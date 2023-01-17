@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -34,13 +35,13 @@ public class HttpsRedirectionMiddleware
     /// <param name="loggerFactory"></param>
     public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _config = config ?? throw new ArgumentNullException(nameof(config));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(config);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        _next = next;
+        _config = config;
+
         var httpsRedirectionOptions = options.Value;
         if (httpsRedirectionOptions.HttpsPort.HasValue)
         {
@@ -123,7 +124,7 @@ public class HttpsRedirectionMiddleware
         // 3. IServerAddressesFeature
         // 4. Fail if not sets
 
-        var nullablePort = _config.GetValue<int?>("HTTPS_PORT") ?? _config.GetValue<int?>("ANCM_HTTPS_PORT");
+        var nullablePort = GetIntConfigValue("HTTPS_PORT") ?? GetIntConfigValue("ANCM_HTTPS_PORT");
         if (nullablePort.HasValue)
         {
             var port = nullablePort.Value;
@@ -165,5 +166,8 @@ public class HttpsRedirectionMiddleware
 
         _logger.FailedToDeterminePort();
         return PortNotFound;
+
+        int? GetIntConfigValue(string name) =>
+            int.TryParse(_config[name], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
     }
 }

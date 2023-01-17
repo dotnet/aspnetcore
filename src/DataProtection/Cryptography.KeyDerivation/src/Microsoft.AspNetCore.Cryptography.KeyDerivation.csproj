@@ -7,12 +7,22 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
-    <Nullable>enable</Nullable>
-    <Nullable Condition="'$(TargetFramework)' == 'netstandard2.0'">annotations</Nullable>
+    <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
+    <IsTrimmable>true</IsTrimmable>
+    <Nullable Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentOutOfRangeThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
 </Project>

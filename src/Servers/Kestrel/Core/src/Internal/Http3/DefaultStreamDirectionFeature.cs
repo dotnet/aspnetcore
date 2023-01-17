@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class DefaultStreamDirectionFeature : IStreamDirectionFeature
+internal sealed class DefaultStreamDirectionFeature : IStreamDirectionFeature
 {
     public DefaultStreamDirectionFeature(bool canRead, bool canWrite)
     {

@@ -18,14 +18,8 @@ public static class HttpLoggingServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddHttpLogging(this IServiceCollection services, Action<HttpLoggingOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
         return services;
@@ -39,16 +33,11 @@ public static class HttpLoggingServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddW3CLogging(this IServiceCollection services, Action<W3CLoggerOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
+        services.AddSingleton<W3CLoggerProcessor>();
         services.AddSingleton<W3CLogger>();
         return services;
     }

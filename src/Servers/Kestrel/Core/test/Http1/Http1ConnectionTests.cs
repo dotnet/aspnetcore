@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -56,6 +57,17 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public async Task MaxRequestHeadersTotalSizeDoesNotThrowForMaxValue()
+    {
+        const string headerLine = "Header: value\r\n";
+        _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize = int.MaxValue;
+        _http1Connection.Reset();
+
+        await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
+        var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+    }
+
+    [Fact]
     public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
     {
         const string headerLine = "Header: value\r\n";
@@ -77,6 +89,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         const string headerLines = "Header-1: value1\r\nHeader-2: value2\r\n";
         _serviceContext.ServerOptions.Limits.MaxRequestHeaderCount = 1;
+        _http1Connection.Initialize(_http1ConnectionContext);
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
@@ -697,6 +710,39 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult = await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCompleted);
+
+        _http1Connection.Abort(new ConnectionAbortedException());
+        var failResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(failResult.IsCompleted);
+    }
+
+    [Fact]
+    public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult = await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCanceled);
+
+        _http1Connection.CancelPendingFlush();
+
+        var canceledResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(canceledResult.IsCanceled);
+
+        //Cancel pending should cancel only next flush
+        var goodResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.False(goodResult.IsCanceled);
+    }
+
+    [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteAsyncAwaitedWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";
@@ -968,6 +1014,25 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _http1Connection.RequestHeaders.Host = "a=b";
         var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
         Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
+    }
+
+    [Fact]
+    public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthRequestHeadersExist()
+    {
+        // Arrange
+        string contentLength = "1024";
+        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
+        _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
+
+        // Act
+        Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
+
+        // Assert
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+        Assert.Equal(contentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+        Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
+        Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
     }
 
     private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)

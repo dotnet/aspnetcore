@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptions>
+internal sealed class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptions>
 {
     private readonly IServiceProvider _serviceProvider;
 
@@ -18,10 +18,7 @@ internal class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptions>
 
     public void Configure(RazorPagesOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.Conventions = new PageConventionCollection(_serviceProvider);
     }

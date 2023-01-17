@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class PhysicalFileResultTest : PhysicalFileResultTestBase
 {
@@ -16,7 +16,7 @@ public class PhysicalFileResultTest : PhysicalFileResultTestBase
         EntityTagHeaderValue entityTag = null,
         bool enableRangeProcessing = false)
     {
-        var fileResult = new PhysicalFileResult(path, contentType)
+        var fileResult = new PhysicalFileHttpResult(path, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -34,5 +34,30 @@ public class PhysicalFileResultTest : PhysicalFileResultTestBase
         };
 
         return fileResult.ExecuteAsync(httpContext);
+    }
+
+    [Fact]
+    public void PhysicalFileResult_Implements_IFileHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new PhysicalFileHttpResult("file.zip", contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(downloadName, result.FileDownloadName);
+    }
+
+    [Fact]
+    public void PhysicalFileResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new PhysicalFileHttpResult("file.zip", contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
     }
 }

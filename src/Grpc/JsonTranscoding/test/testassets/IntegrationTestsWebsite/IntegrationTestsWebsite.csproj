@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\greet.proto" GrpcServices="Server" />
+
+    <Reference Include="Grpc.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
+  </ItemGroup>
+</Project>

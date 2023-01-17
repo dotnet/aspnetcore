@@ -17,6 +17,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextReader.cs" Link="Utf8BufferTextReader.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Utf8BufferTextWriter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ReusableUtf8JsonWriter.cs" Link="ReusableUtf8JsonWriter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TryGetReturnType.cs" Link="TryGetReturnType.cs" />
   </ItemGroup>
 
   <ItemGroup>

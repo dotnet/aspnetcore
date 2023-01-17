@@ -30,16 +30,11 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckCodeFixProvider :
         }
 
         var diagnostic = context.Diagnostics[0];
-        if (diagnostic.Id != ApiDiagnosticDescriptors.API1003_ApiActionsDoNotRequireExplicitModelValidationCheck.Id)
-        {
-            return Task.CompletedTask;
-        }
-
         context.RegisterCodeFix(new MyCodeAction(context.Document, context.Span), diagnostic);
         return Task.CompletedTask;
     }
 
-    private class MyCodeAction : CodeAction
+    private sealed class MyCodeAction : CodeAction
     {
         private readonly Document _document;
         private readonly TextSpan _ifBlockSpan;

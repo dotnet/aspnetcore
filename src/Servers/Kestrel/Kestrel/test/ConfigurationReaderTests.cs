@@ -31,8 +31,8 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Certificates", ""),
-            }).Build();
+            new KeyValuePair<string, string>("Certificates", ""),
+        }).Build();
         var reader = new ConfigurationReader(config);
         var certificates = reader.Certificates;
         Assert.NotNull(certificates);
@@ -44,13 +44,13 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Certificates:FileCert:Path", "/path/cert.pfx"),
-                new KeyValuePair<string, string>("Certificates:FileCert:Password", "certpassword"),
-                new KeyValuePair<string, string>("Certificates:StoreCert:Subject", "certsubject"),
-                new KeyValuePair<string, string>("Certificates:StoreCert:Store", "certstore"),
-                new KeyValuePair<string, string>("Certificates:StoreCert:Location", "cetlocation"),
-                new KeyValuePair<string, string>("Certificates:StoreCert:AllowInvalid", "true"),
-            }).Build();
+            new KeyValuePair<string, string>("Certificates:FileCert:Path", "/path/cert.pfx"),
+            new KeyValuePair<string, string>("Certificates:FileCert:Password", "certpassword"),
+            new KeyValuePair<string, string>("Certificates:StoreCert:Subject", "certsubject"),
+            new KeyValuePair<string, string>("Certificates:StoreCert:Store", "certstore"),
+            new KeyValuePair<string, string>("Certificates:StoreCert:Location", "cetlocation"),
+            new KeyValuePair<string, string>("Certificates:StoreCert:AllowInvalid", "true"),
+        }).Build();
         var reader = new ConfigurationReader(config);
         var certificates = reader.Certificates;
         Assert.NotNull(certificates);
@@ -76,9 +76,9 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Certificates:filecert:Path", "/path/cert.pfx"),
-                new KeyValuePair<string, string>("CERTIFICATES:FILECERT:PASSWORD", "certpassword"),
-            }).Build();
+            new KeyValuePair<string, string>("Certificates:filecert:Path", "/path/cert.pfx"),
+            new KeyValuePair<string, string>("CERTIFICATES:FILECERT:PASSWORD", "certpassword"),
+        }).Build();
         var reader = new ConfigurationReader(config);
         var certificates = reader.Certificates;
         Assert.NotNull(certificates);
@@ -223,13 +223,15 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+        }).Build();
         var reader = new ConfigurationReader(config);
 
         var endpoint = reader.Endpoints.First();
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+#pragma warning restore SYSLIB0039
     }
 
     [Fact]
@@ -237,14 +239,16 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:1", "Tls12"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:1", "Tls12"),
+        }).Build();
         var reader = new ConfigurationReader(config);
 
         var endpoint = reader.Endpoints.First();
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls11 | SslProtocols.Tls12, endpoint.SslProtocols);
+#pragma warning restore SYSLIB0039
     }
 
     [Fact]
@@ -252,13 +256,15 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "TLS11"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "TLS11"),
+        }).Build();
         var reader = new ConfigurationReader(config);
 
         var endpoint = reader.Endpoints.First();
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+#pragma warning restore SYSLIB0039
     }
 
     [Fact]
@@ -266,8 +272,8 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+        }).Build();
         var reader = new ConfigurationReader(config);
 
         var endpoint = reader.Endpoints.First();
@@ -279,8 +285,8 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+        }).Build();
 
         var reader = new ConfigurationReader(config);
 
@@ -294,9 +300,9 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni::Protocols", "Http1"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni::Protocols", "Http1"),
+        }).Build();
 
         var reader = new ConfigurationReader(config);
         var end1Ex = Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
@@ -309,13 +315,13 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Protocols", "Http1"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:SslProtocols:0", "Tls12"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Password", "certpassword"),
-                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
-            }).Build();
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Protocols", "Http1"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:SslProtocols:0", "Tls12"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
+            new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Password", "certpassword"),
+            new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
+        }).Build();
 
         var reader = new ConfigurationReader(config);
 
@@ -338,12 +344,14 @@ public class ConfigurationReaderTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
-                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
-            }).Build();
+            new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
+        }).Build();
         var reader = new ConfigurationReader(config);
 
         var endpoint = reader.EndpointDefaults;
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+#pragma warning restore SYSLIB0039
     }
 
     [Fact]

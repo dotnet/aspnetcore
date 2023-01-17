@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -40,30 +41,16 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static DateTimeOffset? GetDate(this IHeaderDictionary headers, string name)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         return headers.Get<DateTimeOffset?>(name);
     }
 
     internal static void Set(this IHeaderDictionary headers, string name, object? value)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         if (value == null)
         {
@@ -77,15 +64,8 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T>? values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         if (values == null || values.Count == 0)
         {
@@ -115,15 +95,8 @@ public static class HeaderDictionaryTypeExtensions
     /// <param name="values">The values to append.</param>
     public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(values);
 
         switch (values.Count)
         {
@@ -146,15 +119,8 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static void SetDate(this IHeaderDictionary headers, string name, DateTimeOffset? value)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         if (value.HasValue)
         {
@@ -166,34 +132,31 @@ public static class HeaderDictionaryTypeExtensions
         }
     }
 
-    private static readonly IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
-        {
-            { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(ContentRangeHeaderValue), new Func<string, ContentRangeHeaderValue?>(value => { return ContentRangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(MediaTypeHeaderValue), new Func<string, MediaTypeHeaderValue?>(value => { return MediaTypeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(RangeConditionHeaderValue), new Func<string, RangeConditionHeaderValue?>(value => { return RangeConditionHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue?>(value => { return RangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue?>(value => { return EntityTagHeaderValue.TryParse(value, out var result) ? result : null; }) },
-            { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { return HeaderUtilities.TryParseDate(value, out var result) ? result : null; }) },
-            { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
-        };
-
-    private static readonly IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
-        {
-            { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
-            { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },
-            { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { return CookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<CookieHeaderValue>(); })  },
-            { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { return EntityTagHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<EntityTagHeaderValue>(); })  },
-            { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<SetCookieHeaderValue>(); })  },
-        };
-
-    internal static T? Get<T>(this IHeaderDictionary headers, string name)
+    private static readonly Dictionary<Type, object> KnownParsers = new()
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(ContentRangeHeaderValue), new Func<string, ContentRangeHeaderValue?>(value => { return ContentRangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(MediaTypeHeaderValue), new Func<string, MediaTypeHeaderValue?>(value => { return MediaTypeHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(RangeConditionHeaderValue), new Func<string, RangeConditionHeaderValue?>(value => { return RangeConditionHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue?>(value => { return RangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue?>(value => { return EntityTagHeaderValue.TryParse(value, out var result) ? result : null; }) },
+        { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { return HeaderUtilities.TryParseDate(value, out var result) ? result : null; }) },
+        { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
+    };
+
+    private static readonly Dictionary<Type, object> KnownListParsers = new()
+    {
+        { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); }) },
+        { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); }) },
+        { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { return CookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<CookieHeaderValue>(); }) },
+        { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { return EntityTagHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<EntityTagHeaderValue>(); }) },
+        { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<SetCookieHeaderValue>(); }) },
+    };
+
+    internal static T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
+    {
+        ArgumentNullException.ThrowIfNull(headers);
 
         var value = headers[name];
 
@@ -211,19 +174,16 @@ public static class HeaderDictionaryTypeExtensions
         return GetViaReflection<T>(value.ToString());
     }
 
-    internal static IList<T> GetList<T>(this IHeaderDictionary headers, string name)
+    internal static IList<T> GetList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         var values = headers[name];
 
         return GetList<T>(values);
     }
 
-    internal static IList<T> GetList<T>(this StringValues values)
+    internal static IList<T> GetList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this StringValues values)
     {
         if (StringValues.IsNullOrEmpty(values))
         {
@@ -239,31 +199,32 @@ public static class HeaderDictionaryTypeExtensions
         return GetListViaReflection<T>(values);
     }
 
-    private static T? GetViaReflection<T>(string value)
+    private static T? GetViaReflection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string value)
     {
         // TODO: Cache the reflected type for later? Only if success?
         var type = typeof(T);
-        var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .FirstOrDefault(methodInfo =>
-            {
-                if (string.Equals("TryParse", methodInfo.Name, StringComparison.Ordinal)
-                    && methodInfo.ReturnParameter.ParameterType.Equals(typeof(bool)))
-                {
-                    var methodParams = methodInfo.GetParameters();
-                    return methodParams.Length == 2
-                        && methodParams[0].ParameterType.Equals(typeof(string))
-                        && methodParams[1].IsOut
-                        && methodParams[1].ParameterType.Equals(type.MakeByRefType());
-                }
-                return false;
-            });
-
-        if (method == null)
+        MethodInfo? method = null;
+        foreach (var methodInfo in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
         {
-            throw new NotSupportedException(string.Format(
-                CultureInfo.CurrentCulture,
-                "The given type '{0}' does not have a TryParse method with the required signature 'public static bool TryParse(string, out {0}).",
-                nameof(T)));
+            if (string.Equals("TryParse", methodInfo.Name, StringComparison.Ordinal) &&
+                methodInfo.ReturnParameter.ParameterType.Equals(typeof(bool)))
+            {
+                var methodParams = methodInfo.GetParameters();
+                if (methodParams.Length == 2
+                    && methodParams[0].ParameterType.Equals(typeof(string))
+                    && methodParams[1].IsOut
+                    && methodParams[1].ParameterType.Equals(type.MakeByRefType()))
+                {
+                    method = methodInfo;
+                    break;
+                }
+            }
+        }
+
+        if (method is null)
+        {
+            throw new NotSupportedException(
+                $"The given type '{typeof(T)}' does not have a TryParse method with the required signature 'public static bool TryParse(string, out {typeof(T)}).");
         }
 
         var parameters = new object?[] { value, null };
@@ -275,7 +236,7 @@ public static class HeaderDictionaryTypeExtensions
         return default(T);
     }
 
-    private static IList<T> GetListViaReflection<T>(StringValues values)
+    private static IList<T> GetListViaReflection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(StringValues values)
     {
         // TODO: Cache the reflected type for later? Only if success?
         var type = typeof(T);

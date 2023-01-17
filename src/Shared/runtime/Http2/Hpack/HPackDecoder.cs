@@ -183,7 +183,7 @@ namespace System.Net.Http.HPack
             while (currentIndex < data.Length);
 
             // If a header range was set, but the value was not in the data, then copy the range
-            // to the name buffer. Must copy because because the data will be replaced and the range
+            // to the name buffer. Must copy because the data will be replaced and the range
             // will no longer be valid.
             if (_headerNameRange != null)
             {
@@ -577,7 +577,7 @@ namespace System.Net.Http.HPack
                     throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
                 }
 
-                _stringOctets = new byte[Math.Max(length, _stringOctets.Length * 2)];
+                _stringOctets = new byte[Math.Max(length, Math.Min(_stringOctets.Length * 2, _maxHeadersLength))];
             }
 
             _stringLength = length;
@@ -625,7 +625,7 @@ namespace System.Net.Http.HPack
         {
             if (dst.Length < _stringLength)
             {
-                dst = new byte[Math.Max(_stringLength, dst.Length * 2)];
+                dst = new byte[Math.Max(_stringLength, Math.Min(dst.Length * 2, _maxHeadersLength))];
             }
         }
 

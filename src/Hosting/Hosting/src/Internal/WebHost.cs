@@ -52,20 +52,9 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         IConfiguration config,
         AggregateException? hostingStartupErrors)
     {
-        if (appServices == null)
-        {
-            throw new ArgumentNullException(nameof(appServices));
-        }
-
-        if (hostingServiceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(hostingServiceProvider));
-        }
-
-        if (config == null)
-        {
-            throw new ArgumentNullException(nameof(config));
-        }
+        ArgumentNullException.ThrowIfNull(appServices);
+        ArgumentNullException.ThrowIfNull(hostingServiceProvider);
+        ArgumentNullException.ThrowIfNull(config);
 
         _config = config;
         _hostingStartupErrors = hostingStartupErrors;
@@ -115,7 +104,10 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
             // EnsureApplicationServices may have failed due to a missing or throwing Startup class.
             if (_applicationServices == null)
             {
+                // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
                 _applicationServices = _applicationServiceCollection.BuildServiceProvider();
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             }
 
             if (!_options.CaptureStartupErrors)
@@ -371,7 +363,7 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         [LoggerMessage(4, LogLevel.Debug, "Hosting started", EventName = "Started")]
         public static partial void Started(ILogger logger);
 
-        [LoggerMessage(5, LogLevel.Debug, "Hosting shutdown", EventName = "Started")]
+        [LoggerMessage(5, LogLevel.Debug, "Hosting shutdown", EventName = "Shutdown")]
         public static partial void Shutdown(ILogger logger);
 
         [LoggerMessage(12, LogLevel.Debug, "Server shutdown exception", EventName = "ServerShutdownException")]

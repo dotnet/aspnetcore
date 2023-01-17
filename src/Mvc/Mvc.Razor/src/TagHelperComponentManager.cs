@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// <summary>
 /// The default implementation of the <see cref="ITagHelperComponentManager"/>.
 /// </summary>
-internal class TagHelperComponentManager : ITagHelperComponentManager
+internal sealed class TagHelperComponentManager : ITagHelperComponentManager
 {
     /// <summary>
     /// Creates a new <see cref="TagHelperComponentManager"/>.
@@ -17,10 +17,7 @@ internal class TagHelperComponentManager : ITagHelperComponentManager
     /// <param name="tagHelperComponents">The collection of <see cref="ITagHelperComponent"/>s.</param>
     public TagHelperComponentManager(IEnumerable<ITagHelperComponent> tagHelperComponents)
     {
-        if (tagHelperComponents == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperComponents));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperComponents);
 
         Components = new List<ITagHelperComponent>(tagHelperComponents);
     }

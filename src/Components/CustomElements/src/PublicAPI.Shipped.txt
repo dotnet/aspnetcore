@@ -1,0 +1,3 @@
+#nullable enable
+Microsoft.AspNetCore.Components.Web.CustomElementsJSComponentConfigurationExtensions
+static Microsoft.AspNetCore.Components.Web.CustomElementsJSComponentConfigurationExtensions.RegisterCustomElement<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier) -> void

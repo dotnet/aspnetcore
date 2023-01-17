@@ -83,7 +83,7 @@ public class RenderTreeDiffBuilderBenchmark
         GC.KeepAlive(diff);
     }
 
-    private class FakeRenderer : Renderer
+    private sealed class FakeRenderer : Renderer
     {
         public FakeRenderer()
             : base(new TestServiceProvider(), NullLoggerFactory.Instance)
@@ -101,7 +101,7 @@ public class RenderTreeDiffBuilderBenchmark
             => Task.CompletedTask;
     }
 
-    private class TestServiceProvider : IServiceProvider
+    private sealed class TestServiceProvider : IServiceProvider
     {
         public object GetService(Type serviceType)
         {

@@ -4,24 +4,18 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
-internal class ManifestFileInfo : IFileInfo
+internal sealed class ManifestFileInfo : IFileInfo
 {
     private long? _length;
 
     public ManifestFileInfo(Assembly assembly, ManifestFile file, DateTimeOffset lastModified)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (file == null)
-        {
-            throw new ArgumentNullException(nameof(file));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
+        ArgumentNullThrowHelper.ThrowIfNull(file);
 
         Assembly = assembly;
         ManifestFile = file;

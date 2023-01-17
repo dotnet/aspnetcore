@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// The logic to support <see cref="IClientModelValidator"/>
 /// is implemented in <see cref="ValidationAttributeAdapter{TAttribute}"/>.
 /// </summary>
-internal class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
+internal sealed class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
 {
     private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
     private readonly IStringLocalizerFactory? _stringLocalizerFactory;
@@ -33,14 +33,8 @@ internal class DataAnnotationsClientModelValidatorProvider : IClientModelValidat
         IOptions<MvcDataAnnotationsLocalizationOptions> options,
         IStringLocalizerFactory? stringLocalizerFactory)
     {
-        if (validationAttributeAdapterProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
+        ArgumentNullException.ThrowIfNull(options);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         _options = options;
@@ -50,10 +44,7 @@ internal class DataAnnotationsClientModelValidatorProvider : IClientModelValidat
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
         IStringLocalizer? stringLocalizer = null;
         if (_options.Value.DataAnnotationLocalizerProvider != null && _stringLocalizerFactory != null)
         {

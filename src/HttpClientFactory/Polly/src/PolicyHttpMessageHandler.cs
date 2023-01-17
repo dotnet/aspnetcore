@@ -15,12 +15,12 @@ namespace Microsoft.Extensions.Http;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This message handler implementation supports the use of policies provided by the Polly library for 
+/// This message handler implementation supports the use of policies provided by the Polly library for
 /// transient-fault-handling and resiliency.
 /// </para>
 /// <para>
-/// The documentation provided here is focused guidance for using Polly together with the <see cref="IHttpClientFactory"/>. 
-/// See the Polly project and its documentation (https://github.com/app-vnext/Polly) for authoritative information on Polly.
+/// The documentation provided here is focused guidance for using Polly together with the <see cref="IHttpClientFactory"/>.
+/// See the Polly project and its documentation (<see href="https://github.com/app-vnext/Polly"/>) for authoritative information on Polly.
 /// </para>
 /// <para>
 /// The extension methods on <see cref="PollyHttpClientBuilderExtensions"/> are designed as a convenient and correct
@@ -53,14 +53,14 @@ namespace Microsoft.Extensions.Http;
 /// your own policies as needed if this does not meet your requirements.
 /// </para>
 /// <para>
-/// Take care when using policies such as Retry or Timeout together as HttpClient provides its own timeout via 
+/// Take care when using policies such as Retry or Timeout together as HttpClient provides its own timeout via
 /// <see cref="HttpClient.Timeout"/>.  When combining Retry and Timeout, <see cref="HttpClient.Timeout"/> will act as a
 /// timeout across all tries; a Polly Timeout policy can be configured after a Retry policy in the configuration sequence,
 /// to provide a timeout-per-try.
 /// </para>
 /// <para>
-/// All policies provided by Polly are designed to be efficient when used in a long-lived way. Certain policies such as the 
-/// Bulkhead and Circuit-Breaker maintain state and should be scoped across calls you wish to share the Bulkhead or Circuit-Breaker state. 
+/// All policies provided by Polly are designed to be efficient when used in a long-lived way. Certain policies such as the
+/// Bulkhead and Circuit-Breaker maintain state and should be scoped across calls you wish to share the Bulkhead or Circuit-Breaker state.
 /// Take care to ensure the correct lifetimes when using policies and message handlers together in custom scenarios. The extension
 /// methods provided by <see cref="PollyHttpClientBuilderExtensions"/> are designed to assign a long lifetime to policies
 /// and ensure that they can be used when the handler rotation feature is active.

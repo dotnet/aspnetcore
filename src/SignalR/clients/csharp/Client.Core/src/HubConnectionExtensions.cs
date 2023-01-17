@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
@@ -13,7 +14,7 @@ public static partial class HubConnectionExtensions
 {
     private static IDisposable On(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Action<object?[]> handler)
     {
-        return hubConnection.On(methodName, parameterTypes, (parameters, state) =>
+        return hubConnection.On(methodName, parameterTypes, static (parameters, state) =>
         {
             var currentHandler = (Action<object?[]>)state;
             currentHandler(parameters);
@@ -30,10 +31,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On(this HubConnection hubConnection, string methodName, Action handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName, Type.EmptyTypes, args => handler());
     }
@@ -48,10 +46,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1>(this HubConnection hubConnection, string methodName, Action<T1> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1) },
@@ -69,10 +64,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2>(this HubConnection hubConnection, string methodName, Action<T1, T2> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2) },
@@ -91,10 +83,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3) },
@@ -114,10 +103,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) },
@@ -138,10 +124,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4, T5> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) },
@@ -163,10 +146,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5, T6>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4, T5, T6> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6) },
@@ -189,10 +169,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5, T6, T7>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4, T5, T6, T7> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7) },
@@ -216,10 +193,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5, T6, T7, T8>(this HubConnection hubConnection, string methodName, Action<T1, T2, T3, T4, T5, T6, T7, T8> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8) },
@@ -252,10 +226,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On(this HubConnection hubConnection, string methodName, Func<Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName, Type.EmptyTypes, args => handler());
     }
@@ -270,10 +241,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1>(this HubConnection hubConnection, string methodName, Func<T1, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1) },
@@ -291,10 +259,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2>(this HubConnection hubConnection, string methodName, Func<T1, T2, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2) },
@@ -313,10 +278,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3>(this HubConnection hubConnection, string methodName, Func<T1, T2, T3, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3) },
@@ -336,10 +298,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4>(this HubConnection hubConnection, string methodName, Func<T1, T2, T3, T4, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) },
@@ -360,10 +319,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5>(this HubConnection hubConnection, string methodName, Func<T1, T2, T3, T4, T5, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) },
@@ -385,10 +341,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5, T6>(this HubConnection hubConnection, string methodName, Func<T1, T2, T3, T4, T5, T6, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6) },
@@ -411,10 +364,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5, T6, T7>(this HubConnection hubConnection, string methodName, Func<T1, T2, T3, T4, T5, T6, T7, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7) },
@@ -438,10 +388,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, T3, T4, T5, T6, T7, T8>(this HubConnection hubConnection, string methodName, Func<T1, T2, T3, T4, T5, T6, T7, T8, Task> handler)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.On(methodName,
             new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8) },

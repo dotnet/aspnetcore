@@ -79,4 +79,41 @@ public class DefaultHttpContextFactoryTests
 
         Assert.Same(services.GetRequiredService<IServiceScopeFactory>(), context.ServiceScopeFactory);
     }
+
+    [Fact]
+    public void CreateHttpContextSetsActiveField()
+    {
+        // Arrange
+        var services = new ServiceCollection()
+            .AddOptions()
+            .BuildServiceProvider();
+        var contextFactory = new DefaultHttpContextFactory(services);
+
+        // Act & Assert
+        var context = contextFactory.Create(new FeatureCollection()) as DefaultHttpContext;
+        Assert.True(context._active);
+
+        context.Uninitialize();
+
+        Assert.False(context._active);
+    }
+
+    [Fact]
+    public void InitializeHttpContextSetsActiveField()
+    {
+        // Arrange
+        var services = new ServiceCollection()
+            .AddOptions()
+            .BuildServiceProvider();
+        var contextFactory = new DefaultHttpContextFactory(services);
+
+        // Act & Assert
+        var context = new DefaultHttpContext();
+        contextFactory.Initialize(context, new FeatureCollection());
+        Assert.True(context._active);
+
+        context.Uninitialize();
+
+        Assert.False(context._active);
+    }
 }

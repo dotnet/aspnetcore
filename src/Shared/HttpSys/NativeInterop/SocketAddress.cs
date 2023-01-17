@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal;
 ///       on how to format the memory buffers that winsock uses for network addresses.
 ///    </para>
 /// </devdoc>
-internal class SocketAddress
+internal sealed class SocketAddress
 {
     private const int NumberOfIPv6Labels = 8;
     // Lower case hex, no leading zeros
@@ -45,13 +45,7 @@ internal class SocketAddress
     /// </devdoc>
     public SocketAddress(AddressFamily family, int size)
     {
-        if (size < WriteableOffset)
-        {
-            // it doesn't make sense to create a socket address with less tha
-            // 2 bytes, that's where we store the address family.
-
-            throw new ArgumentOutOfRangeException(nameof(size));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(size, WriteableOffset);
         _size = size;
         _buffer = new byte[((size / IntPtr.Size) + 2) * IntPtr.Size]; // sizeof DWORD
 

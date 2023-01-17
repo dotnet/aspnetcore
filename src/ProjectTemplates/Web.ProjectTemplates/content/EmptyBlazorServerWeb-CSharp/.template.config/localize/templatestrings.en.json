@@ -1,0 +1,18 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor Server App Empty",
+  "description": "An empty project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template does not have any content in it.",
+  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
+  "symbols/kestrelHttpsPort/description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used.",
+  "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
+  "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used.",
+  "symbols/HasHttpProfile/description": "Always have HTTP profile.",
+  "symbols/NoHttps/description": "Whether to turn off HTTPS.",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",
+  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+}

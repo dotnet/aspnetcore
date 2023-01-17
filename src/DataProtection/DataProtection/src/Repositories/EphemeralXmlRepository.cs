@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// An ephemeral XML repository backed by process memory. This class must not be used for
 /// anything other than dev scenarios as the keys will not be persisted to storage.
 /// </summary>
-internal class EphemeralXmlRepository : IXmlRepository
+internal sealed class EphemeralXmlRepository : IXmlRepository
 {
     private readonly List<XElement> _storedElements = new List<XElement>();
 
@@ -23,7 +24,7 @@ internal class EphemeralXmlRepository : IXmlRepository
         logger.UsingInmemoryRepository();
     }
 
-    public virtual IReadOnlyCollection<XElement> GetAllElements()
+    public IReadOnlyCollection<XElement> GetAllElements()
     {
         // force complete enumeration under lock for thread safety
         lock (_storedElements)
@@ -41,12 +42,9 @@ internal class EphemeralXmlRepository : IXmlRepository
         }
     }
 
-    public virtual void StoreElement(XElement element, string friendlyName)
+    public void StoreElement(XElement element, string friendlyName)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         var cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
 

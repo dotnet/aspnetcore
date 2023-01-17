@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
-internal class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
+internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
 {
     private readonly SocketTransportOptions _options;
     private readonly MemoryPool<byte> _memoryPool;
@@ -23,15 +23,8 @@ internal class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
 
     public SocketConnectionFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
         _memoryPool = options.Value.MemoryPoolFactory();

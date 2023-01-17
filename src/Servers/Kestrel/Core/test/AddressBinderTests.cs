@@ -78,6 +78,50 @@ public class AddressBinderTests
         Assert.False(https);
     }
 
+    [Fact]
+    public void ParseAddress_HasPipeNoSlash()
+    {
+        // Pipe prefix is missing slash here and so the address is parsed as an IP.
+        // The slash is required to differentiate between a pipe and a hostname.
+        var listenOptions = AddressBinder.ParseAddress("http://pipe:8080", out var https);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(8080, listenOptions.IPEndPoint.Port);
+        Assert.False(https);
+    }
+
+    [Fact]
+    public void ParseAddressNamedPipe()
+    {
+        var address = "http://pipe:/HelloWorld";
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<NamedPipeEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("HelloWorld", listenOptions.PipeName);
+        Assert.False(https);
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
+    [Fact]
+    public void ParseAddressNamedPipe_BackSlashes()
+    {
+        var address = @"http://pipe:/LOCAL\HelloWorld";
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<NamedPipeEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(@"LOCAL\HelloWorld", listenOptions.PipeName);
+        Assert.False(https);
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
+    [Fact]
+    public void ParseAddressNamedPipe_ForwardSlashes()
+    {
+        var address = "http://pipe://tmp/kestrel-test.sock";
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<NamedPipeEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("/tmp/kestrel-test.sock", listenOptions.PipeName);
+        Assert.False(https);
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "tmp/kestrel-test.sock is not valid for windows. Unix socket path must be absolute.")]
     public void ParseAddressUnixPipe()
@@ -248,27 +292,16 @@ public class AddressBinderTests
     }
 
     [Fact]
-    public async Task DefaultAddressBinderWithoutDevCertButHttpsConfiguredBindsToHttpsPorts()
+    public async Task DefaultAddressBinderBindsToHttpPort5000()
     {
-        var x509Certificate2 = TestResources.GetTestCertificate();
         var logger = new MockLogger();
         var addresses = new ServerAddressesFeature();
         var services = new ServiceCollection();
         services.AddLogging();
         var options = new KestrelServerOptions()
         {
-            // This stops the dev cert from being loaded
-            IsDevCertLoaded = true,
             ApplicationServices = services.BuildServiceProvider()
         };
-
-        options.ConfigureEndpointDefaults(e =>
-        {
-            if (e.IPEndPoint.Port == 5001)
-            {
-                e.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = x509Certificate2 });
-            }
-        });
 
         var endpoints = new List<ListenOptions>();
 
@@ -285,6 +318,5 @@ public class AddressBinderTests
         await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
 
         Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
-        Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);
     }
 }

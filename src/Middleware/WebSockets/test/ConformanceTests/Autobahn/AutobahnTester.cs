@@ -135,7 +135,7 @@ public class AutobahnTester : IDisposable
         {
             Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
             ApplicationType = ApplicationType.Portable,
-            TargetFramework = "Net7.0",
+            TargetFramework = "Net8.0",
             EnvironmentName = environment,
             SiteName = "HttpTestSite", // This is configured in the Http.config
             ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
@@ -151,7 +151,9 @@ public class AutobahnTester : IDisposable
         // Win7 HttpClient on NetCoreApp2.2 defaults to TLS 1.0 and won't connect to Kestrel. https://github.com/dotnet/corefx/issues/28733
         // Mac HttpClient on NetCoreApp2.0 doesn't alow you to set some combinations.
         // https://github.com/dotnet/corefx/blob/586cffcdfdf23ad6c193a4bf37fce88a1bf69508/src/System.Net.Http/src/System/Net/Http/CurlHandler/CurlHandler.SslProvider.OSX.cs#L104-L106
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         handler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;
+#pragma warning restore SYSLIB0039
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
         var client = result.CreateHttpClient(handler);
 

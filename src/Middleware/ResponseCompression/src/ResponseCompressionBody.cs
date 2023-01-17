@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.ResponseCompression;
 /// <summary>
 /// Stream wrapper that create specific compression stream only if necessary.
 /// </summary>
-internal class ResponseCompressionBody : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
+internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
 {
     private readonly HttpContext _context;
     private readonly IResponseCompressionProvider _provider;

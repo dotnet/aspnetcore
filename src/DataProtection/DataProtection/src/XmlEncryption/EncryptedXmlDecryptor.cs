@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -44,10 +45,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
     public XElement Decrypt(XElement encryptedElement)
     {
-        if (encryptedElement == null)
-        {
-            throw new ArgumentNullException(nameof(encryptedElement));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(encryptedElement);
 
         // <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">
         //   ...
@@ -77,7 +75,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// <summary>
     /// Can decrypt the XML key data from an <see cref="X509Certificate2"/> that is not in stored in <see cref="X509Store"/>.
     /// </summary>
-    private class EncryptedXmlWithCertificateKeys : EncryptedXml
+    private sealed class EncryptedXmlWithCertificateKeys : EncryptedXml
     {
         private readonly XmlKeyDecryptionOptions? _options;
 
@@ -147,7 +145,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
                         if (privateKey != null)
                         {
                             var useOAEP = encryptedKey.EncryptionMethod?.KeyAlgorithm == XmlEncRSAOAEPUrl;
-                            return DecryptKey(encryptedKey.CipherData.CipherValue, privateKey, useOAEP);
+                            return DecryptKey(encryptedKey.CipherData.CipherValue!, privateKey, useOAEP);
                         }
                     }
                 }

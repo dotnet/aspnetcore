@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class StartupMethods
+internal sealed class StartupMethods
 {
     public StartupMethods(object? instance, Action<IApplicationBuilder> configure, Func<IServiceCollection, IServiceProvider> configureServices)
     {

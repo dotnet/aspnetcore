@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor Server App Leer",
+  "description": "Eine leere Projektvorlage zum Erstellen einer Blazor-Server-App, die serverseitig in einer ASP.NET Core App ausgeführt wird und Benutzerinteraktionen über eine SignalR Verbindung verarbeitet. Diese Vorlage enthält keinen Inhalt.",
+  "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",
+  "symbols/kestrelHttpPort/description": "Portnummer, die für den HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/kestrelHttpsPort/description": "Portnummer, die für den HTTPS Endpunkt in launchSettings.json verwendet werden soll. Diese Option ist nur anwendbar, wenn der Parameter no-https nicht verwendet wird.",
+  "symbols/iisHttpPort/description": "Portnummer, die für den IIS Express HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/iisHttpsPort/description": "Portnummer, die für den IIS Express HTTPS Endpunkt in launchSettings.json verwendet werden soll. Diese Option ist nur anwendbar, wenn der Parameter no-https nicht verwendet wird.",
+  "symbols/HasHttpProfile/description": "Immer HTTP Profil haben.",
+  "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
+}

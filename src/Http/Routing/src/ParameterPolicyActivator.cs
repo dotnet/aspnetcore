@@ -23,19 +23,12 @@ internal static class ParameterPolicyActivator
         // IServiceProvider could be null
         // DefaultInlineConstraintResolver can be created without an IServiceProvider and then call this method
 
-        if (inlineParameterPolicyMap == null)
-        {
-            throw new ArgumentNullException(nameof(inlineParameterPolicyMap));
-        }
-
-        if (inlineParameterPolicy == null)
-        {
-            throw new ArgumentNullException(nameof(inlineParameterPolicy));
-        }
+        ArgumentNullException.ThrowIfNull(inlineParameterPolicyMap);
+        ArgumentNullException.ThrowIfNull(inlineParameterPolicy);
 
         string argumentString;
         var indexOfFirstOpenParens = inlineParameterPolicy.IndexOf('(');
-        if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(")", StringComparison.Ordinal))
+        if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(')'))
         {
             parameterPolicyKey = inlineParameterPolicy.Substring(0, indexOfFirstOpenParens);
             argumentString = inlineParameterPolicy.Substring(
@@ -86,6 +79,7 @@ internal static class ParameterPolicyActivator
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "This type comes from the ConstraintMap.")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070", Justification = "We ensure the constructor is preserved when the constraint map is added.")]
     private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type parameterPolicyType, string argumentString)
     {
         ConstructorInfo activationConstructor = null;

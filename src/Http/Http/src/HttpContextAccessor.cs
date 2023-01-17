@@ -35,7 +35,7 @@ public class HttpContextAccessor : IHttpContextAccessor
         }
     }
 
-    private class HttpContextHolder
+    private sealed class HttpContextHolder
     {
         public HttpContext? Context;
     }

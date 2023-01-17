@@ -59,7 +59,7 @@ public abstract class TwoFactorAuthenticationModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : class
+internal sealed class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;

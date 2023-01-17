@@ -8,7 +8,7 @@
     <PackageTags>http</PackageTags>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,4 +18,7 @@
     <Compile Include="..\..\Shared\HttpParseResult.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Net.Http.Headers.Tests" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,3 @@
+#nullable enable
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.init -> void

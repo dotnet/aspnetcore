@@ -1,16 +1,16 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
-  "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
-  "symbols/kestrelHttpsPort/description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used).",
-  "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
-  "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used).",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "description": "用於建立 ASP.NET Core 應用程式的專案範本，附有 RESTful HTTP 服務的控制器範例。此範本也可用於 ASP.NET Core MVC 的檢視及控制器。",
+  "symbols/ExcludeLaunchSettings/description": "是否要從產生的範本排除 launchSettings.json。",
+  "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",
+  "symbols/kestrelHttpsPort/description": "launchSettings.json 中 HTTPS 端點要使用的連接埠號碼。",
+  "symbols/iisHttpPort/description": "launchSettings.json 中 IIS Express HTTP 端點要使用的連接埠號碼。",
+  "symbols/iisHttpsPort/description": "launchSettings.json 中 IIS Express HTTPS 端點要使用的連接埠號碼。",
+  "symbols/Framework/description": "專案的目標 Framework。",
+  "symbols/Framework/choices/net8.0/description": "目標 net8.0",
+  "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
+  "symbols/NoHttps/description": "是否要關閉 HTTPS。",
+  "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
+  "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
 }

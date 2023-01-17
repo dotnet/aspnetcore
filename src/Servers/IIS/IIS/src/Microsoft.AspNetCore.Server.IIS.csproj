@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
@@ -72,4 +72,9 @@
       <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(InProcessComponents.DllLocation)')" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.IISIntegration.Tests" />
+    <InternalsVisibleTo Include="IIS.Tests" />
+  </ItemGroup>
 </Project>

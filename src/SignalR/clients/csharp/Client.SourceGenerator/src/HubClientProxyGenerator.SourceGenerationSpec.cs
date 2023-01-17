@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
 internal partial class HubClientProxyGenerator
 {
-    public class SourceGenerationSpec
+    public sealed class SourceGenerationSpec
     {
         public string? SetterNamespace;
         public string? SetterClassName;
@@ -21,7 +21,7 @@ internal partial class HubClientProxyGenerator
         public List<TypeSpec> Types = new();
     }
 
-    public class TypeSpec
+    public sealed class TypeSpec
     {
         public string TypeName;
         public List<MethodSpec> Methods = new();
@@ -29,7 +29,7 @@ internal partial class HubClientProxyGenerator
         public string FullyQualifiedTypeName;
     }
 
-    public class MethodSpec
+    public sealed class MethodSpec
     {
         public string Name;
         public List<ArgumentSpec> Arguments = new();
@@ -43,7 +43,7 @@ internal partial class HubClientProxyGenerator
         UnsupportedReturnType
     }
 
-    public class ArgumentSpec
+    public sealed class ArgumentSpec
     {
         public string Name;
         public string FullyQualifiedTypeName;

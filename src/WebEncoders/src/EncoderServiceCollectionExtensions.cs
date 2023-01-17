@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders;
@@ -22,21 +23,18 @@ public static class EncoderServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddWebEncoders(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(services);
 
         services.AddOptions();
 
         // Register the default encoders
         // We want to call the 'Default' property getters lazily since they perform static caching
         services.TryAddSingleton(
-            CreateFactory(() => HtmlEncoder.Default, settings => HtmlEncoder.Create(settings)));
+            CreateFactory(() => HtmlEncoder.Default, HtmlEncoder.Create));
         services.TryAddSingleton(
-            CreateFactory(() => JavaScriptEncoder.Default, settings => JavaScriptEncoder.Create(settings)));
+            CreateFactory(() => JavaScriptEncoder.Default, JavaScriptEncoder.Create));
         services.TryAddSingleton(
-            CreateFactory(() => UrlEncoder.Default, settings => UrlEncoder.Create(settings)));
+            CreateFactory(() => UrlEncoder.Default, UrlEncoder.Create));
 
         return services;
     }
@@ -50,15 +48,8 @@ public static class EncoderServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> setupAction)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(services);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
         services.AddWebEncoders();
         services.Configure(setupAction);

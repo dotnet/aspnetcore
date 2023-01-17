@@ -22,7 +22,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
 
         var deploymentResult = await DeployAsync(deploymentParameters);
@@ -48,7 +48,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         var directoryName = Path.GetRandomFileName();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directoryName;
 
         var deploymentResult = await DeployAsync(deploymentParameters);
@@ -78,7 +78,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = $"..\\{directory.DirectoryInfo.Name}";
         deploymentParameters.ApplicationPath = directory.DirectoryPath;
 
@@ -111,7 +111,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
 
         var deploymentResult = await DeployAsync(deploymentParameters);
@@ -146,7 +146,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -172,7 +172,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -211,7 +211,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -252,12 +252,11 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40059")]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = "./ShadowCopy/../ShadowCopy/";
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -287,7 +286,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
         using var directory = TempDirectory.Create();
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-        deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
         deploymentParameters.HandlerSettings["shadowCopyDirectory"] = "./ShadowCopy";
         var deploymentResult = await DeployAsync(deploymentParameters);
 

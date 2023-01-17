@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting;
 /// </summary>
 public class TestConnection : IDisposable
 {
-    private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(2);
 
     private readonly bool _ownsSocket;
     private readonly Socket _socket;

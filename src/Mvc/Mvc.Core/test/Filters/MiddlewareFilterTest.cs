@@ -441,13 +441,15 @@ public class MiddlewareFilterTest
             MockControllerFactory controllerFactory)
         {
             var objectMethodExecutor = CreateExecutor(actionDescriptor);
+            var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
             return new ControllerActionInvokerCacheEntry(
                 new FilterItem[0],
                 controllerFactory.CreateController,
                 controllerFactory.ReleaseControllerAsync,
                 null,
                 objectMethodExecutor,
-                ActionMethodExecutor.GetExecutor(objectMethodExecutor));
+                actionMethodExecutor,
+                actionMethodExecutor);
         }
     }
 

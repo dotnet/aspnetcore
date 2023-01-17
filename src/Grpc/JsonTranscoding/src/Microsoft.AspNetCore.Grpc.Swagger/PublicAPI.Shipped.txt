@@ -1,0 +1,8 @@
+#nullable enable
+Microsoft.Extensions.DependencyInjection.GrpcSwaggerGenOptionsExtensions
+Microsoft.Extensions.DependencyInjection.GrpcSwaggerServiceExtensions
+static Microsoft.Extensions.DependencyInjection.GrpcSwaggerGenOptionsExtensions.IncludeGrpcXmlComments(this Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions! swaggerGenOptions, string! filePath) -> void
+static Microsoft.Extensions.DependencyInjection.GrpcSwaggerGenOptionsExtensions.IncludeGrpcXmlComments(this Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions! swaggerGenOptions, string! filePath, bool includeControllerXmlComments) -> void
+static Microsoft.Extensions.DependencyInjection.GrpcSwaggerGenOptionsExtensions.IncludeGrpcXmlComments(this Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions! swaggerGenOptions, System.Func<System.Xml.XPath.XPathDocument!>! xmlDocFactory) -> void
+static Microsoft.Extensions.DependencyInjection.GrpcSwaggerGenOptionsExtensions.IncludeGrpcXmlComments(this Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions! swaggerGenOptions, System.Func<System.Xml.XPath.XPathDocument!>! xmlDocFactory, bool includeControllerXmlComments) -> void
+static Microsoft.Extensions.DependencyInjection.GrpcSwaggerServiceExtensions.AddGrpcSwagger(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

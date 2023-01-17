@@ -1,6 +1,4 @@
 #nullable enable
-~Microsoft.AspNetCore.Builder.SessionOptions.Cookie.get -> Microsoft.AspNetCore.Http.CookieBuilder
-~Microsoft.AspNetCore.Builder.SessionOptions.Cookie.set -> void
 ~Microsoft.AspNetCore.Session.DistributedSession.CommitAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Session.DistributedSession.DistributedSession(Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, bool isNewSessionKey) -> void
 ~Microsoft.AspNetCore.Session.DistributedSession.Id.get -> string
@@ -12,11 +10,7 @@
 ~Microsoft.AspNetCore.Session.DistributedSessionStore.Create(string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, bool isNewSessionKey) -> Microsoft.AspNetCore.Http.ISession
 ~Microsoft.AspNetCore.Session.DistributedSessionStore.DistributedSessionStore(Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 ~Microsoft.AspNetCore.Session.ISessionStore.Create(string sessionKey, System.TimeSpan idleTimeout, System.TimeSpan ioTimeout, System.Func<bool> tryEstablishSession, bool isNewSessionKey) -> Microsoft.AspNetCore.Http.ISession
-~Microsoft.AspNetCore.Session.SessionFeature.Session.get -> Microsoft.AspNetCore.Http.ISession
-~Microsoft.AspNetCore.Session.SessionFeature.Session.set -> void
 ~Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Session.SessionMiddleware.SessionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.AspNetCore.Session.ISessionStore sessionStore, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.SessionOptions> options) -> void
-~Microsoft.AspNetCore.Session.SessionMiddleware.SessionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider, Microsoft.AspNetCore.Session.ISessionStore! sessionStore, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.SessionOptions!>! options) -> void
 ~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.SessionOptions options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions.AddSession(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
@@ -55,6 +49,7 @@ Microsoft.AspNetCore.Session.SessionFeature.Session.set -> void
 Microsoft.AspNetCore.Session.SessionFeature.SessionFeature() -> void
 Microsoft.AspNetCore.Session.SessionMiddleware
 Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Session.SessionMiddleware.SessionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider, Microsoft.AspNetCore.Session.ISessionStore! sessionStore, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.SessionOptions!>! options) -> void
 Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions
 static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions.UseSession(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.SessionOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

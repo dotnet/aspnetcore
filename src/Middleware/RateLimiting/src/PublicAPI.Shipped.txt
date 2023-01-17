@@ -1,0 +1,40 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.RateLimiterApplicationBuilderExtensions
+Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Builder.RateLimiterServiceCollectionExtensions
+Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute
+Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute.DisableRateLimitingAttribute() -> void
+Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute
+Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute.EnableRateLimitingAttribute(string! policyName) -> void
+Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute.PolicyName.get -> string?
+Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>
+Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>.GetPartition(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.RateLimiting.RateLimitPartition<TPartitionKey>
+Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>.OnRejected.get -> System.Func<Microsoft.AspNetCore.RateLimiting.OnRejectedContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.RateLimiting.OnRejectedContext
+Microsoft.AspNetCore.RateLimiting.OnRejectedContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.RateLimiting.OnRejectedContext.HttpContext.init -> void
+Microsoft.AspNetCore.RateLimiting.OnRejectedContext.Lease.get -> System.Threading.RateLimiting.RateLimitLease!
+Microsoft.AspNetCore.RateLimiting.OnRejectedContext.Lease.init -> void
+Microsoft.AspNetCore.RateLimiting.OnRejectedContext.OnRejectedContext() -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.AddPolicy<TPartitionKey, TPolicy>(string! policyName) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.AddPolicy<TPartitionKey>(string! policyName, Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>! policy) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.AddPolicy<TPartitionKey>(string! policyName, System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.RateLimiting.RateLimitPartition<TPartitionKey>>! partitioner) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.GlobalLimiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>?
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.GlobalLimiter.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.get -> System.Func<Microsoft.AspNetCore.RateLimiting.OnRejectedContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.RateLimiterOptions() -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.RejectionStatusCode.get -> int
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.RejectionStatusCode.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions
+static Microsoft.AspNetCore.Builder.RateLimiterApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.RateLimiterApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions.DisableRateLimiting<TBuilder>(this TBuilder builder) -> TBuilder
+static Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder, TPartitionKey>(this TBuilder builder, Microsoft.AspNetCore.RateLimiting.IRateLimiterPolicy<TPartitionKey>! policy) -> TBuilder
+static Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder>(this TBuilder builder, string! policyName) -> TBuilder
+static Microsoft.AspNetCore.Builder.RateLimiterServiceCollectionExtensions.AddRateLimiter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddConcurrencyLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! policyName, System.Action<System.Threading.RateLimiting.ConcurrencyLimiterOptions!>! configureOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
+static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddFixedWindowLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! policyName, System.Action<System.Threading.RateLimiting.FixedWindowRateLimiterOptions!>! configureOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
+static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddSlidingWindowLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! policyName, System.Action<System.Threading.RateLimiting.SlidingWindowRateLimiterOptions!>! configureOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
+static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddTokenBucketLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! policyName, System.Action<System.Threading.RateLimiting.TokenBucketRateLimiterOptions!>! configureOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
@@ -48,10 +49,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _pageContext = value;
         }
@@ -104,10 +102,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _tempData = value;
         }
@@ -130,10 +125,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _urlHelper = value;
         }
@@ -193,10 +185,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     protected internal Task<bool> TryUpdateModelAsync<TModel>(TModel model)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         return TryUpdateModelAsync(model, name: string.Empty);
     }
@@ -212,15 +201,8 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     protected internal async Task<bool> TryUpdateModelAsync<TModel>(TModel model, string name)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(name);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -247,20 +229,9 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         IValueProvider valueProvider)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -286,18 +257,11 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     protected internal async Task<bool> TryUpdateModelAsync<TModel>(
         TModel model,
         string name,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (includeExpressions == null)
-        {
-            throw new ArgumentNullException(nameof(includeExpressions));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(includeExpressions);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -332,15 +296,8 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         Func<ModelMetadata, bool> propertyFilter)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -375,23 +332,12 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         TModel model,
         string name,
         IValueProvider valueProvider,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
-
-        if (includeExpressions == null)
-        {
-            throw new ArgumentNullException(nameof(includeExpressions));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(valueProvider);
+        ArgumentNullException.ThrowIfNull(includeExpressions);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -422,20 +368,9 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         Func<ModelMetadata, bool> propertyFilter)
         where TModel : class
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
-
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(valueProvider);
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -462,15 +397,8 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         Type modelType,
         string name)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
         if (!success)
@@ -507,25 +435,10 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         IValueProvider valueProvider,
         Func<ModelMetadata, bool> propertyFilter)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
-
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
-
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
-
-        if (propertyFilter == null)
-        {
-            throw new ArgumentNullException(nameof(propertyFilter));
-        }
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(modelType);
+        ArgumentNullException.ThrowIfNull(valueProvider);
+        ArgumentNullException.ThrowIfNull(propertyFilter);
 
         return ModelBindingHelper.TryUpdateModelAsync(
             model,
@@ -561,10 +474,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         return new BadRequestObjectResult(modelState);
     }
@@ -805,7 +715,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
-    public virtual LocalRedirectResult LocalRedirect(string localUrl)
+    public virtual LocalRedirectResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -821,7 +731,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
-    public virtual LocalRedirectResult LocalRedirectPermanent(string localUrl)
+    public virtual LocalRedirectResult LocalRedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -838,7 +748,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
-    public virtual LocalRedirectResult LocalRedirectPreserveMethod(string localUrl)
+    public virtual LocalRedirectResult LocalRedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -855,7 +765,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
-    public virtual LocalRedirectResult LocalRedirectPermanentPreserveMethod(string localUrl)
+    public virtual LocalRedirectResult LocalRedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
         if (string.IsNullOrEmpty(localUrl))
         {
@@ -916,7 +826,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
-    protected internal RedirectResult Redirect(string url)
+    protected internal RedirectResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -932,7 +842,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
-    public virtual RedirectResult RedirectPermanent(string url)
+    public virtual RedirectResult RedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -949,7 +859,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
-    public virtual RedirectResult RedirectPreserveMethod(string url)
+    public virtual RedirectResult RedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -966,7 +876,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
-    public virtual RedirectResult RedirectPermanentPreserveMethod(string url)
+    public virtual RedirectResult RedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -1746,10 +1656,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     public virtual bool TryValidateModel(
         object model)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         return TryValidateModel(model, name: null);
     }
@@ -1765,10 +1672,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
         object model,
         string? name)
     {
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         ObjectValidator.Validate(
             PageContext,
@@ -1810,10 +1714,7 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// <returns>A <see cref="Task"/> that on completion indicates the filter has executed.</returns>
     public virtual Task OnPageHandlerSelectionAsync(PageHandlerSelectedContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         OnPageHandlerSelected(context);
         return Task.CompletedTask;
@@ -1829,15 +1730,8 @@ public abstract class PageModel : IAsyncPageFilter, IPageFilter
     /// <returns>A <see cref="Task"/> that on completion indicates the filter has executed.</returns>
     public virtual async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         OnPageHandlerExecuting(context);
         if (context.Result == null)

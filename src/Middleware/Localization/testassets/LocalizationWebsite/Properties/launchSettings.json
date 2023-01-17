@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "LocalizationWebsite": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61222;http://localhost:61224"
+    }
+  }
+}

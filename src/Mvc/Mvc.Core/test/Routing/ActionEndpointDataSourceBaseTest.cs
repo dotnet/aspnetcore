@@ -146,7 +146,7 @@ public abstract class ActionEndpointDataSourceBaseTest
 
         var serviceProvider = services.BuildServiceProvider();
 
-        var endpointFactory = new ActionEndpointFactory(serviceProvider.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        var endpointFactory = new ActionEndpointFactory(serviceProvider.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), serviceProvider);
 
         return CreateDataSource(actions, endpointFactory);
     }

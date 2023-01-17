@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
 
@@ -77,7 +78,7 @@ internal abstract class MessagePackHubProtocolWorker
             invocationId = null;
         }
 
-        var target = ReadString(ref reader, "target");
+        var target = ReadString(ref reader, binder, "target");
 
         object[]? arguments;
         try
@@ -161,9 +162,31 @@ internal abstract class MessagePackHubProtocolWorker
                 error = ReadString(ref reader, "error");
                 break;
             case NonVoidResult:
-                var itemType = binder.GetReturnType(invocationId);
-                result = DeserializeObject(ref reader, itemType, "argument");
                 hasResult = true;
+                var itemType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                if (itemType is null)
+                {
+                    reader.Skip();
+                }
+                else
+                {
+                    if (itemType == typeof(RawResult))
+                    {
+                        result = new RawResult(reader.ReadRaw());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            result = DeserializeObject(ref reader, itemType, "argument");
+                        }
+                        catch (Exception ex)
+                        {
+                            error = $"Error trying to deserialize result to {itemType.Name}. {ex.Message}";
+                            hasResult = false;
+                        }
+                    }
+                }
                 break;
             case VoidResult:
                 hasResult = false;
@@ -434,6 +457,10 @@ internal abstract class MessagePackHubProtocolWorker
         {
             writer.WriteNil();
         }
+        else if (argument is RawResult result)
+        {
+            writer.WriteRaw(result.RawSerializedData);
+        }
         else
         {
             Serialize(ref writer, argument.GetType(), argument);
@@ -555,6 +582,26 @@ internal abstract class MessagePackHubProtocolWorker
         catch (Exception ex)
         {
             throw new InvalidDataException($"Reading '{field}' as Int32 failed.", ex);
+        }
+    }
+
+    protected static string ReadString(ref MessagePackReader reader, IInvocationBinder binder, string field)
+    {
+        try
+        {
+#if NETCOREAPP
+            if (reader.TryReadStringSpan(out var span))
+            {
+                return binder.GetTarget(span) ?? Encoding.UTF8.GetString(span);
+            }
+            return reader.ReadString();
+#else
+            return reader.ReadString();
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
         }
     }
 

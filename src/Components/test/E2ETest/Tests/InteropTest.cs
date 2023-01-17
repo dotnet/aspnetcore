@@ -88,6 +88,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["requestDotNetStreamWrapperReferenceAsync"] = @"""Success""",
             ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
             ["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success",
+            ["invokeAsyncThrowsSerializingCircularStructure"] = "Success",
+            ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
+            ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -126,6 +129,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["jsInProcessObjectReference.identity"] = "Invoked from JSInProcessObjectReference",
             ["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success",
             ["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = "Success",
+            ["invokeThrowsSerializingCircularStructure"] = "Success",
+            ["invokeThrowsUndefinedJSObjectReference"] = "Success",
+            ["invokeThrowsNullJSObjectReference"] = "Success",
             ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
             ["jsToDotNetStreamReturnValueUnmarshalled"] = "Success",
             ["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = "False",

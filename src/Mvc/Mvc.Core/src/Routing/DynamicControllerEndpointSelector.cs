@@ -7,16 +7,13 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class DynamicControllerEndpointSelector : IDisposable
+internal sealed class DynamicControllerEndpointSelector : IDisposable
 {
     private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
 
     public DynamicControllerEndpointSelector(EndpointDataSource dataSource)
     {
-        if (dataSource == null)
-        {
-            throw new ArgumentNullException(nameof(dataSource));
-        }
+        ArgumentNullException.ThrowIfNull(dataSource);
 
         _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
     }
@@ -25,10 +22,7 @@ internal class DynamicControllerEndpointSelector : IDisposable
 
     public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         var table = Table;
         var matches = table.Select(values);

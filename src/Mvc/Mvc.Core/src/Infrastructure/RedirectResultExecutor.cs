@@ -22,15 +22,8 @@ public partial class RedirectResultExecutor : IActionResultExecutor<RedirectResu
     /// <param name="urlHelperFactory">The factory used to create url helpers.</param>
     public RedirectResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (urlHelperFactory == null)
-        {
-            throw new ArgumentNullException(nameof(urlHelperFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(urlHelperFactory);
 
         _logger = loggerFactory.CreateLogger<RedirectResultExecutor>();
         _urlHelperFactory = urlHelperFactory;
@@ -39,15 +32,8 @@ public partial class RedirectResultExecutor : IActionResultExecutor<RedirectResu
     /// <inheritdoc />
     public virtual Task ExecuteAsync(ActionContext context, RedirectResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
 

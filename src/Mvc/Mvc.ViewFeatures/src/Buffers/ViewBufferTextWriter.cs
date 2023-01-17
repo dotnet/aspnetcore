@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 /// the writer and switches to writing to the unbuffered writer for all further write operations.
 /// </para>
 /// </summary>
-internal class ViewBufferTextWriter : TextWriter
+internal sealed class ViewBufferTextWriter : TextWriter
 {
     private readonly TextWriter _inner;
     private readonly HtmlEncoder _htmlEncoder;
@@ -29,15 +29,8 @@ internal class ViewBufferTextWriter : TextWriter
     /// <param name="encoding">The <see cref="System.Text.Encoding"/>.</param>
     public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         Buffer = buffer;
         Encoding = encoding;
@@ -54,25 +47,10 @@ internal class ViewBufferTextWriter : TextWriter
     /// </param>
     public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding, HtmlEncoder htmlEncoder, TextWriter inner)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
-
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentNullException.ThrowIfNull(encoding);
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
+        ArgumentNullException.ThrowIfNull(inner);
 
         Buffer = buffer;
         Encoding = encoding;
@@ -102,25 +80,10 @@ internal class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override void Write(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
-
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count));
-        }
-
-        if (buffer.Length - index < count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(count, buffer.Length - index);
 
         Buffer.AppendHtml(new string(buffer, index, count));
     }
@@ -221,15 +184,8 @@ internal class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteAsync(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
         if (count < 0 || (buffer.Length - index < count))
         {
             throw new ArgumentOutOfRangeException(nameof(count));

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// <summary>
 /// Provides access to the normal system clock.
 /// </summary>
-internal class SystemClock : ISystemClock
+internal sealed class SystemClock : ISystemClock
 {
     /// <inheritdoc />
     public long CurrentTicks => Environment.TickCount64;

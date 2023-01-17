@@ -177,7 +177,7 @@ public abstract class JsonOutputFormatterTestBase<TStartup> : IClassFixture<MvcT
         await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
 
         var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", obj.Value<string>("type"));
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", obj.Value<string>("type"));
         Assert.Equal("Not Found", obj.Value<string>("title"));
         Assert.Equal("404", obj.Value<string>("status"));
         Assert.NotNull(obj.Value<string>("traceId"));

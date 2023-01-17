@@ -32,20 +32,9 @@ public class MigrationsEndPointMiddleware
         ILogger<MigrationsEndPointMiddleware> logger,
         IOptions<MigrationsEndPointOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _logger = logger;
@@ -59,10 +48,7 @@ public class MigrationsEndPointMiddleware
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Request.Path.Equals(_options.Path))
         {
@@ -121,7 +107,9 @@ public class MigrationsEndPointMiddleware
         var registeredContexts = context.RequestServices.GetServices<DbContextOptions>()
             .Select(o => o.ContextType);
 
-        if (!registeredContexts.Any(c => string.Equals(contextTypeName, c.AssemblyQualifiedName)))
+        var contextType = registeredContexts.FirstOrDefault(c => string.Equals(contextTypeName, c.AssemblyQualifiedName, StringComparison.Ordinal));
+
+        if (contextType is null)
         {
             var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextTypeName);
 
@@ -131,8 +119,6 @@ public class MigrationsEndPointMiddleware
 
             return null;
         }
-
-        var contextType = Type.GetType(contextTypeName)!;
 
         var db = (DbContext?)context.RequestServices.GetService(contextType);
 

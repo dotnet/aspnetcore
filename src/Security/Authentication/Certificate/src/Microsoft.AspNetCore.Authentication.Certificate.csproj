@@ -6,7 +6,7 @@
     <DefineConstants>$(DefineConstants);SECURITY</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security;x509;certificate</PackageTags>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,4 +14,7 @@
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+  </ItemGroup>
 </Project>

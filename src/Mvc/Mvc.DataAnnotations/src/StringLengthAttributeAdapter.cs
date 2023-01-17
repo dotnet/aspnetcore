@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
-internal class StringLengthAttributeAdapter : AttributeAdapterBase<StringLengthAttribute>
+internal sealed class StringLengthAttributeAdapter : AttributeAdapterBase<StringLengthAttribute>
 {
     private readonly string _max;
     private readonly string _min;
@@ -23,10 +23,7 @@ internal class StringLengthAttributeAdapter : AttributeAdapterBase<StringLengthA
     /// <inheritdoc />
     public override void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, "data-val-length", GetErrorMessage(context));
@@ -45,10 +42,7 @@ internal class StringLengthAttributeAdapter : AttributeAdapterBase<StringLengthA
     /// <inheritdoc />
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
-        if (validationContext == null)
-        {
-            throw new ArgumentNullException(nameof(validationContext));
-        }
+        ArgumentNullException.ThrowIfNull(validationContext);
 
         return GetErrorMessage(
             validationContext.ModelMetadata,

@@ -33,10 +33,7 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
     /// <param name="options">The options instance to configure.</param>
     public void PostConfigure(string? name, OpenIdConnectOptions options)
     {
-        if (name is null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
 
@@ -87,7 +84,7 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
                 if (string.IsNullOrEmpty(options.MetadataAddress) && !string.IsNullOrEmpty(options.Authority))
                 {
                     options.MetadataAddress = options.Authority;
-                    if (!options.MetadataAddress.EndsWith("/", StringComparison.Ordinal))
+                    if (!options.MetadataAddress.EndsWith('/'))
                     {
                         options.MetadataAddress += "/";
                     }
@@ -110,7 +107,7 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
         }
     }
 
-    private class StringSerializer : IDataSerializer<string>
+    private sealed class StringSerializer : IDataSerializer<string>
     {
         public string Deserialize(byte[] data)
         {

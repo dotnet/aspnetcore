@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -11,10 +13,12 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationOptions
 {
-    private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
+    private static readonly Task<AuthorizationPolicy?> _nullPolicyTask = Task.FromResult<AuthorizationPolicy?>(null);
+
+    private Dictionary<string, Task<AuthorizationPolicy?>> PolicyMap { get; } = new Dictionary<string, Task<AuthorizationPolicy?>>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Determines whether authentication handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
+    /// Determines whether authorization handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
     /// Defaults to true.
     /// </summary>
     public bool InvokeHandlersAfterFailure { get; set; } = true;
@@ -44,17 +48,10 @@ public class AuthorizationOptions
     /// <param name="policy">The authorization policy.</param>
     public void AddPolicy(string name, AuthorizationPolicy policy)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(policy);
 
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
-
-        PolicyMap[name] = policy;
+        PolicyMap[name] = Task.FromResult<AuthorizationPolicy?>(policy);
     }
 
     /// <summary>
@@ -64,19 +61,12 @@ public class AuthorizationOptions
     /// <param name="configurePolicy">The delegate that will be used to build the policy.</param>
     public void AddPolicy(string name, Action<AuthorizationPolicyBuilder> configurePolicy)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);
-        PolicyMap[name] = policyBuilder.Build();
+        PolicyMap[name] = Task.FromResult<AuthorizationPolicy?>(policyBuilder.Build());
     }
 
     /// <summary>
@@ -86,16 +76,25 @@ public class AuthorizationOptions
     /// <returns>The policy for the specified name, or null if a policy with the name does not exist.</returns>
     public AuthorizationPolicy? GetPolicy(string name)
     {
-        if (name == null)
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+
+        if (PolicyMap.TryGetValue(name, out var value))
         {
-            throw new ArgumentNullException(nameof(name));
+            return value.Result;
         }
+
+        return null;
+    }
+
+    internal Task<AuthorizationPolicy?> GetPolicyTask(string name)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         if (PolicyMap.TryGetValue(name, out var value))
         {
             return value;
         }
 
-        return null;
+        return _nullPolicyTask;
     }
 }

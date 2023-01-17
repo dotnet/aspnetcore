@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-internal class ControllerSaveTempDataPropertyFilterFactory : IFilterFactory
+internal sealed class ControllerSaveTempDataPropertyFilterFactory : IFilterFactory
 {
     public ControllerSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {
@@ -19,10 +19,7 @@ internal class ControllerSaveTempDataPropertyFilterFactory : IFilterFactory
 
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var service = serviceProvider.GetRequiredService<ControllerSaveTempDataPropertyFilter>();
         service.Properties = TempDataProperties;

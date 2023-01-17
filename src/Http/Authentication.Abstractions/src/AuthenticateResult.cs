@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Authentication;
 /// </summary>
 public class AuthenticateResult
 {
+    private static readonly AuthenticateResult _noResult = new() { None = true };
+
     /// <summary>
     /// Creates a new <see cref="AuthenticateResult"/> instance.
     /// </summary>
@@ -76,10 +78,7 @@ public class AuthenticateResult
     /// <returns>The result.</returns>
     public static AuthenticateResult Success(AuthenticationTicket ticket)
     {
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
         return new AuthenticateResult() { Ticket = ticket, Properties = ticket.Properties };
     }
 
@@ -89,7 +88,7 @@ public class AuthenticateResult
     /// <returns>The result.</returns>
     public static AuthenticateResult NoResult()
     {
-        return new AuthenticateResult() { None = true };
+        return _noResult;
     }
 
     /// <summary>

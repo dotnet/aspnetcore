@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json.schemastore.org/ide.host",
+  "order": 650,
+  "icon": "ide/icon.png",
+  "disableHttpsSymbol": "NoHttps",
+  "supportsDocker": true,
+  "tags": [
+    {
+      "type": "projectType",
+      "add": [ "Blazor", "Cloud", "Web" ],
+      "remove": [ "*" ]
+    },
+    {
+      "type": "platform",
+      "add": [ "Linux", "macOS", "Windows" ]
+    }
+  ]
+}

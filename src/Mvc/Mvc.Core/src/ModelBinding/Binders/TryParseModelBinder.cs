@@ -32,15 +32,8 @@ internal sealed class TryParseModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public TryParseModelBinder(Type modelType, ILoggerFactory loggerFactory)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _tryParseOperation = CreateTryParseOperation(modelType);
         _logger = loggerFactory.CreateLogger<TryParseModelBinder>();
@@ -49,10 +42,7 @@ internal sealed class TryParseModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 
@@ -132,7 +122,7 @@ internal sealed class TryParseModelBinder : IModelBinder
         //     AddModelError(bindingContext, new FormatException());
         // }
         // return model;
-            
+
         var parsedValue = Expression.Variable(modelType, "parsedValue");
         var modelValue = Expression.Variable(typeof(object), "model");
 

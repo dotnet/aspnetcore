@@ -7,7 +7,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
     <Nullable>enable</Nullable>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

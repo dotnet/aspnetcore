@@ -4,6 +4,7 @@
 // Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/aad0424c0bfaa60c8bd136a92fd131e53d14561a/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -12,6 +13,9 @@ namespace Microsoft.Extensions.HotReload;
 
 internal sealed class HotReloadAgent : IDisposable
 {
+    /// Flags for hot reload handler Types like MVC's HotReloadService.
+    private const DynamicallyAccessedMemberTypes HotReloadHandlerLinkerFlags = DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods;
+
     private readonly Action<string> _log;
     private readonly AssemblyLoadEventHandler _assemblyLoad;
     private readonly ConcurrentDictionary<Guid, List<UpdateDelta>> _deltas = new();
@@ -48,6 +52,8 @@ internal sealed class HotReloadAgent : IDisposable
         public List<Action<Type[]?>> UpdateApplication { get; } = new();
     }
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2072",
+        Justification = "The handlerType passed to GetHandlerActions is preserved by MetadataUpdateHandlerAttribute with DynamicallyAccessedMemberTypes.All.")]
     private UpdateHandlerActions GetMetadataUpdateHandlerActions()
     {
         // We need to execute MetadataUpdateHandlers in a well-defined order. For v1, the strategy that is used is to topologically
@@ -83,7 +89,9 @@ internal sealed class HotReloadAgent : IDisposable
         return handlerActions;
     }
 
-    internal void GetHandlerActions(UpdateHandlerActions handlerActions, Type handlerType)
+    internal void GetHandlerActions(
+        UpdateHandlerActions handlerActions,
+        [DynamicallyAccessedMembers(HotReloadHandlerLinkerFlags)] Type handlerType)
     {
         bool methodFound = false;
 
@@ -121,7 +129,7 @@ internal sealed class HotReloadAgent : IDisposable
             };
         }
 
-        MethodInfo? GetUpdateMethod(Type handlerType, string name)
+        MethodInfo? GetUpdateMethod([DynamicallyAccessedMembers(HotReloadHandlerLinkerFlags)] Type handlerType, string name)
         {
             if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(Type[]) }) is MethodInfo updateMethod &&
                 updateMethod.ReturnType == typeof(void))
@@ -153,6 +161,7 @@ internal sealed class HotReloadAgent : IDisposable
             Visit(assemblies, assembly, sortedAssemblies, visited);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
             var assemblyIdentifier = assembly.GetName().Name!;
@@ -214,6 +223,7 @@ internal sealed class HotReloadAgent : IDisposable
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
     private static Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
     {
         List<Type>? types = null;

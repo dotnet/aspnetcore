@@ -43,7 +43,7 @@ public class RegisterConfirmationModel : PageModel
     public virtual Task<IActionResult> OnGetAsync(string email, string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class RegisterConfirmationModel<TUser> : RegisterConfirmationModel where TUser : class
+internal sealed class RegisterConfirmationModel<TUser> : RegisterConfirmationModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly IEmailSender _sender;

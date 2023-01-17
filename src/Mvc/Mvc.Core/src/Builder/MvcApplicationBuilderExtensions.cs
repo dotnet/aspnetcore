@@ -24,10 +24,7 @@ public static class MvcApplicationBuilderExtensions
     /// <see cref="UseMvc(IApplicationBuilder, Action{IRouteBuilder})"/>.</remarks>
     public static IApplicationBuilder UseMvc(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMvc(routes =>
         {
@@ -43,10 +40,7 @@ public static class MvcApplicationBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public static IApplicationBuilder UseMvcWithDefaultRoute(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMvc(routes =>
         {
@@ -66,15 +60,8 @@ public static class MvcApplicationBuilderExtensions
         this IApplicationBuilder app,
         Action<IRouteBuilder> configureRoutes)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-
-        if (configureRoutes == null)
-        {
-            throw new ArgumentNullException(nameof(configureRoutes));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(configureRoutes);
 
         VerifyMvcIsRegistered(app);
 
@@ -101,7 +88,7 @@ public static class MvcApplicationBuilderExtensions
         return app.UseRouter(routes.Build());
     }
 
-    private class EndpointRouteBuilder : IRouteBuilder
+    private sealed class EndpointRouteBuilder : IRouteBuilder
     {
         public EndpointRouteBuilder(IApplicationBuilder applicationBuilder)
         {

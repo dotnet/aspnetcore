@@ -3,6 +3,7 @@ abstract Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthentication
 abstract Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider.ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.Authorization.AuthenticationState! authenticationState, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
 Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Components.Server.CircuitOptions
 Microsoft.AspNetCore.Components.Server.CircuitOptions.CircuitOptions() -> void
@@ -33,6 +34,7 @@ Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserS
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorage.SetAsync(string! key, object! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorage.SetAsync(string! purpose, string! key, object! value) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>
+Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>.ProtectedBrowserStorageResult() -> void
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>.Success.get -> bool
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageResult<TValue>.Value.get -> TValue?
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedLocalStorage

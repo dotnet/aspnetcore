@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerActionEndpointDataSourceIdProvider
+internal sealed class ControllerActionEndpointDataSourceIdProvider
 {
     private int _nextId = 1;
 

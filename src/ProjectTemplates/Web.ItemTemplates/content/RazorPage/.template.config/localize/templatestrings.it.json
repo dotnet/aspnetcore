@@ -1,9 +1,9 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Razor Page",
-  "description": "A Razor page with or without a page model",
-  "symbols/namespace/description": "namespace for the generated code",
-  "symbols/no-pagemodel/description": "create page without a PageModel",
-  "symbols/no-pagemodel/displayName": "Exclude PageModel",
-  "postActions/openInEditor/description": "Opens Index.cshtml in the editor"
+  "name": "Pagina Razor",
+  "description": "Pagina Razor con o senza un modello di pagina",
+  "symbols/namespace/description": "spazio dei nomi per il codice generato",
+  "symbols/no-pagemodel/description": "crea una pagina senza PageModel",
+  "symbols/no-pagemodel/displayName": "Escludi PageModel",
+  "postActions/openInEditor/description": "Apre Index.cshtml nell'editor"
 }

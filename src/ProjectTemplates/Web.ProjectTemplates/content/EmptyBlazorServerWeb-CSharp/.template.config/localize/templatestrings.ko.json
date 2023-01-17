@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor 서버 앱이 비어 있습니다.",
+  "description": "ASP.NET Core 앱 내에서 서버 쪽을 실행하고 SignalR 연결을 통해 사용자 상호 작용을 처리하는 Blazor 서버 앱을 만들기 위한 빈 프로젝트 템플릿입니다. 이 템플릿에는 내용이 없습니다.",
+  "symbols/ExcludeLaunchSettings/description": "생성된 템플릿에서 launchSettings.json을 제외할지 여부입니다.",
+  "symbols/kestrelHttpPort/description": "launchSettings.json의 HTTP 엔드포인트에 사용할 포트 번호입니다.",
+  "symbols/kestrelHttpsPort/description": "launchSettings.json의 HTTPS 엔드포인트에 사용할 포트 번호입니다. 이 옵션은 매개 변수 no-https가 사용되지 않는 경우에만 적용됩니다.",
+  "symbols/iisHttpPort/description": "launchSettings.json의 IIS Express HTTP 엔드포인트에 사용할 포트 번호입니다.",
+  "symbols/iisHttpsPort/description": "launchSettings.json의 IIS Express HTTPS 엔드포인트에 사용할 포트 번호입니다. 이 옵션은 매개 변수 no-https가 사용되지 않는 경우에만 적용됩니다.",
+  "symbols/HasHttpProfile/description": "항상 HTTP 프로필이 있어야 합니다.",
+  "symbols/NoHttps/description": "HTTPS를 끌지 여부입니다.",
+  "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
+  "symbols/Framework/choices/net8.0/description": "대상 net8.0",
+  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
+  "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행"
+}

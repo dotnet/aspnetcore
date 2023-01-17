@@ -20,7 +20,7 @@ public class WebSocketOptions
     /// by the client in the 'Sec-WebSocket-Protocol' request header.
     /// </summary>
     /// <remarks>
-    /// See RFC 6455 section 1.3 for more details on the WebSocket handshake: https://tools.ietf.org/html/rfc6455#section-1.3
+    /// See RFC 6455 section 1.3 for more details on the WebSocket handshake: <see href="https://tools.ietf.org/html/rfc6455#section-1.3"/>
     /// </remarks>
     // WebSocketManager's list of sub protocols is an IList:
     // https://github.com/aspnet/HttpAbstractions/blob/a6bdb9b1ec6ed99978a508e71a7f131be7e4d9fb/src/Microsoft.AspNetCore.Http.Abstractions/WebSocketManager.cs#L23

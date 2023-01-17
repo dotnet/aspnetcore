@@ -6,22 +6,25 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
 
-public class RouteHandlerEndpointRouteBuilderExtensionsTest
+public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 {
-    private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
+    private RouteEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        return Assert.IsType<ModelEndpointDataSource>(Assert.Single(endpointRouteBuilder.DataSources));
+        return Assert.IsType<RouteEndpointDataSource>(Assert.Single(endpointRouteBuilder.DataSources));
     }
 
     private RouteEndpointBuilder GetRouteEndpointBuilder(IEndpointRouteBuilder endpointRouteBuilder)
     {
-        return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointBuilders));
+        return GetBuilderEndpointDataSource(endpointRouteBuilder).GetSingleRouteEndpointBuilder();
     }
 
     public static object?[]?[] MapMethods
@@ -79,8 +82,8 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         static string GetMethod(IHttpMethodMetadata metadata) => Assert.Single(metadata.HttpMethods);
 
         Assert.Equal(3, metadataArray.Length);
-        Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[0]));
-        Assert.Equal("METHOD", GetMethod(metadataArray[1]));
+        Assert.Equal("METHOD", GetMethod(metadataArray[0]));
+        Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[1]));
         Assert.Equal("BUILDER", GetMethod(metadataArray[2]));
 
         Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods.Single());
@@ -127,7 +130,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
-    public async Task MapGetWithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
+    public async Task MapGet_WithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         _ = builder.MapGet("/{id}", (int? id, HttpContext httpContext) =>
@@ -165,7 +168,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
-    public async Task MapGetWithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
+    public async Task MapGet_WithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         _ = builder.MapGet("/", (int? id, HttpContext httpContext) =>
@@ -494,6 +497,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         }
 
         Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
+        Assert.Throws<InvalidOperationException>(() => endpointBuilder.Finally(b => b.Metadata.Add(new RouteNameMetadata("Foo"))));
     }
 
     [Theory]
@@ -847,6 +851,249 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         Assert.Equal(400, httpContext.Response.StatusCode);
     }
 
+    public static object[][] AddFiltersByClassData =
+    {
+        new object[] { (Action<IEndpointConventionBuilder>)((IEndpointConventionBuilder builder) => builder.AddEndpointFilter(new IncrementArgFilter())) },
+        new object[] { (Action<IEndpointConventionBuilder>)((IEndpointConventionBuilder builder) => builder.AddEndpointFilter<IEndpointConventionBuilder, IncrementArgFilter>()) }
+    };
+
+    public static object[][] AddFiltersByDelegateData
+    {
+        get
+        {
+            void WithFilter(IEndpointConventionBuilder builder) =>
+                builder.AddEndpointFilter(async (context, next) =>
+                {
+                    context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
+                    return await next(context);
+                });
+
+            void WithFilterFactory(IEndpointConventionBuilder builder) =>
+                builder.AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
+                {
+                    Assert.NotNull(routeHandlerContext.MethodInfo);
+                    Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
+                    Assert.NotNull(routeHandlerContext.ApplicationServices);
+                    Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
+                    context.Arguments[0] = context.GetArgument<int>(0) + 1;
+                    return await next(context);
+                });
+
+            return new object[][] {
+                new object[] { (Action<IEndpointConventionBuilder>)WithFilter },
+                new object[] { (Action<IEndpointConventionBuilder>)WithFilterFactory  }
+            };
+        }
+    }
+
+    private static async Task AssertIdAsync(Endpoint endpoint, string expectedPattern, int expectedId)
+    {
+        var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+        Assert.Equal(expectedPattern, routeEndpoint.RoutePattern.RawText);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["id"] = "2";
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        await routeEndpoint.RequestDelegate!(httpContext);
+
+        // Assert;
+        var httpResponse = httpContext.Response;
+        httpResponse.Body.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(httpResponse.Body);
+        var body = streamReader.ReadToEndAsync().Result;
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal($"ID: {expectedId}", body);
+    }
+
+    [Theory]
+    [MemberData(nameof(AddFiltersByClassData))]
+    [MemberData(nameof(AddFiltersByDelegateData))]
+    public async Task AddEndpointFilterMethods_CanRegisterFilterWithClassAndDelegateImplementations(Action<IEndpointConventionBuilder> addFilter)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        string PrintId(int id) => $"ID: {id}";
+        addFilter(builder.Map("/{id}", PrintId));
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+        await AssertIdAsync(endpoint, "/{id}", 3);
+    }
+
+    [Theory]
+    [MemberData(nameof(AddFiltersByClassData))]
+    [MemberData(nameof(AddFiltersByDelegateData))]
+    public async Task AddEndpointFilterMethods_WorkWithMapGroup(Action<IEndpointConventionBuilder> addFilter)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        string PrintId(int id) => $"ID: {id}";
+        addFilter(builder.Map("/{id}", PrintId));
+
+        var outerGroup = builder.MapGroup("/outer");
+        addFilter(outerGroup);
+        addFilter(outerGroup.Map("/{id}", PrintId));
+
+        var innerGroup = outerGroup.MapGroup("/inner");
+        addFilter(innerGroup);
+        addFilter(innerGroup.Map("/{id}", PrintId));
+
+        var endpoints = builder.DataSources
+            .SelectMany(ds => ds.Endpoints)
+            .ToDictionary(e => ((RouteEndpoint)e).RoutePattern.RawText!);
+
+        Assert.Equal(3, endpoints.Count);
+
+        // For each layer of grouping, another filter is applies which increments the expectedId by 1 each time.
+        await AssertIdAsync(endpoints["/{id}"], expectedPattern: "/{id}", expectedId: 3);
+        await AssertIdAsync(endpoints["/outer/{id}"], expectedPattern: "/outer/{id}", expectedId: 4);
+        await AssertIdAsync(endpoints["/outer/inner/{id}"], expectedPattern: "/outer/inner/{id}", expectedId: 5);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatAccessesServices()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
+        var routeHandlerBuilder = builder.Map("/", PrintLogger);
+        routeHandlerBuilder.AddEndpointFilter<ServiceAccessingEndpointFilter>();
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var httpResponse = httpContext.Response;
+        httpResponse.Body.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(httpResponse.Body);
+        var body = streamReader.ReadToEndAsync().Result;
+        Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_ProvidesAppServiceProvider_ToFilterFactory()
+    {
+        var appServiceCollection = new ServiceCollection();
+        var appService = new MyService();
+        appServiceCollection.AddSingleton(appService);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(appServiceCollection.BuildServiceProvider()));
+        var filterFactoryRan = false;
+
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
+        var routeHandlerBuilder = builder.Map("/", PrintLogger);
+        routeHandlerBuilder.AddEndpointFilterFactory((rhc, next) =>
+        {
+            Assert.NotNull(rhc.ApplicationServices);
+            var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
+            Assert.Equal(appService, myService);
+            filterFactoryRan = true;
+            return next;
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        Assert.Single(dataSource.Endpoints);
+        Assert.True(filterFactoryRan);
+    }
+
+    [Fact]
+    public void FinallyOnGroup_CanExamineFinallyOnEndpoint()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        ((IEndpointConventionBuilder)group).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint"))
+            {
+                b.Metadata.Add("added-from-group");
+            }
+        });
+
+        group.MapGet("/endpoint", () => { }).Finally(b => b.Metadata.Add("added-from-endpoint"));
+
+        var endpoint = Assert.Single(builder.DataSources
+            .SelectMany(ds => ds.Endpoints));
+
+        Assert.Equal(new[] { "added-from-endpoint", "added-from-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+    }
+
+    [Fact]
+    public void FinallyOnNestedGroups_OuterGroupCanExamineInnerGroup()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        var outerGroup = builder.MapGroup("/group");
+        var innerGroup = outerGroup.MapGroup("/");
+        ((IEndpointConventionBuilder)innerGroup).Finally(b =>
+        {
+            // Verifies that both endpoint-specific finally conventions have run
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint-1")
+                && b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint-2"))
+            {
+                b.Metadata.Add("added-from-inner-group");
+            }
+        });
+        ((IEndpointConventionBuilder)outerGroup).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-inner-group"))
+            {
+                b.Metadata.Add("added-from-outer-group");
+            }
+        });
+
+        var handler = innerGroup.MapGet("/endpoint", () => { });
+        handler.Finally(b => b.Metadata.Add("added-from-endpoint-1"));
+        handler.Finally(b => b.Metadata.Add("added-from-endpoint-2"));
+
+        var endpoint = Assert.Single(builder.DataSources
+            .SelectMany(ds => ds.Endpoints));
+
+        Assert.Equal(new[] { "added-from-endpoint-1", "added-from-endpoint-2", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
+    }
+
+    class MyService { }
+
+    class ServiceAccessingEndpointFilter : IEndpointFilter
+    {
+        private ILogger _logger;
+        private EndpointFilterFactoryContext _routeHandlerContext;
+
+        public ServiceAccessingEndpointFilter(ILoggerFactory loggerFactory, EndpointFilterFactoryContext routeHandlerContext)
+        {
+            _logger = loggerFactory.CreateLogger<ServiceAccessingEndpointFilter>();
+            _routeHandlerContext = routeHandlerContext;
+        }
+
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        {
+            context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
+            context.HttpContext.Items["parentName"] = _routeHandlerContext.MethodInfo.DeclaringType?.Name;
+            return await next(context);
+        }
+    }
+
+    class IncrementArgFilter : IEndpointFilter
+    {
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        {
+            context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
+            return await next(context);
+        }
+    }
+
     class FromRoute : Attribute, IFromRouteMetadata
     {
         public string? Name { get; set; }
@@ -856,10 +1103,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     {
         public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
         {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
+            ArgumentNullException.ThrowIfNull(contentType);
 
             var contentTypes = new List<string>()
                 {

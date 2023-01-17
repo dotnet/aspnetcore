@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
 internal partial class HubServerProxyGenerator
 {
-    internal class Parser
+    internal sealed class Parser
     {
         internal static bool IsSyntaxTargetForAttribute(SyntaxNode node) => node is AttributeSyntax
         {
@@ -111,7 +111,7 @@ internal partial class HubServerProxyGenerator
             var hasPartialModifier = false;
             foreach (var modifier in syntax.Modifiers)
             {
-                if (modifier.Kind() == SyntaxKind.PartialKeyword)
+                if (modifier.IsKind(SyntaxKind.PartialKeyword))
                 {
                     hasPartialModifier = true;
                 }

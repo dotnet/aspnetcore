@@ -37,7 +37,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 
   <PropertyGroup>
-    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).deb</TargetFileName>
+    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-$(TargetArchitecture).deb</TargetFileName>
     <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
 
     <DebPackageVersion>$(TargetingPackVersionPrefix)</DebPackageVersion>

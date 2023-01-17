@@ -1,0 +1,17 @@
+{
+  "author": "Microsoft",
+  "name": "ASP.NET Core API",
+  "description": "A project template for creating an ASP.NET Core API application.",
+  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
+  "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
+  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
+  "symbols/NativeAot/displayName": "Enable _native AOT publish",
+  "symbols/NativeAot/description": "Whether to enable the project for publishing as native AOT.",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+}

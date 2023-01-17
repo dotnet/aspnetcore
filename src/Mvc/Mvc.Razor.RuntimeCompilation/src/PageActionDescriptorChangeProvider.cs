@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
+internal sealed class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
 {
     private readonly RuntimeCompilationFileProvider _fileProvider;
     private readonly string[] _searchPatterns;
@@ -22,20 +22,9 @@ internal class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvi
         RuntimeCompilationFileProvider fileProvider,
         IOptions<RazorPagesOptions> razorPagesOptions)
     {
-        if (projectEngine == null)
-        {
-            throw new ArgumentNullException(nameof(projectEngine));
-        }
-
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
-
-        if (razorPagesOptions == null)
-        {
-            throw new ArgumentNullException(nameof(razorPagesOptions));
-        }
+        ArgumentNullException.ThrowIfNull(projectEngine);
+        ArgumentNullException.ThrowIfNull(fileProvider);
+        ArgumentNullException.ThrowIfNull(razorPagesOptions);
 
         _fileProvider = fileProvider;
 

@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class OptionsAnalyzer
+internal sealed class OptionsAnalyzer
 {
     private readonly StartupAnalysisBuilder _context;
 

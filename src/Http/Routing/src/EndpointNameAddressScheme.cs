@@ -21,10 +21,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
 
     public IEnumerable<Endpoint> FindEndpoints(string address)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         // Capture the current value of the cache
         var entries = Entries;
@@ -70,7 +67,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
 
         // OK we need to report some duplicates.
         var duplicates = endpoints
-            .GroupBy(e => GetEndpointName(e))
+            .GroupBy(GetEndpointName)
             .Where(g => g.Key != null && g.Count() > 1);
 
         var builder = new StringBuilder();

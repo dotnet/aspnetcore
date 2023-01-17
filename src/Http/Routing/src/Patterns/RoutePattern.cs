@@ -132,10 +132,7 @@ public sealed class RoutePattern
     /// <returns>The matching parameter or <c>null</c> if no parameter matches the given name.</returns>
     public RoutePatternParameterPart? GetParameter(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var parameters = Parameters;
         // Read interface .Count once rather than per iteration
@@ -158,7 +155,7 @@ public sealed class RoutePattern
     }
 
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    private class RequiredValueAnySentinal
+    private sealed class RequiredValueAnySentinal
     {
         private static string DebuggerToString() => "*any*";
     }

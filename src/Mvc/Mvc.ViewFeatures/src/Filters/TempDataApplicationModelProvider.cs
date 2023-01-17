@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-internal class TempDataApplicationModelProvider : IApplicationModelProvider
+internal sealed class TempDataApplicationModelProvider : IApplicationModelProvider
 {
     private readonly TempDataSerializer _tempDataSerializer;
 
@@ -27,10 +27,7 @@ internal class TempDataApplicationModelProvider : IApplicationModelProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var controllerModel in context.Result.Controllers)
         {

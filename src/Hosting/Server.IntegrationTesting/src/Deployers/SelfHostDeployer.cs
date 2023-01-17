@@ -192,10 +192,10 @@ public class SelfHostDeployer : ApplicationDeployer
             // Host may not write startup messages, in which case assume it started
             if (DeploymentParameters.StatusMessagesEnabled)
             {
-                // The timeout here is large, because we don't know how long the test could need
-                // We cover a lot of error cases above, but I want to make sure we eventually give up and don't hang the build
-                // just in case we missed one -anurse
-                await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10));
+                // The timeout here is large, because we don't know how long the test could need. We cover a lot
+                // of error cases above, but I want to make sure we eventually give up and don't hang the build
+                // just in case we missed one.
+                await started.Task.TimeoutAfter(TimeSpan.FromMinutes(15));
             }
 
             return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token);

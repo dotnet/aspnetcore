@@ -95,10 +95,7 @@ public class DefaultTagHelperContent : TagHelperContent
     /// <inheritdoc />
     public override void CopyTo(IHtmlContentBuilder destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         if (!_hasContent)
         {
@@ -121,10 +118,7 @@ public class DefaultTagHelperContent : TagHelperContent
     /// <inheritdoc />
     public override void MoveTo(IHtmlContentBuilder destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         if (!_hasContent)
         {
@@ -184,15 +178,8 @@ public class DefaultTagHelperContent : TagHelperContent
     /// <inheritdoc />
     public override void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(encoder);
 
         if (!_hasContent)
         {
@@ -313,7 +300,7 @@ public class DefaultTagHelperContent : TagHelperContent
     }
 
     // Overrides Write(string) to find if the content written is empty/whitespace.
-    private class EmptyOrWhiteSpaceWriter : TextWriter
+    private sealed class EmptyOrWhiteSpaceWriter : TextWriter
     {
         public override Encoding Encoding
         {

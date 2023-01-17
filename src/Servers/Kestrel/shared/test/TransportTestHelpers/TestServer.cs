@@ -94,7 +94,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                                 c.Configure(context.ServerOptions);
                             }
 
-                            return new KestrelServerImpl(sp.GetRequiredService<IConnectionListenerFactory>(), context);
+                            return new KestrelServerImpl(sp.GetServices<IConnectionListenerFactory>(), Array.Empty<IMultiplexedConnectionListenerFactory>(), context);
                         });
                         configureServices(services);
                     })

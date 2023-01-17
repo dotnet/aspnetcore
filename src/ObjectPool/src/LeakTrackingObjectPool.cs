@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.ObjectPool;
 
@@ -16,6 +17,8 @@ namespace Microsoft.Extensions.ObjectPool;
 /// </para>
 /// </summary>
 /// <typeparam name="T">The type of object which is being pooled.</typeparam>
+[Obsolete("LeakTrackingObjectPool<T> was only intended for internal use in diagnostic builds of .NET. " +
+    "It never functioned in publicly shipped .NET versions and may be removed in a future release.")]
 public class LeakTrackingObjectPool<T> : ObjectPool<T> where T : class
 {
     private readonly ConditionalWeakTable<T, Tracker> _trackers = new ConditionalWeakTable<T, Tracker>();
@@ -27,10 +30,7 @@ public class LeakTrackingObjectPool<T> : ObjectPool<T> where T : class
     /// <param name="inner">The <see cref="ObjectPool{T}"/> instance to track leaks in.</param>
     public LeakTrackingObjectPool(ObjectPool<T> inner)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(inner);
 
         _inner = inner;
     }
@@ -55,7 +55,7 @@ public class LeakTrackingObjectPool<T> : ObjectPool<T> where T : class
         _inner.Return(obj);
     }
 
-    private class Tracker : IDisposable
+    private sealed class Tracker : IDisposable
     {
         private readonly string _stack;
         private bool _disposed;

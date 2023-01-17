@@ -10,15 +10,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// An implementation of <see cref="IClientModelValidator"/> that provides the rule for validating
 /// numeric types.
 /// </summary>
-internal class NumericClientModelValidator : IClientModelValidator
+internal sealed class NumericClientModelValidator : IClientModelValidator
 {
     /// <inheritdoc />
     public void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, "data-val-number", GetErrorMessage(context.ModelMetadata));
@@ -34,10 +31,7 @@ internal class NumericClientModelValidator : IClientModelValidator
 
     private static string GetErrorMessage(ModelMetadata modelMetadata)
     {
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadata);
 
         var messageProvider = modelMetadata.ModelBindingMessageProvider;
         var name = modelMetadata.DisplayName ?? modelMetadata.Name;

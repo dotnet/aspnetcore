@@ -9,13 +9,13 @@ using Microsoft.DotNet.OpenApi;
 namespace Microsoft.DotNet.Openapi.Tools.Internal;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-internal class OpenApiDependencyAttribute : Attribute
+internal sealed class OpenApiDependencyAttribute : Attribute
 {
     public OpenApiDependencyAttribute(string name, string version, string codeGenerators)
     {
         Name = name;
         Version = version;
-        CodeGenerators = codeGenerators.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(c => Enum.Parse<CodeGenerator>(c)).ToArray();
+        CodeGenerators = codeGenerators.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(Enum.Parse<CodeGenerator>).ToArray();
     }
 
     public string Name { get; set; }

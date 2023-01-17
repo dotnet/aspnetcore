@@ -6,7 +6,9 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
+#pragma warning restore CA1852 // Seal internal types
 {
     public PrerenderComponentApplicationStore()
     {
@@ -16,10 +18,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
     public PrerenderComponentApplicationStore(string existingState)
     {
-        if (existingState is null)
-        {
-            throw new ArgumentNullException(nameof(existingState));
-        }
+        ArgumentNullException.ThrowIfNull(existingState);
 
         DeserializeState(Convert.FromBase64String(existingState));
     }

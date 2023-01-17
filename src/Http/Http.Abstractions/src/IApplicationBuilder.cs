@@ -19,6 +19,9 @@ public interface IApplicationBuilder
     /// <summary>
     /// Gets the set of HTTP features the application's server provides.
     /// </summary>
+    /// <remarks>
+    /// An empty collection is returned if a server wasn't specified for the application builder.
+    /// </remarks>
     IFeatureCollection ServerFeatures { get; }
 
     /// <summary>

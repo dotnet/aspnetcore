@@ -30,10 +30,7 @@ public static class WebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<IApplicationBuilder> configureApp)
     {
-        if (configureApp == null)
-        {
-            throw new ArgumentNullException(nameof(configureApp));
-        }
+        ArgumentNullException.ThrowIfNull(configureApp);
 
         // Light up the ISupportsStartup implementation
         if (hostBuilder is ISupportsStartup supportsStartup)
@@ -62,10 +59,7 @@ public static class WebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp)
     {
-        if (configureApp == null)
-        {
-            throw new ArgumentNullException(nameof(configureApp));
-        }
+        ArgumentNullException.ThrowIfNull(configureApp);
 
         // Light up the ISupportsStartup implementation
         if (hostBuilder is ISupportsStartup supportsStartup)
@@ -95,10 +89,7 @@ public static class WebHostBuilderExtensions
     /// <remarks>When using the il linker, all public methods of <typeparamref name="TStartup"/> are preserved. This should match the Startup type directly (and not a base type).</remarks>
     public static IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, TStartup> startupFactory) where TStartup : class
     {
-        if (startupFactory == null)
-        {
-            throw new ArgumentNullException(nameof(startupFactory));
-        }
+        ArgumentNullException.ThrowIfNull(startupFactory);
 
         // Light up the GenericWebHostBuilder implementation
         if (hostBuilder is ISupportsStartup supportsStartup)
@@ -113,11 +104,14 @@ public static class WebHostBuilderExtensions
         return hostBuilder
             .ConfigureServices((context, services) =>
             {
-                services.AddSingleton(typeof(IStartup), sp =>
+                services.AddSingleton(typeof(IStartup), GetStartupInstance);
+
+                [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Startup type created by factory can't be determined statically.")]
+                object GetStartupInstance(IServiceProvider serviceProvider)
                 {
                     var instance = startupFactory(context) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
 
-                    var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
+                    var hostingEnvironment = serviceProvider.GetRequiredService<IHostEnvironment>();
 
                     // Check if the instance implements IStartup before wrapping
                     if (instance is IStartup startup)
@@ -125,8 +119,8 @@ public static class WebHostBuilderExtensions
                         return startup;
                     }
 
-                    return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
-                });
+                    return new ConventionBasedStartup(StartupLoader.LoadMethods(serviceProvider, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
+                }
             });
     }
 
@@ -138,10 +132,7 @@ public static class WebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
     {
-        if (startupType == null)
-        {
-            throw new ArgumentNullException(nameof(startupType));
-        }
+        ArgumentNullException.ThrowIfNull(startupType);
 
         // Light up the GenericWebHostBuilder implementation
         if (hostBuilder is ISupportsStartup supportsStartup)
@@ -153,19 +144,21 @@ public static class WebHostBuilderExtensions
 
         hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
+        var state = new UseStartupState(startupType);
+
         return hostBuilder
             .ConfigureServices(services =>
             {
-                if (typeof(IStartup).IsAssignableFrom(startupType))
+                if (typeof(IStartup).IsAssignableFrom(state.StartupType))
                 {
-                    services.AddSingleton(typeof(IStartup), startupType);
+                    services.AddSingleton(typeof(IStartup), state.StartupType);
                 }
                 else
                 {
                     services.AddSingleton(typeof(IStartup), sp =>
                     {
                         var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
-                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
+                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, state.StartupType, hostingEnvironment.EnvironmentName));
                     });
                 }
             });
@@ -211,7 +204,10 @@ public static class WebHostBuilderExtensions
         {
             var options = new ServiceProviderOptions();
             configure(context, options);
+            // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             services.Replace(ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(new DefaultServiceProviderFactory(options)));
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         });
     }
 

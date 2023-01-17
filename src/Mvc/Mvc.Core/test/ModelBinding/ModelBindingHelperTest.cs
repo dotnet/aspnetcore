@@ -1227,7 +1227,7 @@ public class ModelBindingHelperTest
             yield return new object[]
             {
                     "c6687d3a-51f9-4159-8771-a66d2b7d7038",
-                    Guid.Parse("c6687d3a-51f9-4159-8771-a66d2b7d7038")
+                    Guid.Parse("c6687d3a-51f9-4159-8771-a66d2b7d7038", CultureInfo.InvariantCulture)
             };
         }
     }

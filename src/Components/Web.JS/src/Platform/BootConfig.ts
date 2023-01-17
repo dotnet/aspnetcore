@@ -14,9 +14,15 @@ export class BootConfigResult {
       loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
       defaultLoadBlazorBootJson('_framework/blazor.boot.json');
 
-    const bootConfigResponse = loaderResponse instanceof Promise ?
-      await loaderResponse :
-      await defaultLoadBlazorBootJson(loaderResponse ?? '_framework/blazor.boot.json');
+    let bootConfigResponse: Response;
+
+    if (!loaderResponse) {
+      bootConfigResponse = await defaultLoadBlazorBootJson('_framework/blazor.boot.json');
+    } else if (typeof loaderResponse === 'string') {
+      bootConfigResponse = await defaultLoadBlazorBootJson(loaderResponse);
+    } else {
+      bootConfigResponse = await loaderResponse;
+    }
 
     // While we can expect an ASP.NET Core hosted application to include the environment, other
     // hosts may not. Assume 'Production' in the absence of any specified value.
@@ -63,9 +69,16 @@ export interface ResourceGroups {
   readonly satelliteResources?: { [cultureName: string]: ResourceList };
   readonly libraryInitializers?: ResourceList,
   readonly extensions?: BootJsonDataExtension
+  readonly runtimeAssets: ExtendedResourceList;
 }
 
 export type ResourceList = { [name: string]: string };
+export type ExtendedResourceList = {
+  [name: string]: {
+    hash: string,
+    behavior: string
+  }
+};
 
 export enum ICUDataMode {
   Sharded,

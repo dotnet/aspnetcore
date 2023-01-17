@@ -134,6 +134,31 @@ public class OwinEnvironmentTests
         Assert.NotNull(((IEnumerable)owinEnvironment).GetEnumerator());
     }
 
+    [Fact]
+    public void OwinEnvironmentImplementsCopyTo()
+    {
+        var owinEnvironment = new OwinEnvironment(CreateContext());
+        var collection = (ICollection<KeyValuePair<string, object>>)owinEnvironment;
+
+        var length = collection.Count;
+        var kvp = new KeyValuePair<string, object>[length];
+
+        collection.CopyTo(kvp, 0);
+
+        Assert.Throws<ArgumentNullException>(() => collection.CopyTo(null, 0)); // array is null
+        Assert.Throws<ArgumentOutOfRangeException>(() => collection.CopyTo(kvp, -1));   // arrayIndex is less than 0
+        Assert.Throws<ArgumentException>(() => collection.CopyTo(kvp, 1));  // The number of elements in the source ICollection<T> is greater than the available space from arrayIndex to the end of the destination array.
+    }
+
+    [Fact]
+    public void OwinEnvironmentSupportsLinq()
+    {
+        var owinEnvironment = new OwinEnvironment(CreateContext());
+
+        var orderedEnvironment = owinEnvironment.OrderBy(kv => kv.Key).ToList();
+        Assert.NotNull(orderedEnvironment);
+    }
+
     private HttpContext CreateContext()
     {
         var context = new DefaultHttpContext();

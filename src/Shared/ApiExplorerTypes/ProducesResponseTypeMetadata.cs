@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Net.Http.Headers;
@@ -20,11 +19,11 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     /// </summary>
     /// <param name="statusCode">The HTTP response status code.</param>
     public ProducesResponseTypeMetadata(int statusCode)
-        : this(typeof(void), statusCode)
+        : this(typeof(void), statusCode, Enumerable.Empty<string>())
     {
-        IsResponseTypeSetByDefault = true;
     }
 
+    // Only for internal use where validation is unnecessary.
     /// <summary>
     /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
     /// </summary>
@@ -34,7 +33,6 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     {
         Type = type ?? throw new ArgumentNullException(nameof(type));
         StatusCode = statusCode;
-        IsResponseTypeSetByDefault = false;
         _contentTypes = Enumerable.Empty<string>();
     }
 
@@ -47,14 +45,10 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
     public ProducesResponseTypeMetadata(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
     {
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
 
         Type = type ?? throw new ArgumentNullException(nameof(type));
         StatusCode = statusCode;
-        IsResponseTypeSetByDefault = false;
 
         MediaTypeHeaderValue.Parse(contentType);
         for (var i = 0; i < additionalContentTypes.Length; i++)
@@ -65,29 +59,28 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
         _contentTypes = GetContentTypes(contentType, additionalContentTypes);
     }
 
+    // Only for internal use where validation is unnecessary.
+    private ProducesResponseTypeMetadata(Type? type, int statusCode, IEnumerable<string> contentTypes)
+    {
+
+        Type = type;
+        StatusCode = statusCode;
+        _contentTypes = contentTypes;
+    }
+
     /// <summary>
     /// Gets or sets the type of the value returned by an action.
     /// </summary>
-    public Type Type { get; set; }
+    public Type? Type { get; set; }
 
     /// <summary>
     /// Gets or sets the HTTP status code of the response.
     /// </summary>
     public int StatusCode { get; set; }
 
-    /// <summary>
-    /// Used to distinguish a `Type` set by default in the constructor versus
-    /// one provided by the user.
-    ///
-    /// When <see langword="false"/>, then <see cref="Type"/> is set by user.
-    ///
-    /// When <see langword="true"/>, then <see cref="Type"/> is set by by
-    /// default in the constructor
-    /// </summary>
-    /// <value></value>
-    internal bool IsResponseTypeSetByDefault { get; }
-
     public IEnumerable<string> ContentTypes => _contentTypes;
+
+    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(type, statusCode, contentTypes);
 
     private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
     {

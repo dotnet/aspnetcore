@@ -1,5 +1,4 @@
 #nullable enable
-~Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
 Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler
 Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.Container.get -> System.Net.CookieContainer!
 Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.CookieContainerHandler() -> void
@@ -8,6 +7,7 @@ Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler
 Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.MaxRedirects.get -> int
 Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.RedirectHandler() -> void
 Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler.RedirectHandler(int maxRedirects) -> void
+Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.~WebApplicationFactory() -> void
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ClientOptions.get -> Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions!
 Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.CreateClient() -> System.Net.Http.HttpClient!

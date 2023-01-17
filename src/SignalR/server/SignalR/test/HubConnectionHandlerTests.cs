@@ -30,7 +30,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
-public class HubConnectionHandlerTests : VerifiableLoggedTest
+public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 {
     [Fact]
     [LogLevel(LogLevel.Trace)]
@@ -240,7 +240,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<IHubContext<SimpleVoidReturningTypedHub, IVoidReturningTypedHubClient>>());
-            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}'.", ex.Message);
+            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}' or 'System.Threading.Tasks.Task<T>'.", ex.Message);
         }
     }
 
@@ -1846,7 +1846,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).DefaultTimeout();
 
                 await secondClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupA").DefaultTimeout();
-                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout(); ;
+                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout();
 
                 var groupNames = new List<string> { "GroupA", "GroupB" };
                 await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleGroups), "test", groupNames).DefaultTimeout();
@@ -2066,16 +2066,28 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ReceiveCorrectErrorFromStreamThrowing(bool detailedErrors)
+    [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), "Exception: Exception from async enumerable")]
+    [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), null)]
+    [InlineData(nameof(StreamingHub.ExceptionStream), "Exception: Exception from channel")]
+    [InlineData(nameof(StreamingHub.ExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), "ChannelClosedException: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), "Exception: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), null)]
+    public async Task ReceiveCorrectErrorFromStreamThrowing(string streamMethod, string detailedError)
     {
-        using (StartVerifiableLog())
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                   writeContext.EventId.Name == "FailedStreaming";
+        }
+
+        using (StartVerifiableLog(ExpectedErrors))
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             builder.AddSignalR(options =>
             {
-                options.EnableDetailedErrors = detailedErrors;
+                options.EnableDetailedErrors = detailedError != null;
             }), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
 
@@ -2085,14 +2097,14 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 await client.Connected.DefaultTimeout();
 
-                var messages = await client.StreamAsync(nameof(StreamingHub.ExceptionStream));
+                var messages = await client.StreamAsync(streamMethod);
 
                 Assert.Equal(1, messages.Count);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
-                if (detailedErrors)
+                if (detailedError != null)
                 {
-                    Assert.Equal("An error occurred on the server while streaming results. Exception: Exception from channel", completion.Error);
+                    Assert.Equal($"An error occurred on the server while streaming results. {detailedError}", completion.Error);
                 }
                 else
                 {
@@ -2979,8 +2991,14 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
                 await client.SendHubMessageAsync(PingMessage.Instance);
 
                 // Call long running hub method
-                var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
+                var hubMethodTask1 = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
                 await tcsService.StartedMethod.Task.DefaultTimeout();
+
+                // Wait for server to start reading again
+                await customDuplex.WrappedPipeReader.WaitForReadStart().DefaultTimeout();
+                // Send another invocation to server, since we use Inline scheduling we know that once this call completes the server will have read and processed
+                // the message, it should be stuck waiting for the in-progress invoke now
+                _ = await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod)).DefaultTimeout();
 
                 // Tick heartbeat while hub method is running to show that close isn't triggered
                 client.TickHeartbeat();
@@ -2988,7 +3006,8 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
                 // Unblock long running hub method
                 tcsService.EndMethod.SetResult(null);
 
-                await hubMethodTask.DefaultTimeout();
+                await hubMethodTask1.DefaultTimeout();
+                await client.ReadAsync().DefaultTimeout();
 
                 // There is a small window when the hub method finishes and the timer starts again
                 // So we need to delay a little before ticking the heart beat.
@@ -3925,7 +3944,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
         }
 
         Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-            w.EventId.Name == "UnexpectedStreamCompletion"));
+            w.EventId.Name == "UnexpectedCompletion"));
     }
 
     public static string CustomErrorMessage = "custom error for testing ::::)";
@@ -4731,6 +4750,27 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task ServiceResolvedForIEnumerableParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.IEnumerableOfServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal(1L, res.Result);
+        }
+    }
+
+    [Fact]
     public async Task ServiceResolvedWithoutAttribute_WithHubSpecificSettingEnabled()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
@@ -4817,6 +4857,26 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
             var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
             Assert.Equal("Failed to invoke 'ServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceNotResolvedForIEnumerableParameterIfNotInDI()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.IEnumerableOfServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'IEnumerableOfServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
         }
     }
 

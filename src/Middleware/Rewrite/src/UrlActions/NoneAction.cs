@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.UrlActions;
 
-internal class NoneAction : UrlAction
+internal sealed class NoneAction : UrlAction
 {
     public RuleResult Result { get; }
 

@@ -5,14 +5,11 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class DynamicControllerMetadata : IDynamicEndpointMetadata
+internal sealed class DynamicControllerMetadata : IDynamicEndpointMetadata
 {
     public DynamicControllerMetadata(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         Values = values;
     }

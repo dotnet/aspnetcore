@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class IdentityResourceDefinition : ResourceDefinition
+internal sealed class IdentityResourceDefinition : ResourceDefinition
 {
     public IdentityResourceDefinition()
     {

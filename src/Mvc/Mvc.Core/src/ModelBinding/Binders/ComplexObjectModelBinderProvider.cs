@@ -16,10 +16,7 @@ public class ComplexObjectModelBinderProvider : IModelBinderProvider
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var metadata = context.Metadata;
         if (metadata.IsComplexType && !metadata.IsCollectionType)

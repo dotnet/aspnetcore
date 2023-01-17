@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-internal class DefaultApiAuthorizationOptionsConfiguration : IPostConfigureOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>
+internal sealed class DefaultApiAuthorizationOptionsConfiguration : IPostConfigureOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>
 {
     private readonly string _applicationName;
 
@@ -21,7 +21,7 @@ internal class DefaultApiAuthorizationOptionsConfiguration : IPostConfigureOptio
         options.UserOptions.AuthenticationType ??= _applicationName;
     }
 
-    public void PostConfigure(string name, RemoteAuthenticationOptions<ApiAuthorizationProviderOptions> options)
+    public void PostConfigure(string? name, RemoteAuthenticationOptions<ApiAuthorizationProviderOptions> options)
     {
         if (string.Equals(name, Options.DefaultName))
         {

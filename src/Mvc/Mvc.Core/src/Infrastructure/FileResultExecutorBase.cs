@@ -78,10 +78,7 @@ public class FileResultExecutorBase
     /// <returns>An <see cref="ILogger"/>.</returns>
     protected static ILogger CreateLogger<T>(ILoggerFactory factory)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.CreateLogger<T>();
     }

@@ -424,7 +424,7 @@ public class ObjectMethodExecutorTest
 
         public TestObject ValueMethodWithReturnType(int i)
         {
-            return new TestObject() { value = "Hello" }; ;
+            return new TestObject() { value = "Hello" };
         }
 
         public TestObject ValueMethodWithReturnTypeThrowsException(TestObject i)

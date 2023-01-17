@@ -1,5 +1,4 @@
 #nullable enable
-~Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Hosting.KestrelServerOptionsSystemdExtensions
 Microsoft.AspNetCore.Hosting.ListenOptionsConnectionLoggingExtensions
 Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions
@@ -78,6 +77,7 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion.Http2 = 2 -> 
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion.Http3 = 3 -> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion.Unknown = -1 -> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.HttpVersionAndMethod() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.HttpVersionAndMethod(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, int methodEnd) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.Method.get -> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.MethodEnd.get -> int
@@ -94,10 +94,12 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.IsEncoded.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.Length.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.Offset.get -> int
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.TargetOffsetPathLength() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.TargetOffsetPathLength(int offset, int length, bool isEncoded) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.Dispose() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.Options.get -> Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.StartAsync<TContext>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>! application, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.StopAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
@@ -214,6 +216,8 @@ Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.OnAuthen
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.OnAuthenticate.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificate.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateChain.get -> System.Security.Cryptography.X509Certificates.X509Certificate2Collection?
+Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateChain.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateSelector.get -> System.Func<Microsoft.AspNetCore.Connections.ConnectionContext?, string?, System.Security.Cryptography.X509Certificates.X509Certificate2?>?
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateSelector.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.SslProtocols.get -> System.Security.Authentication.SslProtocols

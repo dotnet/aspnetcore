@@ -8,7 +8,10 @@
     <NoWarn>$(NoWarn);CS8603</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -62,4 +65,8 @@
   <Target Name="_CheckBlazorServerJSPath" BeforeTargets="GenerateNuspec" DependsOnTargets="ResolveProjectReferences" Condition=" '$(IsPackable)' == 'true' ">
     <Error Text="'$(BlazorWebAssemblyJSFile)' does not exist. Enable NodeJS to pack this project." Condition=" !EXISTS('$(BlazorWebAssemblyJSFile)') " />
   </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

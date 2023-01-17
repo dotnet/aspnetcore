@@ -16,7 +16,7 @@ using BenchmarkDotNet.Toolchains.DotNetCli;
 
 namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner;
 
-partial class Program
+sealed partial class Program
 {
     private static TextWriter _standardOutput;
     private static StringBuilder _standardOutputText;

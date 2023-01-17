@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal class RazorProjectPageRouteModelProvider : IPageRouteModelProvider
+internal sealed class RazorProjectPageRouteModelProvider : IPageRouteModelProvider
 {
     private const string AreaRootDirectory = "/Areas";
     private readonly RazorProjectFileSystem _razorFileSystem;

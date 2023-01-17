@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal class NullView : IView
+internal sealed class NullView : IView
 {
     public static readonly NullView Instance = new NullView();
 
@@ -14,10 +14,7 @@ internal class NullView : IView
 
     public Task RenderAsync(ViewContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return Task.CompletedTask;
     }

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// A <see cref="IPageFilter"/> which sets the appropriate headers related to response caching.
 /// </summary>
-internal class PageResponseCacheFilter : IPageFilter, IResponseCacheFilter
+internal sealed class PageResponseCacheFilter : IPageFilter, IResponseCacheFilter
 {
     private readonly ResponseCacheFilterExecutor _executor;
     private readonly ILogger _logger;
@@ -85,10 +85,7 @@ internal class PageResponseCacheFilter : IPageFilter, IResponseCacheFilter
 
     public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.IsEffectivePolicy<IResponseCacheFilter>(this))
         {

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 
@@ -17,10 +18,7 @@ public class RequestHeaders
     /// <param name="headers">The request headers.</param>
     public RequestHeaders(IHeaderDictionary headers)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         Headers = headers;
     }
@@ -357,7 +355,7 @@ public class RequestHeaders
     /// The given type must have a static TryParse method.</typeparam>
     /// <param name="name">The name of the header to retrieve.</param>
     /// <returns>The value of the header.</returns>
-    public T? Get<T>(string name)
+    public T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string name)
     {
         return Headers.Get<T>(name);
     }
@@ -370,7 +368,7 @@ public class RequestHeaders
     /// The given type must have a static TryParseList method.</typeparam>
     /// <param name="name">The name of the header to retrieve.</param>
     /// <returns>List of values of the header.</returns>
-    public IList<T> GetList<T>(string name)
+    public IList<T> GetList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string name)
     {
         return Headers.GetList<T>(name);
     }
@@ -382,10 +380,7 @@ public class RequestHeaders
     /// <param name="value">The header value.</param>
     public void Set(string name, object? value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Headers.Set(name, value);
     }
@@ -398,10 +393,7 @@ public class RequestHeaders
     /// <param name="values">The sequence of header values.</param>
     public void SetList<T>(string name, IList<T>? values)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Headers.SetList<T>(name, values);
     }
@@ -413,15 +405,8 @@ public class RequestHeaders
     /// <param name="value">The header value.</param>
     public void Append(string name, object value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(value);
 
         Headers.Append(name, value.ToString());
     }

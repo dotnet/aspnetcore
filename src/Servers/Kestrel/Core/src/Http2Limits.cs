@@ -15,16 +15,16 @@ public class Http2Limits
     private int _maxStreamsPerConnection = 100;
     private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
     private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
-    private int _maxRequestHeaderFieldSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
-    private int _initialConnectionWindowSize = 1024 * 128; // Larger than the default 64kb, and larger than any one single stream.
-    private int _initialStreamWindowSize = 1024 * 96; // Larger than the default 64kb
+    private int _maxRequestHeaderFieldSize = 32 * 1024; // Matches MaxRequestHeadersTotalSize
+    private int _initialConnectionWindowSize = 1024 * 1024; // Equal to SocketTransportOptions.MaxReadBufferSize and larger than any one single stream.
+    private int _initialStreamWindowSize = 768 * 1024; // Larger than the default 64kb and able to use most (3/4ths) of the connection window by itself.
     private TimeSpan _keepAlivePingDelay = TimeSpan.MaxValue;
     private TimeSpan _keepAlivePingTimeout = TimeSpan.FromSeconds(20);
 
     /// <summary>
     /// Limits the number of concurrent request streams per HTTP/2 connection. Excess streams will be refused.
     /// <para>
-    /// Value must be greater than 0, defaults to 100.
+    /// Value must be greater than 0, defaults to 100 streams.
     /// </para>
     /// </summary>
     public int MaxStreamsPerConnection
@@ -44,7 +44,7 @@ public class Http2Limits
     /// <summary>
     /// Limits the size of the header compression tables, in octets, the HPACK encoder and decoder on the server can use.
     /// <para>
-    /// Value must be greater than or equal to 0, defaults to 4096.
+    /// Value must be greater than or equal to 0, defaults to 4096 octets (4 KiB).
     /// </para>
     /// </summary>
     public int HeaderTableSize
@@ -64,7 +64,7 @@ public class Http2Limits
     /// <summary>
     /// Indicates the size of the largest frame payload that is allowed to be received, in octets. The size must be between 2^14 and 2^24-1.
     /// <para>
-    /// Value must be between 2^14 and 2^24, defaults to 2^14 (16,384).
+    /// Value must be between 2^14 and 2^24, defaults to 2^14 octets (16 KiB).
     /// </para>
     /// </summary>
     public int MaxFrameSize
@@ -82,9 +82,9 @@ public class Http2Limits
     }
 
     /// <summary>
-    /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
+    /// Indicates the size of the maximum allowed size of a request header field sequence, in octets. This limit applies to both name and value sequences in their compressed and uncompressed representations.
     /// <para>
-    /// Value must be greater than 0, defaults to 2^14 (16,384).
+    /// Value must be greater than 0, defaults to 2^14 octets (16 KiB).
     /// </para>
     /// </summary>
     public int MaxRequestHeaderFieldSize
@@ -102,10 +102,10 @@ public class Http2Limits
     }
 
     /// <summary>
-    /// Indicates how much request body data the server is willing to receive and buffer at a time aggregated across all
+    /// Indicates how much request body data, in bytes, the server is willing to receive and buffer at a time aggregated across all
     /// requests (streams) per connection. Note requests are also limited by <see cref="InitialStreamWindowSize"/>
     /// <para>
-    /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 128 kb.
+    /// Value must be greater than or equal to 64 KiB and less than 2 GiB, defaults to 1 MiB.
     /// </para>
     /// </summary>
     public int InitialConnectionWindowSize
@@ -124,10 +124,11 @@ public class Http2Limits
     }
 
     /// <summary>
-    /// Indicates how much request body data the server is willing to receive and buffer at a time per stream.
-    /// Note connections are also limited by <see cref="InitialConnectionWindowSize"/>
+    /// Indicates how much request body data, in bytes, the server is willing to receive and buffer at a time per stream.
+    /// Note connections are also limited by <see cref="InitialConnectionWindowSize"/>. There must be space in both the stream
+    /// window and connection window for a client to upload request body data.
     /// <para>
-    /// Value must be greater than or equal to 65,535 and less than 2^31, defaults to 96 kb.
+    /// Value must be greater than or equal to 64 KiB and less than 2 GiB, defaults to 768 KiB.
     /// </para>
     /// </summary>
     public int InitialStreamWindowSize

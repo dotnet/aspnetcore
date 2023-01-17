@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class AuthorizationPageApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class AuthorizationPageApplicationModelProvider : IPageApplicationModelProvider
 {
     private readonly IAuthorizationPolicyProvider _policyProvider;
     private readonly MvcOptions _mvcOptions;
@@ -26,10 +26,7 @@ internal class AuthorizationPageApplicationModelProvider : IPageApplicationModel
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_mvcOptions.EnableEndpointRouting)
         {

@@ -78,7 +78,7 @@ public class DefaultFilesMiddlewareTests
     }
 
     [Fact]
-    public async Task Endpoint_PassesThrough()
+    public async Task Endpoint_With_RequestDelegate_PassesThrough()
     {
         using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
         {
@@ -107,6 +107,9 @@ public class DefaultFilesMiddlewareTests
                     });
 
                     app.UseEndpoints(endpoints => { });
+
+                    // Echo back the current request path value
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
                 },
                 services => { services.AddDirectoryBrowser(); services.AddRouting(); });
             using var server = host.GetTestServer();
@@ -114,6 +117,48 @@ public class DefaultFilesMiddlewareTests
             var response = await server.CreateRequest("/SubFolder/").GetAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/SubFolder/", await response.Content.ReadAsStringAsync()); // Should not be modified
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_With_Null_RequestDelegate_Does_Not_PassThrough()
+    {
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+        {
+            using var host = await StaticFilesTestServer.Create(
+                app =>
+                {
+                    app.UseRouting();
+
+                    app.Use(next => context =>
+                    {
+                        // Assign an endpoint with a null RequestDelegate, the default files should still run
+                        context.SetEndpoint(new Endpoint(requestDelegate: null,
+                        new EndpointMetadataCollection(),
+                        "test"));
+
+                        return next(context);
+                    });
+
+                    app.UseDefaultFiles(new DefaultFilesOptions
+                    {
+                        RequestPath = new PathString(""),
+                        FileProvider = fileProvider
+                    });
+
+                    app.UseEndpoints(endpoints => { });
+
+                    // Echo back the current request path value
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
+                },
+                services => { services.AddDirectoryBrowser(); services.AddRouting(); });
+            using var server = host.GetTestServer();
+
+            var response = await server.CreateRequest("/SubFolder/").GetAsync();
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("/SubFolder/default.html", responseContent); // Should be modified and be valid path to file
         }
     }
 

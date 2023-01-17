@@ -19,10 +19,7 @@ public static class ApplicationModelConventionExtensions
     public static void RemoveType<TApplicationModelConvention>(this IList<IApplicationModelConvention> list)
         where TApplicationModelConvention : IApplicationModelConvention
     {
-        if (list == null)
-        {
-            throw new ArgumentNullException(nameof(list));
-        }
+        ArgumentNullException.ThrowIfNull(list);
 
         RemoveType(list, typeof(TApplicationModelConvention));
     }
@@ -34,15 +31,8 @@ public static class ApplicationModelConventionExtensions
     /// <param name="type">The type to remove.</param>
     public static void RemoveType(this IList<IApplicationModelConvention> list, Type type)
     {
-        if (list == null)
-        {
-            throw new ArgumentNullException(nameof(list));
-        }
-
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(list);
+        ArgumentNullException.ThrowIfNull(type);
 
         for (var i = list.Count - 1; i >= 0; i--)
         {
@@ -65,15 +55,8 @@ public static class ApplicationModelConventionExtensions
         this IList<IApplicationModelConvention> conventions,
         IControllerModelConvention controllerModelConvention)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
-
-        if (controllerModelConvention == null)
-        {
-            throw new ArgumentNullException(nameof(controllerModelConvention));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
+        ArgumentNullException.ThrowIfNull(controllerModelConvention);
 
         conventions.Add(new ControllerApplicationModelConvention(controllerModelConvention));
     }
@@ -89,15 +72,8 @@ public static class ApplicationModelConventionExtensions
         this IList<IApplicationModelConvention> conventions,
         IActionModelConvention actionModelConvention)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
-
-        if (actionModelConvention == null)
-        {
-            throw new ArgumentNullException(nameof(actionModelConvention));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
+        ArgumentNullException.ThrowIfNull(actionModelConvention);
 
         conventions.Add(new ActionApplicationModelConvention(actionModelConvention));
     }
@@ -113,15 +89,8 @@ public static class ApplicationModelConventionExtensions
         this IList<IApplicationModelConvention> conventions,
         IParameterModelConvention parameterModelConvention)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
-
-        if (parameterModelConvention == null)
-        {
-            throw new ArgumentNullException(nameof(parameterModelConvention));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
+        ArgumentNullException.ThrowIfNull(parameterModelConvention);
 
         conventions.Add(new ParameterApplicationModelConvention(parameterModelConvention));
     }
@@ -137,20 +106,13 @@ public static class ApplicationModelConventionExtensions
         this IList<IApplicationModelConvention> conventions,
         IParameterModelBaseConvention parameterModelConvention)
     {
-        if (conventions == null)
-        {
-            throw new ArgumentNullException(nameof(conventions));
-        }
-
-        if (parameterModelConvention == null)
-        {
-            throw new ArgumentNullException(nameof(parameterModelConvention));
-        }
+        ArgumentNullException.ThrowIfNull(conventions);
+        ArgumentNullException.ThrowIfNull(parameterModelConvention);
 
         conventions.Add(new ParameterBaseApplicationModelConvention(parameterModelConvention));
     }
 
-    private class ParameterApplicationModelConvention : IApplicationModelConvention
+    private sealed class ParameterApplicationModelConvention : IApplicationModelConvention
     {
         private readonly IParameterModelConvention _parameterModelConvention;
 
@@ -162,10 +124,7 @@ public static class ApplicationModelConventionExtensions
         /// <inheritdoc />
         public void Apply(ApplicationModel application)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
+            ArgumentNullException.ThrowIfNull(application);
 
             // Create copies of collections of controllers, actions and parameters as users could modify
             // these collections from within the convention itself.
@@ -185,7 +144,7 @@ public static class ApplicationModelConventionExtensions
         }
     }
 
-    private class ParameterBaseApplicationModelConvention :
+    private sealed class ParameterBaseApplicationModelConvention :
         IApplicationModelConvention, IParameterModelBaseConvention
     {
         private readonly IParameterModelBaseConvention _parameterBaseModelConvention;
@@ -198,33 +157,24 @@ public static class ApplicationModelConventionExtensions
         /// <inheritdoc />
         public void Apply(ApplicationModel application)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
+            ArgumentNullException.ThrowIfNull(application);
         }
 
         void IParameterModelBaseConvention.Apply(ParameterModelBase parameterModel)
         {
-            if (parameterModel == null)
-            {
-                throw new ArgumentNullException(nameof(parameterModel));
-            }
+            ArgumentNullException.ThrowIfNull(parameterModel);
 
             _parameterBaseModelConvention.Apply(parameterModel);
         }
     }
 
-    private class ActionApplicationModelConvention : IApplicationModelConvention
+    private sealed class ActionApplicationModelConvention : IApplicationModelConvention
     {
         private readonly IActionModelConvention _actionModelConvention;
 
         public ActionApplicationModelConvention(IActionModelConvention actionModelConvention)
         {
-            if (actionModelConvention == null)
-            {
-                throw new ArgumentNullException(nameof(actionModelConvention));
-            }
+            ArgumentNullException.ThrowIfNull(actionModelConvention);
 
             _actionModelConvention = actionModelConvention;
         }
@@ -232,10 +182,7 @@ public static class ApplicationModelConventionExtensions
         /// <inheritdoc />
         public void Apply(ApplicationModel application)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
+            ArgumentNullException.ThrowIfNull(application);
 
             // Create copies of collections of controllers, actions and parameters as users could modify
             // these collections from within the convention itself.
@@ -251,16 +198,13 @@ public static class ApplicationModelConventionExtensions
         }
     }
 
-    private class ControllerApplicationModelConvention : IApplicationModelConvention
+    private sealed class ControllerApplicationModelConvention : IApplicationModelConvention
     {
         private readonly IControllerModelConvention _controllerModelConvention;
 
         public ControllerApplicationModelConvention(IControllerModelConvention controllerConvention)
         {
-            if (controllerConvention == null)
-            {
-                throw new ArgumentNullException(nameof(controllerConvention));
-            }
+            ArgumentNullException.ThrowIfNull(controllerConvention);
 
             _controllerModelConvention = controllerConvention;
         }
@@ -268,10 +212,7 @@ public static class ApplicationModelConventionExtensions
         /// <inheritdoc />
         public void Apply(ApplicationModel application)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
+            ArgumentNullException.ThrowIfNull(application);
 
             var controllers = application.Controllers.ToArray();
             foreach (var controller in controllers)

@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.Internal;
@@ -29,7 +29,10 @@ internal readonly struct CoercedAwaitableInfo
         AwaitableInfo = coercedAwaitableInfo;
     }
 
-    public static bool IsTypeAwaitable(Type type, out CoercedAwaitableInfo info)
+    [RequiresDynamicCode("Dynamically generates calls to FSharpAsync.")]
+    public static bool IsTypeAwaitable(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type,
+        out CoercedAwaitableInfo info)
     {
         if (AwaitableInfo.IsTypeAwaitable(type, out var directlyAwaitableInfo))
         {

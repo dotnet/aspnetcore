@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class ConfigureServicesBuilder
+internal sealed class ConfigureServicesBuilder
 {
     public ConfigureServicesBuilder(MethodInfo? configureServices)
     {

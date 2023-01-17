@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs
 /// for ASP.NET MVC within an application.
 /// </summary>
-internal class EndpointRoutingUrlHelper : UrlHelperBase
+internal sealed class EndpointRoutingUrlHelper : UrlHelperBase
 {
     private readonly ILogger<EndpointRoutingUrlHelper> _logger;
     private readonly LinkGenerator _linkGenerator;
@@ -29,15 +29,8 @@ internal class EndpointRoutingUrlHelper : UrlHelperBase
         ILogger<EndpointRoutingUrlHelper> logger)
         : base(actionContext)
     {
-        if (linkGenerator == null)
-        {
-            throw new ArgumentNullException(nameof(linkGenerator));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(linkGenerator);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _linkGenerator = linkGenerator;
         _logger = logger;
@@ -46,10 +39,7 @@ internal class EndpointRoutingUrlHelper : UrlHelperBase
     /// <inheritdoc />
     public override string? Action(UrlActionContext urlActionContext)
     {
-        if (urlActionContext == null)
-        {
-            throw new ArgumentNullException(nameof(urlActionContext));
-        }
+        ArgumentNullException.ThrowIfNull(urlActionContext);
 
         var values = GetValuesDictionary(urlActionContext.Values);
 
@@ -90,10 +80,7 @@ internal class EndpointRoutingUrlHelper : UrlHelperBase
     /// <inheritdoc />
     public override string? RouteUrl(UrlRouteContext routeContext)
     {
-        if (routeContext == null)
-        {
-            throw new ArgumentNullException(nameof(routeContext));
-        }
+        ArgumentNullException.ThrowIfNull(routeContext);
 
         var path = _linkGenerator.GetPathByRouteValues(
             ActionContext.HttpContext,

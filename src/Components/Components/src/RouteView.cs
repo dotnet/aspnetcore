@@ -3,6 +3,7 @@
 
 #nullable disable warnings
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
@@ -72,6 +73,8 @@ public class RouteView : IComponent
     /// Renders the component.
     /// </summary>
     /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+    [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
         var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
@@ -98,8 +101,13 @@ public class RouteView : IComponent
             // Since this component does accept some parameters from query, we must supply values for all of them,
             // even if the querystring in the URI is empty. So don't skip the following logic.
             var url = NavigationManager.Uri;
+            ReadOnlyMemory<char> query = default;
             var queryStartPos = url.IndexOf('?');
-            var query = queryStartPos < 0 ? default : url.AsMemory(queryStartPos);
+            if (queryStartPos >= 0)
+            {
+                var queryEndPos = url.IndexOf('#', queryStartPos);
+                query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
+            }
             queryParameterSupplier.RenderParametersFromQueryString(builder, query);
         }
 

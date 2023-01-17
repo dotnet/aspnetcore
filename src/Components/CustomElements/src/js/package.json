@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "scripts": {
+    "preclean": "yarn install --mutex network --frozen-lockfile",
+    "clean": "node node_modules/rimraf/bin.js ./dist/Debug ./dist/Release",
+    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile",
+    "build": "yarn run build:debug && yarn run build:production",
+    "build:debug": "node node_modules/webpack-cli/bin/cli.js --mode development --config ./webpack.config.js",
+    "build:production": "node node_modules/webpack-cli/bin/cli.js --mode production --config ./webpack.config.js"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "eslint": "^8.16.0",
+    "inspectpack": "^4.7.1",
+    "rimraf": "^3.0.2",
+    "terser": "^5.14.2",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.4.2",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
+  },
+  "resolutions": {
+    "ansi-regex": "5.0.1",
+    "minimist": ">=1.2.6"
+  }
+}

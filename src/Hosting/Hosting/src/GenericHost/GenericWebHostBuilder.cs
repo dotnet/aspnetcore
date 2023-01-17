@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -97,26 +98,32 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             // Support UseStartup(assemblyName)
             if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
             {
-                try
-                {
-                    var startupType = StartupLoader.FindStartupType(webHostOptions.StartupAssembly, webhostContext.HostingEnvironment.EnvironmentName);
-                    UseStartup(startupType, context, services);
-                }
-                catch (Exception ex) when (webHostOptions.CaptureStartupErrors)
-                {
-                    var capture = ExceptionDispatchInfo.Capture(ex);
-
-                    services.Configure<GenericWebHostServiceOptions>(options =>
-                    {
-                        options.ConfigureApplication = app =>
-                        {
-                            // Throw if there was any errors initializing startup
-                            capture.Throw();
-                        };
-                    });
-                }
+                ScanAssemblyAndRegisterStartup(context, services, webhostContext, webHostOptions);
             }
         });
+    }
+
+    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Finding startup type in assembly requires unreferenced code. Surfaced to user in UseStartup(assemblyName).")]
+    private void ScanAssemblyAndRegisterStartup(HostBuilderContext context, IServiceCollection services, WebHostBuilderContext webhostContext, WebHostOptions webHostOptions)
+    {
+        try
+        {
+            var startupType = StartupLoader.FindStartupType(webHostOptions.StartupAssembly!, webhostContext.HostingEnvironment.EnvironmentName);
+            UseStartup(startupType, context, services);
+        }
+        catch (Exception ex) when (webHostOptions.CaptureStartupErrors)
+        {
+            var capture = ExceptionDispatchInfo.Capture(ex);
+
+            services.Configure<GenericWebHostServiceOptions>(options =>
+            {
+                options.ConfigureApplication = app =>
+                {
+                    // Throw if there was any errors initializing startup
+                    capture.Throw();
+                };
+            });
+        }
     }
 
     private void ExecuteHostingStartups()
@@ -204,7 +211,10 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var webHostBuilderContext = GetWebHostBuilderContext(context);
             var options = new ServiceProviderOptions();
             configure(webHostBuilderContext, options);
+            // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             return new DefaultServiceProviderFactory(options);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         });
 
         return this;
@@ -219,18 +229,22 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         // UseStartup can be called multiple times. Only run the last one.
         _startupObject = startupType;
 
+        var state = new UseStartupState(startupType);
+
         _builder.ConfigureServices((context, services) =>
         {
             // Run this delegate if the startup type matches
-            if (object.ReferenceEquals(_startupObject, startupType))
+            if (object.ReferenceEquals(_startupObject, state.StartupType))
             {
-                UseStartup(startupType, context, services);
+                UseStartup(state.StartupType, context, services);
             }
         });
 
         return this;
     }
 
+    // Note: This method isn't 100% compatible with trimming. It is possible for the factory to return a derived type from TStartup.
+    // RequiresUnreferencedCode isn't on this method because the majority of people won't do that.
     public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
     {
         var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
@@ -240,7 +254,10 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         // Clear the startup type
         _startupObject = startupFactory;
 
-        _builder.ConfigureServices((context, services) =>
+        _builder.ConfigureServices(ConfigureStartup);
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Startup type created by factory can't be determined statically.")]
+        void ConfigureStartup(HostBuilderContext context, IServiceCollection services)
         {
             // UseStartup can be called multiple times. Only run the last one.
             if (object.ReferenceEquals(_startupObject, startupFactory))
@@ -249,12 +266,11 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
                 var instance = startupFactory(webHostBuilderContext) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
                 UseStartup(instance.GetType(), context, services, instance);
             }
-        });
+        }
 
         return this;
     }
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "We need to call a generic method on IHostBuilder.")]
     private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object? instance = null)
     {
         var webHostBuilderContext = GetWebHostBuilderContext(context);
@@ -289,21 +305,10 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var configureContainerBuilder = StartupLoader.FindConfigureContainerDelegate(startupType, context.HostingEnvironment.EnvironmentName);
             if (configureContainerBuilder.MethodInfo != null)
             {
-                var containerType = configureContainerBuilder.GetContainerType();
                 // Store the builder in the property bag
                 _builder.Properties[typeof(ConfigureContainerBuilder)] = configureContainerBuilder;
 
-                var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
-
-                // Get the private ConfigureContainer method on this type then close over the container type
-                var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
-                                                 .MakeGenericMethod(containerType)
-                                                 .CreateDelegate(actionType, this);
-
-                // _builder.ConfigureContainer<T>(ConfigureContainer);
-                typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
-                    .MakeGenericMethod(containerType)
-                    .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
+                InvokeContainer(this, configureContainerBuilder);
             }
 
             // Resolve Configure after calling ConfigureServices and ConfigureContainer
@@ -329,6 +334,31 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
                 }
             };
         });
+
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+            Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
+        static void InvokeContainer(GenericWebHostBuilder genericWebHostBuilder, ConfigureContainerBuilder configureContainerBuilder)
+        {
+            var containerType = configureContainerBuilder.GetContainerType();
+
+            // Configure container uses MakeGenericType with the container type. MakeGenericType + struct container type requires IsDynamicCodeSupported.
+            if (containerType.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
+            {
+                throw new InvalidOperationException("A ValueType TContainerBuilder isn't supported with AOT.");
+            }
+
+            var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
+
+            // Get the private ConfigureContainer method on this type then close over the container type
+            var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
+                                             .MakeGenericMethod(containerType)
+                                             .CreateDelegate(actionType, genericWebHostBuilder);
+
+            // _builder.ConfigureContainer<T>(ConfigureContainer);
+            typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
+                .MakeGenericMethod(containerType)
+                .InvokeWithoutWrappingExceptions(genericWebHostBuilder._builder, new object[] { configureCallback });
+        }
     }
 
     private void ConfigureContainerImpl<TContainer>(HostBuilderContext context, TContainer container) where TContainer : notnull
@@ -390,13 +420,13 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
         {
             // Use _config as a fallback for WebHostOptions in case the chained source was removed from the hosting IConfigurationBuilder.
-            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config);
+            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config, environment: context.HostingEnvironment);
             var webHostBuilderContext = new WebHostBuilderContext
             {
                 Configuration = context.Configuration,
                 HostingEnvironment = new HostingEnvironment(),
             };
-            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
+            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options, baseEnvironment: context.HostingEnvironment);
             context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
             context.Properties[typeof(WebHostOptions)] = options;
             return webHostBuilderContext;
@@ -420,7 +450,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
     }
 
     // This exists just so that we can use ActivatorUtilities.CreateInstance on the Startup class
-    private class HostServiceProvider : IServiceProvider
+    private sealed class HostServiceProvider : IServiceProvider
     {
         private readonly WebHostBuilderContext _context;
 

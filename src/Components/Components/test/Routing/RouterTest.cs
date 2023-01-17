@@ -203,7 +203,7 @@ public class RouterTest
         public TestNavigationManager() =>
             Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/jan");
 
-        public void NotifyLocationChanged(string uri, bool intercepted)
+        public void NotifyLocationChanged(string uri, bool intercepted, string state = null)
         {
             Uri = uri;
             NotifyLocationChanged(intercepted);

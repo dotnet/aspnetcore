@@ -10,7 +10,7 @@ namespace System.Buffers;
 /// <summary>
 /// Used to allocate and distribute re-usable blocks of memory.
 /// </summary>
-internal class DiagnosticMemoryPool : MemoryPool<byte>
+internal sealed class DiagnosticMemoryPool : MemoryPool<byte>
 {
     private readonly MemoryPool<byte> _pool;
 

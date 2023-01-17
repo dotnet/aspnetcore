@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ProblemDetailsClientErrorFactory : IClientErrorFactory
+internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
 

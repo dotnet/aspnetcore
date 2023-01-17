@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree;
 
 // Data structure representing a node in a decision tree. These are created in DecisionTreeBuilder
 // and walked to find a set of items matching some input criteria.
-internal class DecisionTreeNode<TItem>
+internal sealed class DecisionTreeNode<TItem>
 {
     // The list of matches for the current node. This represents a set of items that have had all
     // of their criteria matched if control gets to this point in the tree.

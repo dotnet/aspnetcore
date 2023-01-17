@@ -48,17 +48,10 @@ public static class MapExtensions
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
     public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, bool preserveMatchedPathSegment, Action<IApplicationBuilder> configuration)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(configuration);
 
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (pathMatch.HasValue && pathMatch.Value!.EndsWith("/", StringComparison.Ordinal))
+        if (pathMatch.HasValue && pathMatch.Value!.EndsWith('/'))
         {
             throw new ArgumentException("The path must not end with a '/'", nameof(pathMatch));
         }

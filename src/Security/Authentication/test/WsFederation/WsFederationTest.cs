@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -25,6 +26,7 @@ public class WsFederationTest
     public async Task VerifySchemeDefaults()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddAuthentication().AddWsFederation();
         var sp = services.BuildServiceProvider();
         var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();

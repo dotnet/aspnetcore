@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -20,15 +22,8 @@ public static class DataProtectionAdvancedExtensions
     /// <returns>The protected form of the plaintext data.</returns>
     public static byte[] Protect(this ITimeLimitedDataProtector protector, byte[] plaintext, TimeSpan lifetime)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
-
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         return protector.Protect(plaintext, DateTimeOffset.UtcNow + lifetime);
     }
@@ -43,15 +38,8 @@ public static class DataProtectionAdvancedExtensions
     /// <returns>The protected form of the plaintext data.</returns>
     public static string Protect(this ITimeLimitedDataProtector protector, string plaintext, DateTimeOffset expiration)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
-
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         var wrappingProtector = new TimeLimitedWrappingProtector(protector) { Expiration = expiration };
         return wrappingProtector.Protect(plaintext);
@@ -67,15 +55,8 @@ public static class DataProtectionAdvancedExtensions
     /// <returns>The protected form of the plaintext data.</returns>
     public static string Protect(this ITimeLimitedDataProtector protector, string plaintext, TimeSpan lifetime)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
-
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         return Protect(protector, plaintext, DateTimeOffset.Now + lifetime);
     }
@@ -88,10 +69,7 @@ public static class DataProtectionAdvancedExtensions
     /// <returns>An <see cref="ITimeLimitedDataProtector"/>.</returns>
     public static ITimeLimitedDataProtector ToTimeLimitedDataProtector(this IDataProtector protector)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
 
         return (protector as ITimeLimitedDataProtector) ?? new TimeLimitedDataProtector(protector);
     }
@@ -109,15 +87,8 @@ public static class DataProtectionAdvancedExtensions
     /// </exception>
     public static string Unprotect(this ITimeLimitedDataProtector protector, string protectedData, out DateTimeOffset expiration)
     {
-        if (protector == null)
-        {
-            throw new ArgumentNullException(nameof(protector));
-        }
-
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protector);
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         var wrappingProtector = new TimeLimitedWrappingProtector(protector);
         string retVal = wrappingProtector.Unprotect(protectedData);
@@ -137,30 +108,21 @@ public static class DataProtectionAdvancedExtensions
 
         public IDataProtector CreateProtector(string purpose)
         {
-            if (purpose == null)
-            {
-                throw new ArgumentNullException(nameof(purpose));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
             throw new NotImplementedException();
         }
 
         public byte[] Protect(byte[] plaintext)
         {
-            if (plaintext == null)
-            {
-                throw new ArgumentNullException(nameof(plaintext));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
             return _innerProtector.Protect(plaintext, Expiration);
         }
 
         public byte[] Unprotect(byte[] protectedData)
         {
-            if (protectedData == null)
-            {
-                throw new ArgumentNullException(nameof(protectedData));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
             return _innerProtector.Unprotect(protectedData, out Expiration);
         }

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.CookiePolicy;
 
-internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeature
+internal sealed class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeature
 {
     private readonly ILogger _logger;
     private bool? _isConsentNeeded;
@@ -98,20 +98,7 @@ internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeatur
         Debug.Assert(key != null);
         ApplyAppendPolicy(ref key, ref value, options);
 
-        var setCookieHeaderValue = new Net.Http.Headers.SetCookieHeaderValue(
-            Uri.EscapeDataString(key),
-            Uri.EscapeDataString(value))
-        {
-            Domain = options.Domain,
-            Path = options.Path,
-            Expires = options.Expires,
-            MaxAge = options.MaxAge,
-            Secure = options.Secure,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly
-        };
-
-        return setCookieHeaderValue.ToString();
+        return options.CreateCookieHeader(Uri.EscapeDataString(key), Uri.EscapeDataString(value)).ToString();
     }
 
     private bool CheckPolicyRequired()
@@ -136,10 +123,7 @@ internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeatur
 
     public void Append(string key, string value, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (ApplyAppendPolicy(ref key, ref value, options))
         {
@@ -153,10 +137,7 @@ internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeatur
 
     public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var nonSuppressedValues = new List<KeyValuePair<string, string>>(keyValuePairs.Length);
 
@@ -214,10 +195,7 @@ internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeatur
 
     public void Delete(string key, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // Assume you can always delete cookies unless directly overridden in the user event.
         var issueCookie = true;

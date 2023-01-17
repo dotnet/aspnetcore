@@ -25,7 +25,7 @@ public class TlsTests : LoggedTest
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
+    [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.Linux, SkipReason = "TLS 1.1 ciphers are now disabled by default: https://github.com/dotnet/docs/issues/20842")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10,
         SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support or incompatible ciphers on Windows 8.1")]
@@ -47,7 +47,9 @@ public class TlsTests : LoggedTest
             listenOptions.Protocols = HttpProtocols.Http2;
             listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
             {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 httpsOptions.SslProtocols = SslProtocols.Tls11 | SslProtocols.Tls12;
+#pragma warning restore SYSLIB0039
             });
         }))
         {
@@ -59,7 +61,9 @@ public class TlsTests : LoggedTest
                     TargetHost = "localhost",
                     RemoteCertificateValidationCallback = (_, __, ___, ____) => true,
                     ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 },
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                     EnabledSslProtocols = SslProtocols.Tls11, // Intentionally less than the required 1.2
+#pragma warning restore SYSLIB0039
                 }, CancellationToken.None);
 
                 var reader = PipeReaderFactory.CreateFromStream(PipeOptions.Default, sslStream, CancellationToken.None);

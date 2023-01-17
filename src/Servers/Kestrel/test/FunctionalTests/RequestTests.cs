@@ -490,6 +490,51 @@ public class RequestTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestAbortedTokenUnchangedOnAbort()
+    {
+        var appDoneTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        CancellationToken? beforeAbort = null;
+        CancellationToken? afterAbort = null;
+
+        await using (var server = new TestServer(async context =>
+        {
+            var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            context.RequestAborted.Register(() =>
+            {
+                abortedTcs.SetResult();
+            });
+
+            beforeAbort = context.RequestAborted;
+
+            context.Abort();
+
+            // Abort doesn't happen inline. Need to wait for it to complete before reading token again.
+            await abortedTcs.Task;
+
+            afterAbort = context.RequestAborted;
+
+            appDoneTcs.SetResult();
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection1 = server.CreateConnection())
+            {
+                await connection1.Send(
+                    "GET / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                await appDoneTcs.Task.DefaultTimeout();
+            }
+        }
+
+        Assert.NotNull(beforeAbort);
+        Assert.NotNull(afterAbort);
+        Assert.Equal(beforeAbort.Value, afterAbort.Value);
+    }
+
+    [Fact]
     public async Task AbortingTheConnectionSendsFIN()
     {
         var builder = TransportSelector.GetHostBuilder()
@@ -821,7 +866,7 @@ public class RequestTests : LoggedTest
 
             try
             {
-                await context.Request.Body.CopyToAsync(Stream.Null); ;
+                await context.Request.Body.CopyToAsync(Stream.Null);
             }
             catch (Exception ex)
             {

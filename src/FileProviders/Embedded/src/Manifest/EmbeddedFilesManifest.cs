@@ -5,11 +5,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
-internal class EmbeddedFilesManifest
+internal sealed class EmbeddedFilesManifest
 {
     private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
         .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
@@ -20,10 +21,7 @@ internal class EmbeddedFilesManifest
 
     internal EmbeddedFilesManifest(ManifestDirectory rootDirectory)
     {
-        if (rootDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(rootDirectory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(rootDirectory);
 
         _rootDirectory = rootDirectory;
     }

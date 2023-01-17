@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Identity.Core;
 using Microsoft.Extensions.Options;
 
@@ -26,7 +27,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
      * Format: { 0x00, salt, subkey }
      *
      * Version 3:
-     * PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
+     * PBKDF2 with HMAC-SHA512, 128-bit salt, 256-bit subkey, 100000 iterations.
      * Format: { 0x01, prf (UInt32), iter count (UInt32), salt length (UInt32), salt, subkey }
      * (All UInt32s are stored big-endian.)
      */
@@ -35,13 +36,15 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     private readonly int _iterCount;
     private readonly RandomNumberGenerator _rng;
 
+    private static readonly PasswordHasherOptions DefaultOptions = new PasswordHasherOptions();
+
     /// <summary>
     /// Creates a new instance of <see cref="PasswordHasher{TUser}"/>.
     /// </summary>
     /// <param name="optionsAccessor">The options for this instance.</param>
     public PasswordHasher(IOptions<PasswordHasherOptions>? optionsAccessor = null)
     {
-        var options = optionsAccessor?.Value ?? new PasswordHasherOptions();
+        var options = optionsAccessor?.Value ?? DefaultOptions;
 
         _compatibilityMode = options.CompatibilityMode;
         switch (_compatibilityMode)
@@ -95,10 +98,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     /// <returns>A hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.</returns>
     public virtual string HashPassword(TUser user, string password)
     {
-        if (password == null)
-        {
-            throw new ArgumentNullException(nameof(password));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(password);
 
         if (_compatibilityMode == PasswordHasherCompatibilityMode.IdentityV2)
         {
@@ -132,7 +132,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     private byte[] HashPasswordV3(string password, RandomNumberGenerator rng)
     {
         return HashPasswordV3(password, rng,
-            prf: KeyDerivationPrf.HMACSHA256,
+            prf: KeyDerivationPrf.HMACSHA512,
             iterCount: _iterCount,
             saltSize: 128 / 8,
             numBytesRequested: 256 / 8);
@@ -155,14 +155,6 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
         return outputBytes;
     }
 
-    private static uint ReadNetworkByteOrder(byte[] buffer, int offset)
-    {
-        return ((uint)(buffer[offset + 0]) << 24)
-            | ((uint)(buffer[offset + 1]) << 16)
-            | ((uint)(buffer[offset + 2]) << 8)
-            | ((uint)(buffer[offset + 3]));
-    }
-
     /// <summary>
     /// Returns a <see cref="PasswordVerificationResult"/> indicating the result of a password hash comparison.
     /// </summary>
@@ -173,14 +165,8 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     /// <remarks>Implementations of this method should be time consistent.</remarks>
     public virtual PasswordVerificationResult VerifyHashedPassword(TUser user, string hashedPassword, string providedPassword)
     {
-        if (hashedPassword == null)
-        {
-            throw new ArgumentNullException(nameof(hashedPassword));
-        }
-        if (providedPassword == null)
-        {
-            throw new ArgumentNullException(nameof(providedPassword));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hashedPassword);
+        ArgumentNullThrowHelper.ThrowIfNull(providedPassword);
 
         byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
 
@@ -205,13 +191,21 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
                 }
 
             case 0x01:
-                int embeddedIterCount;
-                if (VerifyHashedPasswordV3(decodedHashedPassword, providedPassword, out embeddedIterCount))
+                if (VerifyHashedPasswordV3(decodedHashedPassword, providedPassword, out int embeddedIterCount, out KeyDerivationPrf prf))
                 {
                     // If this hasher was configured with a higher iteration count, change the entry now.
-                    return (embeddedIterCount < _iterCount)
-                        ? PasswordVerificationResult.SuccessRehashNeeded
-                        : PasswordVerificationResult.Success;
+                    if (embeddedIterCount < _iterCount)
+                    {
+                        return PasswordVerificationResult.SuccessRehashNeeded;
+                    }
+
+                    // V3 now requires SHA512. If the old PRF is SHA1 or SHA256, upgrade to SHA512 and rehash.
+                    if (prf == KeyDerivationPrf.HMACSHA1 || prf == KeyDerivationPrf.HMACSHA256)
+                    {
+                        return PasswordVerificationResult.SuccessRehashNeeded;
+                    }
+
+                    return PasswordVerificationResult.Success;
                 }
                 else
                 {
@@ -253,14 +247,15 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
 #endif
     }
 
-    private static bool VerifyHashedPasswordV3(byte[] hashedPassword, string password, out int iterCount)
+    private static bool VerifyHashedPasswordV3(byte[] hashedPassword, string password, out int iterCount, out KeyDerivationPrf prf)
     {
         iterCount = default(int);
+        prf = default(KeyDerivationPrf);
 
         try
         {
             // Read header information
-            KeyDerivationPrf prf = (KeyDerivationPrf)ReadNetworkByteOrder(hashedPassword, 1);
+            prf = (KeyDerivationPrf)ReadNetworkByteOrder(hashedPassword, 1);
             iterCount = (int)ReadNetworkByteOrder(hashedPassword, 5);
             int saltLength = (int)ReadNetworkByteOrder(hashedPassword, 9);
 
@@ -298,6 +293,14 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
             // implies verification failed.
             return false;
         }
+    }
+
+    private static uint ReadNetworkByteOrder(byte[] buffer, int offset)
+    {
+        return ((uint)(buffer[offset + 0]) << 24)
+            | ((uint)(buffer[offset + 1]) << 16)
+            | ((uint)(buffer[offset + 2]) << 8)
+            | ((uint)(buffer[offset + 3]));
     }
 
     private static void WriteNetworkByteOrder(byte[] buffer, int offset, uint value)

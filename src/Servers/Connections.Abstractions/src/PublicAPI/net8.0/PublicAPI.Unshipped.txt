@@ -1,0 +1,13 @@
+#nullable enable
+Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.get -> System.IO.Pipes.NamedPipeServerStream!
+Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
+Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName) -> void
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName, string! serverName) -> void
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.PipeName.get -> string!
+Microsoft.AspNetCore.Connections.NamedPipeEndPoint.ServerName.get -> string!
+override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.GetHashCode() -> int
+override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.ToString() -> string!

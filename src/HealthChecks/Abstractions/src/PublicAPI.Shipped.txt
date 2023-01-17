@@ -21,6 +21,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Data.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Description.get -> string?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Exception.get -> System.Exception?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.HealthCheckResult() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.HealthCheckResult(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description = null, System.Exception? exception = null, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data = null) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Status.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport
@@ -34,6 +35,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Data.get -> Syst
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Description.get -> string?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Duration.get -> System.TimeSpan
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Exception.get -> System.Exception?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data, System.Collections.Generic.IEnumerable<string!>? tags = null) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Status.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
+internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 {
     // Use the record separator for delimiting components of the cache key to avoid possible collisions
     private const char KeyDelimiter = '\x1e';
@@ -21,14 +21,8 @@ internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
     internal ResponseCachingKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
     {
-        if (poolProvider == null)
-        {
-            throw new ArgumentNullException(nameof(poolProvider));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(poolProvider);
+        ArgumentNullException.ThrowIfNull(options);
 
         _builderPool = poolProvider.CreateStringBuilderPool();
         _options = options.Value;
@@ -42,10 +36,7 @@ internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH
     public string CreateBaseKey(ResponseCachingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var request = context.HttpContext.Request;
         var builder = _builderPool.Get();
@@ -83,10 +74,7 @@ internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
     public string CreateStorageVaryByKey(ResponseCachingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var varyByRules = context.CachedVaryByRules;
         if (varyByRules == null)
@@ -202,7 +190,7 @@ internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         }
     }
 
-    private class QueryKeyComparer : IComparer<KeyValuePair<string, StringValues>>
+    private sealed class QueryKeyComparer : IComparer<KeyValuePair<string, StringValues>>
     {
         private readonly StringComparer _stringComparer;
 

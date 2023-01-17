@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using Xunit.Sdk;
 
 namespace Microsoft.Extensions.Logging.Testing;
@@ -34,15 +35,8 @@ public static class LogValuesAssert
         IEnumerable<KeyValuePair<string, object>> expectedValues,
         IEnumerable<KeyValuePair<string, object>> actualValues)
     {
-        if (expectedValues == null)
-        {
-            throw new ArgumentNullException(nameof(expectedValues));
-        }
-
-        if (actualValues == null)
-        {
-            throw new ArgumentNullException(nameof(actualValues));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(expectedValues);
+        ArgumentNullThrowHelper.ThrowIfNull(actualValues);
 
         var comparer = new LogValueComparer();
 
@@ -62,7 +56,7 @@ public static class LogValuesAssert
         return string.Join(",", logValues.Select(kvp => $"[{kvp.Key} {kvp.Value}]"));
     }
 
-    private class LogValueComparer : IEqualityComparer<KeyValuePair<string, object>>
+    private sealed class LogValueComparer : IEqualityComparer<KeyValuePair<string, object>>
     {
         public bool Equals(KeyValuePair<string, object> x, KeyValuePair<string, object> y)
         {

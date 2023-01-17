@@ -11,22 +11,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
+internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
 {
     private readonly DynamicControllerEndpointSelectorCache _selectorCache;
     private readonly EndpointMetadataComparer _comparer;
 
     public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelectorCache selectorCache, EndpointMetadataComparer comparer)
     {
-        if (selectorCache == null)
-        {
-            throw new ArgumentNullException(nameof(selectorCache));
-        }
-
-        if (comparer == null)
-        {
-            throw new ArgumentNullException(nameof(comparer));
-        }
+        ArgumentNullException.ThrowIfNull(selectorCache);
+        ArgumentNullException.ThrowIfNull(comparer);
 
         _selectorCache = selectorCache;
         _comparer = comparer;
@@ -36,10 +29,7 @@ internal class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpoint
 
     public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (!ContainsDynamicEndpoints(endpoints))
         {
@@ -67,15 +57,8 @@ internal class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpoint
 
     public async Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         // The per-route selector, must be the same for all the endpoints we are dealing with.
         DynamicControllerEndpointSelector? selector = null;

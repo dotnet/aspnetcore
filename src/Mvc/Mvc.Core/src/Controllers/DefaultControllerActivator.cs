@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers;
 /// <summary>
 /// <see cref="IControllerActivator"/> that uses type activation to create controllers.
 /// </summary>
-internal class DefaultControllerActivator : IControllerActivator
+internal sealed class DefaultControllerActivator : IControllerActivator
 {
     private readonly ITypeActivatorCache _typeActivatorCache;
 
@@ -19,10 +19,7 @@ internal class DefaultControllerActivator : IControllerActivator
     /// <param name="typeActivatorCache">The <see cref="ITypeActivatorCache"/>.</param>
     public DefaultControllerActivator(ITypeActivatorCache typeActivatorCache)
     {
-        if (typeActivatorCache == null)
-        {
-            throw new ArgumentNullException(nameof(typeActivatorCache));
-        }
+        ArgumentNullException.ThrowIfNull(typeActivatorCache);
 
         _typeActivatorCache = typeActivatorCache;
     }
@@ -30,10 +27,7 @@ internal class DefaultControllerActivator : IControllerActivator
     /// <inheritdoc />
     public object Create(ControllerContext controllerContext)
     {
-        if (controllerContext == null)
-        {
-            throw new ArgumentNullException(nameof(controllerContext));
-        }
+        ArgumentNullException.ThrowIfNull(controllerContext);
 
         if (controllerContext.ActionDescriptor == null)
         {
@@ -58,15 +52,8 @@ internal class DefaultControllerActivator : IControllerActivator
     /// <inheritdoc />
     public void Release(ControllerContext context, object controller)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(controller);
 
         if (controller is IDisposable disposable)
         {
@@ -76,15 +63,8 @@ internal class DefaultControllerActivator : IControllerActivator
 
     public ValueTask ReleaseAsync(ControllerContext context, object controller)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(controller);
 
         if (controller is IAsyncDisposable asyncDisposable)
         {

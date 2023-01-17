@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class StartupAnalysisBuilder
+internal sealed class StartupAnalysisBuilder
 {
     private readonly Dictionary<INamedTypeSymbol, List<object>> _analysesByType;
     private readonly StartupAnalyzer _analyzer;

@@ -60,10 +60,7 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// </summary>
     public void EnableLdap(Action<LdapSettings> configureSettings)
     {
-        if (configureSettings == null)
-        {
-            throw new ArgumentNullException(nameof(configureSettings));
-        }
+        ArgumentNullException.ThrowIfNull(configureSettings);
 
         LdapSettings.EnableLdapClaimResolution = true;
         configureSettings(LdapSettings);
@@ -76,5 +73,5 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     internal bool DeferToServer { get; set; }
 
     // For testing
-    internal INegotiateStateFactory StateFactory { get; set; } = new ReflectedNegotiateStateFactory();
+    internal INegotiateStateFactory StateFactory { get; set; } = new NegotiateStateFactory();
 }

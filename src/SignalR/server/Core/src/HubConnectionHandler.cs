@@ -96,7 +96,8 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors,
             disableImplicitFromServiceParameters,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
-            hubFilters);
+            hubFilters,
+            lifetimeManager);
     }
 
     /// <inheritdoc />
@@ -199,6 +200,9 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         // Ensure the connection is aborted before firing disconnect
         await connection.AbortAsync();
 
+        // If a client result is requested in OnDisconnectedAsync we want to avoid the SemaphoreFullException and get the better connection disconnected IOException
+        _ = connection.ActiveInvocationLimit.TryAcquire();
+
         try
         {
             await _dispatcher.OnDisconnectedAsync(connection, exception);
@@ -240,7 +244,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         var protocol = connection.Protocol;
         connection.BeginClientTimeout();
 
-        var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
+        var binder = new HubConnectionBinder<THub>(_dispatcher, _lifetimeManager, connection);
 
         while (true)
         {

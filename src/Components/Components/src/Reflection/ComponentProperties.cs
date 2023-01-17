@@ -22,10 +22,7 @@ internal static class ComponentProperties
 
     public static void SetProperties(in ParameterView parameters, object target)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         var targetType = target.GetType();
         if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
@@ -247,7 +244,7 @@ internal static class ComponentProperties
             $"The property must be assignable from 'Dictionary<string, object>'.");
     }
 
-    private class WritersForType
+    private sealed class WritersForType
     {
         private const int MaxCachedWriterLookups = 100;
         private readonly Dictionary<string, PropertySetter> _underlyingWriters;

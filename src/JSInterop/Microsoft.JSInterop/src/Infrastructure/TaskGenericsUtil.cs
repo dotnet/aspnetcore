@@ -64,12 +64,12 @@ internal static class TaskGenericsUtil
         object? GetResult(Task task);
     }
 
-    private class TaskResultGetter<T> : ITaskResultGetter
+    private sealed class TaskResultGetter<T> : ITaskResultGetter
     {
         public object? GetResult(Task task) => ((Task<T>)task).Result!;
     }
 
-    private class VoidTaskResultGetter : ITaskResultGetter
+    private sealed class VoidTaskResultGetter : ITaskResultGetter
     {
         public object? GetResult(Task task)
         {
@@ -78,7 +78,7 @@ internal static class TaskGenericsUtil
         }
     }
 
-    private class TcsResultSetter<T> : ITcsResultSetter
+    private sealed class TcsResultSetter<T> : ITcsResultSetter
     {
         public Type ResultType => typeof(T);
 

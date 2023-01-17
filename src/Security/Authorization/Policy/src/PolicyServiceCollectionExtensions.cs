@@ -13,16 +13,21 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class PolicyServiceCollectionExtensions
 {
     /// <summary>
+    /// Adds authorization services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>The <see cref="AuthorizationBuilder"/> so that additional calls can be chained.</returns>
+    public static AuthorizationBuilder AddAuthorizationBuilder(this IServiceCollection services)
+        => new AuthorizationBuilder(services.AddAuthorization());
+
+    /// <summary>
     /// Adds the authorization policy evaluator service to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<AuthorizationPolicyMarkerService>();
         services.TryAddTransient<IPolicyEvaluator, PolicyEvaluator>();
@@ -37,13 +42,11 @@ public static class PolicyServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAuthorization(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthorizationCore();
         services.AddAuthorizationPolicyEvaluator();
+        services.TryAddSingleton<AuthorizationPolicyCache>();
         return services;
     }
 
@@ -55,13 +58,11 @@ public static class PolicyServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAuthorization(this IServiceCollection services, Action<AuthorizationOptions> configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthorizationCore(configure);
         services.AddAuthorizationPolicyEvaluator();
+        services.TryAddSingleton<AuthorizationPolicyCache>();
         return services;
     }
 }

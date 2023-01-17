@@ -44,6 +44,29 @@ public class AuthorizationPolicyFacts
     }
 
     [Fact]
+    public async Task CanReplaceDefaultPolicyDirectly()
+    {
+        // Arrange
+        var attributes = new AuthorizeAttribute[] {
+            new AuthorizeAttribute(),
+            new AuthorizeAttribute(),
+        };
+
+        var policies = new[] { new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build() };
+
+        var options = new AuthorizationOptions();
+
+        var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
+        // Act
+        var combined = await AuthorizationPolicy.CombineAsync(provider, attributes, policies);
+
+        // Assert
+        Assert.Equal(1, combined.Requirements.Count);
+        Assert.Empty(combined.Requirements.OfType<DenyAnonymousAuthorizationRequirement>());
+    }
+
+    [Fact]
     public async Task CanReplaceDefaultPolicy()
     {
         // Arrange

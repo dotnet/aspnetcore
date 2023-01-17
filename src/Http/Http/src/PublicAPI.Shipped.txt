@@ -171,6 +171,7 @@ Microsoft.AspNetCore.Http.FormCollection.Count.get -> int
 Microsoft.AspNetCore.Http.FormCollection.Enumerator
 Microsoft.AspNetCore.Http.FormCollection.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>
 Microsoft.AspNetCore.Http.FormCollection.Enumerator.Dispose() -> void
+Microsoft.AspNetCore.Http.FormCollection.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.FormCollection.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Http.FormCollection.Files.get -> Microsoft.AspNetCore.Http.IFormFileCollection!
 Microsoft.AspNetCore.Http.FormCollection.FormCollection(System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>? fields, Microsoft.AspNetCore.Http.IFormFileCollection? files = null) -> void
@@ -210,6 +211,7 @@ Microsoft.AspNetCore.Http.HeaderDictionary.Count.get -> int
 Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator
 Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>
 Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.Dispose() -> void
+Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Http.HeaderDictionary.GetEnumerator() -> Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator
 Microsoft.AspNetCore.Http.HeaderDictionary.HeaderDictionary() -> void
@@ -239,6 +241,7 @@ Microsoft.AspNetCore.Http.QueryCollection.Count.get -> int
 Microsoft.AspNetCore.Http.QueryCollection.Enumerator
 Microsoft.AspNetCore.Http.QueryCollection.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>
 Microsoft.AspNetCore.Http.QueryCollection.Enumerator.Dispose() -> void
+Microsoft.AspNetCore.Http.QueryCollection.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.QueryCollection.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Http.QueryCollection.GetEnumerator() -> Microsoft.AspNetCore.Http.QueryCollection.Enumerator
 Microsoft.AspNetCore.Http.QueryCollection.Keys.get -> System.Collections.Generic.ICollection<string!>!
@@ -255,7 +258,7 @@ Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Dispose() -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.PriorFeature.get -> Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature?
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Stream.get -> System.IO.Stream!
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream) -> void
-Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature! priorFeature) -> void
+Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature? priorFeature) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Writer.get -> System.IO.Pipelines.PipeWriter!
 Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions
 override Microsoft.AspNetCore.Http.BindingAddress.Equals(object? obj) -> bool

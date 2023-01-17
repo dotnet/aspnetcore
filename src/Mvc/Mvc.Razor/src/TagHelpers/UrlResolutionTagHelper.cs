@@ -52,31 +52,31 @@ public class UrlResolutionTagHelper : TagHelper
     private static readonly char[] ValidAttributeWhitespaceChars =
         new[] { '\t', '\n', '\u000C', '\r', ' ' };
     private static readonly Dictionary<string, string[]> ElementAttributeLookups =
-        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        new(StringComparer.OrdinalIgnoreCase)
         {
-                { "a", new[] { "href" } },
-                { "applet", new[] { "archive" } },
-                { "area", new[] { "href" } },
-                { "audio", new[] { "src" } },
-                { "base", new[] { "href" } },
-                { "blockquote", new[] { "cite" } },
-                { "button", new[] { "formaction" } },
-                { "del", new[] { "cite" } },
-                { "embed", new[] { "src" } },
-                { "form", new[] { "action" } },
-                { "html", new[] { "manifest" } },
-                { "iframe", new[] { "src" } },
-                { "img", new[] { "src", "srcset" } },
-                { "input", new[] { "src", "formaction" } },
-                { "ins", new[] { "cite" } },
-                { "link", new[] { "href" } },
-                { "menuitem", new[] { "icon" } },
-                { "object", new[] { "archive", "data" } },
-                { "q", new[] { "cite" } },
-                { "script", new[] { "src" } },
-                { "source", new[] { "src", "srcset" } },
-                { "track", new[] { "src" } },
-                { "video", new[] { "poster", "src" } },
+            { "a", new[] { "href" } },
+            { "applet", new[] { "archive" } },
+            { "area", new[] { "href" } },
+            { "audio", new[] { "src" } },
+            { "base", new[] { "href" } },
+            { "blockquote", new[] { "cite" } },
+            { "button", new[] { "formaction" } },
+            { "del", new[] { "cite" } },
+            { "embed", new[] { "src" } },
+            { "form", new[] { "action" } },
+            { "html", new[] { "manifest" } },
+            { "iframe", new[] { "src" } },
+            { "img", new[] { "src", "srcset" } },
+            { "input", new[] { "src", "formaction" } },
+            { "ins", new[] { "cite" } },
+            { "link", new[] { "href" } },
+            { "menuitem", new[] { "icon" } },
+            { "object", new[] { "archive", "data" } },
+            { "q", new[] { "cite" } },
+            { "script", new[] { "src" } },
+            { "source", new[] { "src", "srcset" } },
+            { "track", new[] { "src" } },
+            { "video", new[] { "poster", "src" } },
         };
 
     /// <summary>
@@ -113,15 +113,8 @@ public class UrlResolutionTagHelper : TagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         if (output.TagName == null)
         {
@@ -149,15 +142,8 @@ public class UrlResolutionTagHelper : TagHelper
     /// <param name="output">The <see cref="TagHelperOutput"/>.</param>
     protected void ProcessUrlAttribute(string attributeName, TagHelperOutput output)
     {
-        if (attributeName == null)
-        {
-            throw new ArgumentNullException(nameof(attributeName));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(attributeName);
+        ArgumentNullException.ThrowIfNull(output);
 
         var attributes = output.Attributes;
         // Read interface .Count once rather than per iteration
@@ -170,8 +156,7 @@ public class UrlResolutionTagHelper : TagHelper
                 continue;
             }
 
-            var stringValue = attribute.Value as string;
-            if (stringValue != null)
+            if (attribute.Value is string stringValue)
             {
                 if (TryResolveUrl(stringValue, resolvedUrl: out string? resolvedUrl))
                 {
@@ -183,8 +168,7 @@ public class UrlResolutionTagHelper : TagHelper
             }
             else
             {
-                var htmlContent = attribute.Value as IHtmlContent;
-                if (htmlContent != null)
+                if (attribute.Value is IHtmlContent htmlContent)
                 {
                     var htmlString = htmlContent as HtmlString;
                     if (htmlString != null)
@@ -228,7 +212,7 @@ public class UrlResolutionTagHelper : TagHelper
     /// <param name="resolvedUrl">Absolute URL beginning with the application's virtual root. <c>null</c> if
     /// <paramref name="url"/> could not be resolved.</param>
     /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-    protected bool TryResolveUrl(string url, out string? resolvedUrl)
+    protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, out string? resolvedUrl)
     {
         resolvedUrl = null;
         var start = FindRelativeStart(url);
@@ -254,7 +238,7 @@ public class UrlResolutionTagHelper : TagHelper
     /// not be resolved.
     /// </param>
     /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-    protected bool TryResolveUrl(string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
+    protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
     {
         resolvedUrl = null;
         var start = FindRelativeStart(url);
@@ -343,7 +327,7 @@ public class UrlResolutionTagHelper : TagHelper
         return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
     }
 
-    private class EncodeFirstSegmentContent : IHtmlContent
+    private sealed class EncodeFirstSegmentContent : IHtmlContent
     {
         private readonly string _firstSegment;
         private readonly int _firstSegmentLength;

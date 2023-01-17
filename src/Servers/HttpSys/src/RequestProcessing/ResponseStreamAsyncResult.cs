@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
+internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
 {
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -65,7 +66,7 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
 
         if (chunked)
         {
-            SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, new ArraySegment<byte>(Helpers.CRLF));
+            SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF);
         }
 
         // This call will pin needed memory
@@ -84,9 +85,12 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
 
         if (chunked)
         {
-            _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
+            // No need to update this chunk, CRLF, because it was already pinned.
+            // However, we increment the counter to ensure we are accounting for all sections.
             currentChunk++;
         }
+
+        Debug.Assert(currentChunk == _dataChunks.Length);
     }
 
     internal ResponseStreamAsyncResult(ResponseBody responseStream, FileStream fileStream, long offset,
@@ -124,9 +128,10 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
                 _dataChunks[1].fromFile.fileHandle = _fileStream.SafeFileHandle.DangerousGetHandle();
                 // Nothing to pin for the file handle.
 
-                _dataChunks[2].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-                _dataChunks[2].fromMemory.BufferLength = (uint)Helpers.CRLF.Length;
-                objectsToPin[1] = Helpers.CRLF;
+                // No need to pin the CRLF data
+                int currentChunk = 2;
+                SetDataChunkWithPinnedData(_dataChunks, ref currentChunk, Helpers.CRLF);
+                Debug.Assert(currentChunk == _dataChunks.Length);
             }
             else
             {
@@ -142,9 +147,8 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
 
             if (chunked)
             {
-                // These must be set after pinning with Overlapped.
+                // This must be set after pinning with Overlapped.
                 _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array!, chunkHeaderBuffer.Offset);
-                _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
             }
         }
     }
@@ -153,10 +157,21 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
     {
         objectsToPin[pinIndex] = segment.Array!;
         pinIndex++;
-        chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        ref var chunk = ref chunks[chunkIndex++];
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         // The address is not set until after we pin it with Overlapped
-        chunks[chunkIndex].fromMemory.BufferLength = (uint)segment.Count;
-        chunkIndex++;
+        chunk.fromMemory.BufferLength = (uint)segment.Count;
+    }
+
+    private static void SetDataChunkWithPinnedData(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, ReadOnlySpan<byte> bytes)
+    {
+        ref var chunk = ref chunks[chunkIndex++];
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        fixed (byte* ptr = bytes)
+        {
+            chunk.fromMemory.pBuffer = (IntPtr)ptr;
+        }
+        chunk.fromMemory.BufferLength = (uint)bytes.Length;
     }
 
     internal SafeNativeOverlapped? NativeOverlapped
@@ -316,14 +331,8 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
 
     public void Dispose()
     {
-        if (_overlapped != null)
-        {
-            _overlapped.Dispose();
-        }
-        if (_fileStream != null)
-        {
-            _fileStream.Dispose();
-        }
+        _overlapped?.Dispose();
+        _fileStream?.Dispose();
         _cancellationRegistration.Dispose();
     }
 }

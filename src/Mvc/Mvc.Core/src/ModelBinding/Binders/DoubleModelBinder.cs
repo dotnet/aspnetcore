@@ -10,8 +10,8 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 /// <summary>
-/// An <see cref="IModelBinder"/> for <see cref="decimal"/> and <see cref="Nullable{T}"/> where <c>T</c> is
-/// <see cref="decimal"/>.
+/// An <see cref="IModelBinder"/> for <see cref="double"/> and <see cref="Nullable{T}"/> where <c>T</c> is
+/// <see cref="double"/>.
 /// </summary>
 public class DoubleModelBinder : IModelBinder
 {
@@ -25,10 +25,7 @@ public class DoubleModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public DoubleModelBinder(NumberStyles supportedStyles, ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _supportedStyles = supportedStyles;
         _logger = loggerFactory.CreateLogger<DoubleModelBinder>();
@@ -37,10 +34,7 @@ public class DoubleModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

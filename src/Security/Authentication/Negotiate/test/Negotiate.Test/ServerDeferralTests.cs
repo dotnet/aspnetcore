@@ -44,7 +44,7 @@ public class ServerDeferralTests
         var builder = new HostBuilder()
             .ConfigureServices(services =>
             {
-                services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                services.AddAuthentication()
                     .AddNegotiate();
 
                 if (supportsAuth)

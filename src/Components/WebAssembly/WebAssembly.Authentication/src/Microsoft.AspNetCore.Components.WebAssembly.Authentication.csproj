@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Sdk Name="Yarn.MSBuild" />
+  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side authentication for single-page applications (SPAs).</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Trimmable>true</Trimmable>
-    <Nullable>disable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -76,14 +77,7 @@
       <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''"
-      SourceType="Computed"
-      SourceId="$(PackageId)"
-      ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"
-      BasePath="_content/$(PackageId)"
-      CandidateAssets="@(_InteropBuildOutput)"
-      RelativePathFilter="**.js"
-    >
+    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''" SourceType="Computed" SourceId="$(PackageId)" ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\" BasePath="_content/$(PackageId)" CandidateAssets="@(_InteropBuildOutput)" RelativePathFilter="**.js">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
 
@@ -93,4 +87,9 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Tests" />
+  </ItemGroup>
 </Project>

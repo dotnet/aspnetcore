@@ -122,6 +122,7 @@
 ~virtual Microsoft.AspNetCore.JsonPatch.Adapters.AdapterFactory.Create(object target, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryAdd(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryConvertKey(string key, out TKey convertedKey, out string errorMessage) -> bool
+~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryConvertValue(object value, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out TValue convertedValue, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryConvertValue(object value, out TValue convertedValue, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryGet(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryRemove(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out string errorMessage) -> bool
@@ -129,6 +130,7 @@
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.TryAdd(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
+~virtual Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.TryConvertValue(object value, System.Type propertyType, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.TryConvertValue(object value, System.Type propertyType, out object convertedValue) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.TryGet(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.TryGetDynamicObjectProperty(object target, Newtonsoft.Json.Serialization.IContractResolver contractResolver, string segment, out object value, out string errorMessage) -> bool
@@ -154,6 +156,7 @@
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryAdd(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
+~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryConvertValue(object value, System.Type propertyType, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryConvertValue(object value, System.Type propertyType, out object convertedValue) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryGet(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryGetJsonProperty(object target, Newtonsoft.Json.Serialization.IContractResolver contractResolver, string segment, out Newtonsoft.Json.Serialization.JsonProperty jsonProperty) -> bool
@@ -195,6 +198,7 @@ Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Remove = 1 -> 
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Replace = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Index.get -> int
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.PositionInfo() -> void
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.PositionInfo(Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType type, int index) -> void
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Type.get -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
@@ -204,6 +208,7 @@ Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.Invalid = 2 -> 
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.OutOfBounds = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
 Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor
 Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath
+Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath.ParsedPath() -> void
 Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter
 Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.PocoAdapter() -> void
 Microsoft.AspNetCore.JsonPatch.JsonPatchDocument

@@ -24,10 +24,7 @@ public class FormCollectionModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public FormCollectionModelBinder(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<FormCollectionModelBinder>();
     }
@@ -35,10 +32,7 @@ public class FormCollectionModelBinder : IModelBinder
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 
@@ -59,7 +53,7 @@ public class FormCollectionModelBinder : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    private class EmptyFormCollection : IFormCollection
+    private sealed class EmptyFormCollection : IFormCollection
     {
         public StringValues this[string key] => StringValues.Empty;
 
@@ -91,7 +85,7 @@ public class FormCollectionModelBinder : IModelBinder
         }
     }
 
-    private class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
+    private sealed class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
     {
         public IFormFile? this[string name] => null;
 

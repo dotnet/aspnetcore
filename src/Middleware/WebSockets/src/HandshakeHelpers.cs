@@ -14,25 +14,20 @@ namespace Microsoft.AspNetCore.WebSockets;
 
 internal static class HandshakeHelpers
 {
-    // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> EncodedWebSocketKey => new byte[]
-    {
-            (byte)'2', (byte)'5', (byte)'8', (byte)'E', (byte)'A', (byte)'F', (byte)'A', (byte)'5', (byte)'-',
-            (byte)'E', (byte)'9', (byte)'1', (byte)'4', (byte)'-', (byte)'4', (byte)'7', (byte)'D', (byte)'A',
-            (byte)'-', (byte)'9', (byte)'5', (byte)'C', (byte)'A', (byte)'-', (byte)'C', (byte)'5', (byte)'A',
-            (byte)'B', (byte)'0', (byte)'D', (byte)'C', (byte)'8', (byte)'5', (byte)'B', (byte)'1', (byte)'1'
-    };
+    private static ReadOnlySpan<byte> EncodedWebSocketKey => "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"u8;
 
-    // Verify Method, Upgrade, Connection, version,  key, etc..
-    public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
+    public static void GenerateResponseHeaders(bool isHttp1, IHeaderDictionary requestHeaders, string? subProtocol, IHeaderDictionary responseHeaders)
     {
-        headers.Connection = HeaderNames.Upgrade;
-        headers.Upgrade = Constants.Headers.UpgradeWebSocket;
-        headers.SecWebSocketAccept = CreateResponseKey(key);
+        if (isHttp1)
+        {
+            responseHeaders.Connection = HeaderNames.Upgrade;
+            responseHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
+            responseHeaders.SecWebSocketAccept = CreateResponseKey(requestHeaders.SecWebSocketKey.ToString());
+        }
         if (!string.IsNullOrWhiteSpace(subProtocol))
         {
-            headers.SecWebSocketProtocol = subProtocol;
+            responseHeaders.SecWebSocketProtocol = subProtocol;
         }
     }
 
@@ -176,7 +171,7 @@ internal static class HandshakeHelpers
                 builder.Append('=');
                 var len = (parsedOptions.ClientMaxWindowBits > 9) ? 2 : 1;
                 var span = builder.AppendSpan(len);
-                var ret = parsedOptions.ClientMaxWindowBits.TryFormat(span, out var written);
+                var ret = parsedOptions.ClientMaxWindowBits.TryFormat(span, out var written, provider: CultureInfo.InvariantCulture);
                 Debug.Assert(ret);
                 Debug.Assert(written == len);
             }
@@ -271,7 +266,7 @@ internal static class HandshakeHelpers
             builder.Append('=');
             var len = (parsedOptions.ServerMaxWindowBits > 9) ? 2 : 1;
             var span = builder.AppendSpan(len);
-            var ret = parsedOptions.ServerMaxWindowBits.TryFormat(span, out var written);
+            var ret = parsedOptions.ServerMaxWindowBits.TryFormat(span, out var written, provider: CultureInfo.InvariantCulture);
             Debug.Assert(ret);
             Debug.Assert(written == len);
         }

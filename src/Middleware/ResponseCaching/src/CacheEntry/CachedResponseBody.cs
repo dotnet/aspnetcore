@@ -5,7 +5,7 @@ using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class CachedResponseBody
+internal sealed class CachedResponseBody
 {
     public CachedResponseBody(List<byte[]> segments, long length)
     {
@@ -19,10 +19,7 @@ internal class CachedResponseBody
 
     public async Task CopyToAsync(PipeWriter destination, CancellationToken cancellationToken)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         foreach (var segment in Segments)
         {

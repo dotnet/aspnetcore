@@ -30,9 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
-    <PackageVersionVariableReference Include="$(RepoRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
-    <PackageVersionVariableReference Include="$(RepoRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
+    <!-- These projects produce packages that the templates depend on. See GenerateContent.targets -->
     <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
@@ -40,6 +38,7 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\JwtBearer\src\Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
@@ -55,10 +54,12 @@
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="GrpcService-CSharp.csproj.in" OutputPath="content/GrpcService-CSharp/GrpcService-CSharp.csproj" />
     <GeneratedContent Include="BlazorServerWeb-CSharp.csproj.in" OutputPath="content/BlazorServerWeb-CSharp/BlazorServerWeb-CSharp.csproj" />
+    <GeneratedContent Include="EmptyBlazorServerWeb-CSharp.csproj.in" OutputPath="content/EmptyBlazorServerWeb-CSharp/EmptyBlazorServerWeb-CSharp.csproj" />
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj" />
+    <GeneratedContent Include="Api-CSharp.csproj.in" OutputPath="content/Api-CSharp/Company.ApiApplication1.csproj" />
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
@@ -66,6 +67,9 @@
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.Client.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Client/ComponentsWebAssembly-CSharp.Client.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.Shared.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Shared/ComponentsWebAssembly-CSharp.Shared.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.Server.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Server/ComponentsWebAssembly-CSharp.Server.csproj" />
+    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.Client.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/Client/EmptyComponentsWebAssembly-CSharp.Client.csproj" />
+    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.Shared.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/Shared/EmptyComponentsWebAssembly-CSharp.Shared.csproj" />
+    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.Server.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/Server/EmptyComponentsWebAssembly-CSharp.Server.csproj" />
   </ItemGroup>
 
 </Project>

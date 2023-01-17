@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// A filter implementation which delegates to the controller for action filter interfaces.
 /// </summary>
-internal class ControllerActionFilter : IAsyncActionFilter, IOrderedFilter
+internal sealed class ControllerActionFilter : IAsyncActionFilter, IOrderedFilter
 {
     // Controller-filter methods run farthest from the action by default.
     /// <inheritdoc />
@@ -19,15 +19,8 @@ internal class ControllerActionFilter : IAsyncActionFilter, IOrderedFilter
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         var controller = context.Controller;
         if (controller == null)

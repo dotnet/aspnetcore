@@ -10,7 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class RemoteRenderer : WebRenderer
+#pragma warning restore CA1852 // Seal internal types
 {
     private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -173,7 +175,7 @@ internal partial class RemoteRenderer : WebRenderer
         // All the batches are sent in order based on the fact that SignalR
         // provides ordering for the underlying messages and that the batches
         // are always in order.
-        return Task.WhenAll(_unacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+        return Task.WhenAll(_unacknowledgedRenderBatches.Select(WriteBatchBytesAsync));
     }
 
     private async Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending)

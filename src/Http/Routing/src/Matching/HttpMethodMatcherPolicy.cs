@@ -38,10 +38,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
     bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (ContainsDynamicEndpoints(endpoints))
         {
@@ -53,10 +50,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         return ContainsDynamicEndpoints(endpoints);
@@ -83,15 +77,8 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
     /// <returns></returns>
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         // Returning a 405 here requires us to return keep track of all 'seen' HTTP methods. We allocate to
         // keep track of this because we either need to keep track of the HTTP methods or keep track of the
@@ -404,12 +391,10 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         return new Endpoint(
             (context) =>
             {
-                context.Response.StatusCode = 405;
-
                 // Prevent ArgumentException from duplicate key if header already added, such as when the
                 // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
                 context.Response.Headers.Allow = allow;
-
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 return Task.CompletedTask;
             },
             EndpointMetadataCollection.Empty,
@@ -450,7 +435,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             !StringValues.IsNullOrEmpty(accessControlRequestMethod);
     }
 
-    private class HttpMethodMetadataEndpointComparer : EndpointMetadataComparer<IHttpMethodMetadata>
+    private sealed class HttpMethodMetadataEndpointComparer : EndpointMetadataComparer<IHttpMethodMetadata>
     {
         protected override int CompareMetadata(IHttpMethodMetadata? x, IHttpMethodMetadata? y)
         {

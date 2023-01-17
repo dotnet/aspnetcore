@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class ViewDataAttributePageApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class ViewDataAttributePageApplicationModelProvider : IPageApplicationModelProvider
 {
     /// <inheritdoc />
     /// <remarks>This order ensures that <see cref="ViewDataAttributePageApplicationModelProvider"/> runs after the <see cref="DefaultPageApplicationModelProvider"/>.</remarks>
@@ -20,10 +20,7 @@ internal class ViewDataAttributePageApplicationModelProvider : IPageApplicationM
     /// <inheritdoc />
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var handlerType = context.PageApplicationModel.HandlerType.AsType();
 

@@ -115,6 +115,8 @@ public class HostingApplicationTests
         using var _ = dummySource.StartActivity("DummyActivity");
 
         Assert.Same(initialActivity, activityFeature.Activity);
+        Assert.Null(activityFeature.Activity.ParentId);
+        Assert.Equal(activityFeature.Activity.Id, Activity.Current.ParentId);
         Assert.NotEqual(Activity.Current, activityFeature.Activity);
 
         // Act/Assert
@@ -156,6 +158,8 @@ public class HostingApplicationTests
         using var _ = dummySource.StartActivity("DummyActivity");
 
         Assert.Same(initialActivity, activityFeature.Activity);
+        Assert.Null(activityFeature.Activity.ParentId);
+        Assert.Equal(activityFeature.Activity.Id, Activity.Current.ParentId);
         Assert.NotEqual(Activity.Current, activityFeature.Activity);
 
         // Act/Assert

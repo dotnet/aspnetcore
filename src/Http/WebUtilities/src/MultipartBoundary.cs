@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
-internal class MultipartBoundary
+internal sealed class MultipartBoundary
 {
     private readonly int[] _skipTable = new int[256];
     private readonly string _boundary;
@@ -13,10 +13,7 @@ internal class MultipartBoundary
 
     public MultipartBoundary(string boundary, bool expectLeadingCrlf = true)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
+        ArgumentNullException.ThrowIfNull(boundary);
 
         _boundary = boundary;
         _expectLeadingCrlf = expectLeadingCrlf;

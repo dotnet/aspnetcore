@@ -326,6 +326,25 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
     }
 #endif
 
+    public WrittenBuffers DetachAndReset()
+    {
+        _completedSegments ??= new List<CompletedBuffer>();
+
+        if (_currentSegment is not null)
+        {
+            _completedSegments.Add(new CompletedBuffer(_currentSegment, _position));
+        }
+
+        var written = new WrittenBuffers(_completedSegments, _bytesWritten);
+
+        _currentSegment = null;
+        _completedSegments = null;
+        _bytesWritten = 0;
+        _position = 0;
+
+        return written;
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -335,9 +354,36 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
     }
 
     /// <summary>
+    /// Holds the written segments from a MemoryBufferWriter and is no longer attached to a MemoryBufferWriter.
+    /// You are now responsible for calling Dispose on this type to return the memory to the pool.
+    /// </summary>
+    internal readonly ref struct WrittenBuffers
+    {
+        public readonly List<CompletedBuffer> Segments;
+        private readonly int _bytesWritten;
+
+        public WrittenBuffers(List<CompletedBuffer> segments, int bytesWritten)
+        {
+            Segments = segments;
+            _bytesWritten = bytesWritten;
+        }
+
+        public int ByteLength => _bytesWritten;
+
+        public void Dispose()
+        {
+            for (var i = 0; i < Segments.Count; i++)
+            {
+                Segments[i].Return();
+            }
+            Segments.Clear();
+        }
+    }
+
+    /// <summary>
     /// Holds a byte[] from the pool and a size value. Basically a Memory but guaranteed to be backed by an ArrayPool byte[], so that we know we can return it.
     /// </summary>
-    private readonly struct CompletedBuffer
+    internal readonly struct CompletedBuffer
     {
         public byte[] Buffer { get; }
         public int Length { get; }

@@ -504,7 +504,7 @@ public class ComponentRendererTest
         Assert.Null(parameterDefinition.TypeName);
         Assert.Null(parameterDefinition.Assembly);
 
-        var value = Assert.Single(serverComponent.ParameterValues); ;
+        var value = Assert.Single(serverComponent.ParameterValues);
         Assert.Null(value);
     }
 

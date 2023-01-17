@@ -1,9 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -102,7 +105,7 @@ public class RoutingFallbackTest : IClassFixture<MvcTestFixture<RoutingWebSite.S
     public async Task Fallback_CanFallbackToPage()
     {
         // Arrange
-        var url = "http://localhost/Foo";
+        var url = "http://localhost/FallbackToPage/Foo/Bar";
         var request = new HttpRequestMessage(HttpMethod.Get, url);
 
         // Act
@@ -112,5 +115,22 @@ public class RoutingFallbackTest : IClassFixture<MvcTestFixture<RoutingWebSite.S
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Hello from fallback page: /FallbackPage", content);
+    }
+
+    [Fact]
+    public async Task Fallback_DoesNotFallbackToFile_WhenContentTypeDoesNotMatchConsumesAttribute()
+    {
+        // Arrange
+        var url = "http://localhost/ConsumesAttribute/Json";
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent("some plaintext", Encoding.UTF8, "text/plain"),
+        };
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
     }
 }

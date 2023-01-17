@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.Web;
 
@@ -20,11 +21,11 @@ public sealed class JSComponentConfigurationStore
     // without needing any changes on the downstream code that implements IJSComponentConfiguration,
     // and without exposing any of the configuration storage across layers.
 
-    internal Dictionary<string, Type> JSComponentTypesByIdentifier { get; } = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Type> _jsComponentTypesByIdentifier = new(StringComparer.Ordinal);
     internal Dictionary<string, JSComponentParameter[]> JSComponentParametersByIdentifier { get; } = new(StringComparer.Ordinal);
     internal Dictionary<string, List<string>> JSComponentIdentifiersByInitializer { get; } = new(StringComparer.Ordinal);
 
-    internal void Add(Type componentType, string identifier)
+    internal void Add([DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, string identifier)
     {
         var parameterTypes = JSComponentInterop.GetComponentParameters(componentType).ParameterInfoByName;
         var parameters = new JSComponentParameter[parameterTypes.Count];
@@ -34,15 +35,24 @@ public sealed class JSComponentConfigurationStore
             parameters[index++] = new JSComponentParameter(name, type.Type);
         }
 
-        JSComponentTypesByIdentifier.Add(identifier, componentType);
+        _jsComponentTypesByIdentifier.Add(identifier, componentType);
         JSComponentParametersByIdentifier.Add(identifier, parameters);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2067",
+        Justification = "Types added to dictionary are always correctly annotated.")]
+    internal bool TryGetComponentType(
+        string identifier,
+        [NotNullWhen(true)][DynamicallyAccessedMembers(LinkerFlags.Component)] out Type? componentType)
+    {
+        return _jsComponentTypesByIdentifier.TryGetValue(identifier, out componentType);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
     [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
     [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
     [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
-    internal void Add(Type componentType, string identifier, string javaScriptInitializer)
+    internal void Add([DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, string identifier, string javaScriptInitializer)
     {
         Add(componentType, identifier);
 

@@ -27,10 +27,7 @@ public class BindingInfo
     /// <param name="other">The <see cref="BindingInfo"/> to copy.</param>
     public BindingInfo(BindingInfo other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         BindingSource = other.BindingSource;
         BinderModelName = other.BinderModelName;
@@ -183,15 +180,8 @@ public class BindingInfo
     /// <returns>A new instance of <see cref="BindingInfo"/> if any binding metadata was discovered; otherwise or <see langword="null"/>.</returns>
     public static BindingInfo? GetBindingInfo(IEnumerable<object> attributes, ModelMetadata modelMetadata)
     {
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
-
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
+        ArgumentNullException.ThrowIfNull(modelMetadata);
 
         var bindingInfo = GetBindingInfo(attributes);
         var isBindingInfoPresent = bindingInfo != null;
@@ -217,10 +207,7 @@ public class BindingInfo
     /// <see langword="false"/> otherwise.</returns>
     public bool TryApplyBindingInfo(ModelMetadata modelMetadata)
     {
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadata);
 
         var isBindingInfoPresent = false;
         if (BinderModelName == null && modelMetadata.BinderModelName != null)
@@ -261,7 +248,7 @@ public class BindingInfo
         return isBindingInfoPresent;
     }
 
-    private class CompositePropertyFilterProvider : IPropertyFilterProvider
+    private sealed class CompositePropertyFilterProvider : IPropertyFilterProvider
     {
         private readonly IEnumerable<IPropertyFilterProvider> _providers;
 

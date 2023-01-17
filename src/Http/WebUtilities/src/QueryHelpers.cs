@@ -25,20 +25,9 @@ public static class QueryHelpers
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
     public static string AddQueryString(string uri, string name, string value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(value);
 
         return AddQueryString(
             uri, new[] { new KeyValuePair<string, string?>(name, value) });
@@ -54,15 +43,8 @@ public static class QueryHelpers
     /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
     public static string AddQueryString(string uri, IDictionary<string, string?> queryString)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (queryString == null)
-        {
-            throw new ArgumentNullException(nameof(queryString));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(queryString);
 
         return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string?>>)queryString);
     }
@@ -77,15 +59,8 @@ public static class QueryHelpers
     /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
     public static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, StringValues>> queryString)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (queryString == null)
-        {
-            throw new ArgumentNullException(nameof(queryString));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(queryString);
 
         return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create<string, string?>(kvp.Key, v)));
     }
@@ -102,24 +77,17 @@ public static class QueryHelpers
         string uri,
         IEnumerable<KeyValuePair<string, string?>> queryString)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (queryString == null)
-        {
-            throw new ArgumentNullException(nameof(queryString));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(queryString);
 
         var anchorIndex = uri.IndexOf('#');
-        var uriToBeAppended = uri;
-        var anchorText = "";
+        var uriToBeAppended = uri.AsSpan();
+        var anchorText = ReadOnlySpan<char>.Empty;
         // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
         {
-            anchorText = uri.Substring(anchorIndex);
-            uriToBeAppended = uri.Substring(0, anchorIndex);
+            anchorText = uriToBeAppended.Slice(anchorIndex);
+            uriToBeAppended = uriToBeAppended.Slice(0, anchorIndex);
         }
 
         var queryIndex = uriToBeAppended.IndexOf('?');

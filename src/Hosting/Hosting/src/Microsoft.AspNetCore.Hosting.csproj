@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,4 +39,7 @@
     <InternalsVisibleTo Include="Identity.DefaultUI.WebSite" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />
+  </ItemGroup>
 </Project>

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A default <see cref="IActionSelector"/> implementation.
 /// </summary>
-internal partial class ActionSelector : IActionSelector
+internal sealed partial class ActionSelector : IActionSelector
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly ActionConstraintCache _actionConstraintCache;
@@ -62,10 +62,7 @@ internal partial class ActionSelector : IActionSelector
 
     public IReadOnlyList<ActionDescriptor> SelectCandidates(RouteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var cache = Current;
 
@@ -81,15 +78,8 @@ internal partial class ActionSelector : IActionSelector
 
     public ActionDescriptor? SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         var finalMatches = EvaluateActionConstraints(context, candidates);
 

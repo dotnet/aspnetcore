@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 /// Parses the "CondPattern" portion of the RewriteCond.
 /// RewriteCond TestString CondPattern
 /// </summary>
-internal class ConditionPatternParser
+internal sealed class ConditionPatternParser
 {
     private const char Not = '!';
     private const char Dash = '-';

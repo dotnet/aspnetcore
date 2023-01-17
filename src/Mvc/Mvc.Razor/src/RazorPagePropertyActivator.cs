@@ -13,7 +13,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
-internal class RazorPagePropertyActivator
+internal sealed class RazorPagePropertyActivator
 {
     private readonly IModelMetadataProvider _metadataProvider;
     private readonly Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> _rootFactory;
@@ -45,10 +45,7 @@ internal class RazorPagePropertyActivator
 
     public void Activate(object page, ViewContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.ViewData = CreateViewDataDictionary(context);
         for (var i = 0; i < _propertyActivators.Length; i++)
@@ -127,7 +124,7 @@ internal class RazorPagePropertyActivator
         return new PropertyActivator<ViewContext>(property, valueAccessor);
     }
 
-    public class PropertyValueAccessors
+    public sealed class PropertyValueAccessors
     {
         public Func<ViewContext, object> UrlHelperAccessor { get; init; } = default!;
 

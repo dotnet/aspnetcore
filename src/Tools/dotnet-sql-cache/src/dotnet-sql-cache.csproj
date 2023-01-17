@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Data.SqlClient" />
+    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
 </Project>

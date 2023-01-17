@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -18,10 +20,7 @@ public sealed class AuthenticatedEncryptorDescriptorDeserializer : IAuthenticate
     /// </summary>
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         // <descriptor>
         //   <encryption algorithm="..." />

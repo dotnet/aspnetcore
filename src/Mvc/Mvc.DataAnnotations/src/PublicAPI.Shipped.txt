@@ -1,9 +1,8 @@
 #nullable enable
-~Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>
-~Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>
 abstract Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>.GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase! validationContext) -> string!
 abstract Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext! context) -> void
 abstract Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationProviderAttribute.GetValidationAttributes() -> System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationAttribute!>!
+Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>
 Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<TAttribute>.AttributeAdapterBase(TAttribute! attribute, Microsoft.Extensions.Localization.IStringLocalizer? stringLocalizer) -> void
 Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter
 Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter.GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase! validationContext) -> string!
@@ -14,6 +13,7 @@ Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions.D
 Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions.MvcDataAnnotationsLocalizationOptions() -> void
 Microsoft.AspNetCore.Mvc.DataAnnotations.RequiredAttributeAdapter
 Microsoft.AspNetCore.Mvc.DataAnnotations.RequiredAttributeAdapter.RequiredAttributeAdapter(System.ComponentModel.DataAnnotations.RequiredAttribute! attribute, Microsoft.Extensions.Localization.IStringLocalizer? stringLocalizer) -> void
+Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>
 Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.Attribute.get -> TAttribute!
 Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<TAttribute>.ValidationAttributeAdapter(TAttribute! attribute, Microsoft.Extensions.Localization.IStringLocalizer? stringLocalizer) -> void
 Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapterProvider

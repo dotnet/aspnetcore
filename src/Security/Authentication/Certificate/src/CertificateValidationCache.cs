@@ -65,7 +65,7 @@ public class CertificateValidationCache : ICertificateValidationCache
     private static string ComputeKey(X509Certificate2 certificate)
         => certificate.GetCertHashString(HashAlgorithmName.SHA256);
 
-    private class CachingClock : Extensions.Internal.ISystemClock
+    private sealed class CachingClock : Extensions.Internal.ISystemClock
     {
         private readonly ISystemClock _clock;
         public CachingClock(ISystemClock clock) => _clock = clock;

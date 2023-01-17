@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SpaProxy;
 /// 2) Ensure that the server is up and running quickly instead of waiting for the proxy to be ready to start the
 ///    server which causes Visual Studio to think the app failed to launch.
 /// </summary>
-internal class SpaProxyMiddleware
+internal sealed class SpaProxyMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly SpaProxyLaunchManager _spaProxyLaunchManager;

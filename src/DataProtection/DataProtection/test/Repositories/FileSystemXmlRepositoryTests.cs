@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing;
@@ -108,7 +109,7 @@ public class FileSystemXmlRepositoryTests
             var filename = fileInfo.Name;
             Assert.EndsWith(".xml", filename, StringComparison.OrdinalIgnoreCase);
             var filenameNoSuffix = filename.Substring(0, filename.Length - ".xml".Length);
-            Guid parsedGuid = Guid.Parse(filenameNoSuffix);
+            Guid parsedGuid = Guid.Parse(filenameNoSuffix, CultureInfo.InvariantCulture);
             Assert.NotEqual(Guid.Empty, parsedGuid);
 
             // file contents should be "<element1 />"
@@ -151,6 +152,25 @@ public class FileSystemXmlRepositoryTests
 
             // Assert
             Assert.Contains(Resources.FormatFileSystem_EphemeralKeysLocationInContainer(dirInfo.FullName), loggerFactory.ToString());
+        });
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void StoreElement_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        WithUniqueTempDirectory(dirInfo =>
+        {
+            // Arrange
+            var element = XElement.Parse("<element1 />");
+            var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+
+            // Act
+            repository.StoreElement(element, "friendly-name");
+
+            // Assert
+            var fileInfo = Assert.Single(dirInfo.GetFiles());
+            Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, fileInfo.UnixFileMode);
         });
     }
 

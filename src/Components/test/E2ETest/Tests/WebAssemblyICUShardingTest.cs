@@ -53,7 +53,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal(culture.ToString(), cultureDisplay.Text);
 
         var dateDisplay = Browser.Exists(By.Id("dateTime"));
-        Assert.Equal("2020. 9. 2. 오전 12:00:00", dateDisplay.Text);
+        Assert.Equal("2020. 9. 2. 00:00:00", dateDisplay.Text);
 
         var localizedDisplay = Browser.Exists(By.Id("localizedString"));
         // The app has a "ko" resx file. This test verifies that we can walk up the culture hierarchy correctly.

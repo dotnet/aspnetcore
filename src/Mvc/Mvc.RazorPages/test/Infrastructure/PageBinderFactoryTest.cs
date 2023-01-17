@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
@@ -838,6 +838,9 @@ public class PageBinderFactoryTest
         }
     }
 
+    private interface ITestService
+    { }
+
     private class PageModelWithNoBoundProperties : PageModel
     {
     }
@@ -855,6 +858,9 @@ public class PageBinderFactoryTest
         [FromQuery]
         protected string FromQuery { get; set; }
 
+        [FromServices]
+        protected ITestService FromService { get; set; }
+
         [FromRoute]
         public static int FromRoute { get; set; }
 
@@ -868,6 +874,9 @@ public class PageBinderFactoryTest
 
         [FromQuery]
         protected string FromQuery { get; set; }
+
+        [FromServices]
+        protected ITestService FromService { get; set; }
 
         [FromRoute]
         public static int FromRoute { get; set; }
@@ -898,6 +907,9 @@ public class PageBinderFactoryTest
         [FromForm]
         public string PropertyWithNoValue { get; set; }
 
+        [FromServices]
+        public ITestService FromService { get; set; }
+
         public override Task ExecuteAsync() => Task.FromResult(0);
     }
 
@@ -911,6 +923,10 @@ public class PageBinderFactoryTest
 
         [FromForm]
         public string PropertyWithNoValue { get; set; }
+
+        [FromServices]
+        public ITestService FromService { get; set; }
+
     }
 
     private class PageModelWithDefaultValue

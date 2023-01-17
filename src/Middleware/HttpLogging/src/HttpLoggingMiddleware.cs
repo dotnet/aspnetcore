@@ -28,18 +28,11 @@ internal sealed class HttpLoggingMiddleware
     /// <param name="logger"></param>
     public HttpLoggingMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options, ILogger<HttpLoggingMiddleware> logger)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
+        _next = next;
         _options = options;
         _logger = logger;
     }
@@ -105,7 +98,11 @@ internal sealed class HttpLoggingMiddleware
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
             {
-                if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
+                if (request.ContentType is null)
+                {
+                    _logger.NoMediaType("request");
+                }
+                else if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
                     options.MediaTypeOptions.MediaTypeStates,
                     out var encoding))
                 {
@@ -119,7 +116,7 @@ internal sealed class HttpLoggingMiddleware
                 }
                 else
                 {
-                    _logger.UnrecognizedMediaType();
+                    _logger.UnrecognizedMediaType("request");
                 }
             }
 
@@ -131,9 +128,24 @@ internal sealed class HttpLoggingMiddleware
         ResponseBufferingStream? responseBufferingStream = null;
         IHttpResponseBodyFeature? originalBodyFeature = null;
 
+        UpgradeFeatureLoggingDecorator? loggableUpgradeFeature = null;
+        IHttpUpgradeFeature? originalUpgradeFeature = null;
+
         try
         {
             var response = context.Response;
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode) || options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+            {
+                originalUpgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+
+                if (originalUpgradeFeature != null && originalUpgradeFeature.IsUpgradableRequest)
+                {
+                    loggableUpgradeFeature = new UpgradeFeatureLoggingDecorator(originalUpgradeFeature, response, options, _logger);
+
+                    context.Features.Set<IHttpUpgradeFeature>(loggableUpgradeFeature);
+                }
+            }
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
             {
@@ -159,9 +171,9 @@ internal sealed class HttpLoggingMiddleware
                 requestBufferingStream.LogRequestBody();
             }
 
-            if (responseBufferingStream == null || responseBufferingStream.FirstWrite == false)
+            if (ResponseHeadersNotYetWritten(responseBufferingStream, loggableUpgradeFeature))
             {
-                // No body, write headers here.
+                // No body, not an upgradable request or request not upgraded, write headers here.
                 LogResponseHeaders(response, options, _logger);
             }
 
@@ -189,7 +201,27 @@ internal sealed class HttpLoggingMiddleware
             {
                 context.Request.Body = originalBody;
             }
+
+            if (loggableUpgradeFeature != null)
+            {
+                context.Features.Set(originalUpgradeFeature);
+            }
         }
+    }
+
+    private static bool ResponseHeadersNotYetWritten(ResponseBufferingStream? responseBufferingStream, UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
+    {
+        return BodyNotYetWritten(responseBufferingStream) && NotUpgradeableRequestOrRequestNotUpgraded(upgradeFeatureLogging);
+    }
+
+    private static bool BodyNotYetWritten(ResponseBufferingStream? responseBufferingStream)
+    {
+        return responseBufferingStream == null || responseBufferingStream.FirstWrite == false;
+    }
+
+    private static bool NotUpgradeableRequestOrRequestNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
+    {
+        return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgraded;
     }
 
     private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)

@@ -50,15 +50,8 @@ public class PageResultExecutor : ViewExecutor
     /// </summary>
     public virtual Task ExecuteAsync(PageContext pageContext, PageResult result)
     {
-        if (pageContext == null)
-        {
-            throw new ArgumentNullException(nameof(pageContext));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(pageContext);
+        ArgumentNullException.ThrowIfNull(result);
 
         if (result.Model != null)
         {
@@ -104,9 +97,6 @@ public class PageResultExecutor : ViewExecutor
     private static void OnExecuting(PageContext pageContext)
     {
         var viewDataValuesProvider = pageContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
-        if (viewDataValuesProvider != null)
-        {
-            viewDataValuesProvider.ProvideViewDataValues(pageContext.ViewData);
-        }
+        viewDataValuesProvider?.ProvideViewDataValues(pageContext.ViewData);
     }
 }

@@ -5,14 +5,11 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
-internal class RazorViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
+internal sealed class RazorViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
 {
     public void Configure(RazorViewEngineOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.ViewLocationFormats.Add("/Views/{1}/{0}" + RazorViewEngine.ViewExtension);
         options.ViewLocationFormats.Add("/Views/Shared/{0}" + RazorViewEngine.ViewExtension);

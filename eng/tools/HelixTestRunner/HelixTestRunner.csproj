@@ -1,0 +1,32 @@
+<Project>
+  <PropertyGroup>
+    <!-- Despite project name, treat as a test asset to avoid both IsTestProject and IsImplementationProject. -->
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <IsUnitTestProject>false</IsUnitTestProject>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <!-- Update helix.proj when this TFM is updated. -->
+    <TargetFramework>net8.0</TargetFramework>
+
+    <OutputType>Exe</OutputType>
+    <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- We don't need this unless building for tests. -->
+    <ExcludeFromBuild Condition=" '$(DotNetBuildFromSource)' == 'true' OR '$(SkipTestBuild)' == 'true' ">true</ExcludeFromBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" AllowExplicitReference="true" />
+  </ItemGroup>
+
+  <Target Name="PublishThisProject" AfterTargets="Build" Condition=" '$(ExcludeFromBuild)' != 'true' " >
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

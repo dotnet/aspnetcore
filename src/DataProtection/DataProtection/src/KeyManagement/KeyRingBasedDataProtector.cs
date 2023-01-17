@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -57,10 +59,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 
     public IDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return new KeyRingBasedDataProtector(
             logger: _logger,
@@ -78,10 +77,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
     {
         // argument & state checking
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         UnprotectStatus status;
         var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
@@ -92,10 +88,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 
     public byte[] Protect(byte[] plaintext)
     {
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         try
         {
@@ -181,10 +174,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 
     public byte[] Unprotect(byte[] protectedData)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         // Argument checking will be done by the callee
         return DangerousUnprotect(protectedData,

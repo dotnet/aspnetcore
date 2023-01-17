@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -24,12 +25,9 @@ public class HttpDeleteAttribute : HttpMethodAttribute
     /// Creates a new <see cref="HttpDeleteAttribute"/> with the given route template.
     /// </summary>
     /// <param name="template">The route template. May not be null.</param>
-    public HttpDeleteAttribute(string template)
+    public HttpDeleteAttribute([StringSyntax("Route")] string template)
         : base(_supportedMethods, template)
     {
-        if (template == null)
-        {
-            throw new ArgumentNullException(nameof(template));
-        }
+        ArgumentNullException.ThrowIfNull(template);
     }
 }

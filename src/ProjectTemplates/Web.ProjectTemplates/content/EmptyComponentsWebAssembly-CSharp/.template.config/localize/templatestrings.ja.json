@@ -1,0 +1,23 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor WebAssembly アプリが空です",
+  "description": "WebAssembly 上で実行し、必要に応じて ASP.NET Core アプリによってホストされる Blazor アプリを作成するための空のプロジェクト テンプレート。このテンプレートにはコンテンツがありません。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
+  "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
+  "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
+  "symbols/Hosted/description": "指定した場合、Blazor WebAssembly アプリの ASP.NET Core ホストが含まれます。",
+  "symbols/ExcludeLaunchSettings/description": "生成されたテンプレートから launchSettings.json を除外するかどうか。",
+  "symbols/kestrelHttpPort/description": "launchSettings.json の HTTP エンドポイントに使用するポート番号。",
+  "symbols/kestrelHttpsPort/description": "launchSettings.json の HTTPS エンドポイントに使用するポート番号。このオプションは、パラメーター no-https を使用しない場合にのみ適用されます。",
+  "symbols/iisHttpPort/description": "launchSettings.json の IIS Express HTTP エンドポイントに使用するポート番号。",
+  "symbols/iisHttpsPort/description": "launchSettings.json の IIS Express HTTPS エンドポイントに使用するポート番号。このオプションは、パラメーター no-https を使用しない場合にのみ適用されます。",
+  "symbols/PWA/displayName": "プログレッシブ Web アプリケーション(_P)",
+  "symbols/PWA/description": "指定した場合、インストールとオフラインでの使用をサポートするプログレッシブ Web アプリケーション (PWA) が生成されます。",
+  "symbols/HasHttpProfile/description": "HTTP プロファイルが常にあります。",
+  "symbols/NoHttps/description": "HTTPS をオフにするかどうか。",
+  "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する",
+  "postActions/restoreClient/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
+  "postActions/restoreClient/manualInstructions/default/text": "'dotnet restore' を実行する"
+}

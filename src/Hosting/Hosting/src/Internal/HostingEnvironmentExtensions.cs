@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -11,10 +12,7 @@ internal static class HostingEnvironmentExtensions
     internal static void Initialize(this IHostingEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
 #pragma warning restore CS0618 // Type or member is obsolete
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
         if (string.IsNullOrEmpty(contentRootPath))
         {
             throw new ArgumentException("A valid non-empty content root must be provided.", nameof(contentRootPath));
@@ -62,12 +60,13 @@ internal static class HostingEnvironmentExtensions
             hostingEnvironment.EnvironmentName;
     }
 
-    internal static void Initialize(this IWebHostEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
+    internal static void Initialize(
+        this IWebHostEnvironment hostingEnvironment,
+        string contentRootPath,
+        WebHostOptions options,
+        IHostEnvironment? baseEnvironment = null)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
         if (string.IsNullOrEmpty(contentRootPath))
         {
             throw new ArgumentException("A valid non-empty content root must be provided.", nameof(contentRootPath));
@@ -77,9 +76,9 @@ internal static class HostingEnvironmentExtensions
             throw new ArgumentException($"The content root '{contentRootPath}' does not exist.", nameof(contentRootPath));
         }
 
-        hostingEnvironment.ApplicationName = options.ApplicationName;
+        hostingEnvironment.ApplicationName = baseEnvironment?.ApplicationName ?? options.ApplicationName;
         hostingEnvironment.ContentRootPath = contentRootPath;
-        hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+        hostingEnvironment.ContentRootFileProvider = baseEnvironment?.ContentRootFileProvider ?? new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
 
         var webRoot = options.WebRoot;
         if (webRoot == null)
@@ -111,6 +110,7 @@ internal static class HostingEnvironmentExtensions
         }
 
         hostingEnvironment.EnvironmentName =
+            baseEnvironment?.EnvironmentName ??
             options.Environment ??
             hostingEnvironment.EnvironmentName;
     }

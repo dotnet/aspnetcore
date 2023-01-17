@@ -78,7 +78,7 @@ public abstract class ResetPasswordModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class ResetPasswordModel<TUser> : ResetPasswordModel where TUser : class
+internal sealed class ResetPasswordModel<TUser> : ResetPasswordModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
 

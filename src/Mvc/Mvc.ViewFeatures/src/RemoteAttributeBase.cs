@@ -62,7 +62,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
         {
             _additionalFields = value ?? string.Empty;
             _additionalFieldsSplit = SplitAndTrimPropertyNames(value)
-                .Select(field => FormatPropertyForClientValidation(field))
+                .Select(FormatPropertyForClientValidation)
                 .ToArray();
         }
     }
@@ -146,10 +146,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
     /// </remarks>
     public virtual void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
 

@@ -85,10 +85,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
     public RoleStore(TContext context, IdentityErrorDescriber? describer = null)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
         Context = context;
         ErrorDescriber = describer ?? new IdentityErrorDescriber();
     }
@@ -134,10 +131,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         Context.Add(role);
         await SaveChanges(cancellationToken);
         return IdentityResult.Success;
@@ -153,10 +147,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         Context.Attach(role);
         role.ConcurrencyStamp = Guid.NewGuid().ToString();
         Context.Update(role);
@@ -181,10 +172,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         Context.Remove(role);
         try
         {
@@ -207,10 +195,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         return Task.FromResult(ConvertIdToString(role.Id)!);
     }
 
@@ -224,10 +209,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         return Task.FromResult(role.Name);
     }
 
@@ -242,10 +224,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         role.Name = roleName;
         return Task.CompletedTask;
     }
@@ -315,10 +294,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         return Task.FromResult(role.NormalizedName);
     }
 
@@ -333,10 +309,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
         role.NormalizedName = normalizedName;
         return Task.CompletedTask;
     }
@@ -346,10 +319,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     /// </summary>
     protected void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     /// <summary>
@@ -366,10 +336,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     public virtual async Task<IList<Claim>> GetClaimsAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
     {
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullException.ThrowIfNull(role);
 
         return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType!, c.ClaimValue!)).ToListAsync(cancellationToken);
     }
@@ -384,14 +351,8 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     public virtual Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
     {
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(role);
+        ArgumentNullException.ThrowIfNull(claim);
 
         RoleClaims.Add(CreateRoleClaim(role, claim));
         return Task.FromResult(false);
@@ -407,14 +368,8 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     public virtual async Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default(CancellationToken))
     {
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(role);
+        ArgumentNullException.ThrowIfNull(claim);
         var claims = await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id) && rc.ClaimValue == claim.Value && rc.ClaimType == claim.Type).ToListAsync(cancellationToken);
         foreach (var c in claims)
         {

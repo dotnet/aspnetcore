@@ -31,7 +31,7 @@ public abstract class ConfirmEmailModel : PageModel
     public virtual Task<IActionResult> OnGetAsync(string userId, string code) => throw new NotImplementedException();
 }
 
-internal class ConfirmEmailModel<TUser> : ConfirmEmailModel where TUser : class
+internal sealed class ConfirmEmailModel<TUser> : ConfirmEmailModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
 

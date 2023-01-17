@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+// https://www.iana.org/assignments/http2-parameters/http2-parameters.xhtml#settings
 internal enum Http2SettingsParameter : ushort
 {
     SETTINGS_HEADER_TABLE_SIZE = 0x1,
@@ -11,4 +12,5 @@ internal enum Http2SettingsParameter : ushort
     SETTINGS_INITIAL_WINDOW_SIZE = 0x4,
     SETTINGS_MAX_FRAME_SIZE = 0x5,
     SETTINGS_MAX_HEADER_LIST_SIZE = 0x6,
+    SETTINGS_ENABLE_CONNECT_PROTOCOL = 0x8,
 }

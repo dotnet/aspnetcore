@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors;
 
-internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
+internal sealed class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
 {
     private readonly string OriginHeader = "Origin";
     private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
@@ -19,10 +19,7 @@ internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
 
     public override bool Accept(ActionConstraintContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var methods = (ReadOnlyCollection<string>)HttpMethods;
         if (methods.Count == 0)

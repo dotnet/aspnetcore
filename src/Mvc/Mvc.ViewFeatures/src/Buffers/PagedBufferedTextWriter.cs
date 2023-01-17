@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
-internal class PagedBufferedTextWriter : TextWriter
+internal sealed class PagedBufferedTextWriter : TextWriter
 {
     private readonly TextWriter _inner;
     private readonly PagedCharBuffer _charBuffer;
@@ -84,10 +84,7 @@ internal class PagedBufferedTextWriter : TextWriter
 
     public override void Write(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         _charBuffer.Append(buffer, index, count);
     }

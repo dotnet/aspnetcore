@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// An <see cref="IHttpRequestStreamReaderFactory"/> that uses pooled buffers.
 /// </summary>
-internal class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStreamReaderFactory
+internal sealed class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStreamReaderFactory
 {
     /// <summary>
     /// The default size of created char buffers.
@@ -35,15 +35,8 @@ internal class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStreamRead
         ArrayPool<byte> bytePool,
         ArrayPool<char> charPool)
     {
-        if (bytePool == null)
-        {
-            throw new ArgumentNullException(nameof(bytePool));
-        }
-
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
+        ArgumentNullException.ThrowIfNull(bytePool);
+        ArgumentNullException.ThrowIfNull(charPool);
 
         _bytePool = bytePool;
         _charPool = charPool;
@@ -52,15 +45,8 @@ internal class MemoryPoolHttpRequestStreamReaderFactory : IHttpRequestStreamRead
     /// <inheritdoc />
     public TextReader CreateReader(Stream stream, Encoding encoding)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         return new HttpRequestStreamReader(stream, encoding, DefaultBufferSize, _bytePool, _charPool);
     }

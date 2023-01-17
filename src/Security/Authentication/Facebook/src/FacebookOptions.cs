@@ -23,6 +23,7 @@ public class FacebookOptions : OAuthOptions
         AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
         TokenEndpoint = FacebookDefaults.TokenEndpoint;
         UserInformationEndpoint = FacebookDefaults.UserInformationEndpoint;
+        UsePkce = true;
         Scope.Add("email");
         Fields.Add("name");
         Fields.Add("email");
@@ -86,14 +87,14 @@ public class FacebookOptions : OAuthOptions
     /// <summary>
     /// Gets or sets if the <c>appsecret_proof</c> should be generated and sent with Facebook API calls.
     /// </summary>
-    /// <remarks>See https://developers.facebook.com/docs/graph-api/security#appsecret_proof for more details.</remarks>
+    /// <remarks>See <see href="https://developers.facebook.com/docs/graph-api/security#appsecret_proof"/> for more details.</remarks>
     /// <value>Defaults to <see langword="true"/>.</value>
     public bool SendAppSecretProof { get; set; }
 
     /// <summary>
     /// The list of fields to retrieve from the UserInformationEndpoint.
-    /// https://developers.facebook.com/docs/graph-api/reference/user
     /// </summary>
+    /// <remarks>See <see href="https://developers.facebook.com/docs/graph-api/reference/user"/> for more details.</remarks>
     /// <value>
     /// Defaults to include the following fields if none are specified: "name", "email", "first_name", and "last_name".
     /// </value>

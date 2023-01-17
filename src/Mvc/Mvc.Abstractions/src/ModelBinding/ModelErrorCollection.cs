@@ -16,10 +16,7 @@ public class ModelErrorCollection : Collection<ModelError>
     /// <param name="exception">The <see cref="Exception"/></param>
     public void Add(Exception exception)
     {
-        if (exception == null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
+        ArgumentNullException.ThrowIfNull(exception);
 
         Add(new ModelError(exception));
     }
@@ -30,10 +27,7 @@ public class ModelErrorCollection : Collection<ModelError>
     /// <param name="errorMessage">The error message.</param>
     public void Add(string errorMessage)
     {
-        if (errorMessage == null)
-        {
-            throw new ArgumentNullException(nameof(errorMessage));
-        }
+        ArgumentNullException.ThrowIfNull(errorMessage);
 
         Add(new ModelError(errorMessage));
     }

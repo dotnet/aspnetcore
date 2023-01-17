@@ -19,10 +19,7 @@ public class CustomXmlDecryptor : IXmlDecryptor
 
     public XElement Decrypt(XElement encryptedElement)
     {
-        if (encryptedElement == null)
-        {
-            throw new ArgumentNullException(nameof(encryptedElement));
-        }
+        ArgumentNullException.ThrowIfNull(encryptedElement);
 
         return new XElement(encryptedElement.Elements().Single());
     }

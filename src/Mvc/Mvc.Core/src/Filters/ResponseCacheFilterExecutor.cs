@@ -8,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class ResponseCacheFilterExecutor
+internal sealed class ResponseCacheFilterExecutor
 {
     private readonly CacheProfile _cacheProfile;
     private int? _cacheDuration;
@@ -54,10 +54,7 @@ internal class ResponseCacheFilterExecutor
 
     public void Execute(FilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!NoStore)
         {

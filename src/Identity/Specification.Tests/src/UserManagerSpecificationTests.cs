@@ -137,7 +137,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
     /// <returns>The query to use.</returns>
     protected abstract Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName);
 
-    private class AlwaysBadValidator : IUserValidator<TUser>,
+    private sealed class AlwaysBadValidator : IUserValidator<TUser>,
         IPasswordValidator<TUser>
     {
         public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad.", Code = "BadValidator" };
@@ -153,7 +153,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         }
     }
 
-    private class EmptyBadValidator : IUserValidator<TUser>,
+    private sealed class EmptyBadValidator : IUserValidator<TUser>,
         IPasswordValidator<TUser>
     {
         public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
@@ -956,7 +956,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         Assert.False(await manager.IsEmailConfirmedAsync(user));
     }
 
-    private class StaticTokenProvider : IUserTwoFactorTokenProvider<TUser>
+    private sealed class StaticTokenProvider : IUserTwoFactorTokenProvider<TUser>
     {
         public async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
         {
@@ -1410,7 +1410,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
     }
 
-    private class YesPhoneNumberProvider : IUserTwoFactorTokenProvider<TUser>
+    private sealed class YesPhoneNumberProvider : IUserTwoFactorTokenProvider<TUser>
     {
         public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
             => Task.FromResult(true);

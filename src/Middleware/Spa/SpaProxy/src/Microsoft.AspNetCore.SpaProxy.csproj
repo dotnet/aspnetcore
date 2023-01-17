@@ -3,7 +3,8 @@
   <PropertyGroup>
     <Description>Helpers for launching the SPA CLI proxy automatically when the application starts in ASP.NET MVC Core.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
     <!-- This is ok since this assembly is not referenced by any application but it is loaded as a hosting startup
     assembly for apps referencing this package-->
   </PropertyGroup>

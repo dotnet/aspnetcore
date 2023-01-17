@@ -63,7 +63,7 @@ public interface IRequestCookieCollection : IEnumerable<KeyValuePair<string, str
     /// <exception cref="System.ArgumentNullException">
     ///     key is null.
     /// </exception>
-    bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value);
+    bool TryGetValue(string key, [NotNullWhen(true)] out string? value);
 
     /// <summary>
     ///     Gets the value with the specified key.

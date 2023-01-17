@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "App Blazor Server vuota",
+  "description": "Modello di progetto vuoto per la creazione di un'app Blazor server che esegue il lato server all'interno di un'app ASP.NET Core e gestisce le interazioni utente tramite una connessione SignalR. Questo modello non presenta contenuto.",
+  "symbols/ExcludeLaunchSettings/description": "Indica se escludere launchSettings.json dal modello generato.",
+  "symbols/kestrelHttpPort/description": "Numero di porta da usare per l'endpoint HTTP in launchSettings.json.",
+  "symbols/kestrelHttpsPort/description": "Numero di porta da usare per l'endpoint HTTPS in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato.",
+  "symbols/iisHttpPort/description": "Numero di porta da usare per l'endpoint HTTP IIS Express in launchSettings.json.",
+  "symbols/iisHttpsPort/description": "Numero di porta da usare per l'endpoint HTTPS IIS Express in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato.",
+  "symbols/HasHttpProfile/description": "Avere sempre un profilo HTTP.",
+  "symbols/NoHttps/description": "Indica se disattivare HTTPS.",
+  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"
+}

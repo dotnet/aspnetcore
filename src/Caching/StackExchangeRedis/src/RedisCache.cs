@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -16,7 +18,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// Distributed cache implementation using Redis.
 /// <para>Uses <c>StackExchange.Redis</c> as the Redis client.</para>
 /// </summary>
-public class RedisCache : IDistributedCache, IDisposable
+public partial class RedisCache : IDistributedCache, IDisposable
 {
     // -- Explanation of why two kinds of SetScript are used --
     // * Redis 2.0 had HSET key field value for setting individual hash fields,
@@ -58,6 +60,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private readonly RedisCacheOptions _options;
     private readonly string _instance;
+    private readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
@@ -66,13 +69,22 @@ public class RedisCache : IDistributedCache, IDisposable
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
+        : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>())
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RedisCache"/>.
+    /// </summary>
+    /// <param name="optionsAccessor">The configuration options.</param>
+    /// <param name="logger">The logger.</param>
+    internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(optionsAccessor);
+        ArgumentNullThrowHelper.ThrowIfNull(logger);
 
         _options = optionsAccessor.Value;
+        _logger = logger;
 
         // This allows partitioning a single backend cache for use with multiple apps/services.
         _instance = _options.InstanceName ?? string.Empty;
@@ -81,10 +93,7 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public byte[]? Get(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         return GetAndRefresh(key, getData: true);
     }
@@ -92,10 +101,7 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -105,20 +111,9 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         Connect();
 
@@ -139,20 +134,9 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         token.ThrowIfCancellationRequested();
 
@@ -176,10 +160,7 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Refresh(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         GetAndRefresh(key, getData: false);
     }
@@ -187,10 +168,7 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -292,13 +270,24 @@ public class RedisCache : IDistributedCache, IDisposable
     {
         _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
 
-        foreach (var endPoint in _connection.GetEndPoints())
+        try
         {
-            if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+            foreach (var endPoint in _connection.GetEndPoints())
             {
-                _setScript = SetScriptPreExtendedSetCommand;
-                return;
+                if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+                {
+                    _setScript = SetScriptPreExtendedSetCommand;
+                    return;
+                }
             }
+        }
+        catch (NotSupportedException ex)
+        {
+            Log.CouldNotDetermineServerVersion(_logger, ex);
+
+            // The GetServer call may not be supported with some configurations, in which
+            // case let's also fall back to using the older command.
+            _setScript = SetScriptPreExtendedSetCommand;
         }
     }
 
@@ -314,10 +303,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private byte[]? GetAndRefresh(string key, bool getData)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         Connect();
 
@@ -350,10 +336,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private async Task<byte[]?> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -390,10 +373,7 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         Connect();
 
@@ -404,10 +384,7 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public async Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         await ConnectAsync(token).ConfigureAwait(false);
         Debug.Assert(_cache is not null);
@@ -434,10 +411,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private void Refresh(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         // Note Refresh has no effect if there is just an absolute expiration (or neither).
         if (sldExpr.HasValue)
@@ -459,10 +433,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private async Task RefreshAsync(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -535,9 +506,6 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 }

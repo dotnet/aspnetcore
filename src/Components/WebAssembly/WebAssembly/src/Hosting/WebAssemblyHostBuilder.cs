@@ -36,6 +36,7 @@ public sealed class WebAssemblyHostBuilder
     /// <param name="args">The argument passed to the application's main method.</param>
     /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
     [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
+    [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChangingAsync), typeof(JSInteropMethods))]
     [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
     // The following dependency prevents HeadOutlet from getting trimmed away in
     // WebAssembly prerendered apps.
@@ -87,8 +88,10 @@ public sealed class WebAssemblyHostBuilder
         };
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     private void InitializeRegisteredRootComponents(IJSUnmarshalledRuntime jsRuntime)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var componentsCount = jsRuntime.InvokeUnmarshalled<int>(RegisteredComponentsInterop.GetRegisteredComponentsCount);
         if (componentsCount == 0)
         {
@@ -105,6 +108,7 @@ public sealed class WebAssemblyHostBuilder
             var serializedParameterValues = jsRuntime.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
             registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString(CultureInfo.InvariantCulture));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
@@ -128,20 +132,26 @@ public sealed class WebAssemblyHostBuilder
 
     private void InitializePersistedState(IJSUnmarshalledRuntime jsRuntime)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         _persistedState = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getPersistedState");
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static void InitializeNavigationManager(IJSUnmarshalledRuntime jsRuntime)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var baseUri = jsRuntime.InvokeUnmarshalled<string>(BrowserNavigationManagerInterop.GetBaseUri);
         var uri = jsRuntime.InvokeUnmarshalled<string>(BrowserNavigationManagerInterop.GetLocationHref);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
     }
 
     private WebAssemblyHostEnvironment InitializeEnvironment(IJSUnmarshalledRuntime jsRuntime)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var applicationEnvironment = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+#pragma warning restore CS0618 // Type or member is obsolete
         var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
@@ -154,8 +164,10 @@ public sealed class WebAssemblyHostBuilder
 
         foreach (var configFile in configFiles)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var appSettingsJson = jsRuntime.InvokeUnmarshalled<string, byte[]>(
                 "Blazor._internal.getConfig", configFile);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (appSettingsJson != null)
             {
@@ -215,10 +227,7 @@ public sealed class WebAssemblyHostBuilder
     /// </remarks>
     public void ConfigureContainer<TBuilder>(IServiceProviderFactory<TBuilder> factory, Action<TBuilder>? configure = null) where TBuilder : notnull
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         _createServiceProvider = () =>
         {

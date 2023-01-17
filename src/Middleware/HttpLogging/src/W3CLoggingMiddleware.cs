@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.HttpLogging;
 /// <summary>
 /// Middleware that logs HTTP requests and HTTP responses.
 /// </summary>
-internal class W3CLoggingMiddleware
+internal sealed class W3CLoggingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly W3CLogger _w3cLogger;
@@ -38,6 +39,7 @@ internal class W3CLoggingMiddleware
     internal static readonly int _userAgentIndex = BitOperations.Log2((int)W3CLoggingFields.UserAgent);
     internal static readonly int _cookieIndex = BitOperations.Log2((int)W3CLoggingFields.Cookie);
     internal static readonly int _refererIndex = BitOperations.Log2((int)W3CLoggingFields.Referer);
+    private readonly ISet<string> _additionalRequestHeaders;
 
     // Number of fields in W3CLoggingFields - equal to the number of _*Index variables above
     internal const int _fieldsLength = 17;
@@ -50,24 +52,14 @@ internal class W3CLoggingMiddleware
     /// <param name="w3cLogger"></param>
     public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, W3CLogger w3cLogger)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (w3cLogger == null)
-        {
-            throw new ArgumentNullException(nameof(w3cLogger));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(w3cLogger);
 
         _next = next;
         _options = options;
         _w3cLogger = w3cLogger;
+        _additionalRequestHeaders = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue);
     }
 
     /// <summary>
@@ -80,6 +72,7 @@ internal class W3CLoggingMiddleware
         var options = _options.CurrentValue;
 
         var elements = new string[_fieldsLength];
+        var additionalHeaderElements = new string[_additionalRequestHeaders.Count];
 
         // Whether any of the requested fields actually had content
         bool shouldLog = false;
@@ -122,10 +115,10 @@ internal class W3CLoggingMiddleware
             }
         }
 
+        var request = context.Request;
+
         if ((W3CLoggingFields.Request & options.LoggingFields) != W3CLoggingFields.None)
         {
-            var request = context.Request;
-
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
             {
                 shouldLog |= AddToList(elements, _protocolVersionIndex, request.Protocol);
@@ -148,11 +141,9 @@ internal class W3CLoggingMiddleware
 
             if ((W3CLoggingFields.RequestHeaders & options.LoggingFields) != W3CLoggingFields.None)
             {
-                var headers = request.Headers;
-
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Host))
                 {
-                    if (headers.TryGetValue(HeaderNames.Host, out var host))
+                    if (request.Headers.TryGetValue(HeaderNames.Host, out var host))
                     {
                         shouldLog |= AddToList(elements, _hostIndex, host.ToString());
                     }
@@ -160,7 +151,7 @@ internal class W3CLoggingMiddleware
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.Referer))
                 {
-                    if (headers.TryGetValue(HeaderNames.Referer, out var referer))
+                    if (request.Headers.TryGetValue(HeaderNames.Referer, out var referer))
                     {
                         shouldLog |= AddToList(elements, _refererIndex, referer.ToString());
                     }
@@ -168,18 +159,31 @@ internal class W3CLoggingMiddleware
 
                 if (options.LoggingFields.HasFlag(W3CLoggingFields.UserAgent))
                 {
-                    if (headers.TryGetValue(HeaderNames.UserAgent, out var agent))
+                    if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var agent))
                     {
                         shouldLog |= AddToList(elements, _userAgentIndex, agent.ToString());
                     }
                 }
+            }
+        }
 
-                if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
+        {
+            if (request.Headers.TryGetValue(HeaderNames.Cookie, out var cookie))
+            {
+                shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
+            }
+        }
+
+        if (_additionalRequestHeaders.Count != 0)
+        {
+            var additionalRequestHeaders = _additionalRequestHeaders.ToList();
+
+            for (var i = 0; i < additionalRequestHeaders.Count; i++)
+            {
+                if (request.Headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
                 {
-                    if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
-                    {
-                        shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
-                    }
+                    shouldLog |= AddToList(additionalHeaderElements, i, headerValue.ToString());
                 }
             }
         }
@@ -195,7 +199,7 @@ internal class W3CLoggingMiddleware
             // Write the log
             if (shouldLog)
             {
-                _w3cLogger.Log(elements);
+                _w3cLogger.Log(elements, additionalHeaderElements);
             }
             throw;
         }
@@ -207,7 +211,7 @@ internal class W3CLoggingMiddleware
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
         {
-            shouldLog |= AddToList(elements, _protocolStatusIndex, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            shouldLog |= AddToList(elements, _protocolStatusIndex, StatusCodeHelper.ToStatusString(response.StatusCode));
         }
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.TimeTaken))
@@ -218,7 +222,7 @@ internal class W3CLoggingMiddleware
         // Write the log
         if (shouldLog)
         {
-            _w3cLogger.Log(elements);
+            _w3cLogger.Log(elements, additionalHeaderElements);
         }
     }
 
