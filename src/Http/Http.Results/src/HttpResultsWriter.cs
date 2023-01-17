@@ -59,6 +59,12 @@ internal static partial class HttpResultsWriter
             return declaredTypeInfo;
         }
 
+        var runtimeType = value.GetType();
+        if (declaredTypeInfo.Type == runtimeType)
+        {
+            return declaredTypeInfo;
+        }
+
         // Since we don't know the type's polymorphic characteristics
         // our best option is use the runtime type
         return jsonSerializerOptions.GetTypeInfo(value.GetType());
