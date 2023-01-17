@@ -42,6 +42,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private IDictionary<object, object?>? _items;
     private readonly CancellationTokenSource _connectionClosedTokenSource;
     private readonly CancellationTokenSource _connectionCloseRequested;
+    private ConnectionDelegate? _connectionDelegate;
 
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
@@ -546,17 +547,30 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    private Task ExecuteApplication() => _connectionDelegate!(this);
+
     private async Task ExecuteApplication(ConnectionDelegate connectionDelegate)
     {
         // Verify some initialization invariants
         Debug.Assert(TransportType != HttpTransportType.None, "Transport has not been initialized yet");
 
-        // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
+        // - Jump onto the thread pool thread so blocking user code doesn't block the setup of the
         // connection and transport
-        await Task.Yield();
+        // - Discard the current ExecutionContext and SynchronizationContext if any
 
-        // Running this in an async method turns sync exceptions into async ones
-        await connectionDelegate(this);
+        // Set the connection delegate here so we can avoid the closure allocation in Task.Run.
+        // We're still paying for the delegate allocation but this happens once per connection so there's no point caching.
+        _connectionDelegate = connectionDelegate;
+
+        if (!ExecutionContext.IsFlowSuppressed())
+        {
+            ExecutionContext.SuppressFlow();
+        }
+
+        await Task.Run(ExecuteApplication);
+
+        // No need to undo the flow suppression since we're in an async method.
+        // The suppression won't be observed outside of this call.
     }
 
     internal void StartSendCancellation()
