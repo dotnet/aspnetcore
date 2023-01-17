@@ -96,7 +96,6 @@ public class TargetPickerUi
         }
         static async Task EvaluateOnBrowser(NetworkStream toStream, string? to, string text, CancellationToken token)
         {
-            //System.Diagnostics.Debugger.Launch();
             var o = JObject.FromObject(new
             {
                 to,
