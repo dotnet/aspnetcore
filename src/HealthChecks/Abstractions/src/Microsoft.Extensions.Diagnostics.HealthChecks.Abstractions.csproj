@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Abstractions for defining health checks in .NET applications
@@ -14,5 +14,10 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
 
 </Project>

@@ -77,13 +77,13 @@ Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.Events.get -> Microsoft.AspNetCore.Authentication.WsFederation.WsFederationEvents!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.Events.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.WsFederationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
-Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.WsFederation.WsFederationConfiguration!>!
-Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.ConfigurationManager.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.AllowUnsolicitedLogins.get -> bool
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.AllowUnsolicitedLogins.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Configuration.get -> Microsoft.IdentityModel.Protocols.WsFederation.WsFederationConfiguration?
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Configuration.set -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.WsFederation.WsFederationConfiguration!>!
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.ConfigurationManager.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Events.get -> Microsoft.AspNetCore.Authentication.WsFederation.WsFederationEvents!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Events.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.MetadataAddress.get -> string?
@@ -116,7 +116,7 @@ Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.WsFederatio
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wtrealm.get -> string?
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wtrealm.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions
-Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions! options) -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.WsFederationPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
 Microsoft.Extensions.DependencyInjection.WsFederationExtensions
 override Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!

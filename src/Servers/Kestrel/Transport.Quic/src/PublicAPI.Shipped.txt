@@ -3,13 +3,15 @@ Microsoft.AspNetCore.Hosting.WebHostBuilderQuicExtensions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Backlog.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Backlog.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.IdleTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.IdleTimeout.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.get -> ushort
+Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultCloseErrorCode.get -> long
+Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultCloseErrorCode.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultStreamErrorCode.get -> long
+Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.DefaultStreamErrorCode.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxReadBufferSize.get -> long?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxReadBufferSize.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.get -> ushort
+Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize.get -> long?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize.set -> void
