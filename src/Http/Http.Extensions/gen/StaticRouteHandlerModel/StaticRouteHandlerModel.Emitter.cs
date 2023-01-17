@@ -58,7 +58,7 @@ System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext
 async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Http.HttpContext httpContext)
                 {
                     var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
-                    await ExecuteObjectResult(result, httpContext);
+                    await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                 }
 """;
     }

@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -1153,10 +1154,7 @@ public partial class HubConnection : IAsyncDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HubConnection));
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)

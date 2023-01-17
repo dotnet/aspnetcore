@@ -48,12 +48,14 @@ __UbuntuPackages+=" symlinks"
 __UbuntuPackages+=" libicu-dev"
 __UbuntuPackages+=" liblttng-ust-dev"
 __UbuntuPackages+=" libunwind8-dev"
+__UbuntuPackages+=" libnuma-dev"
 
 __AlpinePackages+=" gettext-dev"
 __AlpinePackages+=" icu-dev"
 __AlpinePackages+=" libunwind-dev"
 __AlpinePackages+=" lttng-ust-dev"
 __AlpinePackages+=" compiler-rt-static"
+__AlpinePackages+=" numactl-dev"
 
 # runtime libraries' dependencies
 __UbuntuPackages+=" libcurl4-openssl-dev"
@@ -147,9 +149,9 @@ while :; do
             __BuildArch=ppc64le
             __UbuntuArch=ppc64el
             __UbuntuRepo="http://ports.ubuntu.com/ubuntu-ports/"
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libunwind8-dev//')
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp-dev//')
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp5//')
+            __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
+            __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
+            __UbuntuPackages="${__UbuntuPackages// libomp5/}"
             unset __LLDB_Package
             ;;
         riscv64)
@@ -157,7 +159,7 @@ while :; do
             __UbuntuArch=riscv64
             __UbuntuRepo="http://deb.debian.org/debian-ports"
             __CodeName=sid
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libunwind8-dev//')
+            __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             unset __LLDB_Package
 
             if [[ -e "/usr/share/keyrings/debian-ports-archive-keyring.gpg" ]]; then
@@ -168,9 +170,9 @@ while :; do
             __BuildArch=s390x
             __UbuntuArch=s390x
             __UbuntuRepo="http://ports.ubuntu.com/ubuntu-ports/"
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libunwind8-dev//')
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp-dev//')
-            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp5//')
+            __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
+            __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
+            __UbuntuPackages="${__UbuntuPackages// libomp5/}"
             unset __LLDB_Package
             ;;
         x64)
@@ -310,6 +312,8 @@ done
 
 if [[ "$__BuildArch" == "armel" ]]; then
     __LLDB_Package="lldb-3.5-dev"
+elif [[ "$__BuildArch" == "arm" && "$__AlpineVersion" == "3.13" ]]; then
+    __AlpinePackages="${__AlpinePackages//numactl-dev/}"
 fi
 
 __UbuntuPackages+=" ${__LLDB_Package:-}"

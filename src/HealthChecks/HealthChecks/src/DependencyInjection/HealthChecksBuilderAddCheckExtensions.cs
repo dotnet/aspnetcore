@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -58,20 +59,9 @@ public static class HealthChecksBuilderAddCheckExtensions
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = null)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (instance == null)
-        {
-            throw new ArgumentNullException(nameof(instance));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(instance);
 
         return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout));
     }
@@ -130,15 +120,8 @@ public static class HealthChecksBuilderAddCheckExtensions
         IEnumerable<string>? tags = null,
         TimeSpan? timeout = null) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return builder.Add(new HealthCheckRegistration(name, GetServiceOrCreateInstance, failureStatus, tags, timeout));
 
@@ -167,15 +150,8 @@ public static class HealthChecksBuilderAddCheckExtensions
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
         this IHealthChecksBuilder builder, string name, params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return AddTypeActivatedCheck<T>(builder, name, failureStatus: null, tags: null, args);
     }
@@ -203,15 +179,8 @@ public static class HealthChecksBuilderAddCheckExtensions
         HealthStatus? failureStatus,
         params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: null, args);
     }
@@ -241,15 +210,8 @@ public static class HealthChecksBuilderAddCheckExtensions
         IEnumerable<string>? tags,
         params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return builder.Add(new HealthCheckRegistration(name, CreateInstance, failureStatus, tags));
 
@@ -286,15 +248,8 @@ public static class HealthChecksBuilderAddCheckExtensions
         TimeSpan timeout,
         params object[] args) where T : class, IHealthCheck
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return builder.Add(new HealthCheckRegistration(name, CreateInstance, failureStatus, tags, timeout));
 

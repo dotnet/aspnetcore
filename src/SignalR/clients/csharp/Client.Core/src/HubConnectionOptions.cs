@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Client;
 /// <summary>
 /// Configures timeouts for the <see cref="HubConnection" />.
 /// </summary>
-internal class HubConnectionOptions
+internal sealed class HubConnectionOptions
 {
     /// <summary>
     /// Configures ServerTimeout for the <see cref="HubConnection" />.

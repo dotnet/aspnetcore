@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
+    <!-- These projects produce packages that the templates depend on. See GenerateContent.targets -->
     <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
@@ -59,6 +59,7 @@
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj" />
+    <GeneratedContent Include="Api-CSharp.csproj.in" OutputPath="content/Api-CSharp/Company.ApiApplication1.csproj" />
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
