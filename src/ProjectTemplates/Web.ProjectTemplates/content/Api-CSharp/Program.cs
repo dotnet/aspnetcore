@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 #endif
 using Company.ApiApplication1;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 builder.Logging.AddConsole();
 
 #if (NativeAot)
