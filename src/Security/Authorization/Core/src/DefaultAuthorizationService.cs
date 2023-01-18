@@ -81,7 +81,7 @@ public class DefaultAuthorizationService : IAuthorizationService
         }
         else
         {
-            _logger.UserAuthorizationFailed(result.Failure!);
+            _logger.UserAuthorizationFailed(result.Failure);
         }
         return result;
     }

@@ -16,7 +16,7 @@
 #  First, import the template in an arcade-ified repo to pick up the variables, e.g.:
 #
 #  variables:
-#  - template: eng/common/templates/variables/pool-providers.yml
+#  - template: /eng/common/templates/variables/pool-providers.yml
 #
 #  ... then anywhere specifying the pool provider use the runtime variables,
 #      $(DncEngInternalBuildPool) and $  (DncEngPublicBuildPool), e.g.:

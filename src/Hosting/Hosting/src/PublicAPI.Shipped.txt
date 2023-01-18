@@ -30,7 +30,7 @@ Microsoft.AspNetCore.Hosting.WebHostBuilder.Build() -> Microsoft.AspNetCore.Host
 Microsoft.AspNetCore.Hosting.WebHostBuilder.ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Hosting.WebHostBuilder.ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Hosting.WebHostBuilder.ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string?
 Microsoft.AspNetCore.Hosting.WebHostBuilder.UseSetting(string! key, string? value) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Hosting.WebHostBuilder.WebHostBuilder() -> void
 Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions
