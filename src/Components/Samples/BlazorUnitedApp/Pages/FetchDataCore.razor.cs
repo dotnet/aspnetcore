@@ -5,7 +5,7 @@ using BlazorUnitedApp.Data;
 
 namespace BlazorUnitedApp.Pages;
 
-public partial class FetchData
+public partial class FetchDataCore
 {
 #if !BROWSER
     private static readonly string[] Summaries = new[]
@@ -35,7 +35,7 @@ public partial class FetchData
         {
             var param_startDate = System.Text.Json.JsonSerializer.Deserialize<DateTime>(startDate);
 
-            var instance = new FetchData(); // TODO: Resolve via DI
+            var instance = new FetchDataCore(); // TODO: Resolve via DI
             return instance.GetForecastAsync(param_startDate);
         });
     }

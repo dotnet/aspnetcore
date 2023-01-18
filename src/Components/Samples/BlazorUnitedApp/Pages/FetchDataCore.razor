@@ -1,0 +1,57 @@
+﻿@implements IHandleComponentPersistentState
+@attribute [StreamRendering(true)]
+@using BlazorUnitedApp.Data
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+<p><button class="btn btn-primary" @onclick="MoveNext">Next</button></p>
+
+@if (Forecasts == null) {
+    <p><em>Loading...</em></p>
+}
+else {
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in Forecasts) {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    DateTime date;
+    [Persisted] public WeatherForecast[]? Forecasts { get; set; }
+
+    [CascadingParameter] public PersistentScope Scope { get; set; } = null!;
+
+    [Parameter] public DateTime InitialDate { get; set; } = DateTime.Now;
+
+    protected override async Task OnInitializedAsync() {
+        date = InitialDate;
+        Forecasts ??= await GetForecastAsync(date);
+    }
+
+    async Task MoveNext() {
+        date = date.AddDays(7);
+        Forecasts = null; // Show "loading..."
+        Forecasts = await GetForecastAsync(date);
+    }
+}

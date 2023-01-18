@@ -34,10 +34,10 @@ app.Map("/mycomponent", () =>
 {
     return new RazorComponentResult
     (
-        new FetchData { InitialDate = DateTime.Now.AddYears(1000) }
+        new FetchDataCore { InitialDate = DateTime.Now.AddYears(1000) }
     );
 });
 
-FetchData.MapEndpoints(app); // Should be codegenned
+FetchDataCore.MapEndpoints(app); // Should be codegenned
 
 app.Run();
