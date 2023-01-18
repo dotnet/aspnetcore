@@ -88,7 +88,6 @@ Microsoft.AspNetCore.Components.IHandlePersistentState.RestoreState(Microsoft.As
 Microsoft.AspNetCore.Components.IPersistentComponentState
 Microsoft.AspNetCore.Components.IPersistentComponentState.PersistAsJson<TValue>(string! key, TValue instance) -> void
 Microsoft.AspNetCore.Components.IPersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool
-Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.PersistedAttribute
 Microsoft.AspNetCore.Components.PersistedAttribute.PersistedAttribute() -> void
 Microsoft.AspNetCore.Components.PersistentBoundary
