@@ -14,59 +14,42 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// </summary>
 public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>, IContentTypeHttpResult
 {
+    private readonly JsonTypeInfo<TValue>? _jsonTypeInfo;
+    private int _statusCode;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Json"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
     internal JsonHttpResult(TValue? value, JsonSerializerOptions? jsonSerializerOptions)
-        : this(value, statusCode: null, contentType: null, jsonSerializerOptions: jsonSerializerOptions)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Json"/> class with the values.
-    /// </summary>
-    /// <param name="value">The value to format in the entity body.</param>
-    /// <param name="statusCode">The HTTP status code of the response.</param>
-    /// <param name="jsonSerializerOptions">The serializer settings.</param>
-    internal JsonHttpResult(TValue? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
-        : this(value, statusCode: statusCode, contentType: null, jsonSerializerOptions: jsonSerializerOptions)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Json"/> class with the values.
-    /// </summary>
-    /// <param name="value">The value to format in the entity body.</param>
-    /// <param name="statusCode">The HTTP status code of the response.</param>
-    /// <param name="jsonSerializerOptions">The serializer settings.</param>
-    /// <param name="contentType">The value for the <c>Content-Type</c> header</param>
-    internal JsonHttpResult(TValue? value, int? statusCode, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
     {
         Value = value;
 
-        if (jsonSerializerOptions is not null && !jsonSerializerOptions.IsReadOnly) //&& !TrimmingAppContextSwitches.EnsureJsonTrimmability
+        if (jsonSerializerOptions is not null && !jsonSerializerOptions.IsReadOnly) // Switch
         {
             jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
         }
 
         JsonSerializerOptions = jsonSerializerOptions;
-        ContentType = contentType;
+    }
 
-        if (value is ProblemDetails problemDetails)
-        {
-            ProblemDetailsDefaults.Apply(problemDetails, statusCode);
-            statusCode ??= problemDetails.Status;
-        }
-
-        StatusCode = statusCode;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Json"/> class with the values.
+    /// </summary>
+    /// <param name="value">The value to format in the entity body.</param>
+    /// <param name="jsonTypeInfo">The serializer type info.</param>
+    internal JsonHttpResult(TValue? value, JsonTypeInfo<TValue> jsonTypeInfo)
+    {
+        Value = value;
+        _jsonTypeInfo = jsonTypeInfo;
+        JsonSerializerOptions = jsonTypeInfo.Options;
     }
 
     /// <summary>
     /// Gets or sets the serializer settings.
     /// </summary>
-    public JsonSerializerOptions? JsonSerializerOptions { get; internal init; }
+    public JsonSerializerOptions? JsonSerializerOptions { get; }
 
     /// <summary>
     /// Gets the object result.
@@ -78,12 +61,26 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header.
     /// </summary>
-    public string? ContentType { get; internal set; }
+    public string? ContentType { get; internal init; }
 
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int? StatusCode { get; }
+    public int? StatusCode
+    {
+        get => _statusCode;
+        internal init
+        {
+            var statusCode = value;
+            if (Value is ProblemDetails problemDetails)
+            {
+                ProblemDetailsDefaults.Apply(problemDetails, statusCode);
+                statusCode ??= problemDetails.Status;
+            }
+
+            _statusCode = statusCode!.Value;
+        }
+    }
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
@@ -100,11 +97,21 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
             httpContext.Response.StatusCode = statusCode;
         }
 
+        if (_jsonTypeInfo is null)
+        {
+            return HttpResultsWriter.WriteResultAsJsonAsync(
+                httpContext,
+                logger,
+                Value,
+                ContentType,
+                JsonSerializerOptions);
+        }
+
         return HttpResultsWriter.WriteResultAsJsonAsync(
             httpContext,
             logger,
             Value,
-            ContentType,
-            JsonSerializerOptions);
+            _jsonTypeInfo,
+            ContentType);
     }
 }

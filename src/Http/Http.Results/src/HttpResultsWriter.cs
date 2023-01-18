@@ -23,6 +23,25 @@ internal static partial class HttpResultsWriter
         HttpContext httpContext,
         ILogger logger,
         TValue? value,
+        JsonTypeInfo<TValue> jsonTypeInfo,
+        string? contentType = null)
+    {
+        if (value is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
+        return httpContext.Response.WriteAsJsonAsync(
+            value,
+            jsonTypeInfo,
+            contentType: contentType);
+    }
+
+    public static Task WriteResultAsJsonAsync<TValue>(
+        HttpContext httpContext,
+        ILogger logger,
+        TValue? value,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
@@ -32,43 +51,25 @@ internal static partial class HttpResultsWriter
         }
 
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
-        var jsonTypeInfo = GetTypeInfo(value, jsonSerializerOptions);
+        var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
-        Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
-
-        if (jsonTypeInfo is JsonTypeInfo<TValue> genericTypeInfo)
+        Type? runtimeType;
+        if (jsonTypeInfo.IsPolymorphicSafe() || jsonTypeInfo.Type == (runtimeType = value.GetType()))
         {
-            // In this case we don't need to box.
+            Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
             return httpContext.Response.WriteAsJsonAsync(
                 value,
-                genericTypeInfo,
+                jsonTypeInfo,
                 contentType: contentType);
         }
 
-        return httpContext.Response.WriteAsJsonAsync(
-            value,
-            jsonTypeInfo,
-            contentType: contentType);
-    }
-
-    private static JsonTypeInfo GetTypeInfo<TValue>(TValue? value, JsonSerializerOptions jsonSerializerOptions)
-    {
-        var declaredTypeInfo = jsonSerializerOptions.GetTypeInfo(typeof(TValue));
-        if (value is null || declaredTypeInfo.IsPolymorphicSafe())
-        {
-            return declaredTypeInfo;
-        }
-
-        var runtimeType = value.GetType();
-        if (declaredTypeInfo.Type == runtimeType)
-        {
-            return declaredTypeInfo;
-        }
-
+        Log.WritingResultAsJson(logger, runtimeType.Name);
         // Since we don't know the type's polymorphic characteristics
         // our best option is use the runtime type
-        return jsonSerializerOptions.GetTypeInfo(value.GetType());
-
+        return httpContext.Response.WriteAsJsonAsync(
+           value,
+           jsonSerializerOptions.GetTypeInfo(runtimeType),
+           contentType: contentType);
     }
 
     public static Task WriteResultAsContentAsync(
