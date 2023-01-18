@@ -41,7 +41,7 @@ public class StatusCodePagesMiddleware
         var statusCodeFeature = new StatusCodePagesFeature();
         context.Features.Set<IStatusCodePagesFeature>(statusCodeFeature);
         var endpoint = context.GetEndpoint();
-        var shouldCheckEndpointAgain= endpoint is null;
+        var shouldCheckEndpointAgain = endpoint is null;
 
         if (HasSkipStatusCodePagesMetadata(endpoint))
         {
