@@ -319,5 +319,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>1b04d6de502c4108ada6ea8e5ccefdc2ddc3ee7b</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23063.7">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>

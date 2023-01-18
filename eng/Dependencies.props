@@ -141,6 +141,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
+    <LatestPackageReference Include="Microsoft.DotNet.RemoteExecutor" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" />

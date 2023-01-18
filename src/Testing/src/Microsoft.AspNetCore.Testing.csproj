@@ -40,6 +40,7 @@
     -->
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.execution" />
+    <Reference Include="Microsoft.DotNet.RemoteExecutor" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
