@@ -177,7 +177,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
     /// <summary>
     /// Treats the supplied <paramref name="exception"/> as being thrown by this component. This will cause the
-    /// enclosing <see cref="ErrorBoundary"/> to transition into a failed state. If there is no enclosing <see cref="ErrorBoundary"/>,
+    /// enclosing ErrorBoundary to transition into a failed state. If there is no enclosing ErrorBoundary,
     /// it will be regarded as an exception from the enclosing renderer.
     ///
     /// This is useful if an exception occurs outside the component lifecycle methods, but you wish to treat it
