@@ -188,15 +188,12 @@ internal static class DebugProxyLauncher
             else
             {
                 var matchFirefox = NowListeningFirefoxRegex.Match(eventArgs.Data);
-                if (matchFirefox.Success)
+                if (matchFirefox.Success && isFirefox)
                 {
                     aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
                     aspNetProcess.ErrorDataReceived -= OnErrorDataReceived;
                     capturedUrl = matchFirefox.Groups["url"].Value;
                     taskCompletionSource.TrySetResult(capturedUrl);
-                }
-                if (isFirefox)
-                {
                     return;
                 }
                 var match = NowListeningRegex.Match(eventArgs.Data);

@@ -57,7 +57,7 @@ public class TargetPickerUi
 #pragma warning disable CA1835
         static async Task<string> ReceiveMessageLoop(TcpClient browserDebugClientConnect, CancellationToken token)
         {
-            NetworkStream toStream = browserDebugClientConnect.GetStream();
+            using NetworkStream toStream = browserDebugClientConnect.GetStream();
             int bytesRead = 0;
             var _lengthBuffer = new byte[10];
             while (bytesRead == 0 || Convert.ToChar(_lengthBuffer[bytesRead - 1]) != ':')
@@ -127,7 +127,7 @@ public class TargetPickerUi
             }
             CancellationTokenSource source = new CancellationTokenSource();
             CancellationToken token = source.Token;
-            NetworkStream toStream = browserDebugClientConnect.GetStream();
+            using NetworkStream toStream = browserDebugClientConnect.GetStream();
             await SendMessageToBrowser(toStream, JObject.FromObject(new { type = "listTabs", to = "root" }), token);
             string ?tabToRedirect = null;
             bool foundAboutDebugging = false;
