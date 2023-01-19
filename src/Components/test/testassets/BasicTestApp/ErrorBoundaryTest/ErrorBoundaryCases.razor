@@ -99,6 +99,14 @@
     <button class="throw-in-children" @onclick="@(() => { multipleChildrenBeginDelayedError = true; })">Cause multiple errors</button>
 </div>
 
+<hr />
+<h2>Dispatch exception to renderer</h2>
+<p>Use DispatchExceptionAsync to see if exceptions are correctly dispatched to the renderer.</p>
+<div id="exception-dispatch-async">
+    <button id="dispatch-sync-exception" @onclick=SyncExceptionDispatch>Cause exception from sync context</button>
+    <button id="dispatch-async-exception" @onclick=AsyncExceptionDispatch>Cause exception from async context</button>
+</div>
+
 @code {
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
@@ -142,5 +150,40 @@
 
         // Before it completes, dispose its enclosing error boundary
         disposalTestRemoveErrorBoundary = true;
+    }
+
+    async Task SyncExceptionDispatch()
+    {
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                throw new InvalidTimeZoneException("Synchronous exception in SyncExceptionDispatch");
+            });
+        }
+        catch (Exception e)
+        {
+            await DispatchExceptionAsync(e);
+        }
+    }
+
+    async Task AsyncExceptionDispatch()
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                await ThrowExceptionAsync();
+            });
+        }
+        catch (Exception e)
+        {
+            await DispatchExceptionAsync(e);
+        }
+    }
+
+    private Task ThrowExceptionAsync()
+    {
+        throw new InvalidTimeZoneException("Asynchronous exception in AsyncExceptionDispatch");
     }
 }
