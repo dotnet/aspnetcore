@@ -36,7 +36,7 @@ public static class GenericHostWebHostBuilderExtensions
     {
         return ConfigureWebHost(
             builder,
-            (hostBuilder, options) => new GenericWebHostBuilder(hostBuilder, options),
+            static (hostBuilder, options) => new GenericWebHostBuilder(hostBuilder, options),
             configure,
             configureWebHostBuilder);
     }
@@ -52,7 +52,7 @@ public static class GenericHostWebHostBuilderExtensions
     {
         return ConfigureWebHost(
             builder,
-            (hostBuilder, options) => new SlimWebHostBuilder(hostBuilder, options),
+            static (hostBuilder, options) => new SlimWebHostBuilder(hostBuilder, options),
             configure,
             configureWebHostBuilder);
     }
