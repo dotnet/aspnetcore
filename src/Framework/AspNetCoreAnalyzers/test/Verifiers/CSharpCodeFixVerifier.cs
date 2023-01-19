@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 
@@ -63,15 +64,15 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             {
                 Sources = { source.ReplaceLineEndings("\n") },
                 OutputKind = OutputKind.ConsoleApplication,
-                AnalyzerConfigFiles =
-                {
-                    ("/.editorconfig", "end_of_line = lf"),
-                },
             },
             FixedState = { Sources = { fixedSource.ReplaceLineEndings("\n") } },
             ReferenceAssemblies = CSharpAnalyzerVerifier<TAnalyzer>.GetReferenceAssemblies(),
             NumberOfFixAllIterations = expectedIterations,
-            CodeActionEquivalenceKey = codeActionEquivalenceKey
+            CodeActionEquivalenceKey = codeActionEquivalenceKey,
+            OptionsTransforms =
+            {
+                optionSet => optionSet.WithChangedOption(new CodeAnalysis.Options.OptionKey(FormattingOptions.NewLine, LanguageNames.CSharp), "\n"),
+            },
         };
 
         if (usageSource != null)
