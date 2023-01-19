@@ -59,8 +59,16 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             // We need to set the output type to an exe to properly
             // support top-level programs in the tests. Otherwise,
             // the test infra will assume we are trying to build a library.
-            TestState = { Sources = { source }, OutputKind = OutputKind.ConsoleApplication },
-            FixedState = { Sources = { fixedSource } },
+            TestState =
+            {
+                Sources = { source.ReplaceLineEndings("\n") },
+                OutputKind = OutputKind.ConsoleApplication,
+                AnalyzerConfigFiles =
+                {
+                    ("/.editorconfig", "end_of_line = lf"),
+                },
+            },
+            FixedState = { Sources = { fixedSource.ReplaceLineEndings("\n") } },
             ReferenceAssemblies = CSharpAnalyzerVerifier<TAnalyzer>.GetReferenceAssemblies(),
             NumberOfFixAllIterations = expectedIterations,
             CodeActionEquivalenceKey = codeActionEquivalenceKey
