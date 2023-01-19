@@ -93,10 +93,7 @@ internal static class ChecksumValidator
 
     private static (byte[] checksum, string algorithm) ComputeChecksum(RazorProjectItem projectItem, string checksumAlgorithm)
     {
-        if (projectItem == null)
-        {
-            throw new ArgumentNullException(nameof(projectItem));
-        }
+        ArgumentNullException.ThrowIfNull(projectItem);
 
         Func<Stream, byte[]> hashData;
         string algorithmName;
