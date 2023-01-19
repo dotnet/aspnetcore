@@ -70,7 +70,7 @@ public readonly struct RenderHandle
     /// </summary>
     /// <param name="exception">The <see cref="Exception"/> that will be dispatched to the renderer.</param>
     /// <returns>A <see cref="Task"/> that will be completed when the exception has finished dispatching.</returns>
-    public Task DispatchExceptionAsync(Exception exception)
+    internal Task DispatchExceptionAsync(Exception exception)
     {
         var renderer = _renderer;
         var componentId = _componentId;
