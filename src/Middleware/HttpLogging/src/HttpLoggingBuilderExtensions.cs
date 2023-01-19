@@ -17,10 +17,7 @@ public static class HttpLoggingBuilderExtensions
     /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseHttpLogging(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         app.UseMiddleware<HttpLoggingMiddleware>();
         return app;
@@ -33,10 +30,7 @@ public static class HttpLoggingBuilderExtensions
     /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseW3CLogging(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         app.UseMiddleware<W3CLoggingMiddleware>();
         return app;

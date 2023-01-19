@@ -72,10 +72,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var endpoints = GetEndpoints(address);
         if (endpoints.Count == 0)
@@ -127,10 +124,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var endpoints = GetEndpoints(address);
         if (endpoints.Count == 0)
@@ -152,7 +146,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     public override string? GetUriByAddress<TAddress>(
         TAddress address,
         RouteValueDictionary values,
-        string? scheme,
+        string scheme,
         HostString host,
         PathString pathBase = default,
         FragmentString fragment = default,

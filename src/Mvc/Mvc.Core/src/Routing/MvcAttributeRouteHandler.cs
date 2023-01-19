@@ -33,10 +33,7 @@ internal sealed class MvcAttributeRouteHandler : IRouter
 
     public VirtualPathData? GetVirtualPath(VirtualPathContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // We return null here because we're not responsible for generating the url, the route is.
         return null;
@@ -44,10 +41,7 @@ internal sealed class MvcAttributeRouteHandler : IRouter
 
     public Task RouteAsync(RouteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (Actions == null)
         {

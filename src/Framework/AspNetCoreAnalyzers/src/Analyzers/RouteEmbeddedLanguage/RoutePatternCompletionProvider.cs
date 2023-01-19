@@ -9,16 +9,17 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
-using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
+using RoutePatternToken = Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern.RoutePatternKind>;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -56,14 +57,14 @@ public class RoutePatternCompletionProvider : CompletionProvider
         return false;
     }
 
-    public override Task<CompletionDescription> GetDescriptionAsync(Document document, CompletionItem item, CancellationToken cancellationToken)
+    public override Task<CompletionDescription?> GetDescriptionAsync(Document document, CompletionItem item, CancellationToken cancellationToken)
     {
         if (!item.Properties.TryGetValue(DescriptionKey, out var description))
         {
-            return Task.FromResult<CompletionDescription>(null);
+            return Task.FromResult<CompletionDescription?>(null);
         }
 
-        return Task.FromResult(CompletionDescription.Create(
+        return Task.FromResult<CompletionDescription?>(CompletionDescription.Create(
             ImmutableArray.Create(new TaggedText(TextTags.Text, description))));
     }
 
@@ -91,33 +92,36 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        var position = context.Position;
-        var (success, stringToken, semanticModel) = await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(
-            context.Document, position, context.CancellationToken).ConfigureAwait(false);
-
-        if (!success ||
-            position <= stringToken.SpanStart ||
-            position >= stringToken.Span.End)
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root == null)
         {
             return;
         }
 
-        if (!WellKnownTypes.TryGetOrCreate(semanticModel.Compilation, out var wellKnownTypes))
+        var stringToken = root.FindToken(context.Position);
+        if (context.Position <= stringToken.SpanStart ||
+            context.Position >= stringToken.Span.End)
         {
             return;
         }
 
-        var (methodSymbol, _, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, wellKnownTypes, context.CancellationToken);
+        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        if (semanticModel is null)
+        {
+            return;
+        }
 
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(stringToken);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: isMvcAttribute);
-        if (tree == null)
+        var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(stringToken, context.CancellationToken);
+        if (routeUsage is null)
         {
             return;
         }
 
         var routePatternCompletionContext = new EmbeddedCompletionContext(
-            context, tree, stringToken, wellKnownTypes, methodSymbol, isMinimal, isMvcAttribute);
+            context,
+            routeUsage,
+            stringToken);
         ProvideCompletions(routePatternCompletionContext);
 
         if (routePatternCompletionContext.Items.Count == 0)
@@ -133,7 +137,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
             var properties = ImmutableDictionary.CreateBuilder<string, string>();
             properties.Add(StartKey, textChange.Span.Start.ToString(CultureInfo.InvariantCulture));
             properties.Add(LengthKey, textChange.Span.Length.ToString(CultureInfo.InvariantCulture));
-            properties.Add(NewTextKey, textChange.NewText);
+            properties.Add(NewTextKey, textChange.NewText ?? string.Empty);
             properties.Add(DescriptionKey, embeddedItem.FullDescription);
 
             if (change.NewPosition != null)
@@ -214,7 +218,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
     private (RoutePatternNode Parent, RoutePatternToken Token)? GetCurrentToken(EmbeddedCompletionContext context)
     {
-        var previousVirtualCharOpt = context.Tree.Text.Find(context.Position - 1);
+        var previousVirtualCharOpt = context.RouteUsage.RoutePattern.Text.Find(context.Position - 1);
         if (previousVirtualCharOpt == null)
         {
             // We didn't have a previous character.  Can't determine the set of 
@@ -223,20 +227,19 @@ public class RoutePatternCompletionProvider : CompletionProvider
         }
 
         var previousVirtualChar = previousVirtualCharOpt.Value;
-        return FindToken(context.Tree.Root, previousVirtualChar);
+        return FindToken(context.RouteUsage.RoutePattern.Root, previousVirtualChar);
     }
 
     private static void ProvideParameterCompletions(EmbeddedCompletionContext context, RoutePatternNode? parentOpt)
     {
-        if (context.MethodSymbol != null)
+        if (context.RouteUsage.UsageContext.MethodSymbol != null)
         {
-            var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(context.MethodSymbol, context.WellKnownTypes);
-            foreach (var parameterSymbol in resolvedParameterSymbols)
+            foreach (var parameterSymbol in context.RouteUsage.UsageContext.ResolvedParameters)
             {
                 // Don't suggest parameter name if it already exists in the route.
-                if (!context.Tree.TryGetRouteParameter(parameterSymbol.Symbol.Name, out _))
+                if (!context.RouteUsage.RoutePattern.TryGetRouteParameter(parameterSymbol.RouteParameterName, out _))
                 {
-                    context.AddIfMissing(parameterSymbol.Symbol.Name, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: parentOpt);
+                    context.AddIfMissing(parameterSymbol.RouteParameterName, suffix: null, description: null, WellKnownTags.Parameter, parentOpt: parentOpt);
                 }
             }
         }
@@ -244,6 +247,10 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
     private static void ProvidePolicyNameCompletions(EmbeddedCompletionContext context, RoutePatternNode? parentOpt)
     {
+        // Provide completions depending upon the route type.
+        // Blazor: https://learn.microsoft.com/aspnet/core/blazor/fundamentals/routing
+        // HTTP: https://learn.microsoft.com/aspnet/core/fundamentals/routing
+
         context.AddIfMissing("int", suffix: null, "Matches any 32-bit integer.", WellKnownTags.Keyword, parentOpt);
         context.AddIfMissing("bool", suffix: null, "Matches true or false. Case-insensitive.", WellKnownTags.Keyword, parentOpt);
         context.AddIfMissing("datetime", suffix: null, "Matches a valid DateTime value in the invariant culture.", WellKnownTags.Keyword, parentOpt);
@@ -252,19 +259,24 @@ public class RoutePatternCompletionProvider : CompletionProvider
         context.AddIfMissing("float", suffix: null, "Matches a valid float value in the invariant culture.", WellKnownTags.Keyword, parentOpt);
         context.AddIfMissing("guid", suffix: null, "Matches a valid Guid value.", WellKnownTags.Keyword, parentOpt);
         context.AddIfMissing("long", suffix: null, "Matches any 64-bit integer.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("minlength", suffix: null, "Matches a string with a length greater than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("maxlength", suffix: null, "Matches a string with a length less than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("length", suffix: null, @"The string length constraint supports one or two constraint arguments.
+
+        // The following constraints are only available for HTTP route matching.
+        if (context.RouteUsage.UsageContext.UsageType != RouteUsageType.Component)
+        {
+            context.AddIfMissing("minlength", suffix: null, "Matches a string with a length greater than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("maxlength", suffix: null, "Matches a string with a length less than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("length", suffix: null, @"The string length constraint supports one or two constraint arguments.
 
 If there is one argument the string length must equal the argument. For example, length(10) matches a string with exactly 10 characters.
 
 If there are two arguments then the string length must be greater than, or equal to, the first argument and less than, or equal to, the second argument. For example, length(8,16) matches a string at least 8 and no more than 16 characters long.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("min", suffix: null, "Matches an integer with a value greater than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("max", suffix: null, "Matches an integer with a value less than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("range", suffix: null, "Matches an integer with a value greater than, or equal to, the first constraint argument and less than, or equal to, the second constraint argument.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("alpha", suffix: null, "Matches a string that contains only lowercase or uppercase letters A through Z in the English alphabet.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("regex", suffix: null, "Matches a string to the regular expression constraint argument.", WellKnownTags.Keyword, parentOpt);
-        context.AddIfMissing("required", suffix: null, "Used to enforce that a non-parameter value is present during URL generation.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("min", suffix: null, "Matches an integer with a value greater than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("max", suffix: null, "Matches an integer with a value less than, or equal to, the constraint argument.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("range", suffix: null, "Matches an integer with a value greater than, or equal to, the first constraint argument and less than, or equal to, the second constraint argument.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("alpha", suffix: null, "Matches a string that contains only lowercase or uppercase letters A through Z in the English alphabet.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("regex", suffix: null, "Matches a string to the regular expression constraint argument.", WellKnownTags.Keyword, parentOpt);
+            context.AddIfMissing("required", suffix: null, "Used to enforce that a non-parameter value is present during URL generation.", WellKnownTags.Keyword, parentOpt);
+        }
     }
 
     private (RoutePatternNode Parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
@@ -315,12 +327,8 @@ If there are two arguments then the string length must be greater than, or equal
         private readonly CompletionContext _context;
         private readonly HashSet<string> _names = new();
 
-        public readonly RoutePatternTree Tree;
+        public readonly RouteUsageModel RouteUsage;
         public readonly SyntaxToken StringToken;
-        public readonly WellKnownTypes WellKnownTypes;
-        public readonly IMethodSymbol? MethodSymbol;
-        public readonly bool IsMinimal;
-        public readonly bool IsMvcAttribute;
         public readonly CancellationToken CancellationToken;
         public readonly int Position;
         public readonly CompletionTrigger Trigger;
@@ -334,28 +342,20 @@ If there are two arguments then the string length must be greater than, or equal
 
         public EmbeddedCompletionContext(
             CompletionContext context,
-            RoutePatternTree tree,
-            SyntaxToken stringToken,
-            WellKnownTypes wellKnownTypes,
-            IMethodSymbol? methodSymbol,
-            bool isMinimal,
-            bool isMvcAttribute)
+            RouteUsageModel routeUsage,
+            SyntaxToken stringToken)
         {
             _context = context;
-            Tree = tree;
+            RouteUsage = routeUsage;
             StringToken = stringToken;
-            WellKnownTypes = wellKnownTypes;
-            MethodSymbol = methodSymbol;
-            IsMinimal = isMinimal;
-            IsMvcAttribute = isMvcAttribute;
             Position = _context.Position;
             Trigger = _context.Trigger;
             CancellationToken = _context.CancellationToken;
         }
 
         public void AddIfMissing(
-            string displayText, string suffix, string description, string glyph,
-            RoutePatternNode parentOpt, int? positionOffset = null, string insertionText = null)
+            string displayText, string? suffix, string? description, string glyph,
+            RoutePatternNode? parentOpt, int? positionOffset = null, string? insertionText = null)
         {
             var replacementStart = parentOpt != null
                 ? parentOpt.GetSpan().Start
@@ -376,7 +376,7 @@ If there are two arguments then the string length must be greater than, or equal
             }
 
             AddIfMissing(new RoutePatternItem(
-                displayText, suffix, description, glyph,
+                displayText, suffix ?? string.Empty, description ?? string.Empty, glyph,
                 CompletionChange.Create(
                     new TextChange(replacementSpan, escapedInsertionText),
                     newPosition)));

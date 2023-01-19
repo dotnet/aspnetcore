@@ -2,36 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 using Microsoft.CodeAnalysis.Classification;
-using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using RoutePatternToken = Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern.RoutePatternKind>;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 [ExportAspNetCoreEmbeddedLanguageClassifier(name: "Route", language: LanguageNames.CSharp)]
-internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
+internal sealed class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
 {
     public void RegisterClassifications(AspNetCoreEmbeddedLanguageClassificationContext context)
     {
-        if (!WellKnownTypes.TryGetOrCreate(context.SemanticModel.Compilation, out var wellKnownTypes))
+        var routeUsageCache = RouteUsageCache.GetOrCreate(context.SemanticModel.Compilation);
+        var routeUsage = routeUsageCache.Get(context.SyntaxToken, context.CancellationToken);
+        if (routeUsage is null)
         {
             return;
         }
 
-        var usageContext = RoutePatternUsageDetector.BuildContext(context.SyntaxToken, context.SemanticModel, wellKnownTypes, context.CancellationToken);
-
-        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(context.SyntaxToken);
-        var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
-
-        if (tree != null)
-        {
-            var visitor = new Visitor(context);
-            AddClassifications(tree.Root, visitor);
-        }
+        var visitor = new Visitor(context);
+        AddClassifications(routeUsage.RoutePattern.Root, visitor);
     }
 
     private static void AddClassifications(RoutePatternNode node, Visitor visitor)
@@ -84,12 +77,12 @@ internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
             // Nothing to highlight.
         }
 
-        public void Visit(RoutePatternSegmentSeperatorNode node)
+        public void Visit(RoutePatternSegmentSeparatorNode node)
         {
             // Nothing to highlight.
         }
 
-        public void Visit(RoutePatternOptionalSeperatorNode node)
+        public void Visit(RoutePatternOptionalSeparatorNode node)
         {
             // Nothing to highlight.
         }

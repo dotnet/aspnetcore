@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 /// <summary>
 /// A factory for QUIC based connections.
 /// </summary>
-internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFactory
+internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFactory, IConnectionListenerFactorySelector
 {
     private readonly ILogger _log;
     private readonly QuicTransportOptions _options;
@@ -21,7 +21,6 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
     public QuicTransportFactory(ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic");
@@ -55,5 +54,10 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
         await transport.CreateListenerAsync();
 
         return transport;
+    }
+
+    public bool CanBind(EndPoint endpoint)
+    {
+        return endpoint is IPEndPoint;
     }
 }

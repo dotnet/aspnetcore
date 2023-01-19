@@ -14,4 +14,7 @@
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.TestHost.Tests" />
+  </ItemGroup>
 </Project>

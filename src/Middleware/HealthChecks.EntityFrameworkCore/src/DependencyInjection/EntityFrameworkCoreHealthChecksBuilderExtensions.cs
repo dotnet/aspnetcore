@@ -57,10 +57,7 @@ public static class EntityFrameworkCoreHealthChecksBuilderExtensions
         Func<TContext, CancellationToken, Task<bool>>? customTestQuery = default)
         where TContext : DbContext
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         if (name == null)
         {

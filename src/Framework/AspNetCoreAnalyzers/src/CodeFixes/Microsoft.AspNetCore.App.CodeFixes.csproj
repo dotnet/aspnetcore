@@ -14,6 +14,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <Nullable>Enable</Nullable>
     <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
   </PropertyGroup>
 
   <ItemGroup>

@@ -26,7 +26,7 @@ internal sealed class JsonConverterFactoryForWrappers : JsonConverterFactory
             return false;
         }
 
-        var descriptor = JsonConverterHelper.GetMessageDescriptor(typeToConvert);
+        var descriptor = _context.DescriptorRegistry.FindDescriptorByType(typeToConvert);
         if (descriptor == null)
         {
             return false;

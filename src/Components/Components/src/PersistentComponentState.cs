@@ -44,10 +44,7 @@ public class PersistentComponentState
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
 
         _registeredCallbacks.Add(callback);
 
@@ -63,15 +60,7 @@ public class PersistentComponentState
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (!PersistingState)
         {
@@ -98,10 +87,7 @@ public class PersistentComponentState
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public bool TryTakeFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (TryTake(key, out var data))
         {
@@ -118,10 +104,7 @@ public class PersistentComponentState
 
     private bool TryTake(string key, out byte[]? value)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (_existingState == null)
         {

@@ -27,10 +27,7 @@ internal sealed class ConsoleTable
 
     public void AddRow(params string[] values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         if (!_columns.Any())
         {

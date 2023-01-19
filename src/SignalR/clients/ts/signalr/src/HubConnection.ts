@@ -862,7 +862,7 @@ export class HubConnection {
                     return;
                 }
 
-                retryError = e instanceof Error ? e : new Error(e.toString());
+                retryError = e instanceof Error ? e : new Error((e as any).toString());
                 nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
             }
         }

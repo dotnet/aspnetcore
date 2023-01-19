@@ -28,6 +28,13 @@ internal static class CookieHeaderParserShared
             {
                 if (TryParseValue(value, ref index, supportsMultipleValues, out var parsedName, out var parsedValue))
                 {
+                    if (parsedName == null || StringSegment.IsNullOrEmpty(parsedName.Value)
+                        || parsedValue == null || StringSegment.IsNullOrEmpty(parsedValue.Value))
+                    {
+                        // Successfully parsed, but no values.
+                        continue;
+                    }
+
                     // The entry may not contain an actual value, like " , "
                     store[parsedName.Value.Value!] = Uri.UnescapeDataString(parsedValue.Value.Value!);
                     hasFoundValue = true;

@@ -227,10 +227,7 @@ public sealed class WebAssemblyHostBuilder
     /// </remarks>
     public void ConfigureContainer<TBuilder>(IServiceProviderFactory<TBuilder> factory, Action<TBuilder>? configure = null) where TBuilder : notnull
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         _createServiceProvider = () =>
         {

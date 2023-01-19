@@ -64,9 +64,9 @@ public partial class RoutePatternParserTests
         <Literal value=""hello"">hello</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""world"">world</Literal>
@@ -92,9 +92,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -129,9 +129,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -167,9 +167,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <EndOfFile />
   </CompilationUnit>
   <Parameters>
@@ -195,9 +195,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -977,6 +977,109 @@ public partial class RoutePatternParserTests
     }
 
     [Fact]
+    public void TestOptionalOnlyParameter()
+    {
+        Test(@"""{?}""", @"<Tree>
+  <CompilationUnit>
+    <Segment>
+      <Parameter>
+        <OpenBraceToken>{</OpenBraceToken>
+        <ParameterName>
+          <ParameterNameToken />
+        </ParameterName>
+        <Optional>
+          <QuestionMarkToken>?</QuestionMarkToken>
+        </Optional>
+        <CloseBraceToken>}</CloseBraceToken>
+      </Parameter>
+    </Segment>
+    <EndOfFile />
+  </CompilationUnit>
+  <Diagnostics>
+    <Diagnostic Message=""The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter."" Span=""[10..11)"" Text=""?"" />
+  </Diagnostics>
+  <Parameters />
+</Tree>");
+    }
+
+    [Fact]
+    public void TestCatchallEscapeOnlyParameter()
+    {
+        Test(@"""{*}""", @"<Tree>
+  <CompilationUnit>
+    <Segment>
+      <Parameter>
+        <OpenBraceToken>{</OpenBraceToken>
+        <CatchAll>
+          <AsteriskToken>*</AsteriskToken>
+        </CatchAll>
+        <ParameterName>
+          <ParameterNameToken />
+        </ParameterName>
+        <CloseBraceToken>}</CloseBraceToken>
+      </Parameter>
+    </Segment>
+    <EndOfFile />
+  </CompilationUnit>
+  <Diagnostics>
+    <Diagnostic Message=""The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter."" Span=""[11..12)"" Text=""}"" />
+  </Diagnostics>
+  <Parameters />
+</Tree>");
+    }
+
+    [Fact]
+    public void TestCatchallOnlyParameter()
+    {
+        Test(@"""{**}""", @"<Tree>
+  <CompilationUnit>
+    <Segment>
+      <Parameter>
+        <OpenBraceToken>{</OpenBraceToken>
+        <CatchAll>
+          <AsteriskToken>**</AsteriskToken>
+        </CatchAll>
+        <ParameterName>
+          <ParameterNameToken />
+        </ParameterName>
+        <CloseBraceToken>}</CloseBraceToken>
+      </Parameter>
+    </Segment>
+    <EndOfFile />
+  </CompilationUnit>
+  <Diagnostics>
+    <Diagnostic Message=""The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter."" Span=""[12..13)"" Text=""}"" />
+  </Diagnostics>
+  <Parameters />
+</Tree>");
+    }
+
+    [Fact]
+    public void TestCatchallPolicyParameter()
+    {
+        Test(@"""{**:int}""", @"<Tree>
+  <CompilationUnit>
+    <Segment>
+      <Parameter>
+        <OpenBraceToken>{</OpenBraceToken>
+        <CatchAll>
+          <AsteriskToken>**</AsteriskToken>
+        </CatchAll>
+        <ParameterName>
+          <ParameterNameToken value="":int"">:int</ParameterNameToken>
+        </ParameterName>
+        <CloseBraceToken>}</CloseBraceToken>
+      </Parameter>
+    </Segment>
+    <EndOfFile />
+  </CompilationUnit>
+  <Parameters>
+    <Parameter Name="":int"" IsCatchAll=""true"" IsOptional=""false"" EncodeSlashes=""false"" />
+  </Parameters>
+</Tree>");
+    }
+
+    [Fact]
     public void TestParameterWithEscapedPolicyArgument()
     {
         Test(@"""{ssn:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}""", @"<Tree>
@@ -1335,9 +1438,9 @@ public partial class RoutePatternParserTests
         <Literal value=""~"">~</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <EndOfFile />
   </CompilationUnit>
   <Parameters />

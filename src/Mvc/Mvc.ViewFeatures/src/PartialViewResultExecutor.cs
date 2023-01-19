@@ -42,10 +42,7 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
         IModelMetadataProvider modelMetadataProvider)
         : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         Logger = loggerFactory.CreateLogger<PartialViewResultExecutor>();
     }
@@ -63,15 +60,8 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
     /// <returns>A <see cref="ViewEngineResult"/>.</returns>
     public virtual ViewEngineResult FindView(ActionContext actionContext, PartialViewResult viewResult)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
-
-        if (viewResult == null)
-        {
-            throw new ArgumentNullException(nameof(viewResult));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(viewResult);
 
         var viewEngine = viewResult.ViewEngine ?? ViewEngine;
         var viewName = viewResult.ViewName ?? GetActionName(actionContext) ?? string.Empty;
@@ -138,20 +128,9 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
     /// <returns>A <see cref="Task"/> which will complete when view execution is completed.</returns>
     public virtual Task ExecuteAsync(ActionContext actionContext, IView view, PartialViewResult viewResult)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
-
-        if (view == null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
-
-        if (viewResult == null)
-        {
-            throw new ArgumentNullException(nameof(viewResult));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(view);
+        ArgumentNullException.ThrowIfNull(viewResult);
 
         return ExecuteAsync(
             actionContext,
@@ -165,15 +144,8 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
     /// <inheritdoc />
     public virtual async Task ExecuteAsync(ActionContext context, PartialViewResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         var stopwatch = ValueStopwatch.StartNew();
 
@@ -191,10 +163,7 @@ public partial class PartialViewResultExecutor : ViewExecutor, IActionResultExec
 
     private static string? GetActionName(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.RouteData.Values.TryGetValue(ActionNameKey, out var routeValue))
         {

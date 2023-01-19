@@ -29,6 +29,15 @@ public static class WebHostBuilderKestrelExtensions
     /// </returns>
     public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
     {
+        hostBuilder.ConfigureServices(services =>
+        {
+            // Don't override an already-configured transport
+            services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+
+            services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
+            services.AddSingleton<IServer, KestrelServerImpl>();
+        });
+
         hostBuilder.UseQuic(options =>
         {
             // Configure server defaults to match client defaults.
@@ -37,14 +46,9 @@ public static class WebHostBuilderKestrelExtensions
             options.DefaultCloseErrorCode = (long)Http3ErrorCode.NoError;
         });
 
-        return hostBuilder.ConfigureServices(services =>
-        {
-            // Don't override an already-configured transport
-            services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+        hostBuilder.UseNamedPipes();
 
-            services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
-            services.AddSingleton<IServer, KestrelServerImpl>();
-        });
+        return hostBuilder;
     }
 
     /// <summary>

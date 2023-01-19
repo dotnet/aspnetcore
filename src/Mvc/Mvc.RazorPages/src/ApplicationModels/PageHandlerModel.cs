@@ -35,10 +35,7 @@ public class PageHandlerModel : ICommonModel
     /// <param name="other">The <see cref="PageHandlerModel"/> which needs to be copied.</param>
     public PageHandlerModel(PageHandlerModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         MethodInfo = other.MethodInfo;
         HandlerName = other.HandlerName;

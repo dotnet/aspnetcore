@@ -51,4 +51,20 @@ internal sealed class EndpointModelMetadata : ModelMetadata
     public override string? TemplateHint { get; }
     public override bool ValidateChildren { get; }
     public override IReadOnlyList<object> ValidatorMetadata { get; } = Array.Empty<object>();
+
+    public static Type GetDisplayType(Type type)
+    {
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        return underlyingType.IsPrimitive
+            // Those additional types have TypeConverter or TryParse and are not primitives
+            // but should not be considered string in the metadata
+            || underlyingType == typeof(DateTime)
+            || underlyingType == typeof(DateTimeOffset)
+            || underlyingType == typeof(DateOnly)
+            || underlyingType == typeof(TimeOnly)
+            || underlyingType == typeof(TimeSpan)
+            || underlyingType == typeof(decimal)
+            || underlyingType == typeof(Guid)
+            || underlyingType == typeof(Uri) ? type : typeof(string);
+    }
 }

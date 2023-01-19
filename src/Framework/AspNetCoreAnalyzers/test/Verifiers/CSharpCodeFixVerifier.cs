@@ -52,7 +52,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
         => await VerifyCodeFixAsync(source, new[] { expected }, fixedSource);
 
     /// <inheritdoc cref="CodeFixVerifier{TAnalyzer, TCodeFix, TTest, TVerifier}.VerifyCodeFixAsync(string, DiagnosticResult[], string)"/>
-    public static async Task VerifyCodeFixAsync(string source, DiagnosticResult[] expected, string fixedSource, int? expectedIterations = null, string usageSource = null)
+    public static async Task VerifyCodeFixAsync(string source, DiagnosticResult[] expected, string fixedSource, int? expectedIterations = null, string usageSource = null, string codeActionEquivalenceKey = null)
     {
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
         {
@@ -63,6 +63,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             FixedState = { Sources = { fixedSource } },
             ReferenceAssemblies = CSharpAnalyzerVerifier<TAnalyzer>.GetReferenceAssemblies(),
             NumberOfFixAllIterations = expectedIterations,
+            CodeActionEquivalenceKey = codeActionEquivalenceKey
         };
 
         if (usageSource != null)

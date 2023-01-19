@@ -81,17 +81,17 @@ public partial class RoutePatternParserTests
         <Literal value=""cool"">cool</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""awesome"">awesome</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""super"">super</Literal>
@@ -117,9 +117,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -129,9 +129,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -452,9 +452,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -488,9 +488,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -537,9 +537,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""."">.</Literal>
@@ -811,5 +811,48 @@ public partial class RoutePatternParserTests
     {
         var tree = Test(@"""{a}/{*b?}""");
         Assert.Collection(tree.Diagnostics, p => Assert.Equal(Resources.TemplateRoute_CatchAllCannotBeOptional, p.Message));
+    }
+
+    [Theory]
+    [InlineData("{id}", new[] { "id" }, new[] { "" })]
+    [InlineData("{category}/product/{group}", new[] { "category", "group" }, new[] { "", "" })]
+    [InlineData("{category:int}/product/{group:range(10, 20)}?", new[] { "category", "group" }, new[] { ":int", ":range(10, 20)" })]
+    [InlineData("{person:int}/{ssn:regex(^\\\\d{{3}}-\\\\d{{2}}-\\\\d{{4}}$)}", new[] { "person", "ssn" }, new[] { ":int", ":regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)" })]
+    [InlineData("{area=Home}/{controller:required}/{id:int=0}", new[] { "area", "controller", "id" }, new[] { "=Home", ":required", ":int=0" })]
+    [InlineData("{category}/product/{group?}", new[] { "category", "group" }, new[] { "", "?" })]
+    [InlineData("{category}/{product}/{*sku}", new[] { "category", "product", "sku" }, new[] { "", "", "" })]
+    [InlineData("{category}-product-{sku}", new[] { "category", "sku" }, new[] { "", "" })]
+    [InlineData("category-{product}-sku", new[] { "product" }, new[] { "" })]
+    [InlineData("{category}.{sku?}", new[] { "category", "sku" }, new[] { "", "?" })]
+    [InlineData("{category}.{product?}/{sku}", new[] { "category", "product", "sku" }, new[] { "", "?", "" })]
+    public void RouteTokenizer_Works_ForSimpleRouteTemplates(string template, string[] expectedNames, string[] expectedQualifiers)
+    {
+        var tree = Test(@"""" + template + @"""", runSubTreeTests: false);
+
+        Assert.Equal(expectedNames.Length, tree.RouteParameters.Length);
+        Assert.Equal(expectedQualifiers.Length, tree.RouteParameters.Length);
+
+        for (var i = 0; i < expectedNames.Length; i++)
+        {
+            var expectedName = expectedNames[i];
+            var expectedQualifier = expectedQualifiers[i];
+
+            if (!tree.TryGetRouteParameter(expectedName, out var routeParameter))
+            {
+                throw new Exception($"Couldn't find expected route parameter: {expectedName}");
+            }
+
+            var qualifier = string.Join(string.Empty, routeParameter.Policies);
+            if (routeParameter.DefaultValue != null)
+            {
+                qualifier += "=" + routeParameter.DefaultValue;
+            }
+            if (routeParameter.IsOptional)
+            {
+                qualifier += "?";
+            }
+
+            Assert.Equal(expectedQualifier, qualifier);
+        }
     }
 }

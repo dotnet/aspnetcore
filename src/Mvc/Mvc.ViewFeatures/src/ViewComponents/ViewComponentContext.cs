@@ -43,30 +43,11 @@ public class ViewComponentContext
         ViewContext viewContext,
         TextWriter writer)
     {
-        if (viewComponentDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentDescriptor));
-        }
-
-        if (arguments == null)
-        {
-            throw new ArgumentNullException(nameof(arguments));
-        }
-
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
-
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(viewComponentDescriptor);
+        ArgumentNullException.ThrowIfNull(arguments);
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(writer);
 
         ViewComponentDescriptor = viewComponentDescriptor;
         Arguments = arguments;

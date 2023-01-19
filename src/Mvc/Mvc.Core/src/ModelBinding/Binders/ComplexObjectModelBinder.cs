@@ -48,10 +48,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
     /// <inheritdoc/>
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 
@@ -180,10 +177,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
     /// <returns>An <see cref="object"/> compatible with <see cref="ModelBindingContext.ModelType"/>.</returns>
     internal void CreateModel(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         // If model creator throws an exception, we want to propagate it back up the call stack, since the
         // application developer should know that this was an invalid type to try to bind to.

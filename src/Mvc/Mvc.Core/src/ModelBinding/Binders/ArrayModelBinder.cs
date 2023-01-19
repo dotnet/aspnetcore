@@ -108,10 +108,7 @@ public class ArrayModelBinder<TElement> : CollectionModelBinder<TElement>
     /// <inheritdoc />
     protected override void CopyToModel(object target, IEnumerable<TElement?> sourceCollection)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         // Do not attempt to copy values into an array because an array's length is immutable. This choice is also
         // consistent with our handling of a read-only array property.

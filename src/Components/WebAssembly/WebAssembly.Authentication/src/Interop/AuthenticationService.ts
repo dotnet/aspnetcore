@@ -242,9 +242,11 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     async signInInteractive(context: AuthenticationContext) {
+        this.trace('signInInteractive', context);
         try {
             await this._userManager.clearStaleState();
             await this._userManager.signinRedirect(this.createArguments(context.state, context.interactiveRequest));
+            this.debug('Redirect sign in succeeded');
             return this.redirect();
         } catch (redirectError) {
             const message = this.getExceptionMessage(redirectError);
@@ -275,6 +277,7 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     async signOut(context: AuthenticationContext) {
+        this.trace('signOut', context);
         try {
             if (!(await this._userManager.metadataService.getEndSessionEndpoint())) {
                 await this._userManager.removeUser();
@@ -283,11 +286,14 @@ class OidcAuthorizeService implements AuthorizeService {
             await this._userManager.signoutRedirect(this.createArguments(context.state, context.interactiveRequest));
             return this.redirect();
         } catch (redirectSignOutError) {
-            return this.error(this.getExceptionMessage(redirectSignOutError));
+            const message = this.getExceptionMessage(redirectSignOutError);
+            this.debug(`Sign out error '${message}'.`);
+            return this.error(message);
         }
     }
 
     async completeSignOut(url: string) {
+        this.trace('completeSignOut', url);
         try {
             if (await this.stateExists(url)) {
                 const response = await this._userManager.signoutCallback(url);
@@ -296,7 +302,9 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
         } catch (error) {
-            return this.error(this.getExceptionMessage(error));
+            const message = this.getExceptionMessage(error);
+            this.debug(`Complete sign out error '${message}'`);
+            return this.error(message);
         }
     }
 

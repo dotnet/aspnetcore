@@ -173,15 +173,8 @@ public abstract class NavigationManager
     protected void Initialize(string baseUri, string uri)
     {
         // Make sure it's possible/safe to call this method from constructors of derived classes.
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (baseUri == null)
-        {
-            throw new ArgumentNullException(nameof(baseUri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(baseUri);
 
         if (_isInitialized)
         {
@@ -209,7 +202,7 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>
-    public Uri ToAbsoluteUri(string relativeUri)
+    public Uri ToAbsoluteUri(string? relativeUri)
     {
         AssertInitialized();
         return new Uri(_baseUri!, relativeUri);

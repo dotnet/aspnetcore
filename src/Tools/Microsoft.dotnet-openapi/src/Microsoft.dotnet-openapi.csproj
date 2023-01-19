@@ -32,4 +32,8 @@
       <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.DotNet.Open.Api.Tools.Tests" />
+  </ItemGroup>
 </Project>

@@ -365,8 +365,8 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   # If the version of msbuild is going to be xcopied,
   # use this version. Version matches a package here:
-  # https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet-eng&package=RoslynTools.MSBuild&protocolType=NuGet&version=17.2.1&view=overview
-  $defaultXCopyMSBuildVersion = '17.2.1'
+  # https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet-eng&package=RoslynTools.MSBuild&protocolType=NuGet&version=17.4.1&view=overview
+  $defaultXCopyMSBuildVersion = '17.4.1'
 
   if (!$vsRequirements) {
     if (Get-Member -InputObject $GlobalJson.tools -Name 'vs') {
@@ -413,6 +413,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       if($vsMinVersion -lt $vsMinVersionReqd){
         Write-Host "Using xcopy-msbuild version of $defaultXCopyMSBuildVersion since VS version $vsMinVersionStr provided in global.json is not compatible"
         $xcopyMSBuildVersion = $defaultXCopyMSBuildVersion
+        $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
       }
       else{
         # If the VS version IS compatible, look for an xcopy msbuild package
@@ -580,7 +581,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net7.0' }
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net8.0' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -742,6 +743,8 @@ function MSBuild() {
       (Join-Path $basePath (Join-Path netcoreapp2.1 'Microsoft.DotNet.Arcade.Sdk.dll'))
       (Join-Path $basePath (Join-Path netcoreapp3.1 'Microsoft.DotNet.ArcadeLogging.dll')),
       (Join-Path $basePath (Join-Path netcoreapp3.1 'Microsoft.DotNet.Arcade.Sdk.dll'))
+      (Join-Path $basePath (Join-Path net7.0 'Microsoft.DotNet.ArcadeLogging.dll')),
+      (Join-Path $basePath (Join-Path net7.0 'Microsoft.DotNet.Arcade.Sdk.dll'))
     )
     $selectedPath = $null
     foreach ($path in $possiblePaths) {
@@ -814,7 +817,8 @@ function MSBuild-Core() {
       Write-Host "See log: $buildLog" -ForegroundColor DarkGray
     }
 
-    if ($ci) {
+    # When running on Azure Pipelines, override the returned exit code to avoid double logging.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error

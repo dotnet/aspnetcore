@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Buffers;
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
@@ -13,24 +14,13 @@ internal static class RoutePatternParser
     private const char OpenBrace = '{';
     private const char CloseBrace = '}';
     private const char QuestionMark = '?';
-    private const char Asterisk = '*';
     private const string PeriodString = ".";
 
-    internal static readonly char[] InvalidParameterNameChars = new char[]
-    {
-        Separator,
-        OpenBrace,
-        CloseBrace,
-        QuestionMark,
-        Asterisk
-    };
+    internal static readonly IndexOfAnyValues<char> InvalidParameterNameChars = IndexOfAnyValues.Create("/{}?*");
 
     public static RoutePattern Parse(string pattern)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         var trimmedPattern = TrimPrefix(pattern);
 
@@ -431,7 +421,7 @@ internal static class RoutePatternParser
 
     private static bool IsValidParameterName(Context context, string parameterName)
     {
-        if (parameterName.Length == 0 || parameterName.IndexOfAny(InvalidParameterNameChars) >= 0)
+        if (parameterName.Length == 0 || parameterName.AsSpan().IndexOfAny(InvalidParameterNameChars) >= 0)
         {
             context.Error = Resources.FormatTemplateRoute_InvalidParameterName(parameterName);
             return false;

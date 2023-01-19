@@ -299,6 +299,48 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsFromRouteParameterAsPathWithSpecialPrimitiveType()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription, Type expectedTYpe)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedTYpe, param.Type);
+            Assert.Equal(expectedTYpe, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((DateTime foo) => { }, "/{foo}"), typeof(DateTime));
+        AssertPathParameter(GetApiDescription((DateTimeOffset foo) => { }, "/{foo}"), typeof(DateTimeOffset));
+        AssertPathParameter(GetApiDescription((DateOnly foo) => { }, "/{foo}"), typeof(DateOnly));
+        AssertPathParameter(GetApiDescription((TimeOnly foo) => { }, "/{foo}"), typeof(TimeOnly));
+        AssertPathParameter(GetApiDescription((TimeSpan foo) => { }, "/{foo}"), typeof(TimeSpan));
+        AssertPathParameter(GetApiDescription((decimal foo) => { }, "/{foo}"), typeof(decimal));
+        AssertPathParameter(GetApiDescription((Guid foo) => { }, "/{foo}"), typeof(Guid));
+        AssertPathParameter(GetApiDescription((Uri foo) => { }, "/{foo}"), typeof(Uri));
+    }
+
+    [Fact]
+    public void AddsFromRouteParameterAsPathWithNullableSpecialPrimitiveType()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription, Type expectedTYpe)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedTYpe, param.Type);
+            Assert.Equal(expectedTYpe, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((DateTime? foo) => { }, "/{foo}"), typeof(DateTime?));
+        AssertPathParameter(GetApiDescription((DateTimeOffset? foo) => { }, "/{foo}"), typeof(DateTimeOffset?));
+        AssertPathParameter(GetApiDescription((DateOnly? foo) => { }, "/{foo}"), typeof(DateOnly?));
+        AssertPathParameter(GetApiDescription((TimeOnly? foo) => { }, "/{foo}"), typeof(TimeOnly?));
+        AssertPathParameter(GetApiDescription((TimeSpan? foo) => { }, "/{foo}"), typeof(TimeSpan?));
+        AssertPathParameter(GetApiDescription((decimal? foo) => { }, "/{foo}"), typeof(decimal?));
+        AssertPathParameter(GetApiDescription((Guid? foo) => { }, "/{foo}"), typeof(Guid?));
+        AssertPathParameter(GetApiDescription((Uri? foo) => { }, "/{foo}"), typeof(Uri));
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
     {
         static void AssertPathParameter(ApiDescription apiDescription)
@@ -482,6 +524,46 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+    }
+#nullable enable
+
+    public class AsParametersWithRequiredMembers
+    {
+        public required string RequiredStringMember { get; set; }
+        public required string? RequiredNullableStringMember { get; set; }
+        public string NonNullableStringMember { get; set; } = string.Empty;
+        public string? NullableStringMember { get; set; }
+    }
+
+    [Fact]
+    public void SupportsRequiredMembersInAsParametersAttribute()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] AsParametersWithRequiredMembers foo) => { });
+        Assert.Equal(4, apiDescription.ParameterDescriptions.Count);
+
+        Assert.Collection(apiDescription.ParameterDescriptions,
+            param => Assert.True(param.IsRequired),
+            param => Assert.False(param.IsRequired),
+            param => Assert.True(param.IsRequired),
+            param => Assert.False(param.IsRequired));
+    }
+
+#nullable disable
+    public class AsParametersWithRequiredMembersObliviousContext
+    {
+        public required string RequiredStringMember { get; set; }
+        public string OptionalStringMember { get; set; }
+    }
+
+    [Fact]
+    public void SupportsRequiredMembersInAsParametersObliviousContextAttribute()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] AsParametersWithRequiredMembersObliviousContext foo) => { });
+        Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+
+        Assert.Collection(apiDescription.ParameterDescriptions,
+            param => Assert.True(param.IsRequired),
+            param => Assert.False(param.IsRequired));
     }
 #nullable enable
 

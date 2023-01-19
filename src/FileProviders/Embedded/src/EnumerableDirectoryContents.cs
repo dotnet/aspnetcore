@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.FileProviders.Embedded;
 
@@ -13,10 +14,7 @@ internal sealed class EnumerableDirectoryContents : IDirectoryContents
 
     public EnumerableDirectoryContents(IEnumerable<IFileInfo> entries)
     {
-        if (entries == null)
-        {
-            throw new ArgumentNullException(nameof(entries));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(entries);
 
         _entries = entries;
     }
