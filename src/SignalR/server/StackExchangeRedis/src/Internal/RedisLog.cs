@@ -15,7 +15,7 @@ internal static partial class RedisLog
     {
         if (logger.IsEnabled(LogLevel.Information) && endpoints.Count > 0)
         {
-            ConnectingToEndpoints(logger, string.Join(", ", endpoints.Select(e => EndPointCollection.ToString(e))), serverName);
+            ConnectingToEndpoints(logger, string.Join(", ", endpoints.Select(EndPointCollection.ToString)), serverName);
         }
     }
 
