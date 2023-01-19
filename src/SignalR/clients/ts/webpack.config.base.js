@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 const path = require("path");
-const webpack = require("./common/node_modules/webpack");
-const TerserJsPlugin = require("./common/node_modules/terser-webpack-plugin");
-const { DuplicatesPlugin } = require("./common/node_modules/inspectpack/plugin");
-
+const webpack = require("webpack");
+const TerserJsPlugin = require("terser-webpack-plugin");
+const { DuplicatesPlugin } = require("inspectpack/plugin");
 module.exports = function (modulePath, browserBaseName, options) {
     const pkg = require(path.resolve(modulePath, "package.json"));
 
@@ -18,17 +17,13 @@ module.exports = function (modulePath, browserBaseName, options) {
             global: true
         },
         target: options.target,
-        resolveLoader: {
-            // Special resolution rules for loaders (which are in the 'common' directory)
-            modules: [ path.resolve(__dirname, "common", "node_modules") ],
-        },
         module: {
             rules: [
                 {
                     test: /\.ts$/,
                     use: [
                         {
-                            loader: "ts-loader",
+                            loader: 'ts-loader',
                             options: {
                                 configFile: path.resolve(modulePath, "tsconfig.json"),
                             },

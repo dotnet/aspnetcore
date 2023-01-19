@@ -1,0 +1,1 @@
+{"version":3,"file":"TextMessageFormat.d.ts","sourceRoot":"","sources":["TextMessageFormat.ts"],"names":[],"mappings":"AAIA,eAAe;AACf,qBAAa,iBAAiB;IAC1B,OAAc,mBAAmB,SAAQ;IACzC,OAAc,eAAe,SAA8D;WAE7E,KAAK,CAAC,MAAM,EAAE,MAAM,GAAG,MAAM;WAI7B,KAAK,CAAC,KAAK,EAAE,MAAM,GAAG,MAAM,EAAE;CAS/C"}

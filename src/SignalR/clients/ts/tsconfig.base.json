@@ -19,6 +19,7 @@
         "strict": true,
         "lib": [ "es2019", "dom" ],
         "baseUrl": ".",
+        "composite": true,
         "paths": {
             "@microsoft/signalr": [
                 "./signalr"

@@ -8,6 +8,18 @@
     "target": "es2019",
     "module": "es2020",
     "lib": ["es2019", "dom"],
+    "outDir": "lib",
     "strict": true
-  }
+  },
+  "references": [
+    {
+      "path": "../../SignalR/clients/ts/signalr/tsconfig.json"
+    },
+    {
+      "path": "../../SignalR/clients/ts/signalr-protocol-msgpack/tsconfig.json"
+    },
+    {
+      "path": "../../JSInterop/Microsoft.JSInterop.JS/src/tsconfig.json"
+    }
+  ]
 }

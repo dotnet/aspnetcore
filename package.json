@@ -1,0 +1,21 @@
+{
+  "private":"true",
+  "workspaces": [
+    "src/SignalR/clients/ts",
+    "src/SignalR/clients/ts/common",
+    "src/SignalR/clients/ts/signalr",
+    "src/SignalR/clients/ts/signalr-protocol-msgpack",
+    "src/JSInterop/Microsoft.JSInterop.JS/src",
+    "src/Components/Web.JS/@types/dotnet",
+    "src/Components/Web.JS",
+    "src/Components/CustomElements/src/js",
+    "src/Components/WebAssembly/Authentication.Msal/src/Interop",
+    "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
+    "src/Components/test/E2ETest",
+    "src/Middleware/Spa/SpaServices.Extensions/test",
+    "src/ProjectTemplates/test/Templates.Blazor.Tests",
+    "src/ProjectTemplates/test/Templates.Tests",
+    "src/submodules/MessagePack-CSharp/src/MessagePack.UnityClient/Assets/RuntimeUnitTestToolkit",
+    "src/submodules/MessagePack-CSharp/src/MessagePack.UnityClient/Assets/Scripts/MessagePack"
+  ]
+}

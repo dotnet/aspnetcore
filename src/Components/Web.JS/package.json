@@ -9,21 +9,19 @@
     "MonoPlatform.*"
   ],
   "scripts": {
-    "preclean": "yarn install --mutex network --frozen-lockfile",
-    "clean": "node node_modules/rimraf/bin.js ./dist/Debug ./dist/Release",
-    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile",
+    "clean": "npx rimraf ./dist/Debug ./dist/Release",
+    "prebuild": "npm run clean",
     "lint": "eslint -c ./src/.eslintrc.js --ext .ts ./src",
-    "build": "yarn run build:debug && yarn run build:production",
-    "build:debug": "cd src && node ../node_modules/webpack-cli/bin/cli.js --mode development --config ./webpack.config.js",
-    "build:production": "cd src && node ../node_modules/webpack-cli/bin/cli.js --mode production --config ./webpack.config.js"
+    "build": "npm run build:debug && npm run build:production",
+    "build:debug": "npx webpack --mode development --config ./webpack.config.js",
+    "build:production": "npx webpack --mode production --config ./webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.16.8",
-    "@microsoft/dotnet-js-interop": "link:../../JSInterop/Microsoft.JSInterop.JS/src",
-    "@microsoft/signalr": "link:../../SignalR/clients/ts/signalr",
-    "@microsoft/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
-    "@types/dotnet": "./@types/dotnet",
+    "@microsoft/signalr": "*",
+    "@microsoft/signalr-protocol-msgpack": "*",
+    "@types/dotnet": "*",
     "@types/jsdom": "^16.2.14",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
@@ -36,5 +34,8 @@
     "typescript": "^4.5.4",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "network": "^0.6.1"
   }
 }

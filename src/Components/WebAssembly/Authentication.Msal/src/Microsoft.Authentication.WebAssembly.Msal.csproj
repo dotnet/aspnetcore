@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
+    <YarnWorkingDir>$(MSBuildThisFileDirectory)Msal\</YarnWorkingDir>
     <ResolveStaticWebAssetsInputsDependsOn>
       CompileInterop;
       IncludeCompileInteropOutput;

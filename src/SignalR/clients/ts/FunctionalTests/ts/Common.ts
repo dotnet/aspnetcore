@@ -5,9 +5,9 @@ import { HttpClient, HttpTransportType, IHubProtocol, JsonHubProtocol } from "@m
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { TestLogger } from "./TestLogger";
 
-import { FetchHttpClient } from "@microsoft/signalr/dist/esm/FetchHttpClient";
-import { Platform } from "@microsoft/signalr/dist/esm/Utils";
-import { XhrHttpClient } from "@microsoft/signalr/dist/esm/XhrHttpClient";
+import { FetchHttpClient } from "@microsoft/signalr/dist/esm/src/FetchHttpClient";
+import { Platform } from "@microsoft/signalr/dist/esm/src/Utils";
+import { XhrHttpClient } from "@microsoft/signalr/dist/esm/src/XhrHttpClient";
 
 export const DEFAULT_TIMEOUT_INTERVAL: number = 40 * 1000;
 export let ENDPOINT_BASE_URL: string = "";

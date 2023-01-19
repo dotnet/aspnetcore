@@ -1,0 +1,1 @@
+{"version":3,"file":"DefaultReconnectPolicy.d.ts","sourceRoot":"","sources":["DefaultReconnectPolicy.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,YAAY,EAAE,YAAY,EAAE,MAAM,gBAAgB,CAAC;AAK5D,eAAe;AACf,qBAAa,sBAAuB,YAAW,YAAY;IACvD,OAAO,CAAC,QAAQ,CAAC,YAAY,CAAoB;gBAErC,WAAW,CAAC,EAAE,MAAM,EAAE;IAI3B,4BAA4B,CAAC,YAAY,EAAE,YAAY,GAAG,MAAM,GAAG,IAAI;CAGjF"}
