@@ -20,8 +20,8 @@
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
     <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Linkbase="shared"/>
-    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="shared" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(SharedSourceRoot)TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />
     <Compile Include="$(SharedSourceRoot)TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
   </ItemGroup>
