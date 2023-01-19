@@ -190,7 +190,7 @@ export class HubConnectionBuilder {
      *
      * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
-    public withServerTimeout(milliseconds: number): HubConnectionBuilder{
+    public withServerTimeout(milliseconds: number): HubConnectionBuilder {
         Arg.isRequired(milliseconds, "milliseconds");
 
         this._serverTimeoutInMilliseconds = milliseconds;
@@ -202,7 +202,7 @@ export class HubConnectionBuilder {
      *
      * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
-    public withKeepAliveInterval(milliseconds: number): HubConnectionBuilder{
+    public withKeepAliveInterval(milliseconds: number): HubConnectionBuilder {
         Arg.isRequired(milliseconds, "milliseconds");
 
         this._keepAliveIntervalInMilliseconds = milliseconds;
