@@ -154,36 +154,12 @@
 
     async Task SyncExceptionDispatch()
     {
-        try
-        {
-            await InvokeAsync(() =>
-            {
-                throw new InvalidTimeZoneException("Synchronous exception in SyncExceptionDispatch");
-            });
-        }
-        catch (Exception e)
-        {
-            await DispatchExceptionAsync(e);
-        }
+        await DispatchExceptionAsync(new InvalidTimeZoneException("Synchronous exception in SyncExceptionDispatch"));
     }
 
     async Task AsyncExceptionDispatch()
     {
-        try
-        {
-            await InvokeAsync(async () =>
-            {
-                await ThrowExceptionAsync();
-            });
-        }
-        catch (Exception e)
-        {
-            await DispatchExceptionAsync(e);
-        }
-    }
-
-    private Task ThrowExceptionAsync()
-    {
-        throw new InvalidTimeZoneException("Asynchronous exception in AsyncExceptionDispatch");
+        await Task.Yield();
+        await DispatchExceptionAsync(new InvalidTimeZoneException("Asynchronous exception in AsyncExceptionDispatch"));
     }
 }
