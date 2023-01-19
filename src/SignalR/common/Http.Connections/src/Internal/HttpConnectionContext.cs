@@ -598,7 +598,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-
     internal void StartSendCancellation()
     {
         if (!_options.TransportSendTimeoutEnabled)
