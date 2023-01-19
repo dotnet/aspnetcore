@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
@@ -47,6 +47,12 @@ public class TestRazorCompiledItem : RazorCompiledItem
     public static string GetChecksum(string content)
     {
         var bytes = SHA1.HashData(Encoding.UTF8.GetBytes(content));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    public static string GetChecksumSHA256(string content)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }
