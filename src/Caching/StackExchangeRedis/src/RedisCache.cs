@@ -61,8 +61,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpiration = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey };
 
     private static RedisValue[] GetHashFields(bool getData) => getData
-        ? HashMembers_AbsoluteExpiration_SlidingExpiration_Data
-        : HashMembers_AbsoluteExpiration_SlidingExpiration;
+        ? _hashMembersAbsoluteExpirationSlidingExpirationData
+        : _hashMembersAbsoluteExpirationSlidingExpiration;
 
     private const long NotPresent = -1;
     private static readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
