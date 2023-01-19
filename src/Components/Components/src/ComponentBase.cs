@@ -176,7 +176,12 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
     /// <summary>
-    /// Dispatches an <see cref="Exception"/> to the renderer via the <see cref="RenderHandle"/>.
+    /// Treats the supplied <paramref name="exception"/> as being thrown by this component. This will cause the
+    /// enclosing <see cref="ErrorBoundary"/> to transition into a failed state. If there is no enclosing <see cref="ErrorBoundary"/>,
+    /// it will be regarded as an exception from the enclosing renderer.
+    ///
+    /// This is useful if an exception occurs outside the component lifecycle methods, but you wish to treat it
+    /// the same as an exception from a component lifecycle method.
     /// </summary>
     /// <param name="exception">The <see cref="Exception"/> that will be dispatched to the renderer.</param>
     /// <returns>A <see cref="Task"/> that will be completed when the exception has finished dispatching.</returns>
