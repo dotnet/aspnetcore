@@ -63,6 +63,11 @@ steps:
       targetRidArgs='/p:TargetRid=${{ parameters.platform.targetRID }}'
     fi
 
+    runtimeOsArgs=
+    if [ '${{ parameters.platform.runtimeOS }}' != '' ]; then
+      runtimeOsArgs='/p:RuntimeOS=${{ parameters.platform.runtimeOS }}'
+    fi
+
     publishArgs=
     if [ '${{ parameters.platform.skipPublishValidation }}' != 'true' ]; then
       publishArgs='--publish'
@@ -75,6 +80,7 @@ steps:
       $internalRuntimeDownloadArgs \
       $internalRestoreArgs \
       $targetRidArgs \
+      $runtimeOsArgs \
       /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \
       /p:ArcadeBuildFromSource=true
   displayName: Build
