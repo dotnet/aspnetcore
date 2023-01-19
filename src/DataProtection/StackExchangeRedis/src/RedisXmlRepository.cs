@@ -45,7 +45,7 @@ public class RedisXmlRepository : IXmlRepository
         var database = _databaseFactory();
         foreach (var value in database.ListRange(_key))
         {
-            yield return XElement.Parse((string)value);
+            yield return XElement.Parse((string)value!);
         }
     }
 
