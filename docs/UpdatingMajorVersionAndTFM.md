@@ -55,7 +55,7 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
         * If we need to release a Minor version of any of these, use the first zero digit after the Major version to represent that (e.g. 9810 for 8.1, 10100 for 10.1).
   2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
       * Make sure to update _all_ template.json files, including project templates and item templates.
-      * Update precedence values by increasing them to the next integer value whose first digits correspond with the major version.
+      * Use the same precedence scheme as above.
   3. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
 * In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs](/src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs), update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 
