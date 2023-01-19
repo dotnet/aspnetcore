@@ -34,26 +34,18 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
       if (!debugBuild && !hasReferencedPdbs) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
       } else if (navigator.userAgent.includes('Firefox')) {
-        launchDebugger(true);
+        launchFirefoxDebugger();
       } else if (!currentBrowserIsChromeOrEdge) {
         console.error('Currently, only Microsoft Edge (80+), Google Chrome, or Chromium, are supported for debugging.');
       } else {
-        launchDebugger(false);
+        launchDebugger();
       }
     }
   });
 }
 
-async function launchDebugger(isFirefox : boolean) {
-  // The noopener flag is essential, because otherwise Chrome tracks the association with the
-  // parent tab, and then when the parent tab pauses in the debugger, the child tab does so
-  // too (even if it's since navigated to a different page). This means that the debugger
-  // itself freezes, and not just the page being debugged.
-  //
-  // We have to construct a link element and simulate a click on it, because the more obvious
-  // window.open(..., 'noopener') always opens a new window instead of a new tab.
-  if (isFirefox) {
-    const appDiv = document.getElementById('app');
+async function launchFirefoxDebugger() {
+  const appDiv = document.getElementById('app');
     const response = await fetch(`_framework/debug?url=${encodeURIComponent(location.href)}&isFirefox=${isFirefox}`);
     if (response.status !== 200) {
       const warningToDebug = document.createElement('div');
@@ -95,11 +87,19 @@ async function launchDebugger(isFirefox : boolean) {
         warningToDebug.style.display = 'none';
       }
     }
-  } else {
-    const link = document.createElement('a');
-    link.href = `_framework/debug?url=${encodeURIComponent(location.href)}`;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.click();
-  }
+}
+
+function launchDebugger() {
+  // The noopener flag is essential, because otherwise Chrome tracks the association with the
+  // parent tab, and then when the parent tab pauses in the debugger, the child tab does so
+  // too (even if it's since navigated to a different page). This means that the debugger
+  // itself freezes, and not just the page being debugged.
+  //
+  // We have to construct a link element and simulate a click on it, because the more obvious
+  // window.open(..., 'noopener') always opens a new window instead of a new tab.
+  const link = document.createElement('a');
+  link.href = `_framework/debug?url=${encodeURIComponent(location.href)}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.click();
 }
