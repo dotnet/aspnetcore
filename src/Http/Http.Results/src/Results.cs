@@ -6,7 +6,6 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -190,20 +189,6 @@ public static partial class Results
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
     /// </summary>
     /// <param name="data">The object to write as JSON.</param>
-    /// <param name="jsonTypeInfo">TODO.</param>
-    /// <param name="contentType">The content-type to set on the response.</param>
-    /// <param name="statusCode">The status code to set on the response.</param>
-    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
-    /// as JSON format for the response.</returns>
-    /// <remarks>Callers should cache an instance of serializer settings to avoid
-    /// recreating cached data with each call.</remarks>
-    public static IResult Json(object? data, JsonTypeInfo<object> jsonTypeInfo, string? contentType = null, int? statusCode = null)
-        => Json<object>(data, jsonTypeInfo, contentType, statusCode);
-
-    /// <summary>
-    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
-    /// </summary>
-    /// <param name="data">The object to write as JSON.</param>
     /// <param name="options">The serializer options to use when serializing the value.</param>
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="statusCode">The status code to set on the response.</param>
@@ -217,22 +202,6 @@ public static partial class Results
     public static IResult Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => TypedResults.Json(data, options, contentType, statusCode);
-
-    /// <summary>
-    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
-    /// </summary>
-    /// <param name="data">The object to write as JSON.</param>
-    /// <param name="jsonTypeInfo">TODO.</param>
-    /// <param name="contentType">The content-type to set on the response.</param>
-    /// <param name="statusCode">The status code to set on the response.</param>
-    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
-    /// as JSON format for the response.</returns>
-    /// <remarks>Callers should cache an instance of serializer settings to avoid
-    /// recreating cached data with each call.</remarks>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static IResult Json<TValue>(TValue? data, JsonTypeInfo<TValue> jsonTypeInfo, string? contentType = null, int? statusCode = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => TypedResults.Json(data, jsonTypeInfo, contentType, statusCode);
 
     /// <summary>
     /// Writes the byte-array content to the response.

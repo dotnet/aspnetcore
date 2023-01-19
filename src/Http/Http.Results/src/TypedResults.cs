@@ -6,7 +6,6 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -198,22 +197,7 @@ public static class TypedResults
     [RequiresUnreferencedCode("Warning")]
     [RequiresDynamicCode("Warning")]
     public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-        => new(data, options) { ContentType = contentType, StatusCode = statusCode };
-
-    /// <summary>
-    /// Creates a <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/> object to JSON.
-    /// </summary>
-    /// <remarks>Callers should cache an instance of serializer settings to avoid
-    /// recreating cached data with each call.</remarks>
-    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-    /// <param name="data">The object to write as JSON.</param>
-    /// <param name="jsonTypeInfo">TODO.</param>
-    /// <param name="contentType">The content-type to set on the response.</param>
-    /// <param name="statusCode">The status code to set on the response.</param>
-    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
-    /// as JSON format for the response.</returns>
-    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonTypeInfo<TValue> jsonTypeInfo, string? contentType = null, int? statusCode = null)
-        => new(data, jsonTypeInfo) { ContentType = contentType, StatusCode = statusCode };
+        => new(data, options, statusCode, contentType);
 
     /// <summary>
     /// Writes the byte-array content to the response.
