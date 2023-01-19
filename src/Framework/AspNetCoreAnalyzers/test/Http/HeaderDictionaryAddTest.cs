@@ -153,14 +153,14 @@ context.Request.Headers.Append(""Accept"", ""text/html"");"
     {
         // Arrange & Act & Assert
         await VerifyCS.VerifyCodeFixAsync(
-            source.TrimStart(),
+            source.TrimStart().ReplaceLineEndings(),
             new[]
             {
                 new DiagnosticResult(DiagnosticDescriptors.DoNotUseIHeaderDictionaryAdd)
                     .WithLocation(0)
                     .WithMessage(Resources.Analyzer_HeaderDictionaryAdd_Message)
             },
-            fixedSource.TrimStart(),
+            fixedSource.TrimStart().ReplaceLineEndings(),
             codeActionEquivalenceKey: AppendCodeActionEquivalenceKey);
     }
 
