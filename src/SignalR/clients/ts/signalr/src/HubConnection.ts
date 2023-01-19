@@ -113,17 +113,8 @@ export class HubConnection {
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
 
-        if (serverTimeoutInMilliseconds !== undefined) {
-            this.serverTimeoutInMilliseconds = serverTimeoutInMilliseconds;
-        } else {
-            this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
-        }
-
-        if (keepAliveIntervalInMilliseconds !== undefined) {
-            this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds;
-        } else {
-            this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
-        }
+        this.serverTimeoutInMilliseconds = serverTimeoutInMilliseconds ?? DEFAULT_TIMEOUT_IN_MS;
+        this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds ?? DEFAULT_PING_INTERVAL_IN_MS;
 
         this._logger = logger;
         this._protocol = protocol;
