@@ -314,7 +314,7 @@ class HubConnectionTest {
         Action action = () -> value.getAndUpdate((val) -> val + 1);
         Action secondAction = () -> {
             value.getAndUpdate((val) -> val + 2);
-            
+
             complete.onComplete();
         };
 
@@ -3961,5 +3961,17 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void serverTimeoutIsSetThroughBuilder()
+    {
+        long timeout = 60;
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withServerTimeout(timeout)
+                .build();
+
+        assertEquals(timeout, hubConnection.getServerTimeout());
     }
 }

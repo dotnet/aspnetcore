@@ -23,6 +23,8 @@ public class HttpHubConnectionBuilder {
     private Map<String, String> headers;
     private TransportEnum transportEnum;
     private Action1<OkHttpClient.Builder> configureBuilder;
+    private Long serverTimeout;
+    private Long keepAliveInterval;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -141,12 +143,34 @@ public class HttpHubConnectionBuilder {
     }
 
     /**
+     * Sets serverTimeout for the {@link HubConnection}.
+     *
+     * @param timeout The serverTimeout to be set.
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder withServerTimeout(long timeout) {
+        this.serverTimeout = timeout;
+        return this;
+    }
+
+    /**
+     * Sets keepAliveInterval for the {@link HubConnection}.
+     *
+     * @param interval The keepAliveInterval to be set.
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder withKeepAliveInterval(long interval) {
+        this.keepAliveInterval = interval;
+        return this;
+    }
+
+    /**
      * Builds a new instance of {@link HubConnection}.
      *
      * @return A new instance of {@link HubConnection}.
      */
     public HubConnection build() {
         return new HubConnection(url, transport, skipNegotiate, httpClient, protocol, accessTokenProvider,
-            handshakeResponseTimeout, headers, transportEnum, configureBuilder);
+            handshakeResponseTimeout, headers, transportEnum, configureBuilder, serverTimeout, keepAliveInterval);
     }
 }

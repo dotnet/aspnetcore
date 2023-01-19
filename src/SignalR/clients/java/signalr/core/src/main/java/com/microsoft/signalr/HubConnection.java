@@ -49,8 +49,8 @@ public class HubConnection implements AutoCloseable {
     // These are all user-settable properties
     private String baseUrl;
     private List<OnClosedCallback> onClosedCallbackList;
-    private long keepAliveInterval = 15 * 1000;
-    private long serverTimeout = 30 * 1000;
+    private long keepAliveInterval;
+    private long serverTimeout;
     private long handshakeResponseTimeout = 15 * 1000;
 
     // Private property, modified for testing
@@ -120,7 +120,7 @@ public class HubConnection implements AutoCloseable {
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient, HubProtocol protocol,
                   Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum,
-                  Action1<OkHttpClient.Builder> configureBuilder) {
+                  Action1<OkHttpClient.Builder> configureBuilder, Long serverTimeout, Long keepAliveInterval) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -158,6 +158,9 @@ public class HubConnection implements AutoCloseable {
 
         this.headers = headers;
         this.skipNegotiate = skipNegotiate;
+
+        this.serverTimeout = Objects.nonNull(serverTimeout) ? serverTimeout :  30 * 1000;
+        this.keepAliveInterval = Objects.nonNull(keepAliveInterval) ? keepAliveInterval : 15 * 1000;
 
         this.callback = (payload) -> ReceiveLoop(payload);
     }
