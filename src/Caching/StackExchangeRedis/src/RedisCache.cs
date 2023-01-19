@@ -57,8 +57,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private const string DataKey = "data";
 
     // combined keys - same hash keys fetched constantly; avoid allocating an array each time
-    private static readonly RedisValue[] HashMembers_AbsoluteExpiration_SlidingExpiration_Data = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey, DataKey };
-    private static readonly RedisValue[] HashMembers_AbsoluteExpiration_SlidingExpiration = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey };
+    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpirationData = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey, DataKey };
+    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpiration = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey };
 
     private static RedisValue[] GetHashFields(bool getData) => getData
         ? HashMembers_AbsoluteExpiration_SlidingExpiration_Data
