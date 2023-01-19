@@ -547,8 +547,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-    private Task ExecuteApplication() => _connectionDelegate!(this);
-
     private async Task ExecuteApplication(ConnectionDelegate connectionDelegate)
     {
         // Verify some initialization invariants
@@ -572,6 +570,34 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         // No need to undo the flow suppression since we're in an async method.
         // The suppression won't be observed outside of this call.
     }
+
+    private async Task ExecuteApplication()
+    {
+        var connectionDelegate = _connectionDelegate!;
+
+        Debug.Assert(connectionDelegate is not null, "Connection delegate was not set!");
+
+        // Clear the field
+        _connectionDelegate = null;
+
+        if (_logger.IsEnabled(LogLevel.Critical))
+        {
+            // Preserve the connection id logging scope when we execute the connection delegate
+            var logScope = new ConnectionLogScope(ConnectionId);
+
+            // REVIEW: Should we create also create an activity here
+
+            using (_logger.BeginScope(logScope))
+            {
+                await connectionDelegate(this);
+            }
+        }
+        else
+        {
+            await connectionDelegate(this);
+        }
+    }
+
 
     internal void StartSendCancellation()
     {
