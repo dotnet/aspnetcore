@@ -39,7 +39,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
         await clientStream.ConnectAsync().DefaultTimeout();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
-        
+
         var serverConnection = await connectionListener.AcceptAsync().DefaultTimeout();
         var readResult = await serverConnection.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverConnection.Transport.Input.AdvanceTo(readResult.Buffer.End);
@@ -103,7 +103,6 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         // Complete writing.
         await serverConnection.Transport.Output.CompleteAsync();
     }
-
 
     [Fact]
     public async Task CompleteTransport_BeforeClientHasReadLastBytes_DontLooseData()
