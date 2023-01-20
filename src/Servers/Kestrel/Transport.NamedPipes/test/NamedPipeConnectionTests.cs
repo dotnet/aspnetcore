@@ -103,4 +103,56 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         // Complete writing.
         await serverConnection.Transport.Output.CompleteAsync();
     }
+
+
+    [Fact]
+    public async Task CompleteTransport_BeforeClientHasReadLastBytes_DontLooseData()
+    {
+        var options = new NamedPipeTransportOptions();
+        await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
+
+        var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
+        var connectTask = clientStream.ConnectAsync();
+
+        var connection = await connectionListener.AcceptAsync();
+        await connection.Transport.Output.WriteAsync(new byte[] { 41 });
+        byte[] readBuffer = new byte[1];
+        var readAmount = await clientStream.ReadAsync(readBuffer);
+        Assert.Equal(1, readAmount);
+        Assert.Equal(41, readBuffer[0]);
+        await connection.Transport.Output.WriteAsync(new byte[] { 42 });
+        // complete transport and wait for a reasonable amount of time
+        // actual stream disconnection should happen after the last client read happens
+        connection.Transport.Output.Complete();
+        await Task.Delay(500);
+        readAmount = await clientStream.ReadAsync(readBuffer);
+        Assert.Equal(1, readAmount);
+        Assert.Equal(42, readBuffer[0]);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_BeforeClientHasReadLastBytes_DontLooseData()
+    {
+        var options = new NamedPipeTransportOptions();
+        await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
+
+        var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
+        var connectTask = clientStream.ConnectAsync();
+
+        var connection = await connectionListener.AcceptAsync();
+        await connection.Transport.Output.WriteAsync(new byte[] { 41 });
+        byte[] readBuffer = new byte[1];
+        var readAmount = await clientStream.ReadAsync(readBuffer);
+        Assert.Equal(1, readAmount);
+        Assert.Equal(41, readBuffer[0]);
+        await connection.Transport.Output.WriteAsync(new byte[] { 42 });
+        // trigger dispose and wait for a reasonable amount of time
+        // actual stream disconnection should happen after the last client read happens
+        var disposeTask = connection.DisposeAsync();
+        await Task.Delay(500);
+        readAmount = await clientStream.ReadAsync(readBuffer);
+        Assert.Equal(1, readAmount);
+        Assert.Equal(42, readBuffer[0]);
+        await disposeTask;
+    }
 }
