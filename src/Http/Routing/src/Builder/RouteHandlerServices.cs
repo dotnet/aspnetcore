@@ -28,7 +28,7 @@ public static class RouteHandlerServices
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
     /// <param name="httpMethods">The set of supported HTTP methods. May not be null.</param>
     /// <param name="populateMetadata">A delegate for populating endpoint metadata.</param>
-    /// <param name="createRequestDelegate">A delegate for constructing a RequestDelegate from a Delegate.</param>
+    /// <param name="createRequestDelegate">A delegate for constructing a RequestDelegate.</param>
     /// <returns></returns>
     public static RouteHandlerBuilder Map(
             IEndpointRouteBuilder endpoints,
