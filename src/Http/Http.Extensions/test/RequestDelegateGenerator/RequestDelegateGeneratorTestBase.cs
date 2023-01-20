@@ -36,7 +36,7 @@ public class RequestDelegateGeneratorTestBase
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         var diagnostics = updatedCompilation.GetDiagnostics();
-        Assert.Empty(diagnostics.Where(d => d.Severity > DiagnosticSeverity.Warning));
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
         var runResult = driver.GetRunResult();
 
         return (runResult.Results, updatedCompilation);

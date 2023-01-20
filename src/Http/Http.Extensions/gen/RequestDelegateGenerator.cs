@@ -49,6 +49,10 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             [{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
            (methodInfo, options) =>
             {
+                if (options == null)
+                {
+                    return new RequestDelegateMetadataResult { EndpointMetadata = new List<object>().AsReadOnly() };
+                }
                 options.EndpointBuilder.Metadata.Add(new SourceKey{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}});
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             },
@@ -75,7 +79,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 {{StaticRouteHandlerModelEmitter.EmitFilteredRequestHandler()}}
 
                 RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
-                return new RequestDelegateResult(targetDelegate, inferredMetadataResult.EndpointMetadata);
+                var metadata = inferredMetadataResult?.EndpointMetadata ?? new List<object>().AsReadOnly();
+                return new RequestDelegateResult(targetDelegate, metadata);
             }),
 """);
 
