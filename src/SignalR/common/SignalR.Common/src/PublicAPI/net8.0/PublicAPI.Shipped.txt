@@ -15,6 +15,7 @@ Microsoft.AspNetCore.SignalR.IInvocationBinder
 Microsoft.AspNetCore.SignalR.IInvocationBinder.GetParameterTypes(string! methodName) -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Microsoft.AspNetCore.SignalR.IInvocationBinder.GetReturnType(string! invocationId) -> System.Type!
 Microsoft.AspNetCore.SignalR.IInvocationBinder.GetStreamItemType(string! streamId) -> System.Type!
+Microsoft.AspNetCore.SignalR.IInvocationBinder.GetTarget(System.ReadOnlySpan<byte> utf8Bytes) -> string?
 Microsoft.AspNetCore.SignalR.ISignalRBuilder
 Microsoft.AspNetCore.SignalR.ISignalRBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage
@@ -69,6 +70,9 @@ Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string
 Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string? invocationId, string! target, object?[]! arguments) -> void
 Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string? invocationId, string! target, object?[]! arguments, string![]? streamIds) -> void
 Microsoft.AspNetCore.SignalR.Protocol.PingMessage
+Microsoft.AspNetCore.SignalR.Protocol.RawResult
+Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawResult(System.Buffers.ReadOnlySequence<byte> rawBytes) -> void
+Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawSerializedData.get -> System.Buffers.ReadOnlySequence<byte>
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.BindingFailure.get -> System.Runtime.ExceptionServices.ExceptionDispatchInfo!
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.Id.get -> string!

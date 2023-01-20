@@ -40,6 +40,7 @@ Microsoft.AspNetCore.WebUtilities.FormMultipartSection
 Microsoft.AspNetCore.WebUtilities.FormMultipartSection.FormMultipartSection(Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> void
 Microsoft.AspNetCore.WebUtilities.FormMultipartSection.FormMultipartSection(Microsoft.AspNetCore.WebUtilities.MultipartSection! section, Microsoft.Net.Http.Headers.ContentDispositionHeaderValue? header) -> void
 Microsoft.AspNetCore.WebUtilities.FormMultipartSection.GetValueAsync() -> System.Threading.Tasks.Task<string!>!
+Microsoft.AspNetCore.WebUtilities.FormMultipartSection.GetValueAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
 Microsoft.AspNetCore.WebUtilities.FormMultipartSection.Name.get -> string!
 Microsoft.AspNetCore.WebUtilities.FormMultipartSection.Section.get -> Microsoft.AspNetCore.WebUtilities.MultipartSection!
 Microsoft.AspNetCore.WebUtilities.FormPipeReader
@@ -108,20 +109,20 @@ Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions
 Microsoft.AspNetCore.WebUtilities.MultipartSectionStreamExtensions
 Microsoft.AspNetCore.WebUtilities.QueryHelpers
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable
-Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair.EncodedNameValuePair() -> void
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair.DecodeName() -> System.ReadOnlyMemory<char>
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair.DecodeValue() -> System.ReadOnlyMemory<char>
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair.EncodedName.get -> System.ReadOnlyMemory<char>
+Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair.EncodedNameValuePair() -> void
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair.EncodedValue.get -> System.ReadOnlyMemory<char>
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.Enumerator
-Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.Enumerator.Current.get -> Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.EncodedNameValuePair
+Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.GetEnumerator() -> Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.Enumerator
+Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.QueryStringEnumerable() -> void
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.QueryStringEnumerable(string? queryString) -> void
 Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.QueryStringEnumerable(System.ReadOnlyMemory<char> queryString) -> void
-Microsoft.AspNetCore.WebUtilities.QueryStringEnumerable.QueryStringEnumerable() -> void
 Microsoft.AspNetCore.WebUtilities.ReasonPhrases
 Microsoft.AspNetCore.WebUtilities.StreamHelperExtensions
 Microsoft.AspNetCore.WebUtilities.WebEncoders
@@ -142,6 +143,7 @@ override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.Seek(long offset, 
 override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.SetLength(long value) -> void
 override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.Write(byte[]! buffer, int offset, int count) -> void
 override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.CanRead.get -> bool
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.CanSeek.get -> bool
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.CanWrite.get -> bool
@@ -160,6 +162,7 @@ override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.Seek(long off
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.SetLength(long value) -> void
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.Write(byte[]! buffer, int offset, int count) -> void
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.CanRead.get -> bool
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.CanSeek.get -> bool
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.CanWrite.get -> bool
@@ -171,6 +174,7 @@ override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.Position.get
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.Position.set -> void
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.Read(byte[]! buffer, int offset, int count) -> int
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.SetLength(long value) -> void
 override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.Write(byte[]! buffer, int offset, int count) -> void
@@ -200,6 +204,9 @@ override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteAsync(c
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteAsync(string? value) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteAsync(System.ReadOnlyMemory<char> value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLine(System.ReadOnlySpan<char> value) -> void
+override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(char value) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(char[]! values, int index, int count) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(string? value) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(System.ReadOnlyMemory<char> value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.WebUtilities.Base64UrlTextEncoder.Decode(string! text) -> byte[]!
 static Microsoft.AspNetCore.WebUtilities.Base64UrlTextEncoder.Encode(byte[]! data) -> string!
@@ -207,6 +214,7 @@ static Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions.AsF
 static Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions.AsFormDataSection(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> Microsoft.AspNetCore.WebUtilities.FormMultipartSection?
 static Microsoft.AspNetCore.WebUtilities.MultipartSectionConverterExtensions.GetContentDispositionHeader(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue?
 static Microsoft.AspNetCore.WebUtilities.MultipartSectionStreamExtensions.ReadAsStringAsync(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section) -> System.Threading.Tasks.Task<string!>!
+static Microsoft.AspNetCore.WebUtilities.MultipartSectionStreamExtensions.ReadAsStringAsync(this Microsoft.AspNetCore.WebUtilities.MultipartSection! section, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string! uri, string! name, string! value) -> string!
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string! uri, System.Collections.Generic.IDictionary<string!, string?>! queryString) -> string!
 static Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string! uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! queryString) -> string!

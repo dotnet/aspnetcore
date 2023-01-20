@@ -161,10 +161,7 @@ internal sealed class StartupLoader
                     applicationServiceProvider = serviceProviderFactory.CreateServiceProvider(builder);
                 }
 
-                // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
                 return applicationServiceProvider ?? services.BuildServiceProvider();
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             }
         }
 

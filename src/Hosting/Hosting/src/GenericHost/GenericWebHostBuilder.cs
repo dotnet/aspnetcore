@@ -211,10 +211,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var webHostBuilderContext = GetWebHostBuilderContext(context);
             var options = new ServiceProviderOptions();
             configure(webHostBuilderContext, options);
-            // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
             return new DefaultServiceProviderFactory(options);
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         });
 
         return this;
