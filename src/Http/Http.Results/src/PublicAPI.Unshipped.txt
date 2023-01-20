@@ -22,3 +22,4 @@ static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri? uri, T
 *REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
 *REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created(string! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
 *REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
