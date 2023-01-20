@@ -32,13 +32,14 @@ public static class HttpRequestJsonExtensions
     /// <param name="request">The request to read from.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static ValueTask<TValue?> ReadFromJsonAsync<TValue>(
         this HttpRequest request,
         CancellationToken cancellationToken = default)
     {
-        return request.ReadFromJsonAsync<TValue>(options: null, cancellationToken);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var options = ResolveSerializerOptions(request.HttpContext);
+        return request.ReadFromJsonAsync(jsonTypeInfo: (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)), cancellationToken);
     }
 
     /// <summary>
@@ -166,14 +167,15 @@ public static class HttpRequestJsonExtensions
     /// <param name="type">The type of object to read.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static ValueTask<object?> ReadFromJsonAsync(
         this HttpRequest request,
         Type type,
         CancellationToken cancellationToken = default)
     {
-        return request.ReadFromJsonAsync(type, options: null, cancellationToken);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var options = ResolveSerializerOptions(request.HttpContext);
+        return request.ReadFromJsonAsync(jsonTypeInfo: options.GetTypeInfo(type), cancellationToken);
     }
 
     /// <summary>

@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Internal;
 
 #nullable enable
 
@@ -26,7 +27,7 @@ public class JsonOptions
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
         // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
         // .AddContext<TContext>()
-        TypeInfoResolver = CreateDefaultTypeResolver()
+        TypeInfoResolver = TrimmingAppContextSwitches.EnsureJsonTrimmability ? null : CreateDefaultTypeResolver()
     };
 
     // Use a copy so the defaults are not modified.
