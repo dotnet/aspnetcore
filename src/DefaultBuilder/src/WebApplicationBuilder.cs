@@ -92,6 +92,8 @@ public sealed class WebApplicationBuilder
 
         var configuration = new ConfigurationManager();
 
+        configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
+
         // add the default host configuration sources, so they are picked up by the HostApplicationBuilder constructor.
         // These won't be added by HostApplicationBuilder since DisableDefaults = true.
         configuration.AddEnvironmentVariables(prefix: "DOTNET_");
@@ -110,7 +112,7 @@ public sealed class WebApplicationBuilder
             Configuration = configuration,
         });
 
-        // configure the ServiceProvider explicitly because DisableDefaults means HostApplicationBuilder won't.
+        // configure the ServiceProviderOptions here since DisableDefaults = true means HostApplicationBuilder won't.
         var serviceProviderFactory = GetServiceProviderFactory(_hostApplicationBuilder);
         _hostApplicationBuilder.ConfigureContainer(serviceProviderFactory);
 
