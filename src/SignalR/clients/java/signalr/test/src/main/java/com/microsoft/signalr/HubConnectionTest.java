@@ -3966,12 +3966,24 @@ class HubConnectionTest {
     @Test
     public void serverTimeoutIsSetThroughBuilder()
     {
-        long timeout = 60;
+        long timeout = 60 * 1000;
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withServerTimeout(timeout)
                 .build();
 
         assertEquals(timeout, hubConnection.getServerTimeout());
+    }
+
+    @Test
+    public void keepAliveIntervalIsSetThroughBuilder()
+    {
+        long interval = 60 * 1000;
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withKeepAliveInterval(interval)
+                .build();
+
+        assertEquals(interval, hubConnection.getKeepAliveInterval());
     }
 }
