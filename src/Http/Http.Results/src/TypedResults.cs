@@ -623,6 +623,7 @@ public static class TypedResults
     /// <item><description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description></item>
     /// </list>
     /// </summary>
+    /// <typeparam name="TRouteValues">The route values type.</typeparam>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for a route.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
@@ -630,11 +631,11 @@ public static class TypedResults
     /// <param name="fragment">The fragment to add to the URL.</param>
     /// <returns>The created <see cref="RedirectToRouteHttpResult"/> for the response.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static RedirectToRouteHttpResult RedirectToRoute(string? routeName, RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null)
+    public static RedirectToRouteHttpResult RedirectToRoute<TRouteValues>(string? routeName, TRouteValues routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => new(
             routeName: routeName,
-            routeValues: routeValues,
+            routeValues: routeValues == null ? null : CreateRouteValues(routeValues),
             permanent: permanent,
             preserveMethod: preserveMethod,
             fragment: fragment);
@@ -889,11 +890,19 @@ public static class TypedResults
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
+    /// <typeparam name="TRouteValues">The route values type.</typeparam>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute"/> for the response.</returns>
-    public static CreatedAtRoute CreatedAtRoute(string? routeName, RouteValueDictionary routeValues)
-        => new(routeName, routeValues);
+    public static CreatedAtRoute CreatedAtRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TRouteValues>(string? routeName, TRouteValues routeValues)
+        => new(routeName, CreateRouteValues(routeValues));
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute",
+        Justification = "DynamicallyAccessedMemberTypes.All forces all properties to be available. All is required instead of just properties because inherited interface properties must be available.")]
+    internal static RouteValueDictionary CreateRouteValues<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TRouteValues>(TRouteValues values)
+    {
+        return values != null ? new RouteValueDictionary(values) : new RouteValueDictionary();
+    }
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -913,12 +922,13 @@ public static class TypedResults
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
     /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <typeparam name="TRouteValues">The route values type.</typeparam>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute{TValue}"/> for the response.</returns>
-    public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary routeValues)
-        => new(routeName, routeValues, value);
+    public static CreatedAtRoute<TValue> CreatedAtRoute<TValue, TRouteValues>(TValue? value, string? routeName, TRouteValues routeValues)
+        => new(routeName, CreateRouteValues(routeValues), value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -979,11 +989,12 @@ public static class TypedResults
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
+    /// <typeparam name="TRouteValues">The route values type.</typeparam>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute"/> for the response.</returns>
-    public static AcceptedAtRoute AcceptedAtRoute(string? routeName, RouteValueDictionary routeValues)
-        => new(routeName, routeValues);
+    public static AcceptedAtRoute AcceptedAtRoute<TRouteValues>(string? routeName, TRouteValues routeValues)
+        => new(routeName, CreateRouteValues(routeValues));
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -1003,12 +1014,13 @@ public static class TypedResults
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <typeparam name="TRouteValues">The route values type.</typeparam>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
-    public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary routeValues)
-        => new(routeName, routeValues, value);
+    public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue, TRouteValues>(TValue? value, string? routeName, TRouteValues routeValues)
+        => new(routeName, CreateRouteValues(routeValues), value);
 
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.

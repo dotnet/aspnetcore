@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -145,6 +146,8 @@ internal static partial class HttpResultsHelper
             ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
     }
+
+    public static RouteValueDictionary EnsureValue(RouteValueDictionary? values) => values ?? new RouteValueDictionary();
 
     internal static partial class Log
     {

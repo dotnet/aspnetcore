@@ -52,7 +52,7 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatus
         RouteValueDictionary routeValues)
     {
         RouteName = routeName;
-        RouteValues = routeValues;
+        RouteValues = HttpResultsHelper.EnsureValue(routeValues);
     }
 
     /// <summary>

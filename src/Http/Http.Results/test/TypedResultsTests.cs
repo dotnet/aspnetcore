@@ -148,6 +148,38 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void AcceptedAtRoute_WithRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeValues = new { foo = 123 };
+
+        // Act
+        var result = TypedResults.AcceptedAtRoute(routeValues: routeValues);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+    }
+
+    [Fact]
+    public void AcceptedAtRoute_WithRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeValues = new { foo = 123 };
+        var value = new { };
+
+        // Act
+        var result = TypedResults.AcceptedAtRoute(value: value, routeValues: routeValues);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
     public void BadRequest_WithValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -688,6 +720,38 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void CreatedAtRoute_WithRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeValues = new { foo = 123 };
+
+        // Act
+        var result = TypedResults.CreatedAtRoute(routeValues: routeValues);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeValues = new { foo = 123 };
+        var value = new { };
+
+        // Act
+        var result = TypedResults.CreatedAtRoute(value: value, routeValues: routeValues);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
     public void Empty_IsEmptyInstance()
     {
         // Act
@@ -1091,6 +1155,20 @@ public class TypedResultsTests
         // Assert
         Assert.Null(result.RouteName);
         Assert.Null(result.RouteValues);
+    }
+
+    [Fact]
+    public void RedirectToRoute_WithRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeValues = new { foo = 123 };
+
+        // Act
+        var result = TypedResults.RedirectToRoute(routeValues: routeValues);
+
+        // Assert
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
     }
 
     [Fact]

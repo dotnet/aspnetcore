@@ -58,7 +58,7 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     {
         Value = value;
         RouteName = routeName;
-        RouteValues = routeValues;
+        RouteValues = HttpResultsHelper.EnsureValue(routeValues);
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
