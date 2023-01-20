@@ -47,16 +47,17 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
         var thunks = endpoints.Select((endpoint, _) => $$"""
             [{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
-           (del, builder) =>
+           (methodInfo, options) =>
             {
-                builder.Metadata.Add(new SourceKey{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}});
+                options.EndpointBuilder.Metadata.Add(new SourceKey{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}});
+                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             },
-            (del, builder) =>
+            (del, options, inferredMetadataResult) =>
             {
                 var handler = ({{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}})del;
                 EndpointFilterDelegate? filteredInvocation = null;
 
-                if (builder.FilterFactories.Count > 0)
+                if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
                     filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                     {
@@ -66,14 +67,15 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                         }
                         {{StaticRouteHandlerModelEmitter.EmitFilteredInvocation()}}
                     },
-                    builder,
+                    options.EndpointBuilder,
                     handler.Method);
                 }
 
                 {{StaticRouteHandlerModelEmitter.EmitRequestHandler()}}
                 {{StaticRouteHandlerModelEmitter.EmitFilteredRequestHandler()}}
 
-                return filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                return new RequestDelegateResult(targetDelegate, inferredMetadataResult.EndpointMetadata);
             }),
 """);
 
