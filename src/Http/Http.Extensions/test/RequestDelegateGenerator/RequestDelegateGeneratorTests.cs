@@ -52,6 +52,8 @@ app.MapGet("/hello", () => "Hello world!")
         var expectedBody = "Filtered: Hello world!";
         var (results, compilation) = RunGenerator(source);
 
+        await VerifyAgainstBaselineUsingFile(compilation);
+
         var endpointModel = GetStaticEndpoint(results, "EndpointModel");
         var endpoint = GetEndpointFromCompilation(compilation);
         var requestDelegate = endpoint.RequestDelegate;
