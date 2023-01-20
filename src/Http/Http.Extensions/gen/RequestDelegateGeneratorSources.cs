@@ -30,8 +30,8 @@ using global::Microsoft.AspNetCore.Http;
 using global::Microsoft.Extensions.DependencyInjection;
 using global::Microsoft.Extensions.FileProviders;
 using global::Microsoft.Extensions.Primitives;
-using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
-using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
+using MetadataPopulator = System.Func<global::System.Reflection.MethodInfo, global::Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, global::Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
+using RequestDelegateFactoryFunc = System.Func<global::System.Delegate, global::Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, global::Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, global::Microsoft.AspNetCore.Http.RequestDelegateResult>;
 """;
 
     public static string GeneratedCodeAttribute => $@"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
@@ -88,10 +88,11 @@ file static class GeneratedRouteBuilderExtensionsCore
         {{thunks}}
     };
 
+    {{GeneratedCodeAttribute}}
     internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore<T>(
         this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
         string pattern,
-        System.Delegate handler,
+        global::System.Delegate handler,
         IEnumerable<string> httpMethods,
         string filePath,
         int lineNumber)
@@ -100,10 +101,11 @@ file static class GeneratedRouteBuilderExtensionsCore
         return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
     }
 
+    {{GeneratedCodeAttribute}}
     internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapCore(
         this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes,
         string pattern,
-        System.Delegate handler,
+        global::System.Delegate handler,
         IEnumerable<string> httpMethods,
         string filePath,
         int lineNumber)
