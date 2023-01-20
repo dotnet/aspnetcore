@@ -92,14 +92,27 @@ public sealed class WebApplicationBuilder
 
         var configuration = new ConfigurationManager();
 
+        // add the default host configuration sources, so they are picked up by the HostApplicationBuilder constructor.
+        // These won't be added by HostApplicationBuilder since DisableDefaults = true.
+        configuration.AddEnvironmentVariables(prefix: "DOTNET_");
+        if (options.Args is { Length: > 0 } args)
+        {
+            configuration.AddCommandLine(args);
+        }
+
         _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
         {
+            DisableDefaults = true,
             Args = options.Args,
             ApplicationName = options.ApplicationName,
             EnvironmentName = options.EnvironmentName,
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+
+        // configure the ServiceProvider explicitly because DisableDefaults means HostApplicationBuilder won't.
+        var serviceProviderFactory = GetServiceProviderFactory(_hostApplicationBuilder);
+        _hostApplicationBuilder.ConfigureContainer(serviceProviderFactory);
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -145,6 +158,21 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+    }
+
+    private static DefaultServiceProviderFactory GetServiceProviderFactory(HostApplicationBuilder hostApplicationBuilder)
+    {
+        if (hostApplicationBuilder.Environment.IsDevelopment())
+        {
+            return new DefaultServiceProviderFactory(
+                new ServiceProviderOptions
+                {
+                    ValidateScopes = true,
+                    ValidateOnBuild = true,
+                });
+        }
+
+        return new DefaultServiceProviderFactory();
     }
 
     /// <summary>

@@ -1505,14 +1505,33 @@ public class WebApplicationTests
         Assert.Equal("One", chosenEndpoint);
     }
 
+    public static IEnumerable<object[]> OnlyAddsDefaultServicesOnceData
+    {
+        get
+        {
+            // The slim builder doesn't add logging services by default
+            yield return new object[] { (CreateBuilderFunc)CreateBuilder, true };
+            yield return new object[] { (CreateBuilderFunc)CreateSlimBuilder, false };
+        }
+    }
+
     [Theory]
-    [MemberData(nameof(CreateBuilderFuncs))]
-    public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce(CreateBuilderFunc createBuilder)
+    [MemberData(nameof(OnlyAddsDefaultServicesOnceData))]
+    public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce(CreateBuilderFunc createBuilder, bool hasLogging)
     {
         var builder = createBuilder();
 
         // IWebHostEnvironment is added by ConfigureDefaults
-        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
+        var loggingDescriptors = builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>));
+        if (hasLogging)
+        {
+            Assert.Single(loggingDescriptors);
+        }
+        else
+        {
+            Assert.Empty(loggingDescriptors);
+        }
+
         // IWebHostEnvironment is added by ConfigureWebHostDefaults
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
@@ -1520,7 +1539,16 @@ public class WebApplicationTests
 
         await using var app = builder.Build();
 
-        Assert.Single(app.Services.GetRequiredService<IEnumerable<IConfigureOptions<LoggerFactoryOptions>>>());
+        var loggingServices = app.Services.GetRequiredService<IEnumerable<IConfigureOptions<LoggerFactoryOptions>>>();
+        if (hasLogging)
+        {
+            Assert.Single(loggingServices);
+        }
+        else
+        {
+            Assert.Empty(loggingServices);
+        }
+
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IWebHostEnvironment>>());
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IOptionsChangeTokenSource<HostFilteringOptions>>>());
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IServer>>());
