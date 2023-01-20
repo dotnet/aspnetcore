@@ -1,4 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
