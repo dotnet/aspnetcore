@@ -39,7 +39,7 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
 
         Constraint = new Regex(
             regexPattern,
-            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+            RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase,
             RegexMatchTimeout);
     }
 
