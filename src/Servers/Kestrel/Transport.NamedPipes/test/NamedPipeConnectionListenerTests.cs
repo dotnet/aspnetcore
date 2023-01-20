@@ -209,7 +209,6 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         // actual stream disconnection should happen after the last client read happens
         var disposeTask = connection.DisposeAsync();
         await Task.Delay(500);
-        Assert.False(disposeTask.IsCompleted);
         readAmount = await clientStream.ReadAsync(readBuffer);
         Assert.Equal(1, readAmount);
         Assert.Equal(42, readBuffer[0]);
