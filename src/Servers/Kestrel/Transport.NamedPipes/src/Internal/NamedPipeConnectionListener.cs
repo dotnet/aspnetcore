@@ -94,6 +94,12 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
                         }
                     }
                 }
+                catch (IOException) when (!_listeningToken.IsCancellationRequested)
+                {
+                    // pipe is broken. Dispose existing pipe, create a new one and continue accepting
+                    nextStream.Dispose();
+                    nextStream = CreateServerStream();
+                }
                 catch (OperationCanceledException ex) when (_listeningToken.IsCancellationRequested)
                 {
                     // Cancelled the current token
