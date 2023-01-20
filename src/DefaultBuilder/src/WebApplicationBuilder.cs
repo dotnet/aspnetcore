@@ -94,7 +94,6 @@ public sealed class WebApplicationBuilder
 
         _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
         {
-            DisableDefaults = true,
             Args = options.Args,
             ApplicationName = options.ApplicationName,
             EnvironmentName = options.EnvironmentName,
