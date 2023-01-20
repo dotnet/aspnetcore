@@ -6,6 +6,8 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -194,10 +196,40 @@ public static class TypedResults
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
-    [RequiresUnreferencedCode("Warning")]
-    [RequiresDynamicCode("Warning")]
+    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
         => new(data, options, statusCode, contentType);
+
+    /// <summary>
+    /// Creates a <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonTypeInfo jsonTypeInfo, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(data, jsonTypeInfo, statusCode, contentType);
+
+    /// <summary>
+    /// Creates a <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonContext">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerContext jsonContext, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(data, jsonContext, statusCode, contentType);
 
     /// <summary>
     /// Writes the byte-array content to the response.

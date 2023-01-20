@@ -242,7 +242,7 @@ public class JsonResultTests
     public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        var result = new JsonHttpResult<object>(null, null, null, null);
+        var result = new JsonHttpResult<object>(null, jsonSerializerOptions: null, null, null);
         HttpContext httpContext = null;
 
         // Act & Assert

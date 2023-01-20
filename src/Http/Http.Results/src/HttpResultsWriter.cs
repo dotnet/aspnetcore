@@ -23,6 +23,34 @@ internal static partial class HttpResultsWriter
         HttpContext httpContext,
         ILogger logger,
         TValue? value,
+        JsonTypeInfo jsonTypeInfo,
+        string? contentType = null)
+    {
+        if (value is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
+        if (jsonTypeInfo is JsonTypeInfo<TValue> genericTypeInfo)
+        {
+            // We don't need to box in this case
+            return httpContext.Response.WriteAsJsonAsync(
+               value,
+               genericTypeInfo,
+               contentType: contentType);
+        }
+
+        return httpContext.Response.WriteAsJsonAsync(
+            value,
+            jsonTypeInfo,
+            contentType: contentType);
+    }
+
+    public static Task WriteResultAsJsonAsync<TValue>(
+        HttpContext httpContext,
+        ILogger logger,
+        TValue? value,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {

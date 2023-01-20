@@ -6,6 +6,8 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -180,10 +182,42 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
-    [RequiresUnreferencedCode("Warning")]
-    [RequiresDynamicCode("Warning")]
+    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
     => Json<object>(data, options, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json(object? data, JsonTypeInfo jsonTypeInfo, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+    => Json<object>(data, jsonTypeInfo, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonSerializerContext">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json(object? data, JsonSerializerContext jsonSerializerContext, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+    => Json<object>(data, jsonSerializerContext, contentType, statusCode);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -196,12 +230,44 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
-    [RequiresUnreferencedCode("Warning")]
-    [RequiresDynamicCode("Warning")]
+    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => TypedResults.Json(data, options, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json<TValue>(TValue? data, JsonTypeInfo jsonTypeInfo, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => TypedResults.Json(data, jsonTypeInfo, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonSerializerContext">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json<TValue>(TValue? data, JsonSerializerContext jsonSerializerContext, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => TypedResults.Json(data, jsonSerializerContext, contentType, statusCode);
 
     /// <summary>
     /// Writes the byte-array content to the response.

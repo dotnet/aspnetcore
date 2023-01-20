@@ -1351,7 +1351,7 @@ public class ResultsTests
         (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
-        (() => Results.Json(new(), null, null, null), typeof(JsonHttpResult<object>)),
+        (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),
         (() => Results.NotFound(new()), typeof(NotFound<object>)),
