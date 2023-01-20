@@ -499,34 +499,6 @@ public static partial class Results
         => TypedResults.RedirectToRoute(routeName, routeValues, permanent, preserveMethod, fragment);
 
     /// <summary>
-    /// Redirects to the specified route.
-    /// <list type="bullet">
-    /// <item>
-    /// <description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description>
-    /// </item>
-    /// <item>
-    /// <description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description>
-    /// </item>
-    /// <item>
-    /// <description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description>
-    /// </item>
-    /// <item>
-    /// <description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description>
-    /// </item>
-    /// </list>
-    /// </summary>
-    /// <param name="routeName">The name of the route.</param>
-    /// <param name="routeValues">The parameters for a route.</param>
-    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
-    /// <param name="fragment">The fragment to add to the URL.</param>
-    /// <returns>The created <see cref="IResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static IResult RedirectToRoute<TRouteValues>(string? routeName, TRouteValues routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => TypedResults.RedirectToRoute(routeName, routeValues, permanent, preserveMethod, fragment);
-
-    /// <summary>
     /// Creates an <see cref="IResult"/> object by specifying a <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The status code to set on the response.</param>
@@ -768,19 +740,7 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static IResult CreatedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
-        => CreatedAtRoute<object, object?>(routeName, routeValues, value);
-
-    /// <summary>
-    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>
-    /// <param name="routeName">The name of the route to use for generating the URL.</param>
-    /// <param name="routeValues">The route data to use for generating the URL.</param>
-    /// <param name="value">The value to be included in the HTTP response body.</param>
-    /// <returns>The created <see cref="IResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static IResult CreatedAtRoute<TRouteValues>(string? routeName, TRouteValues routeValues, object? value = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => CreatedAtRoute<object, TRouteValues>(routeName, routeValues, value);
+        => CreatedAtRoute<object>(routeName, routeValues, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -792,18 +752,6 @@ public static partial class Results
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult CreatedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => value is null ? TypedResults.CreatedAtRoute(routeName, routeValues) : TypedResults.CreatedAtRoute(value, routeName, routeValues);
-
-    /// <summary>
-    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>
-    /// <param name="routeName">The name of the route to use for generating the URL.</param>
-    /// <param name="routeValues">The route data to use for generating the URL.</param>
-    /// <param name="value">The value to be included in the HTTP response body.</param>
-    /// <returns>The created <see cref="IResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static IResult CreatedAtRoute<TValue, TRouteValues>(string? routeName, TRouteValues routeValues, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => value is null ? TypedResults.CreatedAtRoute(routeName, routeValues) : TypedResults.CreatedAtRoute(value, routeName, routeValues);
 
@@ -838,19 +786,7 @@ public static partial class Results
 #pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
 #pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
-        => AcceptedAtRoute<object, object?>(routeName, routeValues, value);
-
-    /// <summary>
-    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
-    /// </summary>
-    /// <param name="routeName">The name of the route to use for generating the URL.</param>
-    /// <param name="routeValues">The route data to use for generating the URL.</param>
-    /// <param name="value">The optional content value to format in the response body.</param>
-    /// <returns>The created <see cref="IResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static IResult AcceptedAtRoute<TRouteValues>(string? routeName, TRouteValues routeValues, object? value = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => AcceptedAtRoute<object, TRouteValues>(routeName, routeValues, value);
+        => AcceptedAtRoute<object>(routeName, routeValues, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -862,18 +798,6 @@ public static partial class Results
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => value is null ? TypedResults.AcceptedAtRoute(routeName, routeValues) : TypedResults.AcceptedAtRoute(value, routeName, routeValues);
-
-    /// <summary>
-    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
-    /// </summary>
-    /// <param name="routeName">The name of the route to use for generating the URL.</param>
-    /// <param name="routeValues">The route data to use for generating the URL.</param>
-    /// <param name="value">The optional content value to format in the response body.</param>
-    /// <returns>The created <see cref="IResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static IResult AcceptedAtRoute<TValue, TRouteValues>(string? routeName, TRouteValues routeValues, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => value is null ? TypedResults.AcceptedAtRoute(routeName, routeValues) : TypedResults.AcceptedAtRoute(value, routeName, routeValues);
 
