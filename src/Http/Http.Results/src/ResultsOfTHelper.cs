@@ -40,6 +40,8 @@ internal static class ResultsOfTHelper
         }
 
         [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Validated with IsDynamicCodeSupported check.")]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2060:MakeGenericMethod",
+            Justification = "PopulateMetadataMethod calls a public static method. TTarget is annotated to include public methods.")]
         static void InvokeGenericPopulateMetadata(object[] parameters)
         {
             PopulateMetadataMethod.MakeGenericMethod(typeof(TTarget)).Invoke(null, parameters);
