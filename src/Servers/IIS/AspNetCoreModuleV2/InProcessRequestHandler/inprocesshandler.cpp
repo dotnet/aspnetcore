@@ -25,7 +25,8 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pRequestHandlerContext(pRequestHandlerContext),
    m_pAsyncCompletionHandler(pAsyncCompletion),
    m_pDisconnectHandler(pDisconnectHandler),
-   m_disconnectFired(false)
+   m_disconnectFired(false),
+   m_queueNotified(false)
 {
     InitializeSRWLock(&m_srwDisconnectLock);
 }
