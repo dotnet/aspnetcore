@@ -2566,7 +2566,7 @@
             }
           }
         ],
-        "taskName": "[Milestone Assignments] Assign `Current Milestone` to PRs merged to main"
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch"
       }
     },
     {
@@ -3067,7 +3067,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/5.0"
+                "branchName": "release/7.0"
               }
             }
           ]
@@ -3078,12 +3078,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Add release/5.0 targeting PRs to the servicing project",
+        "taskName": "Add release/7.0 targeting PRs to the servicing project",
         "actions": [
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "5.0.x"
+              "milestoneName": "7.0.x"
             }
           },
           {
@@ -3354,6 +3354,10 @@
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch",
         "actions": [
           {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
             "name": "addMilestone",
             "parameters": {
               "milestoneName": "6.0.14"
@@ -3393,6 +3397,10 @@
         ],
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch",
         "actions": [
+          {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
           {
             "name": "addMilestone",
             "parameters": {
