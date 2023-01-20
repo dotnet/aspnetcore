@@ -2701,46 +2701,6 @@
           "operator": "and",
           "operands": [
             {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "release/6.0"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Assign milestone to PRs merged to \"release/6.0\"",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "6.0.2"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
               "name": "labelAdded",
               "parameters": {
                 "label": "Servicing-consider"
@@ -3380,46 +3340,6 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/3.1"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/3.1 branch",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "3.1.33"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
                 "branchName": "release/6.0"
               }
             }
@@ -3436,7 +3356,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.13"
+              "milestoneName": "6.0.14"
             }
           }
         ]
@@ -3476,7 +3396,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.2"
+              "milestoneName": "7.0.3"
             }
           }
         ]
