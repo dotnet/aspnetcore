@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
@@ -63,34 +62,15 @@ internal static class LdapAdapter
             {
                 // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
                 var groupDN = $"{Encoding.UTF8.GetString((byte[])group)}";
-
-                if (!TryGetGroupCN(groupDN, out var groupCN))
-                {
-                    continue;
-                }
+                var groupCN = groupDN.Split(',')[0].Substring("CN=".Length);
 
                 if (!settings.IgnoreNestedGroups)
                 {
-                    GetNestedGroups(settings.LdapConnection!, identity, distinguishedName, groupCN, logger, retrievedClaims, new HashSet<string>());
+                    GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims, new HashSet<string>());
                 }
                 else
                 {
                     retrievedClaims.Add(groupCN);
-                }
-
-                // Local function to use Span<T> in an async function
-                static bool TryGetGroupCN(string groupDN, [NotNullWhen(true)] out string? groupCN)
-                {
-                    Span<Range> groupDNRange = stackalloc Range[1];
-                    var groupDNSpan = groupDN.AsSpan();
-                    if (groupDNSpan.Split(groupDNRange, ',') > 0)
-                    {
-                        groupCN = groupDNSpan[groupDNRange[0]].Slice("CN=".Length).ToString();
-                        return true;
-                    }
-
-                    groupCN = null;
-                    return false;
                 }
             }
 
@@ -137,23 +117,18 @@ internal static class LdapAdapter
             var memberof = group.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
             if (memberof != null)
             {
-                Span<Range> groupDNRange = stackalloc Range[1];
                 foreach (var member in memberof)
                 {
                     var nestedGroupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
-                    var nestedGroupDNSpan = nestedGroupDN.AsSpan();
-                    if (nestedGroupDNSpan.Split(groupDNRange, ',') > 0)
+                    var nestedGroupCN = nestedGroupDN.Split(',')[0].Substring("CN=".Length);
+
+                    if (processedGroups.Contains(nestedGroupDN))
                     {
-                        var nestedGroupCN = nestedGroupDNSpan[groupDNRange[0]].Slice("CN=".Length);
-
-                        if (processedGroups.Contains(nestedGroupDN))
-                        {
-                            // We need to keep track of already processed groups because circular references are possible with AD groups
-                            return;
-                        }
-
-                        GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN.ToString(), logger, retrievedClaims, processedGroups);
+                        // We need to keep track of already processed groups because circular references are possible with AD groups
+                        return;
                     }
+
+                    GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims, processedGroups);
                 }
             }
         }

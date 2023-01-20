@@ -69,7 +69,6 @@ public class CookieRequestCultureProvider : RequestCultureProvider
             return null;
         }
 
-        //var parts = value.Split(_cookieSeparator, StringSplitOptions.RemoveEmptyEntries);
         Span<Range> parts = stackalloc Range[3];
         var valueSpan = value.AsSpan();
         if (valueSpan.Split(parts, _cookieSeparator, StringSplitOptions.RemoveEmptyEntries) != 2)
@@ -89,18 +88,18 @@ public class CookieRequestCultureProvider : RequestCultureProvider
         var cultureName = potentialCultureName.Slice(_culturePrefix.Length);
         var uiCultureName = potentialUICultureName.Slice(_uiCulturePrefix.Length);
 
-        if (cultureName == null && uiCultureName == null)
+        if (cultureName.IsEmpty && uiCultureName.IsEmpty)
         {
             // No values specified for either so no match
             return null;
         }
 
-        if (cultureName != null && uiCultureName == null)
+        if (!cultureName.IsEmpty && uiCultureName.IsEmpty)
         {
             // Value for culture but not for UI culture so default to culture value for both
             uiCultureName = cultureName;
         }
-        else if (cultureName == null && uiCultureName != null)
+        else if (cultureName.IsEmpty && !uiCultureName.IsEmpty)
         {
             // Value for UI culture but not for culture so default to UI culture value for both
             cultureName = uiCultureName;

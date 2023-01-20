@@ -839,8 +839,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         }
 
         var index = transferEncoding.LastIndexOf(',');
-        index = index == -1 ? 0 : index + 1;
-        if (transferEncoding.AsSpan().Slice(index).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase))
+        if (transferEncoding.AsSpan().Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
