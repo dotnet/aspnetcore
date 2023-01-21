@@ -302,9 +302,6 @@ public static partial class HubConnectionExtensions
                     }
                 }
             }
-
-            // Manifest any errors in the completion task
-            await inputChannel.Completion.ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -314,6 +311,15 @@ public static partial class HubConnectionExtensions
         {
             // This will safely no-op if the catch block above ran.
             outputChannel.Writer.TryComplete();
+
+            try
+            {
+                // Needed to avoid UnobservedTaskExceptions
+                await inputChannel.Completion.ConfigureAwait(false);
+            }
+            // This exception should already have been thrown by WaitToReadAsync and that exception was used to complete the channel
+            // we pass to the user so they can see the exception.
+            catch { }
         }
     }
 }
