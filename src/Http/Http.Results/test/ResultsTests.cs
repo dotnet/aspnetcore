@@ -586,7 +586,7 @@ public class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(default(string), value) as Created<object>;
 
         //Assert
@@ -600,7 +600,7 @@ public class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(string.Empty, value) as Created<object>;
 
         //Assert
@@ -614,7 +614,7 @@ public class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act       
+        // Act
         var result = Results.Created(default(Uri), value) as Created<object>;
 
         //Assert
@@ -737,7 +737,7 @@ public class ResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-
+            
         // Act
         var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<object>;
 

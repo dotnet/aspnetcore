@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -58,7 +59,7 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider,
     {
         Value = value;
         RouteName = routeName;
-        RouteValues = HttpResultsHelper.EnsureValue(routeValues);
+        RouteValues = routeValues ?? new RouteValueDictionary();
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
