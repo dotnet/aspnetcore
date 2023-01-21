@@ -222,6 +222,16 @@ public static class WebHost
                 StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment, ctx.Configuration);
             }
         });
+
+        UseKestrel(builder);
+
+        builder
+            .UseIIS()
+            .UseIISIntegration();
+    }
+
+    internal static void UseKestrel(IWebHostBuilder builder)
+    {
         builder.UseKestrel((builderContext, options) =>
         {
             options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
@@ -248,9 +258,7 @@ public static class WebHost
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
             services.AddRouting();
-        })
-        .UseIIS()
-        .UseIISIntegration();
+        });
     }
 
     /// <summary>
