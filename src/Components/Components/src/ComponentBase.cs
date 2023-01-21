@@ -175,6 +175,19 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     protected Task InvokeAsync(Func<Task> workItem)
         => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
+    /// <summary>
+    /// Treats the supplied <paramref name="exception"/> as being thrown by this component. This will cause the
+    /// enclosing ErrorBoundary to transition into a failed state. If there is no enclosing ErrorBoundary,
+    /// it will be regarded as an exception from the enclosing renderer.
+    ///
+    /// This is useful if an exception occurs outside the component lifecycle methods, but you wish to treat it
+    /// the same as an exception from a component lifecycle method.
+    /// </summary>
+    /// <param name="exception">The <see cref="Exception"/> that will be dispatched to the renderer.</param>
+    /// <returns>A <see cref="Task"/> that will be completed when the exception has finished dispatching.</returns>
+    protected Task DispatchExceptionAsync(Exception exception)
+        => _renderHandle.DispatchExceptionAsync(exception);
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         // This implicitly means a ComponentBase can only be associated with a single

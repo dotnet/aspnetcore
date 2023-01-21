@@ -3613,6 +3613,22 @@ public class RendererTest
     }
 
     [Fact]
+    public async Task ExceptionsDispatchedOffSyncContextCanBeHandledAsync()
+    {
+        // Arrange
+        var renderer = new TestRenderer { ShouldHandleExceptions = true };
+        var component = new NestedAsyncComponent();
+        var exception = new InvalidTimeZoneException("Error from outside the sync context.");
+
+        // Act
+        renderer.AssignRootComponentId(component);
+        await component.ExternalExceptionDispatch(exception);
+        
+        // Assert
+        Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
+    }
+
+    [Fact]
     public async Task ExceptionsThrownAsynchronouslyAfterFirstRenderCanBeHandled()
     {
         // This differs from the "during first render" case, because some aspects of the rendering
@@ -5610,6 +5626,20 @@ public class RendererTest
             OnParametersSetAsyncAsync,
             OnAfterRenderAsyncSync,
             OnAfterRenderAsyncAsync,
+        }
+
+        public Task ExternalExceptionDispatch(Exception exception)
+        {
+            var tcs = new TaskCompletionSource();
+            Task.Run(async () =>
+            {
+                // Inside Task.Run, we're outside the call stack or task chain of the lifecycle method, so
+                // DispatchExceptionAsync is needed to get an exception back into the component
+                await DispatchExceptionAsync(exception);
+                tcs.SetResult();
+            });
+
+            return tcs.Task;
         }
     }
 
