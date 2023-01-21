@@ -147,8 +147,6 @@ internal static partial class HttpResultsHelper
         }
     }
 
-    public static RouteValueDictionary EnsureValue(RouteValueDictionary? values) => values ?? new RouteValueDictionary();
-
     internal static partial class Log
     {
         [LoggerMessage(1, LogLevel.Information,
