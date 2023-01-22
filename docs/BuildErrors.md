@@ -81,7 +81,7 @@ To resolve this issue, confirm that you've installed the required C++ components
 
 ## Error: HTTP Error 500.33 - ANCM Request Handler Load Failure
 
-The [ASP.NET Core Module](https://docs.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
+The [ASP.NET Core Module](https://learn.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
 
 After using `startvs.cmd` to open a solution in Visual Studio, the Kestrel web host option must be used (name of the project) and not IIS Express.
 

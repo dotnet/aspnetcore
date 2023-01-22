@@ -2,7 +2,7 @@
 # and some (Microbuild) should only be applied to non-PR cases for internal builds.
 
 parameters:
-# Job schema parameters - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+# Job schema parameters - https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   cancelTimeoutInMinutes: ''
   condition: ''
   container: ''
@@ -83,7 +83,7 @@ jobs:
     - ${{ if ne(variable.name, '') }}:
       - name: ${{ variable.name }}
         value: ${{ variable.value }}
-    
+
     # handle variable groups
     - ${{ if ne(variable.group, '') }}:
       - group: ${{ variable.group }}
@@ -164,7 +164,7 @@ jobs:
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       - task: MicroBuildCleanup@1
-        displayName: Execute Microbuild cleanup tasks  
+        displayName: Execute Microbuild cleanup tasks
         condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
         continueOnError: ${{ parameters.continueOnError }}
         env:
@@ -214,7 +214,7 @@ jobs:
       displayName: Publish XUnit Test Results
       inputs:
         testResultsFormat: 'xUnit'
-        testResultsFiles: '*.xml' 
+        testResultsFiles: '*.xml'
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
         mergeTestResults: ${{ parameters.mergeTestResults }}
@@ -225,7 +225,7 @@ jobs:
       displayName: Publish TRX Test Results
       inputs:
         testResultsFormat: 'VSTest'
-        testResultsFiles: '*.trx' 
+        testResultsFiles: '*.trx'
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
         mergeTestResults: ${{ parameters.mergeTestResults }}

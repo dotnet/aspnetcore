@@ -2,9 +2,9 @@ parameters:
   # Optional: dependencies of the job
   dependsOn: ''
 
-  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  # Optional: A defined YAML pool - https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
   pool: ''
-    
+
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
@@ -27,7 +27,7 @@ parameters:
 
 jobs:
 - job: OneLocBuild${{ parameters.JobNameSuffix }}
-  
+
   dependsOn: ${{ parameters.dependsOn }}
 
   displayName: OneLocBuild${{ parameters.JobNameSuffix }}

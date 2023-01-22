@@ -18,9 +18,9 @@ yarn add @microsoft/signalr@next
 
 ## Usage
 
-See the [SignalR Documentation](https://docs.microsoft.com/aspnet/core/signalr) at docs.microsoft.com for documentation on the latest release. [API Reference Documentation](https://docs.microsoft.com/javascript/api/%40aspnet/signalr/?view=signalr-js-latest) is also available on docs.microsoft.com.
+See the [SignalR Documentation](https://learn.microsoft.com/aspnet/core/signalr) at learn.microsoft.com for documentation on the latest release. [API Reference Documentation](https://learn.microsoft.com/javascript/api/%40aspnet/signalr/?view=signalr-js-latest) is also available on learn.microsoft.com.
 
-For documentation on using this client with Azure SignalR Service and Azure Functions, see the [SignalR Service serverless developer guide](https://docs.microsoft.com/azure/azure-signalr/signalr-concept-serverless-development-config).
+For documentation on using this client with Azure SignalR Service and Azure Functions, see the [SignalR Service serverless developer guide](https://learn.microsoft.com/azure/azure-signalr/signalr-concept-serverless-development-config).
 
 ### Browser
 
