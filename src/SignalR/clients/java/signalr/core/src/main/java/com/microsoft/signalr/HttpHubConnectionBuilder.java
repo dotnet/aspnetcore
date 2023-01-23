@@ -156,11 +156,11 @@ public class HttpHubConnectionBuilder {
     /**
      * Sets keepAliveInterval for the {@link HubConnection}.
      *
-     * @param interval The keepAliveInterval to be set.
+     * @param intervalInMilliseconds The keepAliveInterval to be set.
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder withKeepAliveInterval(long interval) {
-        this.keepAliveInterval = interval;
+    public HttpHubConnectionBuilder withKeepAliveInterval(long intervalInMilliseconds) {
+        this.keepAliveInterval = intervalInMilliseconds;
         return this;
     }
 
