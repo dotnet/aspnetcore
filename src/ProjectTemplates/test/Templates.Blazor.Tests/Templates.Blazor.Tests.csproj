@@ -4,6 +4,8 @@
     <TestGroupName>ProjectTemplates.Blazor.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <RunBlazorPlaywrightTemplateTests Condition="'$(RunBlazorPlaywrightTemplateTests)' == ''">$(RunTemplateTests)</RunBlazorPlaywrightTemplateTests>
     <SkipTests Condition="'$(RunBlazorPlaywrightTemplateTests)' != 'true'">true</SkipTests>
