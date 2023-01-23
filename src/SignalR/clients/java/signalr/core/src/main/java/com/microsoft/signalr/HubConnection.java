@@ -30,6 +30,9 @@ import okhttp3.OkHttpClient;
  * A connection used to invoke hub methods on a SignalR Server.
  */
 public class HubConnection implements AutoCloseable {
+    static final long DEFAULT_SERVER_TIMEOUT = 30 * 1000;
+    static final long DEFAULT_KEEP_ALIVE_INTERVAL = 15 * 1000;
+
     private static final byte RECORD_SEPARATOR = 0x1e;
     private static final List<Type> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
@@ -49,8 +52,8 @@ public class HubConnection implements AutoCloseable {
     // These are all user-settable properties
     private String baseUrl;
     private List<OnClosedCallback> onClosedCallbackList;
-    private long keepAliveInterval = DefaultHubConnectionSettings.KEEP_ALIVE_INTERVAL;
-    private long serverTimeout = DefaultHubConnectionSettings.SERVER_TIMEOUT;
+    private long keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
+    private long serverTimeout = DEFAULT_SERVER_TIMEOUT;
     private long handshakeResponseTimeout = 15 * 1000;
 
     // Private property, modified for testing
