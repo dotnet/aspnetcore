@@ -23,8 +23,8 @@ public class HttpHubConnectionBuilder {
     private Map<String, String> headers;
     private TransportEnum transportEnum;
     private Action1<OkHttpClient.Builder> configureBuilder;
-    private Long serverTimeout;
-    private Long keepAliveInterval;
+    private long serverTimeout = DefaultHubConnectionSettings.SERVER_TIMEOUT;
+    private long keepAliveInterval = DefaultHubConnectionSettings.KEEP_ALIVE_INTERVAL;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
