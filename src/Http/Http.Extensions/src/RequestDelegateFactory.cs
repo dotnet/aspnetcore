@@ -269,7 +269,7 @@ public static partial class RequestDelegateFactory
             Handler = handler,
             ServiceProvider = serviceProvider,
             ServiceProviderIsService = serviceProvider.GetService<IServiceProviderIsService>(),
-            RouteParameters = options?.RouteParameterNames?.ToList(),
+            RouteParameters = options?.RouteParameterNames,
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             EndpointBuilder = endpointBuilder,
