@@ -123,13 +123,13 @@ public class TargetPickerUi
             catch (Exception)
             {
                 context.Response.StatusCode = 404;
-                await context.Response.WriteAsync($@"
-                                    Open about:config:
-                                    - enable devtools.debugger.remote-enabled
-                                    - enable devtools.chrome.enabled
-                                    - disable devtools.debugger.prompt-connection
-                                    Open firefox with remote debugging enabled on port 6000:
-                                    firefox --start-debugger-server 6000 -new-tab about:debugging");
+                await context.Response.WriteAsync($@"WARNING:
+Open about:config:
+- enable devtools.debugger.remote-enabled
+- enable devtools.chrome.enabled
+- disable devtools.debugger.prompt-connection
+Open firefox with remote debugging enabled on port 6000:
+firefox --start-debugger-server 6000 -new-tab about:debugging");
                 return;
             }
             var source = new CancellationTokenSource();
