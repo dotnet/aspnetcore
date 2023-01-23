@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
+using System.Dynamic;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
@@ -47,18 +48,18 @@ public class TargetPickerUi
     /// <returns>The <see cref="Task"/>.</returns>
     public async Task DisplayFirefox(HttpContext context)
     {
-        static async Task SendMessageToBrowser(NetworkStream toStream, JObject args, CancellationToken token)
+        static async Task SendMessageToBrowser(NetworkStream toStream, ExpandoObject args, CancellationToken token)
         {
-            var msg = args.ToString(Newtonsoft.Json.Formatting.None);
+            var msg = JsonSerializer.Serialize(args);
             var bytes = Encoding.UTF8.GetBytes(msg);
-            byte[]? bytesWithHeader = Encoding.UTF8.GetBytes($"{bytes.Length}:").Concat(bytes).ToArray();
+            var bytesWithHeader = Encoding.UTF8.GetBytes($"{bytes.Length}:").Concat(bytes).ToArray();
             await toStream.WriteAsync(bytesWithHeader, token).AsTask();
         }
 #pragma warning disable CA1835
         static async Task<string> ReceiveMessageLoop(TcpClient browserDebugClientConnect, CancellationToken token)
         {
-            using NetworkStream toStream = browserDebugClientConnect.GetStream();
-            int bytesRead = 0;
+            var toStream = browserDebugClientConnect.GetStream();
+            var bytesRead = 0;
             var _lengthBuffer = new byte[10];
             while (bytesRead == 0 || Convert.ToChar(_lengthBuffer[bytesRead - 1]) != ':')
             {
@@ -96,14 +97,17 @@ public class TargetPickerUi
         }
         static async Task EvaluateOnBrowser(NetworkStream toStream, string? to, string text, CancellationToken token)
         {
-            var o = JObject.FromObject(new
-            {
-                to,
-                type = "evaluateJSAsync",
-                text,
-                options = new { eager = true, mapped = new { @await = true } }
-            });
-            await SendMessageToBrowser(toStream, o, token);
+            dynamic message = new ExpandoObject();
+            dynamic options = new ExpandoObject();
+            dynamic awaitObj = new ExpandoObject();
+            awaitObj.@await = true;
+            options.eager = true;
+            options.mapped = awaitObj;
+            message.to = to;
+            message.type = "evaluateJSAsync";
+            message.text = text;
+            message.options = options;
+            await SendMessageToBrowser(toStream, message, token);
         }
 #pragma warning restore CA1835
 
@@ -121,25 +125,32 @@ public class TargetPickerUi
             {
                 context.Response.StatusCode = 404;
                 await context.Response.WriteAsync($@"
-                                    Open firefox with remote debugging enabled on port 6000<br>
-                                    <tt>firefox --start-debugger-server 6000 -new-tab about:debugging</tt>");
+                                    Open about:config:
+                                    - enable devtools.debugger.remote-enabled
+                                    - enable devtools.chrome.enabled
+                                    - disable devtools.debugger.prompt-connection
+                                    Open firefox with remote debugging enabled on port 6000:
+                                    firefox --start-debugger-server 6000 -new-tab about:debugging");
                 return;
             }
-            CancellationTokenSource source = new CancellationTokenSource();
-            CancellationToken token = source.Token;
-            using NetworkStream toStream = browserDebugClientConnect.GetStream();
-            await SendMessageToBrowser(toStream, JObject.FromObject(new { type = "listTabs", to = "root" }), token);
-            string ?tabToRedirect = null;
-            bool foundAboutDebugging = false;
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var toStream = browserDebugClientConnect.GetStream();
+            dynamic messageListTabs = new ExpandoObject();
+            messageListTabs.type = "listTabs";
+            messageListTabs.to = "root";
+            await SendMessageToBrowser(toStream, messageListTabs, token);
+            string? tabToRedirect = null;
+            var foundAboutDebugging = false;
             string? consoleActorId = null;
-            string ?toCmd = null;
+            string? toCmd = null;
             while (browserDebugClientConnect.Connected)
             {
                 var res = JObject.Parse(await ReceiveMessageLoop(browserDebugClientConnect, token));
                 var tabs = res["tabs"]?.Value<JArray>();
                 if (res?["type"]?.Value<string>()?.Equals("tabListChanged") == true)
                 {
-                    await SendMessageToBrowser(toStream, JObject.FromObject(new { type = "listTabs", to = "root" }), token);
+                    await SendMessageToBrowser(toStream, messageListTabs, token);
                 }
                 else if (tabs != null)
                 {
@@ -202,12 +213,24 @@ public class TargetPickerUi
                     }
                     else if (!string.IsNullOrEmpty(res?["actor"]?.Value<string>()))
                     {
-                        await SendMessageToBrowser(toStream, JObject.FromObject(new { type = "watchTargets", targetType = "frame", to = res?["actor"]?.Value<string>() }), token);
-                        await SendMessageToBrowser(toStream, JObject.FromObject(new { type = "watchResources", resourceTypes = new JArray("console-message"), to = res?["actor"]?.Value<string>() }), token);
+                        dynamic messageWatchTargets = new ExpandoObject();
+                        messageWatchTargets.type = "watchTargets";
+                        messageWatchTargets.targetType = "frame";
+                        messageWatchTargets.to = res?["actor"]?.Value<string>();
+                        await SendMessageToBrowser(toStream, messageWatchTargets, token);
+                        dynamic messageWatchResources = new ExpandoObject();
+                        messageWatchResources.type = "watchResources";
+                        messageWatchResources.resourceTypes = new string[1] { "console-message" };
+                        messageWatchResources.to = res?["actor"]?.Value<string>();
+                        await SendMessageToBrowser(toStream, messageWatchResources, token);
                     }
                     else if (!string.IsNullOrEmpty(toCmd))
                     {
-                        await SendMessageToBrowser(toStream, JObject.FromObject(new { type = "getWatcher", isServerTargetSwitchingEnabled = true, to = toCmd }), token);
+                        dynamic messageGetWatcher = new ExpandoObject();
+                        messageGetWatcher.type = "getWatcher";
+                        messageGetWatcher.isServerTargetSwitchingEnabled = true;
+                        messageGetWatcher.to = toCmd;
+                        await SendMessageToBrowser(toStream, messageGetWatcher, token);
                     }
                 }
             }

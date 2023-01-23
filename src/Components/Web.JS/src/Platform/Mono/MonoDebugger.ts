@@ -45,48 +45,10 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
 }
 
 async function launchFirefoxDebugger() {
-  const appDiv = document.getElementById('app');
-    const response = await fetch(`_framework/debug?url=${encodeURIComponent(location.href)}&isFirefox=${isFirefox}`);
-    if (response.status !== 200) {
-      const warningToDebug = document.createElement('div');
-      warningToDebug.id = 'warningToDebug';
-      warningToDebug.style.padding = '20px';
-      warningToDebug.style.backgroundColor = '#f44336';
-      warningToDebug.style.color = 'white';
-      warningToDebug.style.opacity = '1';
-      warningToDebug.style.transition = 'opacity 0.6s';
-      warningToDebug.style.marginBottom = '15px';
-      warningToDebug.style.top = '0';
-      warningToDebug.style.right = '0';
-      warningToDebug.style.position = 'absolute';
-      warningToDebug.style.zIndex = '2';
-      warningToDebug.innerHTML = await response.text();
-      const closeWarningButton = document.createElement('span');
-      closeWarningButton.innerHTML = '&times;';
-      closeWarningButton.style.marginLeft = '15px';
-      closeWarningButton.style.color = 'white';
-      closeWarningButton.style.fontWeight = 'bold';
-      closeWarningButton.style.float = 'right';
-      closeWarningButton.style.fontSize = '22px';
-      closeWarningButton.style.lineHeight = '20px';
-      closeWarningButton.style.cursor = 'pointer';
-      closeWarningButton.style.transition = '0.3s';
-      closeWarningButton.onclick = function(){
-        warningToDebug.style.opacity = '0';
-        setTimeout(function() {
-          warningToDebug.style.display = 'none';
-        }, 600);
-      };
-      warningToDebug.appendChild(closeWarningButton);
-      if (!(appDiv === null)) {
-        appDiv.appendChild(warningToDebug);
-      }
-    } else {
-      const warningToDebug = document.getElementById('warningToDebug');
-      if (!(warningToDebug === null)) {
-        warningToDebug.style.display = 'none';
-      }
-    }
+  const response = await fetch(`_framework/debug?url=${encodeURIComponent(location.href)}&isFirefox=true`);
+  if (response.status !== 200) {
+    console.warn(await response.text());
+  }
 }
 
 function launchDebugger() {
