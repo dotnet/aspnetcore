@@ -199,14 +199,18 @@ internal partial class RemoteJSRuntime : JSRuntime
         [LoggerMessage(2, LogLevel.Debug, "There was an error invoking the static method '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}'.", EventName = "InvokeDotNetMethodException")]
         private static partial void InvokeStaticDotNetMethodException(ILogger logger, string assemblyName, string methodIdentifier, string? callbackId, Exception exception);
 
+#pragma warning disable SYSLIB1025
         [LoggerMessage(4, LogLevel.Debug, "There was an error invoking the instance method '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}'.", EventName = "InvokeDotNetMethodException")]
         private static partial void InvokeInstanceDotNetMethodException(ILogger logger, string methodIdentifier, long dotNetObjectReference, string? callbackId, Exception exception);
+#pragma warning restore SYSLIB1025
 
         [LoggerMessage(3, LogLevel.Debug, "Invocation of '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}' completed successfully.", EventName = "InvokeDotNetMethodSuccess")]
         private static partial void InvokeStaticDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, string assemblyName, string methodIdentifier, string? callbackId);
 
+#pragma warning disable SYSLIB1025
         [LoggerMessage(5, LogLevel.Debug, "Invocation of '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}' completed successfully.", EventName = "InvokeDotNetMethodSuccess")]
         private static partial void InvokeInstanceDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, string methodIdentifier, long dotNetObjectReference, string? callbackId);
+#pragma warning restore SYSLIB1025
 
         internal static void InvokeDotNetMethodException(ILogger logger, in DotNetInvocationInfo invocationInfo, Exception exception)
         {

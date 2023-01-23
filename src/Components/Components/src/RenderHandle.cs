@@ -65,6 +65,18 @@ public readonly struct RenderHandle
         _renderer.AddToRenderQueue(_componentId, renderFragment);
     }
 
+    /// <summary>
+    /// Dispatches an <see cref="Exception"/> to the <see cref="Renderer"/>.
+    /// </summary>
+    /// <param name="exception">The <see cref="Exception"/> that will be dispatched to the renderer.</param>
+    /// <returns>A <see cref="Task"/> that will be completed when the exception has finished dispatching.</returns>
+    public Task DispatchExceptionAsync(Exception exception)
+    {
+        var renderer = _renderer;
+        var componentId = _componentId;
+        return Dispatcher.InvokeAsync(() => renderer!.HandleComponentException(exception, componentId));
+    }
+
     [DoesNotReturn]
     private static void ThrowNotInitialized()
     {

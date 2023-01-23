@@ -22,10 +22,7 @@ internal sealed class TrivialMatcher : Matcher
 
     public sealed override Task MatchAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var path = httpContext.Request.Path.Value;
         if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))

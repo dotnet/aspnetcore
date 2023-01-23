@@ -205,7 +205,7 @@ internal sealed partial class Request
             {
                 // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
                 var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
-                if (transferEncoding != null && string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
+                if (IsChunked(transferEncoding))
                 {
                     _contentBoundaryType = BoundaryType.Chunked;
                 }
@@ -532,7 +532,7 @@ internal sealed partial class Request
         if (StringValues.IsNullOrEmpty(Headers.ContentLength)) { return; }
 
         var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
-        if (transferEncoding == null || !string.Equals("chunked", transferEncoding.Split(',')[^1].Trim(), StringComparison.OrdinalIgnoreCase))
+        if (!IsChunked(transferEncoding))
         {
             return;
         }
@@ -553,5 +553,20 @@ internal sealed partial class Request
         IHeaderDictionary headerDictionary = Headers;
         headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
         Headers.ContentLength = StringValues.Empty;
+    }
+
+    private static bool IsChunked(string? transferEncoding)
+    {
+        if (transferEncoding is null)
+        {
+            return false;
+        }
+
+        var index = transferEncoding.LastIndexOf(',');
+        if (transferEncoding.AsSpan().Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
     }
 }

@@ -23,10 +23,7 @@ public class CookieSlidingExpirationContext : PrincipalContext<CookieAuthenticat
         AuthenticationTicket ticket, TimeSpan elapsedTime, TimeSpan remainingTime)
         : base(context, scheme, options, ticket?.Properties)
     {
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
 
         Principal = ticket.Principal;
         ElapsedTime = elapsedTime;

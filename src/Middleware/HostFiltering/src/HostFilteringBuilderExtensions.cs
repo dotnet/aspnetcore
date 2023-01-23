@@ -18,10 +18,7 @@ public static class HostFilteringBuilderExtensions
     /// <returns>The original <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseHostFiltering(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         app.UseMiddleware<HostFilteringMiddleware>();
 

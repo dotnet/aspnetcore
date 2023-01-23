@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Razor.Hosting;
@@ -173,6 +173,28 @@ public class ChecksumValidatorTest
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some other import"), "/Views/_ViewImports.cstml"),
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some import"), "/Views/Home/_ViewImports.cstml"),
                 new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Views/Home/Index.cstml"),
+        });
+
+        ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "some content"));
+        ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/_ViewImports.cstml", "some import"));
+        ProjectFileSystem.Add(new TestRazorProjectItem("/Views/_ViewImports.cstml", "some other import"));
+
+        // Act
+        var result = ChecksumValidator.IsItemValid(ProjectFileSystem, item);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsItemValid_AllFilesMatch_UsingSHA256_ReturnsTrue()
+    {
+        // Arrange
+        var item = new TestRazorCompiledItem(typeof(string), "mvc.1.0.view", "/Views/Home/Index.cstml", new object[]
+        {
+                new RazorSourceChecksumAttribute("SHA256", GetChecksumSHA256("some other import"), "/Views/_ViewImports.cstml"),
+                new RazorSourceChecksumAttribute("SHA1", GetChecksum("some import"), "/Views/Home/_ViewImports.cstml"),
+                new RazorSourceChecksumAttribute("SHA256", GetChecksumSHA256("some content"), "/Views/Home/Index.cstml"),
         });
 
         ProjectFileSystem.Add(new TestRazorProjectItem("/Views/Home/Index.cstml", "some content"));

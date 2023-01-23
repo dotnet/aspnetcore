@@ -22,10 +22,7 @@ public class BinderTypeModelBinder : IModelBinder
     /// <param name="binderType">The <see cref="Type"/> of the <see cref="IModelBinder"/>.</param>
     public BinderTypeModelBinder(Type binderType)
     {
-        if (binderType == null)
-        {
-            throw new ArgumentNullException(nameof(binderType));
-        }
+        ArgumentNullException.ThrowIfNull(binderType);
 
         if (!typeof(IModelBinder).IsAssignableFrom(binderType))
         {
@@ -42,10 +39,7 @@ public class BinderTypeModelBinder : IModelBinder
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         var requestServices = bindingContext.HttpContext.RequestServices;
         var binder = (IModelBinder)_factory(requestServices, arguments: null);

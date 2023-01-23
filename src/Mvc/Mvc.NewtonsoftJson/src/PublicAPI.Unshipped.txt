@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonValidationMetadataProvider
-Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonValidationMetadataProvider.NewtonsoftJsonValidationMetadataProvider() -> void
-Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonValidationMetadataProvider.NewtonsoftJsonValidationMetadataProvider(Newtonsoft.Json.Serialization.NamingStrategy! namingStrategy) -> void

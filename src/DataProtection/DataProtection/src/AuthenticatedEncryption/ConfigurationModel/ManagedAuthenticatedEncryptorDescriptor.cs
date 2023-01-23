@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -20,15 +21,8 @@ public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncr
     /// <param name="masterKey">The master key.</param>
     public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (masterKey == null)
-        {
-            throw new ArgumentNullException(nameof(masterKey));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullThrowHelper.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;

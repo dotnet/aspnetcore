@@ -384,6 +384,28 @@ describe("HubConnectionBuilder", () => {
 
         expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryContextFinal)).toBe(null);
     });
+
+    it("can configure serverTimeoutInMilliseconds for HubConnection", async () => {
+        const milliseconds = 60000;
+
+        const connection = createConnectionBuilder()
+            .withUrl("http://example.com")
+            .withServerTimeout(milliseconds)
+            .build();
+
+        expect(connection.serverTimeoutInMilliseconds).toBe(milliseconds);
+    });
+
+    it("can configure keepAliveIntervalInMilliseconds for HubConnection", async () => {
+        const milliseconds = 60000;
+
+        const connection = createConnectionBuilder()
+            .withUrl("http://example.com")
+            .withKeepAliveInterval(milliseconds)
+            .build();
+
+        expect(connection.keepAliveIntervalInMilliseconds).toBe(milliseconds);
+    });
 });
 
 class CaptureLogger implements ILogger {

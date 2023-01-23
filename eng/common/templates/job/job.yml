@@ -88,6 +88,16 @@ jobs:
     - ${{ if ne(variable.group, '') }}:
       - group: ${{ variable.group }}
 
+    # handle template variable syntax
+    # example:
+    # - template: path/to/template.yml
+    #   parameters:
+    #     [key]: [value]
+    - ${{ if ne(variable.template, '') }}:
+      - template: ${{ variable.template }}
+        ${{ if ne(variable.parameters, '') }}:
+          parameters: ${{ variable.parameters }}
+
     # handle key-value variable syntax.
     # example:
     # - [key]: [value]

@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
-    <Compile Include="..\..\Mvc.Analyzers\src\MvcFacts.cs" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\MvcFacts.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

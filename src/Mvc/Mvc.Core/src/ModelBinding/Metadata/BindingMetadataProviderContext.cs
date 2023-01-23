@@ -19,10 +19,7 @@ public class BindingMetadataProviderContext
         ModelMetadataIdentity key,
         ModelAttributes attributes)
     {
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
 
         Key = key;
         Attributes = attributes.Attributes;

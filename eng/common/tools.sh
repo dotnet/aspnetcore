@@ -312,7 +312,7 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
-  _InitializeBuildToolFramework="net7.0"
+  _InitializeBuildToolFramework="net8.0"
 }
 
 # Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
@@ -428,6 +428,8 @@ function MSBuild {
     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
       if [[ -f $path ]]; then
         selectedPath=$path

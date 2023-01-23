@@ -1103,10 +1103,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     {
         public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
         {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
+            ArgumentNullException.ThrowIfNull(contentType);
 
             var contentTypes = new List<string>()
                 {

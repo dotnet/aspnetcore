@@ -33,10 +33,7 @@ internal sealed partial class RequestSizeLimitFilter : IAuthorizationFilter, IRe
     /// the <see cref="RequestSizeLimitAttribute"/> is not applied.</remarks>
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var effectivePolicy = context.FindEffectivePolicy<IRequestSizePolicy>();
         if (effectivePolicy != null && effectivePolicy != this)

@@ -61,20 +61,9 @@ internal class DeveloperExceptionPageMiddlewareImpl
         IOptions<JsonOptions>? jsonOptions = null,
         IProblemDetailsService? problemDetailsService = null)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (filters == null)
-        {
-            throw new ArgumentNullException(nameof(filters));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(filters);
 
         _next = next;
         _options = options.Value;
@@ -213,8 +202,6 @@ internal class DeveloperExceptionPageMiddlewareImpl
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Values set on ProblemDetails.Extensions are supported by the default writer.")]
     private ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
     {
         var problemDetails = new ProblemDetails

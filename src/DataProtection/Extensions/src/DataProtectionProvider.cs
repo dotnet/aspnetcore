@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -41,10 +42,7 @@ public static class DataProtectionProvider
     /// represent a directory on a local disk or a UNC share.</param>
     public static IDataProtectionProvider Create(DirectoryInfo keyDirectory)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
 
         return CreateProvider(keyDirectory, setupAction: builder => { }, certificate: null);
     }
@@ -61,14 +59,8 @@ public static class DataProtectionProvider
         DirectoryInfo keyDirectory,
         Action<IDataProtectionBuilder> setupAction)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
         return CreateProvider(keyDirectory, setupAction, certificate: null);
     }
@@ -86,10 +78,7 @@ public static class DataProtectionProvider
         {
             throw new ArgumentNullException(nameof(applicationName));
         }
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(
             keyDirectory: null,
@@ -108,14 +97,8 @@ public static class DataProtectionProvider
         DirectoryInfo keyDirectory,
         X509Certificate2 certificate)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(keyDirectory, setupAction: builder => { }, certificate: certificate);
     }
@@ -134,18 +117,9 @@ public static class DataProtectionProvider
         Action<IDataProtectionBuilder> setupAction,
         X509Certificate2 certificate)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(keyDirectory, setupAction, certificate);
     }
@@ -172,9 +146,6 @@ public static class DataProtectionProvider
         setupAction(builder);
 
         // extract the provider instance from the service collection
-        // TODO: Remove when DI no longer has RequiresDynamicCodeAttribute https://github.com/dotnet/runtime/pull/79425
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         return serviceCollection.BuildServiceProvider().GetRequiredService<IDataProtectionProvider>();
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
     }
 }

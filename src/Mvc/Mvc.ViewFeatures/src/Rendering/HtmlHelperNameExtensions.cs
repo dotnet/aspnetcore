@@ -17,10 +17,7 @@ public static class HtmlHelperNameExtensions
     /// <returns>A <see cref="string"/> containing the element name.</returns>
     public static string NameForModel(this IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.Name(expression: null);
     }
@@ -32,10 +29,7 @@ public static class HtmlHelperNameExtensions
     /// <returns>A <see cref="string"/> containing the element Id.</returns>
     public static string IdForModel(this IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.Id(expression: null);
     }

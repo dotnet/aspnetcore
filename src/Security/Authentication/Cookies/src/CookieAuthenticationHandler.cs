@@ -279,10 +279,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
     /// <inheritdoc />
     protected override async Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         properties = properties ?? new AuthenticationProperties();
 

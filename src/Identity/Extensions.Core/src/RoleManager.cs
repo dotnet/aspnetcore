@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Identity.Core;
 using Microsoft.Extensions.Logging;
 
@@ -40,10 +41,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
         IdentityErrorDescriber errors,
         ILogger<RoleManager<TRole>> logger)
     {
-        if (store == null)
-        {
-            throw new ArgumentNullException(nameof(store));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(store);
         Store = store;
         KeyNormalizer = keyNormalizer;
         ErrorDescriber = errors;
@@ -157,10 +155,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     public virtual async Task<IdentityResult> CreateAsync(TRole role)
     {
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         var result = await ValidateRoleAsync(role).ConfigureAwait(false);
         if (!result.Succeeded)
         {
@@ -194,10 +189,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     public virtual Task<IdentityResult> UpdateAsync(TRole role)
     {
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
 
         return UpdateRoleAsync(role);
     }
@@ -212,10 +204,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     public virtual Task<IdentityResult> DeleteAsync(TRole role)
     {
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
 
         return Store.DeleteAsync(role, CancellationToken);
     }
@@ -230,10 +219,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     public virtual async Task<bool> RoleExistsAsync(string roleName)
     {
         ThrowIfDisposed();
-        if (roleName == null)
-        {
-            throw new ArgumentNullException(nameof(roleName));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(roleName);
 
         return await FindByNameAsync(roleName).ConfigureAwait(false) != null;
     }
@@ -320,10 +306,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     public virtual Task<TRole?> FindByNameAsync(string roleName)
     {
         ThrowIfDisposed();
-        if (roleName == null)
-        {
-            throw new ArgumentNullException(nameof(roleName));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(roleName);
 
         return Store.FindByNameAsync(NormalizeKey(roleName), CancellationToken);
     }
@@ -341,14 +324,8 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     {
         ThrowIfDisposed();
         var claimStore = GetClaimStore();
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(claim);
+        ArgumentNullThrowHelper.ThrowIfNull(role);
 
         await claimStore.AddClaimAsync(role, claim, CancellationToken).ConfigureAwait(false);
         return await UpdateRoleAsync(role).ConfigureAwait(false);
@@ -367,10 +344,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     {
         ThrowIfDisposed();
         var claimStore = GetClaimStore();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
 
         await claimStore.RemoveClaimAsync(role, claim, CancellationToken).ConfigureAwait(false);
         return await UpdateRoleAsync(role).ConfigureAwait(false);
@@ -388,10 +362,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     {
         ThrowIfDisposed();
         var claimStore = GetClaimStore();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return claimStore.GetClaimsAsync(role, CancellationToken);
     }
 
@@ -478,9 +449,6 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// </summary>
     protected void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 }

@@ -29,10 +29,7 @@ public class RedisEndToEndTests : VerifiableLoggedTest
 
     public RedisEndToEndTests(RedisServerFixture<Startup> serverFixture)
     {
-        if (serverFixture == null)
-        {
-            throw new ArgumentNullException(nameof(serverFixture));
-        }
+        ArgumentNullException.ThrowIfNull(serverFixture);
 
         _serverFixture = serverFixture;
     }

@@ -30,15 +30,8 @@ public class TempDataDictionary : ITempDataDictionary
     /// <param name="provider">The <see cref="ITempDataProvider"/> used to Load and Save data.</param>
     public TempDataDictionary(HttpContext context, ITempDataProvider provider)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(provider);
 
         _provider = provider;
         _loaded = false;

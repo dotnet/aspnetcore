@@ -153,10 +153,7 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
         get => _maxModelStateErrors;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             _maxModelStateErrors = value;
         }
@@ -318,10 +315,7 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
         set
         {
             // Disallowing an empty collection would cause the CollectionModelBinder to throw unconditionally.
-            if (value <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
 
             _maxModelBindingCollectionSize = value;
         }
@@ -357,10 +351,7 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
         {
             // Disallowing one model binder (if supported) would cause the model binding system to throw
             // unconditionally. DefaultModelBindingContext always allows a top-level binder i.e. its own creation.
-            if (value <= 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 1);
 
             _maxModelBindingRecursionDepth = value;
         }

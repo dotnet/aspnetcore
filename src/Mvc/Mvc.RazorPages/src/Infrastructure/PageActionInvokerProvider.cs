@@ -60,10 +60,7 @@ internal sealed class PageActionInvokerProvider : IActionInvokerProvider
 
     public void OnProvidersExecuting(ActionInvokerProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var actionContext = context.ActionContext;
 

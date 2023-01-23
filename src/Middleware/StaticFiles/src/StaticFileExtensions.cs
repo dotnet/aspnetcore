@@ -24,10 +24,7 @@ public static class StaticFileExtensions
     /// </remarks>
     public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<StaticFileMiddleware>();
     }
@@ -44,10 +41,7 @@ public static class StaticFileExtensions
     /// </remarks>
     public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app, string requestPath)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseStaticFiles(new StaticFileOptions
         {
@@ -63,14 +57,8 @@ public static class StaticFileExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app, StaticFileOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<StaticFileMiddleware>(Options.Create(options));
     }

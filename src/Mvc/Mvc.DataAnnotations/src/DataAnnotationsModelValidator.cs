@@ -29,15 +29,8 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
         ValidationAttribute attribute,
         IStringLocalizer? stringLocalizer)
     {
-        if (validationAttributeAdapterProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
-        }
-
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
+        ArgumentNullException.ThrowIfNull(attribute);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         Attribute = attribute;
@@ -56,10 +49,7 @@ internal sealed class DataAnnotationsModelValidator : IModelValidator
     /// <returns>An enumerable of the validation results.</returns>
     public IEnumerable<ModelValidationResult> Validate(ModelValidationContext validationContext)
     {
-        if (validationContext == null)
-        {
-            throw new ArgumentNullException(nameof(validationContext));
-        }
+        ArgumentNullException.ThrowIfNull(validationContext);
         if (validationContext.ModelMetadata == null)
         {
             throw new ArgumentException(

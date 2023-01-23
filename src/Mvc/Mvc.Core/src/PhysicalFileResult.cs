@@ -25,10 +25,7 @@ public class PhysicalFileResult : FileResult
     public PhysicalFileResult(string fileName, string contentType)
         : this(fileName, MediaTypeHeaderValue.Parse(contentType))
     {
-        if (fileName == null)
-        {
-            throw new ArgumentNullException(nameof(fileName));
-        }
+        ArgumentNullException.ThrowIfNull(fileName);
     }
 
     /// <summary>
@@ -56,10 +53,7 @@ public class PhysicalFileResult : FileResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<PhysicalFileResult>>();
         return executor.ExecuteAsync(context, this);

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
-    <DefineConstants>$(DefineConstants);AspNetCoreTesting</DefineConstants>
+    <DefineConstants>$(DefineConstants);INTERNAL_NULLABLE_ATTRIBUTES;AspNetCoreTesting</DefineConstants>
     <!-- This package is internal, ignore API doc requirements -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -40,6 +40,7 @@
     -->
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.execution" />
+    <Reference Include="Microsoft.DotNet.RemoteExecutor" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
@@ -60,6 +61,12 @@
       <PackagePath>contentFiles\cs\netstandard2.0\</PackagePath>
     </Content>
     <Compile Include="$(SharedSourceRoot)TaskExtensions.cs" LinkBase="Shared\TaskExtensions.cs" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
+    <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

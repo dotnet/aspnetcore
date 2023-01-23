@@ -27,9 +27,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -42,9 +42,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -102,17 +102,17 @@ public partial class RoutePatternParserTests
         <Literal value=""awesome"">awesome</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""wow"">wow</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -143,9 +143,9 @@ public partial class RoutePatternParserTests
         <Literal value=""awesome"">awesome</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -155,9 +155,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -197,17 +197,17 @@ public partial class RoutePatternParserTests
     {
         Test(@"""/test/{a?}/test""", @"<Tree>
   <CompilationUnit>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""test"">test</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -220,9 +220,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""test"">test</Literal>
@@ -241,17 +241,17 @@ public partial class RoutePatternParserTests
     {
         Test(@"""/test/{a?}/{b}""", @"<Tree>
   <CompilationUnit>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""test"">test</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -264,9 +264,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -290,17 +290,17 @@ public partial class RoutePatternParserTests
     {
         Test(@"""/test/{a}/{**b}""", @"<Tree>
   <CompilationUnit>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""test"">test</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -310,9 +310,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -342,17 +342,17 @@ public partial class RoutePatternParserTests
     {
         Test(@"""/test/{*a}/{b}""", @"<Tree>
   <CompilationUnit>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""test"">test</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -365,9 +365,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -394,17 +394,17 @@ public partial class RoutePatternParserTests
     {
         Test(@"""/test/{a?bc}/{b}""", @"<Tree>
   <CompilationUnit>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""test"">test</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -414,9 +414,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>

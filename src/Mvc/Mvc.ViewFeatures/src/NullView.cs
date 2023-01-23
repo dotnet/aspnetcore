@@ -14,10 +14,7 @@ internal sealed class NullView : IView
 
     public Task RenderAsync(ViewContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return Task.CompletedTask;
     }
