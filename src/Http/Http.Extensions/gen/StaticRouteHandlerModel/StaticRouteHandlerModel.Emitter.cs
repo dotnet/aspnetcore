@@ -34,11 +34,11 @@ internal static class StaticRouteHandlerModelEmitter
     {
         return endpoint.HttpMethod switch
         {
-            "MapGet" => "new[] { HttpMethods.Get }",
-            "MapPut" => "new[] { HttpMethods.Put }",
-            "MapPost" => "new[] { HttpMethods.Post }",
-            "MapDelete" => "new[] { HttpMethods.Delete }",
-            "MapPatch" => "new[] { HttpMethods.Patch }",
+            "MapGet" => "GetVerb",
+            "MapPut" => "PutVerb",
+            "MapPost" => "PostVerb",
+            "MapDelete" => "DeleteVerb",
+            "MapPatch" => "PatchVerb",
             _ => throw new ArgumentException($"Received unexpected HTTP method: {endpoint.HttpMethod}")
         };
     }
