@@ -100,6 +100,22 @@ public class HttpRequestHeadersTests
     }
 
     [Fact]
+    public void IHeaderDictionaryMembersReturnStringValuesEmptyForMissingHeaders()
+    {
+        IHeaderDictionary headers = new HttpRequestHeaders();
+
+        // StringValues.Empty.Equals(default(StringValues)), so we check if the implicit conversion
+        // to string[] returns null or Array.Empty<string>() to tell the difference.
+        Assert.Same(Array.Empty<string>(), (string[])headers["custom"]);
+        Assert.Same(Array.Empty<string>(), (string[])headers["host"]);
+        Assert.Same(Array.Empty<string>(), (string[])headers["Content-Length"]);
+
+        // Test both optimized and non-optimized properties.
+        Assert.Same(Array.Empty<string>(), (string[])headers.Host);
+        Assert.Same(Array.Empty<string>(), (string[])headers.AltSvc);
+    }
+
+    [Fact]
     public void EntriesCanBeEnumeratedAfterResets()
     {
         HttpRequestHeaders headers = new HttpRequestHeaders();

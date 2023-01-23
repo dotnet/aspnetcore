@@ -44,8 +44,11 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     {
         get
         {
-            TryGetValueFast(key, out var value);
-            return value;
+            if (TryGetValueFast(key, out var value))
+            {
+                return value;
+            }
+            return StringValues.Empty;
         }
         set
         {

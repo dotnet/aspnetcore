@@ -859,7 +859,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
             {{
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if (_contentLength.HasValue)
                 {{
                     value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}" : $@"
             get
             {{
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ({header.TestBit()})
                 {{
                     value = _headers._{header.Identifier};
@@ -884,12 +884,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {{
                     {header.SetBit()};
+                    _headers._{header.Identifier} = value; 
                 }}
                 else
                 {{
                     {header.ClearBit()};
-                }}
-                _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
+                    _headers._{header.Identifier} = default; 
+                }}{(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}
         }}")}
@@ -903,7 +904,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return value;
                 }}
-                return default;
+                return StringValues.Empty;
             }}
             set
             {{
@@ -932,7 +933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.{header}, ref value))
                 {{
-                    value = default;
+                    value = StringValues.Empty;
                 }}
                 return value;
             }}

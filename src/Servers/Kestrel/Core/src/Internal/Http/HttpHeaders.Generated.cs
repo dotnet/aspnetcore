@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x2L) != 0)
                 {
                     value = _headers._Connection;
@@ -401,19 +401,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x2L;
+                    _headers._Connection = value; 
                 }
                 else
                 {
                     _bits &= ~0x2L;
+                    _headers._Connection = default; 
                 }
-                _headers._Connection = value; 
             }
         }
         public StringValues HeaderHost
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x4L) != 0)
                 {
                     value = _headers._Host;
@@ -425,19 +426,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x4L;
+                    _headers._Host = value; 
                 }
                 else
                 {
                     _bits &= ~0x4L;
+                    _headers._Host = default; 
                 }
-                _headers._Host = value; 
             }
         }
         public StringValues HeaderAuthority
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x10L) != 0)
                 {
                     value = _headers._Authority;
@@ -449,19 +451,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x10L;
+                    _headers._Authority = value; 
                 }
                 else
                 {
                     _bits &= ~0x10L;
+                    _headers._Authority = default; 
                 }
-                _headers._Authority = value; 
             }
         }
         public StringValues HeaderMethod
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x20L) != 0)
                 {
                     value = _headers._Method;
@@ -473,19 +476,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x20L;
+                    _headers._Method = value; 
                 }
                 else
                 {
                     _bits &= ~0x20L;
+                    _headers._Method = default; 
                 }
-                _headers._Method = value; 
             }
         }
         public StringValues HeaderPath
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x40L) != 0)
                 {
                     value = _headers._Path;
@@ -497,19 +501,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x40L;
+                    _headers._Path = value; 
                 }
                 else
                 {
                     _bits &= ~0x40L;
+                    _headers._Path = default; 
                 }
-                _headers._Path = value; 
             }
         }
         public StringValues HeaderProtocol
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x80L) != 0)
                 {
                     value = _headers._Protocol;
@@ -521,19 +526,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x80L;
+                    _headers._Protocol = value; 
                 }
                 else
                 {
                     _bits &= ~0x80L;
+                    _headers._Protocol = default; 
                 }
-                _headers._Protocol = value; 
             }
         }
         public StringValues HeaderScheme
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x100L) != 0)
                 {
                     value = _headers._Scheme;
@@ -545,19 +551,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x100L;
+                    _headers._Scheme = value; 
                 }
                 else
                 {
                     _bits &= ~0x100L;
+                    _headers._Scheme = default; 
                 }
-                _headers._Scheme = value; 
             }
         }
         public StringValues HeaderTransferEncoding
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x80000000000L) != 0)
                 {
                     value = _headers._TransferEncoding;
@@ -569,19 +576,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x80000000000L;
+                    _headers._TransferEncoding = value; 
                 }
                 else
                 {
                     _bits &= ~0x80000000000L;
+                    _headers._TransferEncoding = default; 
                 }
-                _headers._TransferEncoding = value; 
             }
         }
         public StringValues HeaderContentLength
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if (_contentLength.HasValue)
                 {
                     value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
@@ -603,7 +611,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -631,7 +639,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -659,7 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -687,7 +695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -715,7 +723,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -743,7 +751,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -771,7 +779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -799,7 +807,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -827,7 +835,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -855,7 +863,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -883,7 +891,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -911,7 +919,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -939,7 +947,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -967,7 +975,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -995,7 +1003,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1023,7 +1031,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1051,7 +1059,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1079,7 +1087,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1107,7 +1115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1135,7 +1143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1163,7 +1171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1191,7 +1199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1219,7 +1227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1247,7 +1255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1275,7 +1283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1303,7 +1311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1331,7 +1339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1359,7 +1367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1387,7 +1395,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1415,7 +1423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1443,7 +1451,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1471,7 +1479,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1499,7 +1507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1527,7 +1535,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1555,7 +1563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1583,7 +1591,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1611,7 +1619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1639,7 +1647,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1667,7 +1675,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1695,7 +1703,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1723,7 +1731,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1751,7 +1759,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1779,7 +1787,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -1806,7 +1814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptRanges, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1823,7 +1831,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowCredentials, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1840,7 +1848,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowHeaders, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1857,7 +1865,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowMethods, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1874,7 +1882,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowOrigin, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1891,7 +1899,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlExposeHeaders, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1908,7 +1916,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlMaxAge, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1925,7 +1933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Age, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1942,7 +1950,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Allow, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1959,7 +1967,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AltSvc, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1976,7 +1984,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentDisposition, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -1993,7 +2001,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2010,7 +2018,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentLanguage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2027,7 +2035,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentLocation, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2044,7 +2052,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentMD5, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2061,7 +2069,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentRange, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2078,7 +2086,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentSecurityPolicy, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2095,7 +2103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentSecurityPolicyReportOnly, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2112,7 +2120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ETag, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2129,7 +2137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Expires, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2146,7 +2154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcMessage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2163,7 +2171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcStatus, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2180,7 +2188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.LastModified, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2197,7 +2205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Link, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2214,7 +2222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Location, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2231,7 +2239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ProxyAuthenticate, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2248,7 +2256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ProxyConnection, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2265,7 +2273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.RetryAfter, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2282,7 +2290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketAccept, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2299,7 +2307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketKey, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2316,7 +2324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketProtocol, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2333,7 +2341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketVersion, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2350,7 +2358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketExtensions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2367,7 +2375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Server, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2384,7 +2392,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SetCookie, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2401,7 +2409,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.StrictTransportSecurity, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2418,7 +2426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Trailer, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2435,7 +2443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Vary, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2452,7 +2460,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.WebSocketSubProtocols, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2469,7 +2477,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.WWWAuthenticate, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2486,7 +2494,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XContentTypeOptions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2503,7 +2511,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XFrameOptions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2520,7 +2528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XPoweredBy, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2537,7 +2545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XRequestedWith, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2554,7 +2562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XUACompatible, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -2571,7 +2579,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XXSSProtection, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -8693,7 +8701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x1L) != 0)
                 {
                     value = _headers._Connection;
@@ -8705,12 +8713,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x1L;
+                    _headers._Connection = value; 
                 }
                 else
                 {
                     _bits &= ~0x1L;
+                    _headers._Connection = default; 
                 }
-                _headers._Connection = value; 
                 _headers._rawConnection = null;
             }
         }
@@ -8718,7 +8727,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x1000L) != 0)
                 {
                     value = _headers._Allow;
@@ -8730,19 +8739,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x1000L;
+                    _headers._Allow = value; 
                 }
                 else
                 {
                     _bits &= ~0x1000L;
+                    _headers._Allow = default; 
                 }
-                _headers._Allow = value; 
             }
         }
         public StringValues HeaderAltSvc
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x2000L) != 0)
                 {
                     value = _headers._AltSvc;
@@ -8754,12 +8764,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x2000L;
+                    _headers._AltSvc = value; 
                 }
                 else
                 {
                     _bits &= ~0x2000L;
+                    _headers._AltSvc = default; 
                 }
-                _headers._AltSvc = value; 
                 _headers._rawAltSvc = null;
             }
         }
@@ -8767,7 +8778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if ((_bits & 0x100000000L) != 0)
                 {
                     value = _headers._TransferEncoding;
@@ -8779,12 +8790,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!StringValues.IsNullOrEmpty(value))
                 {
                     _bits |= 0x100000000L;
+                    _headers._TransferEncoding = value; 
                 }
                 else
                 {
                     _bits &= ~0x100000000L;
+                    _headers._TransferEncoding = default; 
                 }
-                _headers._TransferEncoding = value; 
                 _headers._rawTransferEncoding = null;
             }
         }
@@ -8792,7 +8804,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = default;
+                StringValues value = StringValues.Empty;
                 if (_contentLength.HasValue)
                 {
                     value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
@@ -8814,7 +8826,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -8844,7 +8856,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -8873,7 +8885,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -8903,7 +8915,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -8933,7 +8945,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -8962,7 +8974,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -8991,7 +9003,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9020,7 +9032,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9049,7 +9061,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9078,7 +9090,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9107,7 +9119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9136,7 +9148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9165,7 +9177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9194,7 +9206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9224,7 +9236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9253,7 +9265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9282,7 +9294,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9311,7 +9323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9340,7 +9352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9369,7 +9381,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9398,7 +9410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9427,7 +9439,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9456,7 +9468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9485,7 +9497,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9514,7 +9526,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9543,7 +9555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9572,7 +9584,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9601,7 +9613,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9630,7 +9642,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9659,7 +9671,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9688,7 +9700,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9717,7 +9729,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9746,7 +9758,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9776,7 +9788,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9805,7 +9817,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9834,7 +9846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9863,7 +9875,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9892,7 +9904,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -9920,7 +9932,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Accept, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -9938,7 +9950,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptCharset, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -9956,7 +9968,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -9974,7 +9986,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptLanguage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -9992,7 +10004,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlRequestHeaders, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10010,7 +10022,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlRequestMethod, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10028,7 +10040,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Authorization, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10046,7 +10058,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Baggage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10064,7 +10076,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentDisposition, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10082,7 +10094,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentSecurityPolicy, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10100,7 +10112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentSecurityPolicyReportOnly, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10118,7 +10130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.CorrelationContext, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10136,7 +10148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Cookie, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10154,7 +10166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Expect, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10172,7 +10184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.From, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10190,7 +10202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcAcceptEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10208,7 +10220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcMessage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10226,7 +10238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcStatus, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10244,7 +10256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcTimeout, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10262,7 +10274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Host, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10280,7 +10292,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfMatch, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10298,7 +10310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfModifiedSince, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10316,7 +10328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfNoneMatch, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10334,7 +10346,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfRange, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10352,7 +10364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfUnmodifiedSince, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10370,7 +10382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Link, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10388,7 +10400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.MaxForwards, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10406,7 +10418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Origin, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10424,7 +10436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ProxyAuthorization, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10442,7 +10454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Range, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10460,7 +10472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Referer, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10478,7 +10490,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.RequestId, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10496,7 +10508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketAccept, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10514,7 +10526,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketKey, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10532,7 +10544,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketProtocol, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10550,7 +10562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketVersion, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10568,7 +10580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketExtensions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10586,7 +10598,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.StrictTransportSecurity, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10604,7 +10616,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TE, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10622,7 +10634,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Translate, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10640,7 +10652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TraceParent, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10658,7 +10670,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TraceState, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10676,7 +10688,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.UpgradeInsecureRequests, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10694,7 +10706,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.UserAgent, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10712,7 +10724,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.WebSocketSubProtocols, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10730,7 +10742,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XContentTypeOptions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10748,7 +10760,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XFrameOptions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10766,7 +10778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XPoweredBy, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10784,7 +10796,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XRequestedWith, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10802,7 +10814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XUACompatible, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -10820,7 +10832,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XXSSProtection, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15524,7 +15536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -15553,7 +15565,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -15582,7 +15594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return value;
                 }
-                return default;
+                return StringValues.Empty;
             }
             set
             {
@@ -15610,7 +15622,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Accept, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15628,7 +15640,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptCharset, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15646,7 +15658,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15664,7 +15676,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptLanguage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15682,7 +15694,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AcceptRanges, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15700,7 +15712,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowCredentials, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15718,7 +15730,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowHeaders, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15736,7 +15748,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowMethods, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15754,7 +15766,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlAllowOrigin, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15772,7 +15784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlExposeHeaders, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15790,7 +15802,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlMaxAge, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15808,7 +15820,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlRequestHeaders, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15826,7 +15838,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AccessControlRequestMethod, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15844,7 +15856,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Age, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15862,7 +15874,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Allow, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15880,7 +15892,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.AltSvc, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15898,7 +15910,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Authorization, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15916,7 +15928,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Baggage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15934,7 +15946,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.CacheControl, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15952,7 +15964,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Connection, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15970,7 +15982,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentDisposition, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -15988,7 +16000,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16006,7 +16018,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentLanguage, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16024,7 +16036,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentLocation, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16042,7 +16054,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentMD5, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16060,7 +16072,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentRange, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16078,7 +16090,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentSecurityPolicy, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16096,7 +16108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentSecurityPolicyReportOnly, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16114,7 +16126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ContentType, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16132,7 +16144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.CorrelationContext, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16150,7 +16162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Cookie, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16168,7 +16180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Date, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16186,7 +16198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Expires, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16204,7 +16216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Expect, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16222,7 +16234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.From, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16240,7 +16252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcAcceptEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16258,7 +16270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16276,7 +16288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.GrpcTimeout, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16294,7 +16306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Host, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16312,7 +16324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.KeepAlive, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16330,7 +16342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfMatch, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16348,7 +16360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfModifiedSince, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16366,7 +16378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfNoneMatch, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16384,7 +16396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfRange, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16402,7 +16414,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.IfUnmodifiedSince, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16420,7 +16432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.LastModified, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16438,7 +16450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Link, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16456,7 +16468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Location, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16474,7 +16486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.MaxForwards, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16492,7 +16504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Origin, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16510,7 +16522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Pragma, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16528,7 +16540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ProxyAuthenticate, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16546,7 +16558,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ProxyAuthorization, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16564,7 +16576,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.ProxyConnection, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16582,7 +16594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Range, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16600,7 +16612,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Referer, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16618,7 +16630,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.RetryAfter, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16636,7 +16648,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.RequestId, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16654,7 +16666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketAccept, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16672,7 +16684,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketKey, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16690,7 +16702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketProtocol, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16708,7 +16720,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketVersion, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16726,7 +16738,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SecWebSocketExtensions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16744,7 +16756,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Server, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16762,7 +16774,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.SetCookie, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16780,7 +16792,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.StrictTransportSecurity, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16798,7 +16810,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TE, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16816,7 +16828,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Trailer, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16834,7 +16846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TransferEncoding, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16852,7 +16864,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Translate, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16870,7 +16882,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TraceParent, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16888,7 +16900,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.TraceState, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16906,7 +16918,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Upgrade, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16924,7 +16936,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.UpgradeInsecureRequests, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16942,7 +16954,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.UserAgent, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16960,7 +16972,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Vary, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16978,7 +16990,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Via, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -16996,7 +17008,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.Warning, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17014,7 +17026,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.WebSocketSubProtocols, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17032,7 +17044,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.WWWAuthenticate, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17050,7 +17062,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XContentTypeOptions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17068,7 +17080,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XFrameOptions, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17086,7 +17098,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XPoweredBy, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17104,7 +17116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XRequestedWith, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17122,7 +17134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XUACompatible, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }
@@ -17140,7 +17152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.XXSSProtection, ref value))
                 {
-                    value = default;
+                    value = StringValues.Empty;
                 }
                 return value;
             }

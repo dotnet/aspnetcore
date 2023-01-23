@@ -112,4 +112,29 @@ public class HeaderDictionaryTests
 
         Assert.Equal(new[] { "value " }, result);
     }
+
+    [Fact]
+    public void PublicIndexerReturnsStringValuesEmptyForMissingHeaders()
+    {
+        var headers = new HeaderDictionary();
+
+        // StringValues.Empty.Equals(default(StringValues)), so we check if the implicit conversion
+        // to string[] returns null or Array.Empty<string>() to tell the difference.
+        Assert.Same(Array.Empty<string>(), (string[])headers["Header1"]);
+    }
+
+    [Fact]
+    public void IHeaderDictionaryMembersReturnStringValuesEmptyForMissingHeaders()
+    {
+        IHeaderDictionary headers = new HeaderDictionary();
+        Assert.Same(Array.Empty<string>(), (string[])headers["Header1"]);
+        Assert.Same(Array.Empty<string>(), (string[])headers.Host);
+    }
+
+    [Fact]
+    public void IDictionaryIndexerThrowsForMissingHeaders()
+    {
+        IDictionary<string, StringValues> headers = new HeaderDictionary();
+        Assert.Throws<KeyNotFoundException>(() => headers["Header1"]);
+    }
 }
