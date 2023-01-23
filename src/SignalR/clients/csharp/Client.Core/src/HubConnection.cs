@@ -616,9 +616,8 @@ public partial class HubConnection : IAsyncDisposable
         }
         finally
         {
-            // If WaitToReadAsync threw, this will replace that and throw the same Exception
             // Needed to avoid UnobservedTaskExceptions
-            await reader.Completion.ConfigureAwait(false);
+            _ = reader.Completion.Exception;
         }
     }
 

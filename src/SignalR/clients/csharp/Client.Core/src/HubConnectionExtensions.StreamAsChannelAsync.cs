@@ -312,14 +312,8 @@ public static partial class HubConnectionExtensions
             // This will safely no-op if the catch block above ran.
             outputChannel.Writer.TryComplete();
 
-            try
-            {
-                // Needed to avoid UnobservedTaskExceptions
-                await inputChannel.Completion.ConfigureAwait(false);
-            }
-            // This exception should already have been thrown by WaitToReadAsync and that exception was used to complete the channel
-            // we pass to the user so they can see the exception.
-            catch { }
+            // Needed to avoid UnobservedTaskExceptions
+            _ = inputChannel.Completion.Exception;
         }
     }
 }
