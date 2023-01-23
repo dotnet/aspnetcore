@@ -15,7 +15,7 @@ let hasReferencedPdbs = false;
 let debugBuild = false;
 
 export function hasDebuggingEnabled(): boolean {
-  return (hasReferencedPdbs || debugBuild) && currentBrowserIsChromeOrEdge;
+  return (hasReferencedPdbs || debugBuild) && (currentBrowserIsChromeOrEdge || navigator.userAgent.includes('Firefox'));
 }
 
 export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader): void {
@@ -33,6 +33,8 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
     if (evt.shiftKey && (evt.metaKey || evt.altKey) && evt.code === 'KeyD') {
       if (!debugBuild && !hasReferencedPdbs) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
+      } else if (navigator.userAgent.includes('Firefox')) {
+        launchFirefoxDebugger();
       } else if (!currentBrowserIsChromeOrEdge) {
         console.error('Currently, only Microsoft Edge (80+), Google Chrome, or Chromium, are supported for debugging.');
       } else {
@@ -40,6 +42,13 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
       }
     }
   });
+}
+
+async function launchFirefoxDebugger() {
+  const response = await fetch(`_framework/debug?url=${encodeURIComponent(location.href)}&isFirefox=true`);
+  if (response.status !== 200) {
+    console.warn(await response.text());
+  }
 }
 
 function launchDebugger() {
