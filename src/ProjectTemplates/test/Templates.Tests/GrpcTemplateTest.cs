@@ -35,7 +35,7 @@ public class GrpcTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [SkipOnHelix("Not supported queues", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
     [InlineData(true)]
     [InlineData(false)]
@@ -54,22 +54,12 @@ public class GrpcTemplateTest : LoggedTest
 
         await project.RunDotNetBuildAsync();
 
-        var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
         var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
-        var unsupported = isOsx || isWindowsOld;
 
-        using (var serverProcess = project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: Logger))
+        using (var serverProcess = project.StartBuiltProjectAsync(hasListeningUri: !isWindowsOld, logger: Logger))
         {
-            // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
-            // https://github.com/dotnet/aspnetcore/issues/11061
-            if (isOsx)
-            {
-                serverProcess.Process.WaitForExit(assertSuccess: false);
-                Assert.True(serverProcess.Process.HasExited, "built");
-                Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", project, serverProcess.Process));
-            }
-            else if (isWindowsOld)
+            // These templates are HTTPS + HTTP/2 only which is not supported on some platforms.
+            if (isWindowsOld)
             {
                 serverProcess.Process.WaitForExit(assertSuccess: false);
                 Assert.True(serverProcess.Process.HasExited, "built");
@@ -84,18 +74,10 @@ public class GrpcTemplateTest : LoggedTest
             }
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !unsupported))
+        using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !isWindowsOld))
         {
-            // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
-            // https://github.com/dotnet/aspnetcore/issues/11061
-            if (isOsx)
-            {
-                aspNetProcess.Process.WaitForExit(assertSuccess: false);
-                Assert.True(aspNetProcess.Process.HasExited, "published");
-                Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", project, aspNetProcess.Process));
-            }
-            else if (isWindowsOld)
+            // These templates are HTTPS + HTTP/2 only which is not supported on some platforms.
+            if (isWindowsOld)
             {
                 aspNetProcess.Process.WaitForExit(assertSuccess: false);
                 Assert.True(aspNetProcess.Process.HasExited, "published");

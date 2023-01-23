@@ -91,10 +91,7 @@ public class WebHostBuilder : IWebHostBuilder
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
     {
-        if (configureServices == null)
-        {
-            throw new ArgumentNullException(nameof(configureServices));
-        }
+        ArgumentNullException.ThrowIfNull(configureServices);
 
         return ConfigureServices((_, services) => configureServices(services));
     }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Http.Extensions">
+    <type fullname="Microsoft.AspNetCore.Internal.TrimmingAppContextSwitches">
+      <method signature="System.Boolean get_EnsureJsonTrimmability()" body="stub" value="true" feature="Microsoft.AspNetCore.EnsureJsonTrimmability" featurevalue="true" />
+    </type>
+  </assembly>
+</linker>

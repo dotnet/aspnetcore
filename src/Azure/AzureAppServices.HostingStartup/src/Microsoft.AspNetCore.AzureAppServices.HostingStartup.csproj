@@ -15,4 +15,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.AzureAppServicesIntegration.Tests" />
+  </ItemGroup>
 </Project>

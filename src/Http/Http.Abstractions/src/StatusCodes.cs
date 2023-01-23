@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 /// <remarks>
 /// Descriptions for status codes are available from
-/// <see cref="M:Microsoft.AspNetCore.WebUtilitiesReasonPhrases.GetReasonPhrase(Int32)" />.
+/// <see cref="M:Microsoft.AspNetCore.WebUtilities.ReasonPhrases.GetReasonPhrase(Int32)" />.
 /// </remarks>
 public static class StatusCodes
 {

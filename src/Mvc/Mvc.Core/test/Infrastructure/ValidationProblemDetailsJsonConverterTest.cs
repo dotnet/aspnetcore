@@ -148,7 +148,7 @@ public class ValidationProblemDetailsJsonConverterTest
         using Utf8JsonWriter writer = new(stream);
 
         // Act
-        converter.Write(writer, problemDetails, null);
+        converter.Write(writer, problemDetails, new JsonSerializerOptions());
 
         writer.Flush();
         var json = Encoding.UTF8.GetString(stream.ToArray());

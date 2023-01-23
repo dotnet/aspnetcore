@@ -17,4 +17,15 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

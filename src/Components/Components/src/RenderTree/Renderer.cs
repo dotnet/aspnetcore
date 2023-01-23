@@ -77,20 +77,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
     {
-        if (serviceProvider is null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        if (loggerFactory is null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (componentActivator is null)
-        {
-            throw new ArgumentNullException(nameof(componentActivator));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(componentActivator);
 
         _serviceProvider = serviceProvider;
         // Would normally use ILogger<T> here to get the benefit of the string name being cached but this is a public ctor that
@@ -936,6 +925,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 fieldInfo.FieldValue);
         }
     }
+
+    internal void HandleComponentException(Exception exception, int componentId)
+        => HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
 
     /// <summary>
     /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.

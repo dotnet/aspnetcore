@@ -74,10 +74,7 @@ public class HttpRequestStreamReader : TextReader
         _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
         _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
 
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         if (!stream.CanRead)
         {
             throw new ArgumentException(Resources.HttpRequestStreamReader_StreamNotReadable, nameof(stream));
@@ -155,15 +152,8 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override int Read(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         if (count < 0 || index + count > buffer.Length)
         {
@@ -228,15 +218,8 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override Task<int> ReadAsync(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         if (count < 0 || index + count > buffer.Length)
         {

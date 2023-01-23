@@ -40,6 +40,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />

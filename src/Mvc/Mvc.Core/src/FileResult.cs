@@ -21,10 +21,7 @@ public abstract class FileResult : ActionResult
     /// <param name="contentType">The Content-Type header of the response.</param>
     protected FileResult(string contentType)
     {
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
 
         ContentType = contentType;
     }

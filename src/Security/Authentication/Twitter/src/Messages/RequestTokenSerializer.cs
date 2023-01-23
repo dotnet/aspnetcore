@@ -51,15 +51,8 @@ public class RequestTokenSerializer : IDataSerializer<RequestToken>
     /// <param name="token">The token to write</param>
     public static void Write(BinaryWriter writer, RequestToken token)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (token == null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(token);
 
         writer.Write(FormatVersion);
         writer.Write(token.Token);
@@ -75,10 +68,7 @@ public class RequestTokenSerializer : IDataSerializer<RequestToken>
     /// <returns>The token</returns>
     public static RequestToken? Read(BinaryReader reader)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         if (reader.ReadInt32() != FormatVersion)
         {

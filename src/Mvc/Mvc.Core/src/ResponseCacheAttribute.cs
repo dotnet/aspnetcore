@@ -117,10 +117,7 @@ public class ResponseCacheAttribute : Attribute, IFilterFactory, IOrderedFilter
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();

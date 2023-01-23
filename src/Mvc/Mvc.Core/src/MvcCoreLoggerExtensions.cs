@@ -283,10 +283,7 @@ internal static partial class MvcCoreLoggerExtensions
 
         public ActionLogScope(ActionDescriptor action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             _action = action;
         }

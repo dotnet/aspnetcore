@@ -44,10 +44,7 @@ public readonly struct MediaType
     /// <param name="length">The length of the media type to parse if provided.</param>
     public MediaType(string mediaType, int offset, int? length)
     {
-        if (mediaType == null)
-        {
-            throw new ArgumentNullException(nameof(mediaType));
-        }
+        ArgumentNullException.ThrowIfNull(mediaType);
 
         if (offset < 0 || offset >= mediaType.Length)
         {

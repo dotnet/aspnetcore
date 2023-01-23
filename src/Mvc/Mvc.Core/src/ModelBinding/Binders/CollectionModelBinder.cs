@@ -54,15 +54,8 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         ILoggerFactory loggerFactory,
         bool allowValidatingTopLevelNodes)
     {
-        if (elementBinder == null)
-        {
-            throw new ArgumentNullException(nameof(elementBinder));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(elementBinder);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         ElementBinder = elementBinder;
         Logger = loggerFactory.CreateLogger(GetType());
@@ -90,10 +83,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         MvcOptions mvcOptions)
         : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes)
     {
-        if (mvcOptions == null)
-        {
-            throw new ArgumentNullException(nameof(mvcOptions));
-        }
+        ArgumentNullException.ThrowIfNull(mvcOptions);
 
         _maxModelBindingCollectionSize = mvcOptions.MaxModelBindingCollectionSize;
     }
@@ -114,10 +104,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     /// <inheritdoc />
     public virtual async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         Logger.AttemptingToBindModel(bindingContext);
 
@@ -465,10 +452,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     /// </param>
     protected virtual void CopyToModel(object target, IEnumerable<TElement?> sourceCollection)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         var targetCollection = target as ICollection<TElement?>;
         Debug.Assert(targetCollection != null, "This binder is instantiated only for ICollection<T> model types.");

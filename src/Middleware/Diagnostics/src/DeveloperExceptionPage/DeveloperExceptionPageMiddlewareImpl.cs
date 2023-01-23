@@ -5,11 +5,14 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
@@ -34,6 +37,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
     private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
     private readonly Func<ErrorContext, Task> _exceptionHandler;
     private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
+    private readonly ExtensionsExceptionJsonContext _serializationContext;
     private readonly IProblemDetailsService? _problemDetailsService;
 
     /// <summary>
@@ -45,6 +49,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
     /// <param name="hostingEnvironment"></param>
     /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
     /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
+    /// <param name="jsonOptions">The <see cref="JsonOptions"/> used for serialization.</param>
     /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public DeveloperExceptionPageMiddlewareImpl(
         RequestDelegate next,
@@ -53,22 +58,12 @@ internal class DeveloperExceptionPageMiddlewareImpl
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
         IEnumerable<IDeveloperPageExceptionFilter> filters,
+        IOptions<JsonOptions>? jsonOptions = null,
         IProblemDetailsService? problemDetailsService = null)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (filters == null)
-        {
-            throw new ArgumentNullException(nameof(filters));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(filters);
 
         _next = next;
         _options = options.Value;
@@ -77,13 +72,20 @@ internal class DeveloperExceptionPageMiddlewareImpl
         _diagnosticSource = diagnosticSource;
         _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
         _exceptionHandler = DisplayException;
+        _serializationContext = CreateSerializationContext(jsonOptions?.Value);
         _problemDetailsService = problemDetailsService;
-
         foreach (var filter in filters.Reverse())
         {
             var nextFilter = _exceptionHandler;
             _exceptionHandler = errorContext => filter.HandleExceptionAsync(errorContext, nextFilter);
         }
+    }
+
+    private static ExtensionsExceptionJsonContext CreateSerializationContext(JsonOptions? jsonOptions)
+    {
+        // Create context from configured options to get settings such as PropertyNamePolicy and DictionaryKeyPolicy.
+        jsonOptions ??= new JsonOptions();
+        return new ExtensionsExceptionJsonContext(new JsonSerializerOptions(jsonOptions.SerializerOptions));
     }
 
     /// <summary>
@@ -172,21 +174,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
         if (_problemDetailsService != null)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
-                Detail = errorContext.Exception.Message,
-                Status = httpContext.Response.StatusCode
-            };
-
-            problemDetails.Extensions["exception"] = new
-            {
-                Details = errorContext.Exception.ToString(),
-                Headers = httpContext.Request.Headers,
-                Path = httpContext.Request.Path.ToString(),
-                Endpoint = httpContext.GetEndpoint()?.ToString(),
-                RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
-            };
+            var problemDetails = CreateProblemDetails(errorContext, httpContext);
 
             await _problemDetailsService.WriteAsync(new()
             {
@@ -212,6 +200,29 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
             await httpContext.Response.WriteAsync(sb.ToString());
         }
+    }
+
+    private ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
+            Detail = errorContext.Exception.Message,
+            Status = httpContext.Response.StatusCode
+        };
+
+        // Problem details source gen serialization doesn't know about IHeaderDictionary or RouteValueDictionary.
+        // Serialize payload to a JsonElement here. Problem details serialization can write JsonElement in extensions dictionary.
+        problemDetails.Extensions["exception"] = JsonSerializer.SerializeToElement(new ExceptionExtensionData
+        (
+            details: errorContext.Exception.ToString(),
+            headers: httpContext.Request.Headers,
+            path: httpContext.Request.Path.ToString(),
+            endpoint: httpContext.GetEndpoint()?.ToString(),
+            routeValues: httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues
+        ), _serializationContext.ExceptionExtensionData);
+
+        return problemDetails;
     }
 
     private Task DisplayCompilationException(
@@ -327,4 +338,27 @@ internal class DeveloperExceptionPageMiddlewareImpl
         var errorPage = new ErrorPage(model);
         return errorPage.ExecuteAsync(context);
     }
+}
+
+internal sealed class ExceptionExtensionData
+{
+    public ExceptionExtensionData(string details, IHeaderDictionary headers, string path, string? endpoint, RouteValueDictionary? routeValues)
+    {
+        Details = details;
+        Headers = headers;
+        Path = path;
+        Endpoint = endpoint;
+        RouteValues = routeValues;
+    }
+
+    public string Details { get; }
+    public IHeaderDictionary Headers { get; }
+    public string Path { get; }
+    public string? Endpoint { get; }
+    public RouteValueDictionary? RouteValues { get; }
+}
+
+[JsonSerializable(typeof(ExceptionExtensionData))]
+internal sealed partial class ExtensionsExceptionJsonContext : JsonSerializerContext
+{
 }

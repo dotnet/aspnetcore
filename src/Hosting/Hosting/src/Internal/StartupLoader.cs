@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -54,13 +55,27 @@ internal sealed class StartupLoader
         var type = configureContainerMethod.MethodInfo != null ? configureContainerMethod.GetContainerType() : typeof(object);
 
         var builder = (ConfigureServicesDelegateBuilder)Activator.CreateInstance(
-            typeof(ConfigureServicesDelegateBuilder<>).MakeGenericType(type),
+            CreateConfigureServicesDelegateBuilder(type),
             hostingServiceProvider,
             servicesMethod,
             configureContainerMethod,
             instance)!;
 
         return new StartupMethods(instance, configureMethod.Build(instance), builder.Build());
+
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+            Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
+        static Type CreateConfigureServicesDelegateBuilder(Type type)
+        {
+            // Configure container uses MakeGenericType with the container type. MakeGenericType + struct container type requires IsDynamicCodeSupported.
+            if (type.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
+            {
+                throw new InvalidOperationException("ValueType startup container isn't supported with AOT.");
+            }
+
+            return typeof(ConfigureServicesDelegateBuilder<>).MakeGenericType(type);
+        }
     }
 
     private abstract class ConfigureServicesDelegateBuilder

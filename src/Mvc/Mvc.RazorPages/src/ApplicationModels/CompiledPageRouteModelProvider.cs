@@ -35,28 +35,19 @@ internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
 
     public void OnProvidersExecuting(PageRouteModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         CreateModels(context);
     }
 
     public void OnProvidersExecuted(PageRouteModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
     }
 
     private IEnumerable<CompiledViewDescriptor> GetViewDescriptors(ApplicationPartManager applicationManager)
     {
-        if (applicationManager == null)
-        {
-            throw new ArgumentNullException(nameof(applicationManager));
-        }
+        ArgumentNullException.ThrowIfNull(applicationManager);
 
         var viewsFeature = GetViewFeature(applicationManager);
 

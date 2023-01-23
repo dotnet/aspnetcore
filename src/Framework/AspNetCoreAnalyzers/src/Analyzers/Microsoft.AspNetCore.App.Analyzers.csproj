@@ -21,6 +21,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\MvcFacts.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
   </ItemGroup>
 

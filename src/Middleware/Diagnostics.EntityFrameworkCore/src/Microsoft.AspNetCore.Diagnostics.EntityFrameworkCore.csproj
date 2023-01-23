@@ -20,4 +20,7 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests" />
+  </ItemGroup>
 </Project>

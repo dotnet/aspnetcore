@@ -18,10 +18,7 @@ internal sealed class AcceptsMetadata : IAcceptsMetadata
     /// </summary>
     public AcceptsMetadata(string[] contentTypes)
     {
-        if (contentTypes == null)
-        {
-            throw new ArgumentNullException(nameof(contentTypes));
-        }
+        ArgumentNullException.ThrowIfNull(contentTypes);
 
         ContentTypes = contentTypes;
     }
@@ -31,24 +28,21 @@ internal sealed class AcceptsMetadata : IAcceptsMetadata
     /// </summary>
     public AcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
     {
-        RequestType = type ?? throw new ArgumentNullException(nameof(type));
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(contentTypes);
 
-        if (contentTypes == null)
-        {
-            throw new ArgumentNullException(nameof(contentTypes));
-        }
-
+        RequestType = type;
         ContentTypes = contentTypes;
         IsOptional = isOptional;
     }
 
     /// <summary>
-    /// Gets the supported request content types. 
+    /// Gets the supported request content types.
     /// </summary>
     public IReadOnlyList<string> ContentTypes { get; }
 
     /// <summary>
-    /// Gets the type being read from the request. 
+    /// Gets the type being read from the request.
     /// </summary>
     public Type? RequestType { get; }
 

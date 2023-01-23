@@ -5,6 +5,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Internal;
 
@@ -31,15 +32,8 @@ internal static class ClosedGenericMatcher
     /// </remarks>
     public static Type? ExtractGenericInterface(Type queryType, Type interfaceType)
     {
-        if (queryType == null)
-        {
-            throw new ArgumentNullException(nameof(queryType));
-        }
-
-        if (interfaceType == null)
-        {
-            throw new ArgumentNullException(nameof(interfaceType));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(queryType);
+        ArgumentNullThrowHelper.ThrowIfNull(interfaceType);
 
         if (IsGenericInstantiation(queryType, interfaceType))
         {

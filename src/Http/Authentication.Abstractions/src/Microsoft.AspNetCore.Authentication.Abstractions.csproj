@@ -14,4 +14,9 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Core" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Core.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+  </ItemGroup>
 </Project>

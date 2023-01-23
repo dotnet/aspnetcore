@@ -41,10 +41,7 @@ public sealed class FileBufferingWriteStream : Stream
         long? bufferLimit = null,
         Func<string>? tempFileDirectoryAccessor = null)
     {
-        if (memoryThreshold < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(memoryThreshold));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(memoryThreshold);
 
         if (bufferLimit != null && bufferLimit < memoryThreshold)
         {

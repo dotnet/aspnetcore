@@ -22,10 +22,7 @@ internal static class ComponentProperties
 
     public static void SetProperties(in ParameterView parameters, object target)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         var targetType = target.GetType();
         if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
