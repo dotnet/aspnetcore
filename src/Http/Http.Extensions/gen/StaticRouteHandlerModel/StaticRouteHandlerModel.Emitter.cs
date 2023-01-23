@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelEmitter
@@ -28,6 +30,19 @@ internal static class StaticRouteHandlerModelEmitter
         return $@"(@""{endpoint.Location.Item1}"", {endpoint.Location.Item2})";
     }
 
+    public static string EmitVerb(Endpoint endpoint)
+    {
+        return endpoint.HttpMethod switch
+        {
+            "MapGet" => "GetVerb",
+            "MapPut" => "PutVerb",
+            "MapPost" => "PostVerb",
+            "MapDelete" => "DeleteVerb",
+            "MapPatch" => "PatchVerb",
+            _ => throw new ArgumentException($"Received unexpected HTTP method: {endpoint.HttpMethod}")
+        };
+    }
+
     /*
      * TODO: Emit invocation to the request handler. The structure
      * involved here consists of a call to bind parameters, check
@@ -37,7 +52,7 @@ internal static class StaticRouteHandlerModelEmitter
     public static string EmitRequestHandler()
     {
         return """
-System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext)
+Task RequestHandler(HttpContext httpContext)
                 {
                         var result = handler();
                         return httpContext.Response.WriteAsync(result);
@@ -55,7 +70,7 @@ System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext
     public static string EmitFilteredRequestHandler()
     {
         return """
-async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Http.HttpContext httpContext)
+async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                     await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
@@ -81,6 +96,6 @@ async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Ht
      */
     public static string EmitFilteredInvocation()
     {
-        return "return System.Threading.Tasks.ValueTask.FromResult<object?>(handler());";
+        return "return ValueTask.FromResult<object?>(handler());";
     }
 }
