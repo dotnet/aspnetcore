@@ -20,7 +20,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
         "MapPut",
         "MapDelete",
         "MapPatch",
-        "Map",
     };
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -46,7 +45,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .WithTrackingName("EndpointModel");
 
         var thunks = endpoints.Select((endpoint, _) => $$"""
-            [{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
+[{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
            (methodInfo, options) =>
             {
                 if (options == null)
@@ -67,7 +66,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     {
                         if (ic.HttpContext.Response.StatusCode == 400)
                         {
-                            return System.Threading.Tasks.ValueTask.FromResult<object?>(Results.Empty);
+                            return ValueTask.FromResult<object?>(Results.Empty);
                         }
                         {{StaticRouteHandlerModelEmitter.EmitFilteredInvocation()}}
                     },
@@ -86,14 +85,14 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
         var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) => $$"""
 {{RequestDelegateGeneratorSources.GeneratedCodeAttribute}}
-internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
+    internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
         this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
         [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
         global::{{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}} handler,
         [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
         [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
     {
-        return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);
+        return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, {{StaticRouteHandlerModelEmitter.EmitVerb(endpoint)}}, filePath, lineNumber);
     }
 """);
 
