@@ -24,8 +24,6 @@ internal static class RequestDelegateGeneratorSources
 
 namespace Microsoft.AspNetCore.Builder
 {
-    using Microsoft.AspNetCore.Http;
-
     {{GeneratedCodeAttribute}}
     internal class SourceKey
     {
@@ -165,11 +163,11 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     internal static class GenerateRouteBuilderEndpoints
     {
-        private static readonly string[] GetVerb = new[] { HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
+        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
+        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
+        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
+        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
 {{endpoints}}
     }

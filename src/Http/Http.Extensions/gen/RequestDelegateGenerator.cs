@@ -84,7 +84,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 """);
 
         var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) => $$"""
-        {{RequestDelegateGeneratorSources.GeneratedCodeAttribute}}
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
