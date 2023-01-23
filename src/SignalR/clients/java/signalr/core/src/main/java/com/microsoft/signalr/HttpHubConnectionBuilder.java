@@ -145,11 +145,11 @@ public class HttpHubConnectionBuilder {
     /**
      * Sets serverTimeout for the {@link HubConnection}.
      *
-     * @param timeout The serverTimeout to be set.
+     * @param timeoutInMilliseconds The serverTimeout to be set.
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder withServerTimeout(long timeout) {
-        this.serverTimeout = timeout;
+    public HttpHubConnectionBuilder withServerTimeout(long timeoutInMilliseconds) {
+        this.serverTimeout = timeoutInMilliseconds;
         return this;
     }
 
