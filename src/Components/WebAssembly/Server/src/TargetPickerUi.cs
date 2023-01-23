@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 using System.Dynamic;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
@@ -140,88 +139,105 @@ public class TargetPickerUi
             messageListTabs.type = "listTabs";
             messageListTabs.to = "root";
             await SendMessageToBrowser(toStream, messageListTabs, token);
-            string? tabToRedirect = null;
+            var tabToRedirect = -1;
             var foundAboutDebugging = false;
             string? consoleActorId = null;
             string? toCmd = null;
             while (browserDebugClientConnect.Connected)
             {
-                var res = JObject.Parse(await ReceiveMessageLoop(browserDebugClientConnect, token));
-                var tabs = res["tabs"]?.Value<JArray>();
-                if (res?["type"]?.Value<string>()?.Equals("tabListChanged") == true)
+                var res = System.Text.Json.JsonDocument.Parse(await ReceiveMessageLoop(browserDebugClientConnect, token)).RootElement;
+                var hasTabs = res.TryGetProperty("tabs", out var tabs);
+                var hasType = res.TryGetProperty("type", out var type);
+                if (hasType && type.GetString()?.Equals("tabListChanged", StringComparison.Ordinal) == true)
                 {
                     await SendMessageToBrowser(toStream, messageListTabs, token);
                 }
-                else if (tabs != null)
+                else
                 {
-                    foreach (var tab in tabs)
+                    if (hasTabs)
                     {
-                        var urlInTab = tab["url"]?.Value<string>();
-                        if (string.IsNullOrEmpty(consoleActorId))
+                        var tabsList = tabs.Deserialize<JsonElement[]>();
+                        if (tabsList == null)
                         {
-                            if (urlInTab?.StartsWith("about:debugging#", StringComparison.InvariantCultureIgnoreCase) == true)
+                            continue;
+                        }
+                        foreach (var tab in tabsList)
+                        {
+                            var hasUrl = tab.TryGetProperty("url", out var urlInTab);
+                            var hasActor = tab.TryGetProperty("actor", out var actorInTab);
+                            var hasBrowserId = tab.TryGetProperty("browserId", out var browserIdInTab);
+                            if (string.IsNullOrEmpty(consoleActorId))
                             {
-                                foundAboutDebugging = true;
-                                toCmd = tab["actor"]?.Value<string>();
-                                if (!string.IsNullOrEmpty(tabToRedirect))
+                                if (hasUrl && urlInTab.GetString()?.StartsWith("about:debugging#", StringComparison.InvariantCultureIgnoreCase) == true)
                                 {
-                                    break;
+                                    foundAboutDebugging = true;
+
+                                    toCmd = hasActor ? actorInTab.GetString() : "";
+                                    if (tabToRedirect != -1)
+                                    {
+                                        break;
+                                    }
+                                }
+                                if (hasUrl && urlInTab.GetString()?.Equals(targetApplicationUrl, StringComparison.Ordinal) == true)
+                                {
+                                    tabToRedirect = hasBrowserId ? browserIdInTab.GetInt32() : -1;
+                                    if (foundAboutDebugging)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
-                            if (urlInTab?.Equals(targetApplicationUrl) == true)
+                            else if (hasUrl && urlInTab.GetString()?.StartsWith("about:devtools", StringComparison.InvariantCultureIgnoreCase) == true)
                             {
-                                tabToRedirect = tab["browserId"]?.Value<string>();
-                                if (foundAboutDebugging)
-                                {
-                                    break;
-                                }
+                                return;
                             }
                         }
-                        else if (urlInTab?.StartsWith("about:devtools", StringComparison.InvariantCultureIgnoreCase) == true)
+                        if (!foundAboutDebugging)
                         {
+                            context.Response.StatusCode = 404;
+                            await context.Response.WriteAsync("WARNING: Open about:debugging tab before pressing Debugging Hotkey");
                             return;
                         }
-                    }
-                    if (!foundAboutDebugging)
-                    {
-                        context.Response.StatusCode = 404;
-                        await context.Response.WriteAsync("WARNING: Open about:debugging tab before pressing Debugging Hotkey");
-                        return;
-                    }
-                    if (string.IsNullOrEmpty(consoleActorId))
-                    {
-                        await EvaluateOnBrowser(toStream, consoleActorId, $"if (AboutDebugging.store.getState().runtimes.networkRuntimes.find(element => element.id == \"{_debugProxyUrl}\").runtimeDetails !== null) {{ AboutDebugging.actions.selectPage(\"runtime\", \"{_debugProxyUrl}\"); if (AboutDebugging.store.getState().runtimes.selectedRuntimeId == \"{_debugProxyUrl}\") AboutDebugging.actions.inspectDebugTarget(\"tab\", {tabToRedirect})}};", token);
+                        if (string.IsNullOrEmpty(consoleActorId))
+                        {
+                            await EvaluateOnBrowser(toStream, consoleActorId, $"if (AboutDebugging.store.getState().runtimes.networkRuntimes.find(element => element.id == \"{_debugProxyUrl}\").runtimeDetails !== null) {{ AboutDebugging.actions.selectPage(\"runtime\", \"{_debugProxyUrl}\"); if (AboutDebugging.store.getState().runtimes.selectedRuntimeId == \"{_debugProxyUrl}\") AboutDebugging.actions.inspectDebugTarget(\"tab\", {tabToRedirect})}};", token);
+                        }
                     }
                 }
                 if (!string.IsNullOrEmpty(consoleActorId))
                 {
-                    if (res?["input"]?.Value<string>()?.StartsWith("AboutDebugging.actions.addNetworkLocation(", StringComparison.InvariantCultureIgnoreCase) == true)
+                    var hasInput = res.TryGetProperty("input", out var input);
+                    if (hasInput && input.GetString()?.StartsWith("AboutDebugging.actions.addNetworkLocation(", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         await EvaluateOnBrowser(toStream, consoleActorId, $"if (AboutDebugging.store.getState().runtimes.networkRuntimes.find(element => element.id == \"{_debugProxyUrl}\").runtimeDetails !== null) {{ AboutDebugging.actions.selectPage(\"runtime\", \"{_debugProxyUrl}\"); if (AboutDebugging.store.getState().runtimes.selectedRuntimeId == \"{_debugProxyUrl}\") AboutDebugging.actions.inspectDebugTarget(\"tab\", {tabToRedirect})}};", token);
                     }
-                    if (res?["input"]?.Value<string>()?.StartsWith("if (AboutDebugging.store.getState()", StringComparison.InvariantCultureIgnoreCase) == true)
+                    if (hasInput && input.GetString()?.StartsWith("if (AboutDebugging.store.getState()", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         await EvaluateOnBrowser(toStream, consoleActorId, $"if (AboutDebugging.store.getState().runtimes.networkRuntimes.find(element => element.id == \"{_debugProxyUrl}\").runtimeDetails !== null) {{ AboutDebugging.actions.selectPage(\"runtime\", \"{_debugProxyUrl}\"); if (AboutDebugging.store.getState().runtimes.selectedRuntimeId == \"{_debugProxyUrl}\") AboutDebugging.actions.inspectDebugTarget(\"tab\", {tabToRedirect})}};", token);
                     }
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(res?["target"]?["consoleActor"]?.Value<string>()))
+                    var hasTarget = res.TryGetProperty("target", out var target);
+                    JsonElement consoleActor = new();
+                    var hasConsoleActor = hasTarget && target.TryGetProperty("consoleActor", out consoleActor);
+                    var hasActor = res.TryGetProperty("actor", out var actor);
+                    if (hasConsoleActor && !string.IsNullOrEmpty(consoleActor.GetString()))
                     {
-                        consoleActorId = res["target"]?["consoleActor"]?.Value<string>();
+                        consoleActorId = consoleActor.GetString();
                         await EvaluateOnBrowser(toStream, consoleActorId, $"AboutDebugging.actions.addNetworkLocation(\"{_debugProxyUrl}\"); AboutDebugging.actions.connectRuntime(\"{_debugProxyUrl}\");", token);
                     }
-                    else if (!string.IsNullOrEmpty(res?["actor"]?.Value<string>()))
+                    else if (hasActor && !string.IsNullOrEmpty(actor.GetString()))
                     {
                         dynamic messageWatchTargets = new ExpandoObject();
                         messageWatchTargets.type = "watchTargets";
                         messageWatchTargets.targetType = "frame";
-                        messageWatchTargets.to = res?["actor"]?.Value<string>();
+                        messageWatchTargets.to = actor.GetString();
                         await SendMessageToBrowser(toStream, messageWatchTargets, token);
                         dynamic messageWatchResources = new ExpandoObject();
                         messageWatchResources.type = "watchResources";
                         messageWatchResources.resourceTypes = new string[1] { "console-message" };
-                        messageWatchResources.to = res?["actor"]?.Value<string>();
+                        messageWatchResources.to = actor.GetString();
                         await SendMessageToBrowser(toStream, messageWatchResources, token);
                     }
                     else if (!string.IsNullOrEmpty(toCmd))
