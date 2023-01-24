@@ -1720,7 +1720,7 @@
       "Files": [
         "ClientApp/public/favicon.ico",
         "ClientApp/public/index.html",
-        "ClientApp/public/manifest.json",
+        "ClientApp/public/manifest.webmanifest",
         "ClientApp/src/components/Counter.js",
         "ClientApp/src/components/FetchData.js",
         "ClientApp/src/components/Home.js",
