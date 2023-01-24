@@ -10,7 +10,7 @@ public class FlagParserTest
     [Fact]
     public void FlagParser_CheckSingleTerm()
     {
-        var results = new FlagParser().Parse("[NC]");
+        var results = FlagParser.Parse("[NC]");
         var dict = new Dictionary<FlagType, string>();
         dict.Add(FlagType.NoCase, string.Empty);
         var expected = new Flags(dict);
@@ -21,7 +21,7 @@ public class FlagParserTest
     [Fact]
     public void FlagParser_CheckManyTerms()
     {
-        var results = new FlagParser().Parse("[NC,F,L]");
+        var results = FlagParser.Parse("[NC,F,L]");
         var dict = new Dictionary<FlagType, string>();
         dict.Add(FlagType.NoCase, string.Empty);
         dict.Add(FlagType.Forbidden, string.Empty);
@@ -34,7 +34,7 @@ public class FlagParserTest
     [Fact]
     public void FlagParser_CheckManyTermsWithEquals()
     {
-        var results = new FlagParser().Parse("[NC,F,R=301]");
+        var results = FlagParser.Parse("[NC,F,R=301]");
         var dict = new Dictionary<FlagType, string>();
         dict.Add(FlagType.NoCase, string.Empty);
         dict.Add(FlagType.Forbidden, string.Empty);
@@ -51,15 +51,15 @@ public class FlagParserTest
     [InlineData("[RL]", "Unrecognized flag: 'RL'")]
     public void FlagParser_AssertFormatErrorWhenFlagsArePoorlyConstructed(string input, string expected)
     {
-        var ex = Assert.Throws<FormatException>(() => new FlagParser().Parse(input));
+        var ex = Assert.Throws<FormatException>(() => FlagParser.Parse(input));
         Assert.Equal(expected, ex.Message);
     }
 
     [Fact]
     public void FlagParser_AssertArgumentExceptionWhenFlagsAreNullOrEmpty()
     {
-        Assert.Throws<ArgumentException>(() => new FlagParser().Parse(null));
-        Assert.Throws<ArgumentException>(() => new FlagParser().Parse(string.Empty));
+        Assert.Throws<ArgumentException>(() => FlagParser.Parse(null));
+        Assert.Throws<ArgumentException>(() => FlagParser.Parse(string.Empty));
     }
 
     [Theory]
@@ -68,7 +68,7 @@ public class FlagParserTest
     [InlineData("[CO=;NAME:VALUE;ABC:123]", ";NAME:VALUE;ABC:123")]
     public void Flag_ParserHandlesComplexFlags(string flagString, string expected)
     {
-        var results = new FlagParser().Parse(flagString);
+        var results = FlagParser.Parse(flagString);
         string value;
         Assert.True(results.GetValue(FlagType.Cookie, out value));
         Assert.Equal(expected, value);

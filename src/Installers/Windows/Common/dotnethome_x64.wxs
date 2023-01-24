@@ -6,7 +6,7 @@
   <?endif?>
 
   <!-- InstallerNativeMachine matches the expected values for image file machine constants
-       https://docs.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
+       https://learn.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
   <?if $(var.Platform)~=x86?>
     <?define InstallerNativeMachine=332?>
   <?elseif $(var.Platform)~=x64?>

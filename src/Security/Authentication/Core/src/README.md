@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication
 
-This project contains a shared implementation of [Authentication](https://docs.microsoft.com/aspnet/core/security/authentication) for ASP.NET Core.
+This project contains a shared implementation of [Authentication](https://learn.microsoft.com/aspnet/core/security/authentication) for ASP.NET Core.
 
 ## Development Setup
 

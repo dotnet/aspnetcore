@@ -94,7 +94,12 @@ internal sealed class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassi
 
         public void Visit(RoutePatternNameParameterPartNode node)
         {
-            AddClassification(node.ParameterNameToken, ClassificationTypeNames.ParameterName);
+            // Parameter name should look like a regular parameter.
+            // ClassificationTypeNames.ParameterName isn't working so temporarily reuse color from JSON syntax:
+            // https://github.com/dotnet/roslyn/blob/e1ee2f544a7a4f8d536278bed4e180c54919276e/src/Workspaces/Core/Portable/Classification/ClassificationTypeNames.cs#L181
+            //
+            // TODO: Fix properly with https://github.com/dotnet/aspnetcore/issues/46207
+            AddClassification(node.ParameterNameToken, "json - object");
         }
 
         public void Visit(RoutePatternPolicyParameterPartNode node)

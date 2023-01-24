@@ -34,8 +34,8 @@
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
     <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Link="Shared\" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="Shared\" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
+    <Compile Include="$(SharedSourceRoot)TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
   </ItemGroup>
 
   <ItemGroup>

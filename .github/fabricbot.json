@@ -2566,7 +2566,7 @@
             }
           }
         ],
-        "taskName": "[Milestone Assignments] Assign `Current Milestone` to PRs merged to main"
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch"
       }
     },
     {
@@ -2652,7 +2652,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://docs.microsoft.com/en-us/aspnet/core/blazor/debug?view=aspnetcore-5.0&tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
+              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
             }
           }
         ]
@@ -2686,46 +2686,6 @@
             "name": "addReply",
             "parameters": {
               "comment": "Thank you for submitting this for API review. This will be reviewed by @dotnet/aspnet-api-review at the next meeting of the ASP.NET Core API Review group. Please ensure you take a look at [the API review process documentation](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md) and ensure that:\n\n* The PR contains changes to the reference-assembly that describe the API change. **Or**, you have included a snippet of reference-assembly-style code that illustrates the API change.\n* The PR describes the impact to users, both positive (useful new APIs) and negative (breaking changes).\n* Someone is assigned to \"champion\" this change in the meeting, and they understand the impact and design of the change."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "release/6.0"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Assign milestone to PRs merged to \"release/6.0\"",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "6.0.2"
             }
           }
         ]
@@ -3107,7 +3067,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/5.0"
+                "branchName": "release/7.0"
               }
             }
           ]
@@ -3118,12 +3078,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Add release/5.0 targeting PRs to the servicing project",
+        "taskName": "Add release/7.0 targeting PRs to the servicing project",
         "actions": [
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "5.0.x"
+              "milestoneName": "7.0.x"
             }
           },
           {
@@ -3380,46 +3340,6 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/3.1"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/3.1 branch",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "3.1.33"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
                 "branchName": "release/6.0"
               }
             }
@@ -3434,9 +3354,13 @@
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch",
         "actions": [
           {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.13"
+              "milestoneName": "6.0.14"
             }
           }
         ]
@@ -3474,9 +3398,13 @@
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch",
         "actions": [
           {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.2"
+              "milestoneName": "7.0.3"
             }
           }
         ]

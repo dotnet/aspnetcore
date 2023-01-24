@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.Negotiate
 
-This project contains an implementation of [Negotiate Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/windowsauth#kestrel) for ASP.NET Core. It's designed to work cross platform with Kestrel. When using IIS or HttpSys servers this will delegate to their built in implementation instead.
+This project contains an implementation of [Negotiate Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/windowsauth#kestrel) for ASP.NET Core. It's designed to work cross platform with Kestrel. When using IIS or HttpSys servers this will delegate to their built in implementation instead.
 
 ## Development Setup
 

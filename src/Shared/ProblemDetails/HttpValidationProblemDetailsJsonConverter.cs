@@ -23,6 +23,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
             throw new JsonException("Unexpected end when reading JSON.");
         }
 
+        var objectTypeInfo = options.GetTypeInfo(typeof(object));
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
             if (reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
@@ -31,7 +32,7 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
             }
             else
             {
-                ProblemDetailsJsonConverter.ReadValue(ref reader, problemDetails, options);
+                ProblemDetailsJsonConverter.ReadValue(ref reader, problemDetails, objectTypeInfo);
             }
         }
 
