@@ -98,7 +98,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         throw new ArgumentException();
     }
 
-    protected static void ThrowKeyNotFoundException()
+    private static void ThrowKeyNotFoundException()
     {
         throw new KeyNotFoundException();
     }
