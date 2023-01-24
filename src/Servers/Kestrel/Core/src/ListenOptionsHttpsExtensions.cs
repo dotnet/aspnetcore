@@ -176,22 +176,6 @@ public static class ListenOptionsHttpsExtensions
         return listenOptions.UseHttps(options);
     }
 
-    // Use Https if a default cert is available
-    internal static bool TryUseHttps(this ListenOptions listenOptions)
-    {
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
-
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
-        {
-            return false;
-        }
-
-        listenOptions.UseHttps(options);
-        return true;
-    }
-
     /// <summary>
     /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
     /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
