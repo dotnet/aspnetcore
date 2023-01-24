@@ -3606,7 +3606,7 @@
           {
             "name": "noActivitySince",
             "parameters": {
-              "days": 6
+              "days": 7
             }
           },
           {
