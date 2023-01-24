@@ -94,6 +94,15 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
                         }
                     }
                 }
+                catch (IOException ex) when (!_listeningToken.IsCancellationRequested)
+                {
+                    // WaitForConnectionAsync can throw IOException when the pipe is broken.
+                    NamedPipeLog.ConnectionListenerBrokenPipe(_log, ex);
+
+                    // Dispose existing pipe, create a new one and continue accepting.
+                    nextStream.Dispose();
+                    nextStream = CreateServerStream();
+                }
                 catch (OperationCanceledException ex) when (_listeningToken.IsCancellationRequested)
                 {
                     // Cancelled the current token

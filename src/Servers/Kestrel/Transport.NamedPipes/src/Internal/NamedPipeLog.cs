@@ -77,4 +77,6 @@ internal static partial class NamedPipeLog
         }
     }
 
+    [LoggerMessage(8, LogLevel.Debug, "Named pipe listener received broken pipe while waiting for a connection.", EventName = "ConnectionListenerBrokenPipe")]
+    public static partial void ConnectionListenerBrokenPipe(ILogger logger, Exception ex);
 }
