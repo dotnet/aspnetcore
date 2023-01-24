@@ -102,7 +102,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
     }
 
     [Fact]
-    public void AddProblemDetails_CombinesProblemDetailsContext_ForReadOnlyJsonOptions()
+    public void AddProblemDetails_Throws_ForReadOnlyJsonOptions()
     {
         // Arrange
         var collection = new ServiceCollection();
@@ -113,16 +113,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         });
 
         // Act
-        collection.AddProblemDetails();
-
-        // Assert
-        var services = collection.BuildServiceProvider();
-        var jsonOptions = services.GetService<IOptions<JsonOptions>>();
-
-        Assert.NotNull(jsonOptions.Value);
-        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
-        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(ProblemDetails), jsonOptions.Value.SerializerOptions));
-        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(TypeA), jsonOptions.Value.SerializerOptions));
+        Assert.Throws<InvalidOperationException>(() => collection.AddProblemDetails());
     }
 
     [Fact]
