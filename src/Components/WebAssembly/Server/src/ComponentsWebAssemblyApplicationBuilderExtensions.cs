@@ -86,6 +86,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         options.FileProvider = webRootFileProvider;
         var contentTypeProvider = new FileExtensionContentTypeProvider();
         AddMapping(contentTypeProvider, ".dll", MediaTypeNames.Application.Octet);
+        AddMapping(contentTypeProvider, ".webcil", MediaTypeNames.Application.Octet);
         // We unconditionally map pdbs as there will be no pdbs in the output folder for
         // release builds unless BlazorEnableDebugging is explicitly set to true.
         AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
