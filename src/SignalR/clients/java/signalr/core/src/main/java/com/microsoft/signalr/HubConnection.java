@@ -439,15 +439,14 @@ public class HubConnection implements AutoCloseable {
             this.state.unlock();
         }
 
-        Completable stopTask = startTask.onErrorComplete().andThen(Completable.defer(() ->
+        CompletableSubject subject = CompletableSubject.create();
+        startTask.onErrorComplete().subscribe(() ->
         {
             Completable stop = connectionState.transport.stop();
-            stop.onErrorComplete().subscribe();
-            return stop;
-        }));
-        stopTask.onErrorComplete().subscribe();
+            stop.subscribe(() -> subject.onComplete(), e -> subject.onError(e));
+        });
 
-        return stopTask;
+        return subject;
     }
 
     private void ReceiveLoop(ByteBuffer payload)

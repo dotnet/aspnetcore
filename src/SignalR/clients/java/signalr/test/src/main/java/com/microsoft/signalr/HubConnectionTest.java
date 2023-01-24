@@ -2797,14 +2797,11 @@ class HubConnectionTest {
                     .create("http://example")
                     .withTransport(TransportEnum.WEBSOCKETS)
                     .shouldSkipNegotiate(true)
+                    .withHandshakeResponseTimeout(1)
                     .withHttpClient(client)
                     .build();
 
-            try {
-                hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
-            } catch (Exception e) {
-                assertEquals("WebSockets isn't supported in testing currently.", e.getMessage());
-            }
+            assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
             assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
             assertFalse(negotiateCalled.get());
 
@@ -3985,5 +3982,44 @@ class HubConnectionTest {
                 .build();
 
         assertEquals(interval, hubConnection.getKeepAliveInterval());
+    }
+
+    @Test
+    public void WebsocketStopLoggedOnce() {
+        try (TestLogger logger = new TestLogger(WebSocketTransport.class.getName())) {
+            AtomicBoolean negotiateCalled = new AtomicBoolean(false);
+            TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> {
+                        negotiateCalled.set(true);
+                        return Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                    });
+
+            HubConnection hubConnection = HubConnectionBuilder
+                    .create("http://example")
+                    .withTransport(TransportEnum.WEBSOCKETS)
+                    .shouldSkipNegotiate(true)
+                    .withHandshakeResponseTimeout(100)
+                    .withHttpClient(client)
+                    .build();
+
+            Completable startTask = hubConnection.start().timeout(30, TimeUnit.SECONDS);
+            hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+            assertThrows(RuntimeException.class, () -> startTask.blockingAwait());
+            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+            assertFalse(negotiateCalled.get());
+
+            ILoggingEvent[] logs = logger.getLogs();
+            int count = 0;
+            for (ILoggingEvent iLoggingEvent : logs) {
+                if (iLoggingEvent.getFormattedMessage().startsWith("WebSocket connection stopped.")) {
+                    count++;
+                }
+            }
+
+            assertEquals(1, count);
+        }
     }
 }
