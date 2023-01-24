@@ -105,7 +105,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         await serverConnection.Transport.Output.CompleteAsync();
     }
 
-    [Fact]
+    [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Non-OS implementations use UDS with different transport behavior.")]
     public async Task CompleteTransport_BeforeClientHasReadLastBytes_DontLoseData()
     {
@@ -137,7 +137,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         await connection._sendingTask.DefaultTimeout();
     }
 
-    [Fact]
+    [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Non-OS implementations use UDS with different transport behavior.")]
     public async Task DisposeAsync_BeforeClientHasReadLastBytes_DontLoseData()
     {
