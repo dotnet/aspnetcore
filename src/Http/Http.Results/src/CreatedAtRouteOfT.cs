@@ -59,7 +59,7 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider,
     {
         Value = value;
         RouteName = routeName;
-        RouteValues = routeValues ?? new RouteValueDictionary();
+        RouteValues = routeValues;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
