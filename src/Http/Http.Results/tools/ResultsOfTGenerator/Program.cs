@@ -60,7 +60,6 @@ public class Program
         writer.WriteLine();
 
         // Usings
-        writer.WriteLine("using System.Diagnostics.CodeAnalysis;");
         writer.WriteLine("using System.Reflection;");
         writer.WriteLine("using Microsoft.AspNetCore.Builder;");
         writer.WriteLine("using Microsoft.AspNetCore.Http.Metadata;");
@@ -98,7 +97,7 @@ public class Program
             // Type args
             for (int j = 1; j <= i; j++)
             {
-                writer.Write($"[DynamicallyAccessedMembers(ResultsOfTHelper.RequireMethods)] TResult{j}");
+                writer.Write($"TResult{j}");
                 if (j != i)
                 {
                     writer.Write(", ");
