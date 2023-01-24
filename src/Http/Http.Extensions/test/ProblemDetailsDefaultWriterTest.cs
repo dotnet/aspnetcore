@@ -56,7 +56,7 @@ public partial class DefaultProblemDetailsWriterTest
     {
         // Arrange
         var options = new JsonOptions();
-        options.SerializerOptions.AddContext<ProblemDetailsJsonContext>();
+        options.SerializerOptions.TypeInfoResolver = ProblemDetailsJsonContext.Default;
 
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
@@ -170,7 +170,7 @@ public partial class DefaultProblemDetailsWriterTest
     {
         // Arrange
         var options = new JsonOptions();
-        options.SerializerOptions.AddContext<ProblemDetailsJsonContext>();
+        options.SerializerOptions.TypeInfoResolver = ProblemDetailsJsonContext.Default;
 
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
@@ -252,7 +252,7 @@ public partial class DefaultProblemDetailsWriterTest
     {
         // Arrange
         var options = new JsonOptions();
-        options.SerializerOptions.AddContext<CustomProblemDetailsContext>();
+        options.SerializerOptions.TypeInfoResolver = CustomProblemDetailsContext.Default;
 
         var writer = GetWriter(jsonOptions: options);
         var stream = new MemoryStream();
