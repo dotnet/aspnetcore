@@ -163,17 +163,21 @@ public static class ListenOptionsHttpsExtensions
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        configureOptions(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
-
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        return listenOptions.UseHttps(() =>
         {
-            throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
-        }
+            var httpsOptions = new HttpsConnectionAdapterOptions();
+            listenOptions.KestrelServerOptions.ApplyHttpsDefaults(httpsOptions);
+            configureOptions(httpsOptions);
+            listenOptions.KestrelServerOptions.ApplyDefaultCert(httpsOptions);
+            httpsOptions.HttpProtocols = listenOptions.Protocols;
 
-        return listenOptions.UseHttps(options);
+            if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
+            {
+                throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+            }
+
+            return httpsOptions;
+        });
     }
 
     /// <summary>
@@ -185,15 +189,31 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {
-        var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+        return listenOptions.UseHttps(() => httpsOptions);
+    }
 
-        listenOptions.IsTls = true;
-        listenOptions.HttpsOptions = httpsOptions;
-
+    /// <summary>
+    /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+    /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
+    /// </summary>
+    /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+    /// <param name="getHttpsOptions">A function returning options to configure HTTPS.</param>
+    /// <returns>The <see cref="ListenOptions"/>.</returns>
+    private static ListenOptions UseHttps(this ListenOptions listenOptions, Func<HttpsConnectionAdapterOptions> getHttpsOptions)
+    {
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
+            // We defer configuration of the https options until build time so that the IConfiguration will be available.
+            // This is particularly important in docker containers, where the docker tools use IConfiguration to tell
+            // us where the development certificates have been mounted.
+
+            var httpsOptions = getHttpsOptions();
+
+            listenOptions.IsTls = true;
+            listenOptions.HttpsOptions = httpsOptions;
+
+            var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
             var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });
