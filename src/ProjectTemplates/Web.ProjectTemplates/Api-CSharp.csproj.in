@@ -9,8 +9,6 @@
     <ServerGarbageCollection>False</ServerGarbageCollection>
     <!--#if (NativeAot) -->
     <PublishAot>true</PublishAot>
-    <TrimMode>full</TrimMode>
-    <PublishIISAssets>false</PublishIISAssets>
     <!--#endif -->
   </PropertyGroup>
 

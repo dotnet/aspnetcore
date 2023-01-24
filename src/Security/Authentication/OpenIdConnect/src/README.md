@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.OpenIdConnect
 
-This project contains a generic implementation of OpenID Connect for interactive clients. See the [Authentication documentation](https://docs.microsoft.com/aspnet/core/security/authentication/) for ASP.NET Core.
+This project contains a generic implementation of OpenID Connect for interactive clients. See the [Authentication documentation](https://learn.microsoft.com/aspnet/core/security/authentication/) for ASP.NET Core.
 
 ## Development Setup
 

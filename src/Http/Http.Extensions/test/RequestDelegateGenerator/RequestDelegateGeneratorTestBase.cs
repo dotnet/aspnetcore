@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -36,7 +37,7 @@ public class RequestDelegateGeneratorTestBase
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         var diagnostics = updatedCompilation.GetDiagnostics();
-        Assert.Empty(diagnostics.Where(d => d.Severity > DiagnosticSeverity.Warning));
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
         var runResult = driver.GetRunResult();
 
         return (runResult.Results, updatedCompilation);
@@ -170,6 +171,48 @@ public static class TestMapActions
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         return compilation;
+    }
+
+    internal async Task VerifyAgainstBaselineUsingFile(Compilation compilation, [CallerMemberName] string callerName = "")
+    {
+        var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
+        var generatedCode = compilation.SyntaxTrees.Last();
+        var baseline = await File.ReadAllTextAsync(baselineFilePath);
+        var expectedLines = baseline
+            .TrimEnd() // Trim newlines added by autoformat
+            .Replace("%GENERATEDCODEATTRIBUTE%", RequestDelegateGeneratorSources.GeneratedCodeAttribute)
+            .Split(Environment.NewLine);
+
+        Assert.True(CompareLines(expectedLines, generatedCode.GetText(), out var errorMessage), errorMessage);
+    }
+
+    private bool CompareLines(string[] expectedLines, SourceText sourceText, out string message)
+    {
+        if (expectedLines.Length != sourceText.Lines.Count)
+        {
+            message = $"Line numbers do not match. Expected: {expectedLines.Length} lines, but generated {sourceText.Lines.Count}";
+            return false;
+        }
+        var index = 0;
+        foreach (var textLine in sourceText.Lines)
+        {
+            var expectedLine = expectedLines[index].Trim().ReplaceLineEndings();
+            var actualLine = textLine.ToString().Trim().ReplaceLineEndings();
+            if (!expectedLine.Equals(actualLine, StringComparison.Ordinal))
+            {
+                message = $"""
+Line {textLine.LineNumber} does not match.
+Expected Line:
+{expectedLine}
+Actual Line:
+{textLine}
+""";
+                return false;
+            }
+            index++;
+        }
+        message = string.Empty;
+        return true;
     }
 
     private sealed class AppLocalResolver : ICompilationAssemblyResolver

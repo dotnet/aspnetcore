@@ -86,6 +86,97 @@ public sealed class WebApplicationBuilder
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
     }
 
+    internal WebApplicationBuilder(WebApplicationOptions options, bool slim, Action<IHostBuilder>? configureDefaults = null)
+    {
+        Debug.Assert(slim, "should only be called with slim: true");
+
+        var configuration = new ConfigurationManager();
+
+        configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
+
+        // add the default host configuration sources, so they are picked up by the HostApplicationBuilder constructor.
+        // These won't be added by HostApplicationBuilder since DisableDefaults = true.
+        configuration.AddEnvironmentVariables(prefix: "DOTNET_");
+        if (options.Args is { Length: > 0 } args)
+        {
+            configuration.AddCommandLine(args);
+        }
+
+        _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            DisableDefaults = true,
+            Args = options.Args,
+            ApplicationName = options.ApplicationName,
+            EnvironmentName = options.EnvironmentName,
+            ContentRootPath = options.ContentRootPath,
+            Configuration = configuration,
+        });
+
+        // configure the ServiceProviderOptions here since DisableDefaults = true means HostApplicationBuilder won't.
+        var serviceProviderFactory = GetServiceProviderFactory(_hostApplicationBuilder);
+        _hostApplicationBuilder.ConfigureContainer(serviceProviderFactory);
+
+        // Set WebRootPath if necessary
+        if (options.WebRootPath is not null)
+        {
+            Configuration.AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string?>(WebHostDefaults.WebRootKey, options.WebRootPath),
+            });
+        }
+
+        // Run methods to configure web host defaults early to populate services
+        var bootstrapHostBuilder = new BootstrapHostBuilder(_hostApplicationBuilder);
+
+        // This is for testing purposes
+        configureDefaults?.Invoke(bootstrapHostBuilder);
+
+        bootstrapHostBuilder.ConfigureSlimWebHost(
+            webHostBuilder =>
+            {
+                AspNetCore.WebHost.UseKestrel(webHostBuilder);
+
+                webHostBuilder.Configure(ConfigureEmptyApplication);
+
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
+                webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
+                webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
+                webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
+            },
+            options =>
+            {
+                // We've already applied "ASPNETCORE_" environment variables to hosting config
+                options.SuppressEnvironmentConfiguration = true;
+            });
+
+        // This applies the config from ConfigureWebHostDefaults
+        // Grab the GenericWebHostService ServiceDescriptor so we can append it after any user-added IHostedServices during Build();
+        _genericWebHostServiceDescriptor = bootstrapHostBuilder.RunDefaultCallbacks();
+
+        // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder. Then
+        // grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
+        var webHostContext = (WebHostBuilderContext)bootstrapHostBuilder.Properties[typeof(WebHostBuilderContext)];
+        Environment = webHostContext.HostingEnvironment;
+
+        Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
+        WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+    }
+
+    private static DefaultServiceProviderFactory GetServiceProviderFactory(HostApplicationBuilder hostApplicationBuilder)
+    {
+        if (hostApplicationBuilder.Environment.IsDevelopment())
+        {
+            return new DefaultServiceProviderFactory(
+                new ServiceProviderOptions
+                {
+                    ValidateScopes = true,
+                    ValidateOnBuild = true,
+                });
+        }
+
+        return new DefaultServiceProviderFactory();
+    }
+
     /// <summary>
     /// Provides information about the web hosting environment an application is running.
     /// </summary>
@@ -134,6 +225,46 @@ public sealed class WebApplicationBuilder
 
     private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
     {
+        ConfigureApplicationCore(
+            context,
+            app,
+            processAuthMiddlewares: () =>
+            {
+                Debug.Assert(_builtApplication is not null);
+
+                // Process authorization and authentication middlewares independently to avoid
+                // registering middlewares for services that do not exist
+                var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
+                if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
+                {
+                    // Don't add more than one instance of the middleware
+                    if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+                    {
+                        // The Use invocations will set the property on the outer pipeline,
+                        // but we want to set it on the inner pipeline as well.
+                        _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
+                        app.UseAuthentication();
+                    }
+                }
+
+                if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
+                {
+                    if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
+                    {
+                        _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
+                        app.UseAuthorization();
+                    }
+                }
+            });
+    }
+
+    private void ConfigureEmptyApplication(WebHostBuilderContext context, IApplicationBuilder app)
+    {
+        ConfigureApplicationCore(context, app, processAuthMiddlewares: null);
+    }
+
+    private void ConfigureApplicationCore(WebHostBuilderContext context, IApplicationBuilder app, Action? processAuthMiddlewares)
+    {
         Debug.Assert(_builtApplication is not null);
 
         // UseRouting called before WebApplication such as in a StartupFilter
@@ -173,29 +304,7 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        // Process authorization and authentication middlewares independently to avoid
-        // registering middlewares for services that do not exist
-        var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
-        if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
-        {
-            // Don't add more than one instance of the middleware
-            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
-            {
-                // The Use invocations will set the property on the outer pipeline,
-                // but we want to set it on the inner pipeline as well.
-                _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
-                app.UseAuthentication();
-            }
-        }
-
-        if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
-        {
-            if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
-            {
-                _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
-                app.UseAuthorization();
-            }
-        }
+        processAuthMiddlewares?.Invoke();
 
         // Wire the source pipeline to run in the destination pipeline
         app.Use(next =>

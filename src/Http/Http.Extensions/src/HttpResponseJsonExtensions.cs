@@ -30,14 +30,15 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="value">The value to write as JSON.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync<TValue>(
         this HttpResponse response,
         TValue value,
         CancellationToken cancellationToken = default)
     {
-        return response.WriteAsJsonAsync(value, options: null, contentType: null, cancellationToken);
+        ArgumentNullException.ThrowIfNull(response);
+
+        var options = ResolveSerializerOptions(response.HttpContext);
+        return response.WriteAsJsonAsync(value, jsonTypeInfo: (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)), contentType: null, cancellationToken);
     }
 
     /// <summary>
@@ -203,15 +204,16 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="type">The type of object to write.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync(
         this HttpResponse response,
         object? value,
         Type type,
         CancellationToken cancellationToken = default)
     {
-        return response.WriteAsJsonAsync(value, type, options: null, contentType: null, cancellationToken);
+        ArgumentNullException.ThrowIfNull(response);
+
+        var options = ResolveSerializerOptions(response.HttpContext);
+        return response.WriteAsJsonAsync(value, jsonTypeInfo: options.GetTypeInfo(type), contentType: null, cancellationToken);
     }
 
     /// <summary>

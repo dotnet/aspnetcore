@@ -2,7 +2,7 @@
 
 ASP.NET Core IIS Web Server is a flexible secure managed Web Server to be hosted with IIS on Windows.
 
-Documentation for ASP.NET Core IIS can be found in the [ASP.NET Core IIS Docs](https://docs.microsoft.com/aspnet/core/host-and-deploy/iis).
+Documentation for ASP.NET Core IIS can be found in the [ASP.NET Core IIS Docs](https://learn.microsoft.com/aspnet/core/host-and-deploy/iis).
 
 ## Description
 
@@ -12,7 +12,7 @@ There are two modes for hosting application with IIS: in-process and out-of-proc
 
 The following contains a description of the sub-directories.
 
-- [AspNetCoreModuleV2/](AspNetCoreModuleV2/): Contains all native code that is part of the [ASP.NET Core Module/](https://docs.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module?view=aspnetcore-5.0).
+- [AspNetCoreModuleV2/](AspNetCoreModuleV2/): Contains all native code that is part of the [ASP.NET Core Module/](https://learn.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module).
 - [AspNetCoreModuleV2/AspNetCore/](AspNetCoreModuleV2/AspNetCore/): Contains the ASP.NET Core Module shim, a minimal layer for IIS to interact with the in-process and out-of-process modules.
 - [AspNetCoreModuleV2/CommonLib/](AspNetCoreModuleV2/CommonLib/): Contains common code shared between all native components.
 - [AspNetCoreModuleV2/CommonLibTests/](AspNetCoreModuleV2/CommonLibTests/): Contains native tests for the ASP.NET Core Module.
@@ -43,7 +43,7 @@ Or for the less detailed explanation, run the following command inside this dire
 
 To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
-Note: IIS.Tests require both IIS to be enabled, and the [ASP.NET Hosting bundle](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/hosting-bundle) which must be run after IIS has been enabled.
+Note: IIS.Tests require both IIS to be enabled, and the [ASP.NET Hosting bundle](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/hosting-bundle) which must be run after IIS has been enabled.
 
 Or for the less detailed explanation, run the following command inside this directory.
 ```powershell
