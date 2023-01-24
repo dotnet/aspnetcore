@@ -24,9 +24,10 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
     private bool _connectionDisposed;
     private Exception? _shutdownReason;
     private readonly object _shutdownLock = new object();
-    
-    private Task _receivingTask = Task.CompletedTask;
-    private Task _sendingTask = Task.CompletedTask;
+
+    // Internal for testing.
+    internal Task _receivingTask = Task.CompletedTask;
+    internal Task _sendingTask = Task.CompletedTask;
 
     public NamedPipeConnection(
         NamedPipeServerStream stream,

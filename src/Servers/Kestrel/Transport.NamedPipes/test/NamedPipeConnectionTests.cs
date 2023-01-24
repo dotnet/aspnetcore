@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
@@ -105,7 +106,8 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
-    public async Task CompleteTransport_BeforeClientHasReadLastBytes_DontLooseData()
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Non-OS implementations use UDS with different transport behavior.")]
+    public async Task CompleteTransport_BeforeClientHasReadLastBytes_DontLoseData()
     {
         var options = new NamedPipeTransportOptions();
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
@@ -113,24 +115,31 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
         var connectTask = clientStream.ConnectAsync();
 
-        var connection = await connectionListener.AcceptAsync();
+        var connection = (NamedPipeConnection)await connectionListener.AcceptAsync();
         await connection.Transport.Output.WriteAsync(new byte[] { 41 });
         byte[] readBuffer = new byte[1];
         var readAmount = await clientStream.ReadAsync(readBuffer);
         Assert.Equal(1, readAmount);
         Assert.Equal(41, readBuffer[0]);
         await connection.Transport.Output.WriteAsync(new byte[] { 42 });
-        // complete transport and wait for a reasonable amount of time
-        // actual stream disconnection should happen after the last client read happens
+
         connection.Transport.Output.Complete();
-        await Task.Delay(500);
+
+        // Wait for a short amount of time after completing transport before asserting the server is waiting for the client to finish reading.
+        // Actual stream disconnection should happen after the last client read happens.
+        await Task.Delay(100);
+        Assert.False(connection._sendingTask.IsCompleted, "Sending isn't complete until the client reads data.");
+
         readAmount = await clientStream.ReadAsync(readBuffer);
         Assert.Equal(1, readAmount);
         Assert.Equal(42, readBuffer[0]);
+
+        await connection._sendingTask.DefaultTimeout();
     }
 
     [Fact]
-    public async Task DisposeAsync_BeforeClientHasReadLastBytes_DontLooseData()
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Non-OS implementations use UDS with different transport behavior.")]
+    public async Task DisposeAsync_BeforeClientHasReadLastBytes_DontLoseData()
     {
         var options = new NamedPipeTransportOptions();
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
@@ -138,20 +147,27 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
         var connectTask = clientStream.ConnectAsync();
 
-        var connection = await connectionListener.AcceptAsync();
+        var connection = (NamedPipeConnection)await connectionListener.AcceptAsync();
         await connection.Transport.Output.WriteAsync(new byte[] { 41 });
         byte[] readBuffer = new byte[1];
         var readAmount = await clientStream.ReadAsync(readBuffer);
         Assert.Equal(1, readAmount);
         Assert.Equal(41, readBuffer[0]);
         await connection.Transport.Output.WriteAsync(new byte[] { 42 });
-        // trigger dispose and wait for a reasonable amount of time
-        // actual stream disconnection should happen after the last client read happens
+
         var disposeTask = connection.DisposeAsync();
-        await Task.Delay(500);
+
+        // Wait for a short amount of time after completing transport before asserting the server is waiting for the client to finish reading.
+        // Actual stream disconnection should happen after the last client read happens.
+        await Task.Delay(100);
+        Assert.False(connection._sendingTask.IsCompleted, "Sending isn't complete until the client reads data.");
+        Assert.False(disposeTask.IsCompleted, "Sending isn't complete until the client reads data.");
+
         readAmount = await clientStream.ReadAsync(readBuffer);
         Assert.Equal(1, readAmount);
         Assert.Equal(42, readBuffer[0]);
-        await disposeTask;
+
+        await connection._sendingTask.DefaultTimeout();
+        await disposeTask.DefaultTimeout();
     }
 }
