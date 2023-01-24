@@ -361,7 +361,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    // copied from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+    // copied from https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
     private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string ignoreDirectory = "")
     {
         // Get the subdirectories for the specified directory.

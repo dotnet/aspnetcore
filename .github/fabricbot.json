@@ -2652,7 +2652,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://docs.microsoft.com/en-us/aspnet/core/blazor/debug?view=aspnetcore-5.0&tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
+              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
             }
           }
         ]

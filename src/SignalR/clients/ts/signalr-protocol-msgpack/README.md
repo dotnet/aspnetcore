@@ -18,7 +18,7 @@ yarn add @microsoft/signalr-protocol-msgpack@next
 
 ## Usage
 
-See the [SignalR Documentation](https://docs.microsoft.com/aspnet/core/signalr) at docs.microsoft.com for documentation on the latest release. [API Reference Documentation](https://docs.microsoft.com/javascript/api/%40aspnet/signalr-protocol-msgpack/?view=signalr-js-latest) is also available on docs.microsoft.com.
+See the [SignalR Documentation](https://learn.microsoft.com/aspnet/core/signalr) at learn.microsoft.com for documentation on the latest release. [API Reference Documentation](https://learn.microsoft.com/javascript/api/%40aspnet/signalr-protocol-msgpack/?view=signalr-js-latest) is also available on learn.microsoft.com.
 
 ### Browser
 

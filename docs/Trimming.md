@@ -2,7 +2,7 @@
 
 This guide discusses the steps required to enable, annotate, and verify trimming in ASP.NET Core assemblies. An assembly that supports trimming knows all the types and members it needs at runtime. Unused code is removed when an app is published, reducing app size. Trimming is also a precursor to supporting AOT, which requires knowledge of the APIs used by an app on build.
 
-[Trim self-contained deployments and executables](https://docs.microsoft.com/dotnet/core/deploying/trimming/trim-self-contained) has general documentation for trimming. It includes:
+[Trim self-contained deployments and executables](https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-self-contained) has general documentation for trimming. It includes:
 
 * How to output trim warnings. Typically done by publishing an app.
 * How to react to trim warnings. Attributes can be placed on APIs to provide type info, suppress warnings, or verify that an API is incompatible with trimming.
@@ -30,7 +30,7 @@ The first step to trimming an ASP.NET Core assembly is adding it to `Linkability
 
 ## Fix trim warnings
 
-[Introduction to trim warnings](https://docs.microsoft.com/en-us/dotnet/core/deploying/trimming/fixing-warnings) and [Prepare .NET libraries for trimming](https://docs.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming) discuss how to fix trim warnings. There is also a complete list of all the trim warnings with some more detail.
+[Introduction to trim warnings](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/fixing-warnings) and [Prepare .NET libraries for trimming](https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming) discuss how to fix trim warnings. There is also a complete list of all the trim warnings with some more detail.
 
 ## Updating the baselines
 
