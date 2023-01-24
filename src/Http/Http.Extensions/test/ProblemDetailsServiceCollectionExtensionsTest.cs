@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -113,7 +114,13 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         });
 
         // Act
-        Assert.Throws<InvalidOperationException>(() => collection.AddProblemDetails());
+        collection.AddProblemDetails();
+
+        // Assert
+        var services = collection.BuildServiceProvider();
+        var jsonOptions = services.GetService<IOptions<JsonOptions>>();
+
+        Assert.Throws<System.InvalidOperationException>(() => jsonOptions.Value);
     }
 
     [Fact]
@@ -154,6 +161,25 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
 
         Assert.NotNull(jsonOptions.Value);
         Assert.Null(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+    }
+
+    [Fact]
+    public void AddProblemDetails_DoesNotCombineProblemDetailsContext_WhenDefaultypeInfoResolver()
+    {
+        // Arrange
+        var collection = new ServiceCollection();
+        collection.AddOptions<JsonOptions>();
+        collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver());
+
+        // Act
+        collection.AddProblemDetails();
+
+        // Assert
+        var services = collection.BuildServiceProvider();
+        var jsonOptions = services.GetService<IOptions<JsonOptions>>();
+
+        Assert.NotNull(jsonOptions.Value);
+        Assert.IsType<DefaultJsonTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
     }
 
     [JsonSerializable(typeof(TypeA))]
