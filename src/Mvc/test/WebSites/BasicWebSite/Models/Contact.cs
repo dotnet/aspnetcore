@@ -38,5 +38,4 @@ public class ContactRequest
 
     [FromBody]
     public Contact ContactInfo { get; set; }
-
 }
