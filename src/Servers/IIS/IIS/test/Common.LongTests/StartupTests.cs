@@ -357,7 +357,7 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependencies()
+    public async Task TargetDifferenceSharedFramework_FailedToFindNativeDependencies()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
         var deploymentResult = await DeployAsync(deploymentParameters);
@@ -373,6 +373,25 @@ public class StartupTests : IISFunctionalTestBase
         }
 
         EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task WrongApplicationPath_FailedToRun()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+        deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "TRUE";
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        deploymentResult.ModifyWebConfig(element => element
+            .Descendants("system.webServer")
+            .Single()
+            .GetOrAdd("aspNetCore")
+            .SetAttributeValue("arguments", "not-exist.dll"));
+
+        await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31", "Provided application path does not exist, or isn't a .dll or .exe.");
+
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindApplication(), Logger);
     }
 
     [ConditionalFact]
@@ -1557,6 +1576,25 @@ public class StartupTests : IISFunctionalTestBase
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Contains(error, await response.Content.ReadAsStringAsync());
+        StopServer();
+    }
+
+    private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult, params string[] errors)
+    {
+        HttpResponseMessage response = null;
+
+        // Make sure strings aren't freed.
+        for (var i = 0; i < 2; i++)
+        {
+            response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        }
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var responseText = await response.Content.ReadAsStringAsync();
+        foreach (var error in errors)
+        {
+            Assert.Contains(error, responseText);
+        }
         StopServer();
     }
 }
