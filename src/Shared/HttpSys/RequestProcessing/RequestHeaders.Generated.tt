@@ -50,7 +50,7 @@ var props = new[]
 var lengths = props.GroupBy(prop=>prop.Key.Length).OrderBy(prop=>prop.Key);
 
 
-Func<int,string> IsReadMask = Index => "((_flag" + (Index / 32) + " & 0x" + (1<<(Index % 32)).ToString("x") + "u))";
+Func<int,string> IsReadMask = Index => "(_flag" + (Index / 32) + " & 0x" + (1<<(Index % 32)).ToString("x") + "u)";
 Func<int,string> MarkRead = Index => "_flag" + (Index / 32) + " |= 0x" + (1<<(Index % 32)).ToString("x") + "u";
 Func<int,string> Clear = Index => "_flag" + (Index / 32) + " &= ~0x" + (1<<(Index % 32)).ToString("x") + "u";
 #>

@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x1u)) == 0)
+                if ((_flag0 & 0x1u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Accept);
                     if (nativeValue != null)
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x2u)) == 0)
+                if ((_flag0 & 0x2u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptCharset);
                     if (nativeValue != null)
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x4u)) == 0)
+                if ((_flag0 & 0x4u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptEncoding);
                     if (nativeValue != null)
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x8u)) == 0)
+                if ((_flag0 & 0x8u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptLanguage);
                     if (nativeValue != null)
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x10u)) == 0)
+                if ((_flag0 & 0x10u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Allow);
                     if (nativeValue != null)
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x20u)) == 0)
+                if ((_flag0 & 0x20u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Authorization);
                     if (nativeValue != null)
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x40u)) == 0)
+                if ((_flag0 & 0x40u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.CacheControl);
                     if (nativeValue != null)
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x80u)) == 0)
+                if ((_flag0 & 0x80u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Connection);
                     if (nativeValue != null)
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x100u)) == 0)
+                if ((_flag0 & 0x100u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentEncoding);
                     if (nativeValue != null)
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x200u)) == 0)
+                if ((_flag0 & 0x200u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLanguage);
                     if (nativeValue != null)
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x400u)) == 0)
+                if ((_flag0 & 0x400u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLength);
                     if (nativeValue != null)
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x800u)) == 0)
+                if ((_flag0 & 0x800u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLocation);
                     if (nativeValue != null)
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x1000u)) == 0)
+                if ((_flag0 & 0x1000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentMd5);
                     if (nativeValue != null)
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x2000u)) == 0)
+                if ((_flag0 & 0x2000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentRange);
                     if (nativeValue != null)
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x4000u)) == 0)
+                if ((_flag0 & 0x4000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentType);
                     if (nativeValue != null)
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x8000u)) == 0)
+                if ((_flag0 & 0x8000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Cookie);
                     if (nativeValue != null)
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x10000u)) == 0)
+                if ((_flag0 & 0x10000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Date);
                     if (nativeValue != null)
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x20000u)) == 0)
+                if ((_flag0 & 0x20000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expect);
                     if (nativeValue != null)
@@ -693,7 +693,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x40000u)) == 0)
+                if ((_flag0 & 0x40000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expires);
                     if (nativeValue != null)
@@ -728,7 +728,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x80000u)) == 0)
+                if ((_flag0 & 0x80000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.From);
                     if (nativeValue != null)
@@ -763,7 +763,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x100000u)) == 0)
+                if ((_flag0 & 0x100000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Host);
                     if (nativeValue != null)
@@ -798,7 +798,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x200000u)) == 0)
+                if ((_flag0 & 0x200000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfMatch);
                     if (nativeValue != null)
@@ -833,7 +833,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x400000u)) == 0)
+                if ((_flag0 & 0x400000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfModifiedSince);
                     if (nativeValue != null)
@@ -868,7 +868,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x800000u)) == 0)
+                if ((_flag0 & 0x800000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfNoneMatch);
                     if (nativeValue != null)
@@ -903,7 +903,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x1000000u)) == 0)
+                if ((_flag0 & 0x1000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfRange);
                     if (nativeValue != null)
@@ -938,7 +938,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x2000000u)) == 0)
+                if ((_flag0 & 0x2000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince);
                     if (nativeValue != null)
@@ -973,7 +973,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x4000000u)) == 0)
+                if ((_flag0 & 0x4000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.KeepAlive);
                     if (nativeValue != null)
@@ -1008,7 +1008,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x8000000u)) == 0)
+                if ((_flag0 & 0x8000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.LastModified);
                     if (nativeValue != null)
@@ -1043,7 +1043,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x10000000u)) == 0)
+                if ((_flag0 & 0x10000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.MaxForwards);
                     if (nativeValue != null)
@@ -1078,7 +1078,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x20000000u)) == 0)
+                if ((_flag0 & 0x20000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Pragma);
                     if (nativeValue != null)
@@ -1113,7 +1113,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x40000000u)) == 0)
+                if ((_flag0 & 0x40000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.ProxyAuthorization);
                     if (nativeValue != null)
@@ -1148,7 +1148,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag0 & 0x80000000u)) == 0)
+                if ((_flag0 & 0x80000000u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Range);
                     if (nativeValue != null)
@@ -1183,7 +1183,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x1u)) == 0)
+                if ((_flag1 & 0x1u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Referer);
                     if (nativeValue != null)
@@ -1218,7 +1218,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x2u)) == 0)
+                if ((_flag1 & 0x2u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Te);
                     if (nativeValue != null)
@@ -1253,7 +1253,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x4u)) == 0)
+                if ((_flag1 & 0x4u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Trailer);
                     if (nativeValue != null)
@@ -1288,7 +1288,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x8u)) == 0)
+                if ((_flag1 & 0x8u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.TransferEncoding);
                     if (nativeValue != null)
@@ -1323,7 +1323,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x10u)) == 0)
+                if ((_flag1 & 0x10u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Translate);
                     if (nativeValue != null)
@@ -1358,7 +1358,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x20u)) == 0)
+                if ((_flag1 & 0x20u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Upgrade);
                     if (nativeValue != null)
@@ -1393,7 +1393,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x40u)) == 0)
+                if ((_flag1 & 0x40u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.UserAgent);
                     if (nativeValue != null)
@@ -1428,7 +1428,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x80u)) == 0)
+                if ((_flag1 & 0x80u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Via);
                     if (nativeValue != null)
@@ -1463,7 +1463,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (((_flag1 & 0x100u)) == 0)
+                if ((_flag1 & 0x100u) == 0)
                 {
                     string nativeValue = GetKnownHeader(HttpSysRequestHeader.Warning);
                     if (nativeValue != null)
@@ -3244,47 +3244,47 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         private bool HasKnownHeader(HttpSysRequestHeader header) => header switch
         {
-            HttpSysRequestHeader.Accept => ((_flag0 & 0x1u)) != 0 ? _Accept.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Accept),
-            HttpSysRequestHeader.AcceptCharset => ((_flag0 & 0x2u)) != 0 ? _AcceptCharset.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptCharset),
-            HttpSysRequestHeader.AcceptEncoding => ((_flag0 & 0x4u)) != 0 ? _AcceptEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptEncoding),
-            HttpSysRequestHeader.AcceptLanguage => ((_flag0 & 0x8u)) != 0 ? _AcceptLanguage.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptLanguage),
-            HttpSysRequestHeader.Allow => ((_flag0 & 0x10u)) != 0 ? _Allow.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Allow),
-            HttpSysRequestHeader.Authorization => ((_flag0 & 0x20u)) != 0 ? _Authorization.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Authorization),
-            HttpSysRequestHeader.CacheControl => ((_flag0 & 0x40u)) != 0 ? _CacheControl.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.CacheControl),
-            HttpSysRequestHeader.Connection => ((_flag0 & 0x80u)) != 0 ? _Connection.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Connection),
-            HttpSysRequestHeader.ContentEncoding => ((_flag0 & 0x100u)) != 0 ? _ContentEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentEncoding),
-            HttpSysRequestHeader.ContentLanguage => ((_flag0 & 0x200u)) != 0 ? _ContentLanguage.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLanguage),
-            HttpSysRequestHeader.ContentLength => ((_flag0 & 0x400u)) != 0 ? _ContentLength.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLength),
-            HttpSysRequestHeader.ContentLocation => ((_flag0 & 0x800u)) != 0 ? _ContentLocation.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLocation),
-            HttpSysRequestHeader.ContentMd5 => ((_flag0 & 0x1000u)) != 0 ? _ContentMD5.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentMd5),
-            HttpSysRequestHeader.ContentRange => ((_flag0 & 0x2000u)) != 0 ? _ContentRange.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentRange),
-            HttpSysRequestHeader.ContentType => ((_flag0 & 0x4000u)) != 0 ? _ContentType.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentType),
-            HttpSysRequestHeader.Cookie => ((_flag0 & 0x8000u)) != 0 ? _Cookie.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Cookie),
-            HttpSysRequestHeader.Date => ((_flag0 & 0x10000u)) != 0 ? _Date.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Date),
-            HttpSysRequestHeader.Expect => ((_flag0 & 0x20000u)) != 0 ? _Expect.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Expect),
-            HttpSysRequestHeader.Expires => ((_flag0 & 0x40000u)) != 0 ? _Expires.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Expires),
-            HttpSysRequestHeader.From => ((_flag0 & 0x80000u)) != 0 ? _From.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.From),
-            HttpSysRequestHeader.Host => ((_flag0 & 0x100000u)) != 0 ? _Host.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Host),
-            HttpSysRequestHeader.IfMatch => ((_flag0 & 0x200000u)) != 0 ? _IfMatch.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfMatch),
-            HttpSysRequestHeader.IfModifiedSince => ((_flag0 & 0x400000u)) != 0 ? _IfModifiedSince.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfModifiedSince),
-            HttpSysRequestHeader.IfNoneMatch => ((_flag0 & 0x800000u)) != 0 ? _IfNoneMatch.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfNoneMatch),
-            HttpSysRequestHeader.IfRange => ((_flag0 & 0x1000000u)) != 0 ? _IfRange.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfRange),
-            HttpSysRequestHeader.IfUnmodifiedSince => ((_flag0 & 0x2000000u)) != 0 ? _IfUnmodifiedSince.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince),
-            HttpSysRequestHeader.KeepAlive => ((_flag0 & 0x4000000u)) != 0 ? _KeepAlive.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.KeepAlive),
-            HttpSysRequestHeader.LastModified => ((_flag0 & 0x8000000u)) != 0 ? _LastModified.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.LastModified),
-            HttpSysRequestHeader.MaxForwards => ((_flag0 & 0x10000000u)) != 0 ? _MaxForwards.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.MaxForwards),
-            HttpSysRequestHeader.Pragma => ((_flag0 & 0x20000000u)) != 0 ? _Pragma.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Pragma),
-            HttpSysRequestHeader.ProxyAuthorization => ((_flag0 & 0x40000000u)) != 0 ? _ProxyAuthorization.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ProxyAuthorization),
-            HttpSysRequestHeader.Range => ((_flag0 & 0x80000000u)) != 0 ? _Range.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Range),
-            HttpSysRequestHeader.Referer => ((_flag1 & 0x1u)) != 0 ? _Referer.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Referer),
-            HttpSysRequestHeader.Te => ((_flag1 & 0x2u)) != 0 ? _TE.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Te),
-            HttpSysRequestHeader.Trailer => ((_flag1 & 0x4u)) != 0 ? _Trailer.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Trailer),
-            HttpSysRequestHeader.TransferEncoding => ((_flag1 & 0x8u)) != 0 ? _TransferEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.TransferEncoding),
-            HttpSysRequestHeader.Translate => ((_flag1 & 0x10u)) != 0 ? _Translate.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Translate),
-            HttpSysRequestHeader.Upgrade => ((_flag1 & 0x20u)) != 0 ? _Upgrade.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Upgrade),
-            HttpSysRequestHeader.UserAgent => ((_flag1 & 0x40u)) != 0 ? _UserAgent.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.UserAgent),
-            HttpSysRequestHeader.Via => ((_flag1 & 0x80u)) != 0 ? _Via.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Via),
-            HttpSysRequestHeader.Warning => ((_flag1 & 0x100u)) != 0 ? _Warning.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Warning),
+            HttpSysRequestHeader.Accept => (_flag0 & 0x1u) != 0 ? _Accept.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Accept),
+            HttpSysRequestHeader.AcceptCharset => (_flag0 & 0x2u) != 0 ? _AcceptCharset.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptCharset),
+            HttpSysRequestHeader.AcceptEncoding => (_flag0 & 0x4u) != 0 ? _AcceptEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptEncoding),
+            HttpSysRequestHeader.AcceptLanguage => (_flag0 & 0x8u) != 0 ? _AcceptLanguage.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptLanguage),
+            HttpSysRequestHeader.Allow => (_flag0 & 0x10u) != 0 ? _Allow.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Allow),
+            HttpSysRequestHeader.Authorization => (_flag0 & 0x20u) != 0 ? _Authorization.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Authorization),
+            HttpSysRequestHeader.CacheControl => (_flag0 & 0x40u) != 0 ? _CacheControl.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.CacheControl),
+            HttpSysRequestHeader.Connection => (_flag0 & 0x80u) != 0 ? _Connection.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Connection),
+            HttpSysRequestHeader.ContentEncoding => (_flag0 & 0x100u) != 0 ? _ContentEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentEncoding),
+            HttpSysRequestHeader.ContentLanguage => (_flag0 & 0x200u) != 0 ? _ContentLanguage.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLanguage),
+            HttpSysRequestHeader.ContentLength => (_flag0 & 0x400u) != 0 ? _ContentLength.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLength),
+            HttpSysRequestHeader.ContentLocation => (_flag0 & 0x800u) != 0 ? _ContentLocation.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLocation),
+            HttpSysRequestHeader.ContentMd5 => (_flag0 & 0x1000u) != 0 ? _ContentMD5.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentMd5),
+            HttpSysRequestHeader.ContentRange => (_flag0 & 0x2000u) != 0 ? _ContentRange.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentRange),
+            HttpSysRequestHeader.ContentType => (_flag0 & 0x4000u) != 0 ? _ContentType.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentType),
+            HttpSysRequestHeader.Cookie => (_flag0 & 0x8000u) != 0 ? _Cookie.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Cookie),
+            HttpSysRequestHeader.Date => (_flag0 & 0x10000u) != 0 ? _Date.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Date),
+            HttpSysRequestHeader.Expect => (_flag0 & 0x20000u) != 0 ? _Expect.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Expect),
+            HttpSysRequestHeader.Expires => (_flag0 & 0x40000u) != 0 ? _Expires.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Expires),
+            HttpSysRequestHeader.From => (_flag0 & 0x80000u) != 0 ? _From.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.From),
+            HttpSysRequestHeader.Host => (_flag0 & 0x100000u) != 0 ? _Host.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Host),
+            HttpSysRequestHeader.IfMatch => (_flag0 & 0x200000u) != 0 ? _IfMatch.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfMatch),
+            HttpSysRequestHeader.IfModifiedSince => (_flag0 & 0x400000u) != 0 ? _IfModifiedSince.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfModifiedSince),
+            HttpSysRequestHeader.IfNoneMatch => (_flag0 & 0x800000u) != 0 ? _IfNoneMatch.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfNoneMatch),
+            HttpSysRequestHeader.IfRange => (_flag0 & 0x1000000u) != 0 ? _IfRange.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfRange),
+            HttpSysRequestHeader.IfUnmodifiedSince => (_flag0 & 0x2000000u) != 0 ? _IfUnmodifiedSince.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince),
+            HttpSysRequestHeader.KeepAlive => (_flag0 & 0x4000000u) != 0 ? _KeepAlive.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.KeepAlive),
+            HttpSysRequestHeader.LastModified => (_flag0 & 0x8000000u) != 0 ? _LastModified.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.LastModified),
+            HttpSysRequestHeader.MaxForwards => (_flag0 & 0x10000000u) != 0 ? _MaxForwards.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.MaxForwards),
+            HttpSysRequestHeader.Pragma => (_flag0 & 0x20000000u) != 0 ? _Pragma.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Pragma),
+            HttpSysRequestHeader.ProxyAuthorization => (_flag0 & 0x40000000u) != 0 ? _ProxyAuthorization.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ProxyAuthorization),
+            HttpSysRequestHeader.Range => (_flag0 & 0x80000000u) != 0 ? _Range.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Range),
+            HttpSysRequestHeader.Referer => (_flag1 & 0x1u) != 0 ? _Referer.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Referer),
+            HttpSysRequestHeader.Te => (_flag1 & 0x2u) != 0 ? _TE.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Te),
+            HttpSysRequestHeader.Trailer => (_flag1 & 0x4u) != 0 ? _Trailer.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Trailer),
+            HttpSysRequestHeader.TransferEncoding => (_flag1 & 0x8u) != 0 ? _TransferEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.TransferEncoding),
+            HttpSysRequestHeader.Translate => (_flag1 & 0x10u) != 0 ? _Translate.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Translate),
+            HttpSysRequestHeader.Upgrade => (_flag1 & 0x20u) != 0 ? _Upgrade.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Upgrade),
+            HttpSysRequestHeader.UserAgent => (_flag1 & 0x40u) != 0 ? _UserAgent.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.UserAgent),
+            HttpSysRequestHeader.Via => (_flag1 & 0x80u) != 0 ? _Via.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Via),
+            HttpSysRequestHeader.Warning => (_flag1 & 0x100u) != 0 ? _Warning.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Warning),
             _ => throw new NotImplementedException()
         };
     }
