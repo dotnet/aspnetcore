@@ -174,4 +174,7 @@
   <data name="BindingSource_FormFile" xml:space="preserve">
     <value>FormFile</value>
   </data>
+  <data name="ModelStateDictionary_MaxModelStateDepth" xml:space="preserve">
+    <value>The specified key exceeded the maximum ModelState depth: {0}</value>
+  </data>
 </root>

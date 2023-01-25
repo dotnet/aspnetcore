@@ -145,6 +145,53 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 vp => Assert.Same(original[2], vp));
         }
 
+        // Ensure model binding system disallows one more than MaxModelBindingRecursionDepth binders on the stack.
+        [Fact]
+        public void EnterNestedScope_Throws_WhenDeeperThanMaxModelBindingRecursionDepth()
+        {
+            // Arrange
+            var expectedMessage = $"Model binding system exceeded " +
+               $"MaxModelBindingRecursionDepth (3). Reduce the " +
+               $"potential nesting of '{typeof(string)}'. For example, this type may have a property with a " +
+               $"model binder that always succeeds. " +
+               $"Otherwise, consider setting the AppContext switch 'Microsoft.AspNetCore.Mvc.ModelBinding.MaxRecursionDepth' to change the default depth.";
+
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(string), nameof(string.Length))
+                .BindingDetails(b => b.BindingSource = BindingSource.Query);
+
+            var original = CreateDefaultValueProvider();
+            var context = DefaultModelBindingContext.CreateBindingContext(
+                GetActionContext(),
+                original,
+                metadataProvider.GetMetadataForType(typeof(string)),
+                new BindingInfo(),
+                "model") as DefaultModelBindingContext;
+            context.MaxModelBindingRecursionDepth = 3;
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+
+            void RecursiveNestedScope(int depth = 0)
+            {
+                if (depth >= context.MaxModelBindingRecursionDepth)
+                {
+                    return;
+                }
+
+                using (context.EnterNestedScope(propertyMetadata, "Length", "Length", model: null))
+                {
+                    RecursiveNestedScope(++depth);
+                }
+            }
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => RecursiveNestedScope());
+            Assert.Equal(expectedMessage, exception.Message);            
+        }
+
+
         [Fact]
         public void ModelTypeAreFedFromModelMetadata()
         {

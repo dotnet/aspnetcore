@@ -119,6 +119,18 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.37' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Abstractions;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.38' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Abstractions;
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.Owin.Security.Interop;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.39' ">
+    <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

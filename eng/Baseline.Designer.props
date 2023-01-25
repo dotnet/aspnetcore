@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.36</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.38</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -601,7 +601,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Abstractions' ">
-    <BaselinePackageVersion>2.1.3</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.38</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.1.1, )" />
@@ -621,7 +621,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' ">
-    <BaselinePackageVersion>2.1.34</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.38</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.1.1, )" />
@@ -1234,10 +1234,10 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Sdk.Razor' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Owin.Security.Interop-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Owin.Security.Interop' ">
-    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.38</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Owin.Security.Interop' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Owin.Security" Version="[3.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Owin.Security" Version="[4.2.2, )" />
   </ItemGroup>
 </Project>

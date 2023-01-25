@@ -14,6 +14,7 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(MvcSharedSourceRoot)ModelBindingSwitches.cs" LinkBase="Shared"  />    
   </ItemGroup>
 
   <ItemGroup>

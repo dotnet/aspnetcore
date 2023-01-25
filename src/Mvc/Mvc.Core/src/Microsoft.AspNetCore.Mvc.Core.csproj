@@ -23,6 +23,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="$(MvcSharedSourceRoot)ModelBindingSwitches.cs" LinkBase="Shared"  />
   </ItemGroup>
 
   <ItemGroup>
