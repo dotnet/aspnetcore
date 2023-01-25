@@ -6,7 +6,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
-    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Connections" Version="1.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.7" />
   </ItemGroup>
 
 </Project>
