@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
@@ -13,11 +12,14 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
 {
     private static readonly MediaTypeHeaderValue _jsonMediaType = new("application/json");
     private static readonly MediaTypeHeaderValue _problemDetailsJsonMediaType = new("application/problem+json");
-    private readonly ProblemDetailsOptions _options;
 
-    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options)
+    private readonly ProblemDetailsOptions _options;
+    private readonly JsonSerializerOptions _serializerOptions;
+
+    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options, IOptions<JsonOptions> jsonOptions)
     {
         _options = options.Value;
+        _serializerOptions = jsonOptions.Value.SerializerOptions;
     }
 
     public bool CanWrite(ProblemDetailsContext context)
@@ -47,31 +49,17 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         return false;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026",
-        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed and we need to fallback" +
-        "to reflection-based. The ProblemDetailsConverter is marked as RequiresUnreferencedCode already.")]
     public ValueTask WriteAsync(ProblemDetailsContext context)
     {
         var httpContext = context.HttpContext;
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
         _options.CustomizeProblemDetails?.Invoke(context);
 
-        if (context.ProblemDetails.Extensions is { Count: 0 })
-        {
-            // We can use the source generation in this case
-            return new ValueTask(httpContext.Response.WriteAsJsonAsync(
-                context.ProblemDetails,
-                ProblemDetailsJsonContext.Default.ProblemDetails,
-                contentType: "application/problem+json"));
-        }
+        var problemDetailsType = context.ProblemDetails.GetType();
 
         return new ValueTask(httpContext.Response.WriteAsJsonAsync(
                         context.ProblemDetails,
-                        options: null,
+                         _serializerOptions.GetTypeInfo(problemDetailsType),
                         contentType: "application/problem+json"));
     }
-
-    [JsonSerializable(typeof(ProblemDetails))]
-    internal sealed partial class ProblemDetailsJsonContext : JsonSerializerContext
-    { }
 }

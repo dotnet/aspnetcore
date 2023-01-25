@@ -18,7 +18,10 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet8` and `dotnet8-transport`) and adding entries for the new feeds (`dotnet9` and `dotnet9-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
-* In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://docs.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
+* In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://learn.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
+* Mark APIs from the previous release as Shipped by running `.\eng\scripts\mark-shipped.cmd`. **Note that it's best to do this as early as possible after the API surface is finalized from the previous release** - make sure to be careful that any new API in `main` that isn't shipped as part of the previous release, stays in `PublicAPI.Unshipped.txt` files.
+  * One way to ensure this is to check out the release branch shipping the previous release (**after API surface area has been finalized**), run `.\eng\scripts\mark-shipped.cmd` there, copy over all of the `PublicAPI.Unshipped.txt` and `PublicAPI.Shipped.txt` files into a new branch based off of `main`, and build the repo. Any failures there will tell you whether or not there are new APIs in main that need to be put back into the `PublicAPI.Unshipped.txt` files.
+    * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
 
 ### Validation
 
@@ -46,12 +49,13 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   3. Create a PR like [this one](https://github.com/dotnet/spa-templates/pull/21) updating the branding & TFM in the `main` branch of dotnet/spa-templates.
     * Do not merge this until the PR from the previous step is merged.
 * Update template precedence
-  1. Create & merge a PR like [this one](https://github.com/dotnet/spa-templates/pull/39) in dotnet/spa-templates updating `precedence` and `identity` elements in all template.json files.
-      * Going forward, update precedence values by increasing them to the next integer value whose first digits correspond with the major version. This makes it easier to verify that precedence values for any given template were updated since the previous release.
-        * For example, if a precedence value was 9000 for 7.0, increase it to 80000 for 8.0.
+  1. Create & merge a PR like [this one](https://github.com/dotnet/spa-templates/pull/105) in dotnet/spa-templates updating `precedence` and `identity` elements in all template.json files, as well as replacing any references to the previous TFM with the new on in templatestrings.json files.
+      * Going forward, Precedence values should be (9000 + (Major Version) * 100) for 8.0 and 9.0, and (Major Version * 1000) after that.
+        * This means 8.0's Precedence should be 9800, 9.0's should be 9900, 10.0's should be 10000, 11.0's should be 11000, and so on.
+        * If we need to release a Minor version of any of these, use the first zero digit after the Major version to represent that (e.g. 9810 for 8.1, 10100 for 10.1).
   2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
       * Make sure to update _all_ template.json files, including project templates and item templates.
-      * Update precedence values by increasing them to the next integer value whose first digits correspond with the major version.
+      * Use the same precedence scheme as above.
   3. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
 * In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs](/src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs), update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 

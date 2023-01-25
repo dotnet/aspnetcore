@@ -45,13 +45,7 @@ internal sealed class SocketAddress
     /// </devdoc>
     public SocketAddress(AddressFamily family, int size)
     {
-        if (size < WriteableOffset)
-        {
-            // it doesn't make sense to create a socket address with less tha
-            // 2 bytes, that's where we store the address family.
-
-            throw new ArgumentOutOfRangeException(nameof(size));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(size, WriteableOffset);
         _size = size;
         _buffer = new byte[((size / IntPtr.Size) + 2) * IntPtr.Size]; // sizeof DWORD
 

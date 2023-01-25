@@ -78,7 +78,7 @@ internal static partial class LoggerExtensions
         EventName = "ResponseWithUnsuccessfulStatusCodeNotCacheable")]
     internal static partial void ResponseWithUnsuccessfulStatusCodeNotCacheable(this ILogger logger, int statusCode);
 
-    [LoggerMessage(18, LogLevel.Debug, "The 'IfNoneMatch' header of the request contains a value of *.", EventName = "ExpirationExpiresExceeded")]
+    [LoggerMessage(18, LogLevel.Debug, "The 'IfNoneMatch' header of the request contains a value of *.", EventName = "NotModifiedIfNoneMatchStar")]
     internal static partial void NotModifiedIfNoneMatchStar(this ILogger logger);
 
     [LoggerMessage(19, LogLevel.Debug, "The ETag {ETag} in the 'IfNoneMatch' header matched the ETag of a cached entry.",

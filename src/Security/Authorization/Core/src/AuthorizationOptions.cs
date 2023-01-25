@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -47,15 +48,8 @@ public class AuthorizationOptions
     /// <param name="policy">The authorization policy.</param>
     public void AddPolicy(string name, AuthorizationPolicy policy)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(policy);
 
         PolicyMap[name] = Task.FromResult<AuthorizationPolicy?>(policy);
     }
@@ -67,15 +61,8 @@ public class AuthorizationOptions
     /// <param name="configurePolicy">The delegate that will be used to build the policy.</param>
     public void AddPolicy(string name, Action<AuthorizationPolicyBuilder> configurePolicy)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);
@@ -89,10 +76,7 @@ public class AuthorizationOptions
     /// <returns>The policy for the specified name, or null if a policy with the name does not exist.</returns>
     public AuthorizationPolicy? GetPolicy(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         if (PolicyMap.TryGetValue(name, out var value))
         {
@@ -104,10 +88,7 @@ public class AuthorizationOptions
 
     internal Task<AuthorizationPolicy?> GetPolicyTask(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         if (PolicyMap.TryGetValue(name, out var value))
         {

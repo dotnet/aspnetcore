@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;

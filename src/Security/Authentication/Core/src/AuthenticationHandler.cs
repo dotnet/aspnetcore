@@ -123,14 +123,8 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <returns></returns>
     public async Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
     {
-        if (scheme == null)
-        {
-            throw new ArgumentNullException(nameof(scheme));
-        }
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(scheme);
+        ArgumentNullException.ThrowIfNull(context);
 
         Scheme = scheme;
         Context = context;

@@ -54,10 +54,7 @@ internal sealed class ResponseCacheFilterExecutor
 
     public void Execute(FilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!(NoStore || _cacheProfile.Location == ResponseCacheLocation.None || _cacheLocation == ResponseCacheLocation.None))
         {

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http.Features;
 
@@ -33,10 +34,7 @@ public class FeatureCollection : IFeatureCollection
     /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="initialCapacity"/> is less than 0</exception>
     public FeatureCollection(int initialCapacity)
     {
-        if (initialCapacity < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(initialCapacity));
-        }
+        ArgumentOutOfRangeThrowHelper.ThrowIfNegative(initialCapacity);
 
         _initialCapacity = initialCapacity;
     }
@@ -64,19 +62,13 @@ public class FeatureCollection : IFeatureCollection
     {
         get
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(key);
 
             return _features != null && _features.TryGetValue(key, out var result) ? result : _defaults?[key];
         }
         set
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(key);
 
             if (value == null)
             {

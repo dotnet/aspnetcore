@@ -32,8 +32,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
-    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
+    <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -468,10 +467,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' != 'win'">$(Crossgen2Args) --perfmap --perfmap-format-version:1 --perfmap-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
     </PropertyGroup>
 
+    <Message Text="Running crossgen with $(CrossgenToolPath)"
+        Importance="High" />
     <!-- All metadata in batched task comes from current @(IntermediateCrossgenAssembly) item. -->
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
+    <Message Text="Finished crossgen"
+        Importance="High" />
   </Target>
 
   <Target Name="_GenerateComposites"
@@ -510,11 +513,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   #########################################
   -->
   <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
-      Uri="$(DotNetRuntimeDownloadUrl)"
-      PrivateUri="$(DotNetRuntimePrivateDownloadUrl)"
-      PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(DotNetRuntimeArchive)" />
+    <!-- Try various places to find the runtime. It's either released (use official version),
+         public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
+    <ItemGroup>
+      <UrisToDownload Include="https://dotnetcli.azureedge.net/dotnet/$(DotNetRuntimeDownloadPath)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/public/$(DotNetRuntimeDownloadPath)" />
+      <UrisToDownload Include="https://dotnetbuilds.azureedge.net/internal/$(DotNetRuntimeDownloadPath)"
+          Condition=" '$(DotnetRuntimeSourceFeedKey)' != '' ">
+        <token>$(DotnetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
+    </ItemGroup>
+
+    <DownloadFile Condition=" !Exists('$(DotNetRuntimeArchive)') "
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="$(DotNetRuntimeArchive)" />
+
     <RemoveDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
     <MakeDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
 

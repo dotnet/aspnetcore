@@ -28,10 +28,7 @@ public static class ModelExplorerExtensions
     /// </remarks>
     public static string GetSimpleDisplayText(this ModelExplorer modelExplorer)
     {
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         if (modelExplorer.Metadata.SimpleDisplayProperty != null)
         {

@@ -101,7 +101,7 @@ internal sealed class SegmentWriteStream : Stream
     {
         if (!CanWrite)
         {
-            throw new ObjectDisposedException("The stream has been closed for writing.");
+            throw new ObjectDisposedException(nameof(SegmentWriteStream), "The stream has been closed for writing.");
         }
     }
 
@@ -125,7 +125,7 @@ internal sealed class SegmentWriteStream : Stream
         ValidateBufferArguments(buffer, offset, count);
         if (!CanWrite)
         {
-            throw new ObjectDisposedException("The stream has been closed for writing.");
+            throw new ObjectDisposedException(nameof(SegmentWriteStream), "The stream has been closed for writing.");
         }
 
         Write(buffer.AsSpan(offset, count));
@@ -165,7 +165,7 @@ internal sealed class SegmentWriteStream : Stream
     {
         if (!CanWrite)
         {
-            throw new ObjectDisposedException("The stream has been closed for writing.");
+            throw new ObjectDisposedException(nameof(SegmentWriteStream), "The stream has been closed for writing.");
         }
 
         if ((int)_bufferStream.Length == _segmentSize)

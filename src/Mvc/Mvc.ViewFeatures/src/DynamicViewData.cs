@@ -11,10 +11,7 @@ internal sealed class DynamicViewData : DynamicObject
 
     public DynamicViewData(Func<ViewDataDictionary> viewDataFunc)
     {
-        if (viewDataFunc == null)
-        {
-            throw new ArgumentNullException(nameof(viewDataFunc));
-        }
+        ArgumentNullException.ThrowIfNull(viewDataFunc);
 
         _viewDataFunc = viewDataFunc;
     }
@@ -43,10 +40,7 @@ internal sealed class DynamicViewData : DynamicObject
 
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
-        if (binder == null)
-        {
-            throw new ArgumentNullException(nameof(binder));
-        }
+        ArgumentNullException.ThrowIfNull(binder);
 
         result = ViewData[binder.Name];
 
@@ -57,10 +51,7 @@ internal sealed class DynamicViewData : DynamicObject
 
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
-        if (binder == null)
-        {
-            throw new ArgumentNullException(nameof(binder));
-        }
+        ArgumentNullException.ThrowIfNull(binder);
 
         ViewData[binder.Name] = value;
 

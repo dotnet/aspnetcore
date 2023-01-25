@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -36,6 +37,11 @@ public class Startup
                 policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                 policy.RequireClaim(ClaimTypes.NameIdentifier);
             });
+            options.AddPolicy(NegotiateDefaults.AuthenticationScheme, policy =>
+            {
+                policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
+                policy.RequireClaim(ClaimTypes.Name);
+            });
         });
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -51,6 +57,7 @@ public class Startup
                             IssuerSigningKey = SecurityKey
                         };
                 });
+        services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
 
         // Since tests run in parallel, it's possible multiple servers will startup and read files being written by another test
         // Use a unique directory per server to avoid this collision
@@ -85,6 +92,8 @@ public class Startup
             endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
             endpoints.MapHub<HubWithAuthorization2>("/authorizedhub2")
                   .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));
+            endpoints.MapHub<HubWithAuthorization2>("/windowsauthhub")
+                  .RequireAuthorization(new AuthorizeAttribute(NegotiateDefaults.AuthenticationScheme));
 
             endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
 

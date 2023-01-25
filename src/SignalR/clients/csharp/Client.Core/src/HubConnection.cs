@@ -18,11 +18,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
@@ -151,7 +154,7 @@ public partial class HubConnection : IAsyncDisposable
     /// <remarks>
     /// The client times out if it hasn't heard from the server for `this` long.
     /// </remarks>
-    public TimeSpan ServerTimeout { get; set; } = DefaultServerTimeout;
+    public TimeSpan ServerTimeout { get; set; }
 
     /// <summary>
     /// Gets or sets the interval at which the client sends ping messages.
@@ -159,7 +162,7 @@ public partial class HubConnection : IAsyncDisposable
     /// <remarks>
     /// Sending any message resets the timer to the start of the interval.
     /// </remarks>
-    public TimeSpan KeepAliveInterval { get; set; } = DefaultKeepAliveInterval;
+    public TimeSpan KeepAliveInterval { get; set; }
 
     /// <summary>
     /// Gets or sets the timeout for the initial handshake.
@@ -226,6 +229,12 @@ public partial class HubConnection : IAsyncDisposable
         _state = new ReconnectingConnectionState(_logger);
 
         _logScope = new ConnectionLogScope();
+
+        var options = serviceProvider.GetService<IOptions<HubConnectionOptions>>();
+
+        ServerTimeout = options?.Value.ServerTimeout ?? DefaultServerTimeout;
+
+        KeepAliveInterval = options?.Value.KeepAliveInterval ?? DefaultKeepAliveInterval;
     }
 
     /// <summary>
@@ -1145,10 +1154,7 @@ public partial class HubConnection : IAsyncDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HubConnection));
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)

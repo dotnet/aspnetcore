@@ -12,10 +12,7 @@ internal sealed class CompilationFailedException : Exception, ICompilationExcept
             IEnumerable<CompilationFailure> compilationFailures)
         : base(FormatMessage(compilationFailures))
     {
-        if (compilationFailures == null)
-        {
-            throw new ArgumentNullException(nameof(compilationFailures));
-        }
+        ArgumentNullException.ThrowIfNull(compilationFailures);
 
         CompilationFailures = compilationFailures;
     }

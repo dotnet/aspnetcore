@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
@@ -221,10 +222,7 @@ public partial class HubConnectionExtensions
     /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
     public static Task InvokeCoreAsync(this HubConnection hubConnection, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         return hubConnection.InvokeCoreAsync(methodName, typeof(object), args, cancellationToken);
     }

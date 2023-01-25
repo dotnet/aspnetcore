@@ -38,10 +38,7 @@ public class DelegatingEnumerable<TWrapped, TDeclared> : IEnumerable<TWrapped>
     /// <param name="elementWrapperProvider">The wrapper provider for wrapping individual elements.</param>
     public DelegatingEnumerable(IEnumerable<TDeclared> source, IWrapperProvider elementWrapperProvider)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         _source = source;
         _wrapperProvider = elementWrapperProvider;

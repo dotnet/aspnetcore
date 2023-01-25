@@ -34,10 +34,7 @@ public class ValidationProblemDetails : HttpValidationProblemDetails
 
     private static IDictionary<string, string[]> CreateErrorDictionary(ModelStateDictionary modelState)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         var errorDictionary = new Dictionary<string, string[]>(StringComparer.Ordinal);
 

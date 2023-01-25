@@ -28,14 +28,8 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
     {
-        if (sslStream is null)
-        {
-            throw new ArgumentNullException(nameof(sslStream));
-        }
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(sslStream);
+        ArgumentNullException.ThrowIfNull(context);
 
         _sslStream = sslStream;
         _context = context;

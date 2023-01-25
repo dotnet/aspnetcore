@@ -48,9 +48,9 @@ internal sealed class PageContext : IAsyncDisposable
         Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        Renderer.Dispose();
-        return _serviceScope.DisposeAsync();
+        await Renderer.DisposeAsync();
+        await _serviceScope.DisposeAsync();
     }
 }

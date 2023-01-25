@@ -44,10 +44,7 @@ public static class CorsEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullException.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new CorsPolicyBuilder();
         configurePolicy(policyBuilder);

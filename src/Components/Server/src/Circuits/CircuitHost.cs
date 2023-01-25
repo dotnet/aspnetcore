@@ -599,10 +599,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private void AssertNotDisposed()
     {
+#pragma warning disable CA1513 // Use ObjectDisposedException throw helper
         if (_disposed)
         {
             throw new ObjectDisposedException(objectName: null);
         }
+#pragma warning restore CA1513 // Use ObjectDisposedException throw helper
     }
 
     // We want to notify the client if it's still connected, and then tear-down the circuit.
@@ -792,7 +794,7 @@ internal partial class CircuitHost : IAsyncDisposable
             }
         }
 
-        [LoggerMessage(218, LogLevel.Debug, "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
+        [LoggerMessage(218, LogLevel.Debug, "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetStaticFailed")]
         private static partial void BeginInvokeDotNetStaticFailed(ILogger logger, string methodIdentifier, string assembly, string callId, Exception exception);
 
         public static void BeginInvokeDotNetFailed(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, Exception exception)
@@ -807,7 +809,9 @@ internal partial class CircuitHost : IAsyncDisposable
             }
         }
 
+#pragma warning disable SYSLIB1025
         [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+#pragma warning restore SYSLIB1025
     }
 }

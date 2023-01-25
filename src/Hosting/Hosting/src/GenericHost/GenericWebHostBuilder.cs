@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -17,10 +18,8 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
+internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStartup
 {
-    private readonly IHostBuilder _builder;
-    private readonly IConfiguration _config;
     private object? _startupObject;
     private readonly object _startupKey = new object();
 
@@ -28,18 +27,8 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
     private HostingStartupWebHostBuilder? _hostingStartupWebHostBuilder;
 
     public GenericWebHostBuilder(IHostBuilder builder, WebHostBuilderOptions options)
+        : base(builder, options)
     {
-        _builder = builder;
-        var configBuilder = new ConfigurationBuilder()
-            .AddInMemoryCollection();
-
-        if (!options.SuppressEnvironmentConfiguration)
-        {
-            configBuilder.AddEnvironmentVariables(prefix: "ASPNETCORE_");
-        }
-
-        _config = configBuilder.Build();
-
         _builder.ConfigureHostConfiguration(config =>
         {
             config.AddConfiguration(_config);
@@ -171,51 +160,6 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         }
     }
 
-    public IWebHost Build()
-    {
-        throw new NotSupportedException($"Building this implementation of {nameof(IWebHostBuilder)} is not supported.");
-    }
-
-    public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
-    {
-        _builder.ConfigureAppConfiguration((context, builder) =>
-        {
-            var webhostBuilderContext = GetWebHostBuilderContext(context);
-            configureDelegate(webhostBuilderContext, builder);
-        });
-
-        return this;
-    }
-
-    public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
-    {
-        return ConfigureServices((context, services) => configureServices(services));
-    }
-
-    public IWebHostBuilder ConfigureServices(Action<WebHostBuilderContext, IServiceCollection> configureServices)
-    {
-        _builder.ConfigureServices((context, builder) =>
-        {
-            var webhostBuilderContext = GetWebHostBuilderContext(context);
-            configureServices(webhostBuilderContext, builder);
-        });
-
-        return this;
-    }
-
-    public IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure)
-    {
-        _builder.UseServiceProviderFactory(context =>
-        {
-            var webHostBuilderContext = GetWebHostBuilderContext(context);
-            var options = new ServiceProviderOptions();
-            configure(webHostBuilderContext, options);
-            return new DefaultServiceProviderFactory(options);
-        });
-
-        return this;
-    }
-
     public IWebHostBuilder UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
     {
         var startupAssemblyName = startupType.Assembly.GetName().Name;
@@ -267,7 +211,6 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         return this;
     }
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "We need to call a generic method on IHostBuilder.")]
     private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object? instance = null)
     {
         var webHostBuilderContext = GetWebHostBuilderContext(context);
@@ -302,21 +245,10 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var configureContainerBuilder = StartupLoader.FindConfigureContainerDelegate(startupType, context.HostingEnvironment.EnvironmentName);
             if (configureContainerBuilder.MethodInfo != null)
             {
-                var containerType = configureContainerBuilder.GetContainerType();
                 // Store the builder in the property bag
                 _builder.Properties[typeof(ConfigureContainerBuilder)] = configureContainerBuilder;
 
-                var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
-
-                // Get the private ConfigureContainer method on this type then close over the container type
-                var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
-                                                 .MakeGenericMethod(containerType)
-                                                 .CreateDelegate(actionType, this);
-
-                // _builder.ConfigureContainer<T>(ConfigureContainer);
-                typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
-                    .MakeGenericMethod(containerType)
-                    .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
+                InvokeContainer(this, configureContainerBuilder);
             }
 
             // Resolve Configure after calling ConfigureServices and ConfigureContainer
@@ -342,6 +274,31 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
                 }
             };
         });
+
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+            Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
+        static void InvokeContainer(GenericWebHostBuilder genericWebHostBuilder, ConfigureContainerBuilder configureContainerBuilder)
+        {
+            var containerType = configureContainerBuilder.GetContainerType();
+
+            // Configure container uses MakeGenericType with the container type. MakeGenericType + struct container type requires IsDynamicCodeSupported.
+            if (containerType.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
+            {
+                throw new InvalidOperationException("A ValueType TContainerBuilder isn't supported with AOT.");
+            }
+
+            var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
+
+            // Get the private ConfigureContainer method on this type then close over the container type
+            var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)!
+                                             .MakeGenericMethod(containerType)
+                                             .CreateDelegate(actionType, genericWebHostBuilder);
+
+            // _builder.ConfigureContainer<T>(ConfigureContainer);
+            typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))!
+                .MakeGenericMethod(containerType)
+                .InvokeWithoutWrappingExceptions(genericWebHostBuilder._builder, new object[] { configureCallback });
+        }
     }
 
     private void ConfigureContainerImpl<TContainer>(HostBuilderContext context, TContainer container) where TContainer : notnull
@@ -395,40 +352,6 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             }
         });
 
-        return this;
-    }
-
-    private WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
-    {
-        if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
-        {
-            // Use _config as a fallback for WebHostOptions in case the chained source was removed from the hosting IConfigurationBuilder.
-            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config, environment: context.HostingEnvironment);
-            var webHostBuilderContext = new WebHostBuilderContext
-            {
-                Configuration = context.Configuration,
-                HostingEnvironment = new HostingEnvironment(),
-            };
-            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options, baseEnvironment: context.HostingEnvironment);
-            context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
-            context.Properties[typeof(WebHostOptions)] = options;
-            return webHostBuilderContext;
-        }
-
-        // Refresh config, it's periodically updated/replaced
-        var webHostContext = (WebHostBuilderContext)contextVal;
-        webHostContext.Configuration = context.Configuration;
-        return webHostContext;
-    }
-
-    public string? GetSetting(string key)
-    {
-        return _config[key];
-    }
-
-    public IWebHostBuilder UseSetting(string key, string? value)
-    {
-        _config[key] = value;
         return this;
     }
 

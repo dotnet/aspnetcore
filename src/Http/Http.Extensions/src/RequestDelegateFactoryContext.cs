@@ -14,7 +14,7 @@ internal sealed class RequestDelegateFactoryContext
     // Options
     public required IServiceProvider ServiceProvider { get; init; }
     public required IServiceProviderIsService? ServiceProviderIsService { get; init; }
-    public required List<string>? RouteParameters { get; init; }
+    public required IEnumerable<string>? RouteParameters { get; init; }
     public required bool ThrowOnBadRequest { get; init; }
     public required bool DisableInferredFromBody { get; init; }
     public required EndpointBuilder EndpointBuilder { get; init; }
@@ -49,7 +49,6 @@ internal sealed class RequestDelegateFactoryContext
     public bool ReadFormFile { get; set; }
     public ParameterInfo? FirstFormRequestBodyParameter { get; set; }
     // Properties for constructing and managing filters
-    public List<Expression> ContextArgAccess { get; } = new();
     public Expression? MethodCall { get; set; }
     public Type[] ArgumentTypes { get; set; } = Array.Empty<Type>();
     public Expression[]? ArgumentExpressions { get; set; }
@@ -59,6 +58,6 @@ internal sealed class RequestDelegateFactoryContext
     public List<ParameterInfo> Parameters { get; set; } = new();
 
     // Grab these options upfront to avoid the per request DI scope that would be made otherwise to get the options when writing Json
-    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
+    public required JsonSerializerOptions JsonSerializerOptions { get; set; }
     public required Expression JsonSerializerOptionsExpression { get; set; }
 }
