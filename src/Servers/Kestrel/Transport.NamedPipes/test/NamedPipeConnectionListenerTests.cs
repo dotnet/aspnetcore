@@ -68,6 +68,63 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
     }
 
+    [Fact]
+    public async Task AcceptAsync_ParallelConnections_ClientConnectionsSuccessfullyAccepted()
+    {
+        // Arrange
+        const int ParallelCount = 10;
+        const int ParallelCallCount = 5000;
+        const int TotalCallCount = ParallelCount * ParallelCallCount;
+
+        var currentCallCount = 0;
+        var options = new NamedPipeTransportOptions();
+        options.AcceptQueueCount = 16;
+        await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
+
+        // Act
+        var serverTask = Task.Run(async () =>
+        {
+            while (currentCallCount < TotalCallCount)
+            {
+                var connection = await connectionListener.AcceptAsync().DefaultTimeout();
+                await connection.DisposeAsync();
+
+                currentCallCount++;
+
+                Logger.LogInformation($"Server accepted {currentCallCount} calls.");
+            }
+
+            Logger.LogInformation($"Server task complete.");
+        });
+
+        var parallelTasks = new List<Task>();
+        for (var i = 0; i < ParallelCount; i++)
+        {
+            parallelTasks.Add(Task.Run(async () =>
+            {
+                var clientStreamCount = 0;
+                while (clientStreamCount < ParallelCallCount)
+                {
+                    try
+                    {
+                        var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
+                        await clientStream.ConnectAsync();
+
+                        await clientStream.WriteAsync(new byte[1]);
+                        await clientStream.ReadAsync(new byte[1]);
+                        clientStreamCount++;
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.LogInformation(ex, "Client exception.");
+                    }
+                }
+            }));
+        }
+
+        await serverTask.DefaultTimeout();
+    }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Non-OS implementations use UDS with an unlimited accept limit.")]
     public async Task AcceptAsync_HitBacklogLimit_ClientConnectionsSuccessfullyAccepted()

@@ -26,7 +26,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly PipeOptions _inputOptions;
     private readonly PipeOptions _outputOptions;
     private readonly Mutex _mutex;
-    private Task? _listeningTask;
+    private Task[]? _listeningTasks;
     private int _disposed;
 
     public NamedPipeConnectionListener(
@@ -45,7 +45,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         // The OS maintains a backlog of clients that are waiting to connect, so the app queue only stores a single connection.
         // We want to have a queue plus a background task that populates the queue, rather than creating NamedPipeServerStream
         // when AcceptAsync is called, so that the server is always the owner of the pipe name.
-        _acceptedQueue = Channel.CreateBounded<ConnectionContext>(new BoundedChannelOptions(capacity: 1) { SingleWriter = true });
+        _acceptedQueue = Channel.CreateBounded<ConnectionContext>(new BoundedChannelOptions(capacity: 1));
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
         var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
@@ -56,17 +56,22 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
     public void Start()
     {
-        Debug.Assert(_listeningTask == null, "Already started");
+        Debug.Assert(_listeningTasks == null, "Already started");
 
-        // Start first stream inline to catch creation errors.
-        var initialStream = CreateServerStream();
+        _listeningTasks = new Task[_options.AcceptQueueCount];
 
-        _listeningTask = StartAsync(initialStream);
+        for (var i = 0; i < _listeningTasks.Length; i++)
+        {
+            // Start first stream inline to catch creation errors.
+            var initialStream = CreateServerStream();
+
+            _listeningTasks[i] = StartAsync(initialStream, i);
+        }
     }
 
     public EndPoint EndPoint => _endpoint;
 
-    private async Task StartAsync(NamedPipeServerStream nextStream)
+    private async Task StartAsync(NamedPipeServerStream nextStream, int index)
     {
         try
         {
@@ -77,6 +82,8 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
                     var stream = nextStream;
 
                     await stream.WaitForConnectionAsync(_listeningToken);
+
+                    _log.LogInformation("Connection accepted on " + index);
 
                     var connection = new NamedPipeConnection(stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
                     connection.Start();
@@ -182,9 +189,9 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
         _listeningTokenSource.Dispose();
         _mutex.Dispose();
-        if (_listeningTask != null)
+        if (_listeningTasks != null)
         {
-            await _listeningTask;
+            await Task.WhenAll(_listeningTasks);
         }
     }
 }

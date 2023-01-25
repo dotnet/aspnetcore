@@ -12,6 +12,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 public sealed class NamedPipeTransportOptions
 {
     /// <summary>
+    /// 
+    /// </summary>
+    public int AcceptQueueCount { get; set; } = Math.Clamp(Environment.ProcessorCount, 1, 16);
+
+    /// <summary>
     /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
     /// <para>
     /// A value of <see langword="null"/> or 0 disables backpressure entirely allowing unlimited buffering.
