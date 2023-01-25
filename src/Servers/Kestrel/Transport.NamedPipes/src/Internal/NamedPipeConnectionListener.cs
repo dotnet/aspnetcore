@@ -65,13 +65,13 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             // Start first stream inline to catch creation errors.
             var initialStream = CreateServerStream();
 
-            _listeningTasks[i] = Task.Run(() => StartAsync(initialStream, i));
+            _listeningTasks[i] = Task.Run(() => StartAsync(initialStream));
         }
     }
 
     public EndPoint EndPoint => _endpoint;
 
-    private async Task StartAsync(NamedPipeServerStream nextStream, int index)
+    private async Task StartAsync(NamedPipeServerStream nextStream)
     {
         try
         {
@@ -82,8 +82,6 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
                     var stream = nextStream;
 
                     await stream.WaitForConnectionAsync(_listeningToken);
-
-                    _log.LogInformation("Connection accepted on " + index);
 
                     var connection = new NamedPipeConnection(stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
                     connection.Start();

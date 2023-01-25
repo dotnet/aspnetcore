@@ -78,7 +78,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
 
         var currentCallCount = 0;
         var options = new NamedPipeTransportOptions();
-        options.AcceptQueueCount = 1;
+        options.AcceptQueueCount = 16;
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
 
         // Act
