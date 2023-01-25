@@ -14,7 +14,7 @@ public static class RateLimiterOptionsExtensions
     /// <summary>
     /// Registers a new <see cref="TokenBucketRateLimiter"/> with the given <see cref="TokenBucketRateLimiterOptions"/> to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
-    /// Or via the <see cref="EnableRateLimitingAttribute"/>.
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
@@ -41,9 +41,9 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Registers a new <see cref="FixedWindowRateLimiter"/> with the given <see cref="FixedWindowRateLimiterOptions"/> to the to the application.
+    /// Registers a new <see cref="FixedWindowRateLimiter"/> with the given <see cref="FixedWindowRateLimiterOptions"/> to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
-    /// Or via the <see cref="EnableRateLimitingAttribute"/>.
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
@@ -70,9 +70,9 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Registers a new <see cref="SlidingWindowRateLimiter"/> with the given <see cref="SlidingWindowRateLimiterOptions"/> to the to the application.
+    /// Registers a new <see cref="SlidingWindowRateLimiter"/> with the given <see cref="SlidingWindowRateLimiterOptions"/> to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
-    /// Or via the <see cref="EnableRateLimitingAttribute"/>.
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
@@ -99,9 +99,9 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Registers a new <see cref="ConcurrencyLimiter"/> with the given <see cref="ConcurrencyLimiterOptions"/> to the to the application.
+    /// Registers a new <see cref="ConcurrencyLimiter"/> with the given <see cref="ConcurrencyLimiterOptions"/> to the application.
     /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
-    /// Or via the <see cref="EnableRateLimitingAttribute"/>.
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
