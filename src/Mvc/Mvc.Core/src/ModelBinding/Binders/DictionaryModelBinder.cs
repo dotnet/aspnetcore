@@ -112,20 +112,16 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         ArgumentNullException.ThrowIfNull(bindingContext);
 
         await base.BindModelAsync(bindingContext);
-        if (!bindingContext.Result.IsModelSet)
-        {
-            // No match for the prefix at all.
-            return;
-        }
-
         var result = bindingContext.Result;
 
-        Debug.Assert(result.Model != null);
-        var model = (IDictionary<TKey, TValue?>)result.Model;
-        if (model.Count != 0)
+        if (result.IsModelSet)
         {
-            // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
-            return;
+            Debug.Assert(result.Model != null);
+            if (result.Model is IDictionary<TKey, TValue?> { Count: > 0 })
+            {
+                // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
+                return;
+            }
         }
 
         Log.NoKeyValueFormatForDictionaryModelBinder(Logger, bindingContext);
@@ -139,6 +135,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
                 AddErrorIfBindingRequired(bindingContext);
             }
 
+            // No match for the prefix at all.
             return;
         }
 
@@ -157,6 +154,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         }
 
         // Update the existing successful but empty ModelBindingResult.
+        var model = (IDictionary<TKey, TValue?>)(result.Model ?? CreateEmptyCollection(bindingContext.ModelType));
         var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
         var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)]!;
 
@@ -202,6 +200,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
             }
         }
 
+        bindingContext.Result = ModelBindingResult.Success(model);
         bindingContext.ValidationState.Add(model, new ValidationStateEntry()
         {
             Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue?>(keyMappings, valueMetadata),
