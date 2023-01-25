@@ -191,6 +191,12 @@ public partial class HttpResultsHelperTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+
+        if (useJsonContext)
+        {
+            services.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default);
+        }
+
         return services.BuildServiceProvider();
     }
 

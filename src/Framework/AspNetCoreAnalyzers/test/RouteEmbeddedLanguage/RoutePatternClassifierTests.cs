@@ -152,4 +152,6 @@ Regex.CharacterClass("["),
 Regex.CharacterClass("one"),
 Regex.CharacterClass("]"));
     }
+
+    private static FormattedClassification Parameter(string name) => new FormattedClassification(name, "json - object");
 }

@@ -2566,7 +2566,7 @@
             }
           }
         ],
-        "taskName": "[Milestone Assignments] Assign `Current Milestone` to PRs merged to main"
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch"
       }
     },
     {
@@ -2652,7 +2652,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://docs.microsoft.com/en-us/aspnet/core/blazor/debug?view=aspnetcore-5.0&tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
+              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
             }
           }
         ]
@@ -3067,7 +3067,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/5.0"
+                "branchName": "release/7.0"
               }
             }
           ]
@@ -3078,12 +3078,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Add release/5.0 targeting PRs to the servicing project",
+        "taskName": "Add release/7.0 targeting PRs to the servicing project",
         "actions": [
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "5.0.x"
+              "milestoneName": "7.0.x"
             }
           },
           {
@@ -3354,6 +3354,10 @@
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch",
         "actions": [
           {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
             "name": "addMilestone",
             "parameters": {
               "milestoneName": "6.0.14"
@@ -3393,6 +3397,10 @@
         ],
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch",
         "actions": [
+          {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
           {
             "name": "addMilestone",
             "parameters": {
@@ -3436,6 +3444,145 @@
             "name": "addLabel",
             "parameters": {
               "label": "Needs: Author Feedback"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 1,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 6,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isDraftPr",
+            "parameters": {
+              "value": "false"
+            }
+          },
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 7
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "pending-ci-rerun"
+            }
+          }
+        ],
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.\nTo make sure no breaking changes are introduced, please remove the `pending ci rerun` label to kick off a new CI run."
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "pending-ci-rerun"
+            }
+          }
+        ],
+        "taskName": "Request CI rerun for stalish PRs"
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelRemoved",
+              "parameters": {
+                "label": "pending-ci-rerun"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Unblock PRs which are no longer awaiting for a ci run",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "/azp run"
             }
           }
         ]

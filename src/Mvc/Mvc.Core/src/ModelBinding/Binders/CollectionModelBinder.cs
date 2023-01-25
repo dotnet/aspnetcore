@@ -127,7 +127,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
                     AddErrorIfBindingRequired(bindingContext);
                 }
 
-                bindingContext.Result = ModelBindingResult.Success(model);
+                bindingContext.Result = model == null ? ModelBindingResult.Failed() : ModelBindingResult.Success(model);
             }
 
             Logger.DoneAttemptingToBindModel(bindingContext);
@@ -148,6 +148,13 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         }
 
         var boundCollection = result.Model;
+        if (bindingContext.ModelMetadata.HasDefaultValue && (boundCollection is null || !boundCollection.Any()))
+        {
+            bindingContext.Result = ModelBindingResult.Failed();
+            Logger.DoneAttemptingToBindModel(bindingContext);
+            return;
+        }
+
         if (model == null)
         {
             model = ConvertToCollectionType(bindingContext.ModelType, boundCollection);

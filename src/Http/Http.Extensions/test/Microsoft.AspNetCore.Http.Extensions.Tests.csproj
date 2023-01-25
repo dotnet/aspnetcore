@@ -24,4 +24,10 @@
   <ItemGroup>
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.Generators.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="RequestDelegateGenerator\Baselines\*.generated.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
 Authorization
 ===========================
 
-Contains the authorization components for ASP.NET Core. See the [ASP.NET Core authorization documentation](https://docs.microsoft.com/aspnet/core/security/authorization/).
+Contains the authorization components for ASP.NET Core. See the [ASP.NET Core authorization documentation](https://learn.microsoft.com/aspnet/core/security/authorization/).
 
-Some community projects related to authentication and authorization for ASP.NET Core are listed in the [documentation](https://docs.microsoft.com/aspnet/core/security/authentication/community).
+Some community projects related to authentication and authorization for ASP.NET Core are listed in the [documentation](https://learn.microsoft.com/aspnet/core/security/authentication/community).
 
 ## Description
 

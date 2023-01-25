@@ -154,25 +154,27 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             return EdgeKey.WildcardEdgeKey;
         }
 
-        var hostParts = host.Split(':');
-        if (hostParts.Length == 1)
+        Span<Range> hostParts = stackalloc Range[3];
+        var hostSpan = host.AsSpan();
+        var length = hostSpan.Split(hostParts, ':');
+        if (length == 1)
         {
-            if (!string.IsNullOrEmpty(hostParts[0]))
+            if (!hostSpan[hostParts[0]].IsEmpty)
             {
-                return new EdgeKey(hostParts[0], null);
+                return new EdgeKey(hostSpan[hostParts[0]].ToString(), null);
             }
         }
-        if (hostParts.Length == 2)
+        if (length == 2)
         {
-            if (!string.IsNullOrEmpty(hostParts[0]))
+            if (!hostSpan[hostParts[0]].IsEmpty)
             {
-                if (int.TryParse(hostParts[1], out var port))
+                if (int.TryParse(hostSpan[hostParts[1]], out var port))
                 {
-                    return new EdgeKey(hostParts[0], port);
+                    return new EdgeKey(hostSpan[hostParts[0]].ToString(), port);
                 }
-                else if (string.Equals(hostParts[1], WildcardHost, StringComparison.Ordinal))
+                else if (hostSpan[hostParts[1]].Equals(WildcardHost, StringComparison.Ordinal))
                 {
-                    return new EdgeKey(hostParts[0], null);
+                    return new EdgeKey(hostSpan[hostParts[0]].ToString(), null);
                 }
             }
         }

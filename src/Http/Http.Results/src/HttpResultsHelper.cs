@@ -74,7 +74,11 @@ internal static partial class HttpResultsHelper
 
         Log.WritingResultAsJson(logger, runtimeType.Name);
         // Since we don't know the type's polymorphic characteristics
-        // our best option is use the runtime type
+        // our best option is use the runtime type, so,
+        // call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
+        // and avoid source generators issues.
+        // https://github.com/dotnet/aspnetcore/issues/43894
+        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
         return httpContext.Response.WriteAsJsonAsync(
            value,
            jsonSerializerOptions.GetTypeInfo(runtimeType),
