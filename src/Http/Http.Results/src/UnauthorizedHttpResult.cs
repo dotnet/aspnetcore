@@ -34,7 +34,7 @@ public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.UnauthorizedResult");
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
 

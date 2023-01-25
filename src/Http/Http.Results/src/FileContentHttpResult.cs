@@ -112,7 +112,7 @@ public sealed partial class FileContentHttpResult : IResult, IFileHttpResult, IC
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileContentResult");
 
-        var (range, rangeLength, completed) = HttpResultsWriter.WriteResultAsFileCore(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,

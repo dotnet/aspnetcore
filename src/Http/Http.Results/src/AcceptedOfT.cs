@@ -26,7 +26,7 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
     {
         Value = value;
         Location = location;
-        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
     internal Accepted(Uri locationUri, TValue? value)
     {
         Value = value;
-        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
         ArgumentNullException.ThrowIfNull(locationUri);
 
@@ -85,10 +85,10 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.AcceptedResult");
 
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 Value);

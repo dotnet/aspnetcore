@@ -38,7 +38,7 @@ public sealed class NotFound : IResult, IEndpointMetadataProvider, IStatusCodeHt
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.NotFoundObjectResult");
 
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;

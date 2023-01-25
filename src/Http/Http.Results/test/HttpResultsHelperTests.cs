@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public partial class HttpResultsWriterTests
+public partial class HttpResultsHelperTests
 {
     [Theory]
     [InlineData(true)]
@@ -34,7 +34,7 @@ public partial class HttpResultsWriterTests
         }
 
         // Act
-        await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), serializerOptions);
@@ -65,7 +65,7 @@ public partial class HttpResultsWriterTests
         }
 
         // Act
-        await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), serializerOptions);
@@ -98,7 +98,7 @@ public partial class HttpResultsWriterTests
         }
 
         // Act
-        await HttpResultsWriter.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), serializerOptions);
@@ -132,7 +132,7 @@ public partial class HttpResultsWriterTests
         }
 
         // Act
-        await HttpResultsWriter.WriteResultAsJsonAsync<Todo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+        await HttpResultsHelper.WriteResultAsJsonAsync<Todo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), serializerOptions);
@@ -166,7 +166,7 @@ public partial class HttpResultsWriterTests
         }
 
         // Act
-        await HttpResultsWriter.WriteResultAsJsonAsync<JsonTodo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+        await HttpResultsHelper.WriteResultAsJsonAsync<JsonTodo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
 
         // Assert
         var body = JsonSerializer.Deserialize<TodoJsonChild>(responseBodyStream.ToArray(), serializerOptions);

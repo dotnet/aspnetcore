@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal static partial class HttpResultsWriter
+internal static partial class HttpResultsHelper
 {
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;

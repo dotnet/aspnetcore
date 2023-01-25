@@ -110,13 +110,13 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
 
         if (StatusCode is { } statusCode)
         {
-            HttpResultsWriter.Log.WritingResultAsStatusCode(logger, statusCode);
+            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
             httpContext.Response.StatusCode = statusCode;
         }
 
         if (_jsonTypeInfo is not null)
         {
-            return HttpResultsWriter.WriteResultAsJsonAsync(
+            return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 Value,
@@ -124,7 +124,7 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
                 ContentType);
         }
 
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
             httpContext,
             logger,
             Value,

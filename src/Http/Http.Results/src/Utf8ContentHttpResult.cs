@@ -56,11 +56,11 @@ public sealed partial class Utf8ContentHttpResult : IResult, IStatusCodeHttpResu
 
         if (StatusCode is { } statusCode)
         {
-            HttpResultsWriter.Log.WritingResultAsStatusCode(logger, statusCode);
+            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
             httpContext.Response.StatusCode = statusCode;
         }
 
-        httpContext.Response.ContentType = ContentType ?? HttpResultsWriter.DefaultContentType;
+        httpContext.Response.ContentType = ContentType ?? HttpResultsHelper.DefaultContentType;
 
         httpContext.Response.ContentLength = ResponseContent.Length;
         return httpContext.Response.Body.WriteAsync(ResponseContent).AsTask();

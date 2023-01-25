@@ -117,7 +117,7 @@ public sealed class VirtualFileHttpResult : IResult, IFileHttpResult, IContentTy
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.VirtualFileResult");
 
-        var (range, rangeLength, completed) = HttpResultsWriter.WriteResultAsFileCore(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,

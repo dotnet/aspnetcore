@@ -106,7 +106,7 @@ public sealed class PushStreamHttpResult : IResult, IFileHttpResult, IContentTyp
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PushStreamResult");
 
-        var (range, rangeLength, completed) = HttpResultsWriter.WriteResultAsFileCore(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,

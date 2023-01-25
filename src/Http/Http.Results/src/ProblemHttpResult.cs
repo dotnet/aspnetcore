@@ -55,11 +55,11 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
 
         if (StatusCode is { } code)
         {
-            HttpResultsWriter.Log.WritingResultAsStatusCode(logger, code);
+            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, code);
             httpContext.Response.StatusCode = code;
         }
 
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 value: ProblemDetails,

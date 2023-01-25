@@ -69,7 +69,7 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider, IStatusCodeHt
             httpContext.Response.Headers.Location = Location;
         }
 
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;

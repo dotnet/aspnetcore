@@ -24,7 +24,7 @@ public sealed class Conflict<TValue> : IResult, IEndpointMetadataProvider, IStat
     internal Conflict(TValue? error)
     {
         Value = error;
-        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -50,10 +50,10 @@ public sealed class Conflict<TValue> : IResult, IEndpointMetadataProvider, IStat
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ConflictObjectResult");
 
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger: logger,
                 Value);

@@ -44,7 +44,7 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider,
         Value = value;
         RouteName = routeName;
         RouteValues = new RouteValueDictionary(routeValues);
-        HttpResultsWriter.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -94,10 +94,10 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider,
 
         httpContext.Response.Headers.Location = url;
 
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 Value);
