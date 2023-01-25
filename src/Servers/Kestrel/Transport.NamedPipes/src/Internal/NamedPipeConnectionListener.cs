@@ -58,7 +58,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     {
         Debug.Assert(_listeningTasks == null, "Already started");
 
-        _listeningTasks = new Task[_options.AcceptQueueCount];
+        _listeningTasks = new Task[_options.ListenerQueueCount];
 
         for (var i = 0; i < _listeningTasks.Length; i++)
         {
