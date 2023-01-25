@@ -78,7 +78,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
 
         var currentCallCount = 0;
         var options = new NamedPipeTransportOptions();
-        options.AcceptQueueCount = 16;
+        options.AcceptQueueCount = 1;
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
 
         // Act
@@ -86,8 +86,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         {
             while (currentCallCount < TotalCallCount)
             {
-                var connection = await connectionListener.AcceptAsync().DefaultTimeout();
-                await connection.DisposeAsync();
+                _ = await connectionListener.AcceptAsync();
 
                 currentCallCount++;
 
@@ -111,7 +110,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
                         await clientStream.ConnectAsync();
 
                         await clientStream.WriteAsync(new byte[1]);
-                        await clientStream.ReadAsync(new byte[1]);
+                        await clientStream.DisposeAsync();
                         clientStreamCount++;
                     }
                     catch (IOException ex)

@@ -65,7 +65,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             // Start first stream inline to catch creation errors.
             var initialStream = CreateServerStream();
 
-            _listeningTasks[i] = StartAsync(initialStream, i);
+            _listeningTasks[i] = Task.Run(() => StartAsync(initialStream, i));
         }
     }
 

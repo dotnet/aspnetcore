@@ -14,7 +14,7 @@ public sealed class NamedPipeTransportOptions
     /// <summary>
     /// 
     /// </summary>
-    public int AcceptQueueCount { get; set; } = Math.Clamp(Environment.ProcessorCount, 1, 16);
+    public int AcceptQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
 
     /// <summary>
     /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
