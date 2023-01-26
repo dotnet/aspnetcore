@@ -23,15 +23,14 @@ internal sealed class DefaultHttpJsonOptionsSetup : IPostConfigureOptions<JsonOp
         }
     }
 
-    [RequiresUnreferencedCode("TODO")]
-    [RequiresDynamicCode("TODO")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
     private static void InitializeForReflection(JsonOptions options)
     {
         if (options.SerializerOptions.TypeInfoResolver is null)
         {
             options.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
-
 
         // or
         //options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.SerializerOptions.TypeInfoResolver, new DefaultJsonTypeInfoResolver());

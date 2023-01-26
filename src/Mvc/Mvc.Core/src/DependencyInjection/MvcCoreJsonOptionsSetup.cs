@@ -19,8 +19,8 @@ internal sealed class MvcCoreJsonOptionsSetup : IPostConfigureOptions<JsonOption
         }
     }
 
-    [RequiresUnreferencedCode("ABC")]
-    [RequiresDynamicCode("ABC")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
     private static void InitializeForReflection(JsonOptions options)
     {
         if (options.JsonSerializerOptions.TypeInfoResolver is null)
