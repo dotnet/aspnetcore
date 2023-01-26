@@ -30,6 +30,7 @@
         <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
         <HelixAvailableTargetQueue Include="OSX.1200.Amd64.Open" Platform="OSX" />
         <HelixAvailableTargetQueue Include="Windows.11.Amd64.Client.Open" Platform="Windows" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
       </ItemGroup>
     </When>
     <Otherwise>
