@@ -2,15 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <MaxImplicitVersion>2.1.1</MaxImplicitVersion>
-    <!-- Use pre-release versions up until 2.1.1, then don't lift higher -->
-    <AspNetCoreImplicitVersion Condition="$(MicrosoftAspNetCoreAppPackageVersion.StartsWith('$(MaxImplicitVersion)-'))">$(MicrosoftAspNetCoreAppPackageVersion)</AspNetCoreImplicitVersion>
-    <AspNetCoreImplicitVersion>$([MSBuild]::ValueOrDefault('$(AspNetCoreImplicitVersion)','$(MaxImplicitVersion)'))</AspNetCoreImplicitVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(AspNetCoreImplicitVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(AspNetCoreImplicitVersion)" />
+    <!-- Hardcode these to the latest public versions -->
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.30" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.30" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion)" />

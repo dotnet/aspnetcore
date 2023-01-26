@@ -19,6 +19,7 @@
     <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.1.1</MicrosoftAspNetCoreServerHttpSysPackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.1</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.1</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelCorePackageVersion>2.1.25</MicrosoftAspNetCoreServerKestrelCorePackageVersion>
     <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.1.2</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.2</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.1</MicrosoftAspNetCoreStaticFilesPackageVersion>
