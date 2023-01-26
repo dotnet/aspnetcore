@@ -30,6 +30,9 @@
     "test-only": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-tests.ts",
     "ci-test": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-ci-tests.ts"
   },
+  "resolutions": {
+    "minimist": ">=1.2.6"
+  },
   "author": "",
   "license": "Apache-2.0"
 }

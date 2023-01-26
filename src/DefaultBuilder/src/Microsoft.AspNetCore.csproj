@@ -25,6 +25,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Configuration" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Logging.Console" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" PrivateAssets="None" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.1.25" />
   </ItemGroup>
 
 </Project>
