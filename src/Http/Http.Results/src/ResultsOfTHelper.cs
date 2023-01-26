@@ -15,6 +15,8 @@ internal static class ResultsOfTHelper
     public const DynamicallyAccessedMemberTypes RequireMethods = DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods;
     private static readonly MethodInfo PopulateMetadataMethod = typeof(ResultsOfTHelper).GetMethod(nameof(PopulateMetadata), BindingFlags.Static | BindingFlags.NonPublic)!;
 
+    // TODO: Improve calling static interface method with reflection
+    // https://github.com/dotnet/aspnetcore/issues/46267
     public static void PopulateMetadataIfTargetIsIEndpointMetadataProvider<[DynamicallyAccessedMembers(RequireMethods)] TTarget>(MethodInfo method, EndpointBuilder builder)
     {
         if (typeof(IEndpointMetadataProvider).IsAssignableFrom(typeof(TTarget)))
