@@ -3,31 +3,22 @@
   <String Id="Caption">[BundleNameFull] 설치</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">시작</String>
-  <String Id="InstallMessage">설치 프로그램이 컴퓨터에 [WixBundleName]을(를) 설치합니다. 계속하려면 설치를 클릭한 뒤 원하는 경우 옵션에서 설치 디렉터리를 설정하고, 아니면 닫기를 클릭하여 종료합니다.</String>
   <String Id="InstallVersion">버전 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
   <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]디렉터리[\]] - 디렉터리에 번들의 전체 로컬 복사본을 설치, 복구, 제거 또는
-   작성합니다. 설치가 기본값입니다.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]디렉터리[\]] - 디렉터리에 번들의 전체 로컬 복사본을
+   설치, 복구, 제거 또는 작성합니다. 설치가 기본값입니다.
 
-/passive | /quiet -  프롬프트 없이 최소 UI를 표시하거나 UI 및
-   프롬프트를 표시하지 않습니다. 기본적으로 UI와 모든 프롬프트가 표시됩니다.
+/passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및
+   프롬프트를 표시하지 않습니다. 기본값으로 UI와 모든 프롬프트가 표시됩니다.
 
-/norestart   - 다시 시작하지 않게 합니다. 기본적으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
-/log log.txt - 특정 파일에 기록합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다.</String>
+/norestart   - 다시 시작하지 않게 합니다. 기본값으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
+/log log.txt - 특정 파일에 기록합니다. 기본값으로 로그 파일은 %TEMP%에 만들어집니다.</String>
   <String Id="HelpCloseButton">닫기(&amp;C)</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;사용 조건&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">동의함(&amp;A)</String>
-  <String Id="InstallOptionsButton">옵션(&amp;O)</String>
   <String Id="InstallInstallButton">설치(&amp;I)</String>
   <String Id="InstallCloseButton">닫기(&amp;C)</String>
-  <String Id="OptionsHeader">설치 옵션</String>
-  <String Id="OptionsLocationLabel">설치 위치:</String>
-  <String Id="OptionsBrowseButton">찾아보기(&amp;B)</String>
-  <String Id="OptionsOkButton">확인(&amp;O)</String>
-  <String Id="OptionsCancelButton">취소(&amp;C)</String>
   <String Id="ProgressHeader">설치 진행률</String>
   <String Id="ProgressLabel">처리 중:</String>
   <String Id="OverallProgressPackageText">초기화 중...</String>
