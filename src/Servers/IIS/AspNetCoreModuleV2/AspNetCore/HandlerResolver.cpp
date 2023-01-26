@@ -321,7 +321,7 @@ try
                 errorContext.generalErrorType = "Failed to load ASP.NET Core runtime";
                 errorContext.errorReason = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
 
-                if (intHostFxrExitCode == APPARGNOTRUNNABLE)
+                if (intHostFxrExitCode == AppArgNotRunnable)
                 {
                     errorContext.detailedErrorContent = "Provided application path does not exist, or isn't a .dll or .exe.";
                     EventLog::Error(

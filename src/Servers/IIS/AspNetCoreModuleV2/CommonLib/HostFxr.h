@@ -30,7 +30,7 @@ typedef int(*hostfxr_get_runtime_property_value_fn)(void* host_context_handle, P
 typedef int(*hostfxr_run_app_fn)(void* host_context_handle);
 typedef int(*hostfxr_close_fn)(void* hostfxr_context_handle);
 
-#define APPARGNOTRUNNABLE 0x80008094
+const int AppArgNotRunnable = 0x80008094;
 
 class HostFxrErrorRedirector: NonCopyable
 {
