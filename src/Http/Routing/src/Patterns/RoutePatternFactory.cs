@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;

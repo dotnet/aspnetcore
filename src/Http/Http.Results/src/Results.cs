@@ -11,6 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
@@ -563,6 +564,7 @@ public static partial class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static IResult RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null)
         => TypedResults.RedirectToRoute(routeName, routeValues, permanent, preserveMethod, fragment);
 
@@ -737,6 +739,13 @@ public static partial class Results
 
         problemDetails.Title = title ?? problemDetails.Title;
 
+        CopyExtensions(extensions, problemDetails);
+
+        return TypedResults.Problem(problemDetails);
+    }
+
+    private static void CopyExtensions(IDictionary<string, object?>? extensions, HttpValidationProblemDetails problemDetails)
+    {
         if (extensions is not null)
         {
             foreach (var extension in extensions)
@@ -744,8 +753,6 @@ public static partial class Results
                 problemDetails.Extensions.Add(extension);
             }
         }
-
-        return TypedResults.Problem(problemDetails);
     }
 
     /// <summary>
@@ -798,6 +805,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static IResult CreatedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
         => CreatedAtRoute<object>(routeName, routeValues, value);
 
@@ -808,6 +816,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult CreatedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
@@ -840,6 +849,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
 #pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
@@ -852,6 +862,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
