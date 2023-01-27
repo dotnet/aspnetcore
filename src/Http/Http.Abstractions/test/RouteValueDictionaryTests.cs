@@ -358,6 +358,57 @@ public class RouteValueDictionaryTests
         Assert.Equal(message, exception.Message, ignoreCase: true);
     }
 
+    [Fact]
+    public void CreateFromObject_Struct_ReadValues()
+    {
+        // Arrange
+        var obj = new StructAddress() { City = "Singapore" };
+
+        // Act
+        var dict = new RouteValueDictionary(obj);
+
+        // Assert
+        Assert.NotNull(dict._propertyStorage);
+        AssertEmptyArrayStorage(dict);
+        Assert.Collection(
+            dict.OrderBy(kvp => kvp.Key),
+            kvp => { Assert.Equal("City", kvp.Key); Assert.Equal("Singapore", kvp.Value); },
+            kvp => { Assert.Equal("State", kvp.Key); Assert.Null(kvp.Value); });
+    }
+
+    [Fact]
+    public void CreateFromObject_NullableStruct_ReadValues()
+    {
+        // Arrange
+        StructAddress? obj = new StructAddress() { City = "Singapore" };
+
+        // Act
+        var dict = new RouteValueDictionary(obj);
+
+        // Assert
+        Assert.NotNull(dict._propertyStorage);
+        AssertEmptyArrayStorage(dict);
+        Assert.Collection(
+            dict.OrderBy(kvp => kvp.Key),
+            kvp => { Assert.Equal("City", kvp.Key); Assert.Equal("Singapore", kvp.Value); },
+            kvp => { Assert.Equal("State", kvp.Key); Assert.Null(kvp.Value); });
+    }
+
+    [Fact]
+    public void CreateFromObject_NullStruct_ReadValues()
+    {
+        // Arrange
+        StructAddress? obj = null;
+
+        // Act
+        var dict = new RouteValueDictionary(obj);
+
+        // Assert
+        Assert.Null(dict._propertyStorage);
+        AssertEmptyArrayStorage(dict);
+        Assert.Empty(dict);
+    }
+
     // Our comparer is hardcoded to be OrdinalIgnoreCase no matter what.
     [Fact]
     public void Comparer_IsOrdinalIgnoreCase()
@@ -2159,6 +2210,13 @@ public class RouteValueDictionaryTests
     }
 
     private class Address
+    {
+        public string? City { get; set; }
+
+        public string? State { get; set; }
+    }
+
+    private struct StructAddress
     {
         public string? City { get; set; }
 
