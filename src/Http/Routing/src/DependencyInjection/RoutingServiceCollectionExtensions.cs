@@ -98,6 +98,9 @@ public static class RoutingServiceCollectionExtensions
         // Set RouteHandlerOptions.ThrowOnBadRequest in development
         services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());
 
+        // JsonOptions
+        services.ConfigureDefaultHttpJsonOptions();
+
         return services;
     }
 

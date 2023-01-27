@@ -228,8 +228,6 @@ public static class WebHost
         builder
             .UseIIS()
             .UseIISIntegration();
-
-        builder.ConfigureServices(services => services.ConfigureDefaultHttpJsonOptions());
     }
 
     internal static void UseKestrel(IWebHostBuilder builder)

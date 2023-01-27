@@ -4,35 +4,21 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
 
+[RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
+[RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
 internal sealed class DefaultHttpJsonOptionsSetup : IPostConfigureOptions<JsonOptions>
 {
     public void PostConfigure(string? name, JsonOptions options)
     {
-        if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
-        {
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-            InitializeForReflection(options);
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-        }
+        InitializeForReflection(options);
     }
 
-    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
     private static void InitializeForReflection(JsonOptions options)
     {
-        if (options.SerializerOptions.TypeInfoResolver is null)
-        {
-            options.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
-        }
-
-        // or
-        //options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.SerializerOptions.TypeInfoResolver, new DefaultJsonTypeInfoResolver());
+        options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.SerializerOptions.TypeInfoResolver, new DefaultJsonTypeInfoResolver());
     }
 }

@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -139,8 +140,12 @@ public static class MvcCoreServiceCollectionExtensions
             ServiceDescriptor.Transient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Transient<IPostConfigureOptions<JsonOptions>, MvcCoreJsonOptionsSetup>());
+
+        if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
+        {
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IPostConfigureOptions<JsonOptions>, MvcCoreJsonOptionsSetup>());
+        }
 
         //
         // Action Discovery
