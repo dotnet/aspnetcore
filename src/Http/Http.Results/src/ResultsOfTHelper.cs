@@ -39,7 +39,7 @@ internal static class ResultsOfTHelper
                 // Improve with https://github.com/dotnet/aspnetcore/issues/46267
                 if (populateMetadataMethod is null)
                 {
-                    throw new InvalidOperationException($"Couldn't populate metadata for {typeof(TTarget).Name}.");
+                    throw new InvalidOperationException($"Couldn't populate metadata for {typeof(TTarget).Name}. PopulateMetadata must by on the type. A default interface implementation isn't supported with AOT.");
                 }
                 Debug.Assert(populateMetadataMethod != null, $"Couldn't find PopulateMetadata method on {typeof(TTarget)}.");
 
