@@ -166,10 +166,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
         Assert.True(ran2);
 
-        serverOptions.ConfigurationBackedListenOptions[0].Build();
         Assert.True(serverOptions.ConfigurationBackedListenOptions[0].IsTls);
-
-        serverOptions.CodeBackedListenOptions[0].Build();
         Assert.False(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
@@ -211,10 +208,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran2);
 
         // You only get Https once per endpoint.
-        serverOptions.ConfigurationBackedListenOptions[0].Build();
         Assert.True(serverOptions.ConfigurationBackedListenOptions[0].IsTls);
-
-        serverOptions.CodeBackedListenOptions[0].Build();
         Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
@@ -298,7 +292,8 @@ public class KestrelConfigurationLoaderTests
             {
                 Assert.False(listenOptions.HttpsOptions.IsValueCreated);
                 listenOptions.Build();
-                Assert.Equal(listenOptions.HttpsOptions?.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+                Assert.True(listenOptions.HttpsOptions.IsValueCreated);
+                Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
             });
         }
         finally
@@ -350,7 +345,8 @@ public class KestrelConfigurationLoaderTests
             {
                 Assert.False(listenOptions.HttpsOptions.IsValueCreated);
                 listenOptions.Build();
-                Assert.Equal(listenOptions.HttpsOptions?.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+                Assert.True(listenOptions.HttpsOptions.IsValueCreated);
+                Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
             });
         }
         finally
@@ -840,7 +836,7 @@ public class KestrelConfigurationLoaderTests
             });
         });
 
-        serverOptions.CodeBackedListenOptions[0].Build();
+        _ = serverOptions.CodeBackedListenOptions[0].HttpsOptions.Value; // Force evaluation
 
         Assert.True(ranDefault);
         Assert.True(ran1);
@@ -977,7 +973,7 @@ public class KestrelConfigurationLoaderTests
             });
         });
 
-        serverOptions.CodeBackedListenOptions[0].Build();
+        _ = serverOptions.CodeBackedListenOptions[0].HttpsOptions.Value; // Force evaluation
 
         Assert.True(ranDefault);
         Assert.True(ran1);
