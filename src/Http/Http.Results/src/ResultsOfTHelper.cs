@@ -35,6 +35,12 @@ internal static class ResultsOfTHelper
                 {
                     populateMetadataMethod = typeof(TTarget).GetMethod("PopulateMetadata", BindingFlags.Static | BindingFlags.Public);
                 }
+                // Method won't be found if it is from a default interface implementation.
+                // Improve with https://github.com/dotnet/aspnetcore/issues/46267
+                if (populateMetadataMethod is null)
+                {
+                    throw new InvalidOperationException($"Couldn't populate metadata for {typeof(TTarget).Name}.");
+                }
                 Debug.Assert(populateMetadataMethod != null, $"Couldn't find PopulateMetadata method on {typeof(TTarget)}.");
 
                 populateMetadataMethod.Invoke(null, BindingFlags.DoNotWrapExceptions, binder: null, parameters, culture: null);

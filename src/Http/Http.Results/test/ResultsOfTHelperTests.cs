@@ -22,14 +22,9 @@ public class ResultsOfTHelperTests
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
-            var methodInfo = typeof(ResultsOfTHelperTests).GetMethod(nameof(PopulateMetadataIfTargetIsIEndpointMetadataProvider_PublicMethod_Called));
-            var endpointBuilder = new TestEndpointBuilder();
+            var metadata = GetMetadata<PublicMethodEndpointMetadataProvider>();
 
-            ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<PublicMethodEndpointMetadataProvider>(
-                methodInfo,
-                endpointBuilder);
-
-            Assert.Single(endpointBuilder.Metadata);
+            Assert.Single(metadata);
         }, options);
     }
 
@@ -44,14 +39,9 @@ public class ResultsOfTHelperTests
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
-            var methodInfo = typeof(ResultsOfTHelperTests).GetMethod(nameof(PopulateMetadataIfTargetIsIEndpointMetadataProvider_PublicMethod_Called));
-            var endpointBuilder = new TestEndpointBuilder();
+            var metadata = GetMetadata<ExplicitMethodEndpointMetadataProvider>();
 
-            ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<ExplicitMethodEndpointMetadataProvider>(
-                methodInfo,
-                endpointBuilder);
-
-            Assert.Single(endpointBuilder.Metadata);
+            Assert.Single(metadata);
         }, options);
     }
 
@@ -66,15 +56,36 @@ public class ResultsOfTHelperTests
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
-            var methodInfo = typeof(ResultsOfTHelperTests).GetMethod(nameof(PopulateMetadataIfTargetIsIEndpointMetadataProvider_PublicMethod_Called));
-            var endpointBuilder = new TestEndpointBuilder();
+            var metadata = GetMetadata<ExplicitAndPublicMethodEndpointMetadataProvider>();
 
-            ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<ExplicitAndPublicMethodEndpointMetadataProvider>(
-                methodInfo,
-                endpointBuilder);
-
-            Assert.Single(endpointBuilder.Metadata);
+            Assert.Single(metadata);
         }, options);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void PopulateMetadataIfTargetIsIEndpointMetadataProvider_DefaultInterfaceMethod_NoDynamicCode_Throws()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Improve with https://github.com/dotnet/aspnetcore/issues/46267
+            Assert.Throws<InvalidOperationException>(() => GetMetadata<DefaultInterfaceMethodEndpointMetadataProvider>());
+        }, options);
+    }
+
+    private static IList<object> GetMetadata<T>()
+    {
+        var methodInfo = typeof(ResultsOfTHelperTests).GetMethod(nameof(GetMetadata), BindingFlags.NonPublic | BindingFlags.Static);
+        var endpointBuilder = new TestEndpointBuilder();
+
+        ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<T>(
+            methodInfo,
+            endpointBuilder);
+
+        return endpointBuilder.Metadata;
     }
 
     private class TestEndpointBuilder : EndpointBuilder
@@ -112,5 +123,17 @@ public class ResultsOfTHelperTests
         {
             builder.Metadata.Add("Called");
         }
+    }
+
+    private interface IMyEndpointMetadataProvider : IEndpointMetadataProvider
+    {
+        static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            builder.Metadata.Add("Called");
+        }
+    }
+
+    private class DefaultInterfaceMethodEndpointMetadataProvider : IMyEndpointMetadataProvider
+    {
     }
 }
