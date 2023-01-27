@@ -186,7 +186,7 @@ public static partial class Results
     [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
     [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-    => Json<object>(data, options, contentType, statusCode);
+        => Json<object>(data, options, contentType, statusCode);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -202,7 +202,7 @@ public static partial class Results
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Json(object? data, JsonTypeInfo jsonTypeInfo, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-    => Json<object>(data, jsonTypeInfo, contentType, statusCode);
+        => Json<object>(data, jsonTypeInfo, contentType, statusCode);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -218,7 +218,7 @@ public static partial class Results
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Json(object? data, JsonSerializerContext jsonSerializerContext, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-    => Json<object>(data, jsonSerializerContext, contentType, statusCode);
+        => Json<object>(data, jsonSerializerContext, contentType, statusCode);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
