@@ -286,14 +286,11 @@ public class KestrelConfigurationLoaderTests
             });
             Assert.True(ran1);
 
-            Assert.NotEmpty(serverOptions.CodeBackedListenOptions);
-            Assert.All(serverOptions.CodeBackedListenOptions, listenOptions =>
-            {
-                Assert.False(listenOptions.HttpsOptions.IsValueCreated);
-                listenOptions.Build();
-                Assert.True(listenOptions.HttpsOptions.IsValueCreated);
-                Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
-            });
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            Assert.False(listenOptions.HttpsOptions.IsValueCreated);
+            listenOptions.Build();
+            Assert.True(listenOptions.HttpsOptions.IsValueCreated);
+            Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
         }
         finally
         {
@@ -338,14 +335,11 @@ public class KestrelConfigurationLoaderTests
             Assert.NotNull(serverOptions.DefaultCertificate);
             Assert.Equal(serverOptions.DefaultCertificate.SerialNumber, certificate.SerialNumber);
 
-            Assert.NotEmpty(serverOptions.CodeBackedListenOptions);
-            Assert.All(serverOptions.CodeBackedListenOptions, listenOptions =>
-            {
-                Assert.False(listenOptions.HttpsOptions.IsValueCreated);
-                listenOptions.Build();
-                Assert.True(listenOptions.HttpsOptions.IsValueCreated);
-                Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
-            });
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            Assert.False(listenOptions.HttpsOptions.IsValueCreated);
+            listenOptions.Build();
+            Assert.True(listenOptions.HttpsOptions.IsValueCreated);
+            Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
         }
         finally
         {
