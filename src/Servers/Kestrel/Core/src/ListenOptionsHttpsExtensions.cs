@@ -201,6 +201,10 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     private static ListenOptions UseHttps(this ListenOptions listenOptions, Func<HttpsConnectionAdapterOptions> getHttpsOptions)
     {
+        // Set this outside the lambda, which might not be invoked
+        listenOptions.IsTls = true;
+
+        // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
             // We defer configuration of the https options until build time so that the IConfiguration will be available.
@@ -209,7 +213,6 @@ public static class ListenOptionsHttpsExtensions
 
             var httpsOptions = getHttpsOptions();
 
-            listenOptions.IsTls = true;
             listenOptions.HttpsOptions = httpsOptions;
 
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
@@ -274,6 +277,7 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.HttpsCallbackOptions = callbackOptions;
 
+        // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
             // Set the list of protocols from listen options.
