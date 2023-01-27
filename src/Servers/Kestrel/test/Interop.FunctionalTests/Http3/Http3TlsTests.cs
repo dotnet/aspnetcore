@@ -23,6 +23,7 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     public async Task ServerCertificateSelector_Invoked()
     {
+        var serverCertificateSelectorActionCalled = false;
         var builder = CreateHostBuilder(async context =>
         {
             await context.Response.WriteAsync("Hello World");
@@ -35,6 +36,7 @@ public class Http3TlsTests : LoggedTest
                 {
                     httpsOptions.ServerCertificateSelector = (context, host) =>
                     {
+                        serverCertificateSelectorActionCalled = true;
                         Assert.Null(context); // The context isn't available durring the quic handshake.
                         Assert.Equal("testhost", host);
                         return TestResources.GetTestCertificate();
@@ -58,6 +60,8 @@ public class Http3TlsTests : LoggedTest
         var result = await response.Content.ReadAsStringAsync();
         Assert.Equal(HttpVersion.Version30, response.Version);
         Assert.Equal("Hello World", result);
+
+        Assert.True(serverCertificateSelectorActionCalled);
 
         await host.StopAsync().DefaultTimeout();
     }

@@ -282,7 +282,6 @@ public class KestrelConfigurationLoaderTests
             serverOptions.ListenAnyIP(4545, listenOptions =>
             {
                 ran1 = true;
-                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                 listenOptions.UseHttps();
             });
             Assert.True(ran1);
@@ -321,7 +320,6 @@ public class KestrelConfigurationLoaderTests
             serverOptions.ListenAnyIP(4545, listenOptions =>
             {
                 ran1 = true;
-                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                 listenOptions.UseHttps();
             });
             Assert.True(ran1);
@@ -836,7 +834,7 @@ public class KestrelConfigurationLoaderTests
             });
         });
 
-        _ = serverOptions.CodeBackedListenOptions[0].HttpsOptions.Value; // Force evaluation
+        _ = serverOptions.CodeBackedListenOptions.Single().HttpsOptions.Value; // Force evaluation
 
         Assert.True(ranDefault);
         Assert.True(ran1);
@@ -973,7 +971,7 @@ public class KestrelConfigurationLoaderTests
             });
         });
 
-        _ = serverOptions.CodeBackedListenOptions[0].HttpsOptions.Value; // Force evaluation
+        _ = serverOptions.CodeBackedListenOptions.Single().HttpsOptions.Value; // Force evaluation
 
         Assert.True(ranDefault);
         Assert.True(ran1);
