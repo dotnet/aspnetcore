@@ -173,6 +173,7 @@ public static class ListenOptionsHttpsExtensions
             listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
             configureOptions(options);
             listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
+            options.HttpProtocols = listenOptions.Protocols;
 
             if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
             {
@@ -192,7 +193,11 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {
-        return listenOptions.UseHttps(new Lazy<HttpsConnectionAdapterOptions>(httpsOptions));
+        return listenOptions.UseHttps(new Lazy<HttpsConnectionAdapterOptions>(() =>
+        {
+            httpsOptions.HttpProtocols = listenOptions.Protocols;
+            return httpsOptions;
+        }));
     }
 
     /// <summary>
@@ -212,11 +217,7 @@ public static class ListenOptionsHttpsExtensions
         {
             // Evaluate the HttpsConnectionAdapterOptions, now that the configuration, if any, has been loaded
             var httpsOptions = listenOptions.HttpsOptions.Value;
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
-
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-
             var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });
