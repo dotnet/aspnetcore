@@ -8,7 +8,7 @@
       Target the default version of .NET Core in tool projects to maximize the compatible environments. Must be set
       before importing root Directory.Build.targets.
     -->
-    <TargetLatestDotNetRuntime Condition=" '$(IsServicingBuild)' == 'true' ">false</TargetLatestDotNetRuntime>
+    <TargetLatestDotNetRuntime Condition=" '$(IsServicingBuild)' == 'true' '$(DotNetSourceBuild))' != 'true'">false</TargetLatestDotNetRuntime>
     <!-- Tool projects publish before packing. Packages should contain the latest bits. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
@@ -18,4 +18,5 @@
   <Target Name="CleanPublishDir" AfterTargets="CoreClean">
     <RemoveDir Directories="$(PublishDir)" />
   </Target>
+
 </Project>
