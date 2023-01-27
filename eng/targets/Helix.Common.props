@@ -2,7 +2,7 @@
   <!-- This file is shared between Helix.proj and .csproj files. -->
   <PropertyGroup>
     <HelixQueueAlpine314>(Alpine.314.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.14-helix-amd64</HelixQueueAlpine314>
-    <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
+    <HelixQueueDebian12>(Debian.12.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64-staging</HelixQueueDebian12>
     <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix</HelixQueueFedora34>
     <HelixQueueMariner>(Mariner)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
     <HelixQueueArmDebian12>(Debian.12.Arm64.Open)ubuntu.2004.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-arm64v8-staging</HelixQueueArmDebian12>
@@ -30,6 +30,7 @@
         <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
         <HelixAvailableTargetQueue Include="OSX.1200.Amd64.Open" Platform="OSX" />
         <HelixAvailableTargetQueue Include="Windows.11.Amd64.Client.Open" Platform="Windows" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueDebian12)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
       </ItemGroup>
     </When>
@@ -42,7 +43,7 @@
 
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine314)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueDebian12)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />

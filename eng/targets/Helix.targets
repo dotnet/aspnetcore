@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
       $(HelixQueueAlpine314);
-      $(HelixQueueDebian11);
+      $(HelixQueueDebian12);
       $(HelixQueueFedora34);
       $(HelixQueueMariner);
       Redhat.7.Amd64.Open;
