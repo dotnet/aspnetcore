@@ -296,9 +296,9 @@ public class KestrelConfigurationLoaderTests
             Assert.NotEmpty(serverOptions.CodeBackedListenOptions);
             Assert.All(serverOptions.CodeBackedListenOptions, listenOptions =>
             {
-                Assert.Null(listenOptions.HttpsOptions);
+                Assert.False(listenOptions.HttpsOptions.IsValueCreated);
                 listenOptions.Build();
-                Assert.Equal(listenOptions.HttpsOptions?.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+                Assert.Equal(listenOptions.HttpsOptions?.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
             });
         }
         finally
@@ -348,9 +348,9 @@ public class KestrelConfigurationLoaderTests
             Assert.NotEmpty(serverOptions.CodeBackedListenOptions);
             Assert.All(serverOptions.CodeBackedListenOptions, listenOptions =>
             {
-                Assert.Null(listenOptions.HttpsOptions);
+                Assert.False(listenOptions.HttpsOptions.IsValueCreated);
                 listenOptions.Build();
-                Assert.Equal(listenOptions.HttpsOptions?.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+                Assert.Equal(listenOptions.HttpsOptions?.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
             });
         }
         finally
