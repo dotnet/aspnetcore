@@ -175,7 +175,7 @@ internal static partial class HttpResultsHelper
     private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
     {
         // Attempt to resolve options from DI then fallback to default options
-        return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+        return httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
     }
 
     internal static partial class Log
