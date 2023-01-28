@@ -6,11 +6,11 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Routing;
 
 [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
 [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
-internal sealed class DefaultHttpJsonOptionsSetup : IPostConfigureOptions<JsonOptions>
+internal sealed class ConfigureHttpJsonOptions : IPostConfigureOptions<JsonOptions>
 {
     public void PostConfigure(string? name, JsonOptions options)
     {

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -99,7 +101,14 @@ public static class RoutingServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());
 
         // JsonOptions
-        services.ConfigureDefaultHttpJsonOptions();
+        if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
+        {
+#pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Routing.WarningSuppressions.xml
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JsonOptions>, ConfigureHttpJsonOptions>());
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Suppressed in Microsoft.AspNetCore.Routing.WarningSuppressions.xml
+        }
 
         return services;
     }
