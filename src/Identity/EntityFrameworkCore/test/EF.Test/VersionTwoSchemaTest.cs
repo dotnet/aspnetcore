@@ -54,7 +54,7 @@ public class VersionTwoSchemaTest : IClassFixture<ScratchDatabaseFixture>
         }
     }
 
-    private static void VerifyVersion2Schema(VersionTwoDbContext dbContext)
+    internal static void VerifyVersion2Schema(DbContext dbContext)
     {
         var sqlConn = (SqliteConnection)dbContext.Database.GetDbConnection();
 
