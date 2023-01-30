@@ -134,7 +134,7 @@ internal sealed class HtmlRenderer : Renderer
         result.AppendHtml(frame.ElementName);
         int afterElement;
         var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
-        //
+        // We don't want to include value attribute of textarea element.
         var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
