@@ -139,6 +139,9 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
             var createdParameterPolicy = (parameterPolicy is OptionalRouteConstraint optionalRouteConstraint)
                 ? optionalRouteConstraint.InnerConstraint
                 : parameterPolicy;
+
+            // For know, only cache policies in a known allow list. This is indicated by implementing ICachableParameterPolicy.
+            // There is a chance that a user-defined constraint has state, such as an evaluation count. That would break if the constraint is shared between routes, so don't cache.
             if (createdParameterPolicy is ICachableParameterPolicy)
             {
                 _cachedParameters[inlineText] = createdParameterPolicy;
