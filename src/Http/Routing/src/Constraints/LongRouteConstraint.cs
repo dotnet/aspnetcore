@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to represent only 64-bit integer values.
 /// </summary>
-public class LongRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class LongRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(

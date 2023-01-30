@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to be a long with a minimum value.
 /// </summary>
-public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MinRouteConstraint" /> class.

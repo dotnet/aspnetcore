@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to contain only a specified string.
 /// </summary>
-public class StringRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class StringRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     private readonly string _value;
 
