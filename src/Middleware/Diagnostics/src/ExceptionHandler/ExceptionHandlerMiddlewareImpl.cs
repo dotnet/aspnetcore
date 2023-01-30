@@ -112,6 +112,18 @@ internal class ExceptionHandlerMiddlewareImpl
 
     private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
     {
+        if (edi.SourceException is OperationCanceledException operationCanceledException && context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogDebug("Request aborted");
+
+            if (context.Response.HasStarted)
+            {
+                context.Response.StatusCode = 499;
+            }
+
+            return;
+        }
+
         _logger.UnhandledException(edi.SourceException);
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
