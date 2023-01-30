@@ -116,7 +116,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with minimal defaults.
     /// </summary>
-    /// <param name="args">The command line arguments</param>
+    /// <param name="args">The command line arguments.</param>
     /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
     public static WebApplicationBuilder CreateSlimBuilder(string[] args) =>
         new(new() { Args = args }, slim: true);
