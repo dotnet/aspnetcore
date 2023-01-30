@@ -121,13 +121,15 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         public CachingParameterPolicyFactory(ParameterPolicyFactory inner)
         {
             _inner = inner;
-            _cachedParameters = new Dictionary<string, IParameterPolicy>();
+            _cachedParameters = new Dictionary<string, IParameterPolicy>(StringComparer.Ordinal);
         }
 
         public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
         {
             // Blindly check the cache to see if it contains a match.
             // Only cachable parameter policies are in the cache, so a match will only be available if the parameter policy key is configured to a cachable parameter policy.
+            //
+            // Note: Cache key is case sensitive. While the route prefix, e.g. "regex", is case-insensitive, the constraint could care about the case of the argument.
             if (_cachedParameters.TryGetValue(inlineText, out var parameterPolicy))
             {
                 return _inner.Create(parameter, parameterPolicy);
