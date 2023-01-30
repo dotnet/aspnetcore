@@ -139,12 +139,7 @@ public sealed class WebApplicationBuilder
         bootstrapHostBuilder.ConfigureSlimWebHost(
             webHostBuilder =>
             {
-                AspNetCore.WebHost.UseKestrel(webHostBuilder);
-
-                webHostBuilder.ConfigureServices(services =>
-                {
-                    services.AddRoutingCore();
-                });
+                AspNetCore.WebHost.ConfigureWebDefaultsCore(webHostBuilder);
 
                 webHostBuilder.Configure(ConfigureEmptyApplication);
 
