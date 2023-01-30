@@ -130,9 +130,15 @@ internal sealed class HtmlRenderer : Renderer
     {
         ref var frame = ref frames.Array[position];
         var result = context.HtmlContentBuilder;
+
+        if (string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase))
+        {
+            return RenderTextareaElement(context, frames, position);
+        }
+
         result.AppendHtml("<");
         result.AppendHtml(frame.ElementName);
-        var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, out var capturedValueAttribute);
+        var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, true, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
         // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
@@ -188,6 +194,34 @@ internal sealed class HtmlRenderer : Renderer
         }
     }
 
+    private static int RenderTextareaElement(
+         HtmlRenderingContext context,
+         ArrayRange<RenderTreeFrame> frames,
+         int position)
+    {
+        ref var frame = ref frames.Array[position];
+        var result = context.HtmlContentBuilder;
+
+        result.AppendHtml("<");
+        result.AppendHtml(frame.ElementName);
+        _ = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, false, out var capturedValueAttribute);
+        result.AppendHtml(">");
+
+        // Textarea is a special type of form field where the value is given as text content instead of a 'value' attribute
+        // So, if we captured a value attribute, use that instead of any child content
+        if (!string.IsNullOrEmpty(capturedValueAttribute))
+        {
+            result.Append(capturedValueAttribute);
+        }
+
+        var afterElement = position + frame.ElementSubtreeLength; // Skip descendants
+        result.AppendHtml("</");
+        result.AppendHtml(frame.ElementName);
+        result.AppendHtml(">");
+        Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
+        return afterElement;
+    }
+
     private int RenderChildren(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
     {
         if (maxElements == 0)
@@ -200,7 +234,7 @@ internal sealed class HtmlRenderer : Renderer
 
     private static int RenderAttributes(
         HtmlRenderingContext context,
-        ArrayRange<RenderTreeFrame> frames, int position, int maxElements, out string capturedValueAttribute)
+        ArrayRange<RenderTreeFrame> frames, int position, int maxElements, bool includeValueAttribute, out string capturedValueAttribute)
     {
         capturedValueAttribute = null;
 
@@ -223,6 +257,11 @@ internal sealed class HtmlRenderer : Renderer
             if (frame.AttributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 capturedValueAttribute = frame.AttributeValue as string;
+
+                if (!includeValueAttribute)
+                {
+                    continue;
+                }
             }
 
             switch (frame.AttributeValue)
