@@ -130,7 +130,7 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
             // Only cachable parameter policies are in the cache, so a match will only be available if the parameter policy key is configured to a cachable parameter policy.
             if (_cachedParameters.TryGetValue(inlineText, out var parameterPolicy))
             {
-                return Create(parameter, parameterPolicy);
+                return _inner.Create(parameter, parameterPolicy);
             }
 
             parameterPolicy = _inner.Create(parameter, inlineText);
