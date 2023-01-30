@@ -213,12 +213,8 @@ internal sealed class HtmlRenderer : Renderer
             result.Append(capturedValueAttribute);
         }
 
-        var afterElement = position + frame.ElementSubtreeLength; // Skip descendants
-        result.AppendHtml("</");
-        result.AppendHtml(frame.ElementName);
-        result.AppendHtml(">");
-        Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
-        return afterElement;
+        result.AppendHtml("</textarea>");
+        return position + frame.ElementSubtreeLength; // Skip descendants
     }
 
     private int RenderChildren(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
