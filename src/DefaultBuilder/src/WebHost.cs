@@ -223,14 +223,14 @@ public static class WebHost
             }
         });
 
-        UseKestrel(builder);
+        ConfigureWebDefaultsCore(builder);
 
         builder
             .UseIIS()
             .UseIISIntegration();
     }
 
-    internal static void UseKestrel(IWebHostBuilder builder)
+    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder)
     {
         builder.UseKestrel((builderContext, options) =>
         {
