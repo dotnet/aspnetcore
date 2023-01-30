@@ -50,7 +50,8 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     {
         get
         {
-            // Not thread safe. No side effect but could have multiple instances of Regex created.
+            // Create regex instance lazily to avoid compiling regexes at app startup. Delay creation until constraint is first evaluation.
+            // Not thread safe. No side effect but multiple instances of a regex instance could be created from a burst of requests.
             _constraint ??= new Regex(
                 _regexPattern,
                 RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase,
