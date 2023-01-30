@@ -59,6 +59,11 @@ public sealed class WebApplicationBuilder
 
         bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
         {
+            webHostBuilder.ConfigureServices(services =>
+            {
+                services.AddRouting();
+            });
+
             // Runs inline.
             webHostBuilder.Configure(ConfigureApplication);
 
@@ -135,6 +140,11 @@ public sealed class WebApplicationBuilder
             webHostBuilder =>
             {
                 AspNetCore.WebHost.UseKestrel(webHostBuilder);
+
+                webHostBuilder.ConfigureServices(services =>
+                {
+                    services.AddRoutingCore();
+                });
 
                 webHostBuilder.Configure(ConfigureEmptyApplication);
 
