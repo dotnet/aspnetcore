@@ -86,7 +86,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplication"/> class with preconfigured defaults.
     /// </summary>
-    /// <param name="args">Command line arguments</param>
+    /// <param name="args">The command line arguments.</param>
     /// <returns>The <see cref="WebApplication"/>.</returns>
     public static WebApplication Create(string[]? args = null) =>
         new WebApplicationBuilder(new() { Args = args }).Build();
@@ -108,7 +108,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
     /// </summary>
-    /// <param name="args">Command line arguments</param>
+    /// <param name="args">The command line arguments.</param>
     /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
     public static WebApplicationBuilder CreateBuilder(string[] args) =>
         new(new() { Args = args });
