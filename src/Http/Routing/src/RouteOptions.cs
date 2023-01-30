@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -89,6 +90,16 @@ public class RouteOptions
     /// </summary>
     internal IDictionary<string, Type> TrimmerSafeConstraintMap => _constraintTypeMap;
 
+    /// <summary>
+    /// Add Regex-based constraints to the constraint map (e.g. alpha and regex constraint types). This is called automatically by <see cref="RoutingServiceCollectionExtensions.AddRouting(IServiceCollection)"/>.
+    /// </summary>
+    public void AddRegexConstraints()
+    {
+        // Regex-based constraints
+        AddConstraint<AlphaRouteConstraint>(_constraintTypeMap, "alpha");
+        AddConstraint<RegexInlineRouteConstraint>(_constraintTypeMap, "regex");
+    }
+
     private static IDictionary<string, Type> GetDefaultConstraintMap()
     {
         var defaults = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
@@ -112,10 +123,6 @@ public class RouteOptions
         AddConstraint<MinRouteConstraint>(defaults, "min");
         AddConstraint<MaxRouteConstraint>(defaults, "max");
         AddConstraint<RangeRouteConstraint>(defaults, "range");
-
-        // Regex-based constraints
-        AddConstraint<AlphaRouteConstraint>(defaults, "alpha");
-        AddConstraint<RegexInlineRouteConstraint>(defaults, "regex");
 
         AddConstraint<RequiredRouteConstraint>(defaults, "required");
 
@@ -152,7 +159,7 @@ public class RouteOptions
         _constraintTypeMap[token] = type;
     }
 
-    private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(Dictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
+    private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(IDictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
     {
         constraintMap[text] = typeof(TConstraint);
     }

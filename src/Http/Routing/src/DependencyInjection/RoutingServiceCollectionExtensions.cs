@@ -20,12 +20,20 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class RoutingServiceCollectionExtensions
 {
+    public static IServiceCollection AddRouting(this IServiceCollection services)
+    {
+        return services.AddRoutingCore(routeOptions =>
+        {
+            routeOptions.AddRegexConstraints();
+        });
+    }
+
     /// <summary>
     /// Adds services required for routing requests.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddRouting(this IServiceCollection services)
+    public static IServiceCollection AddRoutingCore(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -101,13 +109,24 @@ public static class RoutingServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddRouting(
+        this IServiceCollection services,
+        Action<RouteOptions> configureOptions)
+    {
+        return services.AddRoutingCore(routeOptions =>
+        {
+            routeOptions.AddRegexConstraints();
+            configureOptions(routeOptions);
+        });
+    }
+
     /// <summary>
     /// Adds services required for routing requests.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The routing options to configure the middleware with.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddRouting(
+    public static IServiceCollection AddRoutingCore(
         this IServiceCollection services,
         Action<RouteOptions> configureOptions)
     {
@@ -115,7 +134,7 @@ public static class RoutingServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
-        services.AddRouting();
+        services.AddRoutingCore();
 
         return services;
     }
