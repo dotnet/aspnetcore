@@ -202,8 +202,7 @@ internal sealed class HtmlRenderer : Renderer
         ref var frame = ref frames.Array[position];
         var result = context.HtmlContentBuilder;
 
-        result.AppendHtml("<");
-        result.AppendHtml(frame.ElementName);
+        result.AppendHtml("<textarea");
         _ = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, false, out var capturedValueAttribute);
         result.AppendHtml(">");
 
