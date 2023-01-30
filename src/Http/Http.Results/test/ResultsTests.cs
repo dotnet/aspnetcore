@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -15,7 +17,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class ResultsTests
+public partial class ResultsTests
 {
     [Fact]
     public void Accepted_WithUrlAndValue_ResultHasCorrectValues()
@@ -781,6 +783,100 @@ public class ResultsTests
     }
 
     [Fact]
+    public void Json_WithTypeInfo_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null, StringJsonContext.Default.String as JsonTypeInfo) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.Equal(StringJsonContext.Default.String, result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void Json_WithJsonContext_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null, typeof(string), StringJsonContext.Default) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.IsAssignableFrom<JsonTypeInfo<string>>(result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void JsonOfT_WithTypeInfo_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null, StringJsonContext.Default.String) as JsonHttpResult<string>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.Equal(StringJsonContext.Default.String, result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void JsonOfT_WithJsonContext_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json<string>(null, StringJsonContext.Default) as JsonHttpResult<string>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.IsAssignableFrom<JsonTypeInfo<string>>(result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void JsonOfT_WithNullSerializerContext_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("context", () => Results.Json<object>(null, context: null));
+    }
+
+    [Fact]
+    public void Json_WithNullSerializerContext_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("context", () => Results.Json(null, type: typeof(object), context: null));
+    }
+
+    [Fact]
+    public void Json_WithInvalidSerializerContext_ThrowsInvalidOperationException()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => Results.Json(null, type: typeof(object), context: StringJsonContext.Default));
+        Assert.Equal(ex.Message, $"Unable to obtain the JsonTypeInfo for type 'System.Object' from the context '{typeof(StringJsonContext).FullName}'.");
+    }
+
+    [Fact]
+    public void JsonOfT_WithInvalidSerializerContext_ThrowsInvalidOperationException()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => Results.Json<object>(null, context: StringJsonContext.Default));
+        Assert.Equal(ex.Message, $"Unable to obtain the JsonTypeInfo for type 'System.Object' from the context '{typeof(StringJsonContext).FullName}'.");
+    }
+
+    [Fact]
+    public void Json_WithNullTypeInfo_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("jsonTypeInfo", () => Results.Json(null, jsonTypeInfo: null));
+    }
+
+    [Fact]
+    public void JsonOfT_WithNullTypeInfo_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("jsonTypeInfo", () => Results.Json<object>(null, jsonTypeInfo: null));
+    }
+
+    [Fact]
     public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("localUrl", () => Results.LocalRedirect(default(string)));
@@ -1377,4 +1473,8 @@ public class ResultsTests
     public static IEnumerable<object[]> FactoryMethodsFromTuples() => FactoryMethodsTuples.Select(t => new object[] { t.Item1, t.Item2 });
 
     private record Todo(int Id);
+
+    [JsonSerializable(typeof(string))]
+    private partial class StringJsonContext : JsonSerializerContext
+    { }
 }

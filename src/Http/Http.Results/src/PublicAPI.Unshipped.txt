@@ -12,10 +12,10 @@ static Microsoft.AspNetCore.Http.Results.Created(string? uri, object? value) -> 
 static Microsoft.AspNetCore.Http.Results.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Json(object? data, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Json(object? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json(object? data, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.TypedResults.Created() -> Microsoft.AspNetCore.Http.HttpResults.Created!
 static Microsoft.AspNetCore.Http.TypedResults.Created(string? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
 static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
@@ -27,5 +27,5 @@ static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri? uri, T
 *REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created(string! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
 *REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
 *REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.Serialization.JsonSerializerContext! jsonContext, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<TValue>!

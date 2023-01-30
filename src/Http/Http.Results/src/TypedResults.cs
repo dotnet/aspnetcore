@@ -209,24 +209,33 @@ public static class TypedResults
     /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonTypeInfo jsonTypeInfo, string? contentType = null, int? statusCode = null)
+    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonTypeInfo<TValue> jsonTypeInfo, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => new(data, jsonTypeInfo, statusCode, contentType);
+    {
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+        return new(data, statusCode, contentType) { JsonTypeInfo = jsonTypeInfo };
+    }
 
     /// <summary>
     /// Creates a <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/> object to JSON.
     /// </summary>
     /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
     /// <param name="data">The object to write as JSON.</param>
-    /// <param name="jsonContext">Metadata about the type to convert.</param>
+    /// <param name="context">A metadata provider for serializable types.</param>
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerContext jsonContext, string? contentType = null, int? statusCode = null)
+    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerContext context, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        => new(data, jsonContext, statusCode, contentType);
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return new(data, statusCode, contentType)
+        {
+            JsonTypeInfo = context.GetTypeInfo(typeof(TValue)) ?? throw new InvalidOperationException($"Unable to obtain the JsonTypeInfo for type '{typeof(TValue).FullName}' from the context '{context.GetType().FullName}'.")
+        };
+    }
 
     /// <summary>
     /// Writes the byte-array content to the response.

@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +15,6 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// </summary>
 public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>, IContentTypeHttpResult
 {
-    private readonly JsonTypeInfo? _jsonTypeInfo;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Json"/> class with the values.
     /// </summary>
@@ -47,21 +44,8 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
         JsonSerializerOptions = jsonSerializerOptions;
     }
 
-    internal JsonHttpResult(TValue? value, JsonSerializerContext jsonSerializerContext, int? statusCode = null, string? contentType = null)
-        : this(value, jsonSerializerContext.GetTypeInfo(typeof(TValue))!, statusCode, contentType)
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Json"/> class with the values.
-    /// </summary>
-    /// <param name="value">The value to format in the entity body.</param>
-    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
-    /// <param name="statusCode">The HTTP status code of the response.</param>
-    /// <param name="contentType">The value for the <c>Content-Type</c> header</param>
-    internal JsonHttpResult(TValue? value, JsonTypeInfo jsonTypeInfo, int? statusCode = null, string? contentType = null)
+    internal JsonHttpResult(TValue? value, int? statusCode = null, string? contentType = null)
     {
-        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
-
         Value = value;
         ContentType = contentType;
 
@@ -72,15 +56,17 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
         }
 
         StatusCode = statusCode;
-
-        _jsonTypeInfo = jsonTypeInfo;
-        JsonSerializerOptions = jsonTypeInfo.Options;
     }
 
     /// <summary>
     /// Gets or sets the serializer settings.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; }
+
+    /// <summary>
+    /// Gets or sets the serializer settings.
+    /// </summary>
+    internal JsonTypeInfo? JsonTypeInfo { get; init; }
 
     /// <summary>
     /// Gets the object result.
@@ -114,14 +100,28 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
             httpContext.Response.StatusCode = statusCode;
         }
 
-        if (_jsonTypeInfo is not null)
+        if (Value is null)
         {
-            return HttpResultsHelper.WriteResultAsJsonAsync(
-                httpContext,
-                logger,
+            return Task.CompletedTask;
+        }
+
+        if (JsonTypeInfo != null)
+        {
+            HttpResultsHelper.Log.WritingResultAsJson(logger, JsonTypeInfo.Type.Name);
+
+            if (JsonTypeInfo is JsonTypeInfo<TValue> typedJsonTypeInfo)
+            {
+                // We don't need to box here.
+                return httpContext.Response.WriteAsJsonAsync(
+                    Value,
+                    typedJsonTypeInfo,
+                    contentType: ContentType);
+
+            }
+            return httpContext.Response.WriteAsJsonAsync(
                 Value,
-                _jsonTypeInfo,
-                ContentType);
+                JsonTypeInfo,
+                contentType: ContentType);
         }
 
         return HttpResultsHelper.WriteResultAsJsonAsync(
