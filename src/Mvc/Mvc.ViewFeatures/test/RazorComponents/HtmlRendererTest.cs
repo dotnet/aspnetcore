@@ -320,11 +320,11 @@ public class HtmlRendererTest
     public void RenderComponentAsync_RendersValueAttributeAsTextContentOfTextareaElement()
     {
         // Arrange
-        var expectedHtml = "<textarea rows=\"10\" cols=\"20\">Hello World!</textarea>";
+        var expectedHtml = "<textarea rows=\"10\" cols=\"20\">Hello &lt;html&gt;-encoded content!</textarea>";
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "textarea");
-            rtb.AddAttribute(1, "value", "Hello World!");
+            rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
             rtb.AddAttribute(2, "rows", "10");
             rtb.AddAttribute(3, "cols", "20");
             rtb.CloseElement();
