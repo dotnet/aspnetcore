@@ -368,7 +368,7 @@ public class SignInManager<TUser> where TUser : class
         {
             var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
-            if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
+            if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
                 await ResetLockout(user);
             }
@@ -741,7 +741,14 @@ public class SignInManager<TUser> where TUser : class
         return new ClaimsPrincipal(rememberBrowserIdentity);
     }
 
-    private async Task<bool> IsTfaEnabled(TUser user)
+    /// <summary>
+    /// Check if the <paramref name="user"/> has two factor enabled.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns>
+    /// The task object representing the asynchronous operation containing true if the user has two factor enabled.
+    /// </returns>
+    public virtual async Task<bool> IsTwoFactorEnabledAsync(TUser user)
         => UserManager.SupportsUserTwoFactor &&
         await UserManager.GetTwoFactorEnabledAsync(user) &&
         (await UserManager.GetValidTwoFactorProvidersAsync(user)).Count > 0;
@@ -757,7 +764,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>Returns a <see cref="SignInResult"/></returns>
     protected virtual async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string? loginProvider = null, bool bypassTwoFactor = false)
     {
-        if (!bypassTwoFactor && await IsTfaEnabled(user))
+        if (!bypassTwoFactor && await IsTwoFactorEnabledAsync(user))
         {
             if (!await IsTwoFactorClientRememberedAsync(user))
             {
