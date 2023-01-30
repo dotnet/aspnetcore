@@ -558,7 +558,12 @@ public partial class DefaultProblemDetailsWriterTest
     private static DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null, JsonOptions jsonOptions = null)
     {
         options ??= new ProblemDetailsOptions();
-        jsonOptions ??= new JsonOptions();
+
+        if (jsonOptions is null)
+        {
+            jsonOptions = new JsonOptions();
+            jsonOptions.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+        }
 
         return new DefaultProblemDetailsWriter(Options.Create(options), Options.Create(jsonOptions));
     }

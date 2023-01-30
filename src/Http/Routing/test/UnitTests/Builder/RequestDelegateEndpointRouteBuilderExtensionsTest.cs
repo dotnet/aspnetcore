@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -516,6 +517,14 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         // Assert
         var endpointBuilder1 = GetRouteEndpointBuilder(builder);
         Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+    }
+
+    private static DefaultHttpContext CreateHttpContext()
+    {
+        var services = new ServiceCollection();
+        services.AddDefaultHttpJsonOptions();
+
+        return new() { RequestServices = services.BuildServiceProvider() };
     }
 
     [Attribute1]

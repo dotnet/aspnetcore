@@ -3129,7 +3129,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
@@ -3156,7 +3155,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
@@ -3183,7 +3181,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();
@@ -3221,7 +3218,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
+            .PostConfigure<JsonOptions>(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();
@@ -3247,7 +3244,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
+            .PostConfigure<JsonOptions>(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();
@@ -6883,6 +6880,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
+            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
         };
 
         // Act
@@ -6904,6 +6902,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
+            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
         };
 
         // Act
@@ -6925,6 +6924,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
+            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
         };
 
         // Act
@@ -6948,6 +6948,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
+            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
         };
 
         // Act
@@ -7425,7 +7426,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         return new()
         {
-            RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
+            RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).AddDefaultHttpJsonOptions().BuildServiceProvider(),
             Features =
                 {
                     [typeof(IHttpResponseFeature)] = responseFeature,

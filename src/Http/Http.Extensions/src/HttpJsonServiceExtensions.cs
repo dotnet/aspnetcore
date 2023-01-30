@@ -26,8 +26,9 @@ public static class HttpJsonServiceExtensions
     /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection ConfigureHttpJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
     {
-        services.Configure<JsonOptions>(configureOptions);
-        return services;
+        services.Configure(configureOptions);
+
+        return services.AddDefaultHttpJsonOptions();
     }
 
     /// <summary>
@@ -35,8 +36,12 @@ public static class HttpJsonServiceExtensions
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>
-    public static IServiceCollection ConfigureDefaultHttpJsonOptions(this IServiceCollection services)
+    public static IServiceCollection AddDefaultHttpJsonOptions(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddOptions();
+
         if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
         {
 #pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml

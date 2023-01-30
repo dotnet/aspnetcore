@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
@@ -19,11 +20,15 @@ public class ProblemDetailsServiceTest
                 new MetadataBasedWriter("FirstWriter"),
             });
 
+        var services = new ServiceCollection();
+        services.AddDefaultHttpJsonOptions();
+
         var metadata = new EndpointMetadataCollection(new SampleMetadata() { ContentType = "application/problem+json" });
         var stream = new MemoryStream();
         var context = new DefaultHttpContext()
         {
             Response = { Body = stream, StatusCode = StatusCodes.Status400BadRequest },
+            RequestServices = services.BuildServiceProvider(),
         };
 
         // Act

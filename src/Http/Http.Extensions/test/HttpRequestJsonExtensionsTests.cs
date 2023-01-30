@@ -4,6 +4,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 
 #nullable enable
 
@@ -35,7 +36,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_NonJsonContentType_ThrowError()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "text/json";
 
         // Act
@@ -50,7 +51,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_NoBodyContent_ThrowError()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
 
         // Act
@@ -65,7 +66,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_ValidBodyContent_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("1"));
 
@@ -80,7 +81,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_WithOptions_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2,]"));
 
@@ -101,7 +102,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_Utf8Encoding_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json; charset=utf-8";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2]"));
 
@@ -119,7 +120,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_Utf16Encoding_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json; charset=utf-16";
         context.Request.Body = new MemoryStream(Encoding.Unicode.GetBytes(@"{""name"": ""激光這兩個字是甚麼意思""}"));
 
@@ -134,7 +135,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_WithCancellationToken_CancellationRaised()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application /json";
         context.Request.Body = new TestStream();
 
@@ -154,7 +155,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsyncGeneric_InvalidEncoding_ThrowError()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json; charset=invalid";
 
         // Act
@@ -168,7 +169,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsync_ValidBodyContent_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("1"));
 
@@ -183,7 +184,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsync_Utf16Encoding_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json; charset=utf-16";
         context.Request.Body = new MemoryStream(Encoding.Unicode.GetBytes(@"{""name"": ""激光這兩個字是甚麼意思""}"));
 
@@ -198,7 +199,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsync_InvalidEncoding_ThrowError()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json; charset=invalid";
 
         // Act
@@ -212,7 +213,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsync_WithOptions_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2,]"));
 
@@ -233,7 +234,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsync_WithTypeInfo_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2,]"));
 
@@ -255,7 +256,7 @@ public class HttpRequestJsonExtensionsTests
     public async Task ReadFromJsonAsync_WithGenericTypeInfo_ReturnValue()
     {
         // Arrange
-        var context = new DefaultHttpContext();
+        var context = CreateHttpContext();
         context.Request.ContentType = "application/json";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[1,2,]"));
 
@@ -272,5 +273,13 @@ public class HttpRequestJsonExtensionsTests
         Assert.Collection(result,
             i => Assert.Equal(1, i),
             i => Assert.Equal(2, i));
+    }
+
+    private DefaultHttpContext CreateHttpContext()
+    {
+        var services = new ServiceCollection();
+        services.AddDefaultHttpJsonOptions();
+
+        return new() { RequestServices = services.BuildServiceProvider() };
     }
 }
