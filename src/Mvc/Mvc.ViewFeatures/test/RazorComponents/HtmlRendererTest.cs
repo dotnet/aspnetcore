@@ -317,6 +317,92 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public void RenderComponentAsync_RendersValueAttributeAsTextContentOfTextareaElement()
+    {
+        // Arrange
+        var expectedHtml = "<textarea rows=\"10\" cols=\"20\">Hello &lt;html&gt;-encoded content!</textarea>";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "textarea");
+            rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
+            rtb.AddAttribute(2, "rows", "10");
+            rtb.AddAttribute(3, "cols", "20");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
+    public void RenderComponentAsync_RendersTextareaElementWithoutValueAttribute()
+    {
+        // Arrange
+        var expectedHtml = "<textarea rows=\"10\" cols=\"20\">Hello &lt;html&gt;-encoded content!</textarea>";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "textarea");
+            rtb.AddAttribute(1, "rows", "10");
+            rtb.AddAttribute(2, "cols", "20");
+            rtb.AddContent(3, "Hello <html>-encoded content!");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
+    public void RenderComponentAsync_RendersTextareaElementWithoutValueAttributeOrTextContent()
+    {
+        // Arrange
+        var expectedHtml = "<textarea rows=\"10\" cols=\"20\"></textarea>";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "textarea");
+            rtb.AddAttribute(1, "rows", "10");
+            rtb.AddAttribute(2, "cols", "20");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
+    public void RenderComponentAsync_ValueAttributeOfTextareaElementOverridesTextContent()
+    {
+        // Arrange
+        var expectedHtml = "<textarea>Hello World!</textarea>";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "textarea");
+            rtb.AddAttribute(1, "value", "Hello World!");
+            rtb.AddContent(3, "Some content");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
     public void RenderComponentAsync_MarksSelectedOptionsAsSelected_WithOptGroups()
     {
         // Arrange
