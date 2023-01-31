@@ -519,14 +519,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
     }
 
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        var services = new ServiceCollection();
-        services.AddDefaultHttpJsonOptions();
-
-        return new() { RequestServices = services.BuildServiceProvider() };
-    }
-
     [Attribute1]
     [Attribute2]
     private static Task Handle(HttpContext context) => Task.CompletedTask;

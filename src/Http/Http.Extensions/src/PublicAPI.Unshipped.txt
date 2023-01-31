@@ -1,4 +1,3 @@
 #nullable enable
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-static Microsoft.Extensions.DependencyInjection.HttpJsonServiceExtensions.AddDefaultHttpJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -262,8 +262,7 @@ public static partial class RequestDelegateFactory
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
-        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions;
-        jsonSerializerOptions ??= TrimmingAppContextSwitches.EnsureJsonTrimmability ? JsonOptions.DefaultSerializerOptions : JsonOptions.ReflectionBasedSerializerOptions;
+        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
 
         var factoryContext = new RequestDelegateFactoryContext
         {

@@ -21,7 +21,6 @@ public class ProblemDetailsServiceTest
             });
 
         var services = new ServiceCollection();
-        services.AddDefaultHttpJsonOptions();
 
         var metadata = new EndpointMetadataCollection(new SampleMetadata() { ContentType = "application/problem+json" });
         var stream = new MemoryStream();

@@ -3220,8 +3220,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddDefaultHttpJsonOptions()
-            .PostConfigure<JsonOptions>(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
+            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();
@@ -3247,8 +3246,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddDefaultHttpJsonOptions()
-            .PostConfigure<JsonOptions>(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
+            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();
