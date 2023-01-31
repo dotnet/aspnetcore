@@ -147,14 +147,11 @@ internal sealed class HtmlRenderer : Renderer
             result.AppendHtml(" selected");
         }
 
-        if (!SelfClosingElements.Contains(frame.ElementName))
-        {
-            result.AppendHtml(">");
-        }
-
         var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
         if (remainingElements > 0 || isTextArea)
         {
+            result.AppendHtml(">");
+
             var isSelect = string.Equals(frame.ElementName, "select", StringComparison.OrdinalIgnoreCase);
             if (isSelect)
             {
@@ -179,24 +176,29 @@ internal sealed class HtmlRenderer : Renderer
                 // we can safely say there is no longer any value for this
                 context.ClosestSelectValueAsString = null;
             }
-        }
-        else
-        {
-            afterElement = afterAttributes;
-        }
 
-        if (SelfClosingElements.Contains(frame.ElementName))
-        {
-            result.AppendHtml(" />");
-        }
-        else
-        {
             result.AppendHtml("</");
             result.AppendHtml(frame.ElementName);
             result.AppendHtml(">");
+            Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
+            return afterElement;
         }
-        Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
-        return afterElement;
+        else
+        {
+            if (SelfClosingElements.Contains(frame.ElementName))
+            {
+                result.AppendHtml(" />");
+            }
+            else
+            {
+                result.AppendHtml(">");
+                result.AppendHtml("</");
+                result.AppendHtml(frame.ElementName);
+                result.AppendHtml(">");
+            }
+            Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
+            return afterAttributes;
+        }
     }
 
     private int RenderChildren(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
@@ -226,6 +228,10 @@ internal sealed class HtmlRenderer : Renderer
         {
             var candidateIndex = position + i;
             ref var frame = ref frames.Array[candidateIndex];
+            if (frame.FrameType == RenderTreeFrameType.ElementReferenceCapture)
+            {
+                continue;
+            }
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
                 return candidateIndex;
@@ -309,4 +315,3 @@ internal sealed class HtmlRenderer : Renderer
         }
     }
 }
-

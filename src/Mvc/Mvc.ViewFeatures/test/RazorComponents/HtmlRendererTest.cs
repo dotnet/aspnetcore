@@ -403,7 +403,7 @@ public class HtmlRendererTest
     }
 
     [Fact]
-    public void RenderComponentAsync_RendersSelfClosingElement()
+    public void RenderComponentAsync_RendersSelfClosingElementWithoutTextComponentAsSelfClosingElement()
     {
         // Arrange
         var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
@@ -411,7 +411,49 @@ public class HtmlRendererTest
         {
             rtb.OpenElement(0, "input");
             rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
-            rtb.AddAttribute(1, "id", "Test");
+            rtb.AddAttribute(2, "id", "Test");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
+    public void RenderComponentAsync_RendersSelfClosingElementBySkippingElementReferenceCapture()
+    {
+        // Arrange
+        var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "input");
+            rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
+            rtb.AddAttribute(2, "id", "Test");
+            rtb.AddElementReferenceCapture(3, inputReference => _ = inputReference);
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
+    public void RenderComponentAsync_RendersSelfClosingElementWithTextComponentAsNormalElement()
+    {
+        // Arrange
+        var expectedHtml = "<meta>Something</meta>";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "meta");
+            rtb.AddContent(1, "Something");
             rtb.CloseElement();
         })).BuildServiceProvider();
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
