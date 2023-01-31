@@ -4,13 +4,11 @@
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
