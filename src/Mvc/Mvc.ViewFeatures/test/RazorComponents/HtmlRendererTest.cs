@@ -4,11 +4,13 @@
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -391,6 +393,27 @@ public class HtmlRendererTest
             rtb.OpenElement(0, "textarea");
             rtb.AddAttribute(1, "value", "Hello World!");
             rtb.AddContent(3, "Some content");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+        // Act
+        var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+        // Assert
+        AssertHtmlContentEquals(expectedHtml, result);
+    }
+
+    [Fact]
+    public void RenderComponentAsync_RendersSelfClosingElement()
+    {
+        // Arrange
+        var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "input");
+            rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
+            rtb.AddAttribute(1, "id", "Test");
             rtb.CloseElement();
         })).BuildServiceProvider();
         var htmlRenderer = GetHtmlRenderer(serviceProvider);

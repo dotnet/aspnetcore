@@ -147,11 +147,14 @@ internal sealed class HtmlRenderer : Renderer
             result.AppendHtml(" selected");
         }
 
+        if (!SelfClosingElements.Contains(frame.ElementName))
+        {
+            result.AppendHtml(">");
+        }
+
         var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
         if (remainingElements > 0 || isTextArea)
         {
-            result.AppendHtml(">");
-
             var isSelect = string.Equals(frame.ElementName, "select", StringComparison.OrdinalIgnoreCase);
             if (isSelect)
             {
@@ -176,29 +179,24 @@ internal sealed class HtmlRenderer : Renderer
                 // we can safely say there is no longer any value for this
                 context.ClosestSelectValueAsString = null;
             }
-
-            result.AppendHtml("</");
-            result.AppendHtml(frame.ElementName);
-            result.AppendHtml(">");
-            Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
-            return afterElement;
         }
         else
         {
-            if (SelfClosingElements.Contains(frame.ElementName))
-            {
-                result.AppendHtml(" />");
-            }
-            else
-            {
-                result.AppendHtml(">");
-                result.AppendHtml("</");
-                result.AppendHtml(frame.ElementName);
-                result.AppendHtml(">");
-            }
-            Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
-            return afterAttributes;
+            afterElement = afterAttributes;
         }
+
+        if (SelfClosingElements.Contains(frame.ElementName))
+        {
+            result.AppendHtml(" />");
+        }
+        else
+        {
+            result.AppendHtml("</");
+            result.AppendHtml(frame.ElementName);
+            result.AppendHtml(">");
+        }
+        Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
+        return afterElement;
     }
 
     private int RenderChildren(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
