@@ -106,7 +106,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
             {
                 _logger.RequestAbortedException();
 
-                if (context.Response.HasStarted)
+                if (!context.Response.HasStarted)
                 {
                     context.Response.StatusCode = 499;
                 }
