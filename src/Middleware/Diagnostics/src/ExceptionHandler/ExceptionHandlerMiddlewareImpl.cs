@@ -114,7 +114,7 @@ internal class ExceptionHandlerMiddlewareImpl
     {
         if (edi.SourceException is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
         {
-            _logger.LogDebug("Request aborted");
+            _logger.RequestAbortedException();
 
             if (context.Response.HasStarted)
             {

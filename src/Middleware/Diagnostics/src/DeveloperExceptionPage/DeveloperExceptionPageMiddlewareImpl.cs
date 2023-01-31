@@ -104,7 +104,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
             if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
             {
-                _logger.LogDebug("Request aborted");
+                _logger.RequestAbortedException();
 
                 if (context.Response.HasStarted)
                 {
