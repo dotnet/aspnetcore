@@ -1275,7 +1275,6 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 
-
     [JsonSerializable(typeof(object))]
     private partial class ObjectJsonContext : JsonSerializerContext
     { }
