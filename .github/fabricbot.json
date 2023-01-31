@@ -2562,7 +2562,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview1"
+              "milestoneName": "8.0-preview2"
             }
           }
         ],
@@ -2959,21 +2959,21 @@
                 {
                   "name": "addedToMilestone",
                   "parameters": {
+                    "milestoneName": "7.0.x"
+                  }
+                },
+                {
+                  "name": "addedToMilestone",
+                  "parameters": {
                     "milestoneName": "6.0.x"
                   }
                 },
                 {
                   "name": "addedToMilestone",
                   "parameters": {
-                    "milestoneName": "5.0.x"
+                    "milestoneName": "2.1.x"
                   }
                 },
-                {
-                  "name": "addedToMilestone",
-                  "parameters": {
-                    "milestoneName": "3.1.x"
-                  }
-                }
               ]
             }
           ]
@@ -2991,59 +2991,6 @@
             "parameters": {
               "projectName": "Servicing",
               "columnName": "In Progress"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "release/3.1"
-              }
-            },
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "opened"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Add release/3.1 targeting PRs to the servicing project",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "3.1.x"
-            }
-          },
-          {
-            "name": "addToProject",
-            "parameters": {
-              "projectName": "Servicing",
-              "columnName": "In Progress"
-            }
-          },
-          {
-            "name": "addReply",
-            "parameters": {
-              "comment": "Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.\nOtherwise, please add `tell-mode` label."
             }
           }
         ]
@@ -3405,6 +3352,50 @@
             "name": "addMilestone",
             "parameters": {
               "milestoneName": "7.0.3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/8.0-preview1"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview1 branch",
+        "actions": [
+          {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "8.0-preview1"
             }
           }
         ]
