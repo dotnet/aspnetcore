@@ -20,6 +20,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class RoutingServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds services required for routing requests.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddRouting(this IServiceCollection services)
     {
         return services.AddRoutingCore(routeOptions =>
@@ -29,7 +34,10 @@ public static class RoutingServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds services required for routing requests.
+    /// Adds services required for routing requests. This is similar to
+    /// <see cref="AddRouting(IServiceCollection))" /> except that it
+    /// excludes certain options that are not included by default for
+    /// native AOT scenarios.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
@@ -109,6 +117,12 @@ public static class RoutingServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Adds services required for routing requests.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="configureOptions">The routing options to configure the middleware with.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddRouting(
         this IServiceCollection services,
         Action<RouteOptions> configureOptions)
@@ -121,7 +135,10 @@ public static class RoutingServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds services required for routing requests.
+    /// Adds services required for routing requests. This is similar to
+    /// <see cref="AddRouting(IServiceCollection, Action{RouteOptions})" />
+    /// except that it excludes certain options that are not included by default for native AOT
+    /// scenarios.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The routing options to configure the middleware with.</param>

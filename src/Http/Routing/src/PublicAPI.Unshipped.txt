@@ -1,1 +1,3 @@
 #nullable enable
+static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRoutingCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRoutingCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Routing.RouteOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
