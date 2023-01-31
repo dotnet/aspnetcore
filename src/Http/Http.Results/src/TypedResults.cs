@@ -233,7 +233,7 @@ public static class TypedResults
         ArgumentNullException.ThrowIfNull(context);
         return new(data, statusCode, contentType)
         {
-            JsonTypeInfo = context.GetTypeInfo(typeof(TValue)) ?? throw new InvalidOperationException($"Unable to obtain the JsonTypeInfo for type '{typeof(TValue).FullName}' from the context '{context.GetType().FullName}'.")
+            JsonTypeInfo = context.GetRequiredTypeInfo(typeof(TValue))
         };
     }
 

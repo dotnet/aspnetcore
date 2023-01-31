@@ -224,7 +224,7 @@ public static partial class Results
         ArgumentNullException.ThrowIfNull(context);
         return new JsonHttpResult<object>(data, statusCode, contentType)
         {
-            JsonTypeInfo = context.GetTypeInfo(type) ?? throw new InvalidOperationException($"Unable to obtain the JsonTypeInfo for type '{type.FullName}' from the context '{context.GetType().FullName}'.")
+            JsonTypeInfo = context.GetRequiredTypeInfo(type)
         };
     }
 
