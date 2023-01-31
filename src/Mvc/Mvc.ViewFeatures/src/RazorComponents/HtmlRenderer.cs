@@ -228,10 +228,12 @@ internal sealed class HtmlRenderer : Renderer
         {
             var candidateIndex = position + i;
             ref var frame = ref frames.Array[candidateIndex];
+
             if (frame.FrameType == RenderTreeFrameType.ElementReferenceCapture)
             {
                 continue;
             }
+
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
                 return candidateIndex;
