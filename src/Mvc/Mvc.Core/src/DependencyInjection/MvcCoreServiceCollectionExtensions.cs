@@ -141,12 +141,6 @@ public static class MvcCoreServiceCollectionExtensions
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
 
-        if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
-        {
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<JsonOptions>, MvcCoreJsonOptionsSetup>());
-        }
-
         //
         // Action Discovery
         //
