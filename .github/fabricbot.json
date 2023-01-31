@@ -3395,7 +3395,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0.0-preview1"
+              "milestoneName": "8.0-preview1"
             }
           }
         ]
