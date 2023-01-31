@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// For a sample on how to list all formats which are considered, please visit
 /// http://msdn.microsoft.com/en-us/library/aszyst2c(v=vs.110).aspx
 /// </remarks>
-public class DateTimeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class DateTimeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(

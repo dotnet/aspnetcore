@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to be a string with a maximum length.
 /// </summary>
-public class MaxLengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class MaxLengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MaxLengthRouteConstraint" /> class.

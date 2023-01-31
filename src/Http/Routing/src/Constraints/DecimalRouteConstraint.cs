@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to represent only decimal values.
 /// </summary>
-public class DecimalRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class DecimalRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(
