@@ -15,6 +15,7 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="MessagePack" />
     <Reference Include="StackExchange.Redis.StrongName" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
 </Project>

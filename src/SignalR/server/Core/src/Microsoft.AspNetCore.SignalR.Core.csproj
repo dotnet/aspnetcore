@@ -19,6 +19,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="System.Reflection.Emit" />
     <Reference Include="System.Threading.Channels" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
 </Project>
