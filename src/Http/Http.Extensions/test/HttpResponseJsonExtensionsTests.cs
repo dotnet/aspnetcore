@@ -20,7 +20,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -39,7 +39,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -57,7 +57,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -90,7 +90,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -107,7 +107,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -121,7 +121,7 @@ public class HttpResponseJsonExtensionsTests
     public async Task WriteAsJsonAsyncGeneric_WithCancellationToken_CancellationRaised()
     {
         // Arrange
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = new TestStream();
 
         var cts = new CancellationTokenSource();
@@ -141,7 +141,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
         var value = new TestObject
         {
@@ -161,7 +161,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -180,7 +180,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -198,7 +198,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act & Assert
@@ -210,7 +210,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act & Assert
@@ -222,7 +222,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
         var value = new TestObject
         {
@@ -242,7 +242,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -259,7 +259,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -284,7 +284,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -310,7 +310,7 @@ public class HttpResponseJsonExtensionsTests
         // Arrange
         var cts = new CancellationTokenSource();
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
         context.RequestAborted = cts.Token;
         var iterated = false;
@@ -344,7 +344,7 @@ public class HttpResponseJsonExtensionsTests
         // Arrange
         var cts = new CancellationTokenSource();
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
         context.RequestAborted = cts.Token;
         var iterated = false;
@@ -377,7 +377,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
         context.RequestAborted = new CancellationToken(canceled: true);
         var cts = new CancellationTokenSource();
@@ -411,7 +411,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
         context.RequestAborted = new CancellationToken(canceled: true);
         var cts = new CancellationTokenSource();
@@ -445,7 +445,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -466,7 +466,7 @@ public class HttpResponseJsonExtensionsTests
     {
         // Arrange
         var body = new MemoryStream();
-        var context = CreateHttpContext();
+        var context = new DefaultHttpContext();
         context.Response.Body = body;
 
         // Act
@@ -480,14 +480,6 @@ public class HttpResponseJsonExtensionsTests
 
         var data = Encoding.UTF8.GetString(body.ToArray());
         Assert.Equal("null", data);
-    }
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        var services = new ServiceCollection();
-        services.AddDefaultHttpJsonOptions();
-
-        return new() { RequestServices = services.BuildServiceProvider() };
     }
 
     public class TestObject

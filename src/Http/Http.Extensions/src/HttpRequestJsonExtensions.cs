@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -303,7 +304,10 @@ public static class HttpRequestJsonExtensions
     private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
     {
         // Attempt to resolve options from DI then fallback to default options
-        return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        var options = httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions;
+        options ??= TrimmingAppContextSwitches.EnsureJsonTrimmability ? JsonOptions.DefaultSerializerOptions : JsonOptions.ReflectionBasedSerializerOptions;
+
+        return options;
     }
 
     [DoesNotReturn]

@@ -26,9 +26,8 @@ public static class HttpJsonServiceExtensions
     /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection ConfigureHttpJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
     {
-        services.Configure(configureOptions);
-
-        return services.AddDefaultHttpJsonOptions();
+        services.AddDefaultHttpJsonOptions();
+        return services.Configure(configureOptions);
     }
 
     /// <summary>

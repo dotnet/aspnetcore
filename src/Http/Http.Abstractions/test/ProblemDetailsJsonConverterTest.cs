@@ -4,6 +4,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,10 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class ProblemDetailsJsonConverterTest
 {
-    private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().SerializerOptions;
+    private static JsonSerializerOptions JsonSerializerOptions => new JsonSerializerOptions(new JsonOptions().SerializerOptions)
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+    };
 
     [Fact]
     public void Read_ThrowsIfJsonIsIncomplete()

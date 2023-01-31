@@ -1642,6 +1642,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         var jsonOptions = new JsonOptions();
+        jsonOptions.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
 
         var mock = new Mock<IServiceProvider>();
@@ -1880,6 +1881,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         var jsonOptions = new JsonOptions();
+        jsonOptions.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
 
         var mock = new Mock<IServiceProvider>();
@@ -3218,6 +3220,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
+            .AddDefaultHttpJsonOptions()
             .PostConfigure<JsonOptions>(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
             .BuildServiceProvider();
 
@@ -3244,6 +3247,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
+            .AddDefaultHttpJsonOptions()
             .PostConfigure<JsonOptions>(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
             .BuildServiceProvider();
 
@@ -6880,7 +6884,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
+            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -6902,7 +6906,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
+            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -6924,7 +6928,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
+            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -6948,7 +6952,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().AddDefaultHttpJsonOptions().BuildServiceProvider(),
+            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -7426,7 +7430,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         return new()
         {
-            RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).AddDefaultHttpJsonOptions().BuildServiceProvider(),
+            RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
             Features =
                 {
                     [typeof(IHttpResponseFeature)] = responseFeature,

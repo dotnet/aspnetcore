@@ -3,13 +3,17 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 
 namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class HttpValidationProblemDetailsJsonConverterTest
 {
-    private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().SerializerOptions;
+    private static JsonSerializerOptions JsonSerializerOptions => new JsonSerializerOptions(new JsonOptions().SerializerOptions)
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+    };
 
     [Fact]
     public void Write_Works()
