@@ -112,7 +112,7 @@ internal class ExceptionHandlerMiddlewareImpl
 
     private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
     {
-        if (edi.SourceException is OperationCanceledException operationCanceledException && context.RequestAborted.IsCancellationRequested)
+        if (edi.SourceException is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
         {
             _logger.LogDebug("Request aborted");
 

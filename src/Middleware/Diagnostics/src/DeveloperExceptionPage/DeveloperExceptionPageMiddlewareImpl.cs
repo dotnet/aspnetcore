@@ -102,7 +102,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
         catch (Exception ex)
         {
 
-            if (ex is OperationCanceledException operationCanceledException && context.RequestAborted.IsCancellationRequested)
+            if (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
             {
                 _logger.LogDebug("Request aborted");
 
