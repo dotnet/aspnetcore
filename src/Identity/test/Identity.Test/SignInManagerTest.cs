@@ -425,6 +425,47 @@ public class SignInManagerTest
     }
 
     [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, false, false)]
+    public async Task IsTwoFactorEnabled(bool userManagerSupportsTwoFactor, bool userTwoFactorEnabled, bool hasValidProviders)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var manager = SetupUserManager(user);
+        manager.Setup(m => m.SupportsUserTwoFactor).Returns(userManagerSupportsTwoFactor).Verifiable();
+        if (userManagerSupportsTwoFactor)
+        {
+            manager.Setup(m => m.GetTwoFactorEnabledAsync(user)).ReturnsAsync(userTwoFactorEnabled).Verifiable();
+            if (userTwoFactorEnabled)
+            {
+                manager
+                    .Setup(m => m.GetValidTwoFactorProvidersAsync(user))
+                    .ReturnsAsync(hasValidProviders ? new string[1] { "Fake" } : Array.Empty<string>())
+                    .Verifiable();
+            }
+        }
+
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // Act
+        var result = await helper.IsTwoFactorEnabledAsync(user);
+
+        // Assert
+        var expected = userManagerSupportsTwoFactor && userTwoFactorEnabled && hasValidProviders;
+        Assert.Equal(expected, result);
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]

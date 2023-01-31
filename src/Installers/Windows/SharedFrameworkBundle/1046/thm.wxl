@@ -3,8 +3,6 @@
   <String Id="Caption">Instalação do [BundleNameFull]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Bem-vindo(a)</String>
-  <String Id="InstallMessage">O programa de instalação instalará o [WixBundleName] no seu computador. Clique em Instalar para continuar, Opções para definir o diretório de instalação ou Fechar para sair.</String>
   <String Id="InstallVersion">Versão [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Tem certeza de que deseja cancelar?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versão anterior</String>
@@ -18,16 +16,9 @@
 /norestart   - suprime qualquer tentativa de reiniciar. Por padrão, a interface do usuário perguntará antes de reiniciar.
 /log log.txt - registra em um arquivo específico. Por padrão, um arquivo de log é criado em %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Fechar</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;termos de licença&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">Eu &amp;concordo com os termos e condições da licença</String>
-  <String Id="InstallOptionsButton">&amp;Opções</String>
   <String Id="InstallInstallButton">&amp;Instalar</String>
   <String Id="InstallCloseButton">&amp;Fechar</String>
-  <String Id="OptionsHeader">Opções de Instalação</String>
-  <String Id="OptionsLocationLabel">Local de instalação:</String>
-  <String Id="OptionsBrowseButton">&amp;Procurar</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Cancelar</String>
   <String Id="ProgressHeader">Progresso da Instalação</String>
   <String Id="ProgressLabel">Processando:</String>
   <String Id="OverallProgressPackageText">Inicializando...</String>

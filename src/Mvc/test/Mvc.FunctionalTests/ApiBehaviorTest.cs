@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -143,6 +145,28 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
         Assert.Equal(input.ContactId, result.ContactId);
         Assert.Equal(input.Name, result.Name);
+    }
+
+    [Fact]
+    public async Task ActionsWithApiBehavior_DoesNotInferFromBodyForCompositeComplexTypesParameters()
+    {
+        // Arrange
+        var input = new Contact
+        {
+            ContactId = 13,
+            Name = "Test123",
+        };
+        var requestId = 1;
+
+        // Act
+        var response = await Client.PostAsJsonAsync($"/contact/ActionWithCompositeComplexTypeParameter/{requestId}", input);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var result = JsonConvert.DeserializeObject<ContactRequest>(await response.Content.ReadAsStringAsync());
+        Assert.Equal(input.ContactId, result.ContactInfo.ContactId);
+        Assert.Equal(input.Name, result.ContactInfo.Name);
+        Assert.Equal(requestId, result.Id);
     }
 
     [Fact]

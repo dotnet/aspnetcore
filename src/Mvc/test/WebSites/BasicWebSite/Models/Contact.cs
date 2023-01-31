@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Models;
 
@@ -28,4 +29,13 @@ public class Contact
     public string Twitter { get; set; }
 
     public string Self { get; set; }
+}
+
+public class ContactRequest
+{
+    [FromRoute]
+    public int Id { get; set; }
+
+    [FromBody]
+    public Contact ContactInfo { get; set; }
 }

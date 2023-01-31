@@ -1,6 +1,6 @@
 version: 2
 registries:
-  azure.com:
+  dev.azure.com:
     token: ${{secrets.DEPENDABOT_NPM_TOKEN}}
     type: npm-registry
     url: https://pkgs.dev.azure.com/
@@ -11,7 +11,7 @@ updates:
     # Perform only security updates of our npm dependencies.
     open-pull-requests-limit: 0
     registries:
-    - azure.com
+    - dev.azure.com
     # Schedule should be ignored for security updates.
     schedule:
       interval: monthly
@@ -19,7 +19,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      day: monday
+      day: friday
       interval: "weekly"
       time: 05:00
       timezone: "America/Los_Angeles"
@@ -33,7 +33,7 @@ updates:
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
-      day: monday
+      day: friday
       interval: "weekly"
       time: 05:00
       timezone: "America/Los_Angeles"

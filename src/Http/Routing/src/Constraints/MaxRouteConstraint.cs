@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to be an integer with a maximum value.
 /// </summary>
-public class MaxRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class MaxRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MaxRouteConstraint" /> class.

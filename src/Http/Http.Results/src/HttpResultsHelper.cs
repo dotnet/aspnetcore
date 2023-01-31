@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
@@ -15,6 +16,9 @@ internal static partial class HttpResultsHelper
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
+    // Remove once https://github.com/dotnet/aspnetcore/pull/46008 is done.
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public static Task WriteResultAsJsonAsync<T>(
         HttpContext httpContext,
         ILogger logger,
@@ -47,7 +51,7 @@ internal static partial class HttpResultsHelper
         // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
         return httpContext.Response.WriteAsJsonAsync(
             value,
             runtimeType,

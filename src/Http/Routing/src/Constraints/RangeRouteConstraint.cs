@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constraints a route parameter to be an integer within a given range of values.
 /// </summary>
-public class RangeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class RangeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="RangeRouteConstraint" /> class.

@@ -3,8 +3,6 @@
   <String Id="Caption">[WixBundleName] Kurulumu</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Hoş Geldiniz</String>
-  <String Id="InstallMessage">Kurulum, [WixBundleName] paketini bilgisayarınıza yükler. Devam etmek için Yükle'ye, yükleme dizinini ayarlamak için Seçenekler'e veya çıkmak için Kapat'a tıklayın.</String>
   <String Id="InstallVersion">[WixBundleVersion] Sürümü</String>
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
@@ -18,16 +16,9 @@
 /norestart   - yeniden başlama denemelerini engeller. Varsayılan olarak UI yeniden başlatılmadan önce sorar.
 /log log.txt - belirli bir günlük dosyası tutar. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur.</String>
   <String Id="HelpCloseButton">&amp;Kapat</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;lisans koşulları&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">Lisans hüküm ve koşullarını &amp;kabul ediyorum</String>
-  <String Id="InstallOptionsButton">&amp;Seçenekler</String>
   <String Id="InstallInstallButton">Yü&amp;kle</String>
   <String Id="InstallCloseButton">&amp;Kapat</String>
-  <String Id="OptionsHeader">Kurulum Seçenekleri</String>
-  <String Id="OptionsLocationLabel">Yükleme konumu:</String>
-  <String Id="OptionsBrowseButton">&amp;Gözat</String>
-  <String Id="OptionsOkButton">&amp;Tamam</String>
-  <String Id="OptionsCancelButton">İ&amp;ptal</String>
   <String Id="ProgressHeader">Kurulum İlerleme Durumu</String>
   <String Id="ProgressLabel">İşleniyor:</String>
   <String Id="OverallProgressPackageText">Başlatılıyor...</String>

@@ -116,7 +116,7 @@ public partial class HttpResultsHelperTests
 
         if (useJsonContext)
         {
-            services.ConfigureHttpJsonOptions(o => o.SerializerOptions.AddContext<TestJsonContext>());
+            services.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default);
         }
 
         return services.BuildServiceProvider();

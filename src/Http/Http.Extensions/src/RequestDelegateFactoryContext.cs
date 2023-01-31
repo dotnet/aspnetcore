@@ -14,7 +14,7 @@ internal sealed class RequestDelegateFactoryContext
     // Options
     public required IServiceProvider ServiceProvider { get; init; }
     public required IServiceProviderIsService? ServiceProviderIsService { get; init; }
-    public required List<string>? RouteParameters { get; init; }
+    public required IEnumerable<string>? RouteParameters { get; init; }
     public required bool ThrowOnBadRequest { get; init; }
     public required bool DisableInferredFromBody { get; init; }
     public required EndpointBuilder EndpointBuilder { get; init; }

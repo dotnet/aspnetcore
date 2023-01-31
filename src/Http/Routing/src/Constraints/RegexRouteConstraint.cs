@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
 {
     private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
+    private readonly string _regexPattern;
+    private Regex? _constraint;
 
     /// <summary>
     /// Constructor for a <see cref="RegexRouteConstraint"/> given a <paramref name="regex"/>.
@@ -24,7 +26,8 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     {
         ArgumentNullException.ThrowIfNull(regex);
 
-        Constraint = regex;
+        _constraint = regex;
+        _regexPattern = regex.ToString();
     }
 
     /// <summary>
@@ -37,16 +40,26 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     {
         ArgumentNullException.ThrowIfNull(regexPattern);
 
-        Constraint = new Regex(
-            regexPattern,
-            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
-            RegexMatchTimeout);
+        _regexPattern = regexPattern;
     }
 
     /// <summary>
     /// Gets the regular expression used in the route constraint.
     /// </summary>
-    public Regex Constraint { get; private set; }
+    public Regex Constraint
+    {
+        get
+        {
+            // Create regex instance lazily to avoid compiling regexes at app startup. Delay creation until constraint is first evaluated.
+            // This is not thread safe. No side effect but multiple instances of a regex instance could be created from a burst of requests.
+            _constraint ??= new Regex(
+                _regexPattern,
+                RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                RegexMatchTimeout);
+
+            return _constraint;
+        }
+    }
 
     /// <inheritdoc />
     public bool Match(
