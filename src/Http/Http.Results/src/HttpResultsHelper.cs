@@ -35,7 +35,7 @@ internal static partial class HttpResultsHelper
         var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
         Type? runtimeType;
-        if (jsonTypeInfo.IsPolymorphicSafe() || jsonTypeInfo.Type == (runtimeType = value.GetType()))
+        if (jsonTypeInfo.IsValid(runtimeType = value.GetType()))
         {
             Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
             return httpContext.Response.WriteAsJsonAsync(

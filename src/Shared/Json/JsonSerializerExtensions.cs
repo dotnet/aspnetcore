@@ -9,8 +9,11 @@ namespace Microsoft.AspNetCore.Http;
 
 internal static class JsonSerializerExtensions
 {
-    public static bool IsPolymorphicSafe(this JsonTypeInfo jsonTypeInfo)
+    public static bool HasKnownPolymorphism(this JsonTypeInfo jsonTypeInfo)
      => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
+
+    public static bool IsValid(this JsonTypeInfo jsonTypeInfo, Type? runtimeType)
+     => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
     public static JsonTypeInfo GetReadOnlyTypeInfo(this JsonSerializerOptions options, Type type)
     {
