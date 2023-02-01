@@ -24,6 +24,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
 public class WebHostTests : LoggedTest
 {
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Test expects error. Named pipes supports Windows.")]
+    public void ListenNamedPipeEndpoint_NonWindowsOperatingSystem_Error()
+    {
+        // Arrange
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(o =>
+                    {
+                        o.ListenNamedPipe("Pipename");
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("hello, world");
+                        });
+                    });
+            });
+
+        ExceptionAssert.Throws<PlatformNotSupportedException>(() => builder.Build());
+    }
+
     [Fact]
     public async Task ListenNamedPipeEndpoint_HelloWorld_ClientSuccess()
     {

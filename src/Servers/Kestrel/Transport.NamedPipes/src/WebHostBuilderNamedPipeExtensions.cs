@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
@@ -18,8 +19,14 @@ public static class WebHostBuilderNamedPipeExtensions
     /// </summary>
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    [SupportedOSPlatform("windows")]
     public static IWebHostBuilder UseNamedPipes(this IWebHostBuilder hostBuilder)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException("Named pipes transport requires a Windows operating system.");
+        }
+
         hostBuilder.ConfigureServices(services =>
         {
             services.AddSingleton<IConnectionListenerFactory, NamedPipeTransportFactory>();
@@ -33,6 +40,7 @@ public static class WebHostBuilderNamedPipeExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="configureOptions">A callback to configure transport options.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    [SupportedOSPlatform("windows")]
     public static IWebHostBuilder UseNamedPipes(this IWebHostBuilder hostBuilder, Action<NamedPipeTransportOptions> configureOptions)
     {
         return hostBuilder.UseNamedPipes().ConfigureServices(services =>
