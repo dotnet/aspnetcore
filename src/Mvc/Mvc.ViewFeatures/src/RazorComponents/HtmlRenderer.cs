@@ -132,7 +132,10 @@ internal sealed class HtmlRenderer : Renderer
         var result = context.HtmlContentBuilder;
         result.AppendHtml("<");
         result.AppendHtml(frame.ElementName);
-        var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, out var capturedValueAttribute);
+        int afterElement;
+        var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
+        // We don't want to include value attribute of textarea element.
+        var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
         // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
@@ -145,7 +148,7 @@ internal sealed class HtmlRenderer : Renderer
         }
 
         var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
-        if (remainingElements > 0)
+        if (remainingElements > 0 || isTextArea)
         {
             result.AppendHtml(">");
 
@@ -155,7 +158,17 @@ internal sealed class HtmlRenderer : Renderer
                 context.ClosestSelectValueAsString = capturedValueAttribute;
             }
 
-            var afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
+            if (isTextArea && !string.IsNullOrEmpty(capturedValueAttribute))
+            {
+                // Textarea is a special type of form field where the value is given as text content instead of a 'value' attribute
+                // So, if we captured a value attribute, use that instead of any child content
+                result.Append(capturedValueAttribute);
+                afterElement = position + frame.ElementSubtreeLength; // Skip descendants
+            }
+            else
+            {
+                afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
+            }
 
             if (isSelect)
             {
@@ -200,7 +213,7 @@ internal sealed class HtmlRenderer : Renderer
 
     private static int RenderAttributes(
         HtmlRenderingContext context,
-        ArrayRange<RenderTreeFrame> frames, int position, int maxElements, out string capturedValueAttribute)
+        ArrayRange<RenderTreeFrame> frames, int position, int maxElements, bool includeValueAttribute, out string capturedValueAttribute)
     {
         capturedValueAttribute = null;
 
@@ -215,14 +228,25 @@ internal sealed class HtmlRenderer : Renderer
         {
             var candidateIndex = position + i;
             ref var frame = ref frames.Array[candidateIndex];
+
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
+                if (frame.FrameType == RenderTreeFrameType.ElementReferenceCapture)
+                {
+                    continue;
+                }
+
                 return candidateIndex;
             }
 
             if (frame.AttributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 capturedValueAttribute = frame.AttributeValue as string;
+
+                if (!includeValueAttribute)
+                {
+                    continue;
+                }
             }
 
             switch (frame.AttributeValue)
@@ -293,4 +317,3 @@ internal sealed class HtmlRenderer : Renderer
         }
     }
 }
-

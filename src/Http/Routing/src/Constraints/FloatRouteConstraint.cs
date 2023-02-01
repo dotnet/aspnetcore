@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to represent only 32-bit floating-point values.
 /// </summary>
-public class FloatRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class FloatRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(

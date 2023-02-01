@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to be a string of a given length or within a given range of lengths.
 /// </summary>
-public class LengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class LengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LengthRouteConstraint" /> class that constrains

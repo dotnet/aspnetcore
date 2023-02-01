@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// </list>
 /// </para>
 /// </remarks>
-public class FileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class FileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(
