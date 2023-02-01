@@ -14,7 +14,7 @@ using WellKnownType = WellKnownTypeData.WellKnownType;
 
 public class EndpointResponse
 {
-    public ITypeSymbol ResponseType { get; set; }
+    public ITypeSymbol? ResponseType { get; set; }
     public string WrappedResponseType { get; set; }
     public string ContentType { get; set; }
     public bool IsAwaitable { get; set; }
@@ -23,16 +23,8 @@ public class EndpointResponse
 
     private WellKnownTypes WellKnownTypes { get; init; }
 
-    public List<DiagnosticDescriptor> Diagnostics { get; init; } = new List<DiagnosticDescriptor>();
-
-    internal EndpointResponse(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
+    internal EndpointResponse(IMethodSymbol method, WellKnownTypes wellKnownTypes)
     {
-        if (!operation.TryGetRouteHandlerMethod(out var method))
-        {
-            Diagnostics.Add(DiagnosticDescriptors.UnableToResolveMethod);
-            return;
-        }
-
         WellKnownTypes = wellKnownTypes;
         ResponseType = UnwrapResponseType(method);
         WrappedResponseType = method.ReturnType.ToString();
