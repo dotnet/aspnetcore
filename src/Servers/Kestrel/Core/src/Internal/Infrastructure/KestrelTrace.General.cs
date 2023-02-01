@@ -64,6 +64,11 @@ internal sealed partial class KestrelTrace : ILogger
         GeneralLog.Http3DisabledWithHttp1AndNoTls(_generalLogger, endPoint);
     }
 
+    public void RequestAborted()
+    {
+        GeneralLog.RequestAbortedException(_generalLogger);
+    }
+
     private static partial class GeneralLog
     {
         [LoggerMessage(13, LogLevel.Error, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.", EventName = "ApplicationError")]
@@ -98,6 +103,9 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(65, LogLevel.Warning, "HTTP/3 is not enabled for {Endpoint}. HTTP/3 requires TLS. Connections to this endpoint will use HTTP/1.1.", EventName = "Http3DisabledWithHttp1AndNoTls")]
         public static partial void Http3DisabledWithHttp1AndNoTls(ILogger logger, EndPoint endPoint);
+
+        [LoggerMessage(66, LogLevel.Debug, "The request has aborted.", EventName = "RequestAborted")]
+        public static partial void RequestAbortedException(ILogger logger);
 
         // Highest shared ID is 65. New consecutive IDs start at 66
     }
