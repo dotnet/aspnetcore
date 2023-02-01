@@ -570,6 +570,44 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         await AssertConnectionResult(stream, true);
     }
 
+    [ConditionalFact]
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.Linux, SkipReason = "MacOS only test.")]
+    public async Task CanRenegotiateForClientCertificate_MacOS_PlatformNotSupportedException()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.Protocols = HttpProtocols.Http1;
+            listenOptions.UseHttps(options =>
+            {
+                options.ServerCertificate = _x509Certificate2;
+                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                options.AllowAnyClientCertificate();
+            });
+        }
+
+        await using var server = new TestServer(async context =>
+        {
+            var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(tlsFeature);
+            Assert.Null(tlsFeature.ClientCertificate);
+            Assert.Null(context.Connection.ClientCertificate);
+
+            await Assert.ThrowsAsync<PlatformNotSupportedException>(() => context.Connection.GetClientCertificateAsync());
+
+            await context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+        using var connection = server.CreateConnection();
+        // SslStream is used to ensure the certificate is actually passed to the server
+        // HttpClient might not send the certificate because it is invalid or it doesn't match any
+        // of the certificate authorities sent by the server in the SSL handshake.
+        // Use a random host name to avoid the TLS session resumption cache.
+        var stream = OpenSslStreamWithCert(connection.Stream);
+        await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
+        await AssertConnectionResult(stream, true);
+    }
+
     [Fact]
     public async Task Renegotiate_ServerOptionsSelectionCallback_NotSupported()
     {
