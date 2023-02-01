@@ -63,7 +63,7 @@ public class HttpsTests : LoggedTest
                 ranUseHttpsAction = true;
             });
         });
-        _ = serverOptions.CodeBackedListenOptions.Single().HttpsOptions.Value; // Force evaluation
+        _ = serverOptions.CodeBackedListenOptions[1].HttpsOptions.Value; // Force evaluation
         Assert.True(ranUseHttpsAction);
         Assert.False(serverOptions.IsDevCertLoaded);
     }
