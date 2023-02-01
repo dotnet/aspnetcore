@@ -29,15 +29,14 @@ public static class RoutingServiceCollectionExtensions
     {
         return services.AddRoutingCore(routeOptions =>
         {
-            routeOptions.AddRegexConstraints();
+            routeOptions.AddRegexConstraint();
         });
     }
 
     /// <summary>
     /// Adds services required for routing requests. This is similar to
-    /// <see cref="AddRouting(IServiceCollection))" /> except that it
-    /// excludes certain options that are not included by default for
-    /// native AOT scenarios.
+    /// <see cref="AddRouting(IServiceCollection)" /> except that it
+    /// excludes certain options that can be opted in separately, if needed.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
@@ -129,7 +128,7 @@ public static class RoutingServiceCollectionExtensions
     {
         return services.AddRoutingCore(routeOptions =>
         {
-            routeOptions.AddRegexConstraints();
+            routeOptions.AddRegexConstraint();
             configureOptions(routeOptions);
         });
     }
@@ -137,8 +136,7 @@ public static class RoutingServiceCollectionExtensions
     /// <summary>
     /// Adds services required for routing requests. This is similar to
     /// <see cref="AddRouting(IServiceCollection, Action{RouteOptions})" />
-    /// except that it excludes certain options that are not included by default for native AOT
-    /// scenarios.
+    /// except that it excludes certain options that can be opted in separately, if needed.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The routing options to configure the middleware with.</param>
