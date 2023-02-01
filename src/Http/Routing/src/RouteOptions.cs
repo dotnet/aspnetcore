@@ -93,10 +93,9 @@ public class RouteOptions
     /// <summary>
     /// Add Regex-based constraints to the constraint map (e.g. alpha and regex constraint types). This is called automatically by <see cref="RoutingServiceCollectionExtensions.AddRouting(IServiceCollection)"/>.
     /// </summary>
-    public void AddRegexConstraints()
+    public void AddRegexConstraint()
     {
         // Regex-based constraints
-        AddConstraint<AlphaRouteConstraint>(_constraintTypeMap, "alpha");
         AddConstraint<RegexInlineRouteConstraint>(_constraintTypeMap, "regex");
     }
 
@@ -123,6 +122,8 @@ public class RouteOptions
         AddConstraint<MinRouteConstraint>(defaults, "min");
         AddConstraint<MaxRouteConstraint>(defaults, "max");
         AddConstraint<RangeRouteConstraint>(defaults, "range");
+
+        AddConstraint<AlphaRouteConstraint>(defaults, "alpha");
 
         AddConstraint<RequiredRouteConstraint>(defaults, "required");
 
