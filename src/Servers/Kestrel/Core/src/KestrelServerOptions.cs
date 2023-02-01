@@ -532,6 +532,11 @@ public class KestrelServerOptions
         ArgumentNullException.ThrowIfNull(pipeName);
         ArgumentNullException.ThrowIfNull(configure);
 
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException("Named pipes transport requires a Windows operating system.");
+        }
+
         var listenOptions = new ListenOptions(new NamedPipeEndPoint(pipeName));
         ApplyEndpointDefaults(listenOptions);
         configure(listenOptions);
