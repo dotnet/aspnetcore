@@ -123,6 +123,7 @@ public class RouteOptions
         AddConstraint<MaxRouteConstraint>(defaults, "max");
         AddConstraint<RangeRouteConstraint>(defaults, "range");
 
+        // The alpha constraint uses a compiled regex which has a minimal size cost.
         AddConstraint<AlphaRouteConstraint>(defaults, "alpha");
 
         AddConstraint<RequiredRouteConstraint>(defaults, "required");
