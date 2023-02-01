@@ -6882,7 +6882,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -6904,7 +6903,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -6926,7 +6924,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
@@ -6950,7 +6947,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }),
-            ServiceProvider = new ServiceCollection().BuildServiceProvider(),
         };
 
         // Act
