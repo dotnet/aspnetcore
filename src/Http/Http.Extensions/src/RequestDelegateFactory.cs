@@ -1055,7 +1055,7 @@ public static partial class RequestDelegateFactory
                 {
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
 
-                    if (jsonTypeInfo.IsPolymorphicSafe() == true)
+                    if (jsonTypeInfo.HasKnownPolymorphism())
                     {
                         return Expression.Call(
                             ExecuteTaskOfTFastMethod.MakeGenericMethod(typeArg),
@@ -1096,7 +1096,7 @@ public static partial class RequestDelegateFactory
                 {
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
 
-                    if (jsonTypeInfo.IsPolymorphicSafe() == true)
+                    if (jsonTypeInfo.HasKnownPolymorphism())
                     {
                         return Expression.Call(
                             ExecuteValueTaskOfTFastMethod.MakeGenericMethod(typeArg),
@@ -1140,7 +1140,7 @@ public static partial class RequestDelegateFactory
         {
             var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(returnType);
 
-            if (jsonTypeInfo.IsPolymorphicSafe() == true)
+            if (jsonTypeInfo.HasKnownPolymorphism())
             {
                 return Expression.Call(
                     JsonResultWriteResponseOfTFastAsyncMethod.MakeGenericMethod(returnType),
