@@ -77,7 +77,7 @@ public class JsonResultTests
         var jsonOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
         };
         var value = new Todo(10, "MyName") { Description = null };
         var result = new JsonHttpResult<object>(value, jsonSerializerOptions: jsonOptions);
@@ -203,7 +203,7 @@ public class JsonResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new JsonHttpResult<HttpValidationProblemDetails>(details, StatusCodes.Status422UnprocessableEntity, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<HttpValidationProblemDetails>(details, jsonSerializerOptions: null, StatusCodes.Status422UnprocessableEntity);
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -242,7 +242,7 @@ public class JsonResultTests
     public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        var result = new JsonHttpResult<object>(null, null);
+        var result = new JsonHttpResult<object>(null, jsonSerializerOptions: null, null, null);
         HttpContext httpContext = null;
 
         // Act & Assert
@@ -256,7 +256,7 @@ public class JsonResultTests
         var contentType = "application/json+custom";
 
         // Act & Assert
-        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new JsonHttpResult<string>(null, StatusCodes.Status200OK, contentType, null));
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new JsonHttpResult<string>(null, jsonSerializerOptions: null, StatusCodes.Status200OK, contentType));
         Assert.Equal(contentType, result.ContentType);
     }
 
@@ -267,7 +267,7 @@ public class JsonResultTests
         var contentType = "application/json+custom";
 
         // Act & Assert
-        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, StatusCodes.Status202Accepted, contentType, null));
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, jsonSerializerOptions: null, StatusCodes.Status202Accepted, contentType));
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
@@ -278,7 +278,7 @@ public class JsonResultTests
         var contentType = "application/json+custom";
 
         // Act & Assert
-        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, statusCode: null, contentType, null));
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, jsonSerializerOptions: null, statusCode: null, contentType));
         Assert.Null(result.StatusCode);
     }
 
@@ -290,7 +290,7 @@ public class JsonResultTests
         var contentType = "application/json+custom";
 
         // Act & Assert
-        var result = Assert.IsAssignableFrom<IValueHttpResult>(new JsonHttpResult<string>(value, statusCode: null, contentType, null));
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new JsonHttpResult<string>(value, jsonSerializerOptions: null, statusCode: null, contentType));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -303,7 +303,7 @@ public class JsonResultTests
         var contentType = "application/json+custom";
 
         // Act & Assert
-        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new JsonHttpResult<string>(value, statusCode: null, contentType, null));
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new JsonHttpResult<string>(value, jsonSerializerOptions: null, statusCode: null, contentType));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
