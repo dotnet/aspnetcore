@@ -116,8 +116,8 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
                     Value,
                     typedJsonTypeInfo,
                     contentType: ContentType);
-
             }
+            
             return httpContext.Response.WriteAsJsonAsync(
                 Value,
                 JsonTypeInfo,
