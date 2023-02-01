@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
+[NamedPipesSupported]
 public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 {
-    [Fact]
+    [ConditionalFact]
     public async Task AcceptAsync_AfterUnbind_ReturnNull()
     {
         // Arrange
@@ -23,7 +24,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.Null(await connectionListener.AcceptAsync().DefaultTimeout());
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AcceptAsync_ClientCreatesConnection_ServerAccepts()
     {
         // Arrange
@@ -50,7 +51,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.True(serverConnection2.ConnectionClosed.IsCancellationRequested, "Connection 2 should be closed");
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AcceptAsync_UnbindAfterCall_CleanExitAndLog()
     {
         // Arrange
@@ -123,7 +124,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         public ConnectionContext ServerConnection { get; set; }
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AcceptAsync_DisposeAfterCall_CleanExitAndLog()
     {
         // Arrange
@@ -140,7 +141,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task BindAsync_ListenersSharePort_ThrowAddressInUse()
     {
         // Arrange
@@ -151,7 +152,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         await Assert.ThrowsAsync<AddressInUseException>(() => NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, pipeName: pipeName));
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task BindAsync_ListenersSharePort_DisposeFirstListener_Success()
     {
         // Arrange

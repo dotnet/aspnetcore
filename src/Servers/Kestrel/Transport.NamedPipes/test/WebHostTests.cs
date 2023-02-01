@@ -49,7 +49,8 @@ public class WebHostTests : LoggedTest
         ExceptionAssert.Throws<PlatformNotSupportedException>(() => builder.Build());
     }
 
-    [Fact]
+    [ConditionalFact]
+    [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_HelloWorld_ClientSuccess()
     {
         // Arrange
@@ -99,7 +100,7 @@ public class WebHostTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Impersonation is only supported on Windows.")]
+    [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_Impersonation_ClientSuccess()
     {
         AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
@@ -184,7 +185,8 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [Theory]
+    [ConditionalTheory]
+    [NamedPipesSupported]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ListenNamedPipeEndpoint_ProtocolVersion_ClientSuccess(HttpProtocols protocols)
@@ -251,6 +253,7 @@ public class WebHostTests : LoggedTest
 
     [ConditionalTheory]
     [TlsAlpnSupported]
+    [NamedPipesSupported]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ListenNamedPipeEndpoint_Tls_ClientSuccess(HttpProtocols protocols)
@@ -306,7 +309,8 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [Fact]
+    [ConditionalFact]
+    [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_FromUrl_HelloWorld_ClientSuccess()
     {
         // Arrange

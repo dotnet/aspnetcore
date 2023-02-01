@@ -14,7 +14,7 @@ public class SuccessfulTests
     /// <summary>
     /// Test that executes in quarantined runs and always succeeds.
     /// </summary>
-    [Fact]
+    [ConditionalFact]
     [QuarantinedTest("No issue")]
     public void GuaranteedQuarantinedTest()
     {
@@ -30,7 +30,7 @@ public class SuccessfulTests
     /// e.g. <c>"Quarantined!=true|Quarantined=false</c>. But, <c>xunit.console.exe</c> doesn't have a syntax to
     /// make it work (yet?).
     /// </remarks>
-    [Fact]
+    [ConditionalFact]
     [Trait("Quarantined", "false")]
     public void GuaranteedUnquarantinedTest()
     {
