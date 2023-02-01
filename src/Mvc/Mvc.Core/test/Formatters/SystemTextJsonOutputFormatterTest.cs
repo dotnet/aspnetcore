@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -199,13 +200,30 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
     }
 
     [Fact]
-    public void WriteResponseBodyAsync_Throws_WhenTypeResolverIsNull()
+    public void CreateFormatter_DoesNotThrow_WhenTypeResolverIsNull()
     {
         // Arrange
         var jsonOptions = new JsonOptions();
         jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
 
-        Assert.Throws<InvalidOperationException>(() => SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
+        Assert.IsType< SystemTextJsonOutputFormatter>(SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
+    }
+
+    [Fact]
+    public void CreateFormatter_Throws_WhenTypeResolverIsNull_AndEnsureJsonTrimmabilityTrue()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var jsonOptions = new JsonOptions();
+            jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
+
+            Assert.Throws<InvalidOperationException>(() => SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
+
+        }, options);
     }
 
     private class Person

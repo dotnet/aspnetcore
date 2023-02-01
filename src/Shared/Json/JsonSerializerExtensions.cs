@@ -41,6 +41,11 @@ internal static class JsonSerializerExtensions
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
     private static void InitializeForReflection(JsonSerializerOptions options)
     {
-        options.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.TypeInfoResolver, new DefaultJsonTypeInfoResolver());
+        var combinedResolver = JsonTypeInfoResolver.Combine(options.TypeInfoResolver, new DefaultJsonTypeInfoResolver());
+
+        if (!options.IsReadOnly)
+        {
+            options.TypeInfoResolver = combinedResolver;
+        }
     }
 }

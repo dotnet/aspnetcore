@@ -20,6 +20,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -28,13 +29,14 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Routing.Internal;
 
@@ -3131,6 +3133,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
@@ -3157,6 +3160,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
@@ -3183,6 +3187,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
+            .AddSingleton(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();
@@ -3240,20 +3245,27 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
-    [Fact]
-    public void CreateDelegateThrows_WhenGetJsonTypeInfoFail()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void CreateDelegateThrows_WhenGetJsonTypeInfoFail_AndEnsureJsonTrimmabilityTrue()
     {
-        var httpContext = CreateHttpContext();
-        httpContext.RequestServices = new ServiceCollection()
-            .AddSingleton(LoggerFactory)
-            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
-            .BuildServiceProvider();
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
 
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var httpContext = CreateDefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection()
+                .AddSingleton(NullLoggerFactory.Instance)
+                .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
+                .BuildServiceProvider();
 
-        TodoStruct TestAction() => new TodoStruct(42, "Bob", true);
-        Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = httpContext.RequestServices }));
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            TodoStruct TestAction() => new TodoStruct(42, "Bob", true);
+            Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction, new() { ServiceProvider = httpContext.RequestServices }));
+        }, options);
     }
 
     public static IEnumerable<object[]> CustomResults
@@ -7420,11 +7432,17 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private DefaultHttpContext CreateHttpContext()
     {
+        var context = CreateDefaultHttpContext();
+        context.RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider();
+        return context;
+    }
+
+    private static DefaultHttpContext CreateDefaultHttpContext()
+    {
         var responseFeature = new TestHttpResponseFeature();
 
         return new()
         {
-            RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
             Features =
                 {
                     [typeof(IHttpResponseFeature)] = responseFeature,

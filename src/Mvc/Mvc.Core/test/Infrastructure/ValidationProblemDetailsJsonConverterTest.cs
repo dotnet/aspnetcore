@@ -3,12 +3,16 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 public class ValidationProblemDetailsJsonConverterTest
 {
-    private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().JsonSerializerOptions;
+    private static JsonSerializerOptions JsonSerializerOptions => new JsonSerializerOptions(new JsonOptions().JsonSerializerOptions)
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+    };
 
     [Fact]
     public void Read_Works()
