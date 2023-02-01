@@ -516,7 +516,6 @@ public class KestrelServerOptions
     /// <summary>
     /// Bind to the given named pipe.
     /// </summary>
-    [SupportedOSPlatform("windows")]
     public void ListenNamedPipe(string pipeName)
     {
         ListenNamedPipe(pipeName, _ => { });
@@ -526,16 +525,10 @@ public class KestrelServerOptions
     /// Bind to the given named pipe.
     /// Specify callback to configure endpoint-specific settings.
     /// </summary>
-    [SupportedOSPlatform("windows")]
     public void ListenNamedPipe(string pipeName, Action<ListenOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(pipeName);
         ArgumentNullException.ThrowIfNull(configure);
-
-        if (!OperatingSystem.IsWindows())
-        {
-            throw new PlatformNotSupportedException("Named pipes transport requires a Windows operating system.");
-        }
 
         var listenOptions = new ListenOptions(new NamedPipeEndPoint(pipeName));
         ApplyEndpointDefaults(listenOptions);
