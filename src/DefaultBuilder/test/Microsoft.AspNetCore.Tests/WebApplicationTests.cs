@@ -2327,24 +2327,21 @@ public class WebApplicationTests
 
         var app = builder.Build();
 
-        var chosenRoute = string.Empty;
-
-        app.Use((context, next) =>
-        {
-            chosenRoute = context.GetEndpoint()?.DisplayName;
-            return next(context);
-        });
-
         app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("AlphaRoute");
 
         await app.StartAsync();
 
         var client = app.GetTestClient();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        var ex = await Record.ExceptionAsync(async () =>
         {
             _ = await client.GetAsync("https://localhost/products/abcd1234");
         });
+
+        Assert.IsType<InvalidOperationException>(ex);
+        Assert.Equal(
+            "The constraint reference 'regex' could not be resolved to a type. Register the constraint type with 'Microsoft.AspNetCore.Routing.RouteOptions.ConstraintMap'.",
+            ex.Message);
     }
 
     [Fact]
