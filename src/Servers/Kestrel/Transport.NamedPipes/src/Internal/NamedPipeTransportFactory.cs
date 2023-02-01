@@ -22,7 +22,7 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        Debug.Assert(!OperatingSystem.IsWindows(), "Named pipes transport requires a Windows operating system.");
+        Debug.Assert(OperatingSystem.IsWindows(), "Named pipes transport requires a Windows operating system.");
 
         _loggerFactory = loggerFactory;
         _options = options.Value;
