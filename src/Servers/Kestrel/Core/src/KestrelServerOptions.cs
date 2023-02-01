@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
@@ -515,6 +516,7 @@ public class KestrelServerOptions
     /// <summary>
     /// Bind to the given named pipe.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public void ListenNamedPipe(string pipeName)
     {
         ListenNamedPipe(pipeName, _ => { });
@@ -524,6 +526,7 @@ public class KestrelServerOptions
     /// Bind to the given named pipe.
     /// Specify callback to configure endpoint-specific settings.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public void ListenNamedPipe(string pipeName, Action<ListenOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(pipeName);
