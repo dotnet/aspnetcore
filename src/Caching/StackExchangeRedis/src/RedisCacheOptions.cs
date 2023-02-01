@@ -45,4 +45,16 @@ public class RedisCacheOptions : IOptions<RedisCacheOptions>
     {
         get { return this; }
     }
+
+    private bool? _useForceReconnect;
+    internal bool UseForceReconnect
+    {
+        get
+        {
+            return _useForceReconnect ??= GetDefaultValue();
+            static bool GetDefaultValue() =>
+                AppContext.TryGetSwitch("Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect", out var value) && value;
+        }
+        set => _useForceReconnect = value;
+    }
 }

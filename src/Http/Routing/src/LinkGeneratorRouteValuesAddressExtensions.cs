@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Routing;
 

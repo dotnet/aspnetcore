@@ -22,43 +22,38 @@ static class TodoGenerator
 
     internal static IEnumerable<Todo> GenerateTodos(int count = 5)
     {
-        var titleMap = new List<(int Row, int Prefix, int Suffix)>();
+        var titleCount = _parts.Sum(row => row.Prefixes.Length * row.Suffixes.Length);
+        var titleMap = new (int Row, int Prefix, int Suffix)[titleCount];
+        var mapCount = 0;
         for (var i = 0; i < _parts.Length; i++)
         {
             var prefixes = _parts[i].Prefixes;
             var suffixes = _parts[i].Suffixes;
-            for (int j = 0; j < prefixes.Length; j++)
+            for (var j = 0; j < prefixes.Length; j++)
             {
-                for (int k = 0; k < suffixes.Length; k++)
+                for (var k = 0; k < suffixes.Length; k++)
                 {
-                    titleMap.Add((i, j, k));
+                    titleMap[mapCount++] = (i, j, k);
                 }
             }
         }
 
-        var random = new Random();
+        Random.Shared.Shuffle(titleMap);
 
         for (var id = 1; id <= count; id++)
         {
+            var (rowIndex, prefixIndex, suffixIndex) = titleMap[id];
+            var (prefixes, suffixes) = _parts[rowIndex];
             yield return new Todo
             {
                 Id = id,
-                Title = GetNextTitle(),
-                DueBy = random.Next(-200, 365) switch
+                Title = string.Join(' ', prefixes[prefixIndex], suffixes[suffixIndex]),
+                DueBy = Random.Shared.Next(-200, 365) switch
                 {
                     < 0 => null,
                     var days => DateOnly.FromDateTime(DateTime.Now.AddDays(days))
                 }
             };
-
-            string GetNextTitle()
-            {
-                var index = random.Next(0, titleMap.Count - 1);
-                var map = titleMap[index];
-                var row = _parts[map.Row];
-                titleMap.RemoveAt(index);
-                return string.Join(' ', row.Prefixes[map.Prefix], row.Suffixes[map.Suffix]);
-            }
         }
     }
 }

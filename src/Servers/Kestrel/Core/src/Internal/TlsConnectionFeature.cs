@@ -125,7 +125,9 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     {
         try
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
         catch
         {

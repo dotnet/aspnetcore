@@ -6,9 +6,9 @@
 .PARAMETER Edition
     Selects which 'offering' of Visual Studio to install. Must be one of these values:
         BuildTools
-        Community
+        Community (the default)
         Professional
-        Enterprise (the default)
+        Enterprise
 .PARAMETER Channel
     Selects which channel of Visual Studio to install. Must be one of these values:
         Release (the default)
@@ -28,13 +28,13 @@
     https://visualstudio.com
     https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 .EXAMPLE
-    To install VS 2022 Enterprise, run this command in PowerShell:
+    To install VS 2022 Community, run this command in PowerShell:
 
         .\InstallVisualStudio.ps1
 #>
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
-    [string]$Edition = 'Enterprise',
+    [string]$Edition = 'Community',
     [ValidateSet('Release', 'Preview', 'IntPreview', 'Dogfood')]
     [string]$Channel = 'Release',
     [ValidateSet('2022')]

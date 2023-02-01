@@ -3,8 +3,6 @@
   <String Id="Caption">Программа установки [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Добро пожаловать</String>
-  <String Id="InstallMessage">Программа установки установит [WixBundleName] на ваш компьютер. Щелкните элемент "Установить", чтобы продолжить, "Параметры", чтобы указать каталог установки, или "Закрыть", чтобы выйти.</String>
   <String Id="InstallVersion">Версия [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Отменить?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
@@ -18,16 +16,9 @@
 /norestart — отключение всех попыток перезагрузки. По умолчанию в пользовательском интерфейсе перед перезагрузкой отображается запрос.
 /log log.txt — запись журнала в указанный файл. По умолчанию файл журнала создается в папке %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Закрыть</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;условия лицензии&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">Я &amp;принимаю условия лицензии</String>
-  <String Id="InstallOptionsButton">&amp;Параметры</String>
   <String Id="InstallInstallButton">&amp;Установить</String>
   <String Id="InstallCloseButton">&amp;Закрыть</String>
-  <String Id="OptionsHeader">Параметры установки</String>
-  <String Id="OptionsLocationLabel">Расположение установки:</String>
-  <String Id="OptionsBrowseButton">&amp;Обзор</String>
-  <String Id="OptionsOkButton">&amp;ОК</String>
-  <String Id="OptionsCancelButton">Отм&amp;ена</String>
   <String Id="ProgressHeader">Ход установки</String>
   <String Id="ProgressLabel">Обработка:</String>
   <String Id="OverallProgressPackageText">Инициализация...</String>

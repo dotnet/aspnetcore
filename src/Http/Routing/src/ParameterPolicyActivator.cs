@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -13,35 +11,22 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal static class ParameterPolicyActivator
 {
-    public static T ResolveParameterPolicy<T>(
+    public static T? ResolveParameterPolicy<T>(
         IDictionary<string, Type> inlineParameterPolicyMap,
-        IServiceProvider serviceProvider,
+        IServiceProvider? serviceProvider,
         string inlineParameterPolicy,
-        out string parameterPolicyKey)
+        out string? parameterPolicyKey)
         where T : IParameterPolicy
     {
         // IServiceProvider could be null
         // DefaultInlineConstraintResolver can be created without an IServiceProvider and then call this method
 
-        ArgumentNullException.ThrowIfNull(inlineParameterPolicyMap);
-        ArgumentNullException.ThrowIfNull(inlineParameterPolicy);
-
-        string argumentString;
-        var indexOfFirstOpenParens = inlineParameterPolicy.IndexOf('(');
-        if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(')'))
-        {
-            parameterPolicyKey = inlineParameterPolicy.Substring(0, indexOfFirstOpenParens);
-            argumentString = inlineParameterPolicy.Substring(
-                indexOfFirstOpenParens + 1,
-                inlineParameterPolicy.Length - indexOfFirstOpenParens - 2);
-        }
-        else
-        {
-            parameterPolicyKey = inlineParameterPolicy;
-            argumentString = null;
-        }
-
-        if (!inlineParameterPolicyMap.TryGetValue(parameterPolicyKey, out var parameterPolicyType))
+        if (!ResolveParameterPolicyTypeAndArgument(
+            inlineParameterPolicyMap,
+            inlineParameterPolicy,
+            out parameterPolicyKey,
+            out var argumentString,
+            out var parameterPolicyType))
         {
             return default;
         }
@@ -78,12 +63,38 @@ internal static class ParameterPolicyActivator
         }
     }
 
+    private static bool ResolveParameterPolicyTypeAndArgument(
+        IDictionary<string, Type> inlineParameterPolicyMap,
+        string inlineParameterPolicy,
+        out string? policyKey,
+        out string? argumentString,
+        [NotNullWhen(true)] out Type? policyType)
+    {
+        ArgumentNullException.ThrowIfNull(inlineParameterPolicy);
+
+        var indexOfFirstOpenParens = inlineParameterPolicy.IndexOf('(');
+        if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(')'))
+        {
+            policyKey = inlineParameterPolicy.Substring(0, indexOfFirstOpenParens);
+            argumentString = inlineParameterPolicy.Substring(
+                indexOfFirstOpenParens + 1,
+                inlineParameterPolicy.Length - indexOfFirstOpenParens - 2);
+        }
+        else
+        {
+            policyKey = inlineParameterPolicy;
+            argumentString = null;
+        }
+
+        return inlineParameterPolicyMap.TryGetValue(policyKey, out policyType);
+    }
+
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "This type comes from the ConstraintMap.")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070", Justification = "We ensure the constructor is preserved when the constraint map is added.")]
-    private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type parameterPolicyType, string argumentString)
+    private static IParameterPolicy CreateParameterPolicy(IServiceProvider? serviceProvider, Type parameterPolicyType, string? argumentString)
     {
-        ConstructorInfo activationConstructor = null;
-        object[] parameters = null;
+        ConstructorInfo? activationConstructor = null;
+        object?[]? parameters = null;
         var constructors = parameterPolicyType.GetConstructors();
 
         // If there is only one constructor and it has a single parameter, pass the argument string directly
@@ -91,7 +102,7 @@ internal static class ParameterPolicyActivator
         if (constructors.Length == 1 && GetNonConvertableParameterTypeCount(serviceProvider, constructors[0].GetParameters()) == 1)
         {
             activationConstructor = constructors[0];
-            parameters = ConvertArguments(serviceProvider, activationConstructor.GetParameters(), new string[] { argumentString });
+            parameters = ConvertArguments(serviceProvider, activationConstructor.GetParameters(), new string?[] { argumentString });
         }
         else
         {
@@ -135,7 +146,7 @@ internal static class ParameterPolicyActivator
         return (IParameterPolicy)activationConstructor.Invoke(parameters);
     }
 
-    private static int GetNonConvertableParameterTypeCount(IServiceProvider serviceProvider, ParameterInfo[] parameters)
+    private static int GetNonConvertableParameterTypeCount(IServiceProvider? serviceProvider, ParameterInfo[] parameters)
     {
         if (serviceProvider == null)
         {
@@ -154,9 +165,9 @@ internal static class ParameterPolicyActivator
         return count;
     }
 
-    private static object[] ConvertArguments(IServiceProvider serviceProvider, ParameterInfo[] parameterInfos, string[] arguments)
+    private static object?[] ConvertArguments(IServiceProvider? serviceProvider, ParameterInfo[] parameterInfos, string?[] arguments)
     {
-        var parameters = new object[parameterInfos.Length];
+        var parameters = new object?[parameterInfos.Length];
         var argumentPosition = 0;
         for (var i = 0; i < parameterInfos.Length; i++)
         {

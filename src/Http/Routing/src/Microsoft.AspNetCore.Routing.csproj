@@ -34,6 +34,7 @@
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)TrimmingAppContextSwitches.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

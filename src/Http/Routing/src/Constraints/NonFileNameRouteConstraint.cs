@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// </list>
 /// </para>
 /// </remarks>
-public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(

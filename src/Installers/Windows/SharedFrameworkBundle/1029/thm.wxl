@@ -3,8 +3,6 @@
   <String Id="Caption">Instalační program pro [BundleNameFull]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Vítejte</String>
-  <String Id="InstallMessage">Instalační program nainstaluje [WixBundleName] do počítače. Pokud chcete pokračovat, klikněte na Nainstalovat. Pokud chcete nastavit instalační adresář, klikněte na Možnosti. Pokud chcete program ukončit, klikněte na Zavřít.</String>
   <String Id="InstallVersion">Verze [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
@@ -18,16 +16,9 @@
 /norestart   – potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní před restartováním zobrazí výzvu.
 /log log.txt – Uloží protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zavřít</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Licenční podmínky&lt;/a&gt; pro [WixBundleName]</String>
   <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami</String>
-  <String Id="InstallOptionsButton">M&amp;ožnosti</String>
   <String Id="InstallInstallButton">&amp;Instalovat</String>
   <String Id="InstallCloseButton">&amp;Zavřít</String>
-  <String Id="OptionsHeader">Možnosti instalace</String>
-  <String Id="OptionsLocationLabel">Umístění instalace:</String>
-  <String Id="OptionsBrowseButton">&amp;Procházet</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Storno</String>
   <String Id="ProgressHeader">Průběh instalace</String>
   <String Id="ProgressLabel">Probíhá zpracování:</String>
   <String Id="OverallProgressPackageText">Inicializace...</String>
