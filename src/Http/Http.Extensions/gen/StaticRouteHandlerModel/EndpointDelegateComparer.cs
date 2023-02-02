@@ -5,9 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
-internal sealed class EndpointShapeComparer : IEqualityComparer<Endpoint>, IComparer<Endpoint>
+internal sealed class EndpointDelegateComparer : IEqualityComparer<Endpoint>, IComparer<Endpoint>
 {
-    public static readonly EndpointShapeComparer Instance = new EndpointShapeComparer();
+    public static readonly EndpointDelegateComparer Instance = new EndpointDelegateComparer();
 
     public bool Equals(Endpoint a, Endpoint b) => Compare(a, b) == 0;
 

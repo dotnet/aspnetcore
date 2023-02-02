@@ -33,7 +33,6 @@
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RoslynUtils\LambdaComparer.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

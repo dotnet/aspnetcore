@@ -87,10 +87,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 15)] = (
                (methodInfo, options) =>
                 {
-                    if (options == null || options.EndpointBuilder == null)
-                    {
-                        return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
-                    }
+                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 15));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },

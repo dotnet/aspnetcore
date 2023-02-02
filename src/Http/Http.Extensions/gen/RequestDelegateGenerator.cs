@@ -73,10 +73,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             [{{endpoint.EmitSourceKey()}}] = (
                (methodInfo, options) =>
                 {
-                    if (options == null || options.EndpointBuilder == null)
-                    {
-                        return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
-                    }
+                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey{{endpoint.EmitSourceKey()}});
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
@@ -112,7 +109,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) =>
             {
-                var dedupedByDelegate = endpoints.Distinct(EndpointShapeComparer.Instance);
+                var dedupedByDelegate = endpoints.Distinct(EndpointDelegateComparer.Instance);
                 var code = new StringBuilder();
                 foreach (var endpoint in dedupedByDelegate)
                 {
