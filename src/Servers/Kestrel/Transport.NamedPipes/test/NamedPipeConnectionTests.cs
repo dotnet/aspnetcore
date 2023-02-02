@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
+[NamedPipesSupported]
 public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
-    [Fact]
+    [ConditionalFact]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {
         // Arrange
@@ -30,7 +31,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         Assert.Contains(LogMessages, m => m.Message.Contains("send loop completed gracefully"));
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task InputReadAsync_ServerAborted_ThrowError()
     {
         // Arrange
@@ -54,7 +55,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         await serverConnection.Transport.Output.CompleteAsync();
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task InputReadAsync_ServerAbortedDuring_ThrowError()
     {
         // Arrange
@@ -81,7 +82,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
         await serverConnection.Transport.Output.CompleteAsync();
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task OutputWriteAsync_ServerAborted_ThrowError()
     {
         // Arrange
