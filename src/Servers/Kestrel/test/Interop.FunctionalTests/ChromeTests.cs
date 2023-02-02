@@ -63,7 +63,7 @@ public class ChromeTests : LoggedTest
             };
     }
 
-    [ConditionalTheory(Skip = "Disabling while debugging. https://github.com/dotnet/aspnetcore-internal/issues/1363")]
+    [ConditionalTheory]
     [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
     [InlineData("", "Interop HTTP/2 GET")]
