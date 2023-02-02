@@ -19,9 +19,6 @@
     <RestoreFolderName>Mvc</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <HelixTimeout>01:00:00</HelixTimeout>
-    <SkipHelixQueues>
-      $(HelixQueueArmDebian12);
-    </SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>
