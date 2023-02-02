@@ -44,7 +44,13 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                    endpoints,
+                    pattern,
+                    handler,
+                    GetVerb,
+                    filePath,
+                    lineNumber);
         }
 
     }
@@ -102,7 +108,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
                             return ValueTask.FromResult<object?>(handler());
-
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -112,15 +117,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler();
-                        return GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        return httpContext.Response.WriteAsync(result);
                     }
-
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
-
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;

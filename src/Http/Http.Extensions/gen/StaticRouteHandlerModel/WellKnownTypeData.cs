@@ -14,7 +14,7 @@ internal static class WellKnownTypeData
         System_Threading_Tasks_ValueTask_T
     }
 
-    public static string[] WellKnownTypeNames = new[]
+    public static readonly string[] WellKnownTypeNames = new[]
     {
         "Microsoft.AspNetCore.Http.IResult",
         "System.Threading.Tasks.Task",

@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -44,7 +44,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
                 return new Endpoint(operation, wellKnownTypes);
             })
-            .WithTrackingName(GeneratorSteps.EndpointsStep);
+            .WithTrackingName(GeneratorSteps.EndpointModelStep);
 
         context.RegisterSourceOutput(endpointsWithDiagnostics, (context, endpoint) =>
         {
@@ -93,7 +93,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-{{endpoint.EmitFilteredInvocation()}}
+                            {{endpoint.EmitFilteredInvocation()}}
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -112,42 +112,27 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) =>
             {
-                var dedupedByDelegate = endpoints.Distinct(new LambdaComparer<Endpoint>((a, b) =>
-                {
-                    if (a.Response.IsAwaitable == b.Response.IsAwaitable &&
-                        a.Response.IsVoid == b.Response.IsVoid &&
-                        SymbolEqualityComparer.Default.Equals(a.Response.ResponseType, b.Response.ResponseType) &&
-                        a.HttpMethod == b.HttpMethod)
-                    {
-                        return 0;
-                    }
-                    return -1;
-                }, (endpoint) =>
-                {
-                    unchecked
-                    {
-                        var hashCode = SymbolEqualityComparer.Default.GetHashCode(endpoint.Response.ResponseType);
-                        hashCode = (hashCode * 397) ^ endpoint.Response.IsAwaitable.GetHashCode();
-                        hashCode = (hashCode * 397) ^ endpoint.Response.IsVoid.GetHashCode();
-                        hashCode = (hashCode * 397) ^ endpoint.HttpMethod.GetHashCode();
-                        return hashCode;
-                    }
-                }));
-                var code = new CodeWriter(new StringBuilder());
-                code.Indent(2);
+                var dedupedByDelegate = endpoints.Distinct(EndpointShapeComparer.Instance);
+                var code = new StringBuilder();
                 foreach (var endpoint in dedupedByDelegate)
                 {
-                    code.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint.HttpMethod}(");
-                    code.Indent();
-                    code.WriteLine("this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
-                    code.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
-                    code.WriteLine($"global::{endpoint.EmitHandlerDelegateType()} handler,");
-                    code.WriteLine(@"[global::System.Runtime.CompilerServices.CallerFilePath] string filePath = """",");
-                    code.WriteLine("[global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)");
-                    code.Unindent();
-                    code.StartBlock();
-                    code.WriteLine($"return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, {endpoint.EmitVerb()}, filePath, lineNumber);");
-                    code.EndBlock();
+                    code.AppendLine($$"""
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
+            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+            global::{{endpoint.EmitHandlerDelegateType()}} handler,
+            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+        {
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                    endpoints,
+                    pattern,
+                    handler,
+                    {{endpoint.EmitVerb()}},
+                    filePath,
+                    lineNumber);
+        }
+""");
                 }
 
                 return code.ToString();
@@ -164,11 +149,10 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return;
             }
 
-            var thunksCode = new CodeWriter(new StringBuilder());
-
+            var thunksCode = new StringBuilder();
             foreach (var thunk in thunks)
             {
-                thunksCode.WriteLine(thunk);
+                thunksCode.AppendLine(thunk);
             }
 
             var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(

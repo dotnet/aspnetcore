@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text;
-using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
@@ -62,63 +60,48 @@ internal static class StaticRouteHandlerModelEmitter
      */
     public static string EmitRequestHandler(this Endpoint endpoint)
     {
-        var code = new CodeWriter(new StringBuilder());
-        code.Indent(5);
-        code.WriteLine(endpoint.Response.IsAwaitable
-            ? "async Task RequestHandler(HttpContext httpContext)"
-            : "Task RequestHandler(HttpContext httpContext)");
-        code.StartBlock();
-
-        if (endpoint.Response.IsVoid)
-        {
-            code.WriteLine("handler();");
-            code.WriteLine("return Task.CompletedTask;");
-        }
-        else
-        {
-            code.WriteLine($"""httpContext.Response.ContentType ??= "{endpoint.Response.ContentType}";""");
-            if (endpoint.Response.IsAwaitable)
-            {
-                code.WriteLine("var result = await handler();");
-                code.WriteLine(endpoint.EmitResponseWritingCall());
-            }
-            else
-            {
-                code.WriteLine("var result = handler();");
-                code.WriteLine("return GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
-            }
-        }
-        code.EndBlock();
-        return code.ToString();
+        var handlerSignature = endpoint.Response.IsAwaitable ? "async Task RequestHandler(HttpContext httpContext)" : "Task RequestHandler(HttpContext httpContext)";
+        var resultAssignment = endpoint.Response.IsVoid ? string.Empty : "var result = ";
+        var awaitHandler = endpoint.Response.IsAwaitable ? "await " : string.Empty;
+        var setContentType = endpoint.Response.IsVoid ? string.Empty : $@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";";
+        return $$"""
+                    {{handlerSignature}}
+                    {
+                        {{setContentType}}
+                        {{resultAssignment}}{{awaitHandler}}handler();
+                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
+                    }
+""";
     }
 
     private static string EmitResponseWritingCall(this Endpoint endpoint)
     {
-        var code = new CodeWriter(new StringBuilder());
-        code.WriteNoIndent(endpoint.Response.IsAwaitable ? "await " : "return ");
+        var returnOrAwait = endpoint.Response.IsAwaitable ? "await" : "return";
 
         if (endpoint.Response.IsIResult)
         {
-            code.WriteNoIndent("result.ExecuteAsync(httpContext);");
+            return $"{returnOrAwait} result.ExecuteAsync(httpContext);";
         }
         else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_String)
         {
-            code.WriteNoIndent("httpContext.Response.WriteAsync(result);");
+            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
         }
         else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_Object)
         {
-            code.WriteNoIndent("GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
         }
         else if (!endpoint.Response.IsVoid)
         {
-            code.WriteNoIndent("httpContext.Response.WriteAsJsonAsync(result);");
+            return $"{returnOrAwait} httpContext.Response.WriteAsJsonAsync(result);";
         }
         else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
         {
-            code.WriteNoIndent("Task.CompletedTask;");
+            return $"{returnOrAwait} Task.CompletedTask;";
         }
-
-        return code.ToString();
+        else
+        {
+            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+        }
     }
 
     /*
@@ -130,14 +113,13 @@ internal static class StaticRouteHandlerModelEmitter
      */
     public static string EmitFilteredRequestHandler()
     {
-        var code = new CodeWriter(new StringBuilder());
-        code.Indent(5);
-        code.WriteLine("async Task RequestHandlerFiltered(HttpContext httpContext)");
-        code.StartBlock();
-        code.WriteLine("var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));");
-        code.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
-        code.EndBlock();
-        return code.ToString();
+        return """
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+""";
     }
 
     /*
@@ -158,18 +140,13 @@ internal static class StaticRouteHandlerModelEmitter
      */
     public static string EmitFilteredInvocation(this Endpoint endpoint)
     {
-        var code = new CodeWriter(new StringBuilder());
-        code.Indent(7);
-        if (endpoint.Response.IsVoid)
-        {
-            code.WriteLine("handler();");
-            code.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
-        }
-        else
-        {
-            code.WriteLine("return ValueTask.FromResult<object?>(handler());");
-        }
-
-        return code.ToString();
+        // Note: This string does not need indentation since it is
+        // handled when we generate the output string in the `thunks` pipeline.
+        return endpoint.Response.IsVoid ? """
+handler();
+return ValueTask.FromResult<object?>(Results.Empty);
+""" : """
+return ValueTask.FromResult<object?>(handler());
+""";
     }
 }

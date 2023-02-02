@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +16,6 @@ internal class Endpoint
     public EndpointRoute Route { get; }
     public EndpointResponse Response { get; }
     public List<DiagnosticDescriptor> Diagnostics { get; } = new List<DiagnosticDescriptor>();
-
     public (string, int) Location { get; }
     public IInvocationOperation Operation { get; }
 
@@ -57,26 +57,17 @@ internal class Endpoint
 
         if (o is Endpoint endpoint)
         {
-            return endpoint.HttpMethod.Equals(HttpMethod, StringComparison.OrdinalIgnoreCase) ||
-                endpoint.Location.Item1.Equals(Location.Item1, StringComparison.OrdinalIgnoreCase) ||
-                endpoint.Location.Item2.Equals(Location.Item2) ||
-                endpoint.Response.Equals(Response);
+            return endpoint.HttpMethod.Equals(HttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                endpoint.Route.Equals(Route) &&
+                endpoint.Location.Item1.Equals(Location.Item1, StringComparison.OrdinalIgnoreCase) &&
+                endpoint.Location.Item2.Equals(Location.Item2) &&
+                endpoint.Response.Equals(Response) &&
+                endpoint.Diagnostics.SequenceEqual(Diagnostics);
         }
 
         return false;
     }
 
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            var hashCode = HttpMethod.GetHashCode();
-            hashCode = (hashCode * 397) ^ Route.GetHashCode();
-            hashCode = (hashCode * 397) ^ Response.GetHashCode();
-            hashCode = (hashCode * 397) ^ Diagnostics.GetHashCode();
-            hashCode = (hashCode * 397) ^ Location.GetHashCode();
-            hashCode = (hashCode * 397) ^ Operation.GetHashCode();
-            return hashCode;
-        }
-    }
+    public override int GetHashCode() =>
+        HashCode.Combine(HttpMethod, Route, Location, Response, Diagnostics);
 }

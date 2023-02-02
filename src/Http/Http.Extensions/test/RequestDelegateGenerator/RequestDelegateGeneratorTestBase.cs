@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.AspNetCore.Routing;
@@ -17,13 +15,12 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public class RequestDelegateGeneratorTestBase : LoggedTest
 {
-    internal static (ImmutableArray<GeneratorRunResult>, Compilation) RunGenerator(string sources)
+    internal static (GeneratorRunResult, Compilation) RunGenerator(string sources, params string[] updatedSources)
     {
         var compilation = CreateCompilation(sources);
         var generator = new RequestDelegateGenerator().AsSourceGenerator();
@@ -38,18 +35,25 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
         // Run the source generator
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
+        foreach (var updatedSource in updatedSources)
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(GetMapActionString(updatedSource), path: $"TestMapActions.cs");
+            compilation = compilation
+                .ReplaceSyntaxTree(compilation.SyntaxTrees.First(), syntaxTree);
+            driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out updatedCompilation,
+                out var _);
+        }
         var diagnostics = updatedCompilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
         var runResult = driver.GetRunResult();
 
-        return (runResult.Results, updatedCompilation);
+        return (Assert.Single(runResult.Results), updatedCompilation);
     }
 
-    internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(ImmutableArray<GeneratorRunResult> results, string stepName)
+    internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName)
     {
         // We only invoke the generator once in our test scenarios
-        var firstGeneratorPass = results[0];
-        if (firstGeneratorPass.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
+        if (result.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
         {
             var staticEndpointStep = staticEndpointSteps.Single();
             var staticEndpointOutput = staticEndpointStep.Outputs.Single();
@@ -135,9 +139,8 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
 
         return httpContext;
     }
-    private static Compilation CreateCompilation(string sources)
-    {
-        var source = $$"""
+
+    private static string GetMapActionString(string sources) => $$"""
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -171,6 +174,9 @@ public static class TestMapActions
     }
 }
 """;
+    private static Compilation CreateCompilation(string sources)
+    {
+        var source = GetMapActionString(sources);
 
         var syntaxTrees = new[]
         {

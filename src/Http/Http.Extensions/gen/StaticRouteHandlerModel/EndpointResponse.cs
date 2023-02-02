@@ -122,15 +122,14 @@ public class EndpointResponse
     public override bool Equals(object obj)
     {
         return obj is EndpointResponse otherEndpointResponse &&
-               SymbolEqualityComparer.Default.Equals(otherEndpointResponse.ResponseType, ResponseType) &&
-               otherEndpointResponse.IsAwaitable == IsAwaitable &&
-               otherEndpointResponse.IsVoid == IsVoid &&
-               otherEndpointResponse.IsIResult == IsIResult &&
-               otherEndpointResponse.ContentType.Equals(ContentType, StringComparison.OrdinalIgnoreCase);
+            SymbolEqualityComparer.Default.Equals(otherEndpointResponse.ResponseType, ResponseType) &&
+            otherEndpointResponse.WrappedResponseType.Equals(WrappedResponseType, StringComparison.Ordinal) &&
+            otherEndpointResponse.IsAwaitable == IsAwaitable &&
+            otherEndpointResponse.IsVoid == IsVoid &&
+            otherEndpointResponse.IsIResult == IsIResult &&
+            otherEndpointResponse.ContentType.Equals(ContentType, StringComparison.OrdinalIgnoreCase);
     }
 
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
+    public override int GetHashCode() =>
+        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), WrappedResponseType, IsAwaitable, IsVoid, IsIResult, ContentType);
 }

@@ -44,7 +44,43 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, GetVerb, filePath, lineNumber);
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                    endpoints,
+                    pattern,
+                    handler,
+                    GetVerb,
+                    filePath,
+                    lineNumber);
+        }
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
+            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+            global::System.Func<System.Threading.Tasks.Task<string>> handler,
+            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+        {
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                    endpoints,
+                    pattern,
+                    handler,
+                    GetVerb,
+                    filePath,
+                    lineNumber);
+        }
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
+            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+            global::System.Func<System.Threading.Tasks.ValueTask<string>> handler,
+            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+        {
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                    endpoints,
+                    pattern,
+                    handler,
+                    GetVerb,
+                    filePath,
+                    lineNumber);
         }
 
     }
@@ -102,7 +138,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
                             return ValueTask.FromResult<object?>(handler());
-
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -112,15 +147,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler();
-                        return GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        return httpContext.Response.WriteAsync(result);
                     }
-
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
-
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
@@ -150,7 +183,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
                             return ValueTask.FromResult<object?>(handler());
-
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -160,15 +192,103 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler();
-                        return GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        return httpContext.Response.WriteAsync(result);
                     }
-
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 17)] = (
+               (methodInfo, options) =>
+                {
+                    if (options == null || options.EndpointBuilder == null)
+                    {
+                        return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
+                    }
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 17));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    var handler = (System.Func<System.Threading.Tasks.Task<string>>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler());
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    async Task RequestHandler(HttpContext httpContext)
+                    {
+                        httpContext.Response.ContentType ??= "application/json";
+                        var result = await handler();
+                        await httpContext.Response.WriteAsync(result);
+                    }
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 18)] = (
+               (methodInfo, options) =>
+                {
+                    if (options == null || options.EndpointBuilder == null)
+                    {
+                        return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
+                    }
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 18));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    var handler = (System.Func<System.Threading.Tasks.ValueTask<string>>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler());
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    async Task RequestHandler(HttpContext httpContext)
+                    {
+                        httpContext.Response.ContentType ??= "application/json";
+                        var result = await handler();
+                        await httpContext.Response.WriteAsync(result);
+                    }
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;

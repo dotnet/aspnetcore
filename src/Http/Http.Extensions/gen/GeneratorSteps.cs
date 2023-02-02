@@ -4,6 +4,6 @@ namespace Microsoft.AspNetCore.Http.Generators;
 
 internal class GeneratorSteps
 {
-    internal const string EndpointsStep = "EndpointModel";
-    internal const string EndpointsWithoutDiagnosicsStep = "EndpointsWithoutDiagnostics";
+    internal const string EndpointModelStep = nameof(EndpointModelStep);
+    internal const string EndpointsWithoutDiagnosicsStep = nameof(EndpointsWithoutDiagnosicsStep);
 }
