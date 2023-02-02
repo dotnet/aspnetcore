@@ -58,7 +58,6 @@ internal class Endpoint
         if (o is Endpoint endpoint)
         {
             return endpoint.HttpMethod.Equals(HttpMethod, StringComparison.OrdinalIgnoreCase) &&
-                endpoint.Route.Equals(Route) &&
                 endpoint.Location.Item1.Equals(Location.Item1, StringComparison.OrdinalIgnoreCase) &&
                 endpoint.Location.Item2.Equals(Location.Item2) &&
                 endpoint.Response.Equals(Response) &&
