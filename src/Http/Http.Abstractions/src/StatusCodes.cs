@@ -286,7 +286,7 @@ public static class StatusCodes
     /// <summary>
     /// HTTP status code 499.
     /// </summary>
-    public const int Status499ClientConnectionClosed = 499;
+    public const int Status499ClientClosedRequest = 499;
 
     /// <summary>
     /// HTTP status code 500.

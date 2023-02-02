@@ -1,5 +1,5 @@
 #nullable enable
-const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientConnectionClosed = 499 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
