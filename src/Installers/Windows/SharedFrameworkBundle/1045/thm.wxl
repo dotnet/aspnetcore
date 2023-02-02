@@ -17,16 +17,16 @@
 /norestart  — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
 /log log.txt — tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zamknij</String>
-  <String Id="InstallAcceptCheckbox">Zg&amp;adzam się na warunki licencji</String>
-  <String Id="InstallInstallButton">Za&amp;instaluj</String>
+  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się na warunki licencji</String>
+  <String Id="InstallInstallButton">&amp;Zainstaluj</String>
   <String Id="InstallCloseButton">&amp;Zamknij</String>
   <String Id="ProgressHeader">Postęp instalacji</String>
   <String Id="ProgressLabel">Przetwarzanie:</String>
   <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
   <String Id="ProgressCancelButton">&amp;Anuluj</String>
   <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
-  <String Id="ModifyRepairButton">Nap&amp;raw</String>
-  <String Id="ModifyUninstallButton">O&amp;dinstaluj</String>
+  <String Id="ModifyRepairButton">&amp;Napraw</String>
+  <String Id="ModifyUninstallButton">&amp;Odinstaluj</String>
   <String Id="ModifyCloseButton">&amp;Zamknij</String>
   <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
   <String Id="SuccessUninstallHeader">Pomyślnie ukończono operację odinstalowania</String>
