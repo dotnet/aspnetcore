@@ -319,19 +319,23 @@ public class HealthCheckPublisherHostedServiceTest
                     instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                     failureStatus: null,
                     tags: null,
-                    timeout: default,
-                    delay: TimeSpan.FromSeconds(2),
-                    period: TimeSpan.FromSeconds(18)));
+                    timeout: default)
+                {
+                    Delay = TimeSpan.FromSeconds(2),
+                    Period = TimeSpan.FromSeconds(18)
+                });
 
-            b.Add(
+        b.Add(
                 new HealthCheckRegistration(
                     name: "CheckDelay7Period11",
                     instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                     failureStatus: null,
                     tags: null,
-                    timeout: default,
-                    delay: TimeSpan.FromSeconds(7),
-                    period: TimeSpan.FromSeconds(11)));
+                    timeout: default)
+                {
+                    Delay = TimeSpan.FromSeconds(7),
+                    Period = TimeSpan.FromSeconds(11)
+                });
 
             b.Add(
                new HealthCheckRegistration(
@@ -343,9 +347,11 @@ public class HealthCheckPublisherHostedServiceTest
                    }),
                     failureStatus: null,
                    tags: null,
-                   timeout: default,
-                   delay: TimeSpan.FromSeconds(9),
-                   period: TimeSpan.FromSeconds(5)));
+                   timeout: default)
+               {
+                   Delay = TimeSpan.FromSeconds(9),
+                   Period = TimeSpan.FromSeconds(5)
+               });
         });
 
         try
@@ -553,7 +559,7 @@ public class HealthCheckPublisherHostedServiceTest
             configureBuilder: b =>
             {
                 b.Add(
-                    new HealthCheckRegistration(
+                    new(
                         name: "CheckDefault",
                         instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                         failureStatus: null,
@@ -564,10 +570,11 @@ public class HealthCheckPublisherHostedServiceTest
                         name: "CheckDelay2Period18",
                         instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                         failureStatus: null,
-                        tags: null,
-                        timeout: default,
-                        delay: TimeSpan.FromSeconds(2),
-                        period: TimeSpan.FromSeconds(18)));
+                        tags: null)
+                    {
+                        Delay = TimeSpan.FromSeconds(2),
+                        Period = TimeSpan.FromSeconds(18)
+                    });
 
                 b.Add(
                     new HealthCheckRegistration(
@@ -575,9 +582,11 @@ public class HealthCheckPublisherHostedServiceTest
                         instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                         failureStatus: null,
                         tags: null,
-                        timeout: default,
-                        delay: TimeSpan.FromSeconds(7),
-                        period: TimeSpan.FromSeconds(11)));
+                        timeout: default)
+                    {
+                        Delay = TimeSpan.FromSeconds(7),
+                        Period = TimeSpan.FromSeconds(11)
+                    });
 
                 b.Add(
                    new HealthCheckRegistration(
@@ -589,9 +598,11 @@ public class HealthCheckPublisherHostedServiceTest
                        }),
                        failureStatus: null,
                        tags: null,
-                       timeout: default,
-                       delay: TimeSpan.FromSeconds(9),
-                       period: TimeSpan.FromSeconds(5)));
+                       timeout: default)
+                   {
+                       Delay = TimeSpan.FromSeconds(9),
+                       Period = TimeSpan.FromSeconds(5)
+                   });
             });
 
         try
