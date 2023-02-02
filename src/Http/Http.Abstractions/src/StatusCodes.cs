@@ -284,6 +284,11 @@ public static class StatusCodes
     public const int Status451UnavailableForLegalReasons = 451;
 
     /// <summary>
+    /// HTTP status code 499.
+    /// </summary>
+    public const int Status499ClientConnectionClosed = 499;
+
+    /// <summary>
     /// HTTP status code 500.
     /// </summary>
     public const int Status500InternalServerError = 500;
