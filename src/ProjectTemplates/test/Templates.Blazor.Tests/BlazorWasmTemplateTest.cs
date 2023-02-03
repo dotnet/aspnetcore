@@ -59,7 +59,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         return page;
     }
 
-    [Theory(Skip="Unblock CI")]
+    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
     {
@@ -212,7 +212,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
     }
 
-    [ConditionalTheory(Skip="Unblock CI")]
+    [ConditionalTheory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
     [InlineData(BrowserKind.Chromium)]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
@@ -220,7 +220,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
 
     // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
-    [Theory(Skip="Unblock CI")]
+    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
     [InlineData(BrowserKind.Chromium)]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
