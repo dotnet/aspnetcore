@@ -90,15 +90,6 @@ public class RouteOptions
     /// </summary>
     internal IDictionary<string, Type> TrimmerSafeConstraintMap => _constraintTypeMap;
 
-    /// <summary>
-    /// Add Regex-based constraints to the constraint map (e.g. alpha and regex constraint types). This is called automatically by <see cref="RoutingServiceCollectionExtensions.AddRouting(IServiceCollection)"/>.
-    /// </summary>
-    public void AddRegexConstraint()
-    {
-        // Regex-based constraints
-        AddConstraint<RegexInlineRouteConstraint>(_constraintTypeMap, "regex");
-    }
-
     private static IDictionary<string, Type> GetDefaultConstraintMap()
     {
         var defaults = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);

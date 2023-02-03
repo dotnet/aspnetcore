@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -27,9 +28,9 @@ public static class RoutingServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddRouting(this IServiceCollection services)
     {
-        return services.AddRoutingCore(routeOptions =>
+        return services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
-            routeOptions.AddRegexConstraint();
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
         });
     }
 
@@ -126,31 +127,10 @@ public static class RoutingServiceCollectionExtensions
         this IServiceCollection services,
         Action<RouteOptions> configureOptions)
     {
-        return services.AddRoutingCore(routeOptions =>
+        return services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
-            routeOptions.AddRegexConstraint();
-            configureOptions(routeOptions);
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+            configureOptions(options);
         });
-    }
-
-    /// <summary>
-    /// Adds services required for routing requests. This is similar to
-    /// <see cref="AddRouting(IServiceCollection, Action{RouteOptions})" />
-    /// except that it excludes certain options that can be opted in separately, if needed.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configureOptions">The routing options to configure the middleware with.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddRoutingCore(
-        this IServiceCollection services,
-        Action<RouteOptions> configureOptions)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configureOptions);
-
-        services.Configure(configureOptions);
-        services.AddRoutingCore();
-
-        return services;
     }
 }
