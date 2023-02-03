@@ -18,8 +18,11 @@ public class DefaultPooledObjectPolicy<T> : PooledObjectPolicy<T> where T : clas
     /// <inheritdoc />
     public override bool Return(T obj)
     {
-        // DefaultObjectPool<T> doesn't call 'Return' for the default policy.
-        // So take care adding any logic to this method, as it might require changes elsewhere.
+        if (obj is IResettable resettable)
+        {
+            return resettable.TryReset();
+        }
+
         return true;
     }
 }
