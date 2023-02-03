@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Tests;
@@ -2375,9 +2376,9 @@ public class WebApplicationTests
     public async Task UsingCreateSlimBuilderWorksIfRegexConstraintAddedViaAddRoutingCoreWithActionDelegate()
     {
         var builder = WebApplication.CreateSlimBuilder();
-        builder.Services.AddRoutingCore(options =>
+        builder.Services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
-            options.AddRegexConstraint();
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
         });
         builder.WebHost.UseTestServer();
 

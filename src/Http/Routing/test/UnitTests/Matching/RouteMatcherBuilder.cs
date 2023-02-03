@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Options;
@@ -15,7 +16,9 @@ internal class RouteMatcherBuilder : MatcherBuilder
 
     public RouteMatcherBuilder()
     {
-        _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider());
+        var routeOptions = new RouteOptions();
+        routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(routeOptions), new TestServiceProvider());
         _endpoints = new List<RouteEndpoint>();
     }
 

@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
@@ -2056,6 +2057,8 @@ public class TreeRouterTest
     private static DefaultInlineConstraintResolver CreateConstraintResolver()
     {
         var options = new RouteOptions();
+        options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+
         var optionsMock = new Mock<IOptions<RouteOptions>>();
         optionsMock.SetupGet(o => o.Value).Returns(options);
 
