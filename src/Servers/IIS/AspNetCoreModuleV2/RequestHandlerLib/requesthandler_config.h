@@ -32,7 +32,7 @@
 
 #define MAX_RAPID_FAILS_PER_MINUTE 100
 #define MILLISECONDS_IN_ONE_SECOND 1000
-#define MIN_PORT                   1025
+#define MIN_PORT                   10025
 #define MAX_PORT                   48000
 
 #define TIMESPAN_IN_MILLISECONDS(x)  ((x)/((LONGLONG)(10000)))

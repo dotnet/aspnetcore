@@ -6,7 +6,7 @@
 #include <random>
 #include <map>
 
-#define MIN_PORT                                    1025
+#define MIN_PORT                                    10025
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
 #define MAX_ACTIVE_CHILD_PROCESSES                  16
