@@ -895,6 +895,24 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputWithCustomParserCanMutateValueDuringParsing()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("input-with-custom-parser"));
+
+        // Observe that the value can be mutated by the parser, and this shows up in the DOM
+        input.SendKeys("24h\t");
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+
+        // If the user then re-enters the same value, even though the parser doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("24h\t");            // replace content with new value
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void InputSelectWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();

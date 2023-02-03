@@ -15,11 +15,9 @@ public class InputWithCustomValueParser : InputText
             validationErrorMessage = "INVALID is not allowed value.";
             return false;
         }
-        else
-        {
-            result = value;
-            validationErrorMessage = null;
-            return true;
-        }
+
+        result = value == "24h" ? "24:00:00" : value;
+        validationErrorMessage = null;
+        return true;
     }
 }
