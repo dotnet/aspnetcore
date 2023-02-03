@@ -4,6 +4,7 @@
 using System.Buffers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
@@ -19,7 +20,7 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
     {
         _application = application;
     }
-
+    
     public override async Task<bool> ProcessRequestAsync()
     {
         var context = default(TContext);
@@ -43,6 +44,18 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
             }
             catch (Exception ex)
             {
+                if (ex is OperationCanceledException && _requestAborted)
+                {
+                    ReportRequestAborted();
+
+                    if (!HasResponseStarted)
+                    {
+                        StatusCode = StatusCodes.Status499ClientClosedRequest;
+                    }
+
+                    return false;
+                }
+
                 ReportApplicationError(ex);
                 success = false;
             }
