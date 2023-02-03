@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -117,6 +119,8 @@ public class RouteOptions
         // The alpha constraint uses a compiled regex which has a minimal size cost.
         AddConstraint<AlphaRouteConstraint>(defaults, "alpha");
 
+        AddConstraint<RegexErrorStubRouteConstraint>(defaults, "regex"); // Used to generate error message at runtime with helpful message.
+
         AddConstraint<RequiredRouteConstraint>(defaults, "required");
 
         // Files
@@ -155,5 +159,17 @@ public class RouteOptions
     private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(IDictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
     {
         constraintMap[text] = typeof(TConstraint);
+    }
+}
+
+internal class RegexErrorStubRouteConstraint : IRouteConstraint
+{
+    internal RegexErrorStubRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string regexPattern)
+    {
+    }
+
+    bool IRouteConstraint.Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+    {
+        throw new InvalidOperationException(Resources.FormatRegexRouteContraint_NotConfigured(routeKey));
     }
 }

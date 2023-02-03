@@ -95,7 +95,7 @@ internal static class ParameterPolicyActivator
     {
         ConstructorInfo? activationConstructor = null;
         object?[]? parameters = null;
-        var constructors = parameterPolicyType.GetConstructors();
+        var constructors = parameterPolicyType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         // If there is only one constructor and it has a single parameter, pass the argument string directly
         // This is necessary for the Regex RouteConstraint to ensure that patterns are not split on commas.

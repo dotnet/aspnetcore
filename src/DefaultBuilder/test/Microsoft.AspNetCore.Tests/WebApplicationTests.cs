@@ -2341,7 +2341,7 @@ public class WebApplicationTests
 
         Assert.IsType<InvalidOperationException>(ex);
         Assert.Equal(
-            "The constraint reference 'regex' could not be resolved to a type. Register the constraint type with 'Microsoft.AspNetCore.Routing.RouteOptions.ConstraintMap'.",
+            "The route parameter 'productId' uses a regular expression constraint. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) it may not include the RegexInlineRouteConstraint. To register this route route constraint call SetParameterPolicy<RegexInlineRouteConstraint(\"regex\") on RouteOptions via the Configure<TOptions>(Action<RouteOptions> configureOptions) extension method.",
             ex.Message);
     }
 

@@ -249,4 +249,7 @@
   <data name="RouteEndpointDataSource_RequestDelegateCannotBeCalledBeforeBuild" xml:space="preserve">
     <value>This RequestDelegate cannot be called before the final endpoint is built.</value>
   </data>
+  <data name="RegexRouteContraint_NotConfigured" xml:space="preserve">
+    <value>The route parameter '{0}' uses a regular expression constraint. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) it may not include the RegexInlineRouteConstraint. To register this route route constraint call SetParameterPolicy&lt;RegexInlineRouteConstraint("regex") on RouteOptions via the Configure&lt;TOptions&gt;(Action&lt;RouteOptions&gt; configureOptions) extension method.</value>
+  </data>
 </root>
