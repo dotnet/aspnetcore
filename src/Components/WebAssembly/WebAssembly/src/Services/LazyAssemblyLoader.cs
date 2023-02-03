@@ -3,8 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
 using Microsoft.JSInterop;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -13,13 +16,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 ///
 /// Supports finding pre-loaded assemblies in a server or pre-rendering context.
 /// </summary>
-public sealed class LazyAssemblyLoader
+public sealed partial class LazyAssemblyLoader
 {
-    internal const string GetLazyAssemblies = "window.Blazor._internal.getLazyAssemblies";
-    internal const string ReadLazyAssemblies = "window.Blazor._internal.readLazyAssemblies";
-    internal const string ReadLazyPDBs = "window.Blazor._internal.readLazyPdbs";
-
-    private readonly IJSRuntime _jsRuntime;
     private HashSet<string>? _loadedAssemblyCache;
 
     /// <summary>
@@ -28,7 +26,6 @@ public sealed class LazyAssemblyLoader
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     public LazyAssemblyLoader(IJSRuntime jsRuntime)
     {
-        _jsRuntime = jsRuntime;
     }
 
     /// <summary>
@@ -104,39 +101,54 @@ public sealed class LazyAssemblyLoader
             return Array.Empty<Assembly>();
         }
 
-        var jsRuntime = (IJSUnmarshalledRuntime)_jsRuntime;
-#pragma warning disable CS0618 // Type or member is obsolete
-        var count = (int)await jsRuntime.InvokeUnmarshalled<string[], Task<object>>(
-           GetLazyAssemblies,
-           newAssembliesToLoad.ToArray());
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        if (count == 0)
-        {
-            return Array.Empty<Assembly>();
-        }
-
         var loadedAssemblies = new List<Assembly>();
-#pragma warning disable CS0618 // Type or member is obsolete
-        var assemblies = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyAssemblies);
-        var pdbs = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyPDBs);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        for (int i = 0; i < assemblies.Length; i++)
+        var pendingLoads = newAssembliesToLoad.Select(async assemblyToLoad =>
         {
-            // The runtime loads assemblies into an isolated context by default. As a result,
-            // assemblies that are loaded via Assembly.Load aren't available in the app's context
-            // AKA the default context. To work around this, we explicitly load the assemblies
-            // into the default app context.
-            var assembly = assemblies[i];
-            var pdb = pdbs[i];
-            var loadedAssembly = pdb.Length == 0 ?
-                AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly)) :
-                AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly), new MemoryStream(pdb));
-            loadedAssemblies.Add(loadedAssembly);
-            _loadedAssemblyCache.Add(loadedAssembly.GetName().Name + ".dll");
-        }
+            byte[]? buffer = null;
+            GCHandle pinnedArray = default;
 
+            Func<int, int, IntPtr> allocator = (dllLength, pdbLength) =>
+            {
+                buffer = new byte[dllLength + pdbLength];
+                pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                return pinnedArray.AddrOfPinnedObject();
+            };
+            Action<int, int> loader = (dllLength, pdbLength) =>
+            {
+                if (buffer == null)
+                {
+                    throw new InvalidOperationException("The buffer should not be null.");
+                }
+
+                Assembly loadedAssembly;
+                if (pdbLength == 0)
+                {
+                    loadedAssembly = AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(buffer));
+                }
+                else
+                {
+                    loadedAssembly = AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(buffer, 0, dllLength), new MemoryStream(buffer, dllLength, pdbLength));
+                }
+                loadedAssemblies.Add(loadedAssembly);
+                _loadedAssemblyCache.Add(assemblyToLoad);
+            };
+
+            await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad, allocator, loader);
+            if (pinnedArray.IsAllocated)
+            {
+                pinnedArray.Free();
+            }
+        });
+
+        await Task.WhenAll(pendingLoads);
         return loadedAssemblies;
+    }
+
+    private partial class LazyAssemblyLoaderInterop
+    {
+        [JSImport("Blazor._internal.loadLazyAssembly", "blazor-internal")]
+        public static partial Task LoadLazyAssembly(string assemblyToLoad,
+            [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number>>] Func<int, int, IntPtr> allocator,
+            [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>] Action<int, int> loader);
     }
 }
