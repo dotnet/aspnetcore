@@ -739,7 +739,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // The input changes its value to "24:00:00" whenever "24h" is entered, and we need to show
         // that we don't lose such changes
 
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = appElement.FindElement(By.Id("inputtext-with-mutating-setter"));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -761,7 +761,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // The input changes its value to "24:00:00" whenever "24h" is entered, and we need to show
         // that we don't lose such changes
 
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = appElement.FindElement(By.Id("inputtextarea-with-mutating-setter"));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -779,7 +779,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputCheckboxWorksWithMutatingSetter()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = appElement.FindElement(By.Id("inputcheckbox-with-mutating-setter"));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -791,7 +791,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputDateWorksWithMutatingSetter()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = appElement.FindElement(By.Id("inputdate-with-mutating-setter"));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -809,7 +809,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputNumberWorksWithMutatingSetter()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = appElement.FindElement(By.Id("inputnumber-with-mutating-setter"));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -827,7 +827,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputRadioGroupWorksWithMutatingSetter()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var monday = appElement.FindElement(By.Id("inputradiogroup-with-mutating-setter-monday"));
         var tuesday = appElement.FindElement(By.Id("inputradiogroup-with-mutating-setter-tuesday"));
 
@@ -847,7 +847,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectWorksWithMutatingSetter()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = new SelectElement(appElement.FindElement(By.Id("inputselect-with-mutating-setter")));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -866,7 +866,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectMultipleWorksWithMutatingSetter()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = new SelectElement(appElement.FindElement(By.Id("inputselectmultiple-with-mutating-setter")));
 
         // Observe that the value can be mutated by the setter, and this shows up in the DOM
@@ -885,7 +885,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputWithCustomParserPreservesInvalidValueWhenParsingFails()
     {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
         var input = appElement.FindElement(By.Id("input-with-custom-parser"));
 
         // should not replace the input contents with last known component value (null)
