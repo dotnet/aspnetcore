@@ -164,7 +164,7 @@ public class RouteOptions
 
 internal sealed class RegexErrorStubRouteConstraint : IRouteConstraint
 {
-    internal RegexErrorStubRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string regexPattern)
+    public RegexErrorStubRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string regexPattern)
     {
     }
 
