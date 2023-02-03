@@ -24,7 +24,7 @@ public partial class JsonSerializerExtensionsTests
             var options = new JsonSerializerOptions();
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => JsonSerializerExtensions.Configure(options));
+            Assert.Throws<InvalidOperationException>(() => JsonSerializerExtensions.EnsureConfigured(options));
         }, options);
     }
 
@@ -41,7 +41,7 @@ public partial class JsonSerializerExtensionsTests
             var options = new JsonSerializerOptions() { TypeInfoResolver = JsonSerializerExtensionsTestsContext.Default };
 
             // Act
-            JsonSerializerExtensions.Configure(options);
+            JsonSerializerExtensions.EnsureConfigured(options);
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);
@@ -63,7 +63,7 @@ public partial class JsonSerializerExtensionsTests
             var options = new JsonSerializerOptions();
 
             // Act
-            JsonSerializerExtensions.Configure(options);
+            JsonSerializerExtensions.EnsureConfigured(options);
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);
@@ -85,7 +85,7 @@ public partial class JsonSerializerExtensionsTests
             var options = new JsonSerializerOptions() { TypeInfoResolver = JsonSerializerExtensionsTestsContext.Default };
 
             // Act
-            JsonSerializerExtensions.Configure(options);
+            JsonSerializerExtensions.EnsureConfigured(options);
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);

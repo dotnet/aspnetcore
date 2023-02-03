@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Http;
 
 internal static class JsonSerializerExtensions
 {
+    private static DefaultJsonTypeInfoResolver? _defaultJsonTypeInfoResolver;
+
     public static bool HasKnownPolymorphism(this JsonTypeInfo jsonTypeInfo)
      => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
 
@@ -19,12 +21,12 @@ internal static class JsonSerializerExtensions
 
     public static JsonTypeInfo GetReadOnlyTypeInfo(this JsonSerializerOptions options, Type type)
     {
-        options.Configure();
+        options.EnsureConfigured();
 
         return options.GetTypeInfo(type);
     }
 
-    public static void Configure(this JsonSerializerOptions options)
+    public static void EnsureConfigured(this JsonSerializerOptions options)
     {
         if (!options.IsReadOnly)
         {
@@ -45,11 +47,19 @@ internal static class JsonSerializerExtensions
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
     private static void InitializeForReflection(JsonSerializerOptions options)
     {
-        var combinedResolver = JsonTypeInfoResolver.Combine(options.TypeInfoResolver, new DefaultJsonTypeInfoResolver());
-
-        if (!options.IsReadOnly)
+        // TODO: How can I avoid this lock?
+        lock (options)
         {
-            options.TypeInfoResolver = combinedResolver;
+            if (!options.IsReadOnly)
+            {
+                _defaultJsonTypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
+
+                options.TypeInfoResolver = options.TypeInfoResolver switch
+                {
+                    null => _defaultJsonTypeInfoResolver,
+                    _ => JsonTypeInfoResolver.Combine(options.TypeInfoResolver, _defaultJsonTypeInfoResolver),
+                };
+            }
         }
     }
     public static JsonTypeInfo GetRequiredTypeInfo(this JsonSerializerContext context, Type type)

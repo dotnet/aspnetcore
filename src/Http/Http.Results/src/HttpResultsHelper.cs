@@ -32,6 +32,8 @@ internal static partial class HttpResultsHelper
         }
 
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
+        jsonSerializerOptions.EnsureConfigured();
+
         var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
         Type? runtimeType;

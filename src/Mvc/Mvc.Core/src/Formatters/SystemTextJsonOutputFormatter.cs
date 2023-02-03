@@ -21,7 +21,8 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
     public SystemTextJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
     {
-        jsonSerializerOptions.Configure();
+        jsonSerializerOptions.EnsureConfigured();
+
         SerializerOptions = jsonSerializerOptions;
 
         SupportedEncodings.Add(Encoding.UTF8);
