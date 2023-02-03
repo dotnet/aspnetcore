@@ -154,6 +154,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         ageInput.SendKeys("\t");
         Browser.Equal("modified invalid", () => ageInput.GetAttribute("class"));
         Browser.Equal(new[] { "The AgeInYears field must be a number." }, messagesAccessor);
+        Browser.Equal("", () => ageInput.GetDomProperty("value")); // We can display 'empty' even though it's not representable within the bound property
 
         // Zero is within the allowed range
         ageInput.SendKeys("0\t");
@@ -882,198 +883,15 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void InputTextUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputTextComponent changes its value to "24:00:00" whenever "24h" is entered
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-text"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // first update - OK
-        input.SendKeys("24h");
-        button.Click();
-        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
-
-        // second update - fails if component's .NET model does not update input's element value from DOM (diff does not recognize any change)
-        input.Click();
-        input.SendKeys(Keys.Control + "a"); // select all content
-        input.SendKeys("24h");              // replace content with new value
-        button.Click();                     // raise onchange event
-        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
-    }
-
-    [Fact]
-    public void DerivedInputTextPreservesEnteredInvalidValueInInputElementWhenParsingFails()
+    public void InputWithCustomParserPreservesInvalidValueWhenParsingFails()
     {
         var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-text"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
+        var input = appElement.FindElement(By.Id("input-with-custom-parser"));
 
         // should not replace the input contents with last known component value (null)
-        input.SendKeys("INVALID");
-        button.Click();
+        input.SendKeys("INVALID\t");
         Browser.Equal("INVALID", () => input.GetDomProperty("value"));
-    }
-
-    [Fact]
-    public void InputTextareaUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputTextareaComponent changes its value to "24:00:00" whenever "24h" is entered
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-textarea"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // first update - OK
-        input.SendKeys("24h");
-        button.Click();
-        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
-
-        // second update - fails if component's .NET model does not update input's element value from DOM (diff does not recognize any change)
-        input.Click();
-        input.SendKeys(Keys.Control + "a"); // select all content
-        input.SendKeys("24h");              // replace content with new value
-        button.Click();                     // raise onchange event
-        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
-    }
-
-    [Fact]
-    public void DerivedInputTextareaPreservesEnteredInvalidValueInInputElementWhenParsingFails()
-    {
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-textarea"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // should not replace the input contents with last known component value (null)
-        input.SendKeys("INVALID");
-        button.Click();
-        Browser.Equal("INVALID", () => input.GetDomProperty("value"));
-    }
-
-    [Fact]
-    public void InputDateUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputDateComponent changes its value to "2020-01-01" whenever "0001-01-01" is entered
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-date"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // first update - OK
-        input.SendKeys("01010001");
-        button.Click();
-        Browser.Equal("2020-01-01", () => input.GetDomProperty("value"));
-
-        // second update - fails if component's .NET model does not update input's element value from DOM (diff does not recognize any change)
-        input.Click();
-        input.SendKeys(Keys.ArrowRight);        // move from day to month
-        input.SendKeys(Keys.ArrowRight);        // mover from month to year
-        input.SendKeys("1");                    // set year to 0001
-        button.Click();
-        Browser.Equal("2020-01-01", () => input.GetDomProperty("value"));
-    }
-
-    [Fact]
-    public void InputNumberUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputNumberComponent changes its value to "0" whenever "1" is entered
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-number"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // first update - OK
-        input.SendKeys("1");
-        button.Click();
-        Browser.Equal("0", () => input.GetDomProperty("value"));
-
-        // second update - fails if component's .NET model does not update input's element value from DOM (diff does not recognize any change)
-        input.Click();
-        input.SendKeys(Keys.Control + "a");     // select all content
-        input.SendKeys("1");                    // replace content with "1"
-        button.Click();                         // raise onchange event
-        Browser.Equal("0", () => input.GetDomProperty("value"));
-    }
-
-    [Fact]
-    public void InputCheckboxUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputCheckboxComponent changes its value to false on every BuildRenderTree() call
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("derived-input-checkbox"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // fails if component's .NET model does not update input's element checked attribude value from DOM (diff does not recognize any change)
-        input.Click();
-        Browser.Equal("False", () => input.GetDomProperty("checked"));
-
-        // any click should be reverted to unchecked state
-        input.Click();
-        Browser.Equal("False", () => input.GetDomProperty("checked"));
-    }
-
-    [Fact]
-    public void InputRadioUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputRadioGroupComponent changes its value to DayOfWeek.Monday on any input
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var input = appElement.FindElement(By.Id("input-radio-sunday"));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // fails if component's .NET model does not update input's element checked attribude value from DOM (diff does not recognize any change)
-        input.Click();
-        Browser.Equal("False", () => input.GetDomProperty("checked"));
-
-        // any click should be reverted to unchecked state
-        input.Click();
-        Browser.Equal("False", () => input.GetDomProperty("checked"));
-    }
-
-    [Fact]
-    public void InputSelectUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputSelectComponent changes its value to DayOfWeek.Monday on any input
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var select = new SelectElement(appElement.FindElement(By.Id("derived-select")));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // fails if component's .NET model does not update select-element value from DOM (diff does not recognize any change)
-        select.SelectByValue("Friday");
-        Browser.Equal("Monday", () => select.SelectedOption.Text);
-
-        // any click should be switched to Monday
-        select.SelectByValue("Friday");
-        Browser.Equal("Monday", () => select.SelectedOption.Text);
-    }
-
-    [Fact]
-    public void InputSelectMultipleUpdatesDotNetModelWhenDomValueChanges()
-    {
-        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
-        // DerivedInputSelectMultipleComponent changes its value to DayOfWeek.Monday+Tuesday on any input
-
-        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
-        var select = new SelectElement(appElement.FindElement(By.Id("derived-select-multiple")));
-        var button = appElement.FindElement(By.Id("move-focus-button"));
-
-        // fails if component's .NET model does not update select-element value from DOM (diff does not recognize any change)
-        select.SelectByValue("Friday");
-        Browser.Equal("Monday+Tuesday", () => String.Join('+', select.AllSelectedOptions.Select(e => e.Text)));
-
-        // any click should be switched to Monday+Tuesday
-        select.SelectByValue("Monday");
-        Browser.Equal("Monday+Tuesday", () => String.Join('+', select.AllSelectedOptions.Select(e => e.Text)));
+        Browser.Equal("modified invalid", () => input.GetAttribute("class"));
     }
 
     [Fact]
