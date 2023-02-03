@@ -77,8 +77,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             if (hasChanged)
             {
                 _parsingFailed = false;
-                Value = value;
-                _ = ValueChanged.InvokeAsync(Value);
+                _ = ValueChanged.InvokeAsync(value);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
             }
         }
