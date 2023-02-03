@@ -62,6 +62,4 @@ public class CustomSchemaTest : IClassFixture<ScratchDatabaseFixture>
             }
         }
     }
-
 }
-
