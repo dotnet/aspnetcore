@@ -20,11 +20,11 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.Generators.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Content Include="RequestDelegateGenerator\Baselines\*.generated.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

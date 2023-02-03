@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -20,17 +21,25 @@ internal static class StaticRouteHandlerModelEmitter
      * that do return a value, `System.Func<string, int, string>` will
      * be emitted to indicate a `string`return type.
      */
-    public static string EmitHandlerDelegateType(Endpoint endpoint)
+    public static string EmitHandlerDelegateType(this Endpoint endpoint)
     {
+        if (endpoint.Response.IsVoid)
+        {
+            return $"System.Action";
+        }
+        if (endpoint.Response.IsAwaitable)
+        {
+            return $"System.Func<{endpoint.Response.WrappedResponseType}>";
+        }
         return $"System.Func<{endpoint.Response.ResponseType}>";
     }
 
-    public static string EmitSourceKey(Endpoint endpoint)
+    public static string EmitSourceKey(this Endpoint endpoint)
     {
         return $@"(@""{endpoint.Location.Item1}"", {endpoint.Location.Item2})";
     }
 
-    public static string EmitVerb(Endpoint endpoint)
+    public static string EmitVerb(this Endpoint endpoint)
     {
         return endpoint.HttpMethod switch
         {
@@ -49,15 +58,50 @@ internal static class StaticRouteHandlerModelEmitter
      * their validity (optionality), invoke the underlying handler with
      * the arguments bound from HTTP context, and write out the response.
      */
-    public static string EmitRequestHandler()
+    public static string EmitRequestHandler(this Endpoint endpoint)
     {
-        return """
-Task RequestHandler(HttpContext httpContext)
-                {
-                        var result = handler();
-                        return httpContext.Response.WriteAsync(result);
-                }
+        var handlerSignature = endpoint.Response.IsAwaitable ? "async Task RequestHandler(HttpContext httpContext)" : "Task RequestHandler(HttpContext httpContext)";
+        var resultAssignment = endpoint.Response.IsVoid ? string.Empty : "var result = ";
+        var awaitHandler = endpoint.Response.IsAwaitable ? "await " : string.Empty;
+        var setContentType = endpoint.Response.IsVoid ? string.Empty : $@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";";
+        return $$"""
+                    {{handlerSignature}}
+                    {
+                        {{setContentType}}
+                        {{resultAssignment}}{{awaitHandler}}handler();
+                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
+                    }
 """;
+    }
+
+    private static string EmitResponseWritingCall(this Endpoint endpoint)
+    {
+        var returnOrAwait = endpoint.Response.IsAwaitable ? "await" : "return";
+
+        if (endpoint.Response.IsIResult)
+        {
+            return $"{returnOrAwait} result.ExecuteAsync(httpContext);";
+        }
+        else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_String)
+        {
+            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+        }
+        else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_Object)
+        {
+            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
+        }
+        else if (!endpoint.Response.IsVoid)
+        {
+            return $"{returnOrAwait} httpContext.Response.WriteAsJsonAsync(result);";
+        }
+        else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
+        {
+            return $"{returnOrAwait} Task.CompletedTask;";
+        }
+        else
+        {
+            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+        }
     }
 
     /*
@@ -70,11 +114,11 @@ Task RequestHandler(HttpContext httpContext)
     public static string EmitFilteredRequestHandler()
     {
         return """
-async Task RequestHandlerFiltered(HttpContext httpContext)
-                {
-                    var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
-                    await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
-                }
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
 """;
     }
 
@@ -83,7 +127,7 @@ async Task RequestHandlerFiltered(HttpContext httpContext)
      * the appropriate arguments processed via the parameter binding.
      *
      * ```
-     * return System.Threading.Tasks.ValueTask.FromResult<object?>(handler(name, age));
+     * return ValueTask.FromResult<object?>(handler(name, age));
      * ```
      *
      * If the handler returns void, it will be invoked and an `EmptyHttpResult`
@@ -91,11 +135,18 @@ async Task RequestHandlerFiltered(HttpContext httpContext)
      *
      * ```
      * handler(name, age);
-     * return System.Threading.Tasks.ValueTask.FromResult<object?>(Results.Empty);
+     * return ValueTask.FromResult<object?>(Results.Empty);
      * ```
      */
-    public static string EmitFilteredInvocation()
+    public static string EmitFilteredInvocation(this Endpoint endpoint)
     {
-        return "return ValueTask.FromResult<object?>(handler());";
+        // Note: This string does not need indentation since it is
+        // handled when we generate the output string in the `thunks` pipeline.
+        return endpoint.Response.IsVoid ? """
+handler();
+return ValueTask.FromResult<object?>(Results.Empty);
+""" : """
+return ValueTask.FromResult<object?>(handler());
+""";
     }
 }

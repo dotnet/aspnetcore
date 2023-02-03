@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,9 +18,9 @@ using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RequestDelegateGeneratorTestBase
+public class RequestDelegateGeneratorTestBase : LoggedTest
 {
-    internal static (ImmutableArray<GeneratorRunResult>, Compilation) RunGenerator(string sources)
+    internal static (GeneratorRunResult, Compilation) RunGenerator(string sources, params string[] updatedSources)
     {
         var compilation = CreateCompilation(sources);
         var generator = new RequestDelegateGenerator().AsSourceGenerator();
@@ -36,18 +35,25 @@ public class RequestDelegateGeneratorTestBase
         // Run the source generator
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
+        foreach (var updatedSource in updatedSources)
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(GetMapActionString(updatedSource), path: $"TestMapActions.cs");
+            compilation = compilation
+                .ReplaceSyntaxTree(compilation.SyntaxTrees.First(), syntaxTree);
+            driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out updatedCompilation,
+                out var _);
+        }
         var diagnostics = updatedCompilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
         var runResult = driver.GetRunResult();
 
-        return (runResult.Results, updatedCompilation);
+        return (Assert.Single(runResult.Results), updatedCompilation);
     }
 
-    internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(ImmutableArray<GeneratorRunResult> results, string stepName)
+    internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName)
     {
         // We only invoke the generator once in our test scenarios
-        var firstGeneratorPass = results[0];
-        if (firstGeneratorPass.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
+        if (result.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
         {
             var staticEndpointStep = staticEndpointSteps.Single();
             var staticEndpointOutput = staticEndpointStep.Outputs.Single();
@@ -58,7 +64,7 @@ public class RequestDelegateGeneratorTestBase
         return null;
     }
 
-    internal static Endpoint GetEndpointFromCompilation(Compilation compilation)
+    internal static Endpoint GetEndpointFromCompilation(Compilation compilation, bool checkSourceKey = true)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -100,7 +106,6 @@ public class RequestDelegateGeneratorTestBase
         var handler = assembly.GetType("TestMapActions")
             ?.GetMethod("MapTestEndpoints", BindingFlags.Public | BindingFlags.Static)
             ?.CreateDelegate<Func<IEndpointRouteBuilder, IEndpointRouteBuilder>>();
-        var sourceKeyType = assembly.GetType("Microsoft.AspNetCore.Builder.SourceKey");
 
         Assert.NotNull(handler);
 
@@ -111,15 +116,31 @@ public class RequestDelegateGeneratorTestBase
         // Trigger Endpoint build by calling getter.
         var endpoint = Assert.Single(dataSource.Endpoints);
 
-        var sourceKeyMetadata = endpoint.Metadata.Single(metadata => metadata.GetType() == sourceKeyType);
-        Assert.NotNull(sourceKeyMetadata);
+        if (checkSourceKey)
+        {
+            var sourceKeyType = assembly.GetType("Microsoft.AspNetCore.Builder.SourceKey");
+            var sourceKeyMetadata = endpoint.Metadata.Single(metadata => metadata.GetType() == sourceKeyType);
+            Assert.NotNull(sourceKeyMetadata);
+        }
 
         return endpoint;
     }
 
-    private static Compilation CreateCompilation(string sources)
+    internal HttpContext CreateHttpContext()
     {
-        var source = $$"""
+        var httpContext = new DefaultHttpContext();
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        return httpContext;
+    }
+
+    private static string GetMapActionString(string sources) => $$"""
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -137,8 +158,25 @@ public static class TestMapActions
         {{sources}}
         return app;
     }
+
+    public interface ITodo
+    {
+        public int Id { get; }
+        public string? Name { get; }
+        public bool IsComplete { get; }
+    }
+
+    public class Todo
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; } = "Todo";
+        public bool IsComplete { get; set; }
+    }
 }
 """;
+    private static Compilation CreateCompilation(string sources)
+    {
+        var source = GetMapActionString(sources);
 
         var syntaxTrees = new[]
         {

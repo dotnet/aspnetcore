@@ -14,6 +14,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.Mvc;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class MvcAnalyzer : DiagnosticAnalyzer
 {
