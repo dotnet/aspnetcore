@@ -85,21 +85,16 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Gets the result of parsing of incoming value. If true, the parsing failed and <see cref="IncomingValueBeforeParsing"/> contains the incoming value.
-    /// </summary>
-    protected bool ParsingFailed => _parsingFailed;
-
-    /// <summary>
-    /// Gets incoming value (string) before it was parsed.
-    /// </summary>
-    protected string? IncomingValueBeforeParsing => _incomingValueBeforeParsing;
-
-    /// <summary>
     /// Gets or sets the current value of the input, represented as a string.
     /// </summary>
     protected string? CurrentValueAsString
     {
-        get => FormatValueAsString(CurrentValue);
+        // InputBase-derived components can hold invalid states (e.g., an InputNumber being blank even when bound
+        // to an int value). So, if parsing fails, we keep the rejected string in the UI even though it doesn't
+        // match what's on the .NET model. This avoids interfering with typing, but still notifies the EditContext
+        // about the validation error message.
+        get => _parsingFailed ? _incomingValueBeforeParsing : FormatValueAsString(CurrentValue);
+
         set
         {
             _incomingValueBeforeParsing = value;
