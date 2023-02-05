@@ -146,6 +146,8 @@ public class TemplateParserDefaultValuesTests
         var services = new ServiceCollection().AddOptions();
         var serviceProvider = services.BuildServiceProvider();
         var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
+        accessor.Value.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+
         return new DefaultInlineConstraintResolver(accessor, serviceProvider);
     }
 }

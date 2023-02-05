@@ -2339,10 +2339,11 @@ public class WebApplicationTests
             _ = await client.GetAsync("https://localhost/products/abcd1234");
         });
 
-        Assert.IsType<InvalidOperationException>(ex);
+        Assert.IsType<RouteCreationException>(ex);
+        Assert.IsType<InvalidOperationException>(ex.InnerException.InnerException);
         Assert.Equal(
-            "The route parameter 'productId' uses a regular expression constraint. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) it may not include the RegexInlineRouteConstraint. To register this route route constraint call SetParameterPolicy<RegexInlineRouteConstraint(\"regex\") on RouteOptions via the Configure<TOptions>(Action<RouteOptions> configureOptions) extension method.",
-            ex.Message);
+            "A route parameter uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure<RouteOptions>(options => options.SetParameterPolicy<RegexInlineRouteConstraint>(\"regex\"));",
+            ex.InnerException.InnerException.Message);
     }
 
     [Fact]

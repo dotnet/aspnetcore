@@ -250,6 +250,6 @@
     <value>This RequestDelegate cannot be called before the final endpoint is built.</value>
   </data>
   <data name="RegexRouteContraint_NotConfigured" xml:space="preserve">
-    <value>Route parameter '{0}' uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure&lt;RouteOptions&gt;(options => options.SetParameterPolicy&lt;RegexInlineRouteConstraint&gt;("regex"));</value>
+    <value>A route parameter uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure&lt;RouteOptions&gt;(options =&gt; options.SetParameterPolicy&lt;RegexInlineRouteConstraint&gt;("regex"));</value>
   </data>
 </root>
