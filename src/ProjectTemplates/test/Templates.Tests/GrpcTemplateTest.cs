@@ -43,19 +43,19 @@ public class GrpcTemplateTest : LoggedTest
     }
 
     [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
-    public async Task GrpcTemplateNativeAotCSharp()
+    public async Task GrpcTemplateNativeAot()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.PublishNativeAot });
     }
 
     [ConditionalFact]
-    public async Task GrpcTemplateProgramMainCSharp()
+    public async Task GrpcTemplateProgramMain()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain });
     }
 
     [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
-    public async Task GrpcTemplateProgramMainNativeAotCSharp()
+    public async Task GrpcTemplateProgramMainNativeAot()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
     }
