@@ -13,6 +13,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Test;
 
+[SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+[SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
 public class GrpcTemplateTest : LoggedTest
 {
     public GrpcTemplateTest(ProjectFactoryFixture projectFactory)
@@ -34,16 +36,34 @@ public class GrpcTemplateTest : LoggedTest
         }
     }
 
-    [ConditionalTheory]
-    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GrpcTemplate(bool useProgramMain)
+    [ConditionalFact]
+    public async Task GrpcTemplate()
+    {
+        await GrpcTemplateCore();
+    }
+
+    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
+    public async Task GrpcTemplateNativeAotCSharp()
+    {
+        await GrpcTemplateCore(args: new[] { ArgConstants.PublishNativeAot });
+    }
+
+    [ConditionalFact]
+    public async Task GrpcTemplateProgramMainCSharp()
+    {
+        await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain });
+    }
+
+    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
+    public async Task GrpcTemplateProgramMainNativeAotCSharp()
+    {
+        await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
+    }
+
+    private async Task GrpcTemplateCore(string[] args = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var args = useProgramMain ? new[] { ArgConstants.UseProgramMain } : null;
         await project.RunDotNetNewAsync("grpc", args: args);
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
