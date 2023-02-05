@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="${GrpcAspNetCoreVersion}" />
-    <PackageReference Include="Google.Protobuf" Version="3.22.0-rc2" />
   </ItemGroup>
 
 </Project>
