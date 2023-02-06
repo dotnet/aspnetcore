@@ -55,10 +55,9 @@ interface IBlazor {
     getApplicationEnvironment?: () => System_String,
     readLazyAssemblies?: () => System_Array<System_Object>,
     readLazyPdbs?: () => System_Array<System_Object>,
-    readSatelliteAssemblies?: () => System_Array<System_Object>,
     getLazyAssemblies?: any
     dotNetCriticalError?: any
-    getSatelliteAssemblies?: any,
+    loadSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
     receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,

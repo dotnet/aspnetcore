@@ -344,33 +344,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
       // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
       // startup sequence to load satellite assemblies for the application's culture.
-      Blazor._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray) => {
-        const culturesToLoad = BINDING.mono_array_to_js_array(culturesToLoadDotNetArray);
-        const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
-
-        if (satelliteResources) {
-          const resourcePromises = Promise.all(culturesToLoad!
-            .filter(culture => satelliteResources.hasOwnProperty(culture))
-            .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/${fileName}`, 'assembly'))
-            .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
-            .map(async resource => (await resource.response).arrayBuffer()));
-
-          return BINDING.js_to_mono_obj(resourcePromises.then(resourcesToLoad => {
-            if (resourcesToLoad.length) {
-              Blazor._internal.readSatelliteAssemblies = () => {
-                const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
-                for (let i = 0; i < resourcesToLoad.length; i++) {
-                  BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
-                }
-                return array as any;
-              };
-            }
-
-            return resourcesToLoad.length;
-          }));
-        }
-        return BINDING.js_to_mono_obj(Promise.resolve(0));
-      };
+      Blazor._internal.loadSatelliteAssemblies = loadSatelliteAssemblies;
 
       const lazyResources: {
         assemblies?: (ArrayBuffer | null)[],
@@ -442,6 +416,23 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
         }));
       };
     };
+
+    async function loadSatelliteAssemblies(culturesToLoad: string[], loader: (wrapper: { dll: Uint8Array }) => void): Promise<void> {
+      const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
+      if (!satelliteResources) {
+        return;
+      }
+      await Promise.all(culturesToLoad!
+        .filter(culture => satelliteResources.hasOwnProperty(culture))
+        .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/${fileName}`, 'assembly'))
+        .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
+        .map(async resource => {
+          const response = await resource.response;
+          const bytes = await response.arrayBuffer();
+          const wrapper = { dll: new Uint8Array(bytes) };
+          loader(wrapper);
+        }));
+    }
 
     const postRun = () => {
       if (resourceLoader.bootConfig.debugBuild && resourceLoader.bootConfig.cacheBootResources) {
