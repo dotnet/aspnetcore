@@ -209,7 +209,8 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.IsType< SystemTextJsonOutputFormatter>(SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [RemoteExecutionSupported]
     public void CreateFormatter_Throws_WhenTypeResolverIsNull_AndEnsureJsonTrimmabilityTrue()
     {
         var options = new RemoteInvokeOptions();
