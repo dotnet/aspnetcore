@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.IO.Pipes;
@@ -26,6 +27,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly PipeOptions _inputOptions;
     private readonly PipeOptions _outputOptions;
     private readonly Mutex _mutex;
+    private readonly ConcurrentQueue<NamedPipeServerStream> _streamsCache = new ConcurrentQueue<NamedPipeServerStream>();
     private Task[]? _listeningTasks;
     private int _disposed;
 
@@ -52,6 +54,19 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
         _inputOptions = new PipeOptions(_memoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
         _outputOptions = new PipeOptions(_memoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
+    }
+
+    internal bool TryCacheStream(NamedPipeServerStream namedPipeServerStream)
+    {
+        // Limit the number of cached named pipe server streams.
+        // This isn't thread safe so it's possible for Count and Enqueue to race and slightly exceed this limit.
+        if (_streamsCache.Count <= 50)
+        {
+            _streamsCache.Enqueue(namedPipeServerStream);
+            return true;
+        }
+
+        return false;
     }
 
     public void Start()
@@ -83,13 +98,13 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
                     await stream.WaitForConnectionAsync(_listeningToken);
 
-                    var connection = new NamedPipeConnection(stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
+                    var connection = new NamedPipeConnection(this, stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
                     connection.Start();
 
                     // Create the next stream before writing connected stream to the channel.
                     // This ensures there is always a created stream and another process can't
                     // create a stream with the same name with different a access policy.
-                    nextStream = CreateServerStream();
+                    nextStream = GetOrCreateServerStream();
 
                     while (!_acceptedQueue.Writer.TryWrite(connection))
                     {
@@ -106,7 +121,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
                     // Dispose existing pipe, create a new one and continue accepting.
                     nextStream.Dispose();
-                    nextStream = CreateServerStream();
+                    nextStream = GetOrCreateServerStream();
                 }
                 catch (OperationCanceledException ex) when (_listeningToken.IsCancellationRequested)
                 {
@@ -123,6 +138,17 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         {
             _acceptedQueue.Writer.TryComplete(ex);
         }
+    }
+
+    private NamedPipeServerStream GetOrCreateServerStream()
+    {
+        if (!_streamsCache.TryDequeue(out var stream))
+        {
+            // Cache is empty. Create a new server stream.
+            stream = CreateServerStream();
+        }
+
+        return stream;
     }
 
     private NamedPipeServerStream CreateServerStream()
