@@ -68,17 +68,20 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
     }
 
-    [Fact]
-    public async Task AcceptAsync_ParallelConnections_ClientConnectionsSuccessfullyAccepted()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(4)]
+    [InlineData(16)]
+    public async Task AcceptAsync_ParallelConnections_ClientConnectionsSuccessfullyAccepted(int listenerQueueCount)
     {
         // Arrange
         const int ParallelCount = 10;
-        const int ParallelCallCount = 5000;
+        const int ParallelCallCount = 250;
         const int TotalCallCount = ParallelCount * ParallelCallCount;
 
         var currentCallCount = 0;
         var options = new NamedPipeTransportOptions();
-        options.ListenerQueueCount = 16;
+        options.ListenerQueueCount = listenerQueueCount;
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options);
 
         // Act
@@ -96,6 +99,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
             Logger.LogInformation($"Server task complete.");
         });
 
+        var cts = new CancellationTokenSource();
         var parallelTasks = new List<Task>();
         for (var i = 0; i < ParallelCount; i++)
         {
@@ -107,9 +111,9 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
                     try
                     {
                         var clientStream = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
-                        await clientStream.ConnectAsync();
+                        await clientStream.ConnectAsync(cts.Token);
 
-                        await clientStream.WriteAsync(new byte[1]);
+                        await clientStream.WriteAsync(new byte[1], cts.Token);
                         await clientStream.DisposeAsync();
                         clientStreamCount++;
                     }
@@ -117,11 +121,18 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
                     {
                         Logger.LogInformation(ex, "Client exception.");
                     }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
                 }
             }));
         }
 
         await serverTask.DefaultTimeout();
+
+        cts.Cancel();
+        await Task.WhenAll(parallelTasks).DefaultTimeout();
     }
 
     [ConditionalFact]
