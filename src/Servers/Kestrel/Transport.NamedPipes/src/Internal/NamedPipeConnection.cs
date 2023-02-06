@@ -294,9 +294,13 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
             return;
         }
 
-        if (!_streamDisconnected || !_connectionListener.TryCacheStream(_stream))
+        if (!_streamDisconnected)
         {
             _stream.Dispose();
+        }
+        else
+        {
+            _connectionListener.ReturnStream(_stream);
         }
     }
 }
