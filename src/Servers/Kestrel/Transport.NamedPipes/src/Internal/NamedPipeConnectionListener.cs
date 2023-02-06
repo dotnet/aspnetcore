@@ -166,8 +166,8 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             await Task.WhenAll(_listeningTasks);
         }
 
-        // Dispose pool after listening tasks are complete so there is no chance a stream
-        // is fetched from the pool after the pool is disposed.
+        // Dispose pool after listening tasks are complete so there is no chance a stream is fetched from the pool after the pool is disposed.
+        // Important to dispose because this empties and disposes streams in the pool.
         ((IDisposable)_namedPipeServerStreamPool).Dispose();
     }
 
