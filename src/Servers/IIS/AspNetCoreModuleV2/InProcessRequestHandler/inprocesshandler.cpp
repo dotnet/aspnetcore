@@ -115,11 +115,13 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
     if (pManagedHttpContext != nullptr)
     {
         m_pDisconnectHandler(pManagedHttpContext);
-        // lock before notifying, this prevents the condition where m_queueNotified is already checked but
-        // the condition_variable isn't waiting yet, which would cause notify_all to NOOP and block
-        // IndicateManagedRequestComplete until a spurious wakeup
-        std::unique_lock<std::mutex> lock(m_lockQueue);
-        m_queueNotified = true;
+        {
+            // lock before notifying, this prevents the condition where m_queueNotified is already checked but
+            // the condition_variable isn't waiting yet, which would cause notify_all to NOOP and block
+            // IndicateManagedRequestComplete until a spurious wakeup
+            std::lock_guard<std::mutex> lock(m_lockQueue);
+            m_queueNotified = true;
+        }
         m_queueCheck.notify_all();
     }
 }
@@ -144,6 +146,7 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
         // GCHandle pointing at m_pManagedHttpContext, and a new GCHandle could use the same address
         // for the next request, this could cause an in-progress NotifyDisconnect call to disconnect the new request
         std::unique_lock<std::mutex> lock(m_lockQueue);
+        // loop to handle spurious wakeups
         while (!m_queueNotified)
         {
             m_queueCheck.wait(lock);

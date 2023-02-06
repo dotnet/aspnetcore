@@ -807,6 +807,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         finally
         {
             // Post completion after completing the request to resume the state machine
+            // This must be called before freeing the GCHandle _thisHandle, see comment in IndicateManagedRequestComplete for details
             PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
             // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
