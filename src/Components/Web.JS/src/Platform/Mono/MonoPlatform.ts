@@ -377,7 +377,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
     };
 
-    async function loadLazyAssembly(assemblyNameToLoad: string, allocator: (dllLength: number, pdbLength: number) => number, loader: (dllLength: number, pdbLength: number) => void): Promise<void> {
+    async function loadLazyAssembly(assemblyNameToLoad: string): Promise<{ dll: Uint8Array, pdb: Uint8Array | null }> {
       const lazyAssemblies = resources.lazyAssembly;
       if (!lazyAssemblies) {
         throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
@@ -395,15 +395,16 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       if (shouldLoadPdb) {
         const pdbBytesPromise = await resourceLoader.loadResource(pdbNameToLoad, `_framework/${pdbNameToLoad}`, lazyAssemblies[pdbNameToLoad], 'pdb').response.then(response => response.arrayBuffer());
         const [dllBytes, pdbBytes] = await Promise.all([dllBytesPromise, pdbBytesPromise]);
-        const pinnedBuffer = allocator(dllBytes.byteLength, pdbBytes.byteLength);
-        Module.HEAPU8.set(new Uint8Array(dllBytes), pinnedBuffer);
-        Module.HEAPU8.set(new Uint8Array(pdbBytes), pinnedBuffer + dllBytes.byteLength);
-        loader(dllBytes.byteLength, pdbBytes.byteLength);
+        return {
+          dll: new Uint8Array(dllBytes),
+          pdb: new Uint8Array(pdbBytes),
+        };
       } else {
         const dllBytes = await dllBytesPromise;
-        const pinnedBuffer = allocator(dllBytes.byteLength, 0);
-        Module.HEAPU8.set(new Uint8Array(dllBytes), pinnedBuffer);
-        loader(dllBytes.byteLength, 0);
+        return {
+          dll: new Uint8Array(dllBytes),
+          pdb: null,
+        };
       }
     }
 

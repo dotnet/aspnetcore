@@ -7,7 +7,7 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
 using Microsoft.JSInterop;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -67,6 +67,7 @@ public sealed partial class LazyAssemblyLoader
     }
 
     [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
+    [SupportedOSPlatform("browser")]
     private async Task<IEnumerable<Assembly>> LoadAssembliesInClientAsync(IEnumerable<string> assembliesToLoad)
     {
         if (_loadedAssemblyCache is null)
@@ -102,53 +103,33 @@ public sealed partial class LazyAssemblyLoader
         }
 
         var loadedAssemblies = new List<Assembly>();
-        var pendingLoads = newAssembliesToLoad.Select(async assemblyToLoad =>
-        {
-            byte[]? buffer = null;
-            GCHandle pinnedArray = default;
-
-            Func<int, int, IntPtr> allocator = (dllLength, pdbLength) =>
-            {
-                buffer = new byte[dllLength + pdbLength];
-                pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                return pinnedArray.AddrOfPinnedObject();
-            };
-            Action<int, int> loader = (dllLength, pdbLength) =>
-            {
-                if (buffer == null)
-                {
-                    throw new InvalidOperationException("The buffer should not be null.");
-                }
-
-                Assembly loadedAssembly;
-                if (pdbLength == 0)
-                {
-                    loadedAssembly = AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(buffer));
-                }
-                else
-                {
-                    loadedAssembly = AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(buffer, 0, dllLength), new MemoryStream(buffer, dllLength, pdbLength));
-                }
-                loadedAssemblies.Add(loadedAssembly);
-                _loadedAssemblyCache.Add(assemblyToLoad);
-            };
-
-            await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad, allocator, loader);
-            if (pinnedArray.IsAllocated)
-            {
-                pinnedArray.Free();
-            }
-        });
+        var pendingLoads = newAssembliesToLoad.Select(assemblyToLoad => LoadAssembly(assemblyToLoad, loadedAssemblies));
 
         await Task.WhenAll(pendingLoads);
         return loadedAssemblies;
     }
 
+    [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
+    [SupportedOSPlatform("browser")]
+    private async Task LoadAssembly(string assemblyToLoad, List<Assembly> loadedAssemblies)
+    {
+        JSObject files = await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad);
+
+        byte[] dllBytes = files.GetPropertyAsByteArray("dll")!;
+        byte[]? pdbBytes = files.GetPropertyAsByteArray("pdb");
+        Assembly loadedAssembly = pdbBytes == null
+                    ? AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(dllBytes))
+                    : AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(dllBytes), new MemoryStream(pdbBytes));
+
+        loadedAssemblies.Add(loadedAssembly);
+        _loadedAssemblyCache!.Add(assemblyToLoad);
+
+        files.Dispose();
+    }
+
     private partial class LazyAssemblyLoaderInterop
     {
         [JSImport("Blazor._internal.loadLazyAssembly", "blazor-internal")]
-        public static partial Task LoadLazyAssembly(string assemblyToLoad,
-            [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number>>] Func<int, int, IntPtr> allocator,
-            [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>] Action<int, int> loader);
+        public static partial Task<JSObject> LoadLazyAssembly(string assemblyToLoad);
     }
 }
