@@ -30,6 +30,7 @@ public static class RoutingServiceCollectionExtensions
     {
         return services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
+            // Replace RegexErrorStubRouteConstraint with the real regex constraint.
             options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
         });
     }
