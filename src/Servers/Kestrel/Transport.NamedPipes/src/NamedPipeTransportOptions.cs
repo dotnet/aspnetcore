@@ -12,6 +12,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 public sealed class NamedPipeTransportOptions
 {
     /// <summary>
+    /// The number of listener queues used to accept name pipe connections.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
+    /// </remarks>
+    public int ListenerQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
+
+    /// <summary>
     /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
     /// <para>
     /// A value of <see langword="null"/> or 0 disables backpressure entirely allowing unlimited buffering.
