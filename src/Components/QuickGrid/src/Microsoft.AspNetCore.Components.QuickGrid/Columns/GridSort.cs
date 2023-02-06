@@ -14,7 +14,7 @@ public class GridSort<TGridItem>
 {
     private const string ExpressionNotRepresentableMessage = "The supplied expression can't be represented as a property name for sorting. Only simple member expressions, such as @(x => x.SomeProperty), can be converted to property names.";
 
-    private Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> _first;
+    private readonly Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> _first;
     private List<Func<IOrderedQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>>>? _then;
 
     private (LambdaExpression, bool) _firstExpression;

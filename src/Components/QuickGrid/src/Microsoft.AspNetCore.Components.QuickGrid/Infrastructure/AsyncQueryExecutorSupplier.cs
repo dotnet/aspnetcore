@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,6 +51,6 @@ internal static class AsyncQueryExecutorSupplier
     // We have to do this via reflection because the whole point is to avoid any static dependency on EF unless you
     // reference the adapter. Trimming won't cause us any problems because this is only a way of detecting misconfiguration
     // so it's sufficient if it can detect the misconfiguration in development.
-    private static bool IsEntityFrameworkProviderType(Type queryableProviderType)
-        => queryableProviderType.GetInterfaces().Any(x => string.Equals(x.FullName, "Microsoft.EntityFrameworkCore.Query.IAsyncQueryProvider")) == true;
+    private static bool IsEntityFrameworkProviderType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type queryableProviderType)
+        => queryableProviderType.GetInterfaces().Any(x => string.Equals(x.FullName, "Microsoft.EntityFrameworkCore.Query.IAsyncQueryProvider", StringComparison.Ordinal)) == true;
 }

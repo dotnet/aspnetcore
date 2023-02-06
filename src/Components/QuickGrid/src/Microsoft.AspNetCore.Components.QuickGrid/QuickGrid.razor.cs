@@ -110,8 +110,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     // We cascade the InternalGridContext to descendants, which in turn call it to add themselves to _columns
     // This happens on every render so that the column list can be updated dynamically
-    private InternalGridContext<TGridItem> _internalGridContext;
-    private List<ColumnBase<TGridItem>> _columns;
+    private readonly InternalGridContext<TGridItem> _internalGridContext;
+    private readonly List<ColumnBase<TGridItem>> _columns;
     private bool _collectingColumns; // Columns might re-render themselves arbitrarily. We only want to capture them at a defined time.
 
     // Tracking state for options and sorting
@@ -198,7 +198,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
         {
             _checkColumnOptionsPosition = false;
+#pragma warning disable CA2012 // Use ValueTasks correctly
             _ = _jsModule?.InvokeVoidAsync("checkColumnOptionsPosition", _tableReference);
+#pragma warning restore CA2012 // Use ValueTasks correctly
         }
     }
 
