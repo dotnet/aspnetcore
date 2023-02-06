@@ -258,6 +258,9 @@ public static class WebHost
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
             services.AddRouting();
+
+            // JsonOptions
+            services.AddDefaultHttpJsonOptions();
         });
     }
 

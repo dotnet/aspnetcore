@@ -3,6 +3,7 @@
 
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Internal;
 
 #nullable enable
 
@@ -14,7 +15,9 @@ namespace Microsoft.AspNetCore.Http.Json;
 /// </summary>
 public class JsonOptions
 {
-    internal static readonly JsonSerializerOptions DefaultSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+    private static JsonOptions? _defaultInstance;
+
+    private static readonly JsonSerializerOptions DefaultSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
     {
         // Web defaults don't use the relex JSON escaping encoder.
         //
@@ -27,5 +30,32 @@ public class JsonOptions
     /// <summary>
     /// Gets the <see cref="JsonSerializerOptions"/>.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; internal set; } = new JsonSerializerOptions(DefaultSerializerOptions);
+    public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(DefaultSerializerOptions);
+
+    /// <summary>
+    ///  Gets the default <see cref="JsonOptions"/> instance.
+    /// </summary>
+    public static JsonOptions Default { get => _defaultInstance ??= new JsonOptions().EnsureConfigured(); }
+
+    internal JsonOptions EnsureConfigured(bool markAsReadOnly = true)
+    {
+        if (!SerializerOptions.IsReadOnly)
+        {
+            if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
+            {
+#pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+                SerializerOptions.InitializeForReflection();
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
+            }
+
+            if (markAsReadOnly)
+            {
+                SerializerOptions.MakeReadOnly();
+            }
+        }
+
+        return this;
+    }
 }

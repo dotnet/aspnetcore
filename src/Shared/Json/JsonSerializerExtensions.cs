@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -19,49 +18,19 @@ internal static class JsonSerializerExtensions
     public static bool IsValid(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
      => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
-    public static JsonTypeInfo GetReadOnlyTypeInfo(this JsonSerializerOptions options, Type type)
-    {
-        options.EnsureConfigured();
-
-        return options.GetTypeInfo(type);
-    }
-
-    public static void EnsureConfigured(this JsonSerializerOptions options)
-    {
-        if (!options.IsReadOnly)
-        {
-            if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
-            {
-#pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-                InitializeForReflection(options);
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
-            }
-
-            options.MakeReadOnly();
-        }
-    }
+    public static JsonTypeInfo GetRequiredTypeInfo(this JsonSerializerContext context, Type type)
+        => context.GetTypeInfo(type) ?? throw new InvalidOperationException($"Unable to obtain the JsonTypeInfo for type '{type.FullName}' from the context '{context.GetType().FullName}'.");
 
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true.")]
-    private static void InitializeForReflection(JsonSerializerOptions options)
+    public static void InitializeForReflection(this JsonSerializerOptions options)
     {
-        // TODO: How can I avoid this lock?
-        lock (options)
-        {
-            if (!options.IsReadOnly)
-            {
-                _defaultJsonTypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
+        _defaultJsonTypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
 
-                options.TypeInfoResolver = options.TypeInfoResolver switch
-                {
-                    null => _defaultJsonTypeInfoResolver,
-                    _ => JsonTypeInfoResolver.Combine(options.TypeInfoResolver, _defaultJsonTypeInfoResolver),
-                };
-            }
-        }
+        options.TypeInfoResolver = options.TypeInfoResolver switch
+        {
+            null => _defaultJsonTypeInfoResolver,
+            _ => JsonTypeInfoResolver.Combine(options.TypeInfoResolver, _defaultJsonTypeInfoResolver),
+        };
     }
-    public static JsonTypeInfo GetRequiredTypeInfo(this JsonSerializerContext context, Type type)
-        => context.GetTypeInfo(type) ?? throw new InvalidOperationException($"Unable to obtain the JsonTypeInfo for type '{type.FullName}' from the context '{context.GetType().FullName}'.");
 }

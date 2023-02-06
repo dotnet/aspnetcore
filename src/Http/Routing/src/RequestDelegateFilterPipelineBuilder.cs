@@ -19,15 +19,15 @@ internal static class RequestDelegateFilterPipelineBuilder
         Debug.Assert(options.EndpointBuilder != null);
 
         var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-        var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-        var jsonSerializerOptions = jsonOptions.SerializerOptions;
+        var jsonSerializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.Default.SerializerOptions;
+        jsonSerializerOptions.MakeReadOnly();
 
         var factoryContext = new EndpointFilterFactoryContext
         {
             MethodInfo = requestDelegate.Method,
             ApplicationServices = options.EndpointBuilder.ApplicationServices
         };
-        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object));
+        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
         EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
         {

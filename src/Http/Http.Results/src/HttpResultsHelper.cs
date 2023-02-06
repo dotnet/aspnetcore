@@ -32,7 +32,6 @@ internal static partial class HttpResultsHelper
         }
 
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
-        jsonSerializerOptions.EnsureConfigured();
 
         var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
@@ -149,7 +148,7 @@ internal static partial class HttpResultsHelper
     private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
     {
         // Attempt to resolve options from DI then fallback to default options
-        return httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+        return httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? JsonOptions.Default;
     }
 
     internal static partial class Log

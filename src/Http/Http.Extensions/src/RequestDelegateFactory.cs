@@ -262,7 +262,8 @@ public static partial class RequestDelegateFactory
 
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
-        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.Default.SerializerOptions;
+        jsonSerializerOptions.MakeReadOnly();
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -1001,7 +1002,7 @@ public static partial class RequestDelegateFactory
                 methodCall,
                 HttpContextExpr,
                 factoryContext.JsonSerializerOptionsExpression,
-                Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
+                Expression.Constant(factoryContext.JsonSerializerOptions.GetTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
         else if (returnType == typeof(ValueTask<object>))
         {
@@ -1009,7 +1010,7 @@ public static partial class RequestDelegateFactory
                 methodCall,
                 HttpContextExpr,
                 factoryContext.JsonSerializerOptionsExpression,
-                Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
+                Expression.Constant(factoryContext.JsonSerializerOptions.GetTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
         else if (returnType == typeof(Task<object>))
         {
@@ -1017,7 +1018,7 @@ public static partial class RequestDelegateFactory
                 methodCall,
                 HttpContextExpr,
                 factoryContext.JsonSerializerOptionsExpression,
-                Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
+                Expression.Constant(factoryContext.JsonSerializerOptions.GetTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
         else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
         {
@@ -1053,7 +1054,7 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
+                    var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetTypeInfo(typeArg);
 
                     if (jsonTypeInfo.HasKnownPolymorphism())
                     {
@@ -1094,7 +1095,7 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
+                    var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetTypeInfo(typeArg);
 
                     if (jsonTypeInfo.HasKnownPolymorphism())
                     {
@@ -1138,7 +1139,7 @@ public static partial class RequestDelegateFactory
         }
         else
         {
-            var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(returnType);
+            var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetTypeInfo(returnType);
 
             if (jsonTypeInfo.HasKnownPolymorphism())
             {
@@ -1205,7 +1206,7 @@ public static partial class RequestDelegateFactory
         Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
 
         var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
-        var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(bodyType);
+        var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetTypeInfo(bodyType);
         var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
         var parameterName = factoryContext.JsonRequestBodyParameter.Name;
 

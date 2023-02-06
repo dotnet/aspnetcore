@@ -220,6 +220,7 @@ public class AcceptedAtRouteOfTResultTests
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton(linkGenerator);
+        services.AddDefaultHttpJsonOptions();
         return services.BuildServiceProvider();
     }
 }

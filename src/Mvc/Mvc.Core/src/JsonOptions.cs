@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -38,4 +40,19 @@ public class JsonOptions
         // This value is the same for model binding and Json.Net's serialization.
         MaxDepth = MvcOptions.DefaultMaxModelBindingRecursionDepth,
     };
+
+    internal JsonOptions EnsureConfigured()
+    {
+        if (!JsonSerializerOptions.IsReadOnly)
+        {
+            if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
+            {
+                JsonSerializerOptions.InitializeForReflection();
+            }
+
+            JsonSerializerOptions.MakeReadOnly();
+        }
+
+        return this;
+    }
 }

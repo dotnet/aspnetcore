@@ -3132,7 +3132,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
+            .AddSingleton(Options.Create(JsonOptions.Default))
             .BuildServiceProvider();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
@@ -3159,7 +3159,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
+            .AddSingleton(Options.Create(JsonOptions.Default))
             .BuildServiceProvider();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
@@ -3186,7 +3186,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
+            .AddSingleton(Options.Create(JsonOptions.Default))
             .BuildServiceProvider();
 
         var responseBodyStream = new MemoryStream();

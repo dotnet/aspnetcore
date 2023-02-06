@@ -144,6 +144,7 @@ public class AcceptedOfTResultTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddDefaultHttpJsonOptions();
         return services.BuildServiceProvider();
     }
 }

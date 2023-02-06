@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -31,6 +32,10 @@ public partial class HttpResultsHelperTests
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
+        }
+        else
+        {
+            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
@@ -62,6 +67,10 @@ public partial class HttpResultsHelperTests
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
+        }
+        else
+        {
+            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
@@ -95,6 +104,10 @@ public partial class HttpResultsHelperTests
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
+        }
+        else
+        {
+            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
@@ -130,6 +143,10 @@ public partial class HttpResultsHelperTests
         {
             serializerOptions.AddContext<TestJsonContext>();
         }
+        else
+        {
+            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+        }
 
         // Act
         await HttpResultsHelper.WriteResultAsJsonAsync<Todo>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
@@ -163,6 +180,10 @@ public partial class HttpResultsHelperTests
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
+        }
+        else
+        {
+            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act

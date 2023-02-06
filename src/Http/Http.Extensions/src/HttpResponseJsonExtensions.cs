@@ -38,7 +38,7 @@ public static partial class HttpResponseJsonExtensions
         ArgumentNullException.ThrowIfNull(response);
 
         var options = ResolveSerializerOptions(response.HttpContext);
-        return response.WriteAsJsonAsync(value, jsonTypeInfo: (JsonTypeInfo<TValue>)options.GetReadOnlyTypeInfo(typeof(TValue)), contentType: null, cancellationToken);
+        return response.WriteAsJsonAsync(value, jsonTypeInfo: (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)), contentType: null, cancellationToken);
     }
 
     /// <summary>
@@ -213,7 +213,7 @@ public static partial class HttpResponseJsonExtensions
         ArgumentNullException.ThrowIfNull(response);
 
         var options = ResolveSerializerOptions(response.HttpContext);
-        return response.WriteAsJsonAsync(value, jsonTypeInfo: options.GetReadOnlyTypeInfo(type), contentType: null, cancellationToken);
+        return response.WriteAsJsonAsync(value, jsonTypeInfo: options.GetTypeInfo(type), contentType: null, cancellationToken);
     }
 
     /// <summary>
@@ -339,6 +339,6 @@ public static partial class HttpResponseJsonExtensions
     private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
     {
         // Attempt to resolve options from DI then fallback to default options
-        return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.Default.SerializerOptions;
     }
 }

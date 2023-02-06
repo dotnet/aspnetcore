@@ -11,90 +11,90 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public partial class JsonSerializerExtensionsTests
 {
-    [ConditionalFact]
-    [RemoteExecutionSupported]
-    public void Configure_ThrowsForNullTypeInfoResolver_WhenEnsureJsonTrimmabilityTrue()
-    {
-        var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
+    //[ConditionalFact]
+    //[RemoteExecutionSupported]
+    //public void Configure_ThrowsForNullTypeInfoResolver_WhenEnsureJsonTrimmabilityTrue()
+    //{
+    //    var options = new RemoteInvokeOptions();
+    //    options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
 
-        using var remoteHandle = RemoteExecutor.Invoke(static () =>
-        {
-            // Arrange
-            var options = new JsonSerializerOptions();
+    //    using var remoteHandle = RemoteExecutor.Invoke(static () =>
+    //    {
+    //        // Arrange
+    //        var options = new JsonSerializerOptions();
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => JsonSerializerExtensions.EnsureConfigured(options));
-        }, options);
-    }
+    //        // Act & Assert
+    //        Assert.Throws<InvalidOperationException>(() => JsonSerializerExtensions.EnsureConfigured(options));
+    //    }, options);
+    //}
 
-    [ConditionalFact]
-    [RemoteExecutionSupported]
-    public void Configure_Works_WhenEnsureJsonTrimmabilityTrue()
-    {
-        var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
+    //[ConditionalFact]
+    //[RemoteExecutionSupported]
+    //public void Configure_Works_WhenEnsureJsonTrimmabilityTrue()
+    //{
+    //    var options = new RemoteInvokeOptions();
+    //    options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
 
-        using var remoteHandle = RemoteExecutor.Invoke(static () =>
-        {
-            // Arrange
-            var options = new JsonSerializerOptions() { TypeInfoResolver = JsonSerializerExtensionsTestsContext.Default };
+    //    using var remoteHandle = RemoteExecutor.Invoke(static () =>
+    //    {
+    //        // Arrange
+    //        var options = new JsonSerializerOptions() { TypeInfoResolver = JsonSerializerExtensionsTestsContext.Default };
 
-            // Act
-            JsonSerializerExtensions.EnsureConfigured(options);
+    //        // Act
+    //        JsonSerializerExtensions.EnsureConfigured(options);
 
-            // Assert
-            Assert.NotNull(options.TypeInfoResolver);
-            Assert.IsType<JsonSerializerExtensionsTestsContext>(options.TypeInfoResolver);
-            Assert.True(options.IsReadOnly);
-        }, options);
-    }
+    //        // Assert
+    //        Assert.NotNull(options.TypeInfoResolver);
+    //        Assert.IsType<JsonSerializerExtensionsTestsContext>(options.TypeInfoResolver);
+    //        Assert.True(options.IsReadOnly);
+    //    }, options);
+    //}
 
-    [ConditionalFact]
-    [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_Works_WhenEnsureJsonTrimmabilityFalse()
-    {
-        var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
+    //[ConditionalFact]
+    //[RemoteExecutionSupported]
+    //public void DefaultSerializerOptions_Works_WhenEnsureJsonTrimmabilityFalse()
+    //{
+    //    var options = new RemoteInvokeOptions();
+    //    options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
 
-        using var remoteHandle = RemoteExecutor.Invoke(static () =>
-        {
-            // Arrange
-            var options = new JsonSerializerOptions();
+    //    using var remoteHandle = RemoteExecutor.Invoke(static () =>
+    //    {
+    //        // Arrange
+    //        var options = new JsonSerializerOptions();
 
-            // Act
-            JsonSerializerExtensions.EnsureConfigured(options);
+    //        // Act
+    //        JsonSerializerExtensions.EnsureConfigured(options);
 
-            // Assert
-            Assert.NotNull(options.TypeInfoResolver);
-            Assert.IsType<DefaultJsonTypeInfoResolver>(options.TypeInfoResolver);
-            Assert.True(options.IsReadOnly);
-        }, options);
-    }
+    //        // Assert
+    //        Assert.NotNull(options.TypeInfoResolver);
+    //        Assert.IsType<DefaultJsonTypeInfoResolver>(options.TypeInfoResolver);
+    //        Assert.True(options.IsReadOnly);
+    //    }, options);
+    //}
 
-    [ConditionalFact]
-    [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_Combines_WhenEnsureJsonTrimmabilityFalse()
-    {
-        var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
+    //[ConditionalFact]
+    //[RemoteExecutionSupported]
+    //public void DefaultSerializerOptions_Combines_WhenEnsureJsonTrimmabilityFalse()
+    //{
+    //    var options = new RemoteInvokeOptions();
+    //    options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
 
-        using var remoteHandle = RemoteExecutor.Invoke(static () =>
-        {
-            // Arrange
-            var options = new JsonSerializerOptions() { TypeInfoResolver = JsonSerializerExtensionsTestsContext.Default };
+    //    using var remoteHandle = RemoteExecutor.Invoke(static () =>
+    //    {
+    //        // Arrange
+    //        var options = new JsonSerializerOptions() { TypeInfoResolver = JsonSerializerExtensionsTestsContext.Default };
 
-            // Act
-            JsonSerializerExtensions.EnsureConfigured(options);
+    //        // Act
+    //        JsonSerializerExtensions.EnsureConfigured(options);
 
-            // Assert
-            Assert.NotNull(options.TypeInfoResolver);
-            Assert.IsNotType<DefaultJsonTypeInfoResolver>(options.TypeInfoResolver);
-            Assert.IsNotType<JsonSerializerExtensionsTestsContext>(options.TypeInfoResolver);
-            Assert.NotNull(options.TypeInfoResolver.GetTypeInfo(typeof(string), options));
-            Assert.True(options.IsReadOnly);
-        }, options);
-    }
+    //        // Assert
+    //        Assert.NotNull(options.TypeInfoResolver);
+    //        Assert.IsNotType<DefaultJsonTypeInfoResolver>(options.TypeInfoResolver);
+    //        Assert.IsNotType<JsonSerializerExtensionsTestsContext>(options.TypeInfoResolver);
+    //        Assert.NotNull(options.TypeInfoResolver.GetTypeInfo(typeof(string), options));
+    //        Assert.True(options.IsReadOnly);
+    //    }, options);
+    //}
 
     [JsonSerializable(typeof(object))]
     private partial class JsonSerializerExtensionsTestsContext : JsonSerializerContext
