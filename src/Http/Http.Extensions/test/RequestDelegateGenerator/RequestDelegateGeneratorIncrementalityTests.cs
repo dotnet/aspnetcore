@@ -11,7 +11,7 @@ public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGenera
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
         var updatedSource = @"app.MapGet(""/hello"", () => ""Bye world!"");";
 
-        var (result, compilation) = await RunGenerator(source, updatedSource);
+        var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
@@ -23,7 +23,7 @@ public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGenera
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
         var updatedSource = @"app.MapGet(""/hello-2"", () => ""Hello world!"");";
 
-        var (result, compilation) = await RunGenerator(source, updatedSource);
+        var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
@@ -35,7 +35,7 @@ public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGenera
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
         var updatedSource = @"app.MapGet(""/hello"", () => Task.FromResult(""Hello world!""));";
 
-        var (result, compilation) = await RunGenerator(source, updatedSource);
+        var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));

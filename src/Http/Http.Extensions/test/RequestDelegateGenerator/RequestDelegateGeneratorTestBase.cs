@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public class RequestDelegateGeneratorTestBase : LoggedTest
 {
-    internal static async Task<(GeneratorRunResult, Compilation)> RunGenerator(string sources, params string[] updatedSources)
+    internal static async Task<(GeneratorRunResult, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
-        var compilation = await CreateCompilation(sources);
+        var compilation = await CreateCompilationAsync(sources);
         var generator = new RequestDelegateGenerator().AsSourceGenerator();
 
         // Enable the source generator in tests
@@ -174,7 +174,7 @@ public static class TestMapActions
     }
 }
 """;
-    private static Task<Compilation> CreateCompilation(string sources)
+    private static Task<Compilation> CreateCompilationAsync(string sources)
     {
         var source = GetMapActionString(sources);
         var projectName = $"TestProject-{Guid.NewGuid()}";
