@@ -6,36 +6,36 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGeneratorTestBase
 {
     [Fact]
-    public void MapAction_SameReturnType_DoesNotTriggerUpdate()
+    public async Task MapAction_SameReturnType_DoesNotTriggerUpdate()
     {
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
         var updatedSource = @"app.MapGet(""/hello"", () => ""Bye world!"");";
 
-        var (result, compilation) = RunGenerator(source, updatedSource);
+        var (result, compilation) = await RunGenerator(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
     }
 
     [Fact]
-    public void MapAction_DifferentRoutePattern_DoesNotTriggerUpdate()
+    public async Task MapAction_DifferentRoutePattern_DoesNotTriggerUpdate()
     {
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
         var updatedSource = @"app.MapGet(""/hello-2"", () => ""Hello world!"");";
 
-        var (result, compilation) = RunGenerator(source, updatedSource);
+        var (result, compilation) = await RunGenerator(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
     }
 
     [Fact]
-    public void MapAction_ChangeReturnType_TriggersUpdate()
+    public async Task MapAction_ChangeReturnType_TriggersUpdate()
     {
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
         var updatedSource = @"app.MapGet(""/hello"", () => Task.FromResult(""Hello world!""));";
 
-        var (result, compilation) = RunGenerator(source, updatedSource);
+        var (result, compilation) = await RunGenerator(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
