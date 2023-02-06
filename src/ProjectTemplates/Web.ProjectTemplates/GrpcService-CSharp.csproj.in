@@ -6,8 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!--#if (NativeAot) -->
     <PublishAot>true</PublishAot>
-    <TrimMode>full</TrimMode>
-    <PublishIISAssets>false</PublishIISAssets>
     <!--#endif -->
   </PropertyGroup>
 
