@@ -595,6 +595,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
             await Assert.ThrowsAsync<PlatformNotSupportedException>(() => context.Connection.GetClientCertificateAsync());
 
+            var lifetimeNotificationFeature = context.Features.Get<IConnectionLifetimeNotificationFeature>();
+            Assert.False(
+                lifetimeNotificationFeature.ConnectionClosedRequested.IsCancellationRequested,
+                "GetClientCertificateAsync shouldn't cause the connection to be closed.");
+
             await context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
 
