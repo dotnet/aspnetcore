@@ -115,8 +115,8 @@ public sealed partial class LazyAssemblyLoader
     {
         using var files = await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad);
 
-        byte[] dllBytes = files.GetPropertyAsByteArray("dll")!;
-        byte[]? pdbBytes = files.GetPropertyAsByteArray("pdb");
+        var dllBytes = files.GetPropertyAsByteArray("dll")!;
+        var pdbBytes = files.GetPropertyAsByteArray("pdb");
         Assembly loadedAssembly = pdbBytes == null
                     ? AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(dllBytes))
                     : AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(dllBytes), new MemoryStream(pdbBytes));
