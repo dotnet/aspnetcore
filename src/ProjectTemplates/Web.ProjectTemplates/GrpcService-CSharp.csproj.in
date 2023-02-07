@@ -4,6 +4,9 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!--#if (NativeAot) -->
+    <PublishAot>true</PublishAot>
+    <!--#endif -->
   </PropertyGroup>
 
   <ItemGroup>
