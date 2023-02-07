@@ -196,4 +196,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor AtMostOneFromBodyAttribute = new(
+        "ASP0024",
+        "At most one parameter can have a [FromBody] attribute.",
+        "Two or more parameters are declared with a [FromBody] attribute. Only one parameter can have a [FromBody] attribute.",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
