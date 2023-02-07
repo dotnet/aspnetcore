@@ -83,7 +83,7 @@ internal partial class WebAssemblyCultureProvider
     [SupportedOSPlatform("browser")]
     private void LoadSatelliteAssembly(JSObject wrapper)
     {
-        byte[] dllBytes = wrapper.GetPropertyAsByteArray("dll")!;
+        var dllBytes = wrapper.GetPropertyAsByteArray("dll")!;
         using var stream = new MemoryStream(dllBytes);
         AssemblyLoadContext.Default.LoadFromStream(stream);
         wrapper.Dispose();
