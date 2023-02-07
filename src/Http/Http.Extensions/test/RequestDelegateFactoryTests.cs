@@ -6019,7 +6019,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
-        var decodedResponseBody = JsonSerializer.Deserialize<Mvc.ProblemDetails>(responseBodyStream.ToArray());
+        var decodedResponseBody = JsonSerializer.Deserialize<Mvc.ProblemDetails>(responseBodyStream.ToArray(), JsonOptions.DefaultSerializerOptions);
         Assert.Equal(400, httpContext.Response.StatusCode);
         Assert.Equal("New response", decodedResponseBody!.Detail);
     }
