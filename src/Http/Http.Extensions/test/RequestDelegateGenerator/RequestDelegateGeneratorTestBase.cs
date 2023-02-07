@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public class RequestDelegateGeneratorTestBase : LoggedTest
 {
-    internal static (GeneratorRunResult, Compilation) RunGenerator(string sources, params string[] updatedSources)
+    internal static async Task<(GeneratorRunResult, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
-        var compilation = CreateCompilation(sources);
+        var compilation = await CreateCompilationAsync(sources);
         var generator = new RequestDelegateGenerator().AsSourceGenerator();
 
         // Enable the source generator in tests
@@ -174,18 +174,20 @@ public static class TestMapActions
     }
 }
 """;
-    private static Compilation CreateCompilation(string sources)
+    private static Task<Compilation> CreateCompilationAsync(string sources)
     {
         var source = GetMapActionString(sources);
+        var projectName = $"TestProject-{Guid.NewGuid()}";
+        var project = new AdhocWorkspace().CurrentSolution
+            .AddProject(projectName, projectName, LanguageNames.CSharp)
+            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithNullableContextOptions(NullableContextOptions.Enable))
+            .WithParseOptions(new CSharpParseOptions(LanguageVersion.CSharp11));
 
-        var syntaxTrees = new[]
-        {
-            CSharpSyntaxTree.ParseText(source, path: $"TestMapActions.cs")
-        };
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
 
         // Add in required metadata references
         var resolver = new AppLocalResolver();
-        var references = new List<PortableExecutableReference>();
         var dependencyContext = DependencyContext.Load(typeof(RequestDelegateGeneratorTestBase).Assembly);
 
         Assert.NotNull(dependencyContext);
@@ -199,16 +201,12 @@ public static class TestMapActions
                 {
                     continue;
                 }
-                references.Add(MetadataReference.CreateFromFile(resolveReferencePath));
+                project = project.AddMetadataReference(MetadataReference.CreateFromFile(resolveReferencePath));
             }
         }
 
         // Create a Roslyn compilation for the syntax tree.
-        var compilation = CSharpCompilation.Create(assemblyName: Guid.NewGuid().ToString(),
-            syntaxTrees: syntaxTrees,
-            references: references,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        return compilation;
+        return project.GetCompilationAsync();
     }
 
     internal async Task VerifyAgainstBaselineUsingFile(Compilation compilation, [CallerMemberName] string callerName = "")

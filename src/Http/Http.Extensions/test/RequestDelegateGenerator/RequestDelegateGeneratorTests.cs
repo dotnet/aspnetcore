@@ -16,7 +16,7 @@ public class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
     [InlineData(@"app.MapPut(handler: () => ""Hello world!"", pattern: ""/hello"");", "MapPut", "Hello world!")]
     public async Task MapAction_NoParam_StringReturn(string source, string httpMethod, string expectedBody)
     {
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -51,7 +51,7 @@ app.MapGet("/hello", () => "Hello world!")
     });
 """;
         var expectedBody = "Filtered: Hello world!";
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         await VerifyAgainstBaselineUsingFile(compilation);
 
@@ -82,7 +82,7 @@ app.MapGet("/hello", () => "Hello world!")
     [InlineData(@"app.MapGet(""/"", () => new DateTime(2023, 1, 1));", @"""2023-01-01T00:00:00""")]
     public async Task MapAction_NoParam_AnyReturn(string source, string expectedBody)
     {
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -116,7 +116,7 @@ app.MapGet("/", GetTodo);
     public async Task MapAction_NoParam_ComplexReturn(string source)
     {
         var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -143,9 +143,9 @@ app.MapGet("/", GetTodo);
     [InlineData(@"app.MapGet(""/"", () => Results.NotFound(""Oops!""));", null)]
     [InlineData(@"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item""}));", "application/json")]
     [InlineData(@"app.MapGet(""/"", () => ""Hello world!"");", "text/plain")]
-    public void MapAction_ProducesCorrectContentType(string source, string expectedContentType)
+    public async Task MapAction_ProducesCorrectContentType(string source, string expectedContentType)
     {
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
 
@@ -160,7 +160,7 @@ app.MapGet("/", GetTodo);
     [InlineData(@"app.MapGet(""/"", () => Task.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item""})));", """{"id":0,"name":"Test Item","isComplete":false}""")]
     public async Task MapAction_NoParam_TaskOfTReturn(string source, string expectedBody)
     {
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -188,7 +188,7 @@ app.MapGet("/", GetTodo);
     [InlineData(@"app.MapGet(""/"", () => ValueTask.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item""})));", """{"id":0,"name":"Test Item","isComplete":false}""")]
     public async Task MapAction_NoParam_ValueTaskOfTReturn(string source, string expectedBody)
     {
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -219,7 +219,7 @@ app.MapGet("/", GetTodo);
     [InlineData(@"app.MapGet(""/"", () => Task<object>.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item""})));", """{"id":0,"name":"Test Item","isComplete":false}""")]
     public async Task MapAction_NoParam_TaskLikeOfObjectReturn(string source, string expectedBody)
     {
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -250,7 +250,7 @@ app.MapGet("/es", () => "Hola mundo!");
 app.MapGet("/en-task", () => Task.FromResult("Hello world!"));
 app.MapGet("/es-task", () => new ValueTask<string>("Hola mundo!"));
 """;
-        var (_, compilation) = RunGenerator(source);
+        var (_, compilation) = await RunGeneratorAsync(source);
 
         await VerifyAgainstBaselineUsingFile(compilation);
     }
@@ -263,7 +263,7 @@ app.MapGet("/es-task", () => new ValueTask<string>("Hola mundo!"));
 var route = "/en";
 app.MapGet(route, () => "Hello world!");
 """;
-        var (result, compilation) = RunGenerator(source);
+        var (result, compilation) = await RunGeneratorAsync(source);
 
         // Emits diagnostic but generates no source
         var diagnostic = Assert.Single(result.Diagnostics);
@@ -287,12 +287,12 @@ app.MapGet(route, () => "Hello world!");
     }
 
     [Fact]
-    public void MapAction_RequestDelegateHandler_DoesNotEmit()
+    public async Task MapAction_RequestDelegateHandler_DoesNotEmit()
     {
         var source = """
 app.MapGet("/", (HttpContext context) => context.Response.WriteAsync("Hello world"));
 """;
-        var (result, _) = RunGenerator(source);
+        var (result, _) = await RunGeneratorAsync(source);
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
 
         // Endpoint model is null because we don't pass transform
