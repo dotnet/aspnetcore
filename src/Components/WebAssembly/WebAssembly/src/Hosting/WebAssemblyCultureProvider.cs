@@ -119,5 +119,4 @@ internal partial class WebAssemblyCultureProvider
         public static partial Task<JSObject> LoadSatelliteAssemblies(string[] culturesToLoad,
         [JSMarshalAs<JSType.Function<JSType.Object>>] Action<JSObject> assemblyLoader);
     }
-
 }
