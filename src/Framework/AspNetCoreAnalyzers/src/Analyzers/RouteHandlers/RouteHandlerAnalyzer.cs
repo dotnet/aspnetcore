@@ -106,19 +106,19 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 {
                     var lambda = (IAnonymousFunctionOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in context, wellKnownTypes, invocation, lambda.Symbol);
-                    DisallowNonParsableComplexTypesOnParameters(in context, routeUsage, lambda.Symbol);
+                    DisallowNonParsableComplexTypesOnParameters(in context, wellKnownTypes, routeUsage, lambda.Symbol);
                     DisallowReturningActionResultFromMapMethods(in context, wellKnownTypes, invocation, lambda, delegateCreation.Syntax);
                     DetectMisplacedLambdaAttribute(context, lambda);
                     DetectMismatchedParameterOptionality(in context, routeUsage, lambda.Symbol);
-                    AtMostOneFromBodyAttribute(in context, lambda.Symbol);
+                    AtMostOneFromBodyAttribute(in context, wellKnownTypes, lambda.Symbol);
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
                     var methodReference = (IMethodReferenceOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in context, wellKnownTypes, invocation, methodReference.Method);
-                    DisallowNonParsableComplexTypesOnParameters(in context, routeUsage, methodReference.Method);
+                    DisallowNonParsableComplexTypesOnParameters(in context, wellKnownTypes, routeUsage, methodReference.Method);
                     DetectMismatchedParameterOptionality(in context, routeUsage, methodReference.Method);
-                    AtMostOneFromBodyAttribute(in context, methodReference.Method);
+                    AtMostOneFromBodyAttribute(in context, wellKnownTypes, methodReference.Method);
 
                     var foundMethodReferenceBody = false;
                     if (!methodReference.Method.DeclaringSyntaxReferences.IsEmpty)

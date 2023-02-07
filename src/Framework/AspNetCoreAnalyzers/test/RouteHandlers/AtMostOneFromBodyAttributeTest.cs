@@ -73,4 +73,37 @@ public class Product
             expectedDiagnostic2
             );
     }
+
+    [Fact]
+    public async Task MethodGroup_Handler_With_Two_FromBody_Attributes_Fails()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapPost(""/products/{productId}"", MyHandlers.ProcessRequest);
+
+public static class MyHandlers
+{
+    public static void ProcessRequest(string productId, {|#0:[FromBody]Product product1|}, {|#1:[FromBody]Product product2|})
+    {
+    }
+}
+
+public class Product
+{
+}
+";
+
+        var expectedDiagnostic1 = new DiagnosticResult(DiagnosticDescriptors.AtMostOneFromBodyAttribute).WithLocation(0);
+        var expectedDiagnostic2 = new DiagnosticResult(DiagnosticDescriptors.AtMostOneFromBodyAttribute).WithLocation(1);
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(
+            source,
+            expectedDiagnostic1,
+            expectedDiagnostic2
+            );
+    }
 }

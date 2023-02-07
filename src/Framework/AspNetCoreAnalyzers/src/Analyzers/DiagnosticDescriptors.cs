@@ -199,8 +199,8 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor AtMostOneFromBodyAttribute = new(
         "ASP0024",
-        "Route handler has multiple parameters with the [FromBody] attribute.",
-        "Route handler has multiple parameters with the [FromBody] attribute. Only one parameter can have a [FromBody] attribute.",
+        new LocalizableResourceString(nameof(Resources.Analyzer_MultipleFromBody_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Analyzer_MultipleFromBody_Message), Resources.ResourceManager, typeof(Resources)),
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
