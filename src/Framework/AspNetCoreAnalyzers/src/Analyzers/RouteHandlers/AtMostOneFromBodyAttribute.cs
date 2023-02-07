@@ -17,7 +17,6 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void AtMostOneFromBodyAttribute(
         in OperationAnalysisContext context,
-        RouteUsageModel routeUsage,
         IMethodSymbol methodSymbol)
     {
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.Compilation);
