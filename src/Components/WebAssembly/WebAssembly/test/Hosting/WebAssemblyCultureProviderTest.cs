@@ -4,9 +4,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.JSInterop;
-using Moq;
-using static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyCultureProvider;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -25,54 +22,6 @@ public class WebAssemblyCultureProviderTest
 
         // Assert
         Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public async Task LoadCurrentCultureResourcesAsync_ReadsAssemblies()
-    {
-        // Arrange
-        using var cultureReplacer = new CultureReplacer("en-GB");
-        var invoker = new Mock<IJSUnmarshalledRuntime>();
-#pragma warning disable CS0618 // Type or member is obsolete
-        invoker.Setup(i => i.InvokeUnmarshalled<string[], object, object, Task<object>>(GetSatelliteAssemblies, new[] { "en-GB", "en" }, null, null))
-            .Returns(Task.FromResult<object>(1))
-            .Verifiable();
-
-        invoker.Setup(i => i.InvokeUnmarshalled<object, object, object, object[]>(ReadSatelliteAssemblies, null, null, null))
-            .Returns(new object[] { File.ReadAllBytes(GetType().Assembly.Location) })
-            .Verifiable();
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        var loader = new WebAssemblyCultureProvider(invoker.Object, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
-
-        // Act
-        await loader.LoadCurrentCultureResourcesAsync();
-
-        // Assert
-        invoker.Verify();
-    }
-
-    [Fact]
-    public async Task LoadCurrentCultureResourcesAsync_DoesNotReadAssembliesWhenThereAreNone()
-    {
-        // Arrange
-        using var cultureReplacer = new CultureReplacer("en-GB");
-        var invoker = new Mock<IJSUnmarshalledRuntime>();
-#pragma warning disable CS0618 // Type or member is obsolete
-        invoker.Setup(i => i.InvokeUnmarshalled<string[], object, object, Task<object>>(GetSatelliteAssemblies, new[] { "en-GB", "en" }, null, null))
-            .Returns(Task.FromResult<object>(0))
-            .Verifiable();
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        var loader = new WebAssemblyCultureProvider(invoker.Object, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
-
-        // Act
-        await loader.LoadCurrentCultureResourcesAsync();
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        // Assert
-        invoker.Verify(i => i.InvokeUnmarshalled<object, object, object, object[]>(ReadSatelliteAssemblies, null, null, null), Times.Never());
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [Fact]

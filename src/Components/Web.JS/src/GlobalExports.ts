@@ -53,10 +53,9 @@ interface IBlazor {
     renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void,
     getConfig?: (dotNetFileName: System_String) => System_Object | undefined,
     getApplicationEnvironment?: () => System_String,
-    readSatelliteAssemblies?: () => System_Array<System_Object>,
     dotNetCriticalError?: any
     loadLazyAssembly?: any,
-    getSatelliteAssemblies?: any,
+    loadSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
     receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,
