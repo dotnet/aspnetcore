@@ -33,7 +33,7 @@ internal static class DiagnosticDescriptors
             new LocalizableResourceString(nameof(Resources.UnableToResolveParameter_Title), Resources.ResourceManager, typeof(Resources)),
             new LocalizableResourceString(nameof(Resources.FormatUnableToResolveParameter_Message), Resources.ResourceManager, typeof(Resources), parameterName),
             "Usage",
-            DiagnosticSeverity.Warning,
+            DiagnosticSeverity.Hidden,
             isEnabledByDefault: true);
     }
 }

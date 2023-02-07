@@ -22,24 +22,13 @@ public class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/hello", endpointModel.RoutePattern);
         Assert.Equal(httpMethod, endpointModel.HttpMethod);
 
-        var httpContext = new DefaultHttpContext();
-
-        var outStream = new MemoryStream();
-        httpContext.Response.Body = outStream;
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Theory]
@@ -103,8 +92,9 @@ app.MapGet("/hello", (HttpRequest req, HttpResponse res) => req is null || res i
     [Fact]
     public async Task MapGet_WithRequestDelegate_DoesNotGenerateSources()
     {
-        var (results, compilation) = await RunGeneratorAsync(
-            $"app.MapGet(\"/hello\", (HttpContext context) => Task.CompletedTask);");
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
+""");
 
         Assert.Empty(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
 
@@ -132,23 +122,12 @@ app.MapGet("/hello", () => "Hello world!")
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/hello", endpointModel.RoutePattern);
 
-        var httpContext = new DefaultHttpContext();
-
-        var outStream = new MemoryStream();
-        httpContext.Response.Body = outStream;
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Theory]
@@ -161,24 +140,13 @@ app.MapGet("/hello", () => "Hello world!")
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/", endpointModel.RoutePattern);
         Assert.Equal("MapGet", endpointModel.HttpMethod);
 
-        var httpContext = new DefaultHttpContext();
-
-        var outStream = new MemoryStream();
-        httpContext.Response.Body = outStream;
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Theory]
@@ -195,21 +163,13 @@ app.MapGet("/", GetTodo);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/", endpointModel.RoutePattern);
         Assert.Equal("MapGet", endpointModel.HttpMethod);
 
         var httpContext = CreateHttpContext();
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Theory]
@@ -239,22 +199,14 @@ app.MapGet("/", GetTodo);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/", endpointModel.RoutePattern);
         Assert.Equal("MapGet", endpointModel.HttpMethod);
         Assert.True(endpointModel.Response.IsAwaitable);
 
         var httpContext = CreateHttpContext();
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Theory]
@@ -267,22 +219,14 @@ app.MapGet("/", GetTodo);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/", endpointModel.RoutePattern);
         Assert.Equal("MapGet", endpointModel.HttpMethod);
         Assert.True(endpointModel.Response.IsAwaitable);
 
         var httpContext = CreateHttpContext();
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Theory]
@@ -298,22 +242,14 @@ app.MapGet("/", GetTodo);
 
         var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-        var requestDelegate = endpoint.RequestDelegate;
 
         Assert.Equal("/", endpointModel.RoutePattern);
         Assert.Equal("MapGet", endpointModel.HttpMethod);
         Assert.True(endpointModel.Response.IsAwaitable);
 
         var httpContext = CreateHttpContext();
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Fact]
@@ -411,25 +347,17 @@ app.MapGet(route, () => "Hello world!");
 
         // Falls back to runtime-generated endpoint
         var endpoint = GetEndpointFromCompilation(compilation, expectSourceKey: false);
-        var requestDelegate = endpoint.RequestDelegate;
 
         var httpContext = CreateHttpContext();
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Fact]
     public async Task MapAction_UnknownParameter_EmitsDiagnostic_NoSource()
     {
         // This will eventually be handled by the EndpointParameterSource.JsonBodyOrService.
-        // All parameters should theoretically be handleable with enough "Or"s, sw in the future
+        // All parameters should theoretically be handleable with enough "Or"s in the future
         // we'll remove this test and diagnostic.
         var source = """
 app.MapGet("/", (IServiceProvider provider) => "Hello world!");
@@ -444,18 +372,10 @@ app.MapGet("/", (IServiceProvider provider) => "Hello world!");
 
         // Falls back to runtime-generated endpoint
         var endpoint = GetEndpointFromCompilation(compilation, expectSourceKey: false);
-        var requestDelegate = endpoint.RequestDelegate;
 
         var httpContext = CreateHttpContext();
-
-        await requestDelegate(httpContext);
-
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(expectedBody, body);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
     [Fact]
