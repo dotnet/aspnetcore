@@ -167,6 +167,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
         if (_overlapped != null)
         {
             boundHandle.FreeNativeOverlapped(_overlapped);
+            _overlapped = null;
         }
 
         _requestContext = _requestContextFactory.CreateRequestContext(size, requestId);
