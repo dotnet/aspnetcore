@@ -15,4 +15,7 @@ internal static partial class RequestContextLog
 
     [LoggerMessage(LoggerEventIds.RequestsDrained, LogLevel.Information, "All requests drained.", EventName = "RequestsDrained")]
     public static partial void RequestsDrained(ILogger logger);
+
+    [LoggerMessage(LoggerEventIds.RequestAborted, LogLevel.Debug, "The request has aborted.", EventName = "RequestAborted")]
+    public static partial void RequestAborted(ILogger logger);
 }
