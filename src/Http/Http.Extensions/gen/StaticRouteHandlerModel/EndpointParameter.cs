@@ -86,12 +86,9 @@ internal class EndpointParameter
 
     public override int GetHashCode()
     {
-        unchecked
-        {
-            var hashCode = Source.GetHashCode();
-            hashCode = (hashCode * 397) ^ Name.GetHashCode();
-            hashCode = (hashCode * 397) ^ SymbolEqualityComparer.Default.GetHashCode(Type);
-            return hashCode;
-        }
+        var hashCode = new HashCode();
+        hashCode.Add(Name);
+        hashCode.Add(Type, SymbolEqualityComparer.Default);
+        return hashCode.ToHashCode();
     }
 }
