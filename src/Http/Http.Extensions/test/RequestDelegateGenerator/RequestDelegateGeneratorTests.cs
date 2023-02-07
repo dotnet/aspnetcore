@@ -106,6 +106,27 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     }
 
     [Fact]
+    public async Task MapAction_MultilineLambda()
+    {
+        var source = """
+app.MapGet("/hello", () =>
+{
+    return "Hello world!";
+});
+""";
+        var (result, compilation) = await RunGeneratorAsync(source);
+
+        var endpointModel = GetStaticEndpoint(result, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
     public async Task MapAction_NoParam_StringReturn_WithFilter()
     {
         var source = """

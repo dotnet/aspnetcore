@@ -68,7 +68,7 @@ internal class Endpoint
 
     public List<DiagnosticDescriptor> Diagnostics { get; } = new List<DiagnosticDescriptor>();
 
-    public (string, int) Location { get; }
+    public (string File, int LineNumber) Location { get; }
     public IInvocationOperation Operation { get; }
 
     public override bool Equals(object o) =>
@@ -115,7 +115,7 @@ internal class Endpoint
     {
         var filePath = operation.Syntax.SyntaxTree.FilePath;
         var span = operation.Syntax.SyntaxTree.GetLineSpan(operation.Syntax.Span);
-        var lineNumber = span.EndLinePosition.Line + 1;
+        var lineNumber = span.StartLinePosition.Line + 1;
         return (filePath, lineNumber);
     }
 

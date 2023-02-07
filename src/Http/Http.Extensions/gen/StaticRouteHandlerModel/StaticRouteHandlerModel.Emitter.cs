@@ -33,7 +33,7 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static string EmitSourceKey(this Endpoint endpoint)
     {
-        return $@"(@""{endpoint.Location.Item1}"", {endpoint.Location.Item2})";
+        return $@"(@""{endpoint.Location.File}"", {endpoint.Location.LineNumber})";
     }
 
     public static string EmitVerb(this Endpoint endpoint)
