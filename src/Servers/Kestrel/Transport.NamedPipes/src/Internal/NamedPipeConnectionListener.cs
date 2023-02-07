@@ -57,10 +57,12 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _outputOptions = new PipeOptions(_memoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
     }
 
-    internal void ReturnStream(NamedPipeServerStream namedPipeServerStream)
+    internal void ReturnStream(NamedPipeServerStream stream)
     {
+        Debug.Assert(!stream.IsConnected, "Stream should have been successfully disconnected to reach this point.");
+
         // The stream is automatically disposed if there isn't space in the pool.
-        _namedPipeServerStreamPool.Return(namedPipeServerStream);
+        _namedPipeServerStreamPool.Return(stream);
     }
 
     public void Start()
@@ -221,6 +223,6 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             return stream;
         }
 
-        public bool Return(NamedPipeServerStream obj) => true;
+        public bool Return(NamedPipeServerStream obj) => !obj.IsConnected;
     }
 }
