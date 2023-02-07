@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using NamedPipeOptions = System.IO.Pipes.PipeOptions;
 using PipeOptions = System.IO.Pipelines.PipeOptions;
 
@@ -19,6 +20,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly ILogger _log;
     private readonly NamedPipeEndPoint _endpoint;
     private readonly NamedPipeTransportOptions _options;
+    private readonly ObjectPool<NamedPipeServerStream> _namedPipeServerStreamPool;
     private readonly CancellationTokenSource _listeningTokenSource = new CancellationTokenSource();
     private readonly CancellationToken _listeningToken;
     private readonly Channel<ConnectionContext> _acceptedQueue;
@@ -38,6 +40,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _log = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes");
         _endpoint = endpoint;
         _options = options;
+        _namedPipeServerStreamPool = new DefaultObjectPoolProvider().Create(new NamedPipeServerStreamPoolPolicy(this));
         _mutex = mutex;
         _memoryPool = options.MemoryPoolFactory();
         _listeningToken = _listeningTokenSource.Token;
@@ -54,6 +57,12 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _outputOptions = new PipeOptions(_memoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
     }
 
+    internal void ReturnStream(NamedPipeServerStream namedPipeServerStream)
+    {
+        // The stream is automatically disposed if there isn't space in the pool.
+        _namedPipeServerStreamPool.Return(namedPipeServerStream);
+    }
+
     public void Start()
     {
         Debug.Assert(_listeningTasks == null, "Already started");
@@ -63,7 +72,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         for (var i = 0; i < _listeningTasks.Length; i++)
         {
             // Start first stream inline to catch creation errors.
-            var initialStream = CreateServerStream();
+            var initialStream = _namedPipeServerStreamPool.Get();
 
             _listeningTasks[i] = Task.Run(() => StartAsync(initialStream));
         }
@@ -83,13 +92,13 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
                     await stream.WaitForConnectionAsync(_listeningToken);
 
-                    var connection = new NamedPipeConnection(stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
+                    var connection = new NamedPipeConnection(this, stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
                     connection.Start();
 
                     // Create the next stream before writing connected stream to the channel.
                     // This ensures there is always a created stream and another process can't
                     // create a stream with the same name with different a access policy.
-                    nextStream = CreateServerStream();
+                    nextStream = _namedPipeServerStreamPool.Get();
 
                     while (!_acceptedQueue.Writer.TryWrite(connection))
                     {
@@ -106,7 +115,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
                     // Dispose existing pipe, create a new one and continue accepting.
                     nextStream.Dispose();
-                    nextStream = CreateServerStream();
+                    nextStream = _namedPipeServerStreamPool.Get();
                 }
                 catch (OperationCanceledException ex) when (_listeningToken.IsCancellationRequested)
                 {
@@ -123,41 +132,6 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         {
             _acceptedQueue.Writer.TryComplete(ex);
         }
-    }
-
-    private NamedPipeServerStream CreateServerStream()
-    {
-        NamedPipeServerStream stream;
-        var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
-        if (_options.CurrentUserOnly)
-        {
-            pipeOptions |= NamedPipeOptions.CurrentUserOnly;
-        }
-
-        if (_options.PipeSecurity != null)
-        {
-            stream = NamedPipeServerStreamAcl.Create(
-                _endpoint.PipeName,
-                PipeDirection.InOut,
-                NamedPipeServerStream.MaxAllowedServerInstances,
-                PipeTransmissionMode.Byte,
-                pipeOptions,
-                inBufferSize: 0, // Buffer in System.IO.Pipelines
-                outBufferSize: 0, // Buffer in System.IO.Pipelines
-                _options.PipeSecurity);
-        }
-        else
-        {
-            stream = new NamedPipeServerStream(
-                _endpoint.PipeName,
-                PipeDirection.InOut,
-                NamedPipeServerStream.MaxAllowedServerInstances,
-                PipeTransmissionMode.Byte,
-                pipeOptions,
-                inBufferSize: 0,
-                outBufferSize: 0);
-        }
-        return stream;
     }
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -191,5 +165,56 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         {
             await Task.WhenAll(_listeningTasks);
         }
+
+        // Dispose pool after listening tasks are complete so there is no chance a stream is fetched from the pool after the pool is disposed.
+        // Important to dispose because this empties and disposes streams in the pool.
+        ((IDisposable)_namedPipeServerStreamPool).Dispose();
+    }
+
+    private sealed class NamedPipeServerStreamPoolPolicy : IPooledObjectPolicy<NamedPipeServerStream>
+    {
+        public NamedPipeConnectionListener _listener;
+
+        public NamedPipeServerStreamPoolPolicy(NamedPipeConnectionListener listener)
+        {
+            _listener = listener;
+        }
+
+        public NamedPipeServerStream Create()
+        {
+            NamedPipeServerStream stream;
+            var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
+            if (_listener._options.CurrentUserOnly)
+            {
+                pipeOptions |= NamedPipeOptions.CurrentUserOnly;
+            }
+
+            if (_listener._options.PipeSecurity != null)
+            {
+                stream = NamedPipeServerStreamAcl.Create(
+                    _listener._endpoint.PipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    pipeOptions,
+                    inBufferSize: 0, // Buffer in System.IO.Pipelines
+                    outBufferSize: 0, // Buffer in System.IO.Pipelines
+                    _listener._options.PipeSecurity);
+            }
+            else
+            {
+                stream = new NamedPipeServerStream(
+                    _listener._endpoint.PipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    pipeOptions,
+                    inBufferSize: 0,
+                    outBufferSize: 0);
+            }
+            return stream;
+        }
+
+        public bool Return(NamedPipeServerStream obj) => true;
     }
 }
