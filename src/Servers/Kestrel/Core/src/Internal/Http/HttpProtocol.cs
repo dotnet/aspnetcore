@@ -704,7 +704,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
                     if (!HasResponseStarted)
                     {
-                        StatusCode = 499;
+                        StatusCode = StatusCodes.Status499ClientClosedRequest;
                     }
 
                     return;

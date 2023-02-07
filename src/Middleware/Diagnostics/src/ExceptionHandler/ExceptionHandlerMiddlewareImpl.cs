@@ -118,7 +118,7 @@ internal class ExceptionHandlerMiddlewareImpl
 
             if (!context.Response.HasStarted)
             {
-                context.Response.StatusCode = 499;
+                context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
             }
 
             return;
