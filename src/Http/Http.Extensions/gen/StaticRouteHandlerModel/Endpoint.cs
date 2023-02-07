@@ -79,8 +79,6 @@ internal class Endpoint
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
-        // Eventually we may not have to compare HttpMethod because it should only influence parameter sources
-        // which is compared as part of the Parameters array.
         if (!a.Response.WrappedResponseType.Equals(b.Response.WrappedResponseType, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
