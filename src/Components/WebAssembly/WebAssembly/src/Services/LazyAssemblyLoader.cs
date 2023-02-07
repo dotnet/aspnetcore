@@ -124,7 +124,6 @@ public sealed partial class LazyAssemblyLoader
         loadedAssemblies.Add(loadedAssembly);
         _loadedAssemblyCache!.Add(assemblyToLoad);
 
-        files.Dispose();
     }
 
     private partial class LazyAssemblyLoaderInterop
