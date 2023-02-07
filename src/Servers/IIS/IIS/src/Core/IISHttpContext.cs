@@ -720,7 +720,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     }
     protected void ReportRequestAborted()
     {
-        Log.RequestAborted(_logger);
+        Log.RequestAborted(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier);
     }
 
     public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
