@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
-public static class InvocationOperationExtensions
+internal static class InvocationOperationExtensions
 {
     private const int RoutePatternArgumentOrdinal = 1;
     private const int RouteHandlerArgumentOrdinal = 2;

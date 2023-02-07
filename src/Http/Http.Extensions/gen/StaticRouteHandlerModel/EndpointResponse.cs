@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 using WellKnownType = WellKnownTypeData.WellKnownType;
 
-public class EndpointResponse
+internal class EndpointResponse
 {
     public ITypeSymbol? ResponseType { get; set; }
     public string WrappedResponseType { get; set; }
