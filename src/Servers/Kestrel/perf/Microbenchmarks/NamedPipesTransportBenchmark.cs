@@ -14,11 +14,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
+[OperatingSystemsFilter(true, OS.Windows)]
 public class NamedPipesTransportBenchmark
 {
     private const int _parallelCount = 10;
     private const int _parallelCallCount = 1000;
-    private const string _pipeName = "MicrobenchmarksTestPipe";
     private const string _plaintextExpectedResponse =
         "HTTP/1.1 200 OK\r\n" +
         "Content-Length: 13\r\n" +
@@ -29,6 +29,7 @@ public class NamedPipesTransportBenchmark
         "Hello, World!";
     private static readonly byte[] _responseBuffer = new byte[_plaintextExpectedResponse.Length];
 
+    private string _pipeName;
     private IHost _host;
 
     [Params(1, 2, 8, 16)]
@@ -37,6 +38,8 @@ public class NamedPipesTransportBenchmark
     [GlobalSetup]
     public void GlobalSetupPlaintext()
     {
+        _pipeName = "MicrobenchmarksTestPipe-" + Path.GetRandomFileName();
+
         _host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
