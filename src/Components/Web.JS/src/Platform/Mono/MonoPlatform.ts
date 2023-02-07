@@ -12,7 +12,7 @@ import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { RuntimeAPI, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, AssetEntry, ResourceRequest } from 'dotnet';
+import { RuntimeAPI, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, AssetEntry } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
