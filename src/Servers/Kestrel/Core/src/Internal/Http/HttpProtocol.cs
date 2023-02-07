@@ -695,7 +695,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 // (DisposeContext logs StatusCode).
                 SetBadRequestState(ex);
                 ReportApplicationError(ex);
-            }            
+            }
             catch (Exception ex)
             {
                 if (ex is OperationCanceledException && RequestAborted.IsCancellationRequested)
