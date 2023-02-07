@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 internal static class MvcDetector
 {
     public static bool IsController(INamedTypeSymbol? typeSymbol, WellKnownTypes wellKnownTypes)

@@ -46,7 +46,10 @@ public static class WebHostBuilderKestrelExtensions
             options.DefaultCloseErrorCode = (long)Http3ErrorCode.NoError;
         });
 
-        hostBuilder.UseNamedPipes();
+        if (OperatingSystem.IsWindows())
+        {
+            hostBuilder.UseNamedPipes();
+        }
 
         return hostBuilder;
     }

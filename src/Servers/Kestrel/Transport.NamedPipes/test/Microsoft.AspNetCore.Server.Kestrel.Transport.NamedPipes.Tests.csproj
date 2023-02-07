@@ -18,6 +18,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" Link="shared\TransportTestHelpers\IHostPortExtensions.cs" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(KestrelSharedSourceRoot)test\ServerRetryHelper.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\NamedPipesSupportedAttribute.cs" Link="shared\TransportTestHelpers\NamedPipesSupportedAttribute.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" Link="shared\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" />
   </ItemGroup>
 

@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DisallowNonParsableComplexTypesOnParameters(

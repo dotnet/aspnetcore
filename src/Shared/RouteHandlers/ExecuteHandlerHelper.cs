@@ -37,7 +37,7 @@ internal static class ExecuteHandlerHelper
     {
         var runtimeType = value?.GetType();
 
-        if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.IsPolymorphicSafe())
+        if (jsonTypeInfo.IsValid(runtimeType))
         {
             // In this case the polymorphism is not
             // relevant for us and will be handled by STJ, if needed.

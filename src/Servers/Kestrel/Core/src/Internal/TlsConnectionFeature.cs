@@ -129,6 +129,12 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
             await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
 #pragma warning restore CA1416 // Validate platform compatibility
         }
+        catch (PlatformNotSupportedException)
+        {
+            // NegotiateClientCertificateAsync might not be supported on all platforms.
+            // Don't attempt to recover by creating a new connection. Instead, just throw error directly to the app.
+            throw;
+        }
         catch
         {
             // We can't tell which exceptions are fatal or recoverable. Consider them all recoverable only given a new connection

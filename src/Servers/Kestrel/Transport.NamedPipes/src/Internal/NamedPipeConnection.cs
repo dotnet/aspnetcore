@@ -13,15 +13,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 
 internal sealed class NamedPipeConnection : TransportConnection, IConnectionNamedPipeFeature
 {
+    private static readonly ConnectionAbortedException SendGracefullyCompletedException = new ConnectionAbortedException("The named pipe transport's send loop completed gracefully.");
     private const int MinAllocBufferSize = 4096;
-
+    private readonly NamedPipeConnectionListener _connectionListener;
     private readonly NamedPipeServerStream _stream;
     private readonly ILogger _log;
     private readonly IDuplexPipe _originalTransport;
 
     private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
     private bool _connectionClosed;
-    private bool _connectionDisposed;
+    private bool _connectionShutdown;
+    private bool _streamDisconnected;
     private Exception? _shutdownReason;
     private readonly object _shutdownLock = new object();
 
@@ -30,6 +32,7 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
     internal Task _sendingTask = Task.CompletedTask;
 
     public NamedPipeConnection(
+        NamedPipeConnectionListener connectionListener,
         NamedPipeServerStream stream,
         NamedPipeEndPoint endPoint,
         ILogger logger,
@@ -37,6 +40,7 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
         PipeOptions inputOptions,
         PipeOptions outputOptions)
     {
+        _connectionListener = connectionListener;
         _stream = stream;
         _log = logger;
         MemoryPool = memoryPool;
@@ -120,7 +124,7 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
             // This exception should always be ignored because _shutdownReason should be set.
             error = ex;
 
-            if (!_connectionDisposed)
+            if (!_connectionShutdown)
             {
                 // This is unexpected if the socket hasn't been disposed yet.
                 NamedPipeLog.ConnectionError(_log, this, error);
@@ -206,7 +210,7 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
     {
         lock (_shutdownLock)
         {
-            if (_connectionDisposed)
+            if (_connectionShutdown)
             {
                 return;
             }
@@ -214,25 +218,24 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
             // Make sure to close the connection only after the _aborted flag is set.
             // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
             // a BadHttpRequestException is thrown instead of a TaskCanceledException.
-            _connectionDisposed = true;
+            _connectionShutdown = true;
 
             // shutdownReason should only be null if the output was completed gracefully, so no one should ever
             // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
             // to half close the connection which is currently unsupported.
-            _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
+            _shutdownReason = shutdownReason ?? SendGracefullyCompletedException;
             NamedPipeLog.ConnectionDisconnect(_log, this, _shutdownReason.Message);
 
             try
             {
                 // Try to gracefully close the socket even for aborts to match libuv behavior.
                 _stream.Disconnect();
+                _streamDisconnected = true;
             }
             catch
             {
                 // Ignore any errors from NamedPipeStream.Disconnect() since we're tearing down the connection anyway.
             }
-
-            _stream.Dispose();
         }
     }
 
@@ -287,8 +290,17 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
         catch (Exception ex)
         {
             _log.LogError(0, ex, $"Unexpected exception in {nameof(NamedPipeConnection)}.{nameof(Start)}.");
+            _stream.Dispose();
+            return;
         }
-        
-        await _stream.DisposeAsync();
+
+        if (!_streamDisconnected)
+        {
+            _stream.Dispose();
+        }
+        else
+        {
+            _connectionListener.ReturnStream(_stream);
+        }
     }
 }

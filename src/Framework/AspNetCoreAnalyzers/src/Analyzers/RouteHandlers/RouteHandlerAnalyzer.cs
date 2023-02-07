@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
@@ -218,7 +220,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         public static MapOperation Create(IInvocationOperation operation, RouteUsageModel routeUsageModel)
         {
             IOperation? builder = null;
-                
+
             var builderArgument = operation.Arguments.SingleOrDefault(a => a.Parameter?.Ordinal == 0);
             if (builderArgument != null)
             {

@@ -280,7 +280,9 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
-  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
+  const pdbsBeingLoaded = hasDebuggingEnabled()
+    ? resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb')
+    : [];
   const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, runtimeAssetsBeingLoaded);
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
@@ -340,81 +342,12 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
       pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-      Blazor._internal.dotNetCriticalError = (message) => printErr(message || '(null)');
+      Blazor._internal.dotNetCriticalError = printErr;
+      Blazor._internal.loadLazyAssembly = loadLazyAssembly;
 
       // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
       // startup sequence to load satellite assemblies for the application's culture.
       Blazor._internal.loadSatelliteAssemblies = loadSatelliteAssemblies;
-
-      const lazyResources: {
-        assemblies?: (ArrayBuffer | null)[],
-        pdbs?: (ArrayBuffer | null)[]
-      } = {};
-      Blazor._internal.getLazyAssemblies = (assembliesToLoadDotNetArray) => {
-        const assembliesToLoad = BINDING.mono_array_to_js_array(assembliesToLoadDotNetArray);
-        const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
-
-        if (!lazyAssemblies) {
-          throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
-        }
-
-        const assembliesMarkedAsLazy = assembliesToLoad!.filter(assembly => lazyAssemblies.hasOwnProperty(assembly));
-
-        if (assembliesMarkedAsLazy.length !== assembliesToLoad!.length) {
-          const notMarked = assembliesToLoad!.filter(assembly => !assembliesMarkedAsLazy.includes(assembly));
-          throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
-        }
-
-        let pdbPromises: Promise<(ArrayBuffer | null)[]> | undefined;
-        if (hasDebuggingEnabled()) {
-          const pdbs = resourceLoader.bootConfig.resources.pdb;
-          const pdbsToLoad = assembliesMarkedAsLazy.map(a => changeExtension(a, '.pdb'));
-          if (pdbs) {
-            pdbPromises = Promise.all(pdbsToLoad
-              .map(pdb => lazyAssemblies.hasOwnProperty(pdb) ? resourceLoader.loadResource(pdb, `_framework/${pdb}`, lazyAssemblies[pdb], 'pdb') : null)
-              .map(async resource => resource ? (await resource.response).arrayBuffer() : null));
-          }
-        }
-
-        const resourcePromises = Promise.all(assembliesMarkedAsLazy
-          .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
-          .map(async resource => (await resource.response).arrayBuffer()));
-
-
-        return BINDING.js_to_mono_obj(Promise.all([resourcePromises, pdbPromises]).then(values => {
-          lazyResources['assemblies'] = values[0];
-          lazyResources['pdbs'] = values[1];
-          if (lazyResources['assemblies'].length) {
-            Blazor._internal.readLazyAssemblies = () => {
-              const { assemblies } = lazyResources;
-              if (!assemblies) {
-                return BINDING.mono_obj_array_new(0);
-              }
-              const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
-              for (let i = 0; i < assemblies.length; i++) {
-                const assembly = assemblies[i] as ArrayBuffer;
-                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
-              }
-              return assemblyBytes as any;
-            };
-
-            Blazor._internal.readLazyPdbs = () => {
-              const { assemblies, pdbs } = lazyResources;
-              if (!assemblies) {
-                return BINDING.mono_obj_array_new(0);
-              }
-              const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
-              for (let i = 0; i < assemblies.length; i++) {
-                const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
-                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
-              }
-              return pdbBytes as any;
-            };
-          }
-
-          return lazyResources['assemblies'].length;
-        }));
-      };
     };
 
     async function loadSatelliteAssemblies(culturesToLoad: string[], loader: (wrapper: { dll: Uint8Array }) => void): Promise<void> {
@@ -432,6 +365,37 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
           const wrapper = { dll: new Uint8Array(bytes) };
           loader(wrapper);
         }));
+    }
+
+    async function loadLazyAssembly(assemblyNameToLoad: string): Promise<{ dll: Uint8Array, pdb: Uint8Array | null }> {
+      const lazyAssemblies = resources.lazyAssembly;
+      if (!lazyAssemblies) {
+        throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
+      }
+
+      const assemblyMarkedAsLazy = lazyAssemblies.hasOwnProperty(assemblyNameToLoad);
+      if (!assemblyMarkedAsLazy) {
+        throw new Error(`${assemblyNameToLoad} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
+      }
+      const dllNameToLoad = changeExtension(assemblyNameToLoad, '.dll');
+      const pdbNameToLoad = changeExtension(assemblyNameToLoad, '.pdb');
+      const shouldLoadPdb = hasDebuggingEnabled() && resources.pdb && lazyAssemblies.hasOwnProperty(pdbNameToLoad);
+
+      const dllBytesPromise = resourceLoader.loadResource(dllNameToLoad, `_framework/${dllNameToLoad}`, lazyAssemblies[dllNameToLoad], 'assembly').response.then(response => response.arrayBuffer());
+      if (shouldLoadPdb) {
+        const pdbBytesPromise = await resourceLoader.loadResource(pdbNameToLoad, `_framework/${pdbNameToLoad}`, lazyAssemblies[pdbNameToLoad], 'pdb').response.then(response => response.arrayBuffer());
+        const [dllBytes, pdbBytes] = await Promise.all([dllBytesPromise, pdbBytesPromise]);
+        return {
+          dll: new Uint8Array(dllBytes),
+          pdb: new Uint8Array(pdbBytes),
+        };
+      } else {
+        const dllBytes = await dllBytesPromise;
+        return {
+          dll: new Uint8Array(dllBytes),
+          pdb: null,
+        };
+      }
     }
 
     const postRun = () => {
