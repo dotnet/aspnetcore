@@ -116,8 +116,13 @@ internal class WellKnownTypes
         return false;
     }
 
-    public static bool Implements(ITypeSymbol type, ITypeSymbol interfaceType)
+    public static bool Implements(ITypeSymbol? type, ITypeSymbol interfaceType)
     {
+        if (type is null)
+        {
+            return false;
+        }
+
         foreach (var t in type.AllInterfaces)
         {
             if (SymbolEqualityComparer.Default.Equals(t, interfaceType))

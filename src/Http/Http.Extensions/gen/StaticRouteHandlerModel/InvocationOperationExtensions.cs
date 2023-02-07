@@ -7,8 +7,9 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
-public static class InvocationOperationExtensions
+internal static class InvocationOperationExtensions
 {
+    private const int RoutePatternArgumentOrdinal = 1;
     private const int RouteHandlerArgumentOrdinal = 2;
 
     public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, out IMethodSymbol method)
@@ -23,6 +24,26 @@ public static class InvocationOperationExtensions
         }
         method = null;
         return false;
+    }
+
+    public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, out SyntaxToken token)
+    {
+        IArgumentOperation? argumentOperation = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == RoutePatternArgumentOrdinal)
+            {
+                argumentOperation = argument;
+            }
+        }
+        if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
+            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        {
+            token = default;
+            return false;
+        }
+        token = routePatternArgumentLiteralSyntax.Token;
+        return true;
     }
 
     private static IMethodSymbol ResolveMethodFromOperation(IOperation operation) => operation switch
