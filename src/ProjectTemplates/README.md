@@ -61,9 +61,9 @@ Then, use one of:
 1. Install the templates to an existing Visual Studio installation.
     1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
         - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
-    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new -i "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
+    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new install "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
     3. Run Visual Studio and test out templates manually.
-    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new --uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
+    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
