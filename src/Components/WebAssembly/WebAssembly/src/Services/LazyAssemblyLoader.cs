@@ -113,7 +113,7 @@ public sealed partial class LazyAssemblyLoader
     [SupportedOSPlatform("browser")]
     private async Task LoadAssembly(string assemblyToLoad, List<Assembly> loadedAssemblies)
     {
-        JSObject files = await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad);
+        using var files = await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad);
 
         byte[] dllBytes = files.GetPropertyAsByteArray("dll")!;
         byte[]? pdbBytes = files.GetPropertyAsByteArray("pdb");
