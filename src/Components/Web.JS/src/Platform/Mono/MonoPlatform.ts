@@ -225,7 +225,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     // If anything writes to stderr, treat it as a critical exception. The underlying runtime writes
     // to stderr if a truly critical problem occurs outside .NET code. Note that .NET unhandled
     // exceptions also reach this, but via a different code path - see dotNetCriticalError below.
-    console.error(line);
+    console.error(line || '(null)');
     showErrorNotification();
   };
   const existingPreRun = moduleConfig.preRun || [] as any;
@@ -234,11 +234,11 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
   let resourcesLoaded = 0;
   function setProgress(){
-      resourcesLoaded++;
-      const percentage = resourcesLoaded / totalResources.length * 100;
-      document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
-      document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
-    }
+    resourcesLoaded++;
+    const percentage = resourcesLoaded / totalResources.length * 100;
+    document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
+    document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+  }
 
   const monoToBlazorAssetTypeMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
     'assembly': 'assembly',
