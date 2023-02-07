@@ -698,18 +698,14 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
             catch (Exception ex)
             {
-                if (ex is OperationCanceledException && RequestAborted.IsCancellationRequested)
+                if (ex is OperationCanceledException && _connectionAborted)
                 {
-                    Log.RequestAborted();
-
-                    if (!HasResponseStarted)
-                    {
-                        StatusCode = StatusCodes.Status499ClientClosedRequest;
-                    }
-
-                    return;
+                    Log.RequestAborted(ConnectionId, TraceIdentifier);
                 }
-                ReportApplicationError(ex);
+                else
+                {
+                    ReportApplicationError(ex);
+                }
             }
 
             KestrelEventSource.Log.RequestStop(this);
@@ -750,9 +746,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 }
                 else if (!HasResponseStarted)
                 {
-                    // If the request was aborted and no response was sent, there's no
-                    // meaningful status code to log.
-                    StatusCode = 0;
+                    // If the request was aborted and no response was sent, we use status code 499 for logging
+                    // https://learn.microsoft.com/en-us/azure/application-gateway/http-response-codes#499--client-closed-the-connection
+                    StatusCode = StatusCodes.Status499ClientClosedRequest;
                 }
             }
 
