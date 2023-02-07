@@ -63,6 +63,7 @@ public class InMemoryTransportBenchmark
 
         ValidateResponseAsync(RequestParsingData.PlaintextTechEmpowerRequest, _plaintextExpectedResponse).Wait();
         ValidateResponseAsync(RequestParsingData.PlaintextTechEmpowerPipelinedRequests, _plaintextPipelinedExpectedResponse).Wait();
+        throw new Exception("This should break validation.");
     }
 
     private async Task ValidateResponseAsync(byte[] request, string expectedResponse)
