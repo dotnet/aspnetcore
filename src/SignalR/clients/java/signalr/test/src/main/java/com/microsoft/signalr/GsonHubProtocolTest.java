@@ -465,4 +465,44 @@ class GsonHubProtocolTest {
         LocalDateTime messageResult = (LocalDateTime) invocationMessage.getArguments()[0];
         assertEquals(expectedResult, messageResult);
     }
+
+    @Test
+    public void canRegisterTypeAdaptorWithoutAffectingJsonProtocol() {
+        // Setup appropriate type adaptor
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Integer.class, ((JsonDeserializer<Integer>) (json, type, context)
+                        -> {
+                    String val = json.getAsJsonPrimitive().getAsString();
+                    switch(val) {
+                        case "one":
+                            return 1;
+                        case "two":
+                            return 2;
+                        case "three":
+                            return 3;
+                        default:
+                            throw new ClassCastException("Unable to convert '"+val+"' to an integer");
+                    }
+                }))
+                .create();
+        hubProtocol = new GsonHubProtocol(gson);
+
+        // Create message with string payload "three", soon to be parsed as (int) 3.
+        String json = "{\"type\":1,\"target\":\"test\",\"invocationId\":\"123\",\"arguments\":[\"three\"]}\u001E";
+        ByteBuffer bytes = TestUtils.stringToByteBuffer(json);
+        TestBinder binder = new TestBinder(new Type[] { Integer.class }, null);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(bytes, binder);
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        HubMessage message = messages.get(0);
+        assertEquals(HubMessageType.INVOCATION, message.getMessageType());
+        InvocationMessage invocationMessage = (InvocationMessage) message;
+
+        assertEquals(1, invocationMessage.getArguments().length);
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals("123", invocationMessage.getInvocationId());
+        int messageResult = (int) invocationMessage.getArguments()[0];
+        assertEquals(3, messageResult);
+    }
 }
