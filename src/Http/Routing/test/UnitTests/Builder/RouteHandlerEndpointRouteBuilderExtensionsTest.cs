@@ -426,6 +426,24 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public void MapMetadataAddsMetadata()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        _ = builder.MapMetadata("/{**subpath}").WithMetadata("This is on every endpoint now!");
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+
+        var endpoint = dataSource.Endpoints.First();
+        Assert.NotNull(endpoint);
+
+        Assert.Equal("This is on every endpoint now!", endpoint.Metadata.GetMetadata<string>());
+
+        var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+        Assert.Equal("/{**subpath}", routeEndpointBuilder.RoutePattern.RawText);
+    }
+
+    [Fact]
     public void MapPatch_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));

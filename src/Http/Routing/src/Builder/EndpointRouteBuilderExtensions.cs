@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -9,6 +10,39 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
+
+internal class MetadataOnlyEndpointMetadata
+{
+
+}
+
+internal class MetadataOnlyEndpoint : Endpoint
+{
+    public static readonly RequestDelegate NoOpRequestDelegate = (ctx) => Task.CompletedTask;
+
+    public MetadataOnlyEndpoint(Endpoint endpoint)
+        : base(null, endpoint.Metadata, GetDisplayName(endpoint))
+    {
+
+    }
+
+    public MetadataOnlyEndpoint(Endpoint endpoint, IReadOnlyList<object> metadata)
+        : base(null, new(endpoint.Metadata.Union(metadata)), GetDisplayName(endpoint))
+    {
+
+    }
+
+    public static bool IsMetadataOnlyEndpoint(Endpoint endpoint) =>
+        ReferenceEquals(endpoint.RequestDelegate, NoOpRequestDelegate);
+
+    private static string GetDisplayName(Endpoint endpoint)
+    {
+        var suffix = $"[{nameof(MetadataOnlyEndpoint)}]";
+        return !string.IsNullOrEmpty(endpoint.DisplayName)
+            ? endpoint.DisplayName + " " + suffix
+            : suffix;
+    }
+}
 
 /// <summary>
 /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to add endpoints.
@@ -152,6 +186,23 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(httpMethods);
 
         return endpoints.Map(RoutePatternFactory.Parse(pattern), requestDelegate, httpMethods);
+    }
+
+    /// <summary>
+    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that adds the provided metadata items to
+    /// any <see cref="RouteEndpoint"/> mapped to HTTP requests for the specified pattern.
+    /// </summary>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> builder.</param>
+    /// <param name="pattern">The route pattern.</param>
+    /// <param name="items">A collection of metadata items.</param>
+    /// <returns>An <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static IEndpointConventionBuilder MapMetadata(this IEndpointRouteBuilder endpoints,
+        [StringSyntax("Route")] string pattern,
+        params object[] items)
+    {
+        return endpoints.Map(pattern, MetadataOnlyEndpoint.NoOpRequestDelegate)
+            .WithMetadata(new MetadataOnlyEndpointMetadata())
+            .WithMetadata(items);
     }
 
     /// <summary>
