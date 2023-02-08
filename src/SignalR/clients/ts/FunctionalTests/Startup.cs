@@ -91,6 +91,8 @@ public class Startup
                     }
                 };
             });
+
+        services.AddDefaultHttpJsonOptions();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
