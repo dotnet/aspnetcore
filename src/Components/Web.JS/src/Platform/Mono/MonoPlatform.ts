@@ -211,10 +211,10 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
   const assets: AssetEntry[] = [];
   const environmentVariables = {};
   const config: MonoConfig = {
-    diagnosticTracing: true,
     assets,
     environmentVariables: environmentVariables,
     debugLevel: hasDebuggingEnabled() ? 1 : 0,
+    maxParallelDownloads: 1000000, // disable throttling parallel downloads
   };
   const monoToBlazorAssetTypeMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
     'assembly': 'assembly',
@@ -308,7 +308,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     environmentVariables['DOTNET_SYSTEM_GLOBALIZATION_INVARIANT'] = '1';
   }
 
-  if (hasDebuggingEnabled() && resourceLoader.bootConfig.modifiableAssemblies) {
+  if (resourceLoader.bootConfig.modifiableAssemblies) {
     // Configure the app to enable hot reload in Development.
     environmentVariables['DOTNET_MODIFIABLE_ASSEMBLIES'] = resourceLoader.bootConfig.modifiableAssemblies;
   }
