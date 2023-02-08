@@ -43,7 +43,6 @@ public static class SignalRDependencyInjectionExtensions
         services.Configure<WebSocketOptions>(o => o.KeepAliveInterval = TimeSpan.Zero);
         services.TryAddSingleton<SignalRMarkerService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<HubOptions>, HubOptionsSetup>());
-        services.AddDefaultHttpJsonOptions();
         return services.AddSignalRCore();
     }
 
