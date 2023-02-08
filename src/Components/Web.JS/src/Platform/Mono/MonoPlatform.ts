@@ -288,6 +288,8 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
         hasIcuData = true;
       }
       continue;
+    } else if (behavior === 'js-module-dotnet') {
+      continue;
     }
     const asset: AssetEntry = {
       name,
