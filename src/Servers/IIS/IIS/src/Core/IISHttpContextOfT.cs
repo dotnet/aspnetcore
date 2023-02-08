@@ -90,8 +90,7 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
             }
             else if (!HasResponseStarted && _requestRejectedException == null)
             {
-                // If the request was aborted and no response was sent, we use status code 499 for logging
-                // https://learn.microsoft.com/en-us/azure/application-gateway/http-response-codes#499--client-closed-the-connection
+                // If the request was aborted and no response was sent, we use status code 499 for logging               
                 StatusCode = StatusCodes.Status499ClientClosedRequest;
                 success = false;
             }

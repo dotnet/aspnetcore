@@ -284,7 +284,8 @@ public static class StatusCodes
     public const int Status451UnavailableForLegalReasons = 451;
 
     /// <summary>
-    /// HTTP status code 499.
+    /// HTTP status code 499. This is an unofficial status code originally defined by Nginx and is commonly used
+    /// in logs when the client has disconnected.
     /// </summary>
     public const int Status499ClientClosedRequest = 499;
 
