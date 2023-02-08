@@ -28,7 +28,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly PipeOptions _inputOptions;
     private readonly PipeOptions _outputOptions;
     private readonly Mutex _mutex;
-    private Task[]? _listeningTasks;
+    private Task? _completeListeningTask;
     private int _disposed;
 
     public NamedPipeConnectionListener(
@@ -65,73 +65,79 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
     public void Start()
     {
-        Debug.Assert(_listeningTasks == null, "Already started");
+        Debug.Assert(_completeListeningTask == null, "Already started");
 
-        _listeningTasks = new Task[_options.ListenerQueueCount];
+        var listeningTasks = new Task[_options.ListenerQueueCount];
 
-        for (var i = 0; i < _listeningTasks.Length; i++)
+        for (var i = 0; i < listeningTasks.Length; i++)
         {
             // Start first stream inline to catch creation errors.
             var initialStream = _namedPipeServerStreamPool.Get();
 
-            _listeningTasks[i] = Task.Run(() => StartAsync(initialStream));
+            listeningTasks[i] = Task.Run(() => StartAsync(initialStream));
         }
+
+        _completeListeningTask = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.WhenAll(listeningTasks);
+                _acceptedQueue.Writer.TryComplete();
+            }
+            catch (Exception ex)
+            {
+                _acceptedQueue.Writer.TryComplete(ex);
+                NamedPipeLog.ConnectionListenerAborted(_log, ex);
+            }
+        });
     }
 
     public EndPoint EndPoint => _endpoint;
 
     private async Task StartAsync(NamedPipeServerStream nextStream)
     {
-        try
+        while (true)
         {
-            while (true)
+            try
             {
-                try
+                var stream = nextStream;
+
+                await stream.WaitForConnectionAsync(_listeningToken);
+
+                var connection = new NamedPipeConnection(this, stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
+                connection.Start();
+
+                // Create the next stream before writing connected stream to the channel.
+                // This ensures there is always a created stream and another process can't
+                // create a stream with the same name with different a access policy.
+                nextStream = _namedPipeServerStreamPool.Get();
+
+                while (!_acceptedQueue.Writer.TryWrite(connection))
                 {
-                    var stream = nextStream;
-
-                    await stream.WaitForConnectionAsync(_listeningToken);
-
-                    var connection = new NamedPipeConnection(this, stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
-                    connection.Start();
-
-                    // Create the next stream before writing connected stream to the channel.
-                    // This ensures there is always a created stream and another process can't
-                    // create a stream with the same name with different a access policy.
-                    nextStream = _namedPipeServerStreamPool.Get();
-
-                    while (!_acceptedQueue.Writer.TryWrite(connection))
+                    if (!await _acceptedQueue.Writer.WaitToWriteAsync(_listeningToken))
                     {
-                        if (!await _acceptedQueue.Writer.WaitToWriteAsync(_listeningToken))
-                        {
-                            throw new InvalidOperationException("Accept queue writer was unexpectedly closed.");
-                        }
+                        throw new InvalidOperationException("Accept queue writer was unexpectedly closed.");
                     }
                 }
-                catch (IOException ex) when (!_listeningToken.IsCancellationRequested)
-                {
-                    // WaitForConnectionAsync can throw IOException when the pipe is broken.
-                    NamedPipeLog.ConnectionListenerBrokenPipe(_log, ex);
-
-                    // Dispose existing pipe, create a new one and continue accepting.
-                    nextStream.Dispose();
-                    nextStream = _namedPipeServerStreamPool.Get();
-                }
-                catch (OperationCanceledException ex) when (_listeningToken.IsCancellationRequested)
-                {
-                    // Cancelled the current token
-                    NamedPipeLog.ConnectionListenerAborted(_log, ex);
-                    break;
-                }
             }
+            catch (IOException ex) when (!_listeningToken.IsCancellationRequested)
+            {
+                // WaitForConnectionAsync can throw IOException when the pipe is broken.
+                NamedPipeLog.ConnectionListenerBrokenPipe(_log, ex);
 
-            nextStream.Dispose();
-            _acceptedQueue.Writer.TryComplete();
+                // Dispose existing pipe, create a new one and continue accepting.
+                nextStream.Dispose();
+                nextStream = _namedPipeServerStreamPool.Get();
+            }
+            catch (OperationCanceledException) when (_listeningToken.IsCancellationRequested)
+            {
+                // Cancelled the current token
+                break;
+            }
         }
-        catch (Exception ex)
-        {
-            _acceptedQueue.Writer.TryComplete(ex);
-        }
+
+        NamedPipeLog.ConnectionListenerQueueExited(_log);
+        nextStream.Dispose();
     }
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -161,9 +167,9 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
         _listeningTokenSource.Dispose();
         _mutex.Dispose();
-        if (_listeningTasks != null)
+        if (_completeListeningTask != null)
         {
-            await Task.WhenAll(_listeningTasks);
+            await _completeListeningTask;
         }
 
         // Dispose pool after listening tasks are complete so there is no chance a stream is fetched from the pool after the pool is disposed.
