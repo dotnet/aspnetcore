@@ -18,9 +18,6 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <RestoreFolderName>WebAssembly</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
-    <SkipHelixQueues>
-      $(HelixQueueArmDebian11);
-    </SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>

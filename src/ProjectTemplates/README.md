@@ -87,7 +87,7 @@ An entire test project can be configured to skip specific platforms using the `<
 
 ```xml
 <SkipHelixQueues>
-    $(HelixQueueArmDebian11);
+    $(HelixQueueArmDebian12);
 </SkipHelixQueues>
 ```
 
