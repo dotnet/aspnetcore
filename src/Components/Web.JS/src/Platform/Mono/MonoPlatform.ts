@@ -229,14 +229,16 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
           : name.startsWith('icudt') ? 'icu'
             : 'other';
   };
+  let dotnetwasmResource: LoadingResource | undefined = undefined;
+
   // it would not `loadResource` on types for which there is no typesMap mapping
   const downloadResource = (asset: AssetEntry): LoadingResource | undefined => {
     const type = monoToBlazorAssetTypeMap[asset.behavior];
+    if (type === 'dotnetwasm' && dotnetwasmResource) {
+      return dotnetwasmResource;
+    }
     if (type !== undefined) {
       const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
-      if (!asset.pendingDownload) {
-        asset.pendingDownload = res;
-      }
       res.response.then(setProgress);
       return res;
     }
@@ -251,7 +253,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     assets.push(asset);
     if (asset.behavior === 'dotnetwasm') {
       // start the download as soon as possible
-      downloadResource(asset);
+      dotnetwasmResource = downloadResource(asset);
     }
   }
   for (const name in resources.assembly) {
