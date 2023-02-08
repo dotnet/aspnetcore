@@ -160,7 +160,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         var jsonOptions = services.GetService<IOptions<JsonOptions>>();
 
         Assert.NotNull(jsonOptions.Value);
-        Assert.Null(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.IsType<DefaultJsonTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
     }
 
     [Fact]
