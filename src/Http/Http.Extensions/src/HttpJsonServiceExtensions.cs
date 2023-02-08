@@ -44,7 +44,7 @@ public static class HttpJsonServiceExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddOptions();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JsonOptions>, DefaultHttpJsonOptionsSetup>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptionsFactory<JsonOptions>, HttpJsonOptionsFactory>());
 
         return services;
     }

@@ -321,7 +321,7 @@ public class StatusCodeMiddlewareTest
             .ConfigureWebHost(builder =>
             {
                 builder.UseTestServer()
-                .ConfigureServices(services => services.AddRouting().AddDefaultHttpJsonOptions())
+                .ConfigureServices(services => services.AddRouting())
                 .Configure(app =>
                 {
                     app.UseStatusCodePagesWithReExecute("/status");
@@ -359,7 +359,7 @@ public class StatusCodeMiddlewareTest
             .ConfigureWebHost(builder =>
             {
                 builder.UseTestServer()
-                .ConfigureServices(services => services.AddRouting().AddDefaultHttpJsonOptions())
+                .ConfigureServices(services => services.AddRouting())
                 .Configure(app =>
                 {
                     app.UseStatusCodePagesWithReExecute("/status");

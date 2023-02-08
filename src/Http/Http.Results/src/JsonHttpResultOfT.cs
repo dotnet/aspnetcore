@@ -38,7 +38,7 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
 
         if (jsonSerializerOptions is not null && !jsonSerializerOptions.IsReadOnly)
         {
-            jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
+            jsonSerializerOptions.InitializeForReflection();
         }
 
         JsonSerializerOptions = jsonSerializerOptions;

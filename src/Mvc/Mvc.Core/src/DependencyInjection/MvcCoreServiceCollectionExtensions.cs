@@ -280,6 +280,5 @@ public static class MvcCoreServiceCollectionExtensions
     private static void ConfigureDefaultServices(IServiceCollection services)
     {
         services.AddRouting();
-        services.AddDefaultHttpJsonOptions();
     }
 }
