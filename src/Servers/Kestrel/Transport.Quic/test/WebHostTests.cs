@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 [Collection(nameof(NoParallelCollection))]
 public class WebHostTests : LoggedTest
 {
-    // This test doesn't use QuicListener.IsSupported. Instead, it verifies that HTTP/3 runs on expected platforms:
+    // This test isn't conditional on QuicListener.IsSupported. Instead, it verifies that HTTP/3 runs on expected platforms:
     // 1. Windows 11 or later.
     // 2. Linux with libmsquic package installed.
     [ConditionalFact]
@@ -31,6 +31,8 @@ public class WebHostTests : LoggedTest
         // First check that System.Net.Quic reports that's supported.
         Assert.True(QuicListener.IsSupported, "QuicListener.IsSupported should be true.");
 
+        // Next, do a basic HTTP/3 end-to-end test that ensures Kestrel can server a HTTP/3 request from a client.
+        //
         // Arrange
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
