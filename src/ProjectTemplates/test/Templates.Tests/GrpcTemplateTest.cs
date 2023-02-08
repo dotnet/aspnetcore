@@ -36,7 +36,7 @@ public class GrpcTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
+    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplate()
     {
         await GrpcTemplateCore();
@@ -44,7 +44,7 @@ public class GrpcTemplateTest : LoggedTest
 
     [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
     [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
+    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateNativeAot()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.PublishNativeAot });
@@ -52,7 +52,7 @@ public class GrpcTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
+    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateProgramMain()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain });
@@ -60,7 +60,7 @@ public class GrpcTemplateTest : LoggedTest
 
     [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
     [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
+    [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateProgramMainNativeAot()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
