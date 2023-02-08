@@ -17,9 +17,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
-[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
-[UnconditionalSuppressMessage("Trimmer", "IL2065", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
-[UnconditionalSuppressMessage("Trimmer", "IL2070", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
+[RequiresUnreferencedCode("Uses unbounded Reflection to inspect property types.")]
 internal sealed class ParameterBindingMethodCache
 {
     private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -241,11 +239,8 @@ internal sealed class ParameterBindingMethodCache
                         {
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
-                        return Expression.Call(GetGenericConvertValueTask(nonNullableParameterType), typedCall);
+                        return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
                     }, hasParameterInfo ? 2 : 1);
-
-                    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
-                    static MethodInfo GetGenericConvertValueTask(Type nonNullableParameterType) => ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType);
                 }
                 // ValueTask<Nullable<{type}>>?
                 else if (valueTaskResultType.IsGenericType &&
@@ -265,11 +260,8 @@ internal sealed class ParameterBindingMethodCache
                         {
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
-                        return Expression.Call(GetGenericConvertValueTaskOfNullableResult(nonNullableParameterType), typedCall);
+                        return Expression.Call(ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
                     }, hasParameterInfo ? 2 : 1);
-
-                    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
-                    static MethodInfo GetGenericConvertValueTaskOfNullableResult(Type nonNullableParameterType) => ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType);
                 }
             }
 
