@@ -130,7 +130,7 @@ public class TemplateParserDefaultValuesTests
         services.AddSingleton<RoutingMarkerService>();
         services.AddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
         services.Configure<RouteOptions>(options => {
-            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+            options.AddDefaultRouteConstraints();
         });
 
         var applicationBuilder = Mock.Of<IApplicationBuilder>();

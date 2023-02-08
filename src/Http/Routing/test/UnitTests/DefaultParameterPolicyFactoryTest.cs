@@ -381,6 +381,7 @@ public class DefaultParameterPolicyFactoryTest
         if (options == null)
         {
             options = new RouteOptions();
+            options.AddDefaultRouteConstraints();
         }
 
         if (services == null)

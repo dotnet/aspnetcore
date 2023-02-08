@@ -17,7 +17,7 @@ internal class RouteMatcherBuilder : MatcherBuilder
     public RouteMatcherBuilder()
     {
         var routeOptions = new RouteOptions();
-        routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        routeOptions.AddDefaultRouteConstraints();
         _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(routeOptions), new TestServiceProvider());
         _endpoints = new List<RouteEndpoint>();
     }

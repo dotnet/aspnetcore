@@ -257,6 +257,8 @@ public class TreeRouteBuilderTest
         var services = new ServiceCollection().AddOptions();
         var serviceProvider = services.BuildServiceProvider();
         var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
+        accessor.Value.AddDefaultRouteConstraints();
+
         return new DefaultInlineConstraintResolver(accessor, serviceProvider);
     }
 }

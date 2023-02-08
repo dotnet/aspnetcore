@@ -176,10 +176,13 @@ public class RouteConstraintBuilderTest
 
     private static RouteConstraintBuilder CreateBuilder(string template)
     {
+        var routeOptions = new RouteOptions();
+        routeOptions.AddDefaultRouteConstraints();
+
         var options = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
         options
             .SetupGet(o => o.Value)
-            .Returns(new RouteOptions());
+            .Returns(routeOptions);
 
         var inlineConstraintResolver = new DefaultInlineConstraintResolver(options.Object, new TestServiceProvider());
         return new RouteConstraintBuilder(inlineConstraintResolver, template);

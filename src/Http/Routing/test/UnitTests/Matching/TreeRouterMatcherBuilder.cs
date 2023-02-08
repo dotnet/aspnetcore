@@ -29,7 +29,7 @@ internal class TreeRouterMatcherBuilder : MatcherBuilder
     public override Matcher Build()
     {
         var routeOptions = new RouteOptions();
-        routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        routeOptions.AddDefaultRouteConstraints();
 
         var builder = new TreeRouteBuilder(
             NullLoggerFactory.Instance,

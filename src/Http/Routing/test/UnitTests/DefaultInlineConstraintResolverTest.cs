@@ -16,7 +16,7 @@ public class DefaultInlineConstraintResolverTest
     public DefaultInlineConstraintResolverTest()
     {
         var routeOptions = new RouteOptions();
-        routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        routeOptions.AddDefaultRouteConstraints();
 
         _constraintResolver = GetInlineConstraintResolver(routeOptions);
     }

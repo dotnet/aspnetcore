@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Routing.RouteOptions.AddDefaultRouteConstraints() -> void
+static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRoutingCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Routing.RouteHandlerServices
 static Microsoft.AspNetCore.Routing.RouteHandlerServices.Map(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler, System.Collections.Generic.IEnumerable<string!>! httpMethods, System.Func<System.Reflection.MethodInfo!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult!>! populateMetadata, System.Func<System.Delegate!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions!, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult!>! createRequestDelegate) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
-static Microsoft.Extensions.DependencyInjection.RoutingServiceCollectionExtensions.AddRoutingCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

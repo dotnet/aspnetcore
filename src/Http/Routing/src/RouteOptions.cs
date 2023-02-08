@@ -3,9 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public class RouteOptions
 {
-    private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
+    private IDictionary<string, Type> _constraintTypeMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
     private ICollection<EndpointDataSource> _endpointDataSources = default!;
 
     /// <summary>
@@ -91,42 +90,41 @@ public class RouteOptions
     /// </summary>
     internal IDictionary<string, Type> TrimmerSafeConstraintMap => _constraintTypeMap;
 
-    private static IDictionary<string, Type> GetDefaultConstraintMap()
+    /// <summary>
+    /// Adds all default route constraints so that they can be used in route patterns. This method is called automatically when
+    /// the <see cref="RoutingServiceCollectionExtensions.AddRouting(IServiceCollection)"/> or
+    /// <see cref="RoutingServiceCollectionExtensions.AddRouting(IServiceCollection, Action{RouteOptions})"/> methods are called.
+    /// </summary>
+    public void AddDefaultRouteConstraints()
     {
-        var defaults = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
-
-        // Type-specific constraints
-        AddConstraint<IntRouteConstraint>(defaults, "int");
-        AddConstraint<BoolRouteConstraint>(defaults, "bool");
-        AddConstraint<DateTimeRouteConstraint>(defaults, "datetime");
-        AddConstraint<DecimalRouteConstraint>(defaults, "decimal");
-        AddConstraint<DoubleRouteConstraint>(defaults, "double");
-        AddConstraint<FloatRouteConstraint>(defaults, "float");
-        AddConstraint<GuidRouteConstraint>(defaults, "guid");
-        AddConstraint<LongRouteConstraint>(defaults, "long");
+        SetParameterPolicy<IntRouteConstraint>("int");
+        SetParameterPolicy<BoolRouteConstraint>("bool");
+        SetParameterPolicy<DateTimeRouteConstraint>("datetime");
+        SetParameterPolicy<DecimalRouteConstraint>("decimal");
+        SetParameterPolicy<DoubleRouteConstraint>("double");
+        SetParameterPolicy<FloatRouteConstraint>("float");
+        SetParameterPolicy<GuidRouteConstraint>("guid");
+        SetParameterPolicy<LongRouteConstraint>("long");
 
         // Length constraints
-        AddConstraint<MinLengthRouteConstraint>(defaults, "minlength");
-        AddConstraint<MaxLengthRouteConstraint>(defaults, "maxlength");
-        AddConstraint<LengthRouteConstraint>(defaults, "length");
+        SetParameterPolicy<MinLengthRouteConstraint>("minlength");
+        SetParameterPolicy<MaxLengthRouteConstraint>("maxlength");
+        SetParameterPolicy<LengthRouteConstraint>("length");
 
         // Min/Max value constraints
-        AddConstraint<MinRouteConstraint>(defaults, "min");
-        AddConstraint<MaxRouteConstraint>(defaults, "max");
-        AddConstraint<RangeRouteConstraint>(defaults, "range");
+        SetParameterPolicy<MinRouteConstraint>("min");
+        SetParameterPolicy<MaxRouteConstraint>("max");
+        SetParameterPolicy<RangeRouteConstraint>("range");
 
         // The alpha constraint uses a compiled regex which has a minimal size cost.
-        AddConstraint<AlphaRouteConstraint>(defaults, "alpha");
+        SetParameterPolicy<AlphaRouteConstraint>("alpha");
+        SetParameterPolicy<RegexInlineRouteConstraint>("regex");
 
-        AddConstraint<RegexErrorStubRouteConstraint>(defaults, "regex"); // Used to generate error message at runtime with helpful message.
-
-        AddConstraint<RequiredRouteConstraint>(defaults, "required");
+        SetParameterPolicy<RequiredRouteConstraint>("required");
 
         // Files
-        AddConstraint<FileNameRouteConstraint>(defaults, "file");
-        AddConstraint<NonFileNameRouteConstraint>(defaults, "nonfile");
-
-        return defaults;
+        SetParameterPolicy<FileNameRouteConstraint>("file");
+        SetParameterPolicy<NonFileNameRouteConstraint>("nonfile");
     }
 
     /// <summary>
@@ -158,19 +156,5 @@ public class RouteOptions
     private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(IDictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
     {
         constraintMap[text] = typeof(TConstraint);
-    }
-}
-
-internal sealed class RegexErrorStubRouteConstraint : IRouteConstraint
-{
-    public RegexErrorStubRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string _)
-    {
-        throw new InvalidOperationException(Resources.RegexRouteContraint_NotConfigured);
-    }
-
-    bool IRouteConstraint.Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
-    {
-        // Should never get called, but is same as throw in constructor in case constructor is changed.
-        throw new InvalidOperationException(Resources.RegexRouteContraint_NotConfigured);
     }
 }

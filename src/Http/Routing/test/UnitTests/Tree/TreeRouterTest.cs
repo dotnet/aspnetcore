@@ -2057,7 +2057,7 @@ public class TreeRouterTest
     private static DefaultInlineConstraintResolver CreateConstraintResolver()
     {
         var options = new RouteOptions();
-        options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        options.AddDefaultRouteConstraints();
 
         var optionsMock = new Mock<IOptions<RouteOptions>>();
         optionsMock.SetupGet(o => o.Value).Returns(options);

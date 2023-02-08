@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -30,8 +29,7 @@ public static class RoutingServiceCollectionExtensions
     {
         return services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
-            // Replace RegexErrorStubRouteConstraint with the real regex constraint.
-            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+            options.AddDefaultRouteConstraints();
         });
     }
 
@@ -131,7 +129,7 @@ public static class RoutingServiceCollectionExtensions
         return services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
             // Replace RegexErrorStubRouteConstraint with the real regex constraint.
-            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+            options.AddDefaultRouteConstraints();
             configureOptions(options);
         });
     }

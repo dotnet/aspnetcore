@@ -1861,7 +1861,7 @@ public class RouteTest
     private static void ConfigureRouteOptions(RouteOptions options)
     {
         options.ConstraintMap["test-policy"] = typeof(TestPolicy);
-        options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        options.AddDefaultRouteConstraints();
     }
 
     private class TestPolicy : IParameterPolicy

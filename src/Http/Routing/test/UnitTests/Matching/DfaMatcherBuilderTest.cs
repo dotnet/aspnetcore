@@ -3539,17 +3539,14 @@ public class DfaMatcherBuilderTest
 
     private static DefaultParameterPolicyFactory CreateParameterPolicyFactory()
     {
+        var routeOptions = new RouteOptions();
+        routeOptions.AddDefaultRouteConstraints();
+        routeOptions.SetParameterPolicy<SlugifyParameterTransformer>("slugify");
+        routeOptions.SetParameterPolicy<UpperCaseParameterTransform>("upper-case");
+
         var serviceCollection = new ServiceCollection();
         var policyFactory = new DefaultParameterPolicyFactory(
-            Options.Create(new RouteOptions
-            {
-                ConstraintMap =
-                {
-                        ["slugify"] = typeof(SlugifyParameterTransformer),
-                        ["upper-case"] = typeof(UpperCaseParameterTransform),
-                        ["regex"] = typeof(RegexInlineRouteConstraint) // Regex not included by default since introduction of CreateSlimBuilder
-                }
-            }),
+            Options.Create(routeOptions),
             serviceCollection.BuildServiceProvider());
 
         return policyFactory;
