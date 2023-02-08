@@ -11,7 +11,7 @@ internal static partial class DiagnosticsLoggerExtensions
     [LoggerMessage(1, LogLevel.Error, "An unhandled exception has occurred while executing the request.", EventName = "UnhandledException")]
     public static partial void UnhandledException(this ILogger logger, Exception exception);
 
-    [LoggerMessage(4, LogLevel.Debug, "The request has aborted.", EventName = "RequestAborted")]
+    [LoggerMessage(4, LogLevel.Debug, "The request was aborted by the client.", EventName = "RequestAborted")]
     public static partial void RequestAbortedException(this ILogger logger);
 
     // ExceptionHandlerMiddleware

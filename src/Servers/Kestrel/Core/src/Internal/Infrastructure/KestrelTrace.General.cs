@@ -104,7 +104,7 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(65, LogLevel.Warning, "HTTP/3 is not enabled for {Endpoint}. HTTP/3 requires TLS. Connections to this endpoint will use HTTP/1.1.", EventName = "Http3DisabledWithHttp1AndNoTls")]
         public static partial void Http3DisabledWithHttp1AndNoTls(ILogger logger, EndPoint endPoint);
 
-        [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": The request has aborted.", EventName = "RequestAborted")]
+        [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": The request was aborted by the client.", EventName = "RequestAborted")]
         public static partial void RequestAbortedException(ILogger logger, string connectionId, string traceIdentifier);
 
         // Highest shared ID is 66. New consecutive IDs start at 67
