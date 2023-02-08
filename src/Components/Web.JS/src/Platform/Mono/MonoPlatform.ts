@@ -234,7 +234,10 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     const type = monoToBlazorAssetTypeMap[asset.behavior];
     if (type !== undefined) {
       const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
-      setProgress();
+      if (!asset.pendingDownload) {
+        asset.pendingDownload = res;
+      }
+      res.response.then(setProgress);
       return res;
     }
     return undefined;
@@ -265,7 +268,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
       const asset: AssetEntry = {
         name,
         resolvedUrl: `_framework/${name}`,
-        hash: resources.assembly[name],
+        hash: resources.pdb[name],
         behavior: 'pdb',
       };
       assets.push(asset);
@@ -294,6 +297,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     };
     assets.push(asset);
   }
+  totalResources = assets.length;
 
   if (!hasIcuData) {
     // Use invariant culture if the app does not carry icu data.
@@ -324,6 +328,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
   // TODO (moduleConfig as any).preloadPlugins = []; // why do we need this ?
   const dotnetModuleConfig: DotnetModuleConfig = {
     ...moduleConfig,
+    configSrc: undefined,
     config,
     downloadResource,
     disableDotnet6Compatibility: false,
@@ -359,7 +364,7 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
 }
 
 let resourcesLoaded = 0;
-const totalResources = 0;
+let totalResources = 0;
 function setProgress() {
   resourcesLoaded++;
   const percentage = resourcesLoaded / totalResources * 100;
