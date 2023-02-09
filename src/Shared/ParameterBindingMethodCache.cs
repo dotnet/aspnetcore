@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Internal;
+using static Microsoft.AspNetCore.Http.ParameterBindingMethodCache.SharedExpressions;
 
 #nullable enable
 
@@ -25,8 +26,12 @@ internal sealed class ParameterBindingMethodCache
     private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo UriTryCreateMethod = typeof(Uri).GetMethod(nameof(Uri.TryCreate), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(UriKind), typeof(Uri).MakeByRefType() })!;
 
-    internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
-    internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
+    // work around https://github.com/dotnet/runtime/issues/81864 by splitting these into a separate class.
+    internal static class SharedExpressions
+    {
+        internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
+    }
 
     private readonly MethodInfo _enumTryParseMethod;
     private readonly bool _throwOnInvalidMethod;
