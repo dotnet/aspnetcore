@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Cache;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -61,14 +64,82 @@ internal static class StaticRouteHandlerModelEmitter
         var resultAssignment = endpoint.Response.IsVoid ? string.Empty : "var result = ";
         var awaitHandler = endpoint.Response.IsAwaitable ? "await " : string.Empty;
         var setContentType = endpoint.Response.IsVoid ? string.Empty : $@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";";
+
+        var requestHandlerSource = $$"""
+                                    {{handlerSignature}}
+                                    {
+                                        {{endpoint.EmitParameterPreparation()}}
+                                        {{setContentType}}
+                                        {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
+                                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
+                                    }
+                                    """;
+
+        return requestHandlerSource;
+    }
+    public static string EmitSpecialParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        return $"""
+                var {endpointParameter.Name}_local = {endpointParameter.CallingCode};
+                """;
+    }
+
+    public static string EmitQueryParameterPreparation(this EndpointParameter endpointParameter)
+    {
         return $$"""
-                    {{handlerSignature}}
-                    {
-                        {{setContentType}}
-                        {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
-                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
-                    }
-""";
+                 var {{endpointParameter.Name}}_raw = {{endpointParameter.CallingCode}};
+
+                 if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw) && {{(endpointParameter.IsNullable ? "false" : "false")}})
+                 {
+                     httpContext.Response.StatusCode = 400;
+                     return Task.CompletedTask;
+                 }
+
+                 var {{endpointParameter.HandlerArgument}} = {{endpointParameter.Name}}_raw.ToString();
+                 """;
+    }
+
+    public static string EmitRouteParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        return "// Route Parameter";
+    }
+
+    public static string EmitHeaderParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        return "// Header Parameter";
+    }
+
+    public static string EmitBodyParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        return "// Body Parameter";
+    }
+
+    public static string EmitServiceParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        return "// Service Parameter";
+    }
+
+    public static string EmitParameterPreparation(this Endpoint endpoint)
+    {
+        var parameterPreparationBuilder = new StringBuilder();
+
+        foreach (var parameter in endpoint.Parameters)
+        {
+            var parameterPreparationCode = parameter switch
+            {
+                {
+                    Source: EndpointParameterSource.SpecialType
+                } => parameter.EmitSpecialParameterPreparation(),
+                {
+                    Source: EndpointParameterSource.Query,
+                } => parameter.EmitQueryParameterPreparation(),
+                _ => throw new Exception("Unreachable!")
+            };
+
+            parameterPreparationBuilder.AppendLine(parameterPreparationCode);
+        }
+
+        return parameterPreparationBuilder.ToString();
     }
 
     private static string EmitResponseWritingCall(this Endpoint endpoint)
@@ -115,7 +186,8 @@ internal static class StaticRouteHandlerModelEmitter
         return $$"""
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
-                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext{{argumentList}}));
+                        // var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext{{argumentList}}));
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 """;

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
@@ -15,12 +16,56 @@ internal class EndpointParameter
         Type = parameter.Type;
         Name = parameter.Name;
         Source = EndpointParameterSource.Unknown;
+        HandlerArgument = $"{parameter.Name}_local";
+
+        var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
+        var fromRouteMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
+        var fromHeaderMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata);
+        var fromBodyMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata);
+        var fromServiceMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata);
 
         if (GetSpecialTypeCallingCode(Type, wellKnownTypes) is string callingCode)
         {
             Source = EndpointParameterSource.SpecialType;
             CallingCode = callingCode;
         }
+        else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.Query;
+            CallingCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromRouteMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.Route;
+            CallingCode = $"\"placeholder\"";
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.Header;
+            CallingCode = $"httpContext.Request.Headers[\"{parameter.Name}\"";
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromBodyMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.JsonBody;
+            CallingCode = $"\"placeholder\"";
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromServiceMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.Service;
+            CallingCode = $"\"placeholder\"";
+        }
+        else
+        {
+            // TODO: Inferencing rules go here - but for now:
+            Source = EndpointParameterSource.Unknown;
+        }
+
+        if (parameter.Type is INamedTypeSymbol parameterType && parameterType.ContainingType?.SpecialType == SpecialType.System_Nullable_T)
+        {
+            IsNullable = true;
+        }
+
+        // TODO: Need to handle arrays (wrapped and unwrapped in nullable)!
     }
 
     public ITypeSymbol Type { get; }
@@ -30,17 +75,25 @@ internal class EndpointParameter
     public string Name { get; }
     public string? CallingCode { get; }
 
+    public string HandlerArgument { get; }
+
+    public bool IsNullable { get; }
+
     public string EmitArgument()
     {
-        switch (Source)
-        {
-            case EndpointParameterSource.SpecialType:
-                return CallingCode!;
-            default:
-                // Eventually there should be know unknown parameter sources, but in the meantime we don't expect them to get this far.
-                // The netstandard2.0 target means there is no UnreachableException.
-                throw new Exception("Unreachable!");
-        }
+        //switch (Source)
+        //{
+        //    case EndpointParameterSource.SpecialType:
+        //        return CallingCode!;
+        //    case EndpointParameterSource.Query:
+        //        return CallingCode!;
+        //    default:
+        //        // Eventually there should be know unknown parameter sources, but in the meantime we don't expect them to get this far.
+        //        // The netstandard2.0 target means there is no UnreachableException.
+        //        throw new Exception("Unreachable!");
+        //}
+
+        return HandlerArgument;
     }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.

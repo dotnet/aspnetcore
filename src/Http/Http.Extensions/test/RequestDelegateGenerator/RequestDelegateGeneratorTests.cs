@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Cryptography.Pkcs;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+using Microsoft.Diagnostics.Runtime.ICorDebug;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -29,6 +31,49 @@ public class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    [Fact]
+    public async Task MapAction_SingleStringParam_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]string p) => p);
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=Hello%20world!");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
+    public async Task MapAction_MultipleStringParam_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]string p1, [FromQuery]string p2) => $"{p1} {p2}");
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p1=Hello&p2=world!");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
     }
 
     [Theory]
