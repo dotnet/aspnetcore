@@ -9,6 +9,7 @@ public class Program
 {
     public const string EndpointRoutingScenario = "endpointrouting";
     public const string RouterScenario = "router";
+    public const string MetadataOnlyScenario = "metadataonly";
 
     public static Task Main(string[] args)
     {
@@ -25,6 +26,7 @@ public class Program
             Console.WriteLine("Choose a sample to run:");
             Console.WriteLine($"1. {EndpointRoutingScenario}");
             Console.WriteLine($"2. {RouterScenario}");
+            Console.WriteLine($"3. {MetadataOnlyScenario}");
             Console.WriteLine();
 
             scenario = Console.ReadLine();
@@ -45,6 +47,11 @@ public class Program
             case "2":
             case RouterScenario:
                 startupType = typeof(UseRouterStartup);
+                break;
+
+            case "3":
+            case MetadataOnlyScenario:
+                startupType = typeof(UseMetadataOnlyStartup);
                 break;
 
             default:
