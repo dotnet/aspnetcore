@@ -12,14 +12,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Internal;
+using static Microsoft.AspNetCore.Http.ParameterBindingMethodCache.SharedExpressions;
 
 #nullable enable
 
 namespace Microsoft.AspNetCore.Http;
 
-[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
-[UnconditionalSuppressMessage("Trimmer", "IL2065", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
-[UnconditionalSuppressMessage("Trimmer", "IL2070", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
+[RequiresUnreferencedCode("Uses unbounded Reflection to inspect property types.")]
 internal sealed class ParameterBindingMethodCache
 {
     private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -27,8 +26,12 @@ internal sealed class ParameterBindingMethodCache
     private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo UriTryCreateMethod = typeof(Uri).GetMethod(nameof(Uri.TryCreate), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(UriKind), typeof(Uri).MakeByRefType() })!;
 
-    internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
-    internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
+    // work around https://github.com/dotnet/runtime/issues/81864 by splitting these into a separate class.
+    internal static class SharedExpressions
+    {
+        internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
+    }
 
     private readonly MethodInfo _enumTryParseMethod;
     private readonly bool _throwOnInvalidMethod;
@@ -241,11 +244,8 @@ internal sealed class ParameterBindingMethodCache
                         {
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
-                        return Expression.Call(GetGenericConvertValueTask(nonNullableParameterType), typedCall);
+                        return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
                     }, hasParameterInfo ? 2 : 1);
-
-                    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
-                    static MethodInfo GetGenericConvertValueTask(Type nonNullableParameterType) => ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType);
                 }
                 // ValueTask<Nullable<{type}>>?
                 else if (valueTaskResultType.IsGenericType &&
@@ -265,11 +265,8 @@ internal sealed class ParameterBindingMethodCache
                         {
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
-                        return Expression.Call(GetGenericConvertValueTaskOfNullableResult(nonNullableParameterType), typedCall);
+                        return Expression.Call(ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
                     }, hasParameterInfo ? 2 : 1);
-
-                    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
-                    static MethodInfo GetGenericConvertValueTaskOfNullableResult(Type nonNullableParameterType) => ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType);
                 }
             }
 

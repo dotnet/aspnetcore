@@ -54,13 +54,13 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     /// <summary>
     /// Unwraps all parameters that contains <see cref="AsParametersAttribute"/> and
     /// creates a flat list merging the current parameters, not including the
-    /// parametres that contain a <see cref="AsParametersAttribute"/>, and all additional
+    /// parameters that contain a <see cref="AsParametersAttribute"/>, and all additional
     /// parameters detected.
     /// </summary>
     /// <param name="parameters">List of parameters to be flattened.</param>
     /// <param name="cache">An instance of the method cache class.</param>
     /// <returns>Flat list of parameters.</returns>
-    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "PropertyAsParameterInfo.Flatten requires unreferenced code.")]
+    [RequiresUnreferencedCode("Uses unbounded Reflection to access parameter type constructors.")]
     public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
         ArgumentNullException.ThrowIfNull(parameters);
