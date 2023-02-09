@@ -718,6 +718,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier, ex);
     }
+
     protected void ReportRequestAborted()
     {
         Log.RequestAborted(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier);

@@ -698,7 +698,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
             catch (Exception ex)
             {
-                if (ex is OperationCanceledException && _connectionAborted)
+                if ((ex is OperationCanceledException || ex is IOException) && _connectionAborted)
                 {
                     Log.RequestAborted(ConnectionId, TraceIdentifier);
                 }

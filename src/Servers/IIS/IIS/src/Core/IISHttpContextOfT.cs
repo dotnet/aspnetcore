@@ -43,7 +43,7 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
             }
             catch (Exception ex)
             {
-                if (ex is OperationCanceledException && _requestAborted)
+                if ((ex is OperationCanceledException || ex is IOException) && _requestAborted)
                 {
                     ReportRequestAborted();
                 }

@@ -56,7 +56,7 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             {
                 applicationException = ex;
 
-                if (ex is OperationCanceledException && DisconnectToken.IsCancellationRequested)
+                if ((ex is OperationCanceledException || ex is IOException) && DisconnectToken.IsCancellationRequested)
                 {
                     Log.RequestAborted(Logger);
                 }
