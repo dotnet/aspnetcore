@@ -38,7 +38,7 @@ public class GridSort<TGridItem>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
     /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
     public static GridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
-        => new GridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
+        => new((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
             (expression, true));
 
     /// <summary>
@@ -48,7 +48,7 @@ public class GridSort<TGridItem>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
     /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
     public static GridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
-        => new GridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
+        => new((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
             (expression, false));
 
     /// <summary>
@@ -114,10 +114,12 @@ public class GridSort<TGridItem>
         }
     }
 
-    private IReadOnlyCollection<(string PropertyName, SortDirection Direction)> BuildPropertyList(bool ascending)
+    private List<(string PropertyName, SortDirection Direction)> BuildPropertyList(bool ascending)
     {
-        var result = new List<(string, SortDirection)>();
-        result.Add((ToPropertyName(_firstExpression.Item1), (_firstExpression.Item2 ^ ascending) ? SortDirection.Descending : SortDirection.Ascending));
+        var result = new List<(string, SortDirection)>
+        {
+            (ToPropertyName(_firstExpression.Item1), (_firstExpression.Item2 ^ ascending) ? SortDirection.Descending : SortDirection.Ascending)
+        };
 
         if (_thenExpressions is not null)
         {
@@ -133,8 +135,7 @@ public class GridSort<TGridItem>
     // Not sure we really want this level of complexity, but it converts expressions like @(c => c.Medals.Gold) to "Medals.Gold"
     private static string ToPropertyName(LambdaExpression expression)
     {
-        var body = expression.Body as MemberExpression;
-        if (body is null)
+        if (expression.Body is not MemberExpression body)
         {
             throw new ArgumentException(ExpressionNotRepresentableMessage);
         }
@@ -172,7 +173,7 @@ public class GridSort<TGridItem>
             while (body is not null)
             {
                 nextPos -= body.Member.Name.Length;
-                body.Member.Name.CopyTo(chars.Slice(nextPos));
+                body.Member.Name.CopyTo(chars[nextPos..]);
                 if (nextPos > 0)
                 {
                     chars[--nextPos] = '.';

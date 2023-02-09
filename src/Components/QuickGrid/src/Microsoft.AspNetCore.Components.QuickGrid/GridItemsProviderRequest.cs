@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// Parameters for data to be supplied by a <see cref="QuickGrid{TGridItem}"/>'s <see cref="QuickGrid{TGridItem}.ItemsProvider"/>.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public struct GridItemsProviderRequest<TGridItem>
+public readonly struct GridItemsProviderRequest<TGridItem>
 {
     /// <summary>
     /// The zero-based index of the first item to be supplied.

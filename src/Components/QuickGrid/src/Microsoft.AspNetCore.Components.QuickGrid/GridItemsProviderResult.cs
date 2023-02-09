@@ -49,5 +49,5 @@ public static class GridItemsProviderResult
     /// <param name="totalItemCount">The total numer of items that exist. See <see cref="TotalItemCount"/> for details.</param>
     /// <returns>An instance of <see cref="GridItemsProviderResult{TGridItem}"/>.</returns>
     public static GridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount)
-        => new GridItemsProviderResult<TGridItem>(items, totalItemCount);
+        => new(items, totalItemCount);
 }

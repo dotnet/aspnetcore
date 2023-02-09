@@ -240,7 +240,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         {
             SortDirection.Ascending => true,
             SortDirection.Descending => false,
-            SortDirection.Auto => _sortByColumn == column ? !_sortByAscending : true,
+            SortDirection.Auto => _sortByColumn != column || !_sortByAscending,
             _ => throw new NotSupportedException($"Unknown sort direction {direction}"),
         };
 
