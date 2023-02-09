@@ -198,9 +198,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
         {
             _checkColumnOptionsPosition = false;
-#pragma warning disable CA2012 // Use ValueTasks correctly
-            _ = _jsModule?.InvokeVoidAsync("checkColumnOptionsPosition", _tableReference);
-#pragma warning restore CA2012 // Use ValueTasks correctly
+            _ = _jsModule?.InvokeVoidAsync("checkColumnOptionsPosition", _tableReference).AsTask();
         }
     }
 

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter;
 
-internal class EntityFrameworkAsyncQueryExecutor : IAsyncQueryExecutor
+internal sealed class EntityFrameworkAsyncQueryExecutor : IAsyncQueryExecutor
 {
     public bool IsSupported<T>(IQueryable<T> queryable)
         => queryable.Provider is IAsyncQueryProvider;

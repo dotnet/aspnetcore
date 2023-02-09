@@ -1,9 +1,30 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.Align.Center = 1 -> Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.Align.Left = 0 -> Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.Align.Right = 2 -> Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Align.get -> Microsoft.AspNetCore.Components.QuickGrid.Align
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Align.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Class.get -> string?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Class.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnBase() -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptions.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.ColumnOptions.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Grid.get -> Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>!>?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderTemplate.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsDefaultSort.get -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsDefaultSort.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.PlaceholderTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext>?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.PlaceholderTemplate.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Sortable.get -> bool?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Sortable.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Title.get -> string?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Title.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProvider<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.ApplySorting(System.Linq.IQueryable<TGridItem>! source) -> System.Linq.IQueryable<TGridItem>!
@@ -110,3 +131,7 @@ override Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.IsS
 static Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult.From<TGridItem>(System.Collections.Generic.ICollection<TGridItem>! items, int totalItemCount) -> Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>
 static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByAscending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
 static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByDescending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
+virtual Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsSortableByDefault() -> bool
+~override Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.Paginator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
