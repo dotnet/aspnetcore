@@ -107,8 +107,8 @@ public class EditFormTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<EditForm>(0);
-            builder.AddAttribute(1, "Model", Model);
-            builder.AddAttribute(2, "EditContext", EditContext);
+            builder.AddComponentParameter(1, "Model", Model);
+            builder.AddComponentParameter(2, "EditContext", EditContext);
             builder.CloseComponent();
         }
     }
