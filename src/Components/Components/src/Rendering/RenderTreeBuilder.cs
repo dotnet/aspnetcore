@@ -511,18 +511,6 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="name">The name of the attribute.</param>
     /// <param name="value">The value of the attribute.</param>
-    public void AddComponentParameter(int sequence, string name, bool value)
-    {
-        AssertCanAddComponentParameter();
-        _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
-    }
-
-    /// <summary>
-    /// Appends a frame representing a component parameter.
-    /// </summary>
-    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-    /// <param name="name">The name of the attribute.</param>
-    /// <param name="value">The value of the attribute.</param>
     public void AddComponentParameter(int sequence, string name, object? value)
     {
         AssertCanAddComponentParameter();

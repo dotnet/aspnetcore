@@ -3,5 +3,4 @@ Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exce
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, bool value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void

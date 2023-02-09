@@ -4407,6 +4407,28 @@ public class RendererTest
     }
 
     [Fact]
+    public async Task CanSetComponentParameter_WhenParameterTypeHasImplicitConversionToString()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var parameterValue = new ImplicitlyConvertsToString("Hello");
+        var rootComponent = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ImplicitConversionComponent>(0);
+            builder.AddComponentParameter(1, nameof(ImplicitConversionComponent.SomeParam), parameterValue);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+        var capturingComponent = (ImplicitConversionComponent)renderer.GetCurrentRenderTreeFrames(rootComponentId).Array[0].Component;
+
+        // Assert
+        Assert.Same(parameterValue, capturingComponent.SomeParam);
+    }
+
+    [Fact]
     public void CanUseCustomComponentActivatorFromConstructorParameter()
     {
         // Arrange
@@ -5853,5 +5875,42 @@ public class RendererTest
         {
             RenderCount++;
         }
+    }
+
+    private sealed class ImplicitConversionComponent : IComponent
+    {
+        [Parameter]
+        public ImplicitlyConvertsToString SomeParam { get; set; }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Name.Equals(nameof(SomeParam), StringComparison.OrdinalIgnoreCase))
+                {
+                    // 'SomeParam' will be assigned to null if an implicit conversion changed the
+                    // parameter type.
+                    SomeParam = parameter.Value as ImplicitlyConvertsToString;
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ImplicitlyConvertsToString
+    {
+        private readonly string _value;
+
+        public ImplicitlyConvertsToString(string value)
+        {
+            _value = value;
+        }
+
+        public static implicit operator string(ImplicitlyConvertsToString value) => value._value;
     }
 }
