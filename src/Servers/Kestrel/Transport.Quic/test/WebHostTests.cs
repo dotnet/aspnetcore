@@ -24,6 +24,8 @@ public class WebHostTests : LoggedTest
     // 1. Windows 11 or later.
     // 2. Linux with libmsquic package installed.
     [ConditionalFact]
+    [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
+    [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
     public async Task PlatformSmoketest_HelloWorld_ClientSuccess()
