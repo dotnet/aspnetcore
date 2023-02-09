@@ -841,7 +841,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (string.Equals(HttpRequestHeaders.HeaderProtocol, WebTransportSession.WebTransportProtocolValue, StringComparison.Ordinal))
             {
                 // if the client supports the same version of WebTransport as Kestrel, make this a WebTransport request
-                if (((AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders).TryGetValue(WebTransportSession.CurrentSuppportedVersion, out var version) && string.Equals(version, WebTransportSession.VersionEnabledIndicator, StringComparison.Ordinal))
+                if (((AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders).TryGetValue(WebTransportSession.CurrentSupportedVersion, out var version) && string.Equals(version, WebTransportSession.VersionEnabledIndicator, StringComparison.Ordinal))
                 {
                     IsWebTransportRequest = true;
                 }
@@ -1201,13 +1201,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         if (!IsWebTransportRequest)
         {
-            throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
+            throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSupportedVersion));
         }
 
         _isWebTransportSessionAccepted = true;
 
         // version negotiation
-        var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
+        var version = WebTransportSession.CurrentSupportedVersionSuffix;
 
         _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 

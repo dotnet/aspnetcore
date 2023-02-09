@@ -85,7 +85,14 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             {
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering
-                flattenedParameters ??= new(parameters[0..i]);
+                static List<ParameterInfo> InitializeList(ParameterInfo[] parameters, int i)
+                {
+                    // will add the rest of the parameters to this list, so set initial capacity to reduce growing the list
+                    List<ParameterInfo> list = new(parameters.Length);
+                    list.AddRange(parameters.AsSpan(0, i));
+                    return list;
+                }
+                flattenedParameters ??= InitializeList(parameters, i);
                 nullabilityContext ??= new();
 
                 var isNullable = Nullable.GetUnderlyingType(parameters[i].ParameterType) != null ||
