@@ -215,6 +215,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     environmentVariables: environmentVariables,
     debugLevel: hasDebuggingEnabled() ? 1 : 0,
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
+    enableDownloadRetry: false, // disable retry downloads
   };
   const monoToBlazorAssetTypeMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
     'assembly': 'assembly',
@@ -223,22 +224,19 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     'dotnetwasm': 'dotnetwasm',
   };
   const behaviorByName = (name) => {
-    return name === dotnetTimeZoneResourceName ? 'vfs'
+    return name === 'dotnet.timezones.blat' ? 'vfs'
       : (name.startsWith('dotnet.worker') && name.endsWith('.js')) ? 'js-module-threads'
         : (name.startsWith('dotnet') && name.endsWith('.js')) ? 'js-module-dotnet'
           : name.startsWith('icudt') ? 'icu'
             : 'other';
   };
-  let dotnetwasmResource: LoadingResource | undefined = undefined;
 
   // it would not `loadResource` on types for which there is no typesMap mapping
   const downloadResource = (asset: AssetEntry): LoadingResource | undefined => {
     const type = monoToBlazorAssetTypeMap[asset.behavior];
-    if (type === 'dotnetwasm' && dotnetwasmResource) {
-      return dotnetwasmResource;
-    }
     if (type !== undefined) {
       const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
+      asset.pendingDownload = res;
       res.response.then(setProgress);
       return res;
     }
@@ -253,7 +251,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     assets.push(asset);
     if (asset.behavior === 'dotnetwasm') {
       // start the download as soon as possible
-      dotnetwasmResource = downloadResource(asset);
+      downloadResource(asset);
     }
   }
   for (const name in resources.assembly) {
@@ -264,6 +262,8 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
       behavior: 'assembly',
     };
     assets.push(asset);
+    // start the download as soon as possible
+    downloadResource(asset);
   }
   if (hasDebuggingEnabled() && resources.pdb) {
     for (const name in resources.pdb) {
@@ -276,7 +276,6 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
       assets.push(asset);
     }
   }
-  const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
   const icuDataResourceName = getICUResourceName(resourceLoader.bootConfig, applicationCulture);
   let hasIcuData = false;
