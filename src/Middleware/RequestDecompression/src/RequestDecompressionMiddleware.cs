@@ -124,7 +124,7 @@ internal sealed partial class RequestDecompressionMiddleware
         [LoggerMessage(4, LogLevel.Debug, "The maximum request body size has been set to {RequestSize}.", EventName = "MaxRequestBodySizeSet")]
         public static partial void MaxRequestBodySizeSet(ILogger logger, string requestSize);
 
-        [LoggerMessage(5, LogLevel.Debug, "The maximum request body size as been disabled.", EventName = "MaxRequestBodySizeDisabled")]
+        [LoggerMessage(5, LogLevel.Debug, "The maximum request body size has been disabled.", EventName = "MaxRequestBodySizeDisabled")]
         public static partial void MaxRequestBodySizeDisabled(ILogger logger);
     }
 }
