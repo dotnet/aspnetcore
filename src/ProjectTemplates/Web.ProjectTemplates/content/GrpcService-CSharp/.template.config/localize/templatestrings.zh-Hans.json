@@ -10,8 +10,8 @@
   "symbols/kestrelHttpsPort/description": "要用于 launchSettings.json 中 HTTPS 终结点的端口号。仅当不使用参数 no-https 时，此选项才适用(如果使用 IndividualAuth 或 OrganizationalAuth，则将忽略 no-https)。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",
-  "symbols/NativeAot/displayName": "Enable _native AOT publish",
-  "symbols/NativeAot/description": "Whether to enable the project for publishing as native AOT.",
+  "symbols/NativeAot/displayName": "启用原生 AOT 发布(_N)",
+  "symbols/NativeAot/description": "是否启用“将项目以原生 AOT 发布”。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }
