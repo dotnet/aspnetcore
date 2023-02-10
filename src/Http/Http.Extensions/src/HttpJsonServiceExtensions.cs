@@ -44,7 +44,7 @@ public static class HttpJsonServiceExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddOptions();
-        services.TryAddSingleton<IOptionsFactory<JsonOptions>, HttpJsonOptionsFactory>();
+        services.TryAddTransient<IOptionsFactory<JsonOptions>, HttpJsonOptionsFactory>();
 
         return services;
     }

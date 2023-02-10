@@ -37,7 +37,7 @@ internal sealed class HttpJsonOptionsFactory : IOptionsFactory<JsonOptions>
         // After the options is completed created
         // we need to ensure we have it configured for
         // reflection (if needed) and marked as read-only
-        options.EnsureConfigured();
+        options.SerializerOptions.EnsureConfigured(markAsReadOnly: true);
 
         return options;
     }

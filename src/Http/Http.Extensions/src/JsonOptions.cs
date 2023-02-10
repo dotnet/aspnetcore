@@ -3,7 +3,6 @@
 
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using Microsoft.AspNetCore.Internal;
 
 #nullable enable
 
@@ -30,32 +29,11 @@ public class JsonOptions
     /// <summary>
     /// Gets the <see cref="JsonSerializerOptions"/>.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(DefaultSerializerOptions);
+    public JsonSerializerOptions SerializerOptions { get; private init; } = new JsonSerializerOptions(DefaultSerializerOptions);
 
     /// <summary>
     ///  Gets the default <see cref="JsonOptions"/> instance.
     /// </summary>
-    public static JsonOptions Default { get => _defaultInstance ??= new JsonOptions().EnsureConfigured(); }
+    public static JsonOptions Default { get => _defaultInstance ??= new JsonOptions() { SerializerOptions = new JsonSerializerOptions(DefaultSerializerOptions).EnsureConfigured(markAsReadOnly: true) }; }
 
-    internal JsonOptions EnsureConfigured(bool markAsReadOnly = true)
-    {
-        if (!SerializerOptions.IsReadOnly)
-        {
-            if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
-            {
-#pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
-#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-                SerializerOptions.InitializeForReflection();
-#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-#pragma warning restore IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
-            }
-
-            if (markAsReadOnly)
-            {
-                SerializerOptions.MakeReadOnly();
-            }
-        }
-
-        return this;
-    }
 }

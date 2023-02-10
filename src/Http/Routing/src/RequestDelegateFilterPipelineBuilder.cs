@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
@@ -20,14 +19,12 @@ internal static class RequestDelegateFilterPipelineBuilder
 
         var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
         var jsonSerializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.Default.SerializerOptions;
-        jsonSerializerOptions.MakeReadOnly();
 
         var factoryContext = new EndpointFilterFactoryContext
         {
             MethodInfo = requestDelegate.Method,
             ApplicationServices = options.EndpointBuilder.ApplicationServices
         };
-        var jsonTypeInfo = (JsonTypeInfo<object>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
         EndpointFilterDelegate filteredInvocation = async (EndpointFilterInvocationContext context) =>
         {
@@ -56,7 +53,7 @@ internal static class RequestDelegateFilterPipelineBuilder
             var obj = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext, new object[] { httpContext }));
             if (obj is not null)
             {
-                await ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonSerializerOptions, jsonTypeInfo);
+                await ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonSerializerOptions);
             }
         };
     }

@@ -19,10 +19,6 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public static class HttpRequestJsonExtensions
 {
-    private const string RequiresUnreferencedCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed. " +
-        "Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.";
-    private const string RequiresDynamicCodeMessage = "JSON serialization and deserialization might require types that cannot be statically analyzed and need runtime code generation. " +
-        "Use the overload that takes a JsonTypeInfo or JsonSerializerContext for native AOT applications.";
 
     /// <summary>
     /// Read JSON from the request and deserialize to the specified type.
@@ -51,36 +47,17 @@ public static class HttpRequestJsonExtensions
     /// <param name="options">The serializer options to use when deserializing the content.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
-    public static async ValueTask<TValue?> ReadFromJsonAsync<TValue>(
+    public static ValueTask<TValue?> ReadFromJsonAsync<TValue>(
         this HttpRequest request,
         JsonSerializerOptions? options,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (!request.HasJsonContentType(out var charset))
-        {
-            ThrowContentTypeError(request);
-        }
-
         options ??= ResolveSerializerOptions(request.HttpContext);
+        options.EnsureConfigured();
 
-        var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
-
-        try
-        {
-            return await JsonSerializer.DeserializeAsync<TValue>(inputStream, options, cancellationToken);
-        }
-        finally
-        {
-            if (usesTranscodingStream)
-            {
-                await inputStream.DisposeAsync();
-            }
-        }
+        return ReadFromJsonAsync(request, (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)), cancellationToken);
     }
 
     /// <summary>
@@ -96,44 +73,6 @@ public static class HttpRequestJsonExtensions
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         this HttpRequest request,
         JsonTypeInfo<TValue> jsonTypeInfo,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        if (!request.HasJsonContentType(out var charset))
-        {
-            ThrowContentTypeError(request);
-        }
-
-        var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
-
-        try
-        {
-            return await JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
-        }
-        finally
-        {
-            if (usesTranscodingStream)
-            {
-                await inputStream.DisposeAsync();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Read JSON from the request and deserialize to object type.
-    /// If the request's content-type is not a known JSON type then an error will be thrown.
-    /// </summary>
-    /// <param name="request">The request to read from.</param>
-    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
-    /// <returns>The deserialized value.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static async ValueTask<object?> ReadFromJsonAsync(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-        this HttpRequest request,
-        JsonTypeInfo jsonTypeInfo,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -187,9 +126,7 @@ public static class HttpRequestJsonExtensions
     /// <param name="options">The serializer options use when deserializing the content.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
-    public static async ValueTask<object?> ReadFromJsonAsync(
+    public static ValueTask<object?> ReadFromJsonAsync(
         this HttpRequest request,
         Type type,
         JsonSerializerOptions? options,
@@ -198,27 +135,10 @@ public static class HttpRequestJsonExtensions
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(type);
 
-        if (!request.HasJsonContentType(out var charset))
-        {
-            ThrowContentTypeError(request);
-        }
-
         options ??= ResolveSerializerOptions(request.HttpContext);
+        options.EnsureConfigured();
 
-        var encoding = GetEncodingFromCharset(charset);
-        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
-
-        try
-        {
-            return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
-        }
-        finally
-        {
-            if (usesTranscodingStream)
-            {
-                await inputStream.DisposeAsync();
-            }
-        }
+        return ReadFromJsonAsync(request, options.GetTypeInfo(type), cancellationToken);
     }
 
     /// <summary>
@@ -253,6 +173,44 @@ public static class HttpRequestJsonExtensions
         try
         {
             return await JsonSerializer.DeserializeAsync(inputStream, type, context, cancellationToken);
+        }
+        finally
+        {
+            if (usesTranscodingStream)
+            {
+                await inputStream.DisposeAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Read JSON from the request and deserialize to object type.
+    /// If the request's content-type is not a known JSON type then an error will be thrown.
+    /// </summary>
+    /// <param name="request">The request to read from.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
+    /// <returns>The deserialized value.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static async ValueTask<object?> ReadFromJsonAsync(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        this HttpRequest request,
+        JsonTypeInfo jsonTypeInfo,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (!request.HasJsonContentType(out var charset))
+        {
+            ThrowContentTypeError(request);
+        }
+
+        var encoding = GetEncodingFromCharset(charset);
+        var (inputStream, usesTranscodingStream) = GetInputStream(request.HttpContext, encoding);
+
+        try
+        {
+            return await JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
         }
         finally
         {

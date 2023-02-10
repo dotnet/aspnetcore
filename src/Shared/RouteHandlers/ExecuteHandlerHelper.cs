@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Internal;
 
 internal static class ExecuteHandlerHelper
 {
-    public static Task ExecuteReturnAsync(object obj, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+    public static Task ExecuteReturnAsync(object obj, HttpContext httpContext, JsonSerializerOptions options)
     {
         // Terminal built ins
         if (obj is IResult result)
@@ -24,7 +24,8 @@ internal static class ExecuteHandlerHelper
         else
         {
             // Otherwise, we JSON serialize when we reach the terminal state
-            return WriteJsonResponseAsync(httpContext.Response, obj, options, jsonTypeInfo);
+            var runtimeType = obj.GetType() ?? typeof(object);
+            return HttpResponseJsonExtensions.WriteAsJsonAsync(httpContext.Response, obj, runtimeType, options, default);
         }
     }
 
