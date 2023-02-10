@@ -1278,7 +1278,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     public void CreateThrowsInvalidOperationExceptionWhenAttributeRequiresTryParseMethodThatDoesNotExist(Delegate action)
     {
         var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
-        Assert.Equal("No public static bool object.TryParse(string, out object) method found for notTryParsable.", ex.Message);
+        Assert.Equal("notTryParsable must have a valid TryParse method to support complex binding. No public static bool object.TryParse(string, out object) method found for notTryParsable.", ex.Message);
     }
 
     [Fact]

@@ -1551,7 +1551,7 @@ public static partial class RequestDelegateFactory
         if (tryParseMethodCall is null)
         {
             var typeName = TypeNameHelper.GetTypeDisplayName(targetParseType, fullName: false);
-            throw new InvalidOperationException($"No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
+            throw new InvalidOperationException($"{parameter.Name} must have a valid TryParse method to support complex binding. No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
         }
 
         // string tempSourceString;
