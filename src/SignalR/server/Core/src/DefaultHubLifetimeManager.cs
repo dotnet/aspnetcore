@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -314,7 +313,10 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             throw new IOException($"Connection '{connectionId}' does not exist.");
         }
 
-        var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
+        var id = Interlocked.Increment(ref _lastInvocationId);
+        // prefix the client result ID with 's' for server, so that it won't conflict with other CompletionMessage's from the client
+        // e.g. Stream IDs when completing
+        var invocationId = $"s{id}";
 
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection.ConnectionAborted, out var linkedToken);
