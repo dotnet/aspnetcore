@@ -484,13 +484,26 @@ class GsonHubProtocolTest {
                             throw new ClassCastException("Unable to convert '"+val+"' to an integer");
                     }
                 }))
+                .registerTypeAdapter(String.class, ((JsonDeserializer<String>) (json, type, context) -> {
+                    int val = json.getAsJsonPrimitive().getAsInt();
+                    switch(val) {
+                        case 4:
+                            return "four";
+                        case 5:
+                            return "five";
+                        case 6:
+                            return "six";
+                        default:
+                            throw new ClassCastException("Unable to convert '+val+' to a String");
+                    }
+                }))
                 .create();
         hubProtocol = new GsonHubProtocol(gson);
 
         // Create message with string payload "three", soon to be parsed as (int) 3.
-        String json = "{\"type\":1,\"target\":\"test\",\"invocationId\":\"123\",\"arguments\":[\"three\"]}\u001E";
+        String json = "{\"type\":1,\"target\":\"test\",\"invocationId\":\"123\",\"arguments\":[\"three\", 4]}\u001E";
         ByteBuffer bytes = TestUtils.stringToByteBuffer(json);
-        TestBinder binder = new TestBinder(new Type[] { Integer.class }, null);
+        TestBinder binder = new TestBinder(new Type[] { Integer.class, String.class }, null);
 
         List<HubMessage> messages = hubProtocol.parseMessages(bytes, binder);
         assertNotNull(messages);
@@ -499,10 +512,10 @@ class GsonHubProtocolTest {
         assertEquals(HubMessageType.INVOCATION, message.getMessageType());
         InvocationMessage invocationMessage = (InvocationMessage) message;
 
-        assertEquals(1, invocationMessage.getArguments().length);
+        assertEquals(2, invocationMessage.getArguments().length);
         assertEquals("test", invocationMessage.getTarget());
         assertEquals("123", invocationMessage.getInvocationId());
-        int messageResult = (int) invocationMessage.getArguments()[0];
-        assertEquals(3, messageResult);
+        assertEquals(3, (int) invocationMessage.getArguments()[0]);
+        assertEquals("four", invocationMessage.getArguments()[1]);
     }
 }
