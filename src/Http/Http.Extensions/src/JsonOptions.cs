@@ -31,7 +31,7 @@ public class JsonOptions
     public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(_defaultSerializerOptions);
 
     /// <summary>
-    ///  Gets the default <see cref="JsonOptions"/> instance.
+    ///  Gets the default <see cref="JsonSerializerOptions"/> instance.
     /// </summary>
     public static JsonSerializerOptions DefaultSerializerOptions { get => _defaultSerializerOptionsInstance ??= new JsonSerializerOptions(_defaultSerializerOptions).EnsureConfigured(markAsReadOnly: true); }
 
