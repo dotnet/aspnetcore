@@ -20,6 +20,7 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
     {
         _application = application;
     }
+
     public override async Task<bool> ProcessRequestAsync()
     {
         var context = default(TContext);

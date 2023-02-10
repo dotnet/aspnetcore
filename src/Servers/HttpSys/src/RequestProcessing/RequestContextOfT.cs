@@ -91,7 +91,7 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                     {
                         SetFatalResponse(badHttpRequestException.StatusCode);
                     }
-                    else if (ex is OperationCanceledException && DisconnectToken.IsCancellationRequested)
+                    else if ((ex is OperationCanceledException || ex is IOException) && DisconnectToken.IsCancellationRequested)
                     {
                         SetFatalResponse(StatusCodes.Status499ClientClosedRequest);
                     }
