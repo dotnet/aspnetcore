@@ -150,7 +150,7 @@ public class OutputCacheMiddlewareTests
     }
 
     [Fact]
-    public void ContentIsNotModified_IfModifiedSince_FallsbackToDateHeader()
+    public void ContentIsNotModified_IfModifiedSince_FallsBackToDateHeader()
     {
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
@@ -329,7 +329,7 @@ public class OutputCacheMiddlewareTests
     }
 
     [Fact]
-    public void StartResponsegAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
+    public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
         var clock = new TestClock
         {
@@ -798,10 +798,8 @@ public class OutputCacheMiddlewareTests
             // Wait for the second request to start before processing the first one
             task2Executing.Wait();
 
-            // Simluate some delay to allow for the second request to run while this one is pending
+            // Simulate some delay to allow for the second request to run while this one is pending
             await Task.Delay(500);
-
-            c.Response.Write("Hello" + responseCounter);
         });
 
         var context1 = TestUtils.CreateTestContext();
@@ -824,6 +822,53 @@ public class OutputCacheMiddlewareTests
         await Task.WhenAll(task1, task2);
 
         Assert.Equal(1, responseCounter);
+    }
+
+    [Fact]
+    public async Task Locking_IgnoresNonCacheableResponses()
+    {
+        var responseCounter = 0;
+
+        var task1Executing = new ManualResetEventSlim(false);
+        var task2Executing = new ManualResetEventSlim(false);
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: async c =>
+        {
+            c.Response.Cookies.Append("a", "b");
+
+            responseCounter++;
+            task1Executing.Set();
+
+            // Wait for the second request to start before processing the first one
+            task2Executing.Wait();
+
+            // Simulate some delay to allow for the second request to run while this one is pending
+            await Task.Delay(500);
+        });
+
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for the first request to be processed before sending a second one
+        task1Executing.Wait();
+
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        task2Executing.Set();
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Equal(2, responseCounter);
     }
 
     [Fact]
