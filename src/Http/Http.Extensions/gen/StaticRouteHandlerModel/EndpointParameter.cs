@@ -19,40 +19,16 @@ internal class EndpointParameter
         HandlerArgument = $"{parameter.Name}_local";
 
         var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
-        var fromRouteMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
-        var fromHeaderMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata);
-        var fromBodyMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata);
-        var fromServiceMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata);
 
-        if (GetSpecialTypeCallingCode(Type, wellKnownTypes) is string callingCode)
+        if (GetSpecialTypeAssigningCode(Type, wellKnownTypes) is string assigningCode)
         {
             Source = EndpointParameterSource.SpecialType;
-            CallingCode = callingCode;
+            AssigningCode = assigningCode;
         }
         else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
         {
             Source = EndpointParameterSource.Query;
-            CallingCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
-        }
-        else if (parameter.HasAttributeImplementingInterface(fromRouteMetadataInterfaceType))
-        {
-            Source = EndpointParameterSource.Route;
-            CallingCode = $"\"placeholder\"";
-        }
-        else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType))
-        {
-            Source = EndpointParameterSource.Header;
-            CallingCode = $"httpContext.Request.Headers[\"{parameter.Name}\"";
-        }
-        else if (parameter.HasAttributeImplementingInterface(fromBodyMetadataInterfaceType))
-        {
-            Source = EndpointParameterSource.JsonBody;
-            CallingCode = $"\"placeholder\"";
-        }
-        else if (parameter.HasAttributeImplementingInterface(fromServiceMetadataInterfaceType))
-        {
-            Source = EndpointParameterSource.Service;
-            CallingCode = $"\"placeholder\"";
+            AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
         }
         else
         {
@@ -62,7 +38,7 @@ internal class EndpointParameter
 
         if (parameter.Type is INamedTypeSymbol parameterType && parameterType.ContainingType?.SpecialType == SpecialType.System_Nullable_T)
         {
-            IsNullable = true;
+            IsOptional = true;
         }
 
         // TODO: Need to handle arrays (wrapped and unwrapped in nullable)!
@@ -73,31 +49,17 @@ internal class EndpointParameter
 
     // TODO: If the parameter has [FromRoute("AnotherName")] or similar, prefer that.
     public string Name { get; }
-    public string? CallingCode { get; }
-
+    public string? AssigningCode { get; }
     public string HandlerArgument { get; }
-
-    public bool IsNullable { get; }
+    public bool IsOptional { get; }
 
     public string EmitArgument()
     {
-        //switch (Source)
-        //{
-        //    case EndpointParameterSource.SpecialType:
-        //        return CallingCode!;
-        //    case EndpointParameterSource.Query:
-        //        return CallingCode!;
-        //    default:
-        //        // Eventually there should be know unknown parameter sources, but in the meantime we don't expect them to get this far.
-        //        // The netstandard2.0 target means there is no UnreachableException.
-        //        throw new Exception("Unreachable!");
-        //}
-
         return HandlerArgument;
     }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
-    private static string? GetSpecialTypeCallingCode(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    private static string? GetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes)
     {
         if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpContext)))
         {

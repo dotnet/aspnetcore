@@ -140,14 +140,16 @@ namespace Microsoft.AspNetCore.Http.Generated
                         handler.Method);
                     }
 
-                    Task RequestHandler(HttpContext httpContext)
-                    {
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler();
-                        return httpContext.Response.WriteAsync(result);
-                    }
+Task RequestHandler(HttpContext httpContext)
+{
+
+    httpContext.Response.ContentType ??= "text/plain";
+    var result = handler();
+    return httpContext.Response.WriteAsync(result);
+}
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
+                        // var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
@@ -182,14 +184,16 @@ namespace Microsoft.AspNetCore.Http.Generated
                         handler.Method);
                     }
 
-                    Task RequestHandler(HttpContext httpContext)
-                    {
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler();
-                        return httpContext.Response.WriteAsync(result);
-                    }
+Task RequestHandler(HttpContext httpContext)
+{
+
+    httpContext.Response.ContentType ??= "text/plain";
+    var result = handler();
+    return httpContext.Response.WriteAsync(result);
+}
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
+                        // var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
@@ -224,14 +228,16 @@ namespace Microsoft.AspNetCore.Http.Generated
                         handler.Method);
                     }
 
-                    async Task RequestHandler(HttpContext httpContext)
-                    {
-                        httpContext.Response.ContentType ??= "application/json";
-                        var result = await handler();
-                        await httpContext.Response.WriteAsync(result);
-                    }
+async Task RequestHandler(HttpContext httpContext)
+{
+
+    httpContext.Response.ContentType ??= "application/json";
+    var result = await handler();
+    await httpContext.Response.WriteAsync(result);
+}
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
+                        // var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
@@ -266,14 +272,16 @@ namespace Microsoft.AspNetCore.Http.Generated
                         handler.Method);
                     }
 
-                    async Task RequestHandler(HttpContext httpContext)
-                    {
-                        httpContext.Response.ContentType ??= "application/json";
-                        var result = await handler();
-                        await httpContext.Response.WriteAsync(result);
-                    }
+async Task RequestHandler(HttpContext httpContext)
+{
+
+    httpContext.Response.ContentType ??= "application/json";
+    var result = await handler();
+    await httpContext.Response.WriteAsync(result);
+}
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
+                        // var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Cache;
 using System.Text;
+using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -76,70 +77,6 @@ internal static class StaticRouteHandlerModelEmitter
                                     """;
 
         return requestHandlerSource;
-    }
-    public static string EmitSpecialParameterPreparation(this EndpointParameter endpointParameter)
-    {
-        return $"""
-                var {endpointParameter.Name}_local = {endpointParameter.CallingCode};
-                """;
-    }
-
-    public static string EmitQueryParameterPreparation(this EndpointParameter endpointParameter)
-    {
-        return $$"""
-                 var {{endpointParameter.Name}}_raw = {{endpointParameter.CallingCode}};
-
-                 if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw) && {{(endpointParameter.IsNullable ? "false" : "false")}})
-                 {
-                     httpContext.Response.StatusCode = 400;
-                     return Task.CompletedTask;
-                 }
-
-                 var {{endpointParameter.HandlerArgument}} = {{endpointParameter.Name}}_raw.ToString();
-                 """;
-    }
-
-    public static string EmitRouteParameterPreparation(this EndpointParameter endpointParameter)
-    {
-        return "// Route Parameter";
-    }
-
-    public static string EmitHeaderParameterPreparation(this EndpointParameter endpointParameter)
-    {
-        return "// Header Parameter";
-    }
-
-    public static string EmitBodyParameterPreparation(this EndpointParameter endpointParameter)
-    {
-        return "// Body Parameter";
-    }
-
-    public static string EmitServiceParameterPreparation(this EndpointParameter endpointParameter)
-    {
-        return "// Service Parameter";
-    }
-
-    public static string EmitParameterPreparation(this Endpoint endpoint)
-    {
-        var parameterPreparationBuilder = new StringBuilder();
-
-        foreach (var parameter in endpoint.Parameters)
-        {
-            var parameterPreparationCode = parameter switch
-            {
-                {
-                    Source: EndpointParameterSource.SpecialType
-                } => parameter.EmitSpecialParameterPreparation(),
-                {
-                    Source: EndpointParameterSource.Query,
-                } => parameter.EmitQueryParameterPreparation(),
-                _ => throw new Exception("Unreachable!")
-            };
-
-            parameterPreparationBuilder.AppendLine(parameterPreparationCode);
-        }
-
-        return parameterPreparationBuilder.ToString();
     }
 
     private static string EmitResponseWritingCall(this Endpoint endpoint)
