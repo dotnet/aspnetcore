@@ -52,7 +52,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
     }
 
     [ConditionalFact]
-    public async Task AcceptAsync_UnbindAfterCall_CleanExitAndLog()
+    public async Task AcceptAsync_UnbindAfterCall_CleanExit()
     {
         // Arrange
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
@@ -65,7 +65,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         // Assert
         Assert.Null(await acceptTask.AsTask().DefaultTimeout());
 
-        Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
+        Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Error);
     }
 
     [Theory]
@@ -192,7 +192,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
     }
 
     [ConditionalFact]
-    public async Task AcceptAsync_DisposeAfterCall_CleanExitAndLog()
+    public async Task AcceptAsync_DisposeAfterCall_CleanExit()
     {
         // Arrange
         await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
@@ -205,7 +205,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         // Assert
         Assert.Null(await acceptTask.AsTask().DefaultTimeout());
 
-        Assert.Contains(LogMessages, m => m.EventId.Name == "ConnectionListenerAborted");
+        Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Error);
     }
 
     [ConditionalFact]
