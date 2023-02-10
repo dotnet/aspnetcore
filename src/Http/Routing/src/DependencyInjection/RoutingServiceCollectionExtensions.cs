@@ -30,8 +30,15 @@ public static class RoutingServiceCollectionExtensions
     {
         return services.AddRoutingCore().Configure<RouteOptions>(options =>
         {
-            // Replace RegexErrorStubRouteConstraint with the real regex constraint.
-            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+            var existingRegexConstraintType = options.TrimmerSafeConstraintMap["regex"];
+
+            // Don't override regex constraint if it has already been overridden
+            // this behavior here is just to add it back in if someone calls AddRouting(...)
+            // after setting up routing with AddRoutingCore(...).
+            if (existingRegexConstraintType == typeof(RegexErrorStubRouteConstraint))
+            {
+                options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+            }
         });
     }
 
@@ -131,8 +138,8 @@ public static class RoutingServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.AddRouting();
         services.Configure(configureOptions);
+        services.AddRouting();
 
         return services;
     }
