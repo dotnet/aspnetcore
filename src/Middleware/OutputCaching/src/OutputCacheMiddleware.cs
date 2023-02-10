@@ -172,7 +172,7 @@ internal sealed class OutputCacheMiddleware
                             UnshimResponseStream(context);
                         }
 
-                        // If the policies prevented this response from being cache we can't reuse it for other
+                        // If the policies prevented this response from being cached we can't reuse it for other
                         // pending requests
 
                         if (!context.AllowCacheStorage)
