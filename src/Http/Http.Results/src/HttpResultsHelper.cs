@@ -31,7 +31,8 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
+        jsonSerializerOptions ??= httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        //TODO: EnsureConfigured
 
         var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
@@ -143,12 +144,6 @@ internal static partial class HttpResultsHelper
         {
             ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
-    }
-
-    private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
-    {
-        // Attempt to resolve options from DI then fallback to default options
-        return httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? JsonOptions.Default;
     }
 
     internal static partial class Log

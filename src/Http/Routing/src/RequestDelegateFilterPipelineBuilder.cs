@@ -18,7 +18,7 @@ internal static class RequestDelegateFilterPipelineBuilder
         Debug.Assert(options.EndpointBuilder != null);
 
         var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-        var jsonSerializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.Default.SerializerOptions;
+        var jsonSerializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
 
         var factoryContext = new EndpointFilterFactoryContext
         {
