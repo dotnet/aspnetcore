@@ -160,17 +160,3 @@ public class RouteOptions
         constraintMap[text] = typeof(TConstraint);
     }
 }
-
-internal sealed class RegexErrorStubRouteConstraint : IRouteConstraint
-{
-    public RegexErrorStubRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string _)
-    {
-        throw new InvalidOperationException(Resources.RegexRouteContraint_NotConfigured);
-    }
-
-    bool IRouteConstraint.Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
-    {
-        // Should never get called, but is same as throw in constructor in case constructor is changed.
-        throw new InvalidOperationException(Resources.RegexRouteContraint_NotConfigured);
-    }
-}
