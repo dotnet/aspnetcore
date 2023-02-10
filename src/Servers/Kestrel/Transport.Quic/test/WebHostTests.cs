@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Quic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +20,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 [Collection(nameof(NoParallelCollection))]
 public class WebHostTests : LoggedTest
 {
+    // This test isn't conditional on QuicListener.IsSupported. Instead, it verifies that HTTP/3 runs on expected platforms:
+    // 1. Windows 11 or later.
+    // 2. Linux with libmsquic package installed.
+    [ConditionalFact]
+    [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
+    [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
+    public async Task PlatformSmoketest_HelloWorld_ClientSuccess()
+    {
+        // First check that System.Net.Quic reports that's supported.
+        Assert.True(QuicListener.IsSupported, "QuicListener.IsSupported should be true.");
+
+        // Next, do a basic HTTP/3 end-to-end test that ensures Kestrel can server a HTTP/3 request from a client.
+        //
+        // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(o =>
+                    {
+                        o.ConfigureEndpointDefaults(listenOptions =>
+                        {
+                            listenOptions.Protocols = Core.HttpProtocols.Http3;
+                        });
+                        o.ConfigureHttpsDefaults(httpsOptions =>
+                        {
+                            httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                        });
+                    })
+                    .UseUrls("https://127.0.0.1:0")
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("hello, world");
+                        });
+                    });
+            })
+            .ConfigureServices(AddTestLogging);
+
+        using (var host = builder.Build())
+        using (var client = CreateClient())
+        {
+            await host.StartAsync();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request.Version = HttpVersion.Version30;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version30, response.Version);
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal("hello, world", responseText);
+
+            await host.StopAsync();
+        }
+    }
+
     [ConditionalFact]
     [MsQuicSupported]
     public async Task UseUrls_HelloWorld_ClientSuccess()
