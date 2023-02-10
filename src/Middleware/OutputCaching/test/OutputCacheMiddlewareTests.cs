@@ -832,7 +832,8 @@ public class OutputCacheMiddlewareTests
     {
         var responseCounter = 0;
 
-        var blocker = new TaskCompletionSource<bool>();
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var memoryStream1 = new MemoryStream();
         var memoryStream2 = new MemoryStream();
@@ -846,12 +847,13 @@ public class OutputCacheMiddlewareTests
 
             if (responseCounter == 1)
             {
-                blocker.SetResult(true);
-                await Task.Delay(500);
+                blocker1.SetResult(true);
             }
 
             c.Response.Cookies.Append("a", "b");
             c.Response.Write("Hello" + responseCounter);
+
+            await blocker2.Task;
         });
 
         var context1 = TestUtils.CreateTestContext();
@@ -866,9 +868,17 @@ public class OutputCacheMiddlewareTests
 
         var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
 
-        await blocker.Task;
+        // Wait for context1 to be processed
+        await blocker1.Task;
 
+        // Start context2
         var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        // Wait for it to be blocked by the locking feature
+        await Task.Delay(500);
+
+        // Unblock context1
+        blocker2.SetResult(true);
 
         await Task.WhenAll(task1, task2);
 
@@ -884,8 +894,8 @@ public class OutputCacheMiddlewareTests
     {
         var responseCounter = 0;
 
-        var blocker1 = new TaskCompletionSource<bool>();
-        var blocker2 = new TaskCompletionSource<bool>();
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var options = new OutputCacheOptions();
         options.AddBasePolicy(build => build.Cache().SetLocking(false));
