@@ -1,4 +1,5 @@
-﻿@namespace Microsoft.AspNetCore.Components.QuickGrid
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace Microsoft.AspNetCore.Components.QuickGrid
 
 <div class="paginator">
     @if (Value.TotalItemCount.HasValue)
@@ -25,11 +26,3 @@
         </nav>
     }
 </div>
-
-@code
-{
-    private Task GoFirstAsync() => GoToPageAsync(0);
-    private Task GoPreviousAsync() => GoToPageAsync(Value.CurrentPageIndex - 1);
-    private Task GoNextAsync() => GoToPageAsync(Value.CurrentPageIndex + 1);
-    private Task GoLastAsync() => GoToPageAsync(Value.LastPageIndex.GetValueOrDefault(0));
-}

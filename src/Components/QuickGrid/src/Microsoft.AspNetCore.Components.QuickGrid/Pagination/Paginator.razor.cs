@@ -31,6 +31,11 @@ public partial class Paginator : IDisposable
         _totalItemCountChanged = new(new EventCallback<PaginationState>(this, null));
     }
 
+    private Task GoFirstAsync() => GoToPageAsync(0);
+    private Task GoPreviousAsync() => GoToPageAsync(Value.CurrentPageIndex - 1);
+    private Task GoNextAsync() => GoToPageAsync(Value.CurrentPageIndex + 1);
+    private Task GoLastAsync() => GoToPageAsync(Value.LastPageIndex.GetValueOrDefault(0));
+
     private bool CanGoBack => Value.CurrentPageIndex > 0;
     private bool CanGoForwards => Value.CurrentPageIndex < Value.LastPageIndex;
 
