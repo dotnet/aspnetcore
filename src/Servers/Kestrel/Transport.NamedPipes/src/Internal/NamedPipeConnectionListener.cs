@@ -131,7 +131,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             }
             catch (OperationCanceledException) when (_listeningToken.IsCancellationRequested)
             {
-                // Cancelled the current token
+                // Token was canceled. The listener is shutting down.
                 break;
             }
         }
