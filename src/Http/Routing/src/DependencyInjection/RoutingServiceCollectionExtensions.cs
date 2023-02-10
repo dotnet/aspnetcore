@@ -128,11 +128,12 @@ public static class RoutingServiceCollectionExtensions
         this IServiceCollection services,
         Action<RouteOptions> configureOptions)
     {
-        return services.AddRoutingCore().Configure<RouteOptions>(options =>
-        {
-            // Replace RegexErrorStubRouteConstraint with the real regex constraint.
-            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
-            configureOptions(options);
-        });
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        services.AddRouting();
+        services.Configure(configureOptions);
+
+        return services;
     }
 }
