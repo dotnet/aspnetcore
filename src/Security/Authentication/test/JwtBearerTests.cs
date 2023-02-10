@@ -1174,7 +1174,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                             {
                                 var authenticationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                                 await context.Response.WriteAsJsonAsync(
-                                    new { Expires = authenticationResult.Properties?.ExpiresUtc, Issued = authenticationResult.Properties?.IssuedUtc }, Http.Json.JsonOptions.Default.SerializerOptions);
+                                    new { Expires = authenticationResult.Properties?.ExpiresUtc, Issued = authenticationResult.Properties?.IssuedUtc });
                             }
                             else
                             {
