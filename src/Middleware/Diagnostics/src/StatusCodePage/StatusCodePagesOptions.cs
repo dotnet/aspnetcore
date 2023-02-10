@@ -26,21 +26,26 @@ public class StatusCodePagesOptions
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                await problemDetailsService.WriteAsync(new ()
+                await problemDetailsService.WriteAsync(new()
                 {
                     HttpContext = context.HttpContext,
                     ProblemDetails = { Status = statusCode }
                 });
             }
 
-            // TODO: Render with a pre-compiled html razor view.
-            if (!context.HttpContext.Response.HasStarted)
+            // Do nothing if a response body has already been started.
+            if (context.HttpContext.Response.HasStarted
+                || context.HttpContext.Response.ContentLength.HasValue
+                || !string.IsNullOrEmpty(context.HttpContext.Response.ContentType))
             {
-                var body = BuildResponseBody(statusCode);
-
-                context.HttpContext.Response.ContentType = "text/plain";
-                await context.HttpContext.Response.WriteAsync(body);
+                return;
             }
+
+            // TODO: Render with a pre-compiled html razor view.
+            var body = BuildResponseBody(statusCode);
+
+            context.HttpContext.Response.ContentType = "text/plain";
+            await context.HttpContext.Response.WriteAsync(body);
         };
     }
 
