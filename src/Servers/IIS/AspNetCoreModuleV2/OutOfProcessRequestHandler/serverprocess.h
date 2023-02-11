@@ -6,10 +6,13 @@
 #include <random>
 #include <map>
 
+// Keep using 1025 to avoid breaking existing services that are choosing
+// a port lower than 10000 via the ASPNETCORE_PORT environment variable
+#define MIN_PORT                                    1025
 // This value is somewhat arbitrary. Fixed-port services tend to
 // use ports near the minimum (1025) so this number is much higher
 // to reduce the chance of collisions.
-#define MIN_PORT                                    10000
+#define MIN_PORT_RANDOM                             10000
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
 #define MAX_ACTIVE_CHILD_PROCESSES                  16
