@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 public class AspNetCorePortTests : IISFunctionalTestBase
 {
     // Port range allowed by ANCM config
-    private const int _minPort = 10025;
+    private const int _minPort = 10000;
     private const int _maxPort = 48000;
 
     public AspNetCorePortTests(PublishedSitesFixture fixture) : base(fixture)
