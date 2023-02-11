@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 
 internal sealed class RegexErrorStubRouteConstraint : IRouteConstraint
 {
-    public RegexErrorStubRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string _)
+    public RegexErrorStubRouteConstraint(string _)
     {
         throw new InvalidOperationException(Resources.RegexRouteContraint_NotConfigured);
     }
