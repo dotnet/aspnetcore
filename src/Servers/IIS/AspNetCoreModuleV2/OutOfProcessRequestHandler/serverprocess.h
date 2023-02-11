@@ -6,7 +6,10 @@
 #include <random>
 #include <map>
 
-#define MIN_PORT                                    10025
+// This value is somewhat arbitrary. Fixed-port services tend to
+// use ports near the minimum (1025) so this number is much higher
+// to reduce the chance of collisions.
+#define MIN_PORT                                    10000
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
 #define MAX_ACTIVE_CHILD_PROCESSES                  16
