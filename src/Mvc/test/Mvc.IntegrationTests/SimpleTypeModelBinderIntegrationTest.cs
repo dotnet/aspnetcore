@@ -703,7 +703,7 @@ public class SimpleTypeModelBinderIntegrationTest
     }
 
     [Fact]
-    public async Task BindParameter_PrefersTypeConverter()
+    public async Task BindParameter_PrefersTypeConverter_OverTryParse()
     {
         // Arrange
         var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
