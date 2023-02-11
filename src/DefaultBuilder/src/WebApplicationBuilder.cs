@@ -94,17 +94,15 @@ public sealed class WebApplicationBuilder
 
         configuration.AddEnvironmentVariables(prefix: "ASPNETCORE_");
 
-        // add the default host configuration sources, so they are picked up by the HostApplicationBuilder constructor.
-        // These won't be added by HostApplicationBuilder since DisableDefaults = true.
-        configuration.AddEnvironmentVariables(prefix: "DOTNET_");
-        if (options.Args is { Length: > 0 } args)
-        {
-            configuration.AddCommandLine(args);
-        }
+        // SetDefaultContentRoot needs to be added between 'ASPNETCORE_' and 'DOTNET_' in order to match behavior of the non-slim WebApplicationBuilder.
+        SetDefaultContentRoot(options, configuration);
 
-        _hostApplicationBuilder = new HostApplicationBuilder(new HostApplicationBuilderSettings
+        // Add the default host environment variable configuration source.
+        // This won't be added by CreateEmptyApplicationBuilder.
+        configuration.AddEnvironmentVariables(prefix: "DOTNET_");
+
+        _hostApplicationBuilder = Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings
         {
-            DisableDefaults = true,
             Args = options.Args,
             ApplicationName = options.ApplicationName,
             EnvironmentName = options.EnvironmentName,
@@ -112,7 +110,10 @@ public sealed class WebApplicationBuilder
             Configuration = configuration,
         });
 
-        // configure the ServiceProviderOptions here since DisableDefaults = true means HostApplicationBuilder won't.
+        // Ensure the same behavior of the non-slim WebApplicationBuilder by adding the default "app" Configuration sources
+        ApplyDefaultAppConfiguration(options, configuration);
+
+        // configure the ServiceProviderOptions here since CreateEmptyApplicationBuilder won't.
         var serviceProviderFactory = GetServiceProviderFactory(_hostApplicationBuilder);
         _hostApplicationBuilder.ConfigureContainer(serviceProviderFactory);
 
@@ -175,6 +176,41 @@ public sealed class WebApplicationBuilder
         }
 
         return new DefaultServiceProviderFactory();
+    }
+
+    private static void SetDefaultContentRoot(WebApplicationOptions options, ConfigurationManager configuration)
+    {
+        if (options.ContentRootPath is null && configuration[HostDefaults.ContentRootKey] is null)
+        {
+            // Logic taken from https://github.com/dotnet/runtime/blob/78ed4438a42acab80541e9bde1910abaa8841db2/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L209-L227
+
+            // If we're running anywhere other than C:\Windows\system32, we default to using the CWD for the ContentRoot.
+            // However, since many things like Windows services and MSIX installers have C:\Windows\system32 as there CWD which is not likely
+            // to really be the home for things like appsettings.json, we skip changing the ContentRoot in that case. The non-"default" initial
+            // value for ContentRoot is AppContext.BaseDirectory (e.g. the executable path) which probably makes more sense than the system32.
+
+            // In my testing, both Environment.CurrentDirectory and Environment.GetFolderPath(Environment.SpecialFolder.System) return the path without
+            // any trailing directory separator characters. I'm not even sure the casing can ever be different from these APIs, but I think it makes sense to
+            // ignore case for Windows path comparisons given the file system is usually (always?) going to be case insensitive for the system path.
+            string cwd = System.Environment.CurrentDirectory;
+            if (!OperatingSystem.IsWindows() || !string.Equals(cwd, System.Environment.GetFolderPath(System.Environment.SpecialFolder.System), StringComparison.OrdinalIgnoreCase))
+            {
+                configuration.AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string?>(HostDefaults.ContentRootKey, cwd),
+                });
+            }
+        }
+    }
+
+    private static void ApplyDefaultAppConfiguration(WebApplicationOptions options, ConfigurationManager configuration)
+    {
+        configuration.AddEnvironmentVariables();
+
+        if (options.Args is { Length: > 0 } args)
+        {
+            configuration.AddCommandLine(args);
+        }
     }
 
     /// <summary>
