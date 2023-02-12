@@ -72,9 +72,11 @@ public readonly struct EventCallback : IEventCallback
         return RequiresExplicitReceiver ? (object)this : Delegate;
     }
 
+    /// <inheritdoc />
     public override int GetHashCode()
         => HashCode.Combine(RuntimeHelpers.GetHashCode(Receiver), RuntimeHelpers.GetHashCode(Delegate));
 
+    /// <inheritdoc />
     public override bool Equals(object? obj)
         => obj is EventCallback other
         && ReferenceEquals(Receiver, other.Receiver)
