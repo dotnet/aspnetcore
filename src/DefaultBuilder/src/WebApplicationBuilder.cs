@@ -61,14 +61,6 @@ public sealed class WebApplicationBuilder
 
         bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
         {
-            webHostBuilder.ConfigureServices(services =>
-            {
-                services.Configure<RouteOptions>(routeOptions =>
-                {
-                    routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
-                });
-            });
-
             // Runs inline.
             webHostBuilder.Configure(ConfigureApplication);
 
