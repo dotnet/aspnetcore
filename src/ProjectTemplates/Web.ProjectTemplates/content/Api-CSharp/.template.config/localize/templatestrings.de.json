@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ASP.NET Core-API",
+  "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-API-Anwendung.",
+  "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",
+  "symbols/kestrelHttpPort/description": "Portnummer, die für den HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/iisHttpPort/description": "Portnummer, die für den IIS Express HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
+  "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll.",
+  "symbols/NativeAot/displayName": "_native-AOT-Veröffentlichung aktivieren",
+  "symbols/NativeAot/description": "Gibt an, ob das Projekt für die Veröffentlichung als natives AOT aktiviert werden soll.",
+  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
+}

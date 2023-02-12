@@ -36,23 +36,60 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
         return result.ToArray();
     }
 
-    public async Task<CompletionResult> GetCompletionsAndServiceAsync(int caretPosition, params string[] sources)
+    public Task<CompletionResult> GetCompletionsAndServiceAsync(int caretPosition, params string[] sources)
+    {
+        var source = sources.First();
+        var insertionChar = source[caretPosition - 1];
+        return GetCompletionsAndServiceAsync(caretPosition, CompletionTrigger.CreateInsertionTrigger(insertionChar), sources);
+    }
+
+    public async Task<CompletionResult> GetCompletionsAndServiceAsync(int caretPosition, CompletionTrigger completionTrigger, params string[] sources)
     {
         var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
         var doc = project.Solution.GetDocument(project.Documents.First().Id);
+        var originalText = await doc.GetTextAsync().ConfigureAwait(false);
 
         var completionService = CompletionService.GetService(doc);
-        var result = await completionService.GetCompletionsAsync(doc, caretPosition, CompletionTrigger.Invoke);
+        var shouldTriggerCompletion = completionService.ShouldTriggerCompletion(originalText, caretPosition, completionTrigger);
 
-        return new(doc, completionService, result);
+        if (shouldTriggerCompletion)
+        {
+            var result = await completionService.GetCompletionsAsync(doc, caretPosition, completionTrigger);
+            var completionSpan = completionService.GetDefaultCompletionListSpan(originalText, caretPosition);
+
+            return new(doc, completionService, result, completionSpan, shouldTriggerCompletion);
+        }
+        else
+        {
+            return new(doc, completionService, default, default, shouldTriggerCompletion);
+        }
+    }
+
+    private async Task<(SyntaxToken token, SemanticModel model)> TryGetStringSyntaxTokenAtPositionAsync(int caretPosition, params string[] sources)
+    {
+        var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
+        var document = project.Solution.GetDocument(project.Documents.First().Id);
+
+        var semanticModel = await document.GetSemanticModelAsync(CancellationToken.None).ConfigureAwait(false);
+        if (semanticModel == null)
+        {
+            return default;
+        }
+
+        var root = await document.GetSyntaxRootAsync(CancellationToken.None).ConfigureAwait(false);
+        if (root == null)
+        {
+            return default;
+        }
+
+        var stringToken = root.FindToken(caretPosition);
+
+        return (token: stringToken, model: semanticModel);
     }
 
     public async Task<AspNetCoreBraceMatchingResult?> GetBraceMatchesAsync(int caretPosition, params string[] sources)
     {
-        var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
-        var doc = project.Solution.GetDocument(project.Documents.First().Id);
-
-        var (_, token, model) = await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(doc, caretPosition, CancellationToken.None);
+        var (token, model) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
         var braceMatcher = new RoutePatternBraceMatcher();
 
         return braceMatcher.FindBraces(model, token, caretPosition, CancellationToken.None);
@@ -60,10 +97,7 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
 
     public async Task<List<AspNetCoreHighlightSpan>> GetHighlightingAsync(int caretPosition, params string[] sources)
     {
-        var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
-        var doc = project.Solution.GetDocument(project.Documents.First().Id);
-
-        var (_, token, model) = await RouteStringSyntaxDetectorDocument.TryGetStringSyntaxTokenAtPositionAsync(doc, caretPosition, CancellationToken.None);
+        var (token, model) = await TryGetStringSyntaxTokenAtPositionAsync(caretPosition, sources);
         var highlighter = new RoutePatternHighlighter();
 
         var highlights = highlighter.GetDocumentHighlights(model, token, caretPosition, CancellationToken.None);
@@ -140,4 +174,4 @@ internal class TestDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
     }
 }
 
-public record CompletionResult(Document Document, CompletionService Service, CompletionList Completions);
+public record CompletionResult(Document Document, CompletionService Service, CompletionList Completions, TextSpan CompletionListSpan, bool ShouldTriggerCompletion);

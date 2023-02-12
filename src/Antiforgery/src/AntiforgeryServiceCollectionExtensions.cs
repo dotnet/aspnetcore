@@ -20,10 +20,7 @@ public static class AntiforgeryServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAntiforgery(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddDataProtection();
 
@@ -57,15 +54,8 @@ public static class AntiforgeryServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddAntiforgery(this IServiceCollection services, Action<AntiforgeryOptions> setupAction)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         services.AddAntiforgery();
         services.Configure(setupAction);

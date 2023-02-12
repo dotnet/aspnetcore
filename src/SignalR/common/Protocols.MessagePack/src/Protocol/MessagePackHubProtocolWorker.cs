@@ -162,16 +162,31 @@ internal abstract class MessagePackHubProtocolWorker
                 error = ReadString(ref reader, "error");
                 break;
             case NonVoidResult:
-                var itemType = binder.GetReturnType(invocationId);
-                if (itemType == typeof(RawResult))
+                hasResult = true;
+                var itemType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                if (itemType is null)
                 {
-                    result = new RawResult(reader.ReadRaw());
+                    reader.Skip();
                 }
                 else
                 {
-                    result = DeserializeObject(ref reader, itemType, "argument");
+                    if (itemType == typeof(RawResult))
+                    {
+                        result = new RawResult(reader.ReadRaw());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            result = DeserializeObject(ref reader, itemType, "argument");
+                        }
+                        catch (Exception ex)
+                        {
+                            error = $"Error trying to deserialize result to {itemType.Name}. {ex.Message}";
+                            hasResult = false;
+                        }
+                    }
                 }
-                hasResult = true;
                 break;
             case VoidResult:
                 hasResult = false;

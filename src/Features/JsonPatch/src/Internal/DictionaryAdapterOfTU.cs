@@ -147,7 +147,7 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
         }
 
         // As per JsonPatch spec, the target location must exist for test to be successful
-        if (!dictionary.ContainsKey(convertedKey))
+        if (!dictionary.TryGetValue(convertedKey, out var currentValue))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
@@ -157,8 +157,6 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
         {
             return false;
         }
-
-        var currentValue = dictionary[convertedKey];
 
         // The target segment does not have an assigned value to compare the test value with
         if (currentValue == null)

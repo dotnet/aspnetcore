@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsPackable>false</IsPackable>
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HashCode.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+</Project>

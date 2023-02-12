@@ -30,10 +30,7 @@ public class AttributeRouteModel
     /// <param name="templateProvider">The <see cref="IRouteTemplateProvider"/>.</param>
     public AttributeRouteModel(IRouteTemplateProvider templateProvider)
     {
-        if (templateProvider == null)
-        {
-            throw new ArgumentNullException(nameof(templateProvider));
-        }
+        ArgumentNullException.ThrowIfNull(templateProvider);
 
         Attribute = templateProvider;
         Template = templateProvider.Template;
@@ -47,10 +44,7 @@ public class AttributeRouteModel
     /// <param name="other">The <see cref="AttributeRouteModel"/> to copy.</param>
     public AttributeRouteModel(AttributeRouteModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Attribute = other.Attribute;
         Name = other.Name;
@@ -160,7 +154,7 @@ public class AttributeRouteModel
     {
         return template != null &&
             (template.StartsWith("~/", StringComparison.Ordinal) ||
-            template.StartsWith("/", StringComparison.Ordinal));
+            template.StartsWith('/'));
     }
 
     private static string? ChooseName(
@@ -192,7 +186,7 @@ public class AttributeRouteModel
             return right;
         }
 
-        if (left!.EndsWith("/", StringComparison.Ordinal))
+        if (left!.EndsWith('/'))
         {
             return left + right;
         }
@@ -225,7 +219,7 @@ public class AttributeRouteModel
         }
 
         var startIndex = 0;
-        if (result.StartsWith("/", StringComparison.Ordinal))
+        if (result.StartsWith('/'))
         {
             startIndex = 1;
         }
@@ -241,7 +235,7 @@ public class AttributeRouteModel
         }
 
         var subStringLength = result.Length - startIndex;
-        if (result.EndsWith("/", StringComparison.Ordinal))
+        if (result.EndsWith('/'))
         {
             subStringLength--;
         }

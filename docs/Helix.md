@@ -70,10 +70,10 @@ There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on
   Stopping Azure Pipelines Test Run Ubuntu.1804.Amd64.Open
   Stopping Azure Pipelines Test Run Windows.11.Amd64.ClientPre.Open
   Stopping Azure Pipelines Test Run OSX.1014.Amd64.Open
-D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Work item Microsoft.AspNetCore.Identity.Test--net7.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed. [D:\a\_work\1\s\eng\helix\helix.proj]
-D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net7.0/console [D:\a\_work\1\s\eng\helix\helix.proj]
-##[error].packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : (NETCORE_ENGINEERING_TELEMETRY=Test) Work item Microsoft.AspNetCore.Identity.Test--net7.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed.
-Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net7.0/console
+D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Work item Microsoft.AspNetCore.Identity.Test--net8.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed. [D:\a\_work\1\s\eng\helix\helix.proj]
+D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net8.0/console [D:\a\_work\1\s\eng\helix\helix.proj]
+##[error].packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : (NETCORE_ENGINEERING_TELEMETRY=Test) Work item Microsoft.AspNetCore.Identity.Test--net8.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed.
+Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net8.0/console
 ```
 
 The https://helix.dot.net/ home page displays information about the available public queues (nothing about the related BYOC pools and queues or the internal Helix queues)

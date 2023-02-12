@@ -284,7 +284,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private _writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
-        const resultKind = completionMessage.error ? this._errorResult : completionMessage.result ? this._nonVoidResult : this._voidResult;
+        const resultKind = completionMessage.error ? this._errorResult :
+            (completionMessage.result !== undefined) ? this._nonVoidResult : this._voidResult;
 
         let payload: any;
         switch (resultKind) {

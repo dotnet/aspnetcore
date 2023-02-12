@@ -59,10 +59,7 @@ public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTyp
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        if (fileStream == null)
-        {
-            throw new ArgumentNullException(nameof(fileStream));
-        }
+        ArgumentNullException.ThrowIfNull(fileStream);
 
         FileStream = fileStream;
         if (fileStream.CanSeek)
@@ -108,7 +105,7 @@ public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTyp
     public long? FileLength { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the stream with the file that will be sent back as the response.
+    /// Gets the stream with the file that will be sent back as the response.
     /// </summary>
     public Stream FileStream { get; }
 

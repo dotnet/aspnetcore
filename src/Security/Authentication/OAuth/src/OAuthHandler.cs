@@ -61,7 +61,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
 
         if (properties == null)
         {
-            return HandleRequestResult.Fail("The oauth state was missing or invalid.");
+            return HandleRequestResults.InvalidState;
         }
 
         // OAuth2 10.12 CSRF

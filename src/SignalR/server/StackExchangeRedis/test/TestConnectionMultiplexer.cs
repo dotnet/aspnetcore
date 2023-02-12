@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
+using StackExchange.Redis.Maintenance;
 using StackExchange.Redis.Profiling;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -76,6 +77,12 @@ public class TestConnectionMultiplexer : IConnectionMultiplexer
     }
 
     private readonly TestRedisServer _server;
+
+    public event EventHandler<ServerMaintenanceEvent> ServerMaintenanceEvent
+    {
+        add { }
+        remove { }
+    }
 
     public TestConnectionMultiplexer(TestRedisServer server)
     {
@@ -221,6 +228,13 @@ public class TestConnectionMultiplexer : IConnectionMultiplexer
     {
         throw new NotImplementedException();
     }
+
+    public IServer[] GetServers()
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask DisposeAsync() => default;
 }
 
 public class TestRedisServer

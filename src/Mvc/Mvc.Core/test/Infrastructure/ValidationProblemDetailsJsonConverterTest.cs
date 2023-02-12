@@ -14,7 +14,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void Read_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var detail = "Product not found";
@@ -59,7 +59,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void Read_WithSomeMissingValues_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
@@ -100,7 +100,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void ReadUsingJsonSerializerWorks()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
@@ -148,7 +148,7 @@ public class ValidationProblemDetailsJsonConverterTest
         using Utf8JsonWriter writer = new(stream);
 
         // Act
-        converter.Write(writer, problemDetails, null);
+        converter.Write(writer, problemDetails, new JsonSerializerOptions());
 
         writer.Flush();
         var json = Encoding.UTF8.GetString(stream.ToArray());

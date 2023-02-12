@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
+using System.Net.Security;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -209,7 +210,6 @@ public class Http3TlsTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42388")]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
         var builder = CreateHostBuilder(async context =>
@@ -246,10 +246,44 @@ public class Http3TlsTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
+    public async Task OnAuthenticate_Available_Throws(HttpProtocols protocols)
+    {
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
+        {
+            var builder = CreateHostBuilder(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+            }, configureKestrel: kestrelOptions =>
+            {
+                kestrelOptions.ListenAnyIP(port, listenOptions =>
+                {
+                    listenOptions.Protocols = protocols;
+                    listenOptions.UseHttps(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                        httpsOptions.OnAuthenticate = (_, _) => { };
+                    });
+                });
+            });
+
+            using var host = builder.Build();
+
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
+                host.StartAsync().DefaultTimeout());
+            Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
+        }, Logger);
+    }
+
     [ConditionalFact]
     [MsQuicSupported]
-    public async Task OnAuthenticate_Available_Throws()
+    public async Task TlsHandshakeCallbackOptions_Invoked()
     {
+        var configuredState = new object();
+        object callbackState = null;
         var builder = CreateHostBuilder(async context =>
         {
             await context.Response.WriteAsync("Hello World");
@@ -258,9 +292,18 @@ public class Http3TlsTests : LoggedTest
             kestrelOptions.ListenAnyIP(0, listenOptions =>
             {
                 listenOptions.Protocols = HttpProtocols.Http3;
-                listenOptions.UseHttps(httpsOptions =>
+                listenOptions.UseHttps(new TlsHandshakeCallbackOptions
                 {
-                    httpsOptions.OnAuthenticate = (_, _) => { };
+                    OnConnection = (context) =>
+                    {
+                        callbackState = context.State;
+                        return ValueTask.FromResult(new SslServerAuthenticationOptions
+                        {
+                            ServerCertificate = TestResources.GetTestCertificate(),
+                            ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 }
+                        });
+                    },
+                    OnConnectionState = configuredState
                 });
             });
         });
@@ -268,9 +311,22 @@ public class Http3TlsTests : LoggedTest
         using var host = builder.Build();
         using var client = HttpHelpers.CreateClient();
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
-            host.StartAsync().DefaultTimeout());
-        Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
+        await host.StartAsync().DefaultTimeout();
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        request.Headers.Host = "testhost";
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpVersion.Version30, response.Version);
+        Assert.Equal("Hello World", result);
+
+        Assert.Equal(configuredState, callbackState);
+
+        await host.StopAsync().DefaultTimeout();
     }
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)

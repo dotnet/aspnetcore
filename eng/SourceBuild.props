@@ -3,7 +3,6 @@
   <PropertyGroup>
     <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
-    <CloneSubmodulesToInnerSourceBuildRepo>false</CloneSubmodulesToInnerSourceBuildRepo>
   </PropertyGroup>
 
   <Target Name="PrepareGlobalJsonForSourceBuild"
@@ -15,22 +14,9 @@
   </Target>
 
   <!--
-    Init submodules - temporarary workaround for https://github.com/dotnet/sourcelink/pull/653
-  -->
-  <Target Name="InitSubmodules"
-          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
-          BeforeTargets="RunInnerSourceBuildCommand">
-
-    <Exec
-      Command="git submodule update --init --recursive"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
-      EnvironmentVariables="@(InnerBuildEnv)" />
-  </Target>
-
-  <!--
     Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
     Leaving the inner will cause all conflicting settings to be ignored.
-    https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options
+    https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options
   -->
   <Target Name="RemoveInnerGlobalConfig"
           DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
@@ -69,6 +55,7 @@
 
     <PropertyGroup>
       <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 
@@ -82,7 +69,7 @@
       <!--
         Add the internal installers artifacts required by dotnet/installer.
       -->
-      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-internal-*.tar.gz" />
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.tar.gz" />
       <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore_base_runtime.version" />
     </ItemGroup>
   </Target>

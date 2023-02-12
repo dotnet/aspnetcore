@@ -27,12 +27,15 @@ internal static class QuicTestHelpers
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
-    public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
+    public static QuicTransportFactory CreateTransportFactory(
+        ILoggerFactory loggerFactory = null,
+        ISystemClock systemClock = null,
+        long defaultCloseErrorCode = 0)
     {
         var quicTransportOptions = new QuicTransportOptions();
-        quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
         quicTransportOptions.MaxBidirectionalStreamCount = 200;
         quicTransportOptions.MaxUnidirectionalStreamCount = 200;
+        quicTransportOptions.DefaultCloseErrorCode = defaultCloseErrorCode;
         if (systemClock != null)
         {
             quicTransportOptions.SystemClock = systemClock;
@@ -41,14 +44,36 @@ internal static class QuicTestHelpers
         return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
     }
 
-    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null, bool clientCertificateRequired = false)
+    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(
+        ILoggerFactory loggerFactory = null,
+        ISystemClock systemClock = null,
+        bool clientCertificateRequired = false,
+        long defaultCloseErrorCode = 0,
+        int port = 0)
+    {
+        var transportFactory = CreateTransportFactory(
+            loggerFactory,
+            systemClock,
+            defaultCloseErrorCode: defaultCloseErrorCode);
+
+        var endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
+
+        var features = CreateBindAsyncFeatures(clientCertificateRequired);
+        return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
+    }
+
+    public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(
+        TlsConnectionCallbackOptions tlsConnectionOptions,
+        ILoggerFactory loggerFactory = null,
+        ISystemClock systemClock = null,
+        int port = 0)
     {
         var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
 
-        // Use ephemeral port 0. OS will assign unused port.
-        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var endpoint = new IPEndPoint(IPAddress.Loopback, port);
 
-        var features = CreateBindAsyncFeatures(clientCertificateRequired);
+        var features = new FeatureCollection();
+        features.Set(tlsConnectionOptions);
         return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
     }
 
@@ -63,7 +88,11 @@ internal static class QuicTestHelpers
         sslServerAuthenticationOptions.ClientCertificateRequired = clientCertificateRequired;
 
         var features = new FeatureCollection();
-        features.Set(sslServerAuthenticationOptions);
+        features.Set(new TlsConnectionCallbackOptions
+        {
+            ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols,
+            OnConnection = (context, cancellationToken) => ValueTask.FromResult(sslServerAuthenticationOptions)
+        });
 
         return features;
     }
@@ -87,9 +116,9 @@ internal static class QuicTestHelpers
         return true;
     }
 
-    public static QuicClientConnectionOptions CreateClientConnectionOptions(EndPoint remoteEndPoint)
+    public static QuicClientConnectionOptions CreateClientConnectionOptions(EndPoint remoteEndPoint, bool? ignoreInvalidCertificate = null)
     {
-        return new QuicClientConnectionOptions
+        var options = new QuicClientConnectionOptions
         {
             MaxInboundBidirectionalStreams = 200,
             MaxInboundUnidirectionalStreams = 200,
@@ -99,12 +128,16 @@ internal static class QuicTestHelpers
                 ApplicationProtocols = new List<SslApplicationProtocol>
                 {
                     SslApplicationProtocol.Http3
-                },
-                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback
+                }
             },
             DefaultStreamErrorCode = 0,
             DefaultCloseErrorCode = 0,
         };
+        if (ignoreInvalidCertificate ?? true)
+        {
+            options.ClientAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
+        }
+        return options;
     }
 
     public static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection clientConnection, MultiplexedConnectionContext serverConnection, ILogger logger)

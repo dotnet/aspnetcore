@@ -27,11 +27,11 @@ public class WebTransportHandshakeTests : Http3TestBase
         {
             var success = true;
 
+#pragma warning disable CA2252 // WebTransport is a preview feature
             var webTransportFeature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
 
             success &= webTransportFeature.IsWebTransportRequest;
 
-#pragma warning disable CA2252 // This API requires opting into preview features
             try
             {
                 var session = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout(); // todo session is null here
@@ -65,18 +65,18 @@ public class WebTransportHandshakeTests : Http3TestBase
 
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "CONNECT"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Protocol, "webtransport"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
         var response2 = await requestStream.ExpectHeadersAsync();
 
-        Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[PseudoHeaderNames.Status], null));
+        Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[InternalHeaderNames.Status], null));
 
         await requestStream.OnDisposedTask.DefaultTimeout();
         Assert.True(await appCompletedTcs.Task);
@@ -86,27 +86,27 @@ public class WebTransportHandshakeTests : Http3TestBase
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader),
-        nameof(PseudoHeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
-        nameof(PseudoHeaderNames.Protocol), "webtransport",
-        nameof(PseudoHeaderNames.Scheme), "http",
-        nameof(PseudoHeaderNames.Path), "/",
-        nameof(PseudoHeaderNames.Authority), "server.example.com",
+        nameof(InternalHeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
+        nameof(InternalHeaderNames.Protocol), "webtransport",
+        nameof(InternalHeaderNames.Scheme), "http",
+        nameof(InternalHeaderNames.Path), "/",
+        nameof(InternalHeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
-        nameof(PseudoHeaderNames.Method), "CONNECT",
-        nameof(PseudoHeaderNames.Protocol), "webtransport",
-        nameof(PseudoHeaderNames.Scheme), "http",
-        nameof(PseudoHeaderNames.Authority), "server.example.com",
+        nameof(InternalHeaderNames.Method), "CONNECT",
+        nameof(InternalHeaderNames.Protocol), "webtransport",
+        nameof(InternalHeaderNames.Scheme), "http",
+        nameof(InternalHeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]  // no path
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
-        nameof(PseudoHeaderNames.Method), "CONNECT",
-        nameof(PseudoHeaderNames.Protocol), "webtransport",
-        nameof(PseudoHeaderNames.Scheme), "http",
-        nameof(PseudoHeaderNames.Path), "/",
+        nameof(InternalHeaderNames.Method), "CONNECT",
+        nameof(InternalHeaderNames.Protocol), "webtransport",
+        nameof(InternalHeaderNames.Scheme), "http",
+        nameof(InternalHeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers)
     {
@@ -154,11 +154,11 @@ public class WebTransportHandshakeTests : Http3TestBase
     {
         return coreStringName switch
         {
-            nameof(PseudoHeaderNames.Method) => PseudoHeaderNames.Method,
-            nameof(PseudoHeaderNames.Protocol) => PseudoHeaderNames.Protocol,
-            nameof(PseudoHeaderNames.Scheme) => PseudoHeaderNames.Scheme,
-            nameof(PseudoHeaderNames.Path) => PseudoHeaderNames.Path,
-            nameof(PseudoHeaderNames.Authority) => PseudoHeaderNames.Authority,
+            nameof(InternalHeaderNames.Method) => InternalHeaderNames.Method,
+            nameof(InternalHeaderNames.Protocol) => InternalHeaderNames.Protocol,
+            nameof(InternalHeaderNames.Scheme) => InternalHeaderNames.Scheme,
+            nameof(InternalHeaderNames.Path) => InternalHeaderNames.Path,
+            nameof(InternalHeaderNames.Authority) => InternalHeaderNames.Authority,
             nameof(HeaderNames.Origin) => HeaderNames.Origin,
             _ => throw new Exception("Header name not mapped yet")
         };

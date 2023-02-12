@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -37,20 +38,9 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(
             httpContext,
@@ -88,20 +78,9 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(
             httpContext,
@@ -135,15 +114,8 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(endpointName, new RouteValueDictionary(values), pathBase, fragment, options);
     }
@@ -170,15 +142,8 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetPathByAddress<string>(endpointName, values ?? new(), pathBase, fragment, options);
     }
@@ -226,20 +191,9 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetUriByAddress<string>(
             httpContext,
@@ -296,20 +250,9 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         return generator.GetUriByAddress<string>(
             httpContext,
@@ -360,15 +303,8 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         if (string.IsNullOrEmpty(scheme))
         {
@@ -420,15 +356,8 @@ public static class LinkGeneratorEndpointNameAddressExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         if (string.IsNullOrEmpty(scheme))
         {

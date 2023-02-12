@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -21,7 +20,7 @@ internal sealed class CreateCommand
         @"s\s"
     };
 
-    public static void Register(ProjectCommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app, Program program)
     {
         app.Command("create", cmd =>
         {
@@ -78,11 +77,6 @@ internal sealed class CreateCommand
                 Resources.CreateCommand_ValidForOption_Description,
                 CommandOptionType.SingleValue);
 
-            var outputOption = cmd.Option(
-                "-o|--output",
-                Resources.CreateCommand_OutputOption_Description,
-                CommandOptionType.SingleValue);
-
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
@@ -95,7 +89,7 @@ internal sealed class CreateCommand
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, outputOption.Value());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, cmd.OutputOption.Value(), program);
             });
         });
     }
@@ -116,6 +110,19 @@ internal sealed class CreateCommand
     {
         var isValid = true;
         var project = DevJwtCliHelpers.GetProject(projectOption.Value());
+
+        if (project == null)
+        {
+            reporter.Error(Resources.ProjectOption_ProjectNotFound);
+            isValid = false;
+            // Break out early if we haven't been able to resolve a project
+            // since we depend on it for the managing of JWT tokens
+            return (
+                null,
+                isValid,
+                string.Empty
+            );
+        }
 
         var scheme = schemeNameOption.HasValue() ? schemeNameOption.Value() : "Bearer";
         var optionsString = schemeNameOption.HasValue() ? $"{Resources.JwtPrint_Scheme}: {scheme}{Environment.NewLine}" : string.Empty;
@@ -215,18 +222,19 @@ internal sealed class CreateCommand
         string projectPath,
         JwtCreatorOptions options,
         string optionsString,
-        string outputFormat)
+        string outputFormat,
+        Program program)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
             return 1;
         }
-        var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId, options.Scheme, options.Issuer);
+        var keyMaterial = SigningKeysHandler.GetOrCreateSigningKeyMaterial(userSecretsId, options.Scheme, options.Issuer);
 
         var jwtIssuer = new JwtIssuer(options.Issuer, keyMaterial);
         var jwtToken = jwtIssuer.Create(options);
 
-        var jwtStore = new JwtStore(userSecretsId);
+        var jwtStore = new JwtStore(userSecretsId, program);
         var jwt = Jwt.Create(options.Scheme, jwtToken, JwtIssuer.WriteToken(jwtToken), options.Scopes, options.Roles, options.Claims);
         if (options.Claims is { } customClaims)
         {

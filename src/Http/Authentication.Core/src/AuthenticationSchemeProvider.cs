@@ -120,7 +120,7 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
     /// <param name="name">The name of the authenticationScheme.</param>
     /// <returns>The scheme or null if not found.</returns>
     public virtual Task<AuthenticationScheme?> GetSchemeAsync(string name)
-        => Task.FromResult(_schemes.ContainsKey(name) ? _schemes[name] : null);
+        => Task.FromResult(_schemes.TryGetValue(name, out var scheme) ? scheme : null);
 
     /// <summary>
     /// Returns the schemes in priority order for request handling.
@@ -184,15 +184,14 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
     /// <param name="name">The name of the authenticationScheme being removed.</param>
     public virtual void RemoveScheme(string name)
     {
-        if (!_schemes.ContainsKey(name))
+        if (!_schemes.TryGetValue(name, out _))
         {
             return;
         }
         lock (_lock)
         {
-            if (_schemes.ContainsKey(name))
+            if (_schemes.TryGetValue(name, out var scheme))
             {
-                var scheme = _schemes[name];
                 if (_requestHandlers.Remove(scheme))
                 {
                     _requestHandlersCopy = _requestHandlers.ToArray();

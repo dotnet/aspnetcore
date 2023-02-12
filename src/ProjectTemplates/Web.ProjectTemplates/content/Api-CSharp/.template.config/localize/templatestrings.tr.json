@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ASP.NET Core API",
+  "description": "ASP.NET Core API uygulaması oluşturmak için proje şablonu.",
+  "symbols/ExcludeLaunchSettings/description": "launchSettings.json öğesinin oluşturulan şablondan dışlanıp dışlanmayacağı.",
+  "symbols/kestrelHttpPort/description": "launchSettings.json içinde HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
+  "symbols/iisHttpPort/description": "launchSettings.json içinde IIS Express HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
+  "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
+  "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
+  "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
+  "symbols/NativeAot/displayName": "_yerel AOT yayımlamayı etkinleştir",
+  "symbols/NativeAot/description": "Projenin yerel AOT olarak yayımlama için etkinleştirilip etkinleştirilmeyeceğini belirtir.",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
+}

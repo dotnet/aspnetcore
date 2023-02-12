@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -19,16 +20,23 @@ public static class UsePathBaseExtensions
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
     public static IApplicationBuilder UsePathBase(this IApplicationBuilder app, PathString pathBase)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         // Strip trailing slashes
         pathBase = new PathString(pathBase.Value?.TrimEnd('/'));
         if (!pathBase.HasValue)
         {
             return app;
+        }
+
+        // Only use this path if there's a global router (in the 'WebApplication' case).
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        {
+            return app.Use(next =>
+            {
+                var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
+                return new UsePathBaseMiddleware(newNext, pathBase).Invoke;
+            });
         }
 
         return app.UseMiddleware<UsePathBaseMiddleware>(pathBase);

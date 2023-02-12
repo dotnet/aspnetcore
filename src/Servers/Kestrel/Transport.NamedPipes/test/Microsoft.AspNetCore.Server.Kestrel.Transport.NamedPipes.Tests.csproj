@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" Link="shared\HttpEventSourceListener.cs" />
+    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" Link="shared\TestResources.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" Link="shared\KestrelTestLoggerProvider.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLoggerLoggedTest.cs" Link="shared\TestApplicationErrorLoggerLoggedTest.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" Link="shared\TestApplicationErrorLogger.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" Link="shared\TransportTestHelpers\IHostPortExtensions.cs" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\ServerRetryHelper.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\NamedPipesSupportedAttribute.cs" Link="shared\TransportTestHelpers\NamedPipesSupportedAttribute.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" Link="shared\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+</Project>

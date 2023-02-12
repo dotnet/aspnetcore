@@ -61,9 +61,9 @@ Then, use one of:
 1. Install the templates to an existing Visual Studio installation.
     1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
         - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
-    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new -i "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
+    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new install "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
     3. Run Visual Studio and test out templates manually.
-    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new --uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
+    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
@@ -87,7 +87,7 @@ An entire test project can be configured to skip specific platforms using the `<
 
 ```xml
 <SkipHelixQueues>
-    $(HelixQueueArmDebian11);
+    $(HelixQueueArmDebian12);
 </SkipHelixQueues>
 ```
 
@@ -108,7 +108,7 @@ When queuing test jobs to the Helix infrastructure, a timeout value is passed th
 This value is printed by the Helix runner at the beginning of the console log, formatted in seconds, e.g.:
 
 ```log
-Console log: 'ProjectTemplates.Tests--net7.0' from job b2f6fbe0-4dbe-45fa-a123-9a8c876d5923 (ubuntu.1804.armarch.open) using docker image mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652 on ddvsotx2l137
+Console log: 'ProjectTemplates.Tests--net8.0' from job b2f6fbe0-4dbe-45fa-a123-9a8c876d5923 (ubuntu.1804.armarch.open) using docker image mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652 on ddvsotx2l137
 running $HELIX_CORRELATION_PAYLOAD/scripts/71557bd7f20e49fbbaa81cc79bd57fd6/execute.sh in /home/helixbot/work/C08609D9/w/B3D709E1/e max 2700 seconds
 ```
 

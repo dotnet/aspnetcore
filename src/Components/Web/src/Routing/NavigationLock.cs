@@ -9,11 +9,16 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that can be used to intercept navigation events. 
 /// </summary>
-public class NavigationLock : IComponent, IAsyncDisposable
+public sealed class NavigationLock : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private readonly string _id = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
 
-    private bool HasOnBeforeInternalNavigationCallback => OnBeforeInternalNavigation.HasDelegate;
+    private RenderHandle _renderHandle;
+    private IDisposable? _locationChangingRegistration;
+    private bool _hasLocationChangingHandler;
+    private bool _confirmExternalNavigation;
+
+    private bool HasLocationChangingHandler => OnBeforeInternalNavigation.HasDelegate;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -36,32 +41,51 @@ public class NavigationLock : IComponent, IAsyncDisposable
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
+        _renderHandle = renderHandle;
     }
 
-    async Task IComponent.SetParametersAsync(ParameterView parameters)
+    Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        var lastHasOnBeforeInternalNavigationCallback = HasOnBeforeInternalNavigationCallback;
-        var lastConfirmExternalNavigation = ConfirmExternalNavigation;
-
-        parameters.SetParameterProperties(this);
-
-        var hasOnBeforeInternalNavigationCallback = HasOnBeforeInternalNavigationCallback;
-        if (hasOnBeforeInternalNavigationCallback != lastHasOnBeforeInternalNavigationCallback)
+        foreach (var parameter in parameters)
         {
-            if (hasOnBeforeInternalNavigationCallback)
+            if (parameter.Name.Equals(nameof(OnBeforeInternalNavigation), StringComparison.OrdinalIgnoreCase))
             {
-                NavigationManager.AddLocationChangingHandler(OnLocationChanging);
+                OnBeforeInternalNavigation = (EventCallback<LocationChangingContext>)parameter.Value;
+            }
+            else if (parameter.Name.Equals(nameof(ConfirmExternalNavigation), StringComparison.OrdinalIgnoreCase))
+            {
+                ConfirmExternalNavigation = (bool)parameter.Value;
             }
             else
             {
-                NavigationManager.RemoveLocationChangingHandler(OnLocationChanging);
+                throw new ArgumentException($"The component '{nameof(NavigationLock)}' does not accept a parameter with the name '{parameter.Name}'.");
             }
         }
 
-        var confirmExternalNavigation = ConfirmExternalNavigation;
-        if (confirmExternalNavigation != lastConfirmExternalNavigation)
+        if (_hasLocationChangingHandler != HasLocationChangingHandler ||
+            _confirmExternalNavigation != ConfirmExternalNavigation)
         {
-            if (confirmExternalNavigation)
+            _renderHandle.Render(static builder => { });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    async Task IHandleAfterRender.OnAfterRenderAsync()
+    {
+        if (_hasLocationChangingHandler != HasLocationChangingHandler)
+        {
+            _hasLocationChangingHandler = HasLocationChangingHandler;
+            _locationChangingRegistration?.Dispose();
+            _locationChangingRegistration = _hasLocationChangingHandler
+                ? NavigationManager.RegisterLocationChangingHandler(OnLocationChanging)
+                : null;
+        }
+
+        if (_confirmExternalNavigation != ConfirmExternalNavigation)
+        {
+            _confirmExternalNavigation = ConfirmExternalNavigation;
+            if (_confirmExternalNavigation)
             {
                 await JSRuntime.InvokeVoidAsync(NavigationLockInterop.EnableNavigationPrompt, _id);
             }
@@ -72,14 +96,25 @@ public class NavigationLock : IComponent, IAsyncDisposable
         }
     }
 
-    async ValueTask OnLocationChanging(LocationChangingContext context)
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         await OnBeforeInternalNavigation.InvokeAsync(context);
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        NavigationManager.RemoveLocationChangingHandler(OnLocationChanging);
-        await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
+        _locationChangingRegistration?.Dispose();
+
+        if (_confirmExternalNavigation)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
+            }
+            catch (JSDisconnectedException)
+            {
+                // If the browser is gone, we don't need it to clean up any browser-side state
+            }
+        }
     }
 }

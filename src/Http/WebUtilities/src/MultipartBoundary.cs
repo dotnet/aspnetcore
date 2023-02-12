@@ -13,10 +13,7 @@ internal sealed class MultipartBoundary
 
     public MultipartBoundary(string boundary, bool expectLeadingCrlf = true)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
+        ArgumentNullException.ThrowIfNull(boundary);
 
         _boundary = boundary;
         _expectLeadingCrlf = expectLeadingCrlf;

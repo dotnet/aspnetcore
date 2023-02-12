@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 
@@ -19,10 +20,7 @@ public class NameAuthorizationRequirement : AuthorizationHandler<NameAuthorizati
     /// <param name="requiredName">The required name that the current user must have.</param>
     public NameAuthorizationRequirement(string requiredName)
     {
-        if (requiredName == null)
-        {
-            throw new ArgumentNullException(nameof(requiredName));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(requiredName);
 
         RequiredName = requiredName;
     }
@@ -41,7 +39,18 @@ public class NameAuthorizationRequirement : AuthorizationHandler<NameAuthorizati
     {
         if (context.User != null)
         {
-            if (context.User.Identities.Any(i => string.Equals(i.Name, requirement.RequiredName, StringComparison.Ordinal)))
+            var succeed = false;
+
+            foreach (var identity in context.User.Identities)
+            {
+                if (string.Equals(identity.Name, requirement.RequiredName, StringComparison.Ordinal))
+                {
+                    succeed = true;
+                    break;
+                }
+            }
+
+            if (succeed)
             {
                 context.Succeed(requirement);
             }

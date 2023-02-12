@@ -66,10 +66,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     /// <param name="action">The <see cref="ActionModel"/>.</param>
     public void Apply(ActionModel action)
     {
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         if (!ShouldApply(action))
         {
@@ -87,10 +84,8 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             var bindingSource = parameter.BindingInfo?.BindingSource;
             if (bindingSource == null)
             {
-                bindingSource = InferBindingSourceForParameter(parameter);
-
-                parameter.BindingInfo = parameter.BindingInfo ?? new BindingInfo();
-                parameter.BindingInfo.BindingSource = bindingSource;
+                parameter.BindingInfo ??= new BindingInfo();
+                parameter.BindingInfo.BindingSource = InferBindingSourceForParameter(parameter);
             }
         }
 
@@ -116,16 +111,16 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     }
 
     // Internal for unit testing.
-    internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
+    internal BindingSource? InferBindingSourceForParameter(ParameterModel parameter)
     {
-        if (IsComplexTypeParameter(parameter))
+        if (IsComplexTypeParameter(parameter, out var metadata))
         {
-            if (_serviceProviderIsService?.IsService(parameter.ParameterType) is true)
+            if (IsService(parameter.ParameterType))
             {
                 return BindingSource.Services;
             }
 
-            return BindingSource.Body;
+            return metadata.BoundProperties.Any(prop => prop.BindingSource is not null) ? null : BindingSource.Body;
         }
 
         if (ParameterExistsInAnyRoute(parameter.Action, parameter.ParameterName))
@@ -134,6 +129,25 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         }
 
         return BindingSource.Query;
+    }
+
+    private bool IsService(Type type)
+    {
+        if (_serviceProviderIsService == null)
+        {
+            return false;
+        }
+
+        // IServiceProviderIsService will special case IEnumerable<> and always return true
+        // so, in this case checking the element type instead
+        if (type.IsConstructedGenericType &&
+            type.GetGenericTypeDefinition() is Type genericDefinition &&
+            genericDefinition == typeof(IEnumerable<>))
+        {
+            type = type.GenericTypeArguments[0];
+        }
+
+        return _serviceProviderIsService.IsService(type);
     }
 
     private static bool ParameterExistsInAnyRoute(ActionModel action, string parameterName)
@@ -155,10 +169,10 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         return false;
     }
 
-    private bool IsComplexTypeParameter(ParameterModel parameter)
+    private bool IsComplexTypeParameter(ParameterModel parameter, out ModelMetadata metadata)
     {
         // No need for information from attributes on the parameter. Just use its type.
-        var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
+        metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
 
         return metadata.IsComplexType;
     }

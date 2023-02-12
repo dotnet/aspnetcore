@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -16,12 +17,13 @@ public static class FileServerExtensions
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseFileServer(new FileServerOptions());
     }
@@ -32,12 +34,13 @@ public static class FileServerExtensions
     /// <param name="app"></param>
     /// <param name="enableDirectoryBrowsing">Should directory browsing be enabled?</param>
     /// <returns></returns>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, bool enableDirectoryBrowsing)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseFileServer(new FileServerOptions
         {
@@ -51,17 +54,14 @@ public static class FileServerExtensions
     /// <param name="app"></param>
     /// <param name="requestPath">The relative request path.</param>
     /// <returns></returns>
+    /// <remarks>
+    /// Files are served from the path specified in <see cref="IWebHostEnvironment.WebRootPath"/>
+    /// or <see cref="IWebHostEnvironment.WebRootFileProvider"/> which defaults to the 'wwwroot' subfolder.
+    /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, string requestPath)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-
-        if (requestPath == null)
-        {
-            throw new ArgumentNullException(nameof(requestPath));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(requestPath);
 
         return app.UseFileServer(new FileServerOptions
         {
@@ -77,14 +77,8 @@ public static class FileServerExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, FileServerOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.EnableDefaultFiles)
         {

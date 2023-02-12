@@ -74,7 +74,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40628")]
     public async Task ShadowCopyRelativeOutsideDirectoryWorks()
     {
         using var directory = TempDirectory.Create();
@@ -169,7 +168,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40619")]
     public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
     {
         using var directory = TempDirectory.Create();
@@ -254,7 +252,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40059")]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
     {
         using var directory = TempDirectory.Create();
@@ -364,7 +361,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    // copied from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+    // copied from https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
     private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string ignoreDirectory = "")
     {
         // Get the subdirectories for the specified directory.

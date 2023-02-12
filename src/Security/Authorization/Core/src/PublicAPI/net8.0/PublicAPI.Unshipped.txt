@@ -1,0 +1,3 @@
+#nullable enable
+Microsoft.AspNetCore.Authorization.IAuthorizationRequirementData
+Microsoft.AspNetCore.Authorization.IAuthorizationRequirementData.GetRequirements() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>!

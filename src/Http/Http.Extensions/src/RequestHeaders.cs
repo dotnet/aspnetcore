@@ -18,10 +18,7 @@ public class RequestHeaders
     /// <param name="headers">The request headers.</param>
     public RequestHeaders(IHeaderDictionary headers)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         Headers = headers;
     }
@@ -383,10 +380,7 @@ public class RequestHeaders
     /// <param name="value">The header value.</param>
     public void Set(string name, object? value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Headers.Set(name, value);
     }
@@ -399,10 +393,7 @@ public class RequestHeaders
     /// <param name="values">The sequence of header values.</param>
     public void SetList<T>(string name, IList<T>? values)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Headers.SetList<T>(name, values);
     }
@@ -414,15 +405,8 @@ public class RequestHeaders
     /// <param name="value">The header value.</param>
     public void Append(string name, object value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(value);
 
         Headers.Append(name, value.ToString());
     }

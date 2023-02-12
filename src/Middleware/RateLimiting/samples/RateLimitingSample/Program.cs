@@ -16,23 +16,38 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Inject an ILogger<SampleRateLimiterPolicy>
 builder.Services.AddLogging();
 
-var app = builder.Build();
-
 var todoName = "todoPolicy";
 var completeName = "completePolicy";
 var helloName = "helloPolicy";
 
-// Define endpoint limiters and a global limiter.
-var options = new RateLimiterOptions()
-        .AddTokenBucketLimiter(todoName, new TokenBucketRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(10), 1))
-        .AddPolicy<string>(completeName, new SampleRateLimiterPolicy(NullLogger<SampleRateLimiterPolicy>.Instance))
-        .AddPolicy<string, SampleRateLimiterPolicy>(helloName);
-// The global limiter will be a concurrency limiter with a max permit count of 10 and a queue depth of 5.
-options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+builder.Services.AddRateLimiter(options =>
+{
+    // Define endpoint limiters and a global limiter.
+    options.AddTokenBucketLimiter(todoName, options =>
+    {
+        options.TokenLimit = 1;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 1;
+        options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+        options.TokensPerPeriod = 1;
+    })
+    .AddPolicy<string>(completeName, new SampleRateLimiterPolicy(NullLogger<SampleRateLimiterPolicy>.Instance))
+    .AddPolicy<string, SampleRateLimiterPolicy>(helloName);
+    // The global limiter will be a concurrency limiter with a max permit count of 10 and a queue depth of 5.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        return RateLimitPartition.GetConcurrencyLimiter<string>("globalLimiter", key => new ConcurrencyLimiterOptions
         {
-            return RateLimitPartition.GetConcurrencyLimiter<string>("globalLimiter", key => new ConcurrencyLimiterOptions(10, QueueProcessingOrder.NewestFirst, 5));
+            PermitLimit = 10,
+            QueueProcessingOrder = QueueProcessingOrder.NewestFirst,
+            QueueLimit = 5
         });
-app.UseRateLimiter(options);
+    });
+});
+
+var app = builder.Build();
+
+app.UseRateLimiter();
 
 // The limiter on this endpoint allows 1 request every 5 seconds
 app.MapGet("/", () => "Hello World!").RequireRateLimiting(helloName);

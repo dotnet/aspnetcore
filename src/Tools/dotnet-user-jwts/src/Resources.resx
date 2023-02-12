@@ -246,9 +246,6 @@
   <data name="KeyCommand_ForceOption_Description" xml:space="preserve">
     <value>Don't prompt for confirmation before resetting the signing key.</value>
   </data>
-  <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
-    <value>The issuer associated with the signing key to be reset or displayed. Defaults to 'dotnet-user-jwts'.</value>
-  </data>
   <data name="KeyCommand_KeyCreated" xml:space="preserve">
     <value>New signing key created: '{0}'</value>
   </data>
@@ -294,6 +291,12 @@
   <data name="PrintCommand_ShowAllOption_Description" xml:space="preserve">
     <value>Whether to show all details associated with the JWT.</value>
   </data>
+  <data name="ProjectOption_ProjectNotFound" xml:space="preserve">
+    <value>No project found at `-p|--project` path or current directory.</value>
+  </data>
+  <data name="ProjectOption_SercretIdNotFound" xml:space="preserve">
+    <value>Project does not contain a user secrets ID.</value>
+  </data>
   <data name="ProjectOption_Description" xml:space="preserve">
     <value>The path of the project to operate on. Defaults to the project in the current directory.</value>
   </data>
@@ -308,5 +311,8 @@
   </data>
   <data name="RemoveCommand_NoJwtFound" xml:space="preserve">
     <value>No JWT with ID '{0}' found.</value>
+  </data>
+  <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
+    <value>The issuer associated with the signing key to be reset or displayed. Defaults to 'dotnet-user-jwts'.</value>
   </data>
 </root>

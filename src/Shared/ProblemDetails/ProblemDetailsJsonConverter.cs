@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
@@ -16,30 +17,29 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
     private static readonly JsonEncodedText Detail = JsonEncodedText.Encode("detail");
     private static readonly JsonEncodedText Instance = JsonEncodedText.Encode("instance");
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Trimmer does not allow annotating overriden methods with annotations different from the ones in base type.")]
     public override ProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var problemDetails = new ProblemDetails();
 
         if (reader.TokenType != JsonTokenType.StartObject)
         {
-            throw new JsonException("Unexcepted end when reading JSON.");
+            throw new JsonException("Unexpected end when reading JSON.");
         }
 
+        var objectTypeInfo = options.GetTypeInfo(typeof(object));
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
-            ReadValue(ref reader, problemDetails, options);
+            ReadValue(ref reader, problemDetails, objectTypeInfo);
         }
 
         if (reader.TokenType != JsonTokenType.EndObject)
         {
-            throw new JsonException("Unexcepted end when reading JSON.");
+            throw new JsonException("Unexpected end when reading JSON.");
         }
 
         return problemDetails;
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Trimmer does not allow annotating overriden methods with annotations different from the ones in base type.")]
     public override void Write(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -47,8 +47,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         writer.WriteEndObject();
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
-    internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonSerializerOptions options)
+    internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonTypeInfo extensionDataTypeInfo)
     {
         if (TryReadStringProperty(ref reader, Type, out var propertyValue))
         {
@@ -82,7 +81,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         {
             var key = reader.GetString()!;
             reader.Read();
-            value.Extensions[key] = JsonSerializer.Deserialize(ref reader, typeof(object), options);
+            value.Extensions[key] = JsonSerializer.Deserialize(ref reader, extensionDataTypeInfo);
         }
     }
 
@@ -99,7 +98,6 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         return true;
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void WriteProblemDetails(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         if (value.Type != null)
@@ -130,7 +128,15 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         foreach (var kvp in value.Extensions)
         {
             writer.WritePropertyName(kvp.Key);
-            JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
+
+            if (kvp.Value is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                JsonSerializer.Serialize(writer, kvp.Value, options.GetTypeInfo(kvp.Value.GetType()));
+            }
         }
     }
 }

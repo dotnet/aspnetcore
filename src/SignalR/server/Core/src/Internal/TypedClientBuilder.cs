@@ -12,7 +12,7 @@ internal static class TypedClientBuilder<T>
     private const string ClientModuleName = "Microsoft.AspNetCore.SignalR.TypedClientBuilder";
 
     // There is one static instance of _builder per T
-    private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
+    private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(GenerateClientBuilder);
 
     private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static)!;
 

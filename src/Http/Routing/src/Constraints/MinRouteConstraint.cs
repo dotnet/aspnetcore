@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to be a long with a minimum value.
 /// </summary>
-public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MinRouteConstraint" /> class.
@@ -34,15 +34,8 @@ public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchin
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {

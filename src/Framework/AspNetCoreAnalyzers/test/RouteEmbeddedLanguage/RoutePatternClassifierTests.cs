@@ -41,6 +41,26 @@ public class RoutePatternClassifierTests
     }
 
     [Fact]
+    public async Task CommentOnString_Classified()
+    {
+        await TestAsync(
+@"
+class Program
+{
+    void Goo()
+    {
+        // language=Route
+        var s = [|@""{id?}""|];
+    }
+}" + EmbeddedLanguagesTestConstants.StringSyntaxAttributeCodeCSharp,
+Verbatim(@"@""{id?}"""),
+Regex.CharacterClass("{"),
+Parameter("id"),
+Regex.Anchor("?"),
+Regex.CharacterClass("}"));
+    }
+
+    [Fact]
     public async Task AttributeOnField_Classified()
     {
         await TestAsync(
@@ -132,4 +152,6 @@ Regex.CharacterClass("["),
 Regex.CharacterClass("one"),
 Regex.CharacterClass("]"));
     }
+
+    private static FormattedClassification Parameter(string name) => new FormattedClassification(name, "json - object");
 }

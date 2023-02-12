@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Identity.Core;
 using Microsoft.Extensions.Options;
 
@@ -35,13 +36,15 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     private readonly int _iterCount;
     private readonly RandomNumberGenerator _rng;
 
+    private static readonly PasswordHasherOptions DefaultOptions = new PasswordHasherOptions();
+
     /// <summary>
     /// Creates a new instance of <see cref="PasswordHasher{TUser}"/>.
     /// </summary>
     /// <param name="optionsAccessor">The options for this instance.</param>
     public PasswordHasher(IOptions<PasswordHasherOptions>? optionsAccessor = null)
     {
-        var options = optionsAccessor?.Value ?? new PasswordHasherOptions();
+        var options = optionsAccessor?.Value ?? DefaultOptions;
 
         _compatibilityMode = options.CompatibilityMode;
         switch (_compatibilityMode)
@@ -95,10 +98,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     /// <returns>A hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.</returns>
     public virtual string HashPassword(TUser user, string password)
     {
-        if (password == null)
-        {
-            throw new ArgumentNullException(nameof(password));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(password);
 
         if (_compatibilityMode == PasswordHasherCompatibilityMode.IdentityV2)
         {
@@ -165,14 +165,8 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
     /// <remarks>Implementations of this method should be time consistent.</remarks>
     public virtual PasswordVerificationResult VerifyHashedPassword(TUser user, string hashedPassword, string providedPassword)
     {
-        if (hashedPassword == null)
-        {
-            throw new ArgumentNullException(nameof(hashedPassword));
-        }
-        if (providedPassword == null)
-        {
-            throw new ArgumentNullException(nameof(providedPassword));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hashedPassword);
+        ArgumentNullThrowHelper.ThrowIfNull(providedPassword);
 
         byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
 

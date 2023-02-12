@@ -1,15 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[WixBundleName] 安裝程式</String>
+  <String Id="Caption">[WixBundleName]安裝程式</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">歡迎</String>
-  <String Id="InstallMessage">安裝程式將在電腦上安裝 [WixBundleName]。請按一下 [\[]安裝[\]] 以繼續，該選項會設定安裝目錄，或按一下 [\[]關閉[\]] 以結束。</String>
   <String Id="InstallVersion">版本 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">您確定要取消嗎?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">前一版</String>
-  <String Id="HelpHeader">安裝程式說明</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - 在目錄中安裝、修復、解除安裝或
+  <String Id="HelpHeader">安裝說明</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]目錄[\]] - 在目錄中安裝、修復、解除安裝或
    建立搭售方案的完整本機複本。預設為安裝。
 
 /passive | /quiet -  顯示最少 UI 且不含提示，或者不顯示 UI，也
@@ -18,16 +16,9 @@
 /norestart   - 隱藏任何重新啟動嘗試。根據預設，UI 會在重新啟動之前提示。
 /log log.txt - 記錄至特定檔案。預設會在 %TEMP% 建立記錄檔。</String>
   <String Id="HelpCloseButton">關閉(&amp;C)</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;授權條款&lt;/a&gt;。</String>
   <String Id="InstallAcceptCheckbox">我同意授權條款及條件(&amp;A)</String>
-  <String Id="InstallOptionsButton">選項(&amp;O)</String>
   <String Id="InstallInstallButton">安裝(&amp;I)</String>
   <String Id="InstallCloseButton">關閉(&amp;C)</String>
-  <String Id="OptionsHeader">安裝選項</String>
-  <String Id="OptionsLocationLabel">安裝位置: </String>
-  <String Id="OptionsBrowseButton">瀏覽(&amp;B)</String>
-  <String Id="OptionsOkButton">確定(&amp;O)</String>
-  <String Id="OptionsCancelButton">取消(&amp;C)</String>
   <String Id="ProgressHeader">安裝進度</String>
   <String Id="ProgressLabel">處理中: </String>
   <String Id="OverallProgressPackageText">正在初始化...</String>
@@ -38,16 +29,16 @@
   <String Id="ModifyCloseButton">關閉(&amp;C)</String>
   <String Id="SuccessRepairHeader">修復已成功完成</String>
   <String Id="SuccessUninstallHeader">解除安裝已成功完成</String>
-  <String Id="SuccessInstallHeader">安裝已成功完成</String> 
-  <String Id="SuccessHeader">設定成功</String>	
+  <String Id="SuccessInstallHeader">安裝已成功完成</String>
+  <String Id="SuccessHeader">設定成功</String>
   <String Id="SuccessLaunchButton">啟動(&amp;L)</String>
   <String Id="SuccessRestartText">必須重新啟動電腦，才能使用此軟體。</String>
   <String Id="SuccessRestartButton">重新啟動(&amp;R)</String>
   <String Id="SuccessCloseButton">關閉(&amp;C)</String>
-  <String Id="FailureHeader">設定失敗</String>
-  <String Id="FailureInstallHeader">安裝程式失敗</String>
+  <String Id="FailureHeader">安裝失敗</String>
+  <String Id="FailureInstallHeader">設定失敗</String>
   <String Id="FailureUninstallHeader">解除安裝失敗</String>
-  <String Id="FailureRepairHeader">修復失敗</String> 
+  <String Id="FailureRepairHeader">修復失敗</String>
   <String Id="FailureHyperlinkLogText">有一個或多個問題導致安裝程式失敗。請解決問題，然後重試一次安裝。如需詳細資訊，請參閱&lt;a href="#"&gt;記錄檔&lt;/a&gt;。</String>
   <String Id="FailureRestartText">必須重新啟動電腦，才能完成軟體的復原。</String>
   <String Id="FailureRestartButton">重新啟動(&amp;R)</String>
@@ -61,9 +52,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">歡迎使用 [WixBundleName] 安裝程式。</String>
-  <String Id="InstallResetIIS">請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;這裡&lt;/a&gt;。</String>
-  <String Id="InstallNoIIS">這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;這裡&lt;/a&gt;。</String>
+  <String Id="InstallResetIIS">請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;此處&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;此處&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;授權條款&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隱私權聲明&lt;/a&gt;。</String>
-  <String Id="ModifyResetIIS">請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;這裡&lt;/a&gt;。</String>
-  <String Id="ModifyNoIIS">這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;這裡&lt;/a&gt;。</String>
+  <String Id="ModifyResetIIS">請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;此處&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;此處&lt;/a&gt;.</String>
 </WixLocalization>

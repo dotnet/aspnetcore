@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "API principal de ASP.NET",
+  "description": "Plantilla de proyecto para crear una aplicación de API de ASP.NET Core.",
+  "symbols/ExcludeLaunchSettings/description": "Indica si se va a excluir launchSettings.json de la plantilla generada.",
+  "symbols/kestrelHttpPort/description": "Número de puerto que se va a usar para el punto de conexión HTTP en launchSettings.json.",
+  "symbols/iisHttpPort/description": "Número de puerto que se va a usar para el punto de conexión HTTP de IIS Express en launchSettings.json.",
+  "symbols/Framework/description": "Marco de destino del proyecto.",
+  "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
+  "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
+  "symbols/UseProgramMain/displayName": "No usar instrucciones de _nivel superior",
+  "symbols/UseProgramMain/description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior.",
+  "symbols/NativeAot/displayName": "Habilitar publicación de AOT _native",
+  "symbols/NativeAot/description": "Indica si se debe habilitar el proyecto para publicarlo como AOT nativo.",
+  "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
+  "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\""
+}

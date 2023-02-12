@@ -28,10 +28,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
     /// <returns>The <see cref="IApplicationBuilder"/></returns>
     public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         var webHostEnvironment = builder.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 

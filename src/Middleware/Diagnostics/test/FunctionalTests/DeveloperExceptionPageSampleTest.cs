@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests;
 
@@ -49,5 +50,14 @@ public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<Develo
         Assert.NotNull(body);
         Assert.Equal(500, body.Status);
         Assert.Contains("Demonstration exception", body.Detail);
+
+        var exceptionNode = (JsonElement)body.Extensions["exception"];
+        Assert.Contains("System.Exception: Demonstration exception.", exceptionNode.GetProperty("details").GetString());
+        Assert.Equal("application/json", exceptionNode.GetProperty("headers").GetProperty("Accept")[0].GetString());
+        Assert.Equal("localhost", exceptionNode.GetProperty("headers").GetProperty("Host")[0].GetString());
+        Assert.Equal("/", exceptionNode.GetProperty("path").GetString());
+        Assert.Equal("Endpoint display name", exceptionNode.GetProperty("endpoint").GetString());
+        Assert.Equal("Value1", exceptionNode.GetProperty("routeValues").GetProperty("routeValue1").GetString());
+        Assert.Equal("Value2", exceptionNode.GetProperty("routeValues").GetProperty("routeValue2").GetString());
     }
 }

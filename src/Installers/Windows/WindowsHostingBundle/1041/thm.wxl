@@ -1,17 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[WixBundleName] セットアップ</String>
+  <String Id="Caption">[WixBundleName]のセットアップ</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">ようこそ</String>
-  <String Id="InstallMessage">セットアップによって、コンピューターに [WixBundleName] がインストールされます。[\[]インストール[\]]をクリックしてインストール ディレクトリを設定するオプションを表示するか、[\[]閉じる[\]] をクリックして終了します。</String>
   <String Id="InstallVersion">バージョン [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
   <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - バンドルの完全なローカル コピーに対する
-  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への
-  作成を行います。既定の設定はインストールです。
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]ディレクトリ[\]] - バンドルの完全なローカル コピーに対する
+  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への作成を行います。既定の設定はインストールです。
 
 /passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも
    表示しません。既定では UI とすべてのプロンプトが表示されます。
@@ -19,16 +16,9 @@
 /norestart   - 再起動を抑制します。既定では再起動前に確認メッセージが表示されます。
 /log log.txt - 特定のファイルに記録します。ログ ファイルは既定では %TEMP% に作成されます。</String>
   <String Id="HelpCloseButton">閉じる(&amp;C)</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;ライセンス条項&lt;/a&gt;。</String>
   <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
-  <String Id="InstallOptionsButton">オプション(&amp;O)</String>
   <String Id="InstallInstallButton">インストール(&amp;I)</String>
   <String Id="InstallCloseButton">閉じる(&amp;C)</String>
-  <String Id="OptionsHeader">セットアップ オプション</String>
-  <String Id="OptionsLocationLabel">インストール場所:</String>
-  <String Id="OptionsBrowseButton">参照(&amp;B)</String>
-  <String Id="OptionsOkButton">OK(&amp;O)</String>
-  <String Id="OptionsCancelButton">キャンセル(&amp;C)</String>
   <String Id="ProgressHeader">セットアップの進行状況</String>
   <String Id="ProgressLabel">処理中:</String>
   <String Id="OverallProgressPackageText">初期化しています...</String>
@@ -39,16 +29,16 @@
   <String Id="ModifyCloseButton">閉じる(&amp;C)</String>
   <String Id="SuccessRepairHeader">修復が正常に完了しました</String>
   <String Id="SuccessUninstallHeader">アンインストールが正常に完了しました</String>
-  <String Id="SuccessInstallHeader">インストールが正常に完了しました</String> 
-  <String Id="SuccessHeader">セットアップ完了</String>	
+  <String Id="SuccessInstallHeader">インストールが正常に完了しました</String>
+  <String Id="SuccessHeader">セットアップ完了</String>
   <String Id="SuccessLaunchButton">起動(&amp;L)</String>
   <String Id="SuccessRestartText">ソフトウェアを使用する前にコンピューターを再起動する必要があります。</String>
   <String Id="SuccessRestartButton">再起動(&amp;R)</String>
   <String Id="SuccessCloseButton">閉じる(&amp;C)</String>
-  <String Id="FailureHeader">セットアップ失敗</String>
+  <String Id="FailureHeader">セットアップに失敗しました</String>
   <String Id="FailureInstallHeader">セットアップに失敗しました</String>
   <String Id="FailureUninstallHeader">アンインストールに失敗しました</String>
-  <String Id="FailureRepairHeader">修復に失敗しました</String> 
+  <String Id="FailureRepairHeader">修復に失敗しました</String>
   <String Id="FailureHyperlinkLogText">1 つまたは複数の問題により、セットアップが失敗しました。問題を解決してからセットアップを再試行してください。詳細については、&lt;a href="#"&gt;ログ ファイル&lt;/a&gt;を参照してください。</String>
   <String Id="FailureRestartText">ソフトウェアのロールバックを完了するには、コンピューターを再起動する必要があります。</String>
   <String Id="FailureRestartButton">再起動(&amp;R)</String>
@@ -62,9 +52,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">[WixBundleName] のセットアップへようこそ。</String>
-  <String Id="InstallResetIIS">インストールの完了後に IIS を再起動してください。追加情報については、&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;こちら&lt;/a&gt;を参照してください。</String>
-  <String Id="InstallNoIIS">このマシンでは IIS が有効になっていません。IIS を使用して ASP.NET Core アプリケーションを実行する場合は、このインストーラーを実行する前に IIS をインストールする必要があります。追加情報については、&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;こちら&lt;/a&gt;を参照してください。</String>
+  <String Id="InstallResetIIS">インストールが完了したら、IIS を再起動してください。追加情報については、&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;こちら&lt;/a&gt;をご覧ください。</String>
+  <String Id="InstallNoIIS">このコンピューターでは IIS が有効になっていません。IIS ASP.NET Core アプリケーションを実行する場合は、このインストーラーを実行する前に IIS をインストールする必要があります。追加情報については、&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;こちら&lt;/a&gt;を参照してください。</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;ライセンス条項&lt;/a&gt;および&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;プライバシーに関する声明&lt;/a&gt;。</String>
-  <String Id="ModifyResetIIS">インストールの完了後に IIS を再起動してください。追加情報については、&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;こちら&lt;/a&gt;を参照してください。</String>
-  <String Id="ModifyNoIIS">このマシンでは IIS が有効になっていません。IIS を使用して ASP.NET Core アプリケーションを実行する場合は、このインストーラーを実行する前に IIS をインストールする必要があります。追加情報については、&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;こちら&lt;/a&gt;を参照してください。</String>
+  <String Id="ModifyResetIIS">インストールが完了したら、IIS を再起動してください。追加情報については、&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;こちら&lt;/a&gt;をご覧ください。</String>
+  <String Id="ModifyNoIIS">このコンピューターでは IIS が有効になっていません。IIS ASP.NET Core アプリケーションを実行する場合は、このインストーラーを実行する前に IIS をインストールする必要があります。追加情報については、&lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;こちら&lt;/a&gt;を参照してください。</String>
 </WixLocalization>

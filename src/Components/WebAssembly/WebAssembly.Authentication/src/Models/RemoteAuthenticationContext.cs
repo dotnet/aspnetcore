@@ -15,10 +15,15 @@ public class RemoteAuthenticationContext<[DynamicallyAccessedMembers(JsonSeriali
     /// <summary>
     /// Gets or sets the url for the current authentication operation.
     /// </summary>
-    public string Url { get; set; }
+    public string? Url { get; set; }
 
     /// <summary>
     /// Gets or sets the state instance for the current authentication operation.
     /// </summary>
-    public TRemoteAuthenticationState State { get; set; }
+    public TRemoteAuthenticationState? State { get; set; }
+
+    /// <summary>
+    /// Gets or sets the interaction request for the current authentication operation.
+    /// </summary>
+    public InteractiveRequestOptions? InteractiveRequest { get; set; }
 }

@@ -1,0 +1,16 @@
+#nullable enable
+Microsoft.AspNetCore.Hosting.WebHostBuilderNamedPipeExtensions
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CurrentUserOnly.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CurrentUserOnly.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.ListenerQueueCount.get -> int
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.ListenerQueueCount.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.MaxReadBufferSize.get -> long?
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.MaxReadBufferSize.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.MaxWriteBufferSize.get -> long?
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.MaxWriteBufferSize.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.NamedPipeTransportOptions() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.PipeSecurity.get -> System.IO.Pipes.PipeSecurity?
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.PipeSecurity.set -> void
+static Microsoft.AspNetCore.Hosting.WebHostBuilderNamedPipeExtensions.UseNamedPipes(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderNamedPipeExtensions.UseNamedPipes(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

@@ -28,11 +28,11 @@ public class Http3ConnectionTests : Http3TestBase
 {
     private static readonly KeyValuePair<string, string>[] Headers = new[]
     {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-        };
+        new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+    };
 
     [Fact]
     public async Task CreateRequestStream_RequestCompleted_Disposed()
@@ -56,10 +56,10 @@ public class Http3ConnectionTests : Http3TestBase
 
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
         });
 
         await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
@@ -94,10 +94,10 @@ public class Http3ConnectionTests : Http3TestBase
 
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "127.0.0.1"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
         });
 
@@ -109,7 +109,7 @@ public class Http3ConnectionTests : Http3TestBase
 
         await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: false);
         var headers = await requestStream.ExpectHeadersAsync();
-        Assert.Equal("200", headers[PseudoHeaderNames.Status]);
+        Assert.Equal("200", headers[InternalHeaderNames.Status]);
 
         var responseData = await requestStream.ExpectDataAsync();
         Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
@@ -128,13 +128,13 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var requestHeaders = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
-                new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
-                new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
+            new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
+            new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
+        };
 
         var receivedHeaders = "";
 
@@ -243,6 +243,7 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.SettingsError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
     }
 
@@ -261,6 +262,7 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.StreamCreationError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
     }
 
@@ -281,44 +283,79 @@ public class Http3ConnectionTests : Http3TestBase
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(f)));
     }
 
     [Fact]
-    public async Task ControlStream_ClientToServer_ClientCloses_ConnectionError()
+    public async Task ControlStream_ClientToServer_Completes_ConnectionError()
     {
+        var now = _serviceContext.MockSystemClock.UtcNow;
+
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
         var controlStream = await Http3Api.CreateControlStream(id: 0);
         await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
 
-        await controlStream.EndStreamAsync();
+        await controlStream.EndStreamAsync().DefaultTimeout();
+
+        // Wait for control stream to finish processing and exit.
+        await controlStream.OnStreamCompletedTask.DefaultTimeout();
+
+        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick(now + TimeSpan.FromSeconds(1));
 
         await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
-            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+    }
+
+    [Fact]
+    public async Task GOAWAY_TriggersLifetimeNotification_ConnectionClosedRequested()
+    {
+        var completionSource = new TaskCompletionSource();
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var controlStream = await Http3Api.CreateControlStream(id: 0);
+        await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+        var lifetime = Http3Api.MultiplexedConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>();
+        lifetime.ConnectionClosedRequested.Register(() => completionSource.TrySetResult());
+        Assert.False(lifetime.ConnectionClosedRequested.IsCancellationRequested);
+        
+        await controlStream.SendGoAwayAsync(streamId: 0, false);
+
+        await completionSource.Task.DefaultTimeout();
+        Assert.True(lifetime.ConnectionClosedRequested.IsCancellationRequested);
+
+        // Trigger server shutdown.
+        Http3Api.CloseServerGracefully();
+
+        await Http3Api.WaitForConnectionStopAsync(0, true, expectedErrorCode: Http3ErrorCode.NoError);
     }
 
     [Fact]
     public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
     {
-        Http3Api.OnCreateServerControlStream = testStreamContext =>
-        {
-            var controlStream = new Microsoft.AspNetCore.Testing.Http3ControlStream(Http3Api, testStreamContext);
-
-            // Make server connection error when trying to write to control stream.
-            controlStream.StreamContext.Transport.Output.Complete();
-
-            return controlStream;
-        };
+        var now = _serviceContext.MockSystemClock.UtcNow;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
-        Http3Api.AssertConnectionError<Http3ConnectionErrorException>(
+        var controlStream = await Http3Api.GetInboundControlStream();
+
+        controlStream.StreamContext.Close();
+
+        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick(now + TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
-            expectedErrorMessage: CoreStrings.Http3ControlStreamErrorInitializingOutbound);
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
     }
 
     [Fact]
@@ -354,11 +391,11 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         await Http3Api.InitializeConnectionAsync(_echoApplication);
 
@@ -373,10 +410,10 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json"),
         };
 
@@ -409,22 +446,22 @@ public class Http3ConnectionTests : Http3TestBase
     {
         const BindingFlags privateFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
-        KeyValuePair<string, string>[] requestHeaders1 = new[]
+        var requestHeaders1 = new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/hello"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
         };
 
         // Note: No content-type
-        KeyValuePair<string, string>[] requestHeaders2 = new[]
+        var requestHeaders2 = new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/hello"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80")
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80")
         };
 
         await Http3Api.InitializeConnectionAsync(_echoApplication);
@@ -455,11 +492,11 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         await Http3Api.InitializeConnectionAsync(_echoApplication);
 
@@ -489,11 +526,11 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         var requestDelegate = sendData ? _echoApplication : _noopApplication;
 
@@ -512,12 +549,12 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var requestHeaders = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/hello"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-                new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
 
         var requestCount = 0;
         IHeaderDictionary trailersFirst = null;

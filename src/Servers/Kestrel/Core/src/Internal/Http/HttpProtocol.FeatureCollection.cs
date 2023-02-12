@@ -92,7 +92,7 @@ internal partial class HttpProtocol
             if (!ReferenceEquals(_requestStreamInternal, RequestBody))
             {
                 _requestStreamInternal = RequestBody;
-                RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize()));
+                RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize(), useZeroByteReads: true));
 
                 OnCompleted((self) =>
                 {
@@ -300,16 +300,16 @@ internal partial class HttpProtocol
             throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
         }
 
-        if (StatusCode != StatusCodes.Status200OK)
+        if (StatusCode < StatusCodes.Status200OK || StatusCodes.Status300MultipleChoices <= StatusCode)
         {
-            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe200);
+            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe2XX);
         }
 
         IsExtendedConnectAccepted = true;
 
         await FlushAsync();
 
-        return _bodyControl!.Upgrade();
+        return _bodyControl!.AcceptConnect();
     }
 
     void IHttpRequestLifetimeFeature.Abort()

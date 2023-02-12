@@ -29,7 +29,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
     private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
-    private readonly ILogger<Renderer> _logger;
+    private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
@@ -77,23 +77,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
     {
-        if (serviceProvider is null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        if (loggerFactory is null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (componentActivator is null)
-        {
-            throw new ArgumentNullException(nameof(componentActivator));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(componentActivator);
 
         _serviceProvider = serviceProvider;
-        _logger = loggerFactory.CreateLogger<Renderer>();
+        // Would normally use ILogger<T> here to get the benefit of the string name being cached but this is a public ctor that
+        // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
+        // logger name in here as a string literal.
+        _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator);
     }
 
@@ -933,6 +925,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 fieldInfo.FieldValue);
         }
     }
+
+    internal void HandleComponentException(Exception exception, int componentId)
+        => HandleExceptionViaErrorBoundary(exception, GetRequiredComponentState(componentId));
 
     /// <summary>
     /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.

@@ -89,9 +89,6 @@ public class Program
         app.UseHttpsRedirection();
         #endif
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
-        #endif
         app.UseAuthorization();
 
         #if (UseMinimalAPIs)

@@ -23,7 +23,6 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
         ActionModelConventions = new List<IActionModelConvention>()
         {
             new ApiVisibilityConvention(),
-            new EndpointMetadataConvention(serviceProvider)
         };
 
         if (!options.SuppressMapClientErrors)

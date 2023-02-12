@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -496,6 +497,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         }
 
         Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
+        Assert.Throws<InvalidOperationException>(() => endpointBuilder.Finally(b => b.Metadata.Add(new RouteNameMetadata("Foo"))));
     }
 
     [Theory]
@@ -867,7 +869,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 });
 
             void WithFilterFactory(IEndpointConventionBuilder builder) =>
-                builder.AddEndpointFilter((routeHandlerContext, next) => async (context) =>
+                builder.AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
@@ -991,7 +993,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
         string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
-        routeHandlerBuilder.AddEndpointFilter((rhc, next) =>
+        routeHandlerBuilder.AddEndpointFilterFactory((rhc, next) =>
         {
             Assert.NotNull(rhc.ApplicationServices);
             var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
@@ -1007,23 +1009,59 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
+    public void FinallyOnGroup_CanExamineFinallyOnEndpoint()
     {
-        Assert.Throws<ArgumentNullException>("methodInfo", () => new EndpointFilterFactoryContext(null!, new List<object>(), new ServiceCollection().BuildServiceProvider()));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        ((IEndpointConventionBuilder)group).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint"))
+            {
+                b.Metadata.Add("added-from-group");
+            }
+        });
+
+        group.MapGet("/endpoint", () => { }).Finally(b => b.Metadata.Add("added-from-endpoint"));
+
+        var endpoint = Assert.Single(builder.DataSources
+            .SelectMany(ds => ds.Endpoints));
+
+        Assert.Equal(new[] { "added-from-endpoint", "added-from-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
     }
 
     [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
+    public void FinallyOnNestedGroups_OuterGroupCanExamineInnerGroup()
     {
-        var handler = () => { };
-        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new EndpointFilterFactoryContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
-    }
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
 
-    [Fact]
-    public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
-    {
-        var handler = () => { };
-        Assert.Throws<ArgumentNullException>("applicationServices", () => new EndpointFilterFactoryContext(handler.Method, new List<object>(), null!));
+        var outerGroup = builder.MapGroup("/group");
+        var innerGroup = outerGroup.MapGroup("/");
+        ((IEndpointConventionBuilder)innerGroup).Finally(b =>
+        {
+            // Verifies that both endpoint-specific finally conventions have run
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint-1")
+                && b.Metadata.Any(md => md is string smd && smd == "added-from-endpoint-2"))
+            {
+                b.Metadata.Add("added-from-inner-group");
+            }
+        });
+        ((IEndpointConventionBuilder)outerGroup).Finally(b =>
+        {
+            if (b.Metadata.Any(md => md is string smd && smd == "added-from-inner-group"))
+            {
+                b.Metadata.Add("added-from-outer-group");
+            }
+        });
+
+        var handler = innerGroup.MapGet("/endpoint", () => { });
+        handler.Finally(b => b.Metadata.Add("added-from-endpoint-1"));
+        handler.Finally(b => b.Metadata.Add("added-from-endpoint-2"));
+
+        var endpoint = Assert.Single(builder.DataSources
+            .SelectMany(ds => ds.Endpoints));
+
+        Assert.Equal(new[] { "added-from-endpoint-1", "added-from-endpoint-2", "added-from-inner-group", "added-from-outer-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
     }
 
     class MyService { }
@@ -1065,10 +1103,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     {
         public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
         {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
+            ArgumentNullException.ThrowIfNull(contentType);
 
             var contentTypes = new List<string>()
                 {

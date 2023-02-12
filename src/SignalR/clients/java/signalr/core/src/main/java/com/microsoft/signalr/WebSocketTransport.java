@@ -82,7 +82,9 @@ class WebSocketTransport implements Transport {
 
     @Override
     public Completable stop() {
-        return webSocketClient.stop().doOnEvent(t -> logger.info("WebSocket connection stopped."));
+        Completable stop = webSocketClient.stop();
+        stop.onErrorComplete().subscribe(() -> logger.info("WebSocket connection stopped."));
+        return stop;
     }
 
     void onClose(Integer code, String reason) {

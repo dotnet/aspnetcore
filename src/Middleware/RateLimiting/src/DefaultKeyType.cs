@@ -5,14 +5,14 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 internal struct DefaultKeyType
 {
-    public DefaultKeyType(string policyName, object? key, object? factory = null)
+    public DefaultKeyType(string? policyName, object? key, object? factory = null)
     {
         PolicyName = policyName;
         Key = key;
         Factory = factory;
     }
 
-    public string PolicyName { get; }
+    public string? PolicyName { get; }
 
     public object? Key { get; }
 

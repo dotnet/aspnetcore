@@ -174,7 +174,7 @@ internal class Http3InMemory
         }
     }
 
-    internal void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage) where TException : Exception
+    private void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage) where TException : Exception
     {
         var currentError = (Http3ErrorCode)MultiplexedConnectionContext.Error;
         if (currentError != expectedErrorCode)
@@ -650,7 +650,7 @@ internal class Http3StreamBase
 
 internal class Http3RequestHeaderHandler
 {
-    public readonly byte[] HeaderEncodingBuffer = new byte[64 * 1024];
+    public readonly byte[] HeaderEncodingBuffer = new byte[96 * 1024];
     public readonly QPackDecoder QpackDecoder = new QPackDecoder(8192);
     public readonly Dictionary<string, string> DecodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }
@@ -699,9 +699,8 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
         var done = QPackHeaderWriter.BeginEncodeHeaders(headers, buffer.Span, ref headersTotalSize, out var length);
         if (!done)
         {
-            throw new InvalidOperationException("Headers not sent.");
+            throw new InvalidOperationException("The headers are too large.");
         }
-
         await SendFrameAsync(Http3FrameType.Headers, buffer.Slice(0, length), endStream);
     }
 
@@ -1073,12 +1072,14 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
 
     public void RequestClose()
     {
-        throw new NotImplementedException();
+        ConnectionClosingCts.Cancel();
     }
 }
 
-internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature, IDisposable
+internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature, IDisposable, IStreamClosedFeature
 {
+    private readonly record struct CloseAction(Action<object> Callback, object State);
+
     private readonly Http3InMemory _testBase;
 
     internal DuplexPipePair _pair;
@@ -1096,6 +1097,7 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
     private TaskCompletionSource _disposingTcs;
     private TaskCompletionSource _disposedTcs;
     internal long? _error;
+    private List<CloseAction> _onClosed;
 
     public TestStreamContext(bool canRead, bool canWrite, Http3InMemory testBase)
     {
@@ -1143,6 +1145,7 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
         Features.Set<IStreamAbortFeature>(this);
         Features.Set<IProtocolErrorCodeFeature>(this);
         Features.Set<IPersistentStateFeature>(this);
+        Features.Set<IStreamClosedFeature>(this);
 
         StreamId = streamId;
         _testBase.Logger.LogInformation($"Initializing stream {streamId}");
@@ -1263,5 +1266,25 @@ internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, I
     void IStreamAbortFeature.AbortWrite(long errorCode, ConnectionAbortedException abortReason)
     {
         AbortWriteException = abortReason;
+    }
+
+    public void OnClosed(Action<object> callback, object state)
+    {
+        if (_onClosed == null)
+        {
+            _onClosed = new List<CloseAction>();
+        }
+        _onClosed.Add(new CloseAction(callback, state));
+    }
+
+    public void Close()
+    {
+        if (_onClosed != null)
+        {
+            foreach (var onClose in _onClosed)
+            {
+                onClose.Callback(onClose.State);
+            }
+        }
     }
 }

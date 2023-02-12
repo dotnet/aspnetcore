@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,10 +24,7 @@ public static class ExceptionHandlerExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return SetExceptionHandlerMiddleware(app, options: null);
     }
@@ -40,10 +38,7 @@ public static class ExceptionHandlerExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseExceptionHandler(new ExceptionHandlerOptions
         {
@@ -60,14 +55,8 @@ public static class ExceptionHandlerExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, Action<IApplicationBuilder> configure)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var subAppBuilder = app.New();
         configure(subAppBuilder);
@@ -88,14 +77,8 @@ public static class ExceptionHandlerExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, ExceptionHandlerOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         var iOptions = Options.Create(options);
         return SetExceptionHandlerMiddleware(app, iOptions);
@@ -103,13 +86,12 @@ public static class ExceptionHandlerExtensions
 
     private static IApplicationBuilder SetExceptionHandlerMiddleware(IApplicationBuilder app, IOptions<ExceptionHandlerOptions>? options)
     {
-        const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         var problemDetailsService = app.ApplicationServices.GetService<IProblemDetailsService>();
 
         app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware";
 
         // Only use this path if there's a global router (in the 'WebApplication' case).
-        if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>
             {
@@ -123,16 +105,9 @@ public static class ExceptionHandlerExtensions
 
                 if (!string.IsNullOrEmpty(options.Value.ExceptionHandlingPath) && options.Value.ExceptionHandler is null)
                 {
-                    // start a new middleware pipeline
-                    var builder = app.New();
-                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                    builder.UseRouting();
-                    // apply the next middleware
-                    builder.Run(next);
+                    var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                     // store the pipeline for the error case
-                    options.Value.ExceptionHandler = builder.Build();
+                    options.Value.ExceptionHandler = newNext;
                 }
 
                 return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;

@@ -60,10 +60,7 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// </summary>
     public void EnableLdap(Action<LdapSettings> configureSettings)
     {
-        if (configureSettings == null)
-        {
-            throw new ArgumentNullException(nameof(configureSettings));
-        }
+        ArgumentNullException.ThrowIfNull(configureSettings);
 
         LdapSettings.EnableLdapClaimResolution = true;
         configureSettings(LdapSettings);

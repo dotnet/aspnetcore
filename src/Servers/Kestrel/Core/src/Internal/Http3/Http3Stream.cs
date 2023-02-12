@@ -46,6 +46,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private IProtocolErrorCodeFeature _errorCodeFeature = default!;
     private IStreamIdFeature _streamIdFeature = default!;
     private IStreamAbortFeature _streamAbortFeature = default!;
+    private IStreamClosedFeature _streamClosedFeature = default!;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private StreamCompletionFlags _completionState;
     private int _isClosed;
@@ -61,8 +62,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
-    private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
-    private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
+    public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
     public long? InputRemaining { get; internal set; }
@@ -88,12 +89,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _errorCodeFeature = _context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
         _streamIdFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
         _streamAbortFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
+        _streamClosedFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamClosedFeature>();
 
         _appCompletedTaskSource.Reset();
         _isClosed = 0;
         _requestHeaderParsingState = default;
         _parsedPseudoHeaderFields = default;
         _totalParsedHeaderSize = 0;
+        // Allow up to 2x during parsing, enforce the hard limit after when we can preserve the connection.
+        _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
         StreamTimeoutTicks = 0;
@@ -144,7 +148,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         lock (_completionLock)
         {
-            if (IsCompleted)
+            if (IsCompleted || IsAborted)
             {
                 return;
             }
@@ -273,10 +277,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private void OnHeaderCore(HeaderType headerType, int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        // https://tools.ietf.org/html/rfc7540#section-6.5.2
+        // https://httpwg.org/specs/rfc9114.html#rfc.section.4.2.2
         // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
-        _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
-        if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+        // We don't include the 32 byte overhead hear so we can accept a little more than the advertised limit.
+        _totalParsedHeaderSize += name.Length + value.Length;
+        // Allow a 2x grace before aborting the stream. We'll check the size limit again later where we can send a 431.
+        if (_totalParsedHeaderSize > ServerOptions.Limits.MaxRequestHeadersTotalSize * 2)
         {
             throw new Http3StreamErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http3ErrorCode.RequestRejected);
         }
@@ -573,6 +579,28 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         Exception? error = null;
 
+        // With HTTP/3 the write-side of the stream can be aborted by the client after the server
+        // has finished reading incoming content. That means errors can happen after the Input loop
+        // has finished reading.
+        //
+        // To get notification of request aborted we register to the stream closing or complete.
+        // It will notify this type that the client has aborted the request and Kestrel will complete
+        // pipes and cancel the HttpContext.RequestAborted token.
+        _streamClosedFeature.OnClosed(static s =>
+        {
+            var stream = (Http3Stream)s!;
+
+            if (!stream.IsCompleted)
+            {
+                // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
+                var errorCode = stream._errorCodeFeature.Error;
+                if (errorCode >= 0)
+                {
+                    stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);
+                }
+            }
+        }, this);
+
         try
         {
             while (_isClosed == 0)
@@ -643,44 +671,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 ? new ValueTask(_appCompletedTaskSource, _appCompletedTaskSource.Version)
                 : ValueTask.CompletedTask;
 
-            if (!appCompletedTask.IsCompletedSuccessfully)
-            {
-                // At this point in the stream's read-side is complete. However, with HTTP/3
-                // the write-side of the stream can still be aborted by the client on request
-                // aborted.
-                //
-                // To get notification of request aborted we register to connection closed
-                // token. It will notify this type that the client has aborted the request
-                // and Kestrel will complete pipes and cancel the RequestAborted token.
-                //
-                // Only subscribe to this event after the stream's read-side is complete to
-                // avoid interactions between reading that is in-progress and an abort.
-                // This means while reading, read-side abort will handle getting abort notifications.
-                //
-                // We don't need to hang on to the CancellationTokenRegistration from register.
-                // The CTS is cleaned up in StreamContext.DisposeAsync.
-                //
-                // TODO: Consider a better way to provide this notification. For perf we want to
-                // make the ConnectionClosed CTS pay-for-play, and change this event to use
-                // something that is more lightweight than a CTS.
-                _context.StreamContext.ConnectionClosed.Register(static s =>
-                {
-                    var stream = (Http3Stream)s!;
-
-                    if (!stream.IsCompleted)
-                    {
-                        // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
-                        var errorCode = stream._errorCodeFeature.Error;
-                        if (errorCode >= 0)
-                        {
-                            stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);
-                        }
-                    }
-                }, this);
-
-                // Make sure application func is completed before completing writer.
-                await appCompletedTask;
-            }
+            // At this point, assuming an error wasn't thrown, the stream's read-side is complete.
+            // Make sure application func is completed before completing writer.
+            await appCompletedTask;
 
             try
             {
@@ -848,7 +841,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (string.Equals(HttpRequestHeaders.HeaderProtocol, WebTransportSession.WebTransportProtocolValue, StringComparison.Ordinal))
             {
                 // if the client supports the same version of WebTransport as Kestrel, make this a WebTransport request
-                if (((AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders).TryGetValue(WebTransportSession.CurrentSuppportedVersion, out var version) && string.Equals(version, WebTransportSession.VersionEnabledIndicator, StringComparison.Ordinal))
+                if (((AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders).TryGetValue(WebTransportSession.CurrentSupportedVersion, out var version) && string.Equals(version, WebTransportSession.VersionEnabledIndicator, StringComparison.Ordinal))
                 {
                     IsWebTransportRequest = true;
                 }
@@ -950,6 +943,18 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         endConnection = !TryValidatePseudoHeaders();
 
+        // 431 if the headers are too large
+        if (_totalParsedHeaderSize > ServerOptions.Limits.MaxRequestHeadersTotalSize)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+        }
+
+        // 431 if we received too many headers
+        if (RequestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+        }
+
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();
 
@@ -975,9 +980,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // CONNECT - :scheme and :path must be excluded=
-        if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
+        if (Method == HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
-            if (!string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Path]))
+            if (!string.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !string.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
             {
                 Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                 return false;
@@ -1018,7 +1023,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // OPTIONS request for an "http" or "https" URI that does not include
         // a path component; these MUST include a ":path" pseudo-header field
         // with a value of '*'.
-        if (Method == Http.HttpMethod.Options && path.Length == 1 && path[0] == '*')
+        if (Method == HttpMethod.Options && path.Length == 1 && path[0] == '*')
         {
             // * is stored in RawTarget only since HttpRequest expects Path to be empty or start with a /.
             Path = string.Empty;
@@ -1048,13 +1053,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _methodText = HttpRequestHeaders.HeaderMethod.ToString();
         Method = HttpUtilities.GetKnownMethod(_methodText);
 
-        if (Method == Http.HttpMethod.None)
+        if (Method == HttpMethod.None)
         {
             Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
             return false;
         }
 
-        if (Method == Http.HttpMethod.Custom)
+        if (Method == HttpMethod.Custom)
         {
             if (HttpCharacters.IndexOfInvalidTokenChar(_methodText) >= 0)
             {
@@ -1180,7 +1185,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
     }
 
+#pragma warning disable CA2252 // WebTransport is a preview feature
     public override async ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+#pragma warning restore CA2252 // WebTransport is a preview feature
     {
         if (_isWebTransportSessionAccepted)
         {
@@ -1194,13 +1201,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         if (!IsWebTransportRequest)
         {
-            throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
+            throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSupportedVersion));
         }
 
         _isWebTransportSessionAccepted = true;
 
         // version negotiation
-        var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
+        var version = WebTransportSession.CurrentSupportedVersionSuffix;
 
         _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 
@@ -1241,16 +1248,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Status = 0x10,
         Protocol = 0x20,
         Unknown = 0x40000000
-    }
-
-    [Flags]
-    private enum StreamCompletionFlags
-    {
-        None = 0,
-        EndStreamReceived = 1,
-        AbortedRead = 2,
-        Aborted = 4,
-        Completed = 8,
     }
 
     private static class GracefulCloseInitiator

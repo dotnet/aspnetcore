@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -38,44 +39,44 @@ public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : 
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string? password)
     {
-        if (password == null)
-        {
-            throw new ArgumentNullException(nameof(password));
-        }
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
-        var errors = new List<IdentityError>();
+        ArgumentNullThrowHelper.ThrowIfNull(password);
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
+        List<IdentityError>? errors = null;
         var options = manager.Options.Password;
         if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordTooShort(options.RequiredLength));
         }
         if (options.RequireNonAlphanumeric && password.All(IsLetterOrDigit))
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresNonAlphanumeric());
         }
         if (options.RequireDigit && !password.Any(IsDigit))
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresDigit());
         }
         if (options.RequireLowercase && !password.Any(IsLower))
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresLower());
         }
         if (options.RequireUppercase && !password.Any(IsUpper))
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresUpper());
         }
         if (options.RequiredUniqueChars >= 1 && password.Distinct().Count() < options.RequiredUniqueChars)
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.PasswordRequiresUniqueChars(options.RequiredUniqueChars));
         }
         return
-            Task.FromResult(errors.Count == 0
-                ? IdentityResult.Success
-                : IdentityResult.Failed(errors.ToArray()));
+            Task.FromResult(errors?.Count > 0
+                ? IdentityResult.Failed(errors)
+                : IdentityResult.Success);
     }
 
     /// <summary>

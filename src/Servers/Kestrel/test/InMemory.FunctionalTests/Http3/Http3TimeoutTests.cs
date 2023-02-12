@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Reflection.PortableExecutable;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -15,13 +10,114 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class Http3TimeoutTests : Http3TestBase
 {
+    [Fact]
+    public async Task KeepAliveTimeout_ControlStreamNotReceived_ConnectionClosed()
+    {
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+
+        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
+        await controlStream.ExpectSettingsAsync().DefaultTimeout();
+
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
+
+        await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+    }
+
+    [Fact]
+    public async Task KeepAliveTimeout_RequestNotReceived_ConnectionClosed()
+    {
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await Http3Api.CreateControlStream();
+
+        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
+        await controlStream.ExpectSettingsAsync().DefaultTimeout();
+
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
+
+        await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+    }
+
+    [Fact]
+    public async Task KeepAliveTimeout_AfterRequestComplete_ConnectionClosed()
+    {
+        var requestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+
+        await Http3Api.CreateControlStream();
+        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
+        await controlStream.ExpectSettingsAsync().DefaultTimeout();
+        var requestStream = await Http3Api.CreateRequestStream(requestHeaders, endStream: true);
+        await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+
+        await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+    }
+
+    [Fact]
+    public async Task KeepAliveTimeout_LongRunningRequest_KeepsConnectionAlive()
+    {
+        var requestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+        };
+
+        var limits = _serviceContext.ServerOptions.Limits;
+        var requestReceivedTcs = new TaskCompletionSource();
+        var requestFinishedTcs = new TaskCompletionSource();
+
+        await Http3Api.InitializeConnectionAsync(_ =>
+        {
+            requestReceivedTcs.SetResult();
+            return requestFinishedTcs.Task;
+        }).DefaultTimeout();
+
+        await Http3Api.CreateControlStream();
+        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
+        await controlStream.ExpectSettingsAsync().DefaultTimeout();
+        var requestStream = await Http3Api.CreateRequestStream(requestHeaders, endStream: true);
+
+        await requestReceivedTcs.Task;
+
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout);
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout);
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout);
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout);
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout);
+
+        requestFinishedTcs.SetResult();
+
+        await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        Http3Api.AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+
+        await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+    }
 
     [Fact]
     public async Task HEADERS_IncompleteFrameReceivedWithinRequestHeadersTimeout_StreamError()
@@ -64,11 +160,11 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, null).DefaultTimeout();
 
@@ -143,11 +239,11 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            };
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -288,11 +384,11 @@ public class Http3TimeoutTests : Http3TestBase
 
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
-                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            }, null, true, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        }, null, true, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
 
         await requestStream.OnDisposingTask.DefaultTimeout();
 
@@ -306,10 +402,11 @@ public class Http3TimeoutTests : Http3TestBase
 
         requestStream.StartStreamDisposeTcs.TrySetResult();
 
-        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
             ignoreNonGoAwayFrames: false,
             expectedLastStreamId: 4,
             Http3ErrorCode.InternalError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
@@ -626,5 +723,4 @@ public class Http3TimeoutTests : Http3TestBase
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
-
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to represent only 32-bit integer values.
 /// </summary>
-public class IntRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class IntRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(
@@ -20,15 +20,8 @@ public class IntRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchin
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {

@@ -199,7 +199,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
                     ticket.Properties, Scheme.Name));
             }
 
-            return AuthenticateResult.Fail("Not authenticated");
+            return AuthenticateResult.NoResult();
         }
 
         return AuthenticateResult.Fail("Remote authentication does not directly support AuthenticateAsync");
@@ -215,10 +215,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <param name="properties"></param>
     protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
     {
-        if (properties == null)
-        {
-            throw new ArgumentNullException(nameof(properties));
-        }
+        ArgumentNullException.ThrowIfNull(properties);
 
         var bytes = new byte[32];
         RandomNumberGenerator.Fill(bytes);
@@ -240,10 +237,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <returns></returns>
     protected virtual bool ValidateCorrelationId(AuthenticationProperties properties)
     {
-        if (properties == null)
-        {
-            throw new ArgumentNullException(nameof(properties));
-        }
+        ArgumentNullException.ThrowIfNull(properties);
 
         if (!properties.Items.TryGetValue(CorrelationProperty, out var correlationId))
         {

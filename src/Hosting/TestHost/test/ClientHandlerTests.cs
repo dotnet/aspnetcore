@@ -332,6 +332,19 @@ public class ClientHandlerTests
     }
 
     [Fact]
+    public void Send_ThrowsNotSupportedException()
+    {
+        var handler = new ClientHandler(
+            PathString.Empty,
+            new DummyApplication(context => { return Task.CompletedTask; }));
+
+        var invoker = new HttpMessageInvoker(handler);
+        var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+        Assert.Throws<NotSupportedException>(() => invoker.Send(message, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task ResubmitRequestWorks()
     {
         int requestCount = 1;

@@ -1,6 +1,6 @@
 # HttpClient Factory
 
-Contains an opinionated factory for creating HttpClient instances. See documentation at https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests.
+Contains an opinionated factory for creating HttpClient instances. See documentation at https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-requests.
 
 ## Description
 

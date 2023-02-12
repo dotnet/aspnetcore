@@ -23,6 +23,7 @@ public class FacebookOptions : OAuthOptions
         AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
         TokenEndpoint = FacebookDefaults.TokenEndpoint;
         UserInformationEndpoint = FacebookDefaults.UserInformationEndpoint;
+        UsePkce = true;
         Scope.Add("email");
         Fields.Add("name");
         Fields.Add("email");

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">true</NoDefaultLaunchSettingsFile>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <!--#if (NativeAot) -->
+    <PublishAot>true</PublishAot>
+    <!--#endif -->
+  </PropertyGroup>
+
+</Project>

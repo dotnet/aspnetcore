@@ -1,3 +1,2 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel?
-Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel
+Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod

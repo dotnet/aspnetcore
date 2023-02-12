@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Interfejs API ASP.NET Core",
+  "description": "Szablon projektu służący do tworzenia aplikacji interfejsu API ASP.NET Core.",
+  "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
+  "symbols/kestrelHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP w pliku launchSettings.json.",
+  "symbols/iisHttpPort/description": "Numer portu do użycia dla punktu końcowego HTTP usług IIS Express w pliku launchSettings.json.",
+  "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
+  "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
+  "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
+  "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
+  "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
+  "symbols/NativeAot/displayName": "Włącz publikowanie _native AOT",
+  "symbols/NativeAot/description": "Określa, czy włączyć publikowanie projektu jako natywnego obiektu AOT.",
+  "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""
+}

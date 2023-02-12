@@ -3,7 +3,7 @@
   "name": "Application Blazor WebAssembly vide",
   "description": "Modèle de projet vide pour la création d’une application Blazor qui s’exécute sur WebAssembly et qui est éventuellement hébergée par une application ASP.NET Core. Ce modèle ne contient aucun contenu.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net7.0/description": "Cible net7.0",
+  "symbols/Framework/choices/net8.0/description": "Cible net8.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/Hosted/displayName": "ASP.NET core _Hosted",
   "symbols/Hosted/description": "S’il est spécifié, inclut un hôte ASP.NET Core pour l’application Blazor WebAssembly.",

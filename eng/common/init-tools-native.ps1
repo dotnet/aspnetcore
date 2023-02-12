@@ -98,11 +98,12 @@ try {
               Write-Error "Arcade tools directory '$ArcadeToolsDirectory' was not found; artifacts were not properly installed."
               exit 1
             }
-            $ToolDirectory = (Get-ChildItem -Path "$ArcadeToolsDirectory" -Filter "$ToolName-$ToolVersion*" | Sort-Object -Descending)[0]
-            if ([string]::IsNullOrWhiteSpace($ToolDirectory)) {
+            $ToolDirectories = (Get-ChildItem -Path "$ArcadeToolsDirectory" -Filter "$ToolName-$ToolVersion*" | Sort-Object -Descending)
+            if ($ToolDirectories -eq $null) {
               Write-Error "Unable to find directory for $ToolName $ToolVersion; please make sure the tool is installed on this image."
               exit 1
             }
+            $ToolDirectory = $ToolDirectories[0]
             $BinPathFile = "$($ToolDirectory.FullName)\binpath.txt"
             if (-not (Test-Path -Path "$BinPathFile")) {
               Write-Error "Unable to find binpath.txt in '$($ToolDirectory.FullName)' ($ToolName $ToolVersion); artifact is either installed incorrectly or is not a bootstrappable tool."
@@ -112,6 +113,7 @@ try {
             $ToolPath = Convert-Path -Path $BinPath
             Write-Host "Adding $ToolName to the path ($ToolPath)..."
             Write-Host "##vso[task.prependpath]$ToolPath"
+            $env:PATH = "$ToolPath;$env:PATH"
             $InstalledTools += @{ $ToolName = $ToolDirectory.FullName }
           }
         }

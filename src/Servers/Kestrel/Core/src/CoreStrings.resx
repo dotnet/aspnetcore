@@ -548,8 +548,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="RequestTrailersNotAvailable" xml:space="preserve">
     <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
   </data>
-  <data name="Http2NoTlsOsx" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on macOS due to missing ALPN support.</value>
+  <data name="Http2NoTlsAlpn" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported due to missing ALPN support.</value>
   </data>
   <data name="Http2StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
@@ -686,8 +686,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="AcceptCannotBeCalledMultipleTimes" xml:space="preserve">
     <value>IHttpExtendedConnectFeature.AcceptAsync was already called and can only be called once per request.</value>
   </data>
-  <data name="ConnectStatusMustBe200" xml:space="preserve">
-    <value>The response status code for a Extended CONNECT request must be 200.</value>
+  <data name="ConnectStatusMustBe2XX" xml:space="preserve">
+    <value>The response status code for a Extended CONNECT request must be 2XX.</value>
   </data>
   <data name="AttemptedToReadHeaderOnAbortedStream" xml:space="preserve">
     <value>Attempted to read header on aborted stream.</value>
@@ -706,5 +706,20 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="WebTransportIsDisabled" xml:space="preserve">
     <value>WebTransport is disabled. Please enable it before starting a session.</value>
+  </data>
+  <data name="DynamicPortOnMultipleTransportsNotSupported" xml:space="preserve">
+    <value>Dynamic port binding is not supported when binding multiple transports. HTTP/3 not enabled. A port must be specified to support TCP based HTTP/1.1 and HTTP/2, and QUIC based HTTP/3 with the same endpoint.</value>
+  </data>
+  <data name="NonzeroContentLengthNotAllowedOn205" xml:space="preserve">
+    <value>Responses with status code 205 cannot have a non-zero Content-Length value.</value>
+  </data>
+  <data name="Http3ErrorControlStreamClosed" xml:space="preserve">
+    <value>A control stream used by the connection was closed or reset.</value>
+  </data>
+  <data name="ConnectResponseCanNotHaveBody" xml:space="preserve">
+    <value>Responses to 'CONNECT' requests with the success status code '{StatusCode}' cannot have a response body. Use the 'IHttpExtendedConnectFeature' to accept and write to the 'CONNECT' stream.</value>
+  </data>
+  <data name="FailedToBindToIPv6Any" xml:space="preserve">
+    <value>Failed to bind to http://[::]:{port} (IPv6Any).</value>
   </data>
 </root>

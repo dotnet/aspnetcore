@@ -107,10 +107,18 @@ public class ControllerActionEndpointDataSourceBenchmark
         var dataSource = new ControllerActionEndpointDataSource(
             new ControllerActionEndpointDataSourceIdProvider(),
             actionDescriptorCollectionProvider,
-            new ActionEndpointFactory(new MockRoutePatternTransformer(), Enumerable.Empty<IRequestDelegateFactory>()),
+            new ActionEndpointFactory(new MockRoutePatternTransformer(), Enumerable.Empty<IRequestDelegateFactory>(), new MockServiceProvider()),
             new OrderedEndpointsSequenceProvider());
 
         return dataSource;
+    }
+
+    private sealed class MockServiceProvider : IServiceProvider
+    {
+        public object GetService(Type serviceType)
+        {
+            return null;
+        }
     }
 
     private sealed class MockRoutePatternTransformer : RoutePatternTransformer

@@ -15,7 +15,7 @@ internal sealed class OpenApiDependencyAttribute : Attribute
     {
         Name = name;
         Version = version;
-        CodeGenerators = codeGenerators.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(c => Enum.Parse<CodeGenerator>(c)).ToArray();
+        CodeGenerators = codeGenerators.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(Enum.Parse<CodeGenerator>).ToArray();
     }
 
     public string Name { get; set; }

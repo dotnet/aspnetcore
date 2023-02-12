@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
@@ -11,8 +12,6 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public abstract class NavigationManager
 {
-    private static readonly char[] UriPathEndChar = new[] { '#', '?' };
-
     /// <summary>
     /// An event that fires when the navigation location has changed.
     /// </summary>
@@ -103,7 +102,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-    public void NavigateTo(string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad) // This overload is for binary back-compat with < 6.0
         => NavigateTo(uri, forceLoad, replace: false);
 
     /// <summary>
@@ -113,7 +112,7 @@ public abstract class NavigationManager
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
     /// <param name="replace">If true, replaces the current entry in the history stack. If false, appends the new entry to the history stack.</param>
-    public void NavigateTo(string uri, bool forceLoad = false, bool replace = false)
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad = false, bool replace = false)
     {
         AssertInitialized();
 
@@ -139,7 +138,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
-    public void NavigateTo(string uri, NavigationOptions options)
+    public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options)
     {
         AssertInitialized();
         NavigateToCore(uri, options);
@@ -155,7 +154,7 @@ public abstract class NavigationManager
     // already override this, so the framework needs to keep using it for the cases when only pre-6.0 options are used.
     // However, for anyone implementing a new NavigationManager post-6.0, we don't want them to have to override this
     // overload any more, so there's now a default implementation that calls the updated overload.
-    protected virtual void NavigateToCore(string uri, bool forceLoad)
+    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, bool forceLoad)
         => NavigateToCore(uri, new NavigationOptions { ForceLoad = forceLoad });
 
     /// <summary>
@@ -164,7 +163,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
     /// (as returned by <see cref="BaseUri"/>).</param>
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
-    protected virtual void NavigateToCore(string uri, NavigationOptions options) =>
+    protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options) =>
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
     /// <summary>
@@ -174,15 +173,8 @@ public abstract class NavigationManager
     protected void Initialize(string baseUri, string uri)
     {
         // Make sure it's possible/safe to call this method from constructors of derived classes.
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (baseUri == null)
-        {
-            throw new ArgumentNullException(nameof(baseUri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
+        ArgumentNullException.ThrowIfNull(baseUri);
 
         if (_isInitialized)
         {
@@ -210,7 +202,7 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>
-    public Uri ToAbsoluteUri(string relativeUri)
+    public Uri ToAbsoluteUri(string? relativeUri)
     {
         AssertInitialized();
         return new Uri(_baseUri!, relativeUri);
@@ -231,9 +223,9 @@ public abstract class NavigationManager
             return uri.Substring(_baseUri.OriginalString.Length);
         }
 
-        var pathEndIndex = uri.IndexOfAny(UriPathEndChar);
-        var uriPathOnly = pathEndIndex < 0 ? uri : uri.Substring(0, pathEndIndex);
-        if ($"{uriPathOnly}/".Equals(_baseUri.OriginalString, StringComparison.Ordinal))
+        var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
+        if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -303,13 +295,25 @@ public abstract class NavigationManager
         _locationChangingCts = cts;
 
         var cancellationToken = cts.Token;
-        var context = new LocationChangingContext(uri, state, isNavigationIntercepted, cancellationToken);
+        var context = new LocationChangingContext
+        {
+            TargetLocation = uri,
+            HistoryEntryState = state,
+            IsNavigationIntercepted = isNavigationIntercepted,
+            CancellationToken = cancellationToken,
+        };
 
         try
         {
             if (handlerCount == 1)
             {
                 var handlerTask = InvokeLocationChangingHandlerAsync(_locationChangingHandlers[0], context);
+
+                if (handlerTask.IsFaulted)
+                {
+                    await handlerTask;
+                    return false; // Unreachable because the previous line will throw.
+                }
 
                 if (context.DidPreventNavigation)
                 {
@@ -398,17 +402,29 @@ public abstract class NavigationManager
         }
     }
 
+    private async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+    {
+        try
+        {
+            await handler(context);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        catch (Exception ex)
+        {
+            HandleLocationChangingHandlerException(ex, context);
+        }
+    }
+
     /// <summary>
-    /// Invokes the provided <paramref name="handler"/>, passing it the given <paramref name="context"/>.
-    /// This method can be overridden to analyze the state of the handler task even after
-    /// <see cref="NotifyLocationChangingAsync(string, string?, bool)"/> completes. For example, this can be useful for
-    /// processing exceptions thrown from handlers that continue running after the navigation ends.
+    /// Handles exceptions thrown in location changing handlers.
     /// </summary>
-    /// <param name="handler">The handler to invoke.</param>
-    /// <param name="context">The context to pass to the handler.</param>
-    /// <returns></returns>
-    protected virtual ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
-        => handler(context);
+    /// <param name="ex">The exception to handle.</param>
+    /// <param name="context">The context passed to the handler.</param>
+    protected virtual void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
+        => throw new InvalidOperationException($"To support navigation locks, {GetType().Name} must override {nameof(HandleLocationChangingHandlerException)}");
 
     /// <summary>
     /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
@@ -420,10 +436,11 @@ public abstract class NavigationManager
         => throw new NotSupportedException($"To support navigation locks, {GetType().Name} must override {nameof(SetNavigationLockState)}");
 
     /// <summary>
-    /// Adds a handler to process incoming navigation events.
+    /// Registers a handler to process incoming navigation events.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
-    public void AddLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
+    /// <returns>An <see cref="IDisposable"/> that can be disposed to unregister the location changing handler.</returns>
+    public IDisposable RegisterLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
 
@@ -435,13 +452,11 @@ public abstract class NavigationManager
         {
             SetNavigationLockState(true);
         }
+
+        return new LocationChangingRegistration(locationChangingHandler, this);
     }
 
-    /// <summary>
-    /// Removes a previously-added location changing handler.
-    /// </summary>
-    /// <param name="locationChangingHandler">The handler to remove.</param>
-    public void RemoveLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
+    private void RemoveLocationChangingHandler(Func<LocationChangingContext, ValueTask> locationChangingHandler)
     {
         AssertInitialized();
 
@@ -474,9 +489,9 @@ public abstract class NavigationManager
             return true;
         }
 
-        var pathEndIndex = uri.IndexOfAny(UriPathEndChar);
-        var uriPathOnly = pathEndIndex < 0 ? uri : uri.Substring(0, pathEndIndex);
-        if ($"{uriPathOnly}/".Equals(baseUri.OriginalString, StringComparison.Ordinal))
+        var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
+        if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan(0, baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -503,6 +518,23 @@ public abstract class NavigationManager
         {
             var message = $"The URI '{uri}' is not contained by the base URI '{baseUri}'.";
             throw new ArgumentException(message);
+        }
+    }
+
+    private sealed class LocationChangingRegistration : IDisposable
+    {
+        private readonly Func<LocationChangingContext, ValueTask> _handler;
+        private readonly NavigationManager _navigationManager;
+
+        public LocationChangingRegistration(Func<LocationChangingContext, ValueTask> handler, NavigationManager navigationManager)
+        {
+            _handler = handler;
+            _navigationManager = navigationManager;
+        }
+
+        public void Dispose()
+        {
+            _navigationManager.RemoveLocationChangingHandler(_handler);
         }
     }
 }

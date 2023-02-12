@@ -242,10 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
     private static string GetMethodString(string method)
     {
-        if (method == null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
+        ArgumentNullException.ThrowIfNull(method);
 
         const int length = sizeof(ulong);
 

@@ -403,8 +403,8 @@ public static class HeaderUtilities
         return long.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
     }
 
-    // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)
-    // See https://tools.ietf.org/html/rfc7231#section-5.3.1
+    // Strict and fast RFC9110 12.4.2 Quality value parser (and without memory allocation)
+    // See https://tools.ietf.org/html/rfc9110#section-12.4.2
     // Check is made to verify if the value is between 0 and 1 (and it returns False if the check fails).
     internal static bool TryParseQualityDouble(StringSegment input, int startIndex, out double quality, out int length)
     {
@@ -515,6 +515,27 @@ public static class HeaderUtilities
         }
 
         return ((ulong)value).ToString(NumberFormatInfo.InvariantInfo);
+    }
+
+    /// <summary>
+    /// Converts the 64-bit numeric value to its equivalent string representation.
+    /// </summary>
+    /// <param name="value">
+    /// The number to convert.
+    /// </param>
+    /// <returns>
+    /// The string representation of the value of this instance, consisting of a sequence of digits ranging from 0 to 9 with no leading zeroes.
+    /// In case of negative numeric value it will have a leading minus sign.
+    /// </returns>
+    internal static string FormatInt64(long value)
+    {
+        return value switch
+        {
+            0 => "0",
+            1 => "1",
+            -1 => "-1",
+            _ => value.ToString(NumberFormatInfo.InvariantInfo)
+        };
     }
 
     /// <summary>

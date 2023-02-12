@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -44,21 +46,21 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     public override bool HasDefaultValue
         => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
     public override object? DefaultValue
-        => _constructionParameterInfo is not null ? _constructionParameterInfo.DefaultValue : null;
+        => _constructionParameterInfo?.DefaultValue;
     public override int MetadataToken => _underlyingProperty.MetadataToken;
     public override object? RawDefaultValue
-        => _constructionParameterInfo is not null ? _constructionParameterInfo.RawDefaultValue : null;
+        => _constructionParameterInfo?.RawDefaultValue;
 
     /// <summary>
     /// Unwraps all parameters that contains <see cref="AsParametersAttribute"/> and
     /// creates a flat list merging the current parameters, not including the
-    /// parametres that contain a <see cref="AsParametersAttribute"/>, and all additional
+    /// parameters that contain a <see cref="AsParametersAttribute"/>, and all additional
     /// parameters detected.
     /// </summary>
     /// <param name="parameters">List of parameters to be flattened.</param>
     /// <param name="cache">An instance of the method cache class.</param>
     /// <returns>Flat list of parameters.</returns>
-    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "PropertyAsParameterInfo.Flatten requires unreferenced code.")]
+    [RequiresUnreferencedCode("Uses unbounded Reflection to access parameter type constructors.")]
     public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
         ArgumentNullException.ThrowIfNull(parameters);
@@ -83,8 +85,23 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             {
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering
-                flattenedParameters ??= new(parameters[0..i]);
+                static List<ParameterInfo> InitializeList(ParameterInfo[] parameters, int i)
+                {
+                    // will add the rest of the parameters to this list, so set initial capacity to reduce growing the list
+                    List<ParameterInfo> list = new(parameters.Length);
+                    list.AddRange(parameters.AsSpan(0, i));
+                    return list;
+                }
+                flattenedParameters ??= InitializeList(parameters, i);
                 nullabilityContext ??= new();
+
+                var isNullable = Nullable.GetUnderlyingType(parameters[i].ParameterType) != null ||
+                    nullabilityContext.Create(parameters[i])?.ReadState == NullabilityState.Nullable;
+
+                if (isNullable)
+                {
+                    throw new InvalidOperationException($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameters[i].ParameterType, fullName: false)}' is not supported.");
+                }
 
                 var (constructor, constructorParameters) = cache.FindConstructor(parameters[i].ParameterType);
                 if (constructor is not null && constructorParameters is { Length: > 0 })
@@ -111,9 +128,9 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
                     }
                 }
             }
-            else if (flattenedParameters is not null)
+            else
             {
-                flattenedParameters.Add(parameters[i]);
+                flattenedParameters?.Add(parameters[i]);
             }
         }
 
@@ -173,7 +190,20 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             _underlyingProperty.IsDefined(attributeType, inherit);
     }
 
-    public new bool IsOptional => HasDefaultValue || NullabilityInfo.ReadState != NullabilityState.NotNull;
+    public new bool IsOptional => NullabilityInfo.ReadState switch
+    {
+        // Anything nullable is optional
+        NullabilityState.Nullable => true,
+        // In an oblivious context, the required modifier makes
+        // members non-optional
+        NullabilityState.Unknown => !_underlyingProperty.GetCustomAttributes().OfType<RequiredMemberAttribute>().Any(),
+        // Non-nullable types are only optional if they have a default
+        // value
+        NullabilityState.NotNull => HasDefaultValue,
+        // Assume that types are optional by default so we
+        // don't greedily opt parameters into param checking
+        _ => true
+    };
 
     public NullabilityInfo NullabilityInfo
         => _nullabilityInfo ??= _constructionParameterInfo is not null ?

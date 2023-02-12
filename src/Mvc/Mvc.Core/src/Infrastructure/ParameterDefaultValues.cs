@@ -11,10 +11,7 @@ internal static class ParameterDefaultValues
 {
     public static object?[] GetParameterDefaultValues(MethodBase methodInfo)
     {
-        if (methodInfo == null)
-        {
-            throw new ArgumentNullException(nameof(methodInfo));
-        }
+        ArgumentNullException.ThrowIfNull(methodInfo);
 
         var parameters = methodInfo.GetParameters();
         var values = new object?[parameters.Length];

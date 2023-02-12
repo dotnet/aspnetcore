@@ -20,10 +20,7 @@ internal sealed class RoutePatternMatcher
         RoutePattern pattern,
         RouteValueDictionary defaults)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         RoutePattern = pattern;
         Defaults = defaults ?? new RouteValueDictionary();
@@ -61,10 +58,7 @@ internal sealed class RoutePatternMatcher
 
     public bool TryMatch(PathString path, RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         var i = 0;
         var pathTokenizer = new PathTokenizer(path);
@@ -364,15 +358,16 @@ internal sealed class RoutePatternMatcher
                 lastLiteral = part;
 
                 var startIndex = lastIndex;
+                // We are at the beginning of the segment and we still need to match a literal
+                if (startIndex == 0)
+                {
+                    return false;
+                }
+
                 // If we have a pending parameter subsegment, we must leave at least one character for that
                 if (parameterNeedsValue != null)
                 {
                     startIndex--;
-                }
-
-                if (startIndex == 0)
-                {
-                    return false;
                 }
 
                 int indexOfLiteral;

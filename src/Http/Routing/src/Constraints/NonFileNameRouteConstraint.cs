@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// </list>
 /// </para>
 /// </remarks>
-public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(
@@ -87,15 +87,8 @@ public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNod
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var obj) && obj != null)
         {

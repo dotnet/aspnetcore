@@ -1846,7 +1846,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).DefaultTimeout();
 
                 await secondClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupA").DefaultTimeout();
-                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout(); ;
+                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "GroupB").DefaultTimeout();
 
                 var groupNames = new List<string> { "GroupA", "GroupB" };
                 await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleGroups), "test", groupNames).DefaultTimeout();
@@ -2991,8 +2991,14 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await client.SendHubMessageAsync(PingMessage.Instance);
 
                 // Call long running hub method
-                var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
+                var hubMethodTask1 = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
                 await tcsService.StartedMethod.Task.DefaultTimeout();
+
+                // Wait for server to start reading again
+                await customDuplex.WrappedPipeReader.WaitForReadStart().DefaultTimeout();
+                // Send another invocation to server, since we use Inline scheduling we know that once this call completes the server will have read and processed
+                // the message, it should be stuck waiting for the in-progress invoke now
+                _ = await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod)).DefaultTimeout();
 
                 // Tick heartbeat while hub method is running to show that close isn't triggered
                 client.TickHeartbeat();
@@ -3000,7 +3006,8 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 // Unblock long running hub method
                 tcsService.EndMethod.SetResult(null);
 
-                await hubMethodTask.DefaultTimeout();
+                await hubMethodTask1.DefaultTimeout();
+                await client.ReadAsync().DefaultTimeout();
 
                 // There is a small window when the hub method finishes and the timer starts again
                 // So we need to delay a little before ticking the heart beat.
@@ -4743,6 +4750,27 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task ServiceResolvedForIEnumerableParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.IEnumerableOfServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal(1L, res.Result);
+        }
+    }
+
+    [Fact]
     public async Task ServiceResolvedWithoutAttribute_WithHubSpecificSettingEnabled()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
@@ -4829,6 +4857,26 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
             var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
             Assert.Equal("Failed to invoke 'ServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceNotResolvedForIEnumerableParameterIfNotInDI()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.IEnumerableOfServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'IEnumerableOfServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
         }
     }
 

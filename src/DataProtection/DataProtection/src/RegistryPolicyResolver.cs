@@ -177,7 +177,7 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         var valueFromRegistry = key.GetValue(nameof(ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmType));
         if (valueFromRegistry != null)
         {
-            options.EncryptionAlgorithmType = TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!);
+            options.EncryptionAlgorithmType = ManagedAlgorithmHelpers.FriendlyNameToType(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!);
         }
 
         valueFromRegistry = key.GetValue(nameof(ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize));
@@ -189,7 +189,7 @@ internal sealed class RegistryPolicyResolver : IRegistryPolicyResolver
         valueFromRegistry = key.GetValue(nameof(ManagedAuthenticatedEncryptorConfiguration.ValidationAlgorithmType));
         if (valueFromRegistry != null)
         {
-            options.ValidationAlgorithmType = TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!);
+            options.ValidationAlgorithmType = ManagedAlgorithmHelpers.FriendlyNameToType(Convert.ToString(valueFromRegistry, CultureInfo.InvariantCulture)!);
         }
 
         return options;

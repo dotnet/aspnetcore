@@ -21,6 +21,58 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task Abort_AbortAfterDispose_Ignored()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            LoggerFactory,
+            defaultCloseErrorCode: (long)Http3ErrorCode.RequestCancelled);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+
+        await serverConnection.DisposeAsync();
+
+        // Assert
+        serverConnection.Abort(); // Doesn't throw ODE.
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeReported()
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(
+            LoggerFactory,
+            defaultCloseErrorCode: (long)Http3ErrorCode.RequestCancelled);
+
+        // Act
+        var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await acceptTask.DefaultTimeout();
+
+        await serverConnection.DisposeAsync();
+
+        // Assert
+        var ex = await ExceptionAssert.ThrowsAsync<QuicException>(
+            () => clientConnection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional).AsTask(),
+            exceptionMessage: $"Connection aborted by peer ({(long)Http3ErrorCode.RequestCancelled}).");
+
+        Assert.Equal((long)Http3ErrorCode.RequestCancelled, ex.ApplicationErrorCode);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task AcceptAsync_CancellationThenAccept_AcceptStreamAfterCancellation()
     {
         // Arrange
@@ -393,6 +445,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     public async Task StreamPool_StreamAbortedOnClientAndServer_NotPooled()
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);

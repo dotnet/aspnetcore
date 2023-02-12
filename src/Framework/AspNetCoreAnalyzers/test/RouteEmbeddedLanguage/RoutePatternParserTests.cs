@@ -3,29 +3,17 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml.Linq;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.EmbeddedSyntax;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.EmbeddedLanguages.VirtualChars;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.Common;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.RegularExpressions;
-using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
-using Xunit;
-using System.Reflection;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -56,20 +44,22 @@ public partial class RoutePatternParserTests
         string expected = null,
         bool runSubTreeTests = true,
         bool allowDiagnosticsMismatch = false,
-        bool runReplaceTokens = false)
+        RoutePatternOptions routePatternOptions = null)
     {
+        routePatternOptions ??= RoutePatternOptions.DefaultRoute;
+
         var (tree, sourceText) = TryParseTree(
             stringText,
             conversionFailureOk: false,
-            allowDiagnosticsMismatch,
-            runReplaceTokens);
+            routePatternOptions,
+            allowDiagnosticsMismatch);
 
         // Tests are allowed to not run the subtree tests.  This is because some
         // subtrees can cause the native regex parser to exhibit very bad behavior
         // (like not ever actually finishing compiling).
         if (runSubTreeTests)
         {
-            TryParseSubTrees(stringText, allowDiagnosticsMismatch, runReplaceTokens);
+            TryParseSubTrees(stringText, allowDiagnosticsMismatch, routePatternOptions);
         }
 
         const string DoubleQuoteEscaping = "\"\"";
@@ -80,7 +70,7 @@ public partial class RoutePatternParserTests
         _outputHelper.WriteLine(actual);
         if (expected != null)
         {
-            Assert.Equal(expected.Replace("\"", DoubleQuoteEscaping), actual);
+            Assert.Equal(expected.Replace("\"", DoubleQuoteEscaping), actual, ignoreLineEndingDifferences: true);
         }
 
         return tree;
@@ -89,14 +79,14 @@ public partial class RoutePatternParserTests
     private void TryParseSubTrees(
         string stringText,
         bool allowDiagnosticsMismatch,
-        bool runReplaceTokens = false)
+        RoutePatternOptions routePatternOptions)
     {
         // Trim the input from the right and make sure tree invariants hold
         var current = stringText;
         while (current is not "@\"\"" and not "\"\"")
         {
             current = current.Substring(0, current.Length - 2) + "\"";
-            TryParseTree(current, conversionFailureOk: true, allowDiagnosticsMismatch, runReplaceTokens);
+            TryParseTree(current, conversionFailureOk: true, routePatternOptions, allowDiagnosticsMismatch);
         }
 
         // Trim the input from the left and make sure tree invariants hold
@@ -112,7 +102,7 @@ public partial class RoutePatternParserTests
                 current = "\"" + current.Substring(2);
             }
 
-            TryParseTree(current, conversionFailureOk: true, allowDiagnosticsMismatch, runReplaceTokens);
+            TryParseTree(current, conversionFailureOk: true, routePatternOptions, allowDiagnosticsMismatch);
         }
 
         for (var start = stringText[0] == '@' ? 2 : 1; start < stringText.Length - 1; start++)
@@ -121,13 +111,13 @@ public partial class RoutePatternParserTests
                 stringText.Substring(0, start) +
                 stringText.Substring(start + 1, stringText.Length - (start + 1)),
                 conversionFailureOk: true,
-                allowDiagnosticsMismatch,
-                runReplaceTokens);
+                routePatternOptions,
+                allowDiagnosticsMismatch);
         }
     }
 
     private (SyntaxToken, RoutePatternTree, VirtualCharSequence) JustParseTree(
-        string stringText, bool conversionFailureOk, bool runReplaceTokens)
+        string stringText, bool conversionFailureOk, RoutePatternOptions routePatternOptions)
     {
         var token = GetStringToken(stringText);
         var allChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
@@ -137,17 +127,17 @@ public partial class RoutePatternParserTests
             return (token, null, allChars);
         }
 
-        var tree = RoutePatternParser.TryParse(allChars, supportTokenReplacement: runReplaceTokens);
+        var tree = RoutePatternParser.TryParse(allChars, routePatternOptions);
         return (token, tree, allChars);
     }
 
     private (RoutePatternTree, SourceText) TryParseTree(
         string stringText,
         bool conversionFailureOk,
-        bool allowDiagnosticsMismatch = false,
-        bool runReplaceTokens = false)
+        RoutePatternOptions routePatternOptions,
+        bool allowDiagnosticsMismatch = false)
     {
-        var (token, tree, allChars) = JustParseTree(stringText, conversionFailureOk, runReplaceTokens);
+        var (token, tree, allChars) = JustParseTree(stringText, conversionFailureOk, routePatternOptions);
         if (tree == null)
         {
             Assert.True(allChars.IsDefault);
@@ -165,7 +155,7 @@ public partial class RoutePatternParserTests
             routePattern = RoutePatternFactory.Parse(token.ValueText);
             parsedRoutePatterns = routePattern.Parameters;
 
-            if (runReplaceTokens)
+            if (routePatternOptions.SupportTokenReplacement)
             {
                 AttributeRouteModel.ReplaceTokens(token.ValueText, new Dictionary<string, string>
                 {
@@ -181,7 +171,7 @@ public partial class RoutePatternParserTests
             {
                 if (tree.Diagnostics.Length == 0)
                 {
-                    throw new Exception($"Parsing '{token.ValueText}' throws RoutePattern error '{ex.Message}'. No diagnostics.");
+                    throw new Exception($"Parsing '{token.ValueText}' throws RoutePattern error '{ex.Message}'. No diagnostics.", ex);
                 }
 
                 // Ensure the diagnostic we emit is the same as the .NET one. Note: we can only
@@ -214,7 +204,7 @@ public partial class RoutePatternParserTests
             {
                 try
                 {
-                    if (tree.RouteParameters.TryGetValue(parsedRoutePattern.Name, out var routeParameter))
+                    if (tree.TryGetRouteParameter(parsedRoutePattern.Name, out var routeParameter))
                     {
                         Assert.True(routeParameter.IsOptional == parsedRoutePattern.IsOptional, "IsOptional");
                         Assert.True(routeParameter.IsCatchAll == parsedRoutePattern.IsCatchAll, "IsCatchAll");
@@ -241,7 +231,7 @@ public partial class RoutePatternParserTests
             }
 
             Assert.True(
-                parsedRoutePatterns.Count == tree.RouteParameters.Count,
+                parsedRoutePatterns.Count == tree.RouteParameters.Length,
                 $"Parsing '{token.ValueText}' has mismatched parameter counts.");
         }
 
@@ -265,7 +255,7 @@ public partial class RoutePatternParserTests
         }
 
         element.Add(new XElement("Parameters",
-            tree.RouteParameters.OrderBy(kvp => kvp.Key).Select(kvp => CreateParameter(kvp.Value))));
+            tree.RouteParameters.OrderBy(p => p.Name).Select(CreateParameter)));
 
         return element.ToString();
     }

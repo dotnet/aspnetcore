@@ -527,6 +527,48 @@
       "AuthOption": "None"
     }
   },
+  "api": {
+    "Default": {
+      "Template": "api",
+      "Arguments": "new api",
+      "Files": [
+        "Todo.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "NativeAot": {
+      "Template": "api",
+      "Arguments": "new api -aot",
+      "Files": [
+        "Todo.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "ProgramMain": {
+      "Template": "api",
+      "Arguments": "new api --use-program-main",
+      "Files": [
+        "Todo.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "ProgramMainNativeAot": {
+      "Template": "api",
+      "Arguments": "new api -aot --use-program-main",
+      "Files": [
+        "Todo.cs",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    }
+  },
   "webapi": {
     "IndividualB2C": {
       "Template": "webapi",
@@ -1368,7 +1410,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
@@ -1407,7 +1448,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
@@ -1446,7 +1486,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
@@ -1484,7 +1523,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
@@ -1554,7 +1592,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
@@ -1593,7 +1630,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
@@ -1684,7 +1720,7 @@
       "Files": [
         "ClientApp/public/favicon.ico",
         "ClientApp/public/index.html",
-        "ClientApp/public/manifest.json",
+        "ClientApp/public/manifest.webmanifest",
         "ClientApp/src/components/Counter.js",
         "ClientApp/src/components/FetchData.js",
         "ClientApp/src/components/Home.js",
@@ -1737,7 +1773,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/icon-192.png",
         "wwwroot/index.html",
@@ -1774,7 +1809,6 @@
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
         "Shared/RedirectToLogin.razor",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/appsettings.Development.json",
         "wwwroot/appsettings.json",
         "wwwroot/favicon.png",
@@ -1813,7 +1847,6 @@
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
         "Shared/RedirectToLogin.razor",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/appsettings.json",
         "wwwroot/favicon.png",
         "wwwroot/icon-192.png",
@@ -1851,7 +1884,6 @@
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
         "Shared/RedirectToLogin.razor",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/appsettings.json",
         "wwwroot/favicon.png",
         "wwwroot/icon-192.png",
@@ -1886,7 +1918,6 @@
         "Client/Shared/MainLayout.razor.css",
         "Client/Shared/NavMenu.razor",
         "Client/Shared/NavMenu.razor.css",
-        "Client/Shared/SurveyPrompt.razor",
         "Client/wwwroot/css/app.css",
         "Client/wwwroot/favicon.png",
         "Client/wwwroot/icon-192.png",
@@ -1927,12 +1958,11 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/icon-192.png",
         "wwwroot/icon-512.png",
         "wwwroot/index.html",
-        "wwwroot/manifest.json",
+        "wwwroot/manifest.webmanifest",
         "wwwroot/service-worker.js",
         "wwwroot/service-worker.published.js",
         "wwwroot/css/app.css",
@@ -1965,13 +1995,12 @@
         "Client/Shared/MainLayout.razor.css",
         "Client/Shared/NavMenu.razor",
         "Client/Shared/NavMenu.razor.css",
-        "Client/Shared/SurveyPrompt.razor",
         "Client/wwwroot/css/app.css",
         "Client/wwwroot/favicon.png",
         "Client/wwwroot/icon-192.png",
         "Client/wwwroot/icon-512.png",
         "Client/wwwroot/index.html",
-        "Client/wwwroot/manifest.json",
+        "Client/wwwroot/manifest.webmanifest",
         "Client/wwwroot/service-worker.js",
         "Client/wwwroot/service-worker.published.js",
         "Client/wwwroot/css/bootstrap/bootstrap.min.css",
@@ -2009,7 +2038,6 @@
         "Shared/MainLayout.razor.css",
         "Shared/NavMenu.razor",
         "Shared/NavMenu.razor.css",
-        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.png",
         "wwwroot/icon-192.png",
         "wwwroot/index.html",
@@ -2072,7 +2100,7 @@
         "wwwroot/css/app.css",
         "wwwroot/icon-512.png",
         "wwwroot/index.html",
-        "wwwroot/manifest.json",
+        "wwwroot/manifest.webmanifest",
         "wwwroot/service-worker.js",
         "wwwroot/service-worker.published.js",
         "_Imports.razor",
@@ -2107,7 +2135,7 @@
         "Client/Properties/launchSettings.json",
         "Client/wwwroot/icon-512.png",
         "Client/wwwroot/index.html",
-        "Client/wwwroot/manifest.json",
+        "Client/wwwroot/manifest.webmanifest",
         "Client/wwwroot/service-worker.js",
         "Client/wwwroot/service-worker.published.js",
         "Client/wwwroot/css/app.css",

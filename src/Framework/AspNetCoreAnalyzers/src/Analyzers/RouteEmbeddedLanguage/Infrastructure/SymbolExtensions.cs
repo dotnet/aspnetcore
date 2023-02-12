@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -19,6 +21,26 @@ internal static class SymbolExtensions
             }
         }
 
+        return false;
+    }
+
+    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
+    {
+        return symbol.HasAttributeImplementingInterface(interfaceType, out var _);
+    }
+
+    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in symbol.GetAttributes())
+        {
+            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceType))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
         return false;
     }
 
@@ -57,4 +79,7 @@ internal static class SymbolExtensions
             IPropertySymbol parameterSymbol => parameterSymbol.Parameters,
             _ => ImmutableArray<IParameterSymbol>.Empty,
         };
+
+    public static ISymbol? GetAnySymbol(this SymbolInfo info)
+        => info.Symbol ?? info.CandidateSymbols.FirstOrDefault();
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
 {
     private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
+    private readonly string _regexPattern;
+    private Regex? _constraint;
 
     /// <summary>
     /// Constructor for a <see cref="RegexRouteConstraint"/> given a <paramref name="regex"/>.
@@ -21,35 +24,42 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     /// <param name="regex">A <see cref="Regex"/> instance to use as a constraint.</param>
     public RegexRouteConstraint(Regex regex)
     {
-        if (regex == null)
-        {
-            throw new ArgumentNullException(nameof(regex));
-        }
+        ArgumentNullException.ThrowIfNull(regex);
 
-        Constraint = regex;
+        _constraint = regex;
+        _regexPattern = regex.ToString();
     }
 
     /// <summary>
     /// Constructor for a <see cref="RegexRouteConstraint"/> given a <paramref name="regexPattern"/>.
     /// </summary>
     /// <param name="regexPattern">A string containing the regex pattern.</param>
-    public RegexRouteConstraint(string regexPattern)
+    public RegexRouteConstraint(
+        [StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
+        string regexPattern)
     {
-        if (regexPattern == null)
-        {
-            throw new ArgumentNullException(nameof(regexPattern));
-        }
+        ArgumentNullException.ThrowIfNull(regexPattern);
 
-        Constraint = new Regex(
-            regexPattern,
-            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
-            RegexMatchTimeout);
+        _regexPattern = regexPattern;
     }
 
     /// <summary>
     /// Gets the regular expression used in the route constraint.
     /// </summary>
-    public Regex Constraint { get; private set; }
+    public Regex Constraint
+    {
+        get
+        {
+            // Create regex instance lazily to avoid compiling regexes at app startup. Delay creation until constraint is first evaluated.
+            // This is not thread safe. No side effect but multiple instances of a regex instance could be created from a burst of requests.
+            _constraint ??= new Regex(
+                _regexPattern,
+                RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase,
+                RegexMatchTimeout);
+
+            return _constraint;
+        }
+    }
 
     /// <inheritdoc />
     public bool Match(
@@ -59,15 +69,8 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var routeValue)
             && routeValue != null)

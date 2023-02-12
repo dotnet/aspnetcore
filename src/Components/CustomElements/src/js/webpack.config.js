@@ -12,7 +12,7 @@ module.exports = (env, args) => ({
         rules: [{ test: /\.ts?$/, loader: 'ts-loader' }]
     },
     entry: {
-        'BlazorCustomElements': './BlazorCustomElements.ts',
+        'Microsoft.AspNetCore.Components.CustomElements.lib.module': './BlazorCustomElements.ts',
     },
     output: { path: path.join(__dirname, 'dist', args.mode == 'development' ? 'Debug' : 'Release'), filename: '[name].js' },
     performance: {

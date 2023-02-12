@@ -3,11 +3,11 @@
 
 using System.Collections.ObjectModel;
 using System.IO.Pipelines;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -15,7 +15,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class TypedResultsTests
+public partial class TypedResultsTests
 {
     [Fact]
     public void Accepted_WithStringUrlAndValue_ResultHasCorrectValues()
@@ -502,6 +502,17 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Created_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = TypedResults.Created();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public void Created_WithStringUriAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -562,39 +573,58 @@ public class TypedResultsTests
     }
 
     [Fact]
-    public void Created_WithNullStringUri_ThrowsArgException()
+    public void Created_WithNullStringUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(default(string)));
+        // Act
+        var result = TypedResults.Created(default(string));
+
+        // Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void Created_WithEmptyStringUri_ThrowsArgException()
+    public void Created_WithEmptyStringUri_SetsLocationEmpty()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(string.Empty));
+        var result = TypedResults.Created(string.Empty);
+        Assert.Empty(result.Location);
     }
 
     [Fact]
-    public void Created_WithNullUri_ThrowsArgNullException()
+    public void Created_WithNullUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(Uri)));
+        // Act
+        var result = TypedResults.Created(default(Uri));
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void CreatedOfT_WithNullStringUri_ThrowsArgException()
+    public void CreatedOfT_WithNullStringUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(default(string), default(object)));
+        // Act
+        var result = TypedResults.Created(default(string), default(object));
+
+        // Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void CreatedOfT_WithEmptyStringUri_ThrowsArgException()
+    public void CreatedOfT_WithEmptyStringUri_SetsLocationEmpty()
     {
-        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(string.Empty, default(object)));
+        // Act
+        var result = TypedResults.Created(string.Empty, default(object));
+
+        // Assert
+        Assert.Empty(result.Location);
     }
 
     [Fact]
-    public void CreatedOfT_WithNullUri_ThrowsArgNullException()
+    public void CreatedOfT_WithNullUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(Uri), default(object)));
+        // Act
+        var result = TypedResults.Created(default(Uri), default(object));
+
+        // Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
@@ -677,7 +707,7 @@ public class TypedResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-            
+
         // Act
         var result = TypedResults.Json(data, options, contentType, statusCode);
 
@@ -702,6 +732,65 @@ public class TypedResultsTests
         Assert.Null(result.JsonSerializerOptions);
         Assert.Null(result.ContentType);
         Assert.Null(result.StatusCode);
+    }
+
+    [Fact]
+    public void Json_WithTypeInfo_ResultHasCorrectValues()
+    {
+        // Arrange
+        var data = default(object);
+
+        // Act
+        var result = TypedResults.Json(data, ObjectJsonContext.Default.Object);
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.Equal(ObjectJsonContext.Default.Object, result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void Json_WithJsonContext_ResultHasCorrectValues()
+    {
+        // Arrange
+        var data = default(object);
+
+        // Act
+        var result = TypedResults.Json(data, ObjectJsonContext.Default);
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.IsAssignableFrom<JsonTypeInfo<object>>(result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void Json_WithNullSerializerContext_ThrowsArgException()
+    {
+        // Arrange
+        var data = default(object);
+
+        Assert.Throws<ArgumentNullException>("context", () => TypedResults.Json(data, context: null));
+    }
+
+    [Fact]
+    public void Json_WithInvalidSerializerContext_ThrowsInvalidOperationException()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => TypedResults.Json(string.Empty, context: ObjectJsonContext.Default));
+        Assert.Equal(ex.Message, $"Unable to obtain the JsonTypeInfo for type 'System.String' from the context '{typeof(ObjectJsonContext).FullName}'.");
+    }
+
+    [Fact]
+    public void Json_WithNullTypeInfo_ThrowsArgException()
+    {
+        // Arrange
+        var data = default(object);
+
+        Assert.Throws<ArgumentNullException>("jsonTypeInfo", () => TypedResults.Json(data, jsonTypeInfo: null));
     }
 
     [Fact]
@@ -873,6 +962,28 @@ public class TypedResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
+    [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
+    public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
+        int statusCode,
+        string title,
+        string type)
+    {
+        // Act
+        var result = TypedResults.Problem(statusCode: statusCode);
+
+        // Assert
+        Assert.Null(result.ProblemDetails.Detail);
+        Assert.Null(result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.NotNull(result.ProblemDetails.Extensions);
+        Assert.Empty(result.ProblemDetails.Extensions);
+    }
+
     [Fact]
     public void Problem_WithNoArgs_ResultHasCorrectValues()
     {
@@ -885,7 +996,7 @@ public class TypedResultsTests
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         Assert.Equal("An error occurred while processing your request.", result.ProblemDetails.Title);
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", result.ProblemDetails.Type);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", result.ProblemDetails.Type);
         Assert.Empty(result.ProblemDetails.Extensions);
     }
 
@@ -1163,4 +1274,8 @@ public class TypedResultsTests
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
+
+    [JsonSerializable(typeof(object))]
+    private partial class ObjectJsonContext : JsonSerializerContext
+    { }
 }

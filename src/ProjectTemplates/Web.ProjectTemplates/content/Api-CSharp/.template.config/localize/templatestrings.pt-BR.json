@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "API ASP.NET Core",
+  "description": "Um modelo de projeto para a criação de um aplicativo com API ASP.NET Core.",
+  "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",
+  "symbols/kestrelHttpPort/description": "Número da porta a ser usada para o ponto de extremidade HTTP em launchSettings.json.",
+  "symbols/iisHttpPort/description": "Número da porta a ser usada para o ponto de extremidade HTTP do IIS Express em launchSettings.json.",
+  "symbols/Framework/description": "A estrutura de destino do projeto.",
+  "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
+  "symbols/UseProgramMain/displayName": "Não use ins_truções de nível superior",
+  "symbols/UseProgramMain/description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior.",
+  "symbols/NativeAot/displayName": "Habilitar publicação AOT _nativo",
+  "symbols/NativeAot/description": "Se o projeto deve ser habilitado para publicação como AOT nativo.",
+  "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
+  "postActions/restore/manualInstructions/default/text": "Executa 'dotnet restore'"
+}

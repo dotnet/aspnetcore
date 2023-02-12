@@ -34,7 +34,7 @@
       "_justification": "This is a fake password used in test code."
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\testCert.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\testCert.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
@@ -98,63 +98,79 @@
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\aspnetdevcert.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\aspnetdevcert.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.client.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\eku.client.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.code_signing.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\eku.code_signing.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.multiple_usages.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\eku.multiple_usages.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.server.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\eku.server.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\no_extensions.pfx",
+      "file": "\\src\\Shared\\TestCertificates\\no_extensions.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\testCert.pfx",
+      "file": "\\src\\SignalR\\common\\Shared\\testCert.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\SignalR\\clients\\ts\\FunctionalTests\\testCertECC.pfx",
+      "file": "\\src\\SignalR\\common\\Shared\\testCertECC.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-aspnet.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-aspnet.key",
       "_justification": "Legitimate key file used for testing"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-dsa-protected.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-dsa-protected.key",
       "_justification": "Legitimate key file used for testing"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-dsa.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-dsa.key",
       "_justification": "Legitimate key file used for testing"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-ecdsa-protected.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-ecdsa-protected.key",
       "_justification": "Legitimate key file used for testing"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-ecdsa.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-ecdsa.key",
       "_justification": "Legitimate key file used for testing"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-rsa-protected.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-rsa-protected.key",
       "_justification": "Legitimate key file used for testing"
     },
     {
-      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\https-rsa.key",
+      "file": "\\src\\Shared\\TestCertificates\\https-rsa.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Shared\\TestCertificates\\intermediate2_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Shared\\TestCertificates\\intermediate_ca.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Shared\\TestCertificates\\leaf.com.key",
+      "_justification": "Legitimate key file used for testing"
+    },
+    {
+      "file": "\\src\\Shared\\TestCertificates\\root_ca.key",
       "_justification": "Legitimate key file used for testing"
     },
     {

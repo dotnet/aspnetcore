@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
@@ -9,6 +12,8 @@ namespace Microsoft.AspNetCore.OutputCaching;
 internal sealed class NamedPolicy : IOutputCachePolicy
 {
     private readonly string _policyName;
+    private IOptions<OutputCacheOptions>? _options;
+    private readonly object _synLock = new();
 
     /// <summary>
     /// Create a new <see cref="NamedPolicy"/> instance.
@@ -55,12 +60,20 @@ internal sealed class NamedPolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
-        return policy.CacheRequestAsync(context, cancellationToken); ;
+        return policy.CacheRequestAsync(context, cancellationToken);
     }
 
     internal IOutputCachePolicy? GetProfilePolicy(OutputCacheContext context)
     {
-        var policies = context.Options.NamedPolicies;
+        if (_options == null)
+        {
+            lock (_synLock)
+            {
+                _options ??= context.HttpContext.RequestServices.GetRequiredService<IOptions<OutputCacheOptions>>();
+            }
+        }
+
+        var policies = _options!.Value.NamedPolicies;
 
         return policies != null && policies.TryGetValue(_policyName, out var cacheProfile)
             ? cacheProfile

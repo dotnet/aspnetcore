@@ -188,7 +188,7 @@ internal sealed class SpaProxyLaunchManager : IDisposable
                 WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
             };
             _spaProcess = Process.Start(info);
-            if (_spaProcess != null && !_spaProcess.HasExited)
+            if (_spaProcess != null && !_spaProcess.HasExited && !_options.KeepRunning)
             {
                 if (OperatingSystem.IsWindows())
                 {

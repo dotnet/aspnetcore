@@ -18,10 +18,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
     public PrerenderComponentApplicationStore(string existingState)
     {
-        if (existingState is null)
-        {
-            throw new ArgumentNullException(nameof(existingState));
-        }
+        ArgumentNullException.ThrowIfNull(existingState);
 
         DeserializeState(Convert.FromBase64String(existingState));
     }

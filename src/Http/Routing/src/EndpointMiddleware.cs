@@ -50,6 +50,12 @@ internal sealed partial class EndpointMiddleware
 
             if (endpoint.RequestDelegate is not null)
             {
+                if (!_logger.IsEnabled(LogLevel.Information))
+                {
+                    // Avoid the AwaitRequestTask state machine allocation if logging is disabled.
+                    return endpoint.RequestDelegate(httpContext);
+                }
+
                 Log.ExecutingEndpoint(_logger, endpoint);
 
                 try
@@ -60,10 +66,10 @@ internal sealed partial class EndpointMiddleware
                         return AwaitRequestTask(endpoint, requestTask, _logger);
                     }
                 }
-                catch (Exception exception)
+                catch
                 {
                     Log.ExecutedEndpoint(_logger, endpoint);
-                    return Task.FromException(exception);
+                    throw;
                 }
 
                 Log.ExecutedEndpoint(_logger, endpoint);

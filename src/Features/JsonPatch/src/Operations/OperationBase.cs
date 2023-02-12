@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch.Operations;
@@ -20,10 +21,10 @@ public class OperationBase
         }
     }
 
-    [JsonProperty("path")]
+    [JsonProperty(nameof(path))]
     public string path { get; set; }
 
-    [JsonProperty("op")]
+    [JsonProperty(nameof(op))]
     public string op
     {
         get
@@ -42,7 +43,7 @@ public class OperationBase
         }
     }
 
-    [JsonProperty("from")]
+    [JsonProperty(nameof(from))]
     public string from { get; set; }
 
     public OperationBase()
@@ -51,15 +52,8 @@ public class OperationBase
 
     public OperationBase(string op, string path, string from)
     {
-        if (op == null)
-        {
-            throw new ArgumentNullException(nameof(op));
-        }
-
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(op);
+        ArgumentNullThrowHelper.ThrowIfNull(path);
 
         this.op = op;
         this.path = path;

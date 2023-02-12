@@ -227,7 +227,8 @@ internal sealed partial class LongPollingTransport : ITransport
         try
         {
             Log.SendingDeleteRequest(_logger, url);
-            var response = await _httpClient.DeleteAsync(url).ConfigureAwait(false);
+            var request = new HttpRequestMessage(HttpMethod.Delete, url);
+            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {

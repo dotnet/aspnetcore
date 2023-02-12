@@ -52,10 +52,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         _ = PerformNavigationAsync();
 
@@ -75,27 +72,16 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
             }
             catch (Exception ex)
             {
-                // We shouldn't ever reach this since exceptions thrown from handlers are caught in InvokeLocationChangingHandlerAsync.
+                // We shouldn't ever reach this since exceptions thrown from handlers are handled in HandleLocationChangingHandlerException.
                 // But if some other exception gets thrown, we still want to know about it.
                 Log.NavigationFailed(_logger, uri, ex);
             }
         }
     }
 
-    protected override async ValueTask InvokeLocationChangingHandlerAsync(Func<LocationChangingContext, ValueTask> handler, LocationChangingContext context)
+    protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
-        try
-        {
-            await handler(context);
-        }
-        catch (OperationCanceledException)
-        {
-            // Ignore exceptions caused by cancellations.
-        }
-        catch (Exception ex)
-        {
-            Log.NavigationFailed(_logger, context.TargetLocation, ex);
-        }
+        Log.NavigationFailed(_logger, context.TargetLocation, ex);
     }
 
     protected override void SetNavigationLockState(bool value)

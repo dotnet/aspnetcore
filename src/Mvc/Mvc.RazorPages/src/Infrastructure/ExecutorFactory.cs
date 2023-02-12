@@ -12,10 +12,7 @@ internal static class ExecutorFactory
 {
     public static PageHandlerExecutorDelegate CreateExecutor(HandlerMethodDescriptor handlerDescriptor)
     {
-        if (handlerDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(handlerDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(handlerDescriptor);
 
         var handler = CreateHandlerMethod(handlerDescriptor);
 

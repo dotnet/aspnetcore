@@ -14,9 +14,6 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 internal sealed partial class ResponseCookies : IResponseCookies
 {
-    internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
-    internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
-
     private readonly IFeatureCollection _features;
     private ILogger? _logger;
 
@@ -34,9 +31,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(string key, string value)
     {
-        var setCookieHeaderValue = new SetCookieHeaderValue(
-            _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value))
+        var setCookieHeaderValue = new SetCookieHeaderValue(key, Uri.EscapeDataString(value))
         {
             Path = "/"
         };
@@ -48,10 +43,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(string key, string value, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // SameSite=None cookies must be marked as Secure.
         if (!options.Secure && options.SameSite == SameSiteMode.None)
@@ -68,20 +60,14 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookie = options.CreateCookieHeader(
-            _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
-            Uri.EscapeDataString(value)).ToString();
-
+        var cookie = options.CreateCookieHeader(key, Uri.EscapeDataString(value)).ToString();
         Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookie);
     }
 
     /// <inheritdoc />
     public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // SameSite=None cookies must be marked as Secure.
         if (!options.Secure && options.SameSite == SameSiteMode.None)
@@ -101,19 +87,18 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString()[1..];
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString().AsSpan(1);
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
         foreach (var keyValuePair in keyValuePairs)
         {
-            var key = _enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key;
-            cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
+            cookies[position] = string.Concat(keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookieSuffix);
             position++;
         }
 
         // Can't use += as StringValues does not override operator+
-        // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+        // and the implicit conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
         Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookies);
     }
 
@@ -126,12 +111,9 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Delete(string key, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
-        var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
+        var encodedKeyPlusEquals = key + "=";
         var domainHasValue = !string.IsNullOrEmpty(options.Domain);
         var pathHasValue = !string.IsNullOrEmpty(options.Path);
 

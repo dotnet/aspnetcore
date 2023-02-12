@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
+using System.Net.Security;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -13,11 +15,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
@@ -224,6 +228,8 @@ public class Http3RequestTests : LoggedTest
     public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
     {
         // Arrange
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         var builder = CreateHostBuilder(context =>
         {
             return Task.CompletedTask;
@@ -533,6 +539,58 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task POST_ServerAbortAfterWrite_ClientReceivesAbort()
+    {
+        // Arrange
+        var builder = CreateHostBuilder(async context =>
+        {
+            Logger.LogInformation("Server writing content.");
+            await context.Response.Body.WriteAsync(new byte[16]);
+
+            // Note that there is a race here on what is sent before the abort is processed.
+            // Abort may happen before or after response headers have been sent.
+            Logger.LogInformation("Server aborting.");
+            context.Abort();
+        }, protocol: HttpProtocols.Http3);
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync().DefaultTimeout();
+
+            for (var i = 0; i < 100; i++)
+            {
+                Logger.LogInformation($"Client sending request {i}");
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(HttpProtocols.Http3);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var sendTask = client.SendAsync(request, CancellationToken.None);
+
+                // Assert
+                var ex = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                {
+                    // Note that there is a race here on what is sent before the abort is processed.
+                    // Abort may happen before or after response headers have been sent.
+                    Logger.LogInformation($"Client awaiting response {i}");
+                    var response = await sendTask;
+
+                    Logger.LogInformation($"Client awaiting content {i}");
+                    await response.Content.ReadAsByteArrayAsync();
+                }).DefaultTimeout();
+
+                var protocolException = ex.GetProtocolException();
+                Assert.Equal((long)Http3ErrorCode.InternalError, protocolException.ErrorCode);
+            }
+
+            await host.StopAsync().DefaultTimeout();
+        }
+    }
+
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
@@ -647,6 +705,71 @@ public class Http3RequestTests : LoggedTest
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43374")]
+    [MsQuicSupported]
+    public async Task GET_ConnectionsMakingMultipleRequests_AllSuccess()
+    {
+        // Arrange
+        var requestCount = 0;
+
+        var builder = CreateHostBuilder(context =>
+        {
+            Interlocked.Increment(ref requestCount);
+            return Task.CompletedTask;
+        });
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+
+            var address = $"https://127.0.0.1:{host.GetPort()}/";
+
+            // Act
+            var connectionRequestTasks = new List<Task<int>>();
+
+            for (var i = 0; i < 10; i++)
+            {
+                connectionRequestTasks.Add(RunConnection(address));
+            }
+
+            var calls = (await Task.WhenAll(connectionRequestTasks)).Sum();
+
+            // Assert
+            Assert.Equal(1000, calls);
+            Assert.Equal(1000, requestCount);
+
+            await host.StopAsync();
+        }
+
+        static async Task<int> RunConnection(string address)
+        {
+            using (var client = HttpHelpers.CreateClient())
+            {
+                var requestTasks = new List<Task>();
+
+                for (var j = 0; j < 100; j++)
+                {
+                    requestTasks.Add(MakeRequest(client, address, j));
+                }
+
+                await Task.WhenAll(requestTasks);
+
+                return requestTasks.Count;
+            }
+        }
+
+        static async Task MakeRequest(HttpMessageInvoker client, string address, int count)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, address);
+            request.Version = HttpVersion.Version30;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response = await client.SendAsync(request, CancellationToken.None);
+            response.EnsureSuccessStatusCode();
+        }
+    }
+
+    [ConditionalFact]
     [MsQuicSupported]
     public async Task GET_MultipleRequestsInSequence_ReusedState()
     {
@@ -701,6 +824,84 @@ public class Http3RequestTests : LoggedTest
 
             await host.StopAsync();
         }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task GET_MultipleRequests_RequestVersionOrHigher_UpgradeToHttp3()
+    {
+        // Arrange
+        await ServerRetryHelper.BindPortsWithRetry(async port =>
+        {
+            var requestHeaders = new List<Dictionary<string, StringValues>>();
+
+            var builder = CreateHostBuilder(
+                context =>
+                {
+                    requestHeaders.Add(context.Request.Headers.ToDictionary(k => k.Key, k => k.Value, StringComparer.OrdinalIgnoreCase));
+                    return Task.CompletedTask;
+                },
+                configureKestrel: o =>
+                {
+                    o.Listen(IPAddress.Parse("127.0.0.1"), port, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                        listenOptions.UseHttps(TestResources.GetTestCertificate());
+                    });
+                });
+
+            using (var host = builder.Build())
+            using (var client = HttpHelpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                // Act 1
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.Headers.Add("id", "1");
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
+                response1.EnsureSuccessStatusCode();
+                var request1Headers = requestHeaders.Single(i => i["id"] == "1");
+
+                // Assert 1
+                Assert.Equal(HttpVersion.Version20, response1.Version);
+                Assert.False(request1Headers.ContainsKey("alt-used"));
+
+                // Act 2
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.Headers.Add("id", "2");
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
+                response2.EnsureSuccessStatusCode();
+                var request2Headers = requestHeaders.Single(i => i["id"] == "2");
+
+                // Assert 2
+                Assert.Equal(HttpVersion.Version30, response2.Version);
+                Assert.True(request2Headers.ContainsKey("alt-used"));
+
+                // Delay to ensure the stream has enough time to return to pool
+                await Task.Delay(100);
+
+                // Act 3
+                var request3 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request3.Headers.Add("id", "3");
+                request3.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
+                var response3 = await client.SendAsync(request3, CancellationToken.None);
+                response3.EnsureSuccessStatusCode();
+                var request3Headers = requestHeaders.Single(i => i["id"] == "3");
+
+                // Assert 3
+                Assert.Equal(HttpVersion.Version30, response3.Version);
+                Assert.True(request3Headers.ContainsKey("alt-used"));
+
+                Assert.Same((string)request2Headers["alt-used"], (string)request3Headers["alt-used"]);
+
+                await host.StopAsync();
+            }
+        }, Logger);
     }
 
     // Verify HTTP/2 and HTTP/3 match behavior
@@ -1204,7 +1405,7 @@ public class Http3RequestTests : LoggedTest
                 kestrel.ListenLocalhost(5001, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http3;
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                     listenOptions.UseConnectionLogging();
                 });
             });
@@ -1241,6 +1442,58 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task GET_UseHttpsCallback_ConnectionContextAvailable()
+    {
+        // Arrange
+        BaseConnectionContext connectionContext = null;
+        var builder = CreateHostBuilder(
+            context =>
+            {
+                return Task.CompletedTask;
+            },
+            configureKestrel: kestrel =>
+            {
+                kestrel.ListenLocalhost(5001, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(new TlsHandshakeCallbackOptions
+                    {
+                        OnConnection = context =>
+                        {
+                            connectionContext = context.Connection;
+                            return ValueTask.FromResult(new SslServerAuthenticationOptions
+                            {
+                                ServerCertificate = TestResources.GetTestCertificate()
+                            });
+                        }
+                    });
+                });
+            });
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            var port = 5001;
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+
+            // Assert
+            Assert.NotNull(connectionContext);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task GET_ClientDisconnected_ConnectionAbortRaised()
     {
         // Arrange
@@ -1256,7 +1509,7 @@ public class Http3RequestTests : LoggedTest
                 kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http3;
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
 
                     IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
                     multiplexedConnectionBuilder.Use(next =>
@@ -1425,7 +1678,7 @@ public class Http3RequestTests : LoggedTest
                 kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http3;
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
 
                     IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
                     multiplexedConnectionBuilder.Use(next =>
@@ -1584,7 +1837,7 @@ public class Http3RequestTests : LoggedTest
             kestrel.Listen(IPAddress.Loopback, 0, listenOptions =>
             {
                 listenOptions.Protocols = protocol;
-                listenOptions.UseHttps();
+                listenOptions.UseHttps(TestResources.GetTestCertificate());
             });
         });
 

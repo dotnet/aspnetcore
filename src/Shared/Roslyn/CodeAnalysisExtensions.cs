@@ -22,7 +22,7 @@ internal static class CodeAnalysisExtensions
     {
         foreach (var declaredAttribute in symbol.GetAttributes())
         {
-            if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
+            if (declaredAttribute.AttributeClass is not null && attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
             {
                 yield return declaredAttribute;
             }
@@ -132,7 +132,7 @@ internal static class CodeAnalysisExtensions
     {
         foreach (var declaredAttribute in symbol.GetAttributes())
         {
-            if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
+            if (declaredAttribute.AttributeClass is not null && attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
             {
                 return true;
             }

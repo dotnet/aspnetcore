@@ -4,6 +4,7 @@
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
 {
     private readonly SslStream _sslStream;
+    private readonly ConnectionContext _context;
     private X509Certificate2? _clientCert;
     private ReadOnlyMemory<byte>? _applicationProtocol;
     private SslProtocols? _protocol;
@@ -24,14 +26,13 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private int? _keyExchangeStrength;
     private Task<X509Certificate2?>? _clientCertTask;
 
-    public TlsConnectionFeature(SslStream sslStream)
+    public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
     {
-        if (sslStream is null)
-        {
-            throw new ArgumentNullException(nameof(sslStream));
-        }
+        ArgumentNullException.ThrowIfNull(sslStream);
+        ArgumentNullException.ThrowIfNull(context);
 
         _sslStream = sslStream;
+        _context = context;
     }
 
     internal bool AllowDelayedClientCertificateNegotation { get; set; }
@@ -122,7 +123,28 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     private async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
     {
-        await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+        try
+        {
+#pragma warning disable CA1416 // Validate platform compatibility
+            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
+        }
+        catch (PlatformNotSupportedException)
+        {
+            // NegotiateClientCertificateAsync might not be supported on all platforms.
+            // Don't attempt to recover by creating a new connection. Instead, just throw error directly to the app.
+            throw;
+        }
+        catch
+        {
+            // We can't tell which exceptions are fatal or recoverable. Consider them all recoverable only given a new connection
+            // and close the connection gracefully to avoid over-caching and affecting future requests on this connection.
+            // This allows recovery by starting a new connection. The close is graceful to allow the server to
+            // send an error response like 401. https://github.com/dotnet/aspnetcore/issues/41369
+            _context.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
+            throw;
+        }
+
         return ClientCertificate;
     }
 

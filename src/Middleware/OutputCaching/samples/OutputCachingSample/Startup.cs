@@ -27,7 +27,7 @@ app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoCache());
 
 app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput("NoCache");
 
-app.MapGet("/attribute", [OutputCache(PolicyName = "NoCache")] () => Gravatar.WriteGravatar);
+app.MapGet("/attribute", [OutputCache(PolicyName = "NoCache")] (context) => Gravatar.WriteGravatar(context));
 
 var blog = app.MapGroup("blog").CacheOutput(x => x.Tag("blog"));
 blog.MapGet("/", Gravatar.WriteGravatar);
@@ -41,7 +41,7 @@ app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 });
 
 // Cached entries will vary by culture, but any other additional query is ignored and returns the same cached content
-app.MapGet("/query", Gravatar.WriteGravatar).CacheOutput(p => p.VaryByQuery("culture"));
+app.MapGet("/query", Gravatar.WriteGravatar).CacheOutput(p => p.SetVaryByQuery("culture"));
 
 app.MapGet("/vary", Gravatar.WriteGravatar).CacheOutput(c => c.VaryByValue((context) => new KeyValuePair<string, string>("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
 
@@ -52,7 +52,7 @@ app.MapGet("/lock", async (context) =>
 {
     await Task.Delay(1000);
     await context.Response.WriteAsync($"<pre>{requests++}</pre>");
-}).CacheOutput(p => p.AllowLocking(false).Expire(TimeSpan.FromMilliseconds(1)));
+}).CacheOutput(p => p.SetLocking(false).Expire(TimeSpan.FromMilliseconds(1)));
 
 // Etag
 app.MapGet("/etag", async (context) =>

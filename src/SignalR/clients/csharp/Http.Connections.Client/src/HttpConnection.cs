@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -32,7 +34,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 
-    private readonly ILogger _logger;
+    internal readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
     private bool _started;
@@ -120,10 +122,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private static HttpConnectionOptions CreateHttpOptions(Uri url, HttpTransportType transports)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(url);
         return new HttpConnectionOptions { Url = url, Transports = transports };
     }
 
@@ -134,10 +133,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     /// <param name="loggerFactory">The logger factory.</param>
     public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory? loggerFactory)
     {
-        if (httpConnectionOptions == null)
-        {
-            throw new ArgumentNullException(nameof(httpConnectionOptions));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(httpConnectionOptions);
 
         if (httpConnectionOptions.Url == null)
         {
@@ -461,8 +457,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
-                // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
-                request.Version = new Version(1, 1);
+#if NET5_0_OR_GREATER
+                request.Options.Set(new HttpRequestOptionsKey<bool>("IsNegotiate"), true);
+#else
+                request.Properties.Add("IsNegotiate", true);
+#endif
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.
@@ -534,6 +533,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         HttpMessageHandler httpMessageHandler = httpClientHandler;
 
         var isBrowser = OperatingSystem.IsBrowser();
+        var allowHttp2 = true;
 
         if (_httpConnectionOptions != null)
         {
@@ -571,11 +571,17 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 if (_httpConnectionOptions.UseDefaultCredentials != null)
                 {
                     httpClientHandler.UseDefaultCredentials = _httpConnectionOptions.UseDefaultCredentials.Value;
+                    // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
+                    // https://github.com/dotnet/runtime/issues/1582
+                    allowHttp2 = !_httpConnectionOptions.UseDefaultCredentials.Value;
                 }
 
                 if (_httpConnectionOptions.Credentials != null)
                 {
                     httpClientHandler.Credentials = _httpConnectionOptions.Credentials;
+                    // Negotiate Auth isn't supported over HTTP/2 and HttpClient does not gracefully fallback to HTTP/1.1 in that case
+                    // https://github.com/dotnet/runtime/issues/1582
+                    allowHttp2 = false;
                 }
             }
 
@@ -595,6 +601,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         // Wrap message handler after HttpMessageHandlerFactory to ensure not overridden
         httpMessageHandler = new LoggingHttpMessageHandler(httpMessageHandler, _loggerFactory);
+
+        if (allowHttp2)
+        {
+            httpMessageHandler = new Http2HttpMessageHandler(httpMessageHandler);
+        }
 
         var httpClient = new HttpClient(httpMessageHandler);
         httpClient.Timeout = HttpClientTimeout;
@@ -657,10 +668,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpConnection));
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     private static bool IsWebSocketsSupported()

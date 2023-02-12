@@ -22,13 +22,13 @@ internal class WebTransportTestUtilities
 
     public static async ValueTask<WebTransportSession> GenerateSession(Http3InMemory inMemory, TaskCompletionSource exitSessionTcs)
     {
+#pragma warning disable CA2252 // WebTransport is a preview feature
         var appCompletedTcs = new TaskCompletionSource<IWebTransportSession>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await inMemory.InitializeConnectionAsync(async context =>
         {
             var webTransportFeature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
 
-#pragma warning disable CA2252 // This API requires opting into preview features
             try
             {
                 var session = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout();
@@ -38,7 +38,7 @@ internal class WebTransportTestUtilities
             {
                 appCompletedTcs.SetException(exception);
             }
-#pragma warning restore CA2252
+#pragma warning restore CA2252 // WebTransport is a preview feature
 
             // wait for the test to tell us to kill the application
             await exitSessionTcs.Task;
@@ -59,13 +59,13 @@ internal class WebTransportTestUtilities
 
         var requestStream = await inMemory.CreateRequestStream(new[]
         {
-            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "CONNECT"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Protocol, "webtransport"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
         return (WebTransportSession)await appCompletedTcs.Task;

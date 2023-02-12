@@ -4,8 +4,10 @@
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -21,12 +23,11 @@ public static class GrpcJsonTranscodingServiceExtensions
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
     public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
+        builder.Services.TryAddSingleton<DescriptorRegistry>();
 
         return builder;
     }
@@ -39,12 +40,27 @@ public static class GrpcJsonTranscodingServiceExtensions
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
     public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder, Action<GrpcJsonTranscodingOptions> configureOptions)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.Configure(configureOptions);
+
         return builder.AddJsonTranscoding();
+    }
+
+    private sealed class GrpcJsonTranscodingOptionsSetup : IConfigureOptions<GrpcJsonTranscodingOptions>
+    {
+        private readonly DescriptorRegistry _descriptorRegistry;
+
+        public GrpcJsonTranscodingOptionsSetup(DescriptorRegistry descriptorRegistry)
+        {
+            _descriptorRegistry = descriptorRegistry;
+        }
+
+        public void Configure(GrpcJsonTranscodingOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            options.DescriptorRegistry = _descriptorRegistry;
+        }
     }
 }

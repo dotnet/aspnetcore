@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -72,15 +73,8 @@ public class FileBufferingReadStream : Stream
         Func<string> tempFileDirectoryAccessor,
         ArrayPool<byte> bytePool)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
-
-        if (tempFileDirectoryAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(tempFileDirectoryAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(tempFileDirectoryAccessor);
 
         _bytePool = bytePool;
         if (memoryThreshold <= _maxRentedBufferSize)
@@ -131,15 +125,8 @@ public class FileBufferingReadStream : Stream
         string tempFileDirectory,
         ArrayPool<byte> bytePool)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
-
-        if (tempFileDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(tempFileDirectory));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(tempFileDirectory);
 
         _bytePool = bytePool;
         if (memoryThreshold <= _maxRentedBufferSize)
@@ -254,6 +241,14 @@ public class FileBufferingReadStream : Stream
         }
 
         _tempFileName = Path.Combine(_tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid().ToString() + ".tmp");
+
+        // Create a temp file with the correct Unix file mode before moving it to the assigned _tempFileName in the _tempFileDirectory.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var tempTempFileName = Path.GetTempFileName();
+            File.Move(tempTempFileName, _tempFileName);
+        }
+
         return new FileStream(_tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete, 1024 * 16,
             FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
     }

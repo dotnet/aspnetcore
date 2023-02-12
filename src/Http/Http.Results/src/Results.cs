@@ -1,13 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
@@ -179,8 +183,50 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
+    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
         => Json<object>(data, options, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json(object? data, JsonTypeInfo jsonTypeInfo, string? contentType = null, int? statusCode = null)
+    {
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+        return new JsonHttpResult<object>(data, statusCode, contentType) { JsonTypeInfo = jsonTypeInfo };
+    }
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="type">The type of object to write.</param>
+    /// <param name="context">A metadata provider for serializable types.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json(object? data, Type type, JsonSerializerContext context, string? contentType = null, int? statusCode = null)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return new JsonHttpResult<object>(data, statusCode, contentType)
+        {
+            JsonTypeInfo = context.GetRequiredTypeInfo(type)
+        };
+    }
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -193,10 +239,44 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
+    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => TypedResults.Json(data, options, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json<TValue>(TValue? data, JsonTypeInfo<TValue> jsonTypeInfo, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => TypedResults.Json(data, jsonTypeInfo, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="context">A metadata provider for serializable types.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Json<TValue>(TValue? data, JsonSerializerContext context, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => TypedResults.Json(data, context, contentType, statusCode);
 
     /// <summary>
     /// Writes the byte-array content to the response.
@@ -424,42 +504,66 @@ public static partial class Results
     /// <summary>
     /// Redirects to the specified <paramref name="url"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
-    /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
+    /// <item>
+    /// <description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description>
+    /// </item>
     /// </list>
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
+    public static IResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
         => TypedResults.Redirect(url, permanent, preserveMethod);
 
     /// <summary>
     /// Redirects to the specified <paramref name="localUrl"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
-    /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
+    /// <item>
+    /// <description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description>
+    /// </item>
     /// </list>
     /// </summary>
     /// <param name="localUrl">The local URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
+    public static IResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
         => TypedResults.LocalRedirect(localUrl, permanent, preserveMethod);
 
     /// <summary>
     /// Redirects to the specified route.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
-    /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
+    /// <item>
+    /// <description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description>
+    /// </item>
+    /// <item>
+    /// <description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description>
+    /// </item>
     /// </list>
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
@@ -468,6 +572,7 @@ public static partial class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static IResult RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null)
         => TypedResults.RedirectToRoute(routeName, routeValues, permanent, preserveMethod, fragment);
 
@@ -642,6 +747,13 @@ public static partial class Results
 
         problemDetails.Title = title ?? problemDetails.Title;
 
+        CopyExtensions(extensions, problemDetails);
+
+        return TypedResults.Problem(problemDetails);
+    }
+
+    private static void CopyExtensions(IDictionary<string, object?>? extensions, HttpValidationProblemDetails problemDetails)
+    {
         if (extensions is not null)
         {
             foreach (var extension in extensions)
@@ -649,9 +761,14 @@ public static partial class Results
                 problemDetails.Extensions.Add(extension);
             }
         }
-
-        return TypedResults.Problem(problemDetails);
     }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>   
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Created()
+        => TypedResults.Created();
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -659,7 +776,7 @@ public static partial class Results
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Created(string uri, object? value)
+    public static IResult Created(string? uri, object? value)
         => Created<object>(uri, value);
 
     /// <summary>
@@ -668,7 +785,7 @@ public static partial class Results
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Created<TValue>(string uri, TValue? value)
+    public static IResult Created<TValue>(string? uri, TValue? value)
         => value is null ? TypedResults.Created(uri) : TypedResults.Created(uri, value);
 
     /// <summary>
@@ -677,7 +794,7 @@ public static partial class Results
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Created(Uri uri, object? value)
+    public static IResult Created(Uri? uri, object? value)
         => Created<object>(uri, value);
 
     /// <summary>
@@ -686,7 +803,7 @@ public static partial class Results
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Created<TValue>(Uri uri, TValue? value)
+    public static IResult Created<TValue>(Uri? uri, TValue? value)
         => value is null ? TypedResults.Created(uri) : TypedResults.Created(uri, value);
 
     /// <summary>
@@ -696,6 +813,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static IResult CreatedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
         => CreatedAtRoute<object>(routeName, routeValues, value);
 
@@ -706,6 +824,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult CreatedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
@@ -738,6 +857,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
 #pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
@@ -750,6 +870,7 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters

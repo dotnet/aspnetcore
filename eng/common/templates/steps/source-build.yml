@@ -63,9 +63,19 @@ steps:
       targetRidArgs='/p:TargetRid=${{ parameters.platform.targetRID }}'
     fi
 
+    runtimeOsArgs=
+    if [ '${{ parameters.platform.runtimeOS }}' != '' ]; then
+      runtimeOsArgs='/p:RuntimeOS=${{ parameters.platform.runtimeOS }}'
+    fi
+
     publishArgs=
     if [ '${{ parameters.platform.skipPublishValidation }}' != 'true' ]; then
       publishArgs='--publish'
+    fi
+
+    assetManifestFileName=SourceBuild_RidSpecific.xml
+    if [ '${{ parameters.platform.name }}' != '' ]; then
+      assetManifestFileName=SourceBuild_${{ parameters.platform.name }}.xml
     fi
 
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
@@ -75,8 +85,10 @@ steps:
       $internalRuntimeDownloadArgs \
       $internalRestoreArgs \
       $targetRidArgs \
+      $runtimeOsArgs \
       /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \
-      /p:ArcadeBuildFromSource=true
+      /p:ArcadeBuildFromSource=true \
+      /p:AssetManifestFileName=$assetManifestFileName
   displayName: Build
 
 # Upload build logs for diagnosis.

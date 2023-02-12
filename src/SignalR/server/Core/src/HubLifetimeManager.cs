@@ -142,9 +142,9 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     /// <param name="connectionId">The connection ID.</param>
     /// <param name="methodName">The invocation method name.</param>
     /// <param name="args">The invocation arguments.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. It is recommended to set a max wait for expecting a result.</param>
     /// <returns>The response from the connection.</returns>
-    public virtual Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public virtual Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         throw new NotImplementedException($"{GetType().Name} does not support client return values.");
     }

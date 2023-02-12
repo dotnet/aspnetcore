@@ -165,12 +165,6 @@
   <data name="TemplateRoute_Exception" xml:space="preserve">
     <value>An error occurred while creating the route with name '{0}' and template '{1}'.</value>
   </data>
-  <data name="Invalid_Route_pattern" xml:space="preserve">
-    <value>Invalid route pattern</value>
-  </data>
-  <data name="Route_issue_0" xml:space="preserve">
-    <value>Route issue: {0}</value>
-  </data>
   <data name="AttributeRoute_TokenReplacement_EmptyTokenNotAllowed" xml:space="preserve">
     <value>An empty replacement token ('[]') is not allowed.</value>
   </data>
@@ -182,5 +176,35 @@
   </data>
   <data name="AttributeRoute_TokenReplacement_UnescapedBraceInToken" xml:space="preserve">
     <value>An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape.</value>
+  </data>
+  <data name="Analyzer_HeaderDictionaryIndexer_Message" xml:space="preserve">
+    <value>The header '{0}' can be accessed using the {1} property</value>
+  </data>
+  <data name="Analyzer_HeaderDictionaryIndexer_Title" xml:space="preserve">
+    <value>Suggest using IHeaderDictionary properties</value>
+  </data>
+  <data name="Analyzer_RequestDelegateReturnValue_Message" xml:space="preserve">
+    <value>The method used to create a RequestDelegate returns Task&lt;{0}&gt;. RequestDelegate discards this value. If this isn't intended then change the return type to non-generic Task or, if the delegate is a route handler, cast it to Delegate so the return value is written to the response.</value>
+  </data>
+  <data name="Analyzer_RequestDelegateReturnValue_Title" xml:space="preserve">
+    <value>Do not return a value from RequestDelegate</value>
+  </data>
+  <data name="Analyzer_RouteIssue_Message" xml:space="preserve">
+    <value>Route issue: {0}</value>
+  </data>
+  <data name="Analyzer_RouteIssue_Title" xml:space="preserve">
+    <value>Invalid route pattern</value>
+  </data>
+  <data name="Analyzer_UnusedParameter_Message" xml:space="preserve">
+    <value>Unused route parameter '{0}'</value>
+  </data>
+  <data name="Analyzer_UnusedParameter_Title" xml:space="preserve">
+    <value>Unused route parameter</value>
+  </data>
+  <data name="Analyzer_HeaderDictionaryAdd_Message" xml:space="preserve">
+    <value>Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key.</value>
+  </data>
+  <data name="Analyzer_HeaderDictionaryAdd_Title" xml:space="preserve">
+    <value>Suggest using IHeaderDictionary.Append or the indexer</value>
   </data>
 </root>

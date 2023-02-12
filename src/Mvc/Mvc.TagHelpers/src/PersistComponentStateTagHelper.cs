@@ -44,15 +44,8 @@ public class PersistComponentStateTagHelper : TagHelper
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         var services = ViewContext.HttpContext.RequestServices;
         var manager = services.GetRequiredService<ComponentStatePersistenceManager>();

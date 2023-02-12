@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -597,6 +598,33 @@ public class FileBufferingReadStreamTests
         Assert.Equal(100, read2);
         Assert.Equal(data.AsMemory(0, read1).ToArray(), buffer);
         Assert.Equal(data.AsMemory(0, read2).ToArray(), buffer2.AsMemory(0, read2).ToArray());
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void Read_BufferingContentToDisk_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        var inner = MakeStream(1024 * 2);
+        string tempFileName;
+        using (var stream = new FileBufferingReadStream(inner, 1024, null, GetCurrentDirectory()))
+        {
+            var bytes = new byte[1024 * 2];
+            var read0 = stream.Read(bytes, 0, bytes.Length);
+            Assert.Equal(bytes.Length, read0);
+            Assert.Equal(read0, stream.Length);
+            Assert.Equal(read0, stream.Position);
+            Assert.False(stream.InMemory);
+            Assert.NotNull(stream.TempFileName);
+
+            var read1 = stream.Read(bytes, 0, bytes.Length);
+            Assert.Equal(0, read1);
+
+            tempFileName = stream.TempFileName!;
+            Assert.True(File.Exists(tempFileName));
+            Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(tempFileName));
+        }
+
+        Assert.False(File.Exists(tempFileName));
     }
 
     private static string GetCurrentDirectory()

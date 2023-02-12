@@ -97,6 +97,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     public Http3ControlStream? EncoderStream { get; set; }
     public Http3ControlStream? DecoderStream { get; set; }
     public string ConnectionId => _context.ConnectionId;
+    public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
     public void StopProcessingNextRequest()
         => StopProcessingNextRequest(serverInitiated: true);
@@ -198,7 +199,47 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             return;
         }
 
+        ValidateOpenControlStreams(now);
         UpdateStreamTimeouts(now);
+    }
+
+    private void ValidateOpenControlStreams(DateTimeOffset now)
+    {
+        var ticks = now.Ticks;
+
+        // This method validates that a connnection's control streams are open.
+        //
+        // They're checked on a delayed timer because when a connection is aborted or timed out, notifications are sent to open streams
+        // and the connection simultaneously. This is a problem because when a control stream is closed the connection should be aborted
+        // with the H3_CLOSED_CRITICAL_STREAM status. There is a race between the connection closing for the real reason, and control
+        // streams closing the connection with H3_CLOSED_CRITICAL_STREAM.
+        //
+        // Realistically, control streams are never closed except when the connection is. A small delay in aborting the connection in the
+        // unlikely situation where a control stream is incorrectly closed should be fine.
+        ValidateOpenControlStream(OutboundControlStream, this, ticks);
+        ValidateOpenControlStream(ControlStream, this, ticks);
+        ValidateOpenControlStream(EncoderStream, this, ticks);
+        ValidateOpenControlStream(DecoderStream, this, ticks);
+
+        static void ValidateOpenControlStream(Http3ControlStream? stream, Http3Connection connection, long ticks)
+        {
+            if (stream != null)
+            {
+                if (stream.IsCompleted || stream.IsAborted || stream.EndStreamReceived)
+                {
+                    // If a control stream is no longer active then set a timeout so that the connection is aborted next tick.
+                    if (stream.StreamTimeoutTicks == default)
+                    {
+                        stream.StreamTimeoutTicks = ticks;
+                    }
+
+                    if (stream.StreamTimeoutTicks < ticks)
+                    {
+                        connection.OnStreamConnectionError(new Http3ConnectionErrorException("A control stream used by the connection was closed or reset.", Http3ErrorCode.ClosedCriticalStream));
+                    }
+                }
+            }
+        }
     }
 
     private void UpdateStreamTimeouts(DateTimeOffset now)
@@ -264,14 +305,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     if (stream.StreamTimeoutTicks == default)
                     {
-                        stream.StreamTimeoutTicks = _context.TimeoutControl.GetResponseDrainDeadline(ticks, minDataRate);
+                        stream.StreamTimeoutTicks = TimeoutControl.GetResponseDrainDeadline(ticks, minDataRate);
                     }
 
                     if (stream.StreamTimeoutTicks < ticks)
                     {
                         // Cancel connection to be consistent with other data rate limits.
                         Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, stream.TraceIdentifier);
-                        Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied), Http3ErrorCode.InternalError);
+                        OnStreamConnectionError(new Http3ConnectionErrorException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied, Http3ErrorCode.InternalError));
                     }
                 }
             }
@@ -306,6 +347,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             // Don't delay on waiting to send outbound control stream settings.
             outboundControlStreamTask = ProcessOutboundControlStreamAsync(outboundControlStream);
 
+            // Close the connection if we don't receive any request streams
+            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+
             while (_stoppedAcceptingStreams == 0)
             {
                 var streamContext = await _multiplexedContext.AcceptAsync(_acceptStreamsCts.Token);
@@ -332,12 +376,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Debug.Assert(streamDirectionFeature != null);
                     Debug.Assert(streamIdFeature != null);
 
-                    var context = CreateHttpStreamContext(streamContext);
-
                     // unidirectional stream
                     if (!streamDirectionFeature.CanWrite)
                     {
-                        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                        var context = CreateHttpStreamContext(streamContext);
+
+                        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
                             var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
@@ -369,8 +413,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     // bidirectional stream
                     else
                     {
-                        if (context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
+                        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
                         {
+                            var context = CreateHttpStreamContext(streamContext);
                             var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
                             _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
@@ -386,12 +431,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             }
                             else
                             {
-                                await CreateHttp3Stream(streamContext, context, application, streamIdFeature.StreamId);
+                                await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
                             }
                         }
                         else
                         {
-                            await CreateHttp3Stream(streamContext, context, application, streamIdFeature.StreamId);
+                            await CreateHttp3Stream(streamContext, application, streamIdFeature.StreamId);
                         }
                     }
                 }
@@ -493,7 +538,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     await _streamCompletionAwaitable;
                 }
 
-                _context.TimeoutControl.CancelTimeout();
+                TimeoutControl.CancelTimeout();
             }
             catch
             {
@@ -512,7 +557,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private async Task CreateHttp3Stream<TContext>(ConnectionContext streamContext, Http3StreamContext context, IHttpApplication<TContext> application, long streamId) where TContext : notnull
+    private async Task CreateHttp3Stream<TContext>(ConnectionContext streamContext, IHttpApplication<TContext> application, long streamId) where TContext : notnull
     {
         // http request stream
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
@@ -538,7 +583,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         // A stream will only be cached if the transport stream itself is reused.
         if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
         {
-            stream = new Http3Stream<TContext>(application, context);
+            stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
             persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
         }
         else
@@ -650,8 +695,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     {
         try
         {
-            await controlStream.SendStreamIdAsync(id: 0);
-            await controlStream.SendSettingsFrameAsync();
+            await controlStream.ProcessOutboundSendsAsync(id: 0);
         }
         catch (Exception ex)
         {
@@ -753,6 +797,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             if (stream.IsRequestStream)
             {
+                if (_activeRequestCount == 0 && TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
+                {
+                    TimeoutControl.CancelTimeout();
+                }
+
                 _activeRequestCount++;
             }
             _streams[stream.StreamId] = stream;
@@ -766,6 +815,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             if (stream.IsRequestStream)
             {
                 _activeRequestCount--;
+
+                if (_activeRequestCount == 0)
+                {
+                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                }
             }
             _streams.Remove(stream.StreamId);
         }
@@ -777,6 +831,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     }
 
     void IHttp3StreamLifetimeHandler.OnStreamConnectionError(Http3ConnectionErrorException ex)
+    {
+        OnStreamConnectionError(ex);
+    }
+
+    private void OnStreamConnectionError(Http3ConnectionErrorException ex)
     {
         Log.Http3ConnectionError(ConnectionId, ex);
         Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);

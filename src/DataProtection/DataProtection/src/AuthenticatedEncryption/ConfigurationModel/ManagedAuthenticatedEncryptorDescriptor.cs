@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -20,15 +21,8 @@ public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncr
     /// <param name="masterKey">The master key.</param>
     public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptorConfiguration configuration, ISecret masterKey)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        if (masterKey == null)
-        {
-            throw new ArgumentNullException(nameof(masterKey));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
+        ArgumentNullThrowHelper.ThrowIfNull(masterKey);
 
         Configuration = configuration;
         MasterKey = masterKey;
@@ -49,11 +43,11 @@ public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncr
         // </descriptor>
 
         var encryptionElement = new XElement("encryption",
-            new XAttribute("algorithm", TypeToFriendlyName(Configuration.EncryptionAlgorithmType)),
+            new XAttribute("algorithm", ManagedAlgorithmHelpers.TypeToFriendlyName(Configuration.EncryptionAlgorithmType)),
             new XAttribute("keyLength", Configuration.EncryptionAlgorithmKeySize));
 
         var validationElement = new XElement("validation",
-            new XAttribute("algorithm", TypeToFriendlyName(Configuration.ValidationAlgorithmType)));
+            new XAttribute("algorithm", ManagedAlgorithmHelpers.TypeToFriendlyName(Configuration.ValidationAlgorithmType)));
 
         var rootElement = new XElement("descriptor",
             new XComment(" Algorithms provided by specified SymmetricAlgorithm and KeyedHashAlgorithm "),
@@ -62,35 +56,5 @@ public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncr
             MasterKey.ToMasterKeyElement());
 
         return new XmlSerializedDescriptorInfo(rootElement, typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer));
-    }
-
-    // Any changes to this method should also be be reflected
-    // in ManagedAuthenticatedEncryptorDescriptorDeserializer.FriendlyNameToType.
-    private static string TypeToFriendlyName(Type type)
-    {
-        if (type == typeof(Aes))
-        {
-            return nameof(Aes);
-        }
-        else if (type == typeof(HMACSHA1))
-        {
-            return nameof(HMACSHA1);
-        }
-        else if (type == typeof(HMACSHA256))
-        {
-            return nameof(HMACSHA256);
-        }
-        else if (type == typeof(HMACSHA384))
-        {
-            return nameof(HMACSHA384);
-        }
-        else if (type == typeof(HMACSHA512))
-        {
-            return nameof(HMACSHA512);
-        }
-        else
-        {
-            return type.AssemblyQualifiedName!;
-        }
     }
 }

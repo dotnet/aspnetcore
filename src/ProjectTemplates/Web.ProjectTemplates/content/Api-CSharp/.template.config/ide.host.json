@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json.schemastore.org/ide.host",
+  "order": 100,
+  "icon": "ide/API.png",
+  "supportsDocker": true,
+  "symbolInfo": [
+    {
+      "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "NativeAot",
+      "isVisible": true
+    }
+  ],
+  "unsupportedHosts": [
+    {
+      "id": "vs"
+    }
+  ]
+}

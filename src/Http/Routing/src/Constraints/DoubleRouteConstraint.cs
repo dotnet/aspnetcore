@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to represent only 64-bit floating-point values.
 /// </summary>
-public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(
@@ -20,15 +20,8 @@ public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatc
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {

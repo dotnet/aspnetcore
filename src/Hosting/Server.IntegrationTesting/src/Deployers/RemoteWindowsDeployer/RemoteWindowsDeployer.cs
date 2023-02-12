@@ -19,7 +19,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
     private string _deployedFolderPathInFileShare;
     private readonly RemoteWindowsDeploymentParameters _deploymentParameters;
     private bool _isDisposed;
-    private static readonly Lazy<Scripts> _scripts = new Lazy<Scripts>(() => CopyEmbeddedScriptFilesToDisk());
+    private static readonly Lazy<Scripts> _scripts = new Lazy<Scripts>(CopyEmbeddedScriptFilesToDisk);
 
     public RemoteWindowsDeployer(RemoteWindowsDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         : base(deploymentParameters, loggerFactory)
@@ -76,7 +76,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
         {
             if (_isDisposed)
             {
-                throw new ObjectDisposedException("This instance of deployer has already been disposed.");
+                throw new ObjectDisposedException(GetType().Name, "This instance of deployer has already been disposed.");
             }
 
             // Publish the app to a local temp folder on the machine where the test is running

@@ -29,20 +29,9 @@ internal sealed partial class RequestDecompressionMiddleware
         ILogger<RequestDecompressionMiddleware> logger,
         IRequestDecompressionProvider provider)
     {
-        if (next is null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (logger is null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
-        if (provider is null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(provider);
 
         _next = next;
         _logger = logger;
@@ -135,7 +124,7 @@ internal sealed partial class RequestDecompressionMiddleware
         [LoggerMessage(4, LogLevel.Debug, "The maximum request body size has been set to {RequestSize}.", EventName = "MaxRequestBodySizeSet")]
         public static partial void MaxRequestBodySizeSet(ILogger logger, string requestSize);
 
-        [LoggerMessage(5, LogLevel.Debug, "The maximum request body size as been disabled.", EventName = "MaxRequestBodySizeDisabled")]
+        [LoggerMessage(5, LogLevel.Debug, "The maximum request body size has been disabled.", EventName = "MaxRequestBodySizeDisabled")]
         public static partial void MaxRequestBodySizeDisabled(ILogger logger);
     }
 }
