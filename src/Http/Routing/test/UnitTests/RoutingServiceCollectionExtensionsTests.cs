@@ -68,7 +68,6 @@ public class RoutingServiceCollectionExtensionsTests
 
         services.Configure<RouteOptions>(options =>
         {
-            Console.Write("First!");
         });
 
 
