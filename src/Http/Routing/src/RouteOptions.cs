@@ -153,7 +153,7 @@ public class RouteOptions
         _constraintTypeMap[token] = type;
     }
 
-    private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(IDictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
+    private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(Dictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
     {
         constraintMap[text] = typeof(TConstraint);
     }
