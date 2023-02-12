@@ -16,7 +16,7 @@ public class HttpHubConnectionBuilder {
     private final String url;
     private Transport transport;
     private HttpClient httpClient;
-    private HubProtocol protocol = new JsonHubProtocol();
+    private HubProtocol protocol = new GsonHubProtocol();
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private long handshakeResponseTimeout = 0;
