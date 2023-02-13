@@ -980,7 +980,7 @@ public class ResultsTests
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
-    [InlineData(499, null, null)]
+    [InlineData(499, "Client Closed Request", null)]
     public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
         int statusCode,
         string title,
@@ -988,7 +988,7 @@ public class ResultsTests
     {
         // Act
         var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;
-
+        
         // Assert
         Assert.Null(result.ProblemDetails.Detail);
         Assert.Null(result.ProblemDetails.Instance);
