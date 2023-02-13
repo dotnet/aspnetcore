@@ -565,24 +565,22 @@ public class WebApplicationTests
     public void ContentRootIsDefaultedToCurrentDirectory()
     {
         var tmpDir = Directory.CreateTempSubdirectory();
-        // On macOS /tmp is a symlink to /private/tmp. Resolve any links so the path comparison works correctly.
-        var tmpDirectoryPath = tmpDir.LinkTarget ?? tmpDir.FullName;
 
         try
         {
             var options = new RemoteInvokeOptions();
-            options.StartInfo.WorkingDirectory = tmpDirectoryPath;
+            options.StartInfo.WorkingDirectory = tmpDir.FullName;
 
-            using var remoteHandle = RemoteExecutor.Invoke(static (string currentDirectory) =>
+            using var remoteHandle = RemoteExecutor.Invoke(static () =>
             {
                 foreach (object[] data in CreateBuilderFuncs)
                 {
                     var createBuilder = (CreateBuilderFunc)data[0];
                     var builder = createBuilder();
 
-                    Assert.Equal(NormalizePath(currentDirectory), NormalizePath(builder.Environment.ContentRootPath));
+                    Assert.Equal(NormalizePath(Environment.CurrentDirectory), NormalizePath(builder.Environment.ContentRootPath));
                 }
-            }, tmpDirectoryPath, options);
+            }, options);
         }
         finally
         {
