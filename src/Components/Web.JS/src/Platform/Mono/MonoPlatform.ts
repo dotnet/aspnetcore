@@ -221,6 +221,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     'assembly': 'assembly',
     'pdb': 'pdb',
     'icu': 'globalization',
+    'vfs': 'globalization',
     'dotnetwasm': 'dotnetwasm',
   };
   const behaviorByName = (name) => {
@@ -274,31 +275,36 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
         behavior: 'pdb',
       };
       assets.push(asset);
+      downloadResource(asset);
     }
   }
   const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
   const icuDataResourceName = getICUResourceName(resourceLoader.bootConfig, applicationCulture);
   let hasIcuData = false;
   for (const name in resources.runtime) {
-    if (resources.runtimeAssets.hasOwnProperty(name)) {
-      continue;
-    }
     const behavior = behaviorByName(name) as any;
     if (behavior === 'icu') {
-      if (name === icuDataResourceName) {
-        hasIcuData = true;
+      if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Invariant) {
+        continue;
       }
-      continue;
+      if (name !== icuDataResourceName) {
+        continue;
+      }
+      hasIcuData = true;
     } else if (behavior === 'js-module-dotnet') {
+      continue;
+    }
+    if (resources.runtimeAssets.hasOwnProperty(name)) {
       continue;
     }
     const asset: AssetEntry = {
       name,
       resolvedUrl: `_framework/${name}`,
-      hash: resources.assembly[name],
+      hash: resources.runtime[name],
       behavior,
     };
     assets.push(asset);
+    downloadResource(asset);
   }
   totalResources = assets.length;
 
