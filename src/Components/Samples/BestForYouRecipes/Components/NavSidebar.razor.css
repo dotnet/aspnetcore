@@ -10,6 +10,7 @@ nav {
     background-color: #435869;
     box-shadow: 0 2px 4px 0px rgb(0 0 0 / 30%);
     z-index: 1;
+    transition: width 0.1s ease-out;
 }
 
 nav:hover {
