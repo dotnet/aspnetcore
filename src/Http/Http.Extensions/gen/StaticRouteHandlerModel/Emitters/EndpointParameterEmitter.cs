@@ -20,7 +20,7 @@ internal static class EndpointParameterEmitter
         return $$"""
                  var {{endpointParameter.Name}}_raw = {{endpointParameter.AssigningCode}};
 
-                 if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw) && {{(endpointParameter.IsOptional ? "false" : "false")}})
+                 if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw) && {{(endpointParameter.IsOptional ? "false" : "true")}})
                  {
                      httpContext.Response.StatusCode = 400;
                      return Task.CompletedTask;
