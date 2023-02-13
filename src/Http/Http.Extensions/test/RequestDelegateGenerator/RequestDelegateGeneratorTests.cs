@@ -102,6 +102,7 @@ app.MapGet("/hello", ([FromQuery]string? p) => p ?? "Was null!");
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Was null!");
+
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
