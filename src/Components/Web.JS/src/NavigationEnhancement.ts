@@ -1,3 +1,4 @@
+import { synchronizeDOMContent } from "./DomSync/DomSync";
 import { toAbsoluteUri } from "./Services/NavigationManager";
 
 let _navigationCompletedCallback: Function;
@@ -59,9 +60,9 @@ export async function performEnhancedPageLoad(url: string, fetchOptions?: Reques
         }
     }
 
+    synchronizeDOMContent({ parent: document }, responseHtml);
+
     const parsedHtml = new DOMParser().parseFromString(responseHtml, 'text/html');
-    document.body.innerHTML = parsedHtml.body.innerHTML;
-    responseHtml = '';
     for (let i = 0; i < parsedHtml.scripts.length; i++) {
         const script = parsedHtml.scripts[i];
         if (script.textContent) {
@@ -69,6 +70,7 @@ export async function performEnhancedPageLoad(url: string, fetchOptions?: Reques
         }
     }
 
+    let chunkHtml = '';
     while (!finished) {
         const chunk = await responseReader.read();
         if (chunk.done) {
@@ -77,18 +79,18 @@ export async function performEnhancedPageLoad(url: string, fetchOptions?: Reques
 
         if (chunk.value) {
             const chunkText = decoder.decode(chunk.value);
-            responseHtml += chunkText;
+            chunkHtml += chunkText;
 
             // Not making any attempt to cope if the chunk boundaries don't line up with the script blocks
             if (chunkText.indexOf('</script>') > 0) {
-                const parsedHtml = new DOMParser().parseFromString(responseHtml, 'text/html');
+                const parsedHtml = new DOMParser().parseFromString(chunkHtml, 'text/html');
                 for (let i = 0; i < parsedHtml.scripts.length; i++) {
                     const script = parsedHtml.scripts[i];
                     if (script.textContent) {
                         eval(script.textContent);
                     }
                 }
-                responseHtml = '';
+                chunkHtml = '';
             }
         }
     }
