@@ -116,10 +116,8 @@ internal static class StaticRouteHandlerModelEmitter
      * can be used to reduce the boxing that happens at runtime when constructing
      * the context object.
      */
-    public static string EmitFilteredRequestHandler(this Endpoint endpoint)
+    public static string EmitFilteredRequestHandler(this Endpoint _)
     {
-        var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-
         return $$"""
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
