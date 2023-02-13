@@ -114,13 +114,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         // Endpoint Parameter: p (Type = string, IsOptional = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
-                        if (StringValues.IsNullOrEmpty(p_raw) && true)
+                        if (StringValues.IsNullOrEmpty(p_raw))
                         {
                             httpContext.Response.StatusCode = 400;
                             return Task.CompletedTask;
                         }
                         var p_local = p_raw.ToString();
-
 
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(p_local);

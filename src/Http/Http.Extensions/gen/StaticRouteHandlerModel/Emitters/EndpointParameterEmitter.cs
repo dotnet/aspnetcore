@@ -29,15 +29,6 @@ internal static class EndpointParameterEmitter
                         var {{endpointParameter.Name}}_raw = {{endpointParameter.AssigningCode}};
 """);
 
-        // If we are not optional and no value is provided, respond with 400.
-        builder.AppendLine($$"""
-                        if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw) && {{(endpointParameter.IsOptional ? "false" : "true")}})
-                        {
-                            httpContext.Response.StatusCode = 400;
-                            return Task.CompletedTask;
-                        }                             
-""");
-
         // If we are not optional, then at this point we can just assign the string value to the handler argument,
         // otherwise we need to detect whether no value is provided and set the handler argument to null to
         // preserve consistency with RDF behavior. We don't want to emit the conditional block to avoid
@@ -51,6 +42,11 @@ internal static class EndpointParameterEmitter
         else
         {
             builder.AppendLine($$"""
+                        if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw))
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return Task.CompletedTask;
+                        }                             
                         var {{endpointParameter.HandlerArgument}} = {{endpointParameter.Name}}_raw.ToString();
 """);
         }

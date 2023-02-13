@@ -114,7 +114,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var req_local = httpContext.Request;
                         var res_local = httpContext.Response;
-
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(req_local, res_local);
                         return httpContext.Response.WriteAsync(result);

@@ -12,8 +12,10 @@ internal static class EndpointEmitter
     {
         var parameterPreparationBuilder = new StringBuilder();
 
-        foreach (var parameter in endpoint.Parameters)
+        for (var parameterIndex = 0; parameterIndex < endpoint.Parameters.Length; parameterIndex++)
         {
+            var parameter = endpoint.Parameters[parameterIndex];
+
             var parameterPreparationCode = parameter switch
             {
                 {
@@ -25,7 +27,15 @@ internal static class EndpointEmitter
                 _ => throw new Exception("Unreachable!")
             };
 
-            parameterPreparationBuilder.AppendLine(parameterPreparationCode);
+            // To avoid having two newlines after the block of parameter handling code.
+            if (parameterIndex < endpoint.Parameters.Length - 1)
+            {
+                parameterPreparationBuilder.AppendLine(parameterPreparationCode);
+            }
+            else
+            {
+                parameterPreparationBuilder.Append(parameterPreparationCode);
+            }
         }
 
         return parameterPreparationBuilder.ToString();
