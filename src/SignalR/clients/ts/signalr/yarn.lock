@@ -14,9 +14,9 @@
     chalk "^4.0.0"
 
 "@types/eventsource@^1.1.8":
-  version "1.1.10"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/eventsource/-/eventsource-1.1.10.tgz#e085be22c913e893f83f5ace21e9c10f87cbf6d2"
-  integrity sha1-4IW+IskT6JP4P1rOIenBD4fL9tI=
+  version "1.1.11"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/eventsource/-/eventsource-1.1.11.tgz#a2c0bfd0436b7db42ed1b2b2117f7ec2e8478dc7"
+  integrity sha1-osC/0ENrfbQu0bKyEX9+wuhHjcc=
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0":
   version "2.0.4"
@@ -46,14 +46,14 @@
     pretty-format "^26.0.0"
 
 "@types/node@*":
-  version "18.11.9"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-18.11.9.tgz#02d013de7058cea16d36168ef2fc653464cfbad4"
-  integrity sha1-AtAT3nBYzqFtNhaO8vxlNGTPutQ=
+  version "18.13.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-18.13.0.tgz#0400d1e6ce87e9d3032c19eb6c58205b0d3f7850"
+  integrity sha1-BADR5s6H6dMDLBnrbFggWw0/eFA=
 
 "@types/node@^14.14.31":
-  version "14.18.33"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-14.18.33.tgz#8c29a0036771569662e4635790ffa9e057db379b"
-  integrity sha1-jCmgA2dxVpZi5GNXkP+p4FfbN5s=
+  version "14.18.36"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/node/-/node-14.18.36.tgz#c414052cb9d43fab67d679d5f3c641be911f5835"
+  integrity sha1-xBQFLLnUP6tn1nnV88ZBvpEfWDU=
 
 "@types/tough-cookie@^4.0.0":
   version "4.0.2"
@@ -66,9 +66,9 @@
   integrity sha1-DGDlN/p5D1+Ucu0ndsK3HsEXNRs=
 
 "@types/yargs@^15.0.0":
-  version "15.0.14"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/yargs/-/yargs-15.0.14.tgz#26d821ddb89e70492160b66d10a0eb6df8f6fb06"
-  integrity sha1-Jtgh3biecEkhYLZtEKDrbfj2+wY=
+  version "15.0.15"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@types/yargs/-/yargs-15.0.15.tgz#e609a2b1ef9e05d90489c2f5f45bbfb2be092158"
+  integrity sha1-5gmise+eBdkEicL19Fu/sr4JIVg=
   dependencies:
     "@types/yargs-parser" "*"
 
@@ -155,9 +155,9 @@ jest-get-type@^26.3.0:
   integrity sha1-6X3Dw/U8K0Bsp6+u1Ek7HQmRmeA=
 
 node-fetch@^2.6.7:
-  version "2.6.7"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
-  integrity sha1-JN6fuoJ+O0rkTciyAlajeRYAUq0=
+  version "2.6.9"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
+  integrity sha1-fH90S1zG61/UBODHqf7GMKVWV+Y=
   dependencies:
     whatwg-url "^5.0.0"
 
@@ -182,9 +182,9 @@ psl@^1.1.33:
   integrity sha1-0N8qE38AeUVl/K87LADNCfjVpac=
 
 punycode@^2.1.1:
-  version "2.1.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
-  integrity sha1-tYsBCsQMIsVldhbI0sLALHv0eew=
+  version "2.3.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
+  integrity sha1-9n+mfJTaj00M//mBruQRgGQZm48=
 
 querystringify@^2.1.1:
   version "2.2.0"
