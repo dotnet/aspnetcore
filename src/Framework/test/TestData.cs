@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore;
 
@@ -156,7 +157,8 @@ public static class TestData
             };
 
         // System.Diagnostics.EventLog.Messages is only present in the Windows build.
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+            !SkipOnHelixAttribute.OnHelix()) // Helix tests always run against the Windows assets (even on non-Windows)
         {
             ListedSharedFxAssemblies.Remove("System.Diagnostics.EventLog.Messages");
         }
