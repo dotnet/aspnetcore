@@ -242,7 +242,11 @@ internal struct StaticFileContext
 
     public Task ApplyResponseHeadersAsync(int statusCode)
     {
-        _response.StatusCode = statusCode;
+        // Only clobber the default status (e.g. in cases this a status code pages retry)
+        if (_response.StatusCode == StatusCodes.Status200OK)
+        {
+            _response.StatusCode = statusCode;
+        }
         if (statusCode < 400)
         {
             // these headers are returned for 200, 206, and 304
