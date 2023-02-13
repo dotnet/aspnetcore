@@ -97,16 +97,12 @@ Microsoft.AspNetCore.Components.EventCallback.EventCallback(Microsoft.AspNetCore
 Microsoft.AspNetCore.Components.EventCallback.HasDelegate.get -> bool
 Microsoft.AspNetCore.Components.EventCallback.InvokeAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventCallback.InvokeAsync(object? arg) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
-override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 Microsoft.AspNetCore.Components.EventCallback<TValue>
 Microsoft.AspNetCore.Components.EventCallback<TValue>.EventCallback() -> void
 Microsoft.AspNetCore.Components.EventCallback<TValue>.EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? delegate) -> void
 Microsoft.AspNetCore.Components.EventCallback<TValue>.HasDelegate.get -> bool
 Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue? arg) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
-override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
 Microsoft.AspNetCore.Components.EventCallbackFactory
 Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, Microsoft.AspNetCore.Components.EventCallback callback) -> Microsoft.AspNetCore.Components.EventCallback
 Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object! receiver, System.Action! callback) -> Microsoft.AspNetCore.Components.EventCallback
