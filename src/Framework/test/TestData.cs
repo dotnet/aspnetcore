@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore;
 
@@ -153,6 +154,12 @@ public static class TestData
                 "System.Security.Cryptography.Xml",
                 "System.Threading.RateLimiting",
             };
+
+        // System.Diagnostics.EventLog.Messages is only present in the Windows build.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            ListedSharedFxAssemblies.Remove("System.Diagnostics.EventLog.Messages");
+        }
 
         ListedTargetingPackAssemblies = new List<string>
             {
