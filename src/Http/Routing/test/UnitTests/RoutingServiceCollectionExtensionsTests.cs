@@ -68,16 +68,10 @@ public class RoutingServiceCollectionExtensionsTests
 
         services.Configure<RouteOptions>(options =>
         {
-        });
-
-
-        services.Configure<RouteOptions>(options =>
-        {
-            Console.Write("Second!");
             options.SetParameterPolicy<DummyRegexRouteConstraint>("regex");
         });
 
-
+        // Act
         services.AddRouting();
         var provider = services.BuildServiceProvider();
 
