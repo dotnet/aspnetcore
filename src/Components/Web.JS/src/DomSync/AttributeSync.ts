@@ -33,7 +33,7 @@ export function synchronizeAttributes(destination: Element, endState: Element) {
     const endStateAttribName = endStateAttrib.name;
     const endStateAttribValue = endStateAttrib.value;
     const destinationAttribValue = destinationAttributesByName.get(endStateAttribName);
-    if (destinationAttribValue) {
+    if (destinationAttribValue !== undefined) {
       if (destinationAttribValue !== endStateAttribValue) {
         //console.log(`Changing value of attribute '${endStateAttribName}' from '${destinationAttribValue}' to '${endStateAttribValue}'`);
         destination.setAttribute(endStateAttribName, endStateAttribValue);
