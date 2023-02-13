@@ -26,6 +26,7 @@ public class WebHostTests : LoggedTest
     [ConditionalFact]
     [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
     [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/46418", Queues = "Debian.12.Arm64.Open;")]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
     public async Task PlatformSmoketest_HelloWorld_ClientSuccess()
