@@ -69,7 +69,7 @@ internal static class StaticRouteHandlerModelEmitter
         var requestHandlerSource = $$"""
                     {{handlerSignature}}
                     {
-                        {{endpoint.EmitParameterPreparation()}}
+{{endpoint.EmitParameterPreparation()}}
                         {{setContentType}}
                         {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
                         {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}

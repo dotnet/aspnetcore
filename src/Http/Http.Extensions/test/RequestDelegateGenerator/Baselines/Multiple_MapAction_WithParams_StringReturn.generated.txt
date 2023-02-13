@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var req_local = httpContext.Request;
-var res_local = httpContext.Response;
+                        var res_local = httpContext.Response;
 
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(req_local, res_local);

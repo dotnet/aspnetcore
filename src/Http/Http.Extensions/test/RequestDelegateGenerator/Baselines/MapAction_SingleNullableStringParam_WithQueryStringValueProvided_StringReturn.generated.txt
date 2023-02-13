@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<string> handler,
+            global::System.Func<string?, string> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (System.Func<string>)del;
+                    var handler = (System.Func<string?, string>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler());
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<string?>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -112,9 +112,18 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     Task RequestHandler(HttpContext httpContext)
                     {
+                        // Endpoint Parameter: p (Type = string?, IsOptional = True, Source = Query)
+                        var p_raw = httpContext.Request.Query["p"];
+                        if (StringValues.IsNullOrEmpty(p_raw) && false)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return Task.CompletedTask;
+                        }
+                        var p_local = p_raw.Count > 0 ? p_raw.ToString() : null;
+
 
                         httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler();
+                        var result = handler(p_local);
                         return httpContext.Response.WriteAsync(result);
                     }
                     async Task RequestHandlerFiltered(HttpContext httpContext)

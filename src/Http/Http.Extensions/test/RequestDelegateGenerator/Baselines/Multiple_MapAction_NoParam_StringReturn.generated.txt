@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     Task RequestHandler(HttpContext httpContext)
                     {
-                        
+
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler();
                         return httpContext.Response.WriteAsync(result);
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     Task RequestHandler(HttpContext httpContext)
                     {
-                        
+
                         httpContext.Response.ContentType ??= "text/plain";
                         var result = handler();
                         return httpContext.Response.WriteAsync(result);
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     async Task RequestHandler(HttpContext httpContext)
                     {
-                        
+
                         httpContext.Response.ContentType ??= "application/json";
                         var result = await handler();
                         await httpContext.Response.WriteAsync(result);
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     async Task RequestHandler(HttpContext httpContext)
                     {
-                        
+
                         httpContext.Response.ContentType ??= "application/json";
                         var result = await handler();
                         await httpContext.Response.WriteAsync(result);

@@ -55,6 +55,7 @@ app.MapGet("/hello", ([FromQuery]string p) => p);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -78,6 +79,7 @@ app.MapGet("/hello", ([FromQuery]string? p) => p ?? "Error!");
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -100,6 +102,7 @@ app.MapGet("/hello", ([FromQuery]string? p) => p ?? "Was null!");
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Was null!");
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -123,6 +126,7 @@ app.MapGet("/hello", ([FromQuery]string? p) => p == string.Empty ? "No value, bu
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "No value, but not null!");
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -143,6 +147,7 @@ app.MapGet("/hello", ([FromQuery]string p1, [FromQuery]string p2) => $"{p1} {p2}
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Theory]
@@ -201,6 +206,7 @@ app.MapGet("/hello", (HttpRequest req, HttpResponse res) => req is null || res i
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
