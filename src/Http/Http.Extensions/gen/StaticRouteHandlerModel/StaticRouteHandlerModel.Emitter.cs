@@ -123,7 +123,6 @@ internal static class StaticRouteHandlerModelEmitter
         return $$"""
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
-                        // var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext{{argumentList}}));
                         var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
