@@ -3,6 +3,10 @@
 
 using System.Security.Authentication;
 
+#if NET7_0_OR_GREATER
+using System.Net.Security;
+#endif
+
 namespace Microsoft.AspNetCore.Connections.Features;
 
 /// <summary>
@@ -14,6 +18,13 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="SslProtocols"/>.
     /// </summary>
     SslProtocols Protocol { get; }
+
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// Gets the <see cref="TlsCipherSuite"/>.
+    /// </summary>
+    TlsCipherSuite? NegotiatedCipherSuite { get => default; }
+#endif
 
     /// <summary>
     /// Gets the <see cref="CipherAlgorithmType"/>.
