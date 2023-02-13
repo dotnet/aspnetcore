@@ -36,7 +36,7 @@ internal class EndpointParameter
             Source = EndpointParameterSource.Unknown;
         }
 
-        if (parameter.Type is INamedTypeSymbol parameterType && parameterType.ContainingType?.SpecialType == SpecialType.System_Nullable_T)
+        if (parameter.Type is INamedTypeSymbol parameterType && parameterType.NullableAnnotation == NullableAnnotation.Annotated)
         {
             IsOptional = true;
         }
