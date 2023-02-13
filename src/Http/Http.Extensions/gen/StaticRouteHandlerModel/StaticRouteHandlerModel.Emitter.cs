@@ -67,14 +67,14 @@ internal static class StaticRouteHandlerModelEmitter
         var setContentType = endpoint.Response.IsVoid ? string.Empty : $@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";";
 
         var requestHandlerSource = $$"""
-                                    {{handlerSignature}}
-                                    {
-                                        {{endpoint.EmitParameterPreparation()}}
-                                        {{setContentType}}
-                                        {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
-                                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
-                                    }
-                                    """;
+                    {{handlerSignature}}
+                    {
+                        {{endpoint.EmitParameterPreparation()}}
+                        {{setContentType}}
+                        {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
+                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
+                    }
+""";
 
         return requestHandlerSource;
     }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -29,19 +30,13 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.Query;
             AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
+            IsOptional = parameter.Type is INamedTypeSymbol parameterType && parameterType.NullableAnnotation == NullableAnnotation.Annotated;
         }
         else
         {
             // TODO: Inferencing rules go here - but for now:
             Source = EndpointParameterSource.Unknown;
         }
-
-        if (parameter.Type is INamedTypeSymbol parameterType && parameterType.NullableAnnotation == NullableAnnotation.Annotated)
-        {
-            IsOptional = true;
-        }
-
-        // TODO: Need to handle arrays (wrapped and unwrapped in nullable)!
     }
 
     public ITypeSymbol Type { get; }

@@ -4,6 +4,7 @@
 using System.Security.Cryptography.Pkcs;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 using Microsoft.Diagnostics.Runtime.ICorDebug;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -54,6 +55,74 @@ app.MapGet("/hello", ([FromQuery]string p) => p);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
+    public async Task MapAction_SingleNullableStringParam_WithQueryStringValueProvided_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]string? p) => p ?? "Error!");
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=Hello%20world!");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
+    public async Task MapAction_SingleNullableStringParam_WithoutQueryStringValueProvided_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]string? p) => p ?? "Was null!");
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Was null!");
+    }
+
+    [Fact]
+    public async Task MapAction_SingleNullableStringParam_WithEmptyQueryStringValueProvided_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]string? p) => p == string.Empty ? "No value, but not null!" : "Was null!");
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "No value, but not null!");
     }
 
     [Fact]
