@@ -212,6 +212,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
   const environmentVariables = {};
   const config: MonoConfig = {
     assets,
+    globalizationMode: 'icu',
     environmentVariables: environmentVariables,
     debugLevel: hasDebuggingEnabled() ? 1 : 0,
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
@@ -309,8 +310,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
   totalResources = assets.length;
 
   if (!hasIcuData) {
-    // Use invariant culture if the app does not carry icu data.
-    environmentVariables['DOTNET_SYSTEM_GLOBALIZATION_INVARIANT'] = '1';
+    config.globalizationMode = 'invariant';
   }
 
   if (resourceLoader.bootConfig.modifiableAssemblies) {
