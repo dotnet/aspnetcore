@@ -324,7 +324,7 @@ public class SharedFxTests
         var packageFolder = SkipOnHelixAttribute.OnHelix() ?
             Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
             TestData.GetPackagesFolder();
-        var sharedFxPath = Directory.GetFiles(packageFolder, "Microsoft.AspNetCore.App.Runtime.*-x64." + TestData.GetSharedFxVersion() + ".nupkg").FirstOrDefault();
+        var sharedFxPath = Directory.GetFiles(packageFolder, "Microsoft.AspNetCore.App.Runtime.*-*." + TestData.GetSharedFxVersion() + ".nupkg").FirstOrDefault();
         Assert.NotNull(sharedFxPath);
 
         ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
