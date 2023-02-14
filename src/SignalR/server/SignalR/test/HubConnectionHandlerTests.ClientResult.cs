@@ -453,11 +453,17 @@ public partial class HubConnectionHandlerTests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var invocationId = await client.BeginUploadStreamAsync("1", nameof(MethodHub.GetClientResultWithStream), new[] { "id" }, Array.Empty<object>()).DefaultTimeout();
+                // Regression test: Use 1 as the stream ID as this is the first ID the server would use for invocation IDs it generates
+                // We want to make sure the client result completion doesn't accidentally complete the stream
+                var streamId = "1";
+                var invocationId = await client.BeginUploadStreamAsync("1", nameof(MethodHub.GetClientResultWithStream), new[] { streamId }, Array.Empty<object>()).DefaultTimeout();
 
                 // Hub asks client for a result, this is an invocation message with an ID
                 var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
                 Assert.NotNull(invocationMessage.InvocationId);
+                // This check isn't really needed except we want to make sure the regression test mentioned above is still testing the expected scenario
+                Assert.Equal("s1", invocationMessage.InvocationId);
+
                 var res = 4 + ((long)invocationMessage.Arguments[0]);
                 await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
 
