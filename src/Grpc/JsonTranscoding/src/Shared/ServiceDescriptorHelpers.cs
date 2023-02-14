@@ -74,7 +74,7 @@ internal static class ServiceDescriptorHelpers
             if (currentDescriptor != null)
             {
                 field = allowJsonName
-                    ? GetFieldByName(messageDescriptor, fieldName)
+                    ? GetFieldByName(currentDescriptor, fieldName)
                     : currentDescriptor.FindFieldByName(fieldName);
             }
 
