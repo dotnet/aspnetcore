@@ -26,6 +26,9 @@ internal static class EndpointEmitter
                 {
                     Source: EndpointParameterSource.JsonBody
                 } => parameter.EmitJsonBodyParameterPreparationString(),
+                {
+                    Source: EndpointParameterSource.Service
+                } => parameter.EmitServiceParameterPreparation(),
                 _ => throw new Exception("Unreachable!")
             };
 

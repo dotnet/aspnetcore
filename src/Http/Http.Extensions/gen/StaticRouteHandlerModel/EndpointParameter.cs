@@ -20,6 +20,7 @@ internal class EndpointParameter
         HandlerArgument = $"{parameter.Name}_local";
 
         var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
+        var fromServiceMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
 
         if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
         {
@@ -30,7 +31,18 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.Query;
             AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
-            IsOptional = parameter.Type is INamedTypeSymbol parameterType && parameterType.NullableAnnotation == NullableAnnotation.Annotated;
+            IsOptional = parameter.Type is INamedTypeSymbol
+            {
+                NullableAnnotation: NullableAnnotation.Annotated
+            };
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromServiceMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.Service;
+            IsOptional = parameter.Type is INamedTypeSymbol { NullableAnnotation: NullableAnnotation.Annotated } || parameter.HasExplicitDefaultValue;
+            AssigningCode = IsOptional ?
+                $"httpContext.RequestServices.GetService<{parameter.Type}>();" :
+                $"httpContext.RequestServices.GetRequiredService<{parameter.Type}>()";
         }
         else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var jsonBodyAssigningCode, out var isOptional))
         {
