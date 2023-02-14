@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -10,7 +11,11 @@ namespace Microsoft.Net.Http.Headers;
 
 internal static class HttpRuleParser
 {
-    private static readonly bool[] TokenChars = CreateTokenChars();
+    // token = 1*<any CHAR except CTLs or separators>
+    // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+    private static readonly IndexOfAnyValues<char> TokenChars =
+        IndexOfAnyValues.Create("!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+
     private const int MaxNestedCount = 5;
     private static readonly string[] DateFormats = new string[]
     {
@@ -45,51 +50,6 @@ internal static class HttpRuleParser
     // iso-8859-1, Western European (ISO)
     internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding("iso-8859-1");
 
-    private static bool[] CreateTokenChars()
-    {
-        // token = 1*<any CHAR except CTLs or separators>
-        // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
-
-        var tokenChars = new bool[128]; // everything is false
-
-        for (var i = 33; i < 127; i++) // skip Space (32) & DEL (127)
-        {
-            tokenChars[i] = true;
-        }
-
-        // remove separators: these are not valid token characters
-        tokenChars[(byte)'('] = false;
-        tokenChars[(byte)')'] = false;
-        tokenChars[(byte)'<'] = false;
-        tokenChars[(byte)'>'] = false;
-        tokenChars[(byte)'@'] = false;
-        tokenChars[(byte)','] = false;
-        tokenChars[(byte)';'] = false;
-        tokenChars[(byte)':'] = false;
-        tokenChars[(byte)'\\'] = false;
-        tokenChars[(byte)'"'] = false;
-        tokenChars[(byte)'/'] = false;
-        tokenChars[(byte)'['] = false;
-        tokenChars[(byte)']'] = false;
-        tokenChars[(byte)'?'] = false;
-        tokenChars[(byte)'='] = false;
-        tokenChars[(byte)'{'] = false;
-        tokenChars[(byte)'}'] = false;
-
-        return tokenChars;
-    }
-
-    internal static bool IsTokenChar(char character)
-    {
-        // Must be between 'space' (32) and 'DEL' (127)
-        if (character > 127)
-        {
-            return false;
-        }
-
-        return TokenChars[character];
-    }
-
     [Pure]
     internal static int GetTokenLength(StringSegment input, int startIndex)
     {
@@ -100,17 +60,9 @@ internal static class HttpRuleParser
             return 0;
         }
 
-        var current = startIndex;
-
-        while (current < input.Length)
-        {
-            if (!IsTokenChar(input[current]))
-            {
-                return current - startIndex;
-            }
-            current++;
-        }
-        return input.Length - startIndex;
+        var subspan = input.AsSpan(startIndex);
+        var firstNonTokenCharIdx = subspan.IndexOfAnyExcept(TokenChars);
+        return (firstNonTokenCharIdx == -1) ? subspan.Length : firstNonTokenCharIdx;
     }
 
     internal static int GetWhitespaceLength(StringSegment input, int startIndex)
