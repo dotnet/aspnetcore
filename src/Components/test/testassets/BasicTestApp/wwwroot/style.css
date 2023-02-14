@@ -39,3 +39,7 @@
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.loading-progress-text::after {
+    content: var(--blazor-load-percentage-text);
+}
