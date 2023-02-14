@@ -18,6 +18,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
     public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
     {
         ProjectFactory = projectFactory;
+        Microsoft.Playwright.Program.Main(new[] { "install" });
     }
 
     public ProjectFactoryFixture ProjectFactory { get; set; }
