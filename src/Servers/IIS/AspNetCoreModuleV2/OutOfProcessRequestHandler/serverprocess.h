@@ -9,7 +9,6 @@
 // Minimum port number that can be used.
 // This is lower than 'MIN_PORT_RANDOM' since we allow people to choose
 // low-numbered ports when they are not using random assignment.
-// a port lower than 10000 via the ASPNETCORE_PORT environment variable
 #define MIN_PORT                                    1025
 // Minimum number used for automatic random port assignment.
 // This value is somewhat arbitrary. Fixed-port services tend to
