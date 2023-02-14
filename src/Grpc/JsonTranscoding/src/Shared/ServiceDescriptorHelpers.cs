@@ -104,6 +104,7 @@ internal static class ServiceDescriptorHelpers
     {
         // Search fields by field name and JSON name.
         // JSON name takes precedence. If there are conflicts then the last field with a name wins.
+        // This logic matches how properties are used in JSON serialization's MessageTypeInfoResolver.
         var fields = messageDescriptor.Fields.InFieldNumberOrder();
 
         FieldDescriptor? fieldDescriptor = null;
