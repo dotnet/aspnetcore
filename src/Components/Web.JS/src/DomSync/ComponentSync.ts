@@ -1,12 +1,18 @@
 import { synchronizeDOMContent } from './DomSync';
 
 export function synchronizeComponentContent(componentId: number, html: string) {
-  const startMarker = findPassiveComponentStartMarker(componentId);
+  const startMarker = tryFindPassiveComponentStartMarker(componentId);
+  if (!startMarker) {
+    // While streaming rendering is in flight, the user might have navigated to a different page via progressive
+    // navigation. We'll still get the streaming update but it may no longer be applicable.
+    return;
+  }
+
   const endMarker = findPassiveComponentEndMarker(startMarker);
   synchronizeDOMContent({ parent: startMarker.parentNode!, subset: { startMarker, endMarker } }, html);
 }
 
-function findPassiveComponentStartMarker(componentId: number): Comment {
+function tryFindPassiveComponentStartMarker(componentId: number): Comment | null {
   const expectedText = `c${componentId}`;
   const iterator = document.createNodeIterator(document, NodeFilter.SHOW_COMMENT);
   let node: Node | null;
@@ -16,7 +22,7 @@ function findPassiveComponentStartMarker(componentId: number): Comment {
     }
   }
 
-  throw new Error(`Cannot find marker for passive component ${componentId} in the document`);
+  return null;
 }
 
 const passiveComponentStartMarkerPattern = /^c\d+$/;
