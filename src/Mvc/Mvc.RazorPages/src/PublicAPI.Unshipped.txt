@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder!

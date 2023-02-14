@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!

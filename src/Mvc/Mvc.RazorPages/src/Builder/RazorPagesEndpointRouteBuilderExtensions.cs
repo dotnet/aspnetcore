@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -28,7 +26,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
 
         EnsureRazorPagesServices(endpoints);
 
-        return GetOrCreateDataSource(endpoints).DefaultBuilder;
+        return PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints).DefaultBuilder;
     }
 
     /// <summary>
@@ -65,7 +63,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         EnsureRazorPagesServices(endpoints);
 
         // Called for side-effect to make sure that the data source is registered.
-        var pageDataSource = GetOrCreateDataSource(endpoints);
+        var pageDataSource = PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints);
         pageDataSource.CreateInertEndpoints = true;
         RegisterInCache(endpoints.ServiceProvider, pageDataSource);
 
@@ -123,7 +121,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         EnsureRazorPagesServices(endpoints);
 
         // Called for side-effect to make sure that the data source is registered.
-        var pageDataSource = GetOrCreateDataSource(endpoints);
+        var pageDataSource = PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints);
         pageDataSource.CreateInertEndpoints = true;
         RegisterInCache(endpoints.ServiceProvider, pageDataSource);
 
@@ -177,7 +175,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         EnsureRazorPagesServices(endpoints);
 
         // Called for side-effect to make sure that the data source is registered.
-        var pageDataSource = GetOrCreateDataSource(endpoints);
+        var pageDataSource = PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints);
         pageDataSource.CreateInertEndpoints = true;
         RegisterInCache(endpoints.ServiceProvider, pageDataSource);
 
@@ -237,7 +235,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         EnsureRazorPagesServices(endpoints);
 
         // Called for side-effect to make sure that the data source is registered.
-        var pageDataSource = GetOrCreateDataSource(endpoints);
+        var pageDataSource = PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints);
         pageDataSource.CreateInertEndpoints = true;
         RegisterInCache(endpoints.ServiceProvider, pageDataSource);
 
@@ -303,7 +301,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         EnsureRazorPagesServices(endpoints);
 
         // Called for side-effect to make sure that the data source is registered.
-        var pageDataSource = GetOrCreateDataSource(endpoints);
+        var pageDataSource = PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints);
         RegisterInCache(endpoints.ServiceProvider, pageDataSource);
 
         pageDataSource.AddDynamicPageEndpoint(endpoints, pattern, typeof(TTransformer), state);
@@ -337,7 +335,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         EnsureRazorPagesServices(endpoints);
 
         // Called for side-effect to make sure that the data source is registered.
-        var pageDataSource = GetOrCreateDataSource(endpoints);
+        var pageDataSource = PageActionEndpointDataSourceProvider.GetOrCreateDataSource(endpoints);
         RegisterInCache(endpoints.ServiceProvider, pageDataSource);
 
         pageDataSource.AddDynamicPageEndpoint(endpoints, pattern, typeof(TTransformer), state, order);
@@ -362,20 +360,6 @@ public static class RazorPagesEndpointRouteBuilderExtensions
                 "AddRazorPages",
                 "ConfigureServices(...)"));
         }
-    }
-
-    private static PageActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder endpoints)
-    {
-        var dataSource = endpoints.DataSources.OfType<PageActionEndpointDataSource>().FirstOrDefault();
-        if (dataSource == null)
-        {
-            var orderProviderCache = endpoints.ServiceProvider.GetRequiredService<OrderedEndpointsSequenceProviderCache>();
-            var factory = endpoints.ServiceProvider.GetRequiredService<PageActionEndpointDataSourceFactory>();
-            dataSource = factory.Create(orderProviderCache.GetOrCreateOrderedEndpointsSequenceProvider(endpoints));
-            endpoints.DataSources.Add(dataSource);
-        }
-
-        return dataSource;
     }
 
     private static void RegisterInCache(IServiceProvider serviceProvider, PageActionEndpointDataSource dataSource)

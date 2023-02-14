@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.HotReload;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -285,6 +286,31 @@ public static class MvcServiceCollectionExtensions
         {
             builder.AddRazorPages(configure);
         }
+
+        return new MvcBuilder(builder.Services, builder.PartManager);
+    }
+
+    /// <summary>
+    /// Adds services for razor components to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method configures the MVC services for the commonly used features for razor components. This
+    /// combines the effects of <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>,
+    /// <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/>,
+    /// and <see cref="MvcRazorPagesMvcCoreBuilderExtensions.AddRazorPages(IMvcCoreBuilder)"/>.
+    /// </para>
+    /// </remarks>
+    public static IMvcBuilder AddRazorComponents(this IServiceCollection services)
+    {
+        var builder = services
+            .AddMvcCore()
+            .AddAuthorization()
+            .AddRazorPages();
+
+        services.AddScoped<PassiveComponentRenderer>();
 
         return new MvcBuilder(builder.Services, builder.PartManager);
     }
