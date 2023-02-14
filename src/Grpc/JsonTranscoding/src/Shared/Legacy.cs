@@ -237,6 +237,11 @@ internal static class Legacy
         }
     }
 
+    public static string GetFieldMaskText(IList<string> paths)
+    {
+        return string.Join(",", paths.Select(ToJsonName));
+    }
+
     /// <summary>
     /// Appends a number of nanoseconds to a StringBuilder. Either 0 digits are added (in which
     /// case no "." is appended), or 3 6 or 9 digits. This is internal for use in Timestamp as well

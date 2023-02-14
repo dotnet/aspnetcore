@@ -168,4 +168,17 @@ public class SchemaGeneratorIntegrationTests
         Assert.Equal("number", schema.Properties["mapValue"].AdditionalProperties.Type);
         Assert.Equal("double", schema.Properties["mapValue"].AdditionalProperties.Format);
     }
+
+    [Fact]
+    public void GenerateSchema_FieldMask_ReturnSchema()
+    {
+        // Arrange & Act
+        var (schema, repository) = GenerateSchema(typeof(FieldMaskMessage));
+
+        // Assert
+        schema = repository.Schemas[schema.Reference.Id];
+        Assert.Equal("object", schema.Type);
+        Assert.Equal(1, schema.Properties.Count);
+        Assert.Equal("string", schema.Properties["fieldMaskValue"].Type);
+    }
 }
