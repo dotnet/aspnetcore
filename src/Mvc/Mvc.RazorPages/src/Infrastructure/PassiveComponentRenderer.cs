@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
 internal class PassiveComponentRenderer
 {
     private readonly ILoggerFactory _loggerFactory;

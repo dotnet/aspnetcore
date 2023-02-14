@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
 internal static class PageActionEndpointDataSourceProvider
 {
     public static PageActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder endpoints)
