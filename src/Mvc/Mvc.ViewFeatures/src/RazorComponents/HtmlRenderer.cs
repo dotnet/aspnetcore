@@ -66,6 +66,12 @@ internal sealed class HtmlRenderer : Renderer
         {
             return _streamingRenderBatches.Writer.WriteAsync(renderBatch).AsTask()
                 .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
+            // Note that we cannot pass the actual RenderBatch here because ChannelWriter<T>.WriteAsync
+            // and the actual write-to-HTTP-response process are asynchronous, and in the meantime, the
+            // underlying RenderBatch buffer may get reused by a subsequent render. But that's OK because
+            // we weren't going to use the diffs anyway. All we actually have to pass is the list of
+            // components being updated, and then PassiveComponentRenderer can (at an arbitrary later time)
+            // flush out the latest content from those components, whether or not it has updated again.
         }
 
         return CanceledRenderTask;
@@ -341,6 +347,13 @@ internal sealed class HtmlRenderer : Renderer
 
     private ViewBuffer GetRenderedHtmlContent(int componentId)
     {
+        // We're about to walk through buffers (RenderTreeBuilder instances) that can get mutated during rendering
+        // so it's essential that:
+        // [1] ... our access is exclusive, which we validate by calling Dispatcher.AssertAccess
+        // [2] ... this method's output is self-contained (i.e., doesn't point to anything in the mutable buffers)
+        // [3] ... this method is synchronous, because if we yield, then during that time the buffers could mutate
+        Dispatcher.AssertAccess();
+
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
         var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
 

@@ -75,7 +75,8 @@ internal class PassiveComponentRenderer
         viewBuffer.AppendHtml(result);
 
         using var writer = _writerFactory.CreateWriter(httpContext.Response.BodyWriter.AsStream(), Encoding.UTF8);
-        await viewBuffer.WriteToAsync(writer, _htmlEncoder);
+        await htmlRenderer.Dispatcher.InvokeAsync(
+            () => viewBuffer.WriteToAsync(writer, _htmlEncoder));
 
         try
         {
