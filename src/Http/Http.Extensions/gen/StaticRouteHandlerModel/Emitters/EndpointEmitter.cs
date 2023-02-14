@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -24,6 +23,9 @@ internal static class EndpointEmitter
                 {
                     Source: EndpointParameterSource.Query,
                 } => parameter.EmitQueryParameterPreparation(),
+                {
+                    Source: EndpointParameterSource.JsonBody
+                } => parameter.EmitJsonBodyParameterPreparationString(),
                 _ => throw new Exception("Unreachable!")
             };
 
