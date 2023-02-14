@@ -3,6 +3,7 @@
 
 syntax = "proto3";
 
+import "google/protobuf/field_mask.proto";
 import "google/api/annotations.proto";
 
 package greet;
@@ -23,11 +24,15 @@ service Greeter {
 
 message HelloRequest {
   string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  string full_name = 3;
+  google.protobuf.FieldMask mask = 4;
 }
 
 message HelloRequestFrom {
   string name = 1;
   string from = 2;
+  string full_name = 3;
 }
 
 message HelloReply {
