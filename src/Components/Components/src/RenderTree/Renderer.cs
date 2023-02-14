@@ -466,6 +466,24 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             : EventArgsTypeCache.GetEventArgsType(methodInfo);
     }
 
+    /// <summary>
+    /// Returns the number of ancestors above the specified component.
+    /// </summary>
+    /// <param name="componentId">The component ID.</param>
+    /// <returns>The number of components in the ancestor chain, not including the specified component itself.</returns>
+    protected int GetComponentDepth(int componentId)
+    {
+        var state = GetRequiredComponentState(componentId).ParentComponentState;
+        var depth = 0;
+        while (state is not null)
+        {
+            depth++;
+            state = state.ParentComponentState;
+        }
+
+        return depth;
+    }
+
     internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
     {
         if (frame.FrameTypeField != RenderTreeFrameType.Component)

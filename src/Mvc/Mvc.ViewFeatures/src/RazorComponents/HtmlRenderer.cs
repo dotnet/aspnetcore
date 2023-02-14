@@ -116,7 +116,7 @@ internal sealed class HtmlRenderer : Renderer
     private string RenderTreeToHtmlString(ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
     {
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
+        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider, null);
         RenderFrames(context, frames, position, maxElements);
 
         using var sw = new StringWriter();
@@ -177,6 +177,7 @@ internal sealed class HtmlRenderer : Renderer
         int position)
     {
         ref var frame = ref frames.Array[position];
+        context.ComponentRenderingTracker?.Add(frame.ComponentId);
 
         var interactiveMarker = (InteractiveComponentMarker?)null;
 
@@ -351,7 +352,7 @@ internal sealed class HtmlRenderer : Renderer
         return position + maxElements;
     }
 
-    internal ViewBuffer GetRenderedHtmlContent(int componentId)
+    internal ViewBuffer GetRenderedHtmlContent(int componentId, HashSet<int> componentRenderingTracker)
     {
         // We're about to walk through buffers (RenderTreeBuilder instances) that can get mutated during rendering
         // so it's essential that:
@@ -361,7 +362,7 @@ internal sealed class HtmlRenderer : Renderer
         Dispatcher.AssertAccess();
 
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
+        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider, componentRenderingTracker);
 
         var frames = GetCurrentRenderTreeFrames(componentId);
         var newPosition = RenderFrames(context, frames, 0, frames.Count);
@@ -370,15 +371,38 @@ internal sealed class HtmlRenderer : Renderer
         return viewBuffer;
     }
 
-    public Task VisitRenderedHtmlSubtrees(IEnumerable<int> componentIds, Func<int, ViewBuffer, Task> visitor)
+    public Task VisitRenderedHtmlSubtrees(IReadOnlyList<int> componentIds, Func<int, ViewBuffer, Task> visitor)
     {
         return Dispatcher.InvokeAsync(async () =>
         {
-            foreach (var componentId in componentIds)
+            // Each time we transmit the HTML for a component, we also transmit the HTML for its descendants.
+            // So, if we transmitted *everything* in 'componentIds' separately, there would be a lot of duplication.
+            // That is, the subtrees projected from each entry in 'componentIds' will overlap a lot.
+            //
+            // To avoid duplicated HTML transmission and unnecessary work on the client, we want to pick a subset
+            // of 'componentIds' such that, when we transmit that subset, it includes every member of 'componentIds'
+            // without any duplication.
+            //
+            // This is quite easy if we first sort the list into depth order. As long as we process parents before
+            // their descendants, we can keep a log of the descendants we rendered implicitly, and then skip over
+            // those if we see them later in the list.
+            var componentsInDepthOrder = new (int Depth, int ComponentId)[componentIds.Count];
+            for (var index = 0; index < componentsInDepthOrder.Length; index++)
             {
-                var viewBuffer = GetRenderedHtmlContent(componentId);
-                await visitor(componentId, viewBuffer);
-                Console.WriteLine(componentId);
+                var id = componentIds[index];
+                componentsInDepthOrder[index] = (Depth: GetComponentDepth(id), ComponentId: id);
+            }
+            Array.Sort(componentsInDepthOrder, (left, right) => left.Depth - right.Depth);
+
+            // Now we have them in depth order, process them and skip those already rendered
+            var componentRenderingTracker = new HashSet<int>();
+            foreach (var (_, componentId) in componentsInDepthOrder)
+            {
+                if (!componentRenderingTracker.Contains(componentId))
+                {
+                    var viewBuffer = GetRenderedHtmlContent(componentId, componentRenderingTracker);
+                    await visitor(componentId, viewBuffer);
+                }
             }
         });
     }
@@ -440,14 +464,17 @@ internal sealed class HtmlRenderer : Renderer
         private ServerComponentSerializer _serverComponentSerializer;
         private ServerComponentInvocationSequence _serverComponentSequence;
 
-        public HtmlRenderingContext(HtmlRenderer htmlRenderer, ViewBuffer viewBuffer, IServiceProvider serviceProvider)
+        public HtmlRenderingContext(HtmlRenderer htmlRenderer, ViewBuffer viewBuffer, IServiceProvider serviceProvider, HashSet<int> componentRenderingTracker)
         {
             HtmlContentBuilder = viewBuffer;
+            ComponentRenderingTracker = componentRenderingTracker;
             _htmlRenderer = htmlRenderer;
             _serviceProvider = serviceProvider;
         }
 
         public ViewBuffer HtmlContentBuilder { get; }
+
+        public HashSet<int> ComponentRenderingTracker { get; }
 
         public string ClosestSelectValueAsString { get; set; }
 
@@ -574,7 +601,7 @@ internal sealed class HtmlRenderer : Renderer
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            var actualHtmlContent = _renderer.GetRenderedHtmlContent(_componentId);
+            var actualHtmlContent = _renderer.GetRenderedHtmlContent(_componentId, null);
             actualHtmlContent.WriteTo(writer, encoder);
         }
     }
