@@ -9,6 +9,7 @@
 // Keep using 1025 to avoid breaking existing services that are choosing
 // a port lower than 10000 via the ASPNETCORE_PORT environment variable
 #define MIN_PORT                                    1025
+// Minimum number used for automatic random port assignment.
 // This value is somewhat arbitrary. Fixed-port services tend to
 // use ports near the minimum (1025) so this number is much higher
 // to reduce the chance of collisions.
