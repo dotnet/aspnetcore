@@ -295,7 +295,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       'globalization'
     );
     totalResources.push(timeZoneResource);
-    timeZoneResource.response.then(_ => setProgress());
   }
 
   let icuDataResource: LoadingResource | undefined;
@@ -309,7 +308,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       'globalization'
     );
     totalResources.push(icuDataResource);
-    icuDataResource.response.then(_ => setProgress());
   }
 
   totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
