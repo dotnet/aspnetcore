@@ -70,34 +70,23 @@ internal static class ServiceDescriptorHelpers
 
         foreach (var fieldName in path)
         {
-            var field = currentDescriptor?.FindFieldByName(fieldName);
+            FieldDescriptor? field = null;
+            if (currentDescriptor != null)
+            {
+                field = allowJsonName
+                    ? GetFieldByName(messageDescriptor, fieldName)
+                    : currentDescriptor.FindFieldByName(fieldName);
+            }
+
             if (field == null)
             {
-                if (allowJsonName && currentDescriptor != null)
-                {
-                    var fields = currentDescriptor.Fields.InFieldNumberOrder();
-
-                    // TODO: Optimize. This is super inefficent.
-                    var mapping = CreateJsonFieldMap(fields);
-                    if (mapping.TryGetValue(fieldName, out var value))
-                    {
-                        field = value;
-                    }
-                }
-
-                if (field == null)
-                {
-                    fieldDescriptors = null;
-                    return false;
-                }
+                fieldDescriptors = null;
+                return false;
             }
 
-            if (fieldDescriptors == null)
-            {
-                fieldDescriptors = new List<FieldDescriptor>();
-            }
-
+            fieldDescriptors ??= new List<FieldDescriptor>();
             fieldDescriptors.Add(field);
+
             if (field.FieldType == FieldType.Message)
             {
                 currentDescriptor = field.MessageType;
@@ -111,15 +100,29 @@ internal static class ServiceDescriptorHelpers
         return fieldDescriptors != null;
     }
 
-    private static Dictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
+    private static FieldDescriptor? GetFieldByName(MessageDescriptor messageDescriptor, string fieldName)
     {
-        var map = new Dictionary<string, FieldDescriptor>();
-        foreach (var field in fields)
+        // JSON name takes precedence. Last field wins.
+        var fields = messageDescriptor.Fields.InFieldNumberOrder();
+
+        FieldDescriptor? fieldDescriptor = null;
+        for (var i = fields.Count - 1; i >= 0; i--)
         {
-            map[field.Name] = field;
-            map[field.JsonName] = field;
+            // Exit early on match because we're checking JSON name first, in reverse order through fields.
+            var field = fields[i];
+            if (field.JsonName == fieldName)
+            {
+                fieldDescriptor = field;
+                break;
+            }
+            else if (field.Name == fieldName)
+            {
+                fieldDescriptor = field;
+                break;
+            }
         }
-        return map;
+
+        return fieldDescriptor;
     }
 
     private static object? ConvertValue(object? value, FieldDescriptor descriptor)
