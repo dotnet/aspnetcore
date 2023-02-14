@@ -25,6 +25,7 @@ using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.Extensions.Primitives;
 using Type = System.Type;
 
@@ -63,7 +64,7 @@ internal static class ServiceDescriptorHelpers
         throw new InvalidOperationException($"Get not find Descriptor property on {serviceReflectionType.Name}.");
     }
 
-    public static bool TryResolveDescriptors(MessageDescriptor messageDescriptor, IList<string> path, [NotNullWhen(true)]out List<FieldDescriptor>? fieldDescriptors)
+    public static bool TryResolveDescriptors(MessageDescriptor messageDescriptor, IList<string> path, bool allowJsonName, [NotNullWhen(true)]out List<FieldDescriptor>? fieldDescriptors)
     {
         fieldDescriptors = null;
         MessageDescriptor? currentDescriptor = messageDescriptor;
@@ -73,8 +74,23 @@ internal static class ServiceDescriptorHelpers
             var field = currentDescriptor?.FindFieldByName(fieldName);
             if (field == null)
             {
-                fieldDescriptors = null;
-                return false;
+                if (allowJsonName && currentDescriptor != null)
+                {
+                    var fields = currentDescriptor.Fields.InFieldNumberOrder();
+
+                    // TODO: Optimize. This is super inefficent.
+                    var mapping = CreateJsonFieldMap(fields);
+                    if (mapping.TryGetValue(fieldName, out var value))
+                    {
+                        field = value;
+                    }
+                }
+
+                if (field == null)
+                {
+                    fieldDescriptors = null;
+                    return false;
+                }
             }
 
             if (fieldDescriptors == null)
@@ -94,6 +110,17 @@ internal static class ServiceDescriptorHelpers
         }
 
         return fieldDescriptors != null;
+    }
+
+    private static Dictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
+    {
+        var map = new Dictionary<string, FieldDescriptor>();
+        foreach (var field in fields)
+        {
+            map[field.Name] = field;
+            map[field.JsonName] = field;
+        }
+        return map;
     }
 
     private static object? ConvertValue(object? value, FieldDescriptor descriptor)
@@ -298,7 +325,7 @@ internal static class ServiceDescriptorHelpers
         foreach (var variable in variables)
         {
             var path = variable.FieldPath;
-            if (!TryResolveDescriptors(messageDescriptor, path, out var fieldDescriptors))
+            if (!TryResolveDescriptors(messageDescriptor, path, allowJsonName: false, out var fieldDescriptors))
             {
                 throw new InvalidOperationException($"Couldn't find matching field for route parameter '{string.Join(".", path)}' on {messageDescriptor.Name}.");
             }
