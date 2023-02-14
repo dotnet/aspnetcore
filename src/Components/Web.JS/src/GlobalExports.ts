@@ -31,6 +31,7 @@ interface IBlazor {
 
   _internal: {
     mergePassiveContentIntoDOM?: (html: string) => void,
+    mergePassiveComponentIntoDOM?: (componentId: number, html: string) => void,
     navigationManager: typeof navigationManagerInternalFunctions | any,
     domWrapper: typeof domFunctions,
     Virtualize: typeof Virtualize,
