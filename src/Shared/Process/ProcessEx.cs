@@ -179,7 +179,7 @@ internal sealed class ProcessEx : IDisposable
                 _output.WriteLine("Process exited.");
             }
         }
-
+        _process.WaitForExit();
         _stdoutLines.CompleteAdding();
         _stdoutLines = null;
         _exited.TrySetResult(_process.ExitCode);
