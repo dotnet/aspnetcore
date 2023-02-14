@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispatch(System.Action<System.IServiceProvider!>! action) -> void

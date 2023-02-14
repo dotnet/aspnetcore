@@ -113,6 +113,23 @@ public abstract class WebViewManager : IAsyncDisposable
     }
 
     /// <summary>
+    /// Calls the specified <paramref name="action"/> and passes in the scoped services available to Blazor components.
+    /// </summary>
+    /// <param name="action">The action to invoke.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="action"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if this method is called before Blazor has started in the web view.</exception>
+    public void Dispatch(Action<IServiceProvider> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        if (_currentPageContext is null)
+        {
+            throw new InvalidOperationException($"{nameof(Dispatch)} can't be called until after Blazor has started in the web view.");
+        }
+
+        action(_currentPageContext.ServiceProvider);
+    }
+
+    /// <summary>
     /// Removes a previously-attached root component from the current page.
     /// </summary>
     /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
