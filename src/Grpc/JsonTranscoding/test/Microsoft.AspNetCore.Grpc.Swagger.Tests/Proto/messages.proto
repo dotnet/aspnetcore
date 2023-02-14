@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
 
 package messages;
 
@@ -101,4 +102,8 @@ message OneOfMessage {
 
 message MapMessage {
   map<string, double> map_value = 1;
+}
+
+message FieldMaskMessage {
+  google.protobuf.FieldMask field_mask_value = 1;
 }

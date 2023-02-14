@@ -138,4 +138,26 @@ public class ParametersTests
         Assert.Equal(ParameterLocation.Query, operation.Parameters[4].In);
         Assert.Equal("parameterTwo", operation.Parameters[4].Name);
     }
+
+    [Fact]
+    public void KnownTypes_AllQueryFields()
+    {
+        // Arrange & Act
+        var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
+
+        // Assert
+        var path = swagger.Paths["/v1/parameters9"];
+        Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
+        Assert.Equal(3, operation.Parameters.Count);
+        Assert.Equal(ParameterLocation.Query, operation.Parameters[0].In);
+        Assert.Equal("fieldMaskValue", operation.Parameters[0].Name);
+        Assert.Equal("string", operation.Parameters[0].Schema.Type);
+        Assert.Equal(ParameterLocation.Query, operation.Parameters[1].In);
+        Assert.Equal("stringValue", operation.Parameters[1].Name);
+        Assert.Equal("string", operation.Parameters[1].Schema.Type);
+        Assert.Equal(ParameterLocation.Query, operation.Parameters[2].In);
+        Assert.Equal("int32Value", operation.Parameters[2].Name);
+        Assert.Equal("integer", operation.Parameters[2].Schema.Type);
+        Assert.Equal("int32", operation.Parameters[2].Schema.Format);
+    }
 }

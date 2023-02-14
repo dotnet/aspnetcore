@@ -25,6 +25,7 @@ using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.Extensions.Primitives;
 using Type = System.Type;
 
@@ -148,14 +149,39 @@ internal static class ServiceDescriptorHelpers
                     throw new InvalidOperationException("String required to convert to enum.");
                 }
             case FieldType.Message:
-                if (IsWrapperType(descriptor.MessageType))
+                if (IsWellKnownType(descriptor.MessageType))
                 {
-                    if (value == null)
+                    if (IsWrapperType(descriptor.MessageType))
                     {
-                        return null;
-                    }
+                        if (value == null)
+                        {
+                            return null;
+                        }
 
-                    return ConvertValue(value, descriptor.MessageType.FindFieldByName("value"));
+                        return ConvertValue(value, descriptor.MessageType.FindFieldByName("value"));
+                    }
+                    else if (descriptor.MessageType.FullName == FieldMask.Descriptor.FullName)
+                    {
+                        return FieldMask.FromString((string)value!);
+                    }
+                    else if (descriptor.MessageType.FullName == Duration.Descriptor.FullName)
+                    {
+                        var (seconds, nanos) = Legacy.ParseDuration((string)value!);
+
+                        var duration = new Duration();
+                        duration.Seconds = seconds;
+                        duration.Nanos = nanos;
+                        return duration;
+                    }
+                    else if (descriptor.MessageType.FullName == Timestamp.Descriptor.FullName)
+                    {
+                        var (seconds, nanos) = Legacy.ParseTimestamp((string)value!);
+
+                        var timestamp = new Timestamp();
+                        timestamp.Seconds = seconds;
+                        timestamp.Nanos = nanos;
+                        return timestamp;
+                    }
                 }
                 break;
         }
@@ -247,7 +273,7 @@ internal static class ServiceDescriptorHelpers
         }
     }
 
-    public static bool TryGetHttpRule(MethodDescriptor methodDescriptor, [NotNullWhen(true)]out HttpRule? httpRule)
+    public static bool TryGetHttpRule(MethodDescriptor methodDescriptor, [NotNullWhen(true)] out HttpRule? httpRule)
     {
         var options = methodDescriptor.GetOptions();
         httpRule = options?.GetExtension(AnnotationsExtensions.Http);
@@ -255,7 +281,7 @@ internal static class ServiceDescriptorHelpers
         return httpRule != null;
     }
 
-    public static bool TryResolvePattern(HttpRule http, [NotNullWhen(true)]out string? pattern, [NotNullWhen(true)]out string? verb)
+    public static bool TryResolvePattern(HttpRule http, [NotNullWhen(true)] out string? pattern, [NotNullWhen(true)] out string? verb)
     {
         switch (http.PatternCase)
         {
@@ -424,14 +450,21 @@ internal static class ServiceDescriptorHelpers
                     case FieldType.SInt32:
                     case FieldType.SInt64:
                     case FieldType.Enum:
-                        var joinedPath = string.Join(".", path.Select(d => d.JsonName));
-                        queryParameters[joinedPath] = fieldDescriptor;
+                        {
+                            var joinedPath = string.Join(".", path.Select(d => d.JsonName));
+                            queryParameters[joinedPath] = fieldDescriptor;
+                        }
                         break;
                     case FieldType.Group:
                     case FieldType.Message:
                     default:
                         // Complex repeated fields aren't valid query parameters.
-                        if (!fieldDescriptor.IsRepeated)
+                        if (IsCustomType(fieldDescriptor.MessageType))
+                        {
+                            var joinedPath = string.Join(".", path.Select(d => d.JsonName));
+                            queryParameters[joinedPath] = fieldDescriptor;
+                        }
+                        else if (!fieldDescriptor.IsRepeated)
                         {
                             RecursiveVisitMessages(queryParameters, existingParameters, fieldDescriptor.MessageType, path);
                         }
@@ -442,6 +475,23 @@ internal static class ServiceDescriptorHelpers
                 path.RemoveAt(path.Count - 1);
             }
         }
+    }
+
+    private static bool IsCustomType(MessageDescriptor messageDescriptor)
+    {
+        // The messages flags here should be kept in sync with GrpcDataContractResolver.TryCustomizeMessage.
+        if (IsWrapperType(messageDescriptor) ||
+            messageDescriptor.FullName == Timestamp.Descriptor.FullName ||
+            messageDescriptor.FullName == Duration.Descriptor.FullName ||
+            messageDescriptor.FullName == FieldMask.Descriptor.FullName ||
+            messageDescriptor.FullName == Struct.Descriptor.FullName ||
+            messageDescriptor.FullName == ListValue.Descriptor.FullName ||
+            messageDescriptor.FullName == Value.Descriptor.FullName ||
+            messageDescriptor.FullName == Any.Descriptor.FullName)
+        {
+            return true;
+        }
+        return false;
     }
 
     public sealed record BodyDescriptorInfo(
