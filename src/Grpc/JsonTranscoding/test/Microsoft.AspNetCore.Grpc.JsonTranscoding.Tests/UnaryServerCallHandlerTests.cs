@@ -361,6 +361,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.NotNull(request);
         Assert.Equal("TestName!", request!.FieldName);
+        Assert.Equal("", request!.HiddenFieldName);
     }
 
     [Fact]
