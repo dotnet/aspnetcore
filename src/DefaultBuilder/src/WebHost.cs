@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -228,10 +227,7 @@ public static class WebHost
 
         builder.ConfigureServices(services =>
         {
-            services.Configure<RouteOptions>(routeOptions =>
-            {
-                routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
-            });
+            services.AddRouting();
         });
 
         builder

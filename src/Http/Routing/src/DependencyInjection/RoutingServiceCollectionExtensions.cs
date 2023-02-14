@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -28,18 +27,9 @@ public static class RoutingServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddRouting(this IServiceCollection services)
     {
-        return services.AddRoutingCore().Configure<RouteOptions>(options =>
-        {
-            var existingRegexConstraintType = options.TrimmerSafeConstraintMap["regex"];
-
-            // Don't override regex constraint if it has already been overridden
-            // this behavior here is just to add it back in if someone calls AddRouting(...)
-            // after setting up routing with AddRoutingCore(...).
-            if (existingRegexConstraintType == typeof(RegexErrorStubRouteConstraint))
-            {
-                options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
-            }
-        });
+        services.AddRoutingCore();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RouteOptions>, RegexInlineRouteConstraintSetup>());
+        return services;
     }
 
     /// <summary>
