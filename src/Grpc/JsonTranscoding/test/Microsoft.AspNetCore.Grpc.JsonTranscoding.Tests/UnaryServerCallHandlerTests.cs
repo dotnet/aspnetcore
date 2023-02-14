@@ -361,7 +361,6 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.NotNull(request);
         Assert.Equal("TestName!", request!.FieldName);
-        Assert.Equal("", request!.HiddenFieldName);
     }
 
     [Fact]
@@ -388,6 +387,33 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.NotNull(request);
         Assert.Equal(1.1f, request!.FloatValue);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_MatchingQueryStringValues_JsonNameHidesFieldName_SetOnRequestMessage()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(invoker);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["field_name"] = "TestName!"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("", request!.FieldName);
+        Assert.Equal("TestName!", request!.HidingFieldName);
     }
 
     [Fact]
