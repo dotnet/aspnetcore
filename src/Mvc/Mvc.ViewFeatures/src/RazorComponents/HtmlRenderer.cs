@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Channels;
@@ -28,7 +27,7 @@ internal sealed class HtmlRenderer : Renderer
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly IViewBufferScope _viewBufferScope;
     private readonly IServiceProvider _serviceProvider;
-    private Channel<int[]> _streamingRenderBatches; // TODO: Make a better type for this
+    private Channel<StreamingComponentUpdate> _streamingRenderBatches;
 
     public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope)
         : base(serviceProvider, loggerFactory)
@@ -46,7 +45,7 @@ internal sealed class HtmlRenderer : Renderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public ChannelReader<int[]> StreamingRenderBatches { get; private set; }
+    public ChannelReader<StreamingComponentUpdate> StreamingRenderBatches { get; private set; }
 
     /// <inheritdoc />
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -73,14 +72,10 @@ internal sealed class HtmlRenderer : Renderer
             // components being updated, and then PassiveComponentRenderer can (at an arbitrary later time)
             // flush out the latest content from those components, whether or not it has updated again.
 
-            // TODO: Make a better way to communicate this info
-            var updatedComponentIds = renderBatch.UpdatedComponents.Array
-                .Take(renderBatch.UpdatedComponents.Count)
-                .Select(x => x.ComponentId)
-                .ToArray();
-            if (updatedComponentIds.Length > 0)
+            var update = StreamingComponentUpdate.SnapshotFromRenderBatch(renderBatch);
+            if (update.UpdatedComponentIds.Count > 0)
             {
-                return _streamingRenderBatches.Writer.WriteAsync(updatedComponentIds).AsTask()
+                return _streamingRenderBatches.Writer.WriteAsync(update).AsTask()
                     .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
             }
         }
@@ -99,7 +94,7 @@ internal sealed class HtmlRenderer : Renderer
         // For any subsequent render batches, we'll advertise them through a channel so that
         // streaming rendering can observe them
         var streamingQuiescenceTask = WaitForStreamingQuiescence();
-        _streamingRenderBatches = Channel.CreateUnbounded<int[]>();
+        _streamingRenderBatches = Channel.CreateUnbounded<StreamingComponentUpdate>();
         StreamingRenderBatches = _streamingRenderBatches.Reader;
         _ = streamingQuiescenceTask.ContinueWith(task =>
         {
@@ -356,7 +351,7 @@ internal sealed class HtmlRenderer : Renderer
         return position + maxElements;
     }
 
-    public ViewBuffer GetRenderedHtmlContent(int componentId)
+    internal ViewBuffer GetRenderedHtmlContent(int componentId)
     {
         // We're about to walk through buffers (RenderTreeBuilder instances) that can get mutated during rendering
         // so it's essential that:
@@ -373,6 +368,19 @@ internal sealed class HtmlRenderer : Renderer
         Debug.Assert(newPosition == frames.Count);
 
         return viewBuffer;
+    }
+
+    public Task VisitRenderedHtmlSubtrees(IEnumerable<int> componentIds, Func<int, ViewBuffer, Task> visitor)
+    {
+        return Dispatcher.InvokeAsync(async () =>
+        {
+            foreach (var componentId in componentIds)
+            {
+                var viewBuffer = GetRenderedHtmlContent(componentId);
+                await visitor(componentId, viewBuffer);
+                Console.WriteLine(componentId);
+            }
+        });
     }
 
     private readonly struct InteractiveComponentMarker

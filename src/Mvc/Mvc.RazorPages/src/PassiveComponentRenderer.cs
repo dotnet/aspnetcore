@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
 using System.Globalization;
+using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -82,9 +83,9 @@ internal class PassiveComponentRenderer
         {
             if (htmlRenderer.StreamingRenderBatches is not null)
             {
-                await foreach (var updatedComponentIds in htmlRenderer.StreamingRenderBatches.ReadAllAsync(httpContext.RequestAborted))
+                await foreach (var update in htmlRenderer.StreamingRenderBatches.ReadAllAsync(httpContext.RequestAborted))
                 {
-                    await WriteIncrementalBatchAsync(httpContext, htmlRenderer, updatedComponentIds);
+                    await WriteIncrementalBatchAsync(httpContext, htmlRenderer, update);
                 }
             }
         }
@@ -160,33 +161,45 @@ internal class PassiveComponentRenderer
         return result;
     }
 
-    private async Task WriteIncrementalBatchAsync(HttpContext httpContext, HtmlRenderer renderer, int[] updatedComponentIds)
+    private Task WriteIncrementalBatchAsync(HttpContext httpContext, HtmlRenderer renderer, StreamingComponentUpdate update)
     {
-        // TODO: Loop over the minimal subtree roots
-        if (updatedComponentIds.Length == 0)
+        return renderer.VisitRenderedHtmlSubtrees(update.UpdatedComponentIds, async (componentId, viewBuffer) =>
         {
-            return;
+            // Convert to a JSON string. This demo implementation is very unrealistic. A real implementation
+            // would not do anything like this.
+            using var memoryStream = new MemoryStream();
+            using var streamWriter = new StreamWriter(memoryStream);
+            await viewBuffer.WriteToAsync(streamWriter, _htmlEncoder);
+            await streamWriter.FlushAsync();
+            memoryStream.Position = 0;
+            using var streamReader = new StreamReader(memoryStream);
+            var htmlString = streamReader.ReadToEnd();
+            var htmlStringJson = JsonSerializer.Serialize(htmlString);
+
+            using var writer = _writerFactory.CreateWriter(httpContext.Response.BodyWriter.AsStream(), Encoding.UTF8);
+            await writer.WriteAsync("\n<script>Blazor._internal.mergePassiveComponentIntoDOM(");
+            await writer.WriteAsync(componentId.ToString(CultureInfo.InvariantCulture));
+            await writer.WriteAsync(",");
+            await writer.FlushAsync();
+
+            // I haven't tracked down why, but simply calling writer.WriteAsync(htmlStringJson) causes the response
+            // to hang forever if htmlStringJson is bigger than some threshold. As a workaround, this does chunking.
+            await WriteInChunks(httpContext.Response.BodyWriter, htmlStringJson);
+
+            await writer.WriteAsync(");</script>");
+        });
+    }
+
+    private static async Task WriteInChunks(PipeWriter response, string value)
+    {
+        var buf = new byte[1024];
+        var pos = 0;
+        var encoder = Encoding.UTF8.GetEncoder();
+        while (pos < value.Length)
+        {
+            encoder.Convert(value.AsSpan(pos), buf, true, out var charsUsed, out var bytesUsed, out _);
+            pos += charsUsed;
+            await response.WriteAsync(buf.AsMemory(0, bytesUsed));
         }
-
-        var componentId = updatedComponentIds[0];
-        var viewBuffer = await renderer.Dispatcher.InvokeAsync(() => renderer.GetRenderedHtmlContent(componentId));
-
-        // Convert to a JSON string. This demo implementation is very unrealistic. A real implementation
-        // would not do anything like this.
-        using var memoryStream = new MemoryStream();
-        using var streamWriter = new StreamWriter(memoryStream);
-        await viewBuffer.WriteToAsync(streamWriter, _htmlEncoder);
-        await streamWriter.FlushAsync();
-        memoryStream.Position = 0;
-        using var streamReader = new StreamReader(memoryStream);
-        var htmlString = streamReader.ReadToEnd();
-        var htmlStringJson = JsonSerializer.Serialize(htmlString);
-        
-        using var writer = _writerFactory.CreateWriter(httpContext.Response.BodyWriter.AsStream(), Encoding.UTF8);
-        await writer.WriteAsync("\n<script>Blazor._internal.mergePassiveComponentIntoDOM(");
-        await writer.WriteAsync(componentId.ToString(CultureInfo.InvariantCulture));
-        await writer.WriteAsync(",");
-        await writer.WriteAsync(htmlStringJson);
-        await writer.WriteAsync(");</script>");
     }
 }
