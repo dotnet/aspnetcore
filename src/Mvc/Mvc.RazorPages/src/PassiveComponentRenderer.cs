@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -17,6 +16,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -82,11 +82,9 @@ internal class PassiveComponentRenderer
         {
             if (htmlRenderer.StreamingRenderBatches is not null)
             {
-                await foreach (var batch in htmlRenderer.StreamingRenderBatches.ReadAllAsync(httpContext.RequestAborted))
+                await foreach (var updatedComponentIds in htmlRenderer.StreamingRenderBatches.ReadAllAsync(httpContext.RequestAborted))
                 {
-                    // TODO: Instead of passing 'result', we should only pass 'batch', and WriteDiffAsync should
-                    // render that batch to the output instead of the whole page
-                    await WriteDiffAsync(httpContext, result);
+                    await WriteIncrementalBatchAsync(httpContext, htmlRenderer, updatedComponentIds);
                 }
             }
         }
@@ -162,13 +160,16 @@ internal class PassiveComponentRenderer
         return result;
     }
 
-    private async Task WriteDiffAsync(HttpContext httpContext, IHtmlContent result)
+    private async Task WriteIncrementalBatchAsync(HttpContext httpContext, HtmlRenderer renderer, int[] updatedComponentIds)
     {
-        // TODO: Instead of re-rendering the entire page as HTML, just emit the edits in this batch
-        // and have client-side JS apply it to the existing DOM.
+        // TODO: Loop over the minimal subtree roots
+        if (updatedComponentIds.Length == 0)
+        {
+            return;
+        }
 
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(RazorComponentsEndpointRouteBuilderExtensions), ViewBuffer.ViewPageSize);
-        viewBuffer.AppendHtml(result);
+        var componentId = updatedComponentIds[0];
+        var viewBuffer = await renderer.Dispatcher.InvokeAsync(() => renderer.GetRenderedHtmlContent(componentId));
 
         // Convert to a JSON string. This demo implementation is very unrealistic. A real implementation
         // would not do anything like this.
@@ -182,7 +183,9 @@ internal class PassiveComponentRenderer
         var htmlStringJson = JsonSerializer.Serialize(htmlString);
         
         using var writer = _writerFactory.CreateWriter(httpContext.Response.BodyWriter.AsStream(), Encoding.UTF8);
-        await writer.WriteAsync("\n<script>Blazor._internal.mergePassiveContentIntoDOM(");
+        await writer.WriteAsync("\n<script>Blazor._internal.mergePassiveComponentIntoDOM(");
+        await writer.WriteAsync(componentId.ToString(CultureInfo.InvariantCulture));
+        await writer.WriteAsync(",");
         await writer.WriteAsync(htmlStringJson);
         await writer.WriteAsync(");</script>");
     }

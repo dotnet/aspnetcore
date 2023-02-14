@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Channels;
@@ -26,7 +28,7 @@ internal sealed class HtmlRenderer : Renderer
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly IViewBufferScope _viewBufferScope;
     private readonly IServiceProvider _serviceProvider;
-    private Channel<RenderBatch> _streamingRenderBatches;
+    private Channel<int[]> _streamingRenderBatches; // TODO: Make a better type for this
 
     public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope)
         : base(serviceProvider, loggerFactory)
@@ -44,7 +46,7 @@ internal sealed class HtmlRenderer : Renderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public ChannelReader<RenderBatch> StreamingRenderBatches { get; private set; }
+    public ChannelReader<int[]> StreamingRenderBatches { get; private set; }
 
     /// <inheritdoc />
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -64,14 +66,23 @@ internal sealed class HtmlRenderer : Renderer
 
         if (_streamingRenderBatches is not null)
         {
-            return _streamingRenderBatches.Writer.WriteAsync(renderBatch).AsTask()
-                .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
             // Note that we cannot pass the actual RenderBatch here because ChannelWriter<T>.WriteAsync
             // and the actual write-to-HTTP-response process are asynchronous, and in the meantime, the
             // underlying RenderBatch buffer may get reused by a subsequent render. But that's OK because
             // we weren't going to use the diffs anyway. All we actually have to pass is the list of
             // components being updated, and then PassiveComponentRenderer can (at an arbitrary later time)
             // flush out the latest content from those components, whether or not it has updated again.
+
+            // TODO: Make a better way to communicate this info
+            var updatedComponentIds = renderBatch.UpdatedComponents.Array
+                .Take(renderBatch.UpdatedComponents.Count)
+                .Select(x => x.ComponentId)
+                .ToArray();
+            if (updatedComponentIds.Length > 0)
+            {
+                return _streamingRenderBatches.Writer.WriteAsync(updatedComponentIds).AsTask()
+                    .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
+            }
         }
 
         return CanceledRenderTask;
@@ -88,7 +99,7 @@ internal sealed class HtmlRenderer : Renderer
         // For any subsequent render batches, we'll advertise them through a channel so that
         // streaming rendering can observe them
         var streamingQuiescenceTask = WaitForStreamingQuiescence();
-        _streamingRenderBatches = Channel.CreateUnbounded<RenderBatch>();
+        _streamingRenderBatches = Channel.CreateUnbounded<int[]>();
         StreamingRenderBatches = _streamingRenderBatches.Reader;
         _ = streamingQuiescenceTask.ContinueWith(task =>
         {
@@ -189,7 +200,7 @@ internal sealed class HtmlRenderer : Renderer
             //       within this flow, and only output the markers when we have. Then if the client can't find the marker
             //       for some content it is given, it assumes it to replace the whole document.
             context.HtmlContentBuilder.AppendHtml("<!--c");
-            context.HtmlContentBuilder.AppendHtml(frame.ComponentId.ToString()); // TODO: Avoid this allocation
+            context.HtmlContentBuilder.AppendHtml(frame.ComponentId.ToString(CultureInfo.InvariantCulture)); // TODO: Avoid this allocation
             context.HtmlContentBuilder.AppendHtml("-->");
         }
 
@@ -345,7 +356,7 @@ internal sealed class HtmlRenderer : Renderer
         return position + maxElements;
     }
 
-    private ViewBuffer GetRenderedHtmlContent(int componentId)
+    public ViewBuffer GetRenderedHtmlContent(int componentId)
     {
         // We're about to walk through buffers (RenderTreeBuilder instances) that can get mutated during rendering
         // so it's essential that:
