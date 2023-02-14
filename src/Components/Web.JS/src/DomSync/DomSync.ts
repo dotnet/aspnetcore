@@ -1,3 +1,4 @@
+import { emptyLogicalElement, isKnownLogicalElement, LogicalElement } from '../Rendering/LogicalElements';
 import { synchronizeAttributes } from './AttributeSync';
 import { Operation, getEditScript, ComparisonResult } from './EditDistance';
 import { ItemList, SiblingSubsetNodeList } from './SiblingSubsetNodeList';
@@ -15,7 +16,7 @@ interface SiblingSubset {
   endMarker: Comment;
 }
 
-export function synchronizeDOMContent(destinationWithOldContent: NodeRange, newContent: string | ParentNode) {  
+export function synchronizeDOMContent(destinationWithOldContent: NodeRange, newContent: string | ParentNode) {
   const treatAsWholeDocument = destinationWithOldContent.parent instanceof Document;
   const newContentFragment = parseContent(newContent, treatAsWholeDocument);
   synchronizeSubtree(destinationWithOldContent, newContentFragment);
@@ -41,6 +42,18 @@ function parseContent(content: string | Node, treatAsWholeDocument: boolean): No
 }
 
 function synchronizeSubtree(destination: NodeRange, desiredEndState: Node) {
+  // HACK FOR PROTOTYPE. If we're removing any interactive content (e.g., by replacing it with passive content), we should
+  // find all the orphaned interactive components and clean up their state - notifying any WebAssembly runtime or circuit that
+  // those root components need to be disposed, possibly shutting down the circuit, and deleting the corresponding DOM nodes
+  // including removing them as logical children from any logical parents.
+  // As a simpler version of that for this prototype, we'll just assume that if we're putting passive content into any
+  // element then we just need to mark it as not a logical component. There are many cases that doesn't handle. But if we
+  // do nothing about it, we'll get errors because orphaned logical children will still be tracked by this parent and then
+  // there will be errors if the content later changes back to interactive and we try to process the logical elements.
+  if (isKnownLogicalElement(destination.parent)) {
+    emptyLogicalElement(destination.parent as any as LogicalElement);
+  }
+
   const existingNodes = nodeRangeToItemList(destination);
   const edits = getEditScript(existingNodes, desiredEndState.childNodes, compareNodes);
   if (!edits) {
