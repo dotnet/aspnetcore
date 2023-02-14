@@ -102,13 +102,15 @@ internal static class ServiceDescriptorHelpers
 
     private static FieldDescriptor? GetFieldByName(MessageDescriptor messageDescriptor, string fieldName)
     {
-        // JSON name takes precedence. Last field wins.
+        // Search fields by field name and JSON name.
+        // JSON name takes precedence. If there are conflicts then the last field with a name wins.
         var fields = messageDescriptor.Fields.InFieldNumberOrder();
 
         FieldDescriptor? fieldDescriptor = null;
         for (var i = fields.Count - 1; i >= 0; i--)
         {
-            // Exit early on match because we're checking JSON name first, in reverse order through fields.
+            // We're checking JSON name first, in reverse order through fields.
+            // That means the method can exit early on match because the match has the highest precedence.
             var field = fields[i];
             if (field.JsonName == fieldName)
             {
