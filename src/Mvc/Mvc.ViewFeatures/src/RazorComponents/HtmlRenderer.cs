@@ -173,6 +173,19 @@ internal sealed class HtmlRenderer : Renderer
             interactiveMarker = context.SerializeInvocation(frames, position, frame.ComponentRenderMode);
             interactiveMarker.Value.AppendPreamble(context.HtmlContentBuilder);
         }
+        else
+        {
+            // In case we have streaming rendering available, we want streaming SSR to be able to update arbitrary
+            // subtrees within the output instead of having to resend the entire tree from the root. So we have to
+            // let the client keep track of which parts of the document correspond to which components.
+            // TODO: Try to find a way to avoid emitting any such markers before <!DOCTYPE html> as that could confuse
+            //       some not-strictly-compliant tech. For example, keep track of whether we've yet called RenderElement
+            //       within this flow, and only output the markers when we have. Then if the client can't find the marker
+            //       for some content it is given, it assumes it to replace the whole document.
+            context.HtmlContentBuilder.AppendHtml("<!--c");
+            context.HtmlContentBuilder.AppendHtml(frame.ComponentId.ToString()); // TODO: Avoid this allocation
+            context.HtmlContentBuilder.AppendHtml("-->");
+        }
 
         var childFrames = GetCurrentRenderTreeFrames(frame.ComponentId);
         RenderFrames(context, childFrames, 0, childFrames.Count);
@@ -180,6 +193,10 @@ internal sealed class HtmlRenderer : Renderer
         if (interactiveMarker.HasValue)
         {
             interactiveMarker.Value.AppendEpilogue(context.HtmlContentBuilder);
+        }
+        else
+        {
+            context.HtmlContentBuilder.AppendHtml("<!--/c-->");
         }
 
         return position + frame.ComponentSubtreeLength;
