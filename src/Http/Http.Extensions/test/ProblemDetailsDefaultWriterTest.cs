@@ -11,6 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
+using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 

@@ -120,7 +120,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     lineNumber);
         }
 """);
-                }
+               }
 
                 return code.ToString();
             });

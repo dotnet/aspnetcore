@@ -237,14 +237,15 @@ public static class TestMapActions
     internal async Task VerifyAgainstBaselineUsingFile(Compilation compilation, [CallerMemberName] string callerName = "")
     {
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
-        var generatedCode = compilation.SyntaxTrees.Last();
+        var generatedSyntaxTree = compilation.SyntaxTrees.Last();
+        var generatedCode = generatedSyntaxTree.GetText();
         var baseline = await File.ReadAllTextAsync(baselineFilePath);
         var expectedLines = baseline
             .TrimEnd() // Trim newlines added by autoformat
             .Replace("%GENERATEDCODEATTRIBUTE%", RequestDelegateGeneratorSources.GeneratedCodeAttribute)
             .Split(Environment.NewLine);
 
-        Assert.True(CompareLines(expectedLines, generatedCode.GetText(), out var errorMessage), errorMessage);
+        Assert.True(CompareLines(expectedLines, generatedCode, out var errorMessage), errorMessage);
     }
 
     private bool CompareLines(string[] expectedLines, SourceText sourceText, out string message)

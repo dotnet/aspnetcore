@@ -3,8 +3,10 @@
 
 using System;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -15,11 +17,25 @@ internal class EndpointParameter
         Type = parameter.Type;
         Name = parameter.Name;
         Source = EndpointParameterSource.Unknown;
+        HandlerArgument = $"{parameter.Name}_local";
 
-        if (GetSpecialTypeCallingCode(Type, wellKnownTypes) is string callingCode)
+        var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
+
+        if (GetSpecialTypeAssigningCode(Type, wellKnownTypes) is string assigningCode)
         {
             Source = EndpointParameterSource.SpecialType;
-            CallingCode = callingCode;
+            AssigningCode = assigningCode;
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
+        {
+            Source = EndpointParameterSource.Query;
+            AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
+            IsOptional = parameter.Type is INamedTypeSymbol parameterType && parameterType.NullableAnnotation == NullableAnnotation.Annotated;
+        }
+        else
+        {
+            // TODO: Inferencing rules go here - but for now:
+            Source = EndpointParameterSource.Unknown;
         }
     }
 
@@ -28,23 +44,17 @@ internal class EndpointParameter
 
     // TODO: If the parameter has [FromRoute("AnotherName")] or similar, prefer that.
     public string Name { get; }
-    public string? CallingCode { get; }
+    public string? AssigningCode { get; }
+    public string HandlerArgument { get; }
+    public bool IsOptional { get; }
 
     public string EmitArgument()
     {
-        switch (Source)
-        {
-            case EndpointParameterSource.SpecialType:
-                return CallingCode!;
-            default:
-                // Eventually there should be know unknown parameter sources, but in the meantime we don't expect them to get this far.
-                // The netstandard2.0 target means there is no UnreachableException.
-                throw new Exception("Unreachable!");
-        }
+        return HandlerArgument;
     }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
-    private static string? GetSpecialTypeCallingCode(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    private static string? GetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes)
     {
         if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpContext)))
         {

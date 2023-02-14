@@ -88,7 +88,7 @@ internal class Endpoint
 
         for (var i = 0; i < a.Parameters.Length; i++)
         {
-            if (a.Parameters[i].Equals(b.Parameters[i]))
+            if (!a.Parameters[i].Equals(b.Parameters[i]))
             {
                 return false;
             }

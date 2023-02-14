@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Cache;
 using System.Text;
+using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -61,14 +65,18 @@ internal static class StaticRouteHandlerModelEmitter
         var resultAssignment = endpoint.Response.IsVoid ? string.Empty : "var result = ";
         var awaitHandler = endpoint.Response.IsAwaitable ? "await " : string.Empty;
         var setContentType = endpoint.Response.IsVoid ? string.Empty : $@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";";
-        return $$"""
+
+        var requestHandlerSource = $$"""
                     {{handlerSignature}}
                     {
+{{endpoint.EmitParameterPreparation()}}
                         {{setContentType}}
                         {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
                         {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
                     }
 """;
+
+        return requestHandlerSource;
     }
 
     private static string EmitResponseWritingCall(this Endpoint endpoint)
@@ -108,14 +116,12 @@ internal static class StaticRouteHandlerModelEmitter
      * can be used to reduce the boxing that happens at runtime when constructing
      * the context object.
      */
-    public static string EmitFilteredRequestHandler(this Endpoint endpoint)
+    public static string EmitFilteredRequestHandler(this Endpoint _)
     {
-        var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-
         return $$"""
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
-                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext{{argumentList}}));
+                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 """;
