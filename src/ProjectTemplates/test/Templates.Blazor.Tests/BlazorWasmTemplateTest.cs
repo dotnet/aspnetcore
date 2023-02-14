@@ -107,7 +107,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/45736")]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
