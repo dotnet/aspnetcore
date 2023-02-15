@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 {

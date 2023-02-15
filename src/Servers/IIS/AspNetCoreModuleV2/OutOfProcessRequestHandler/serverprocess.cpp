@@ -113,13 +113,13 @@ SERVER_PROCESS::GetRandomPort
     BOOL    fPortInUse = FALSE;
     DWORD   dwActualProcessId = 0;
 
-    std::uniform_int_distribution<> dist(MIN_PORT, MAX_PORT);
+    std::uniform_int_distribution<> dist(MIN_PORT_RANDOM, MAX_PORT);
 
     if (g_fNsiApiNotSupported)
     {
         //
         // the default value for optional parameter dwExcludedPort is 0 which is reserved
-        // a random number between MIN_PORT and MAX_PORT
+        // a random number between MIN_PORT_RANDOM and MAX_PORT
         //
         while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
     }
@@ -224,7 +224,7 @@ Finished:
             m_struAppFullPath.QueryStr(),
             m_struPhysicalPath.QueryStr(),
             m_dwPort,
-            MIN_PORT,
+            MIN_PORT_RANDOM,
             MAX_PORT,
             hr);
     }

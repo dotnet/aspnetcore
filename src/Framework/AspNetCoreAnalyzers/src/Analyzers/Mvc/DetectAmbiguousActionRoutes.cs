@@ -14,6 +14,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.Mvc;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 public partial class MvcAnalyzer
 {
     private static void DetectAmbiguousActionRoutes(SymbolAnalysisContext context, WellKnownTypes wellKnownTypes, List<ActionRoute> actionRoutes)

@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">true</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
-    <ServerGarbageCollection>False</ServerGarbageCollection>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
     <!--#if (NativeAot) -->
     <PublishAot>true</PublishAot>
     <!--#endif -->

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
@@ -25,7 +26,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver";
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30761")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
     {
@@ -77,11 +78,8 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         }
     }
 
-    public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
-            BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
-
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
-    [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
+    [InlineData(BrowserKind.Chromium)]
+    [Theory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind)
     {
@@ -134,29 +132,9 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     private async Task TestBasicNavigation(IPage page)
     {
-        var socket = await page.WaitForWebSocketAsync();
+        // Wait for the page to load, and the connection to idle for >500ms
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = 60_000 });
 
-        var framesReceived = 0;
-        var framesSent = 0;
-
-        void FrameReceived(object sender, IWebSocketFrame frame) { framesReceived++; }
-        void FrameSent(object sender, IWebSocketFrame frame) { framesSent++; }
-
-        socket.FrameReceived += FrameReceived;
-        socket.FrameSent += FrameSent;
-
-        // Receive render batch
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 1 });
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 1 });
-
-        // JS interop call to intercept navigation
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 2 });
-        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 2 });
-
-        socket.FrameReceived -= FrameReceived;
-        socket.FrameSent -= FrameSent;
-
-        await page.WaitForSelectorAsync("nav");
         // <title> element gets project ID injected into it during template execution
         Assert.Equal("Index", (await page.TitleAsync()).Trim());
 
@@ -168,10 +146,13 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         await page.WaitForSelectorAsync("h1+p >> text=Current count: 0");
 
         // Clicking the counter button works
-        await page.ClickAsync("p+button >> text=Click me");
-        await page.WaitForSelectorAsync("h1+p >> text=Current count: 1");
+        for (var i = 1; i <= 3; i++)
+        {
+            await page.ClickAsync("p+button >> text=Click me");
+            await page.WaitForSelectorAsync($"h1+p >> text=Current count: {i}");
+        }
 
-        // Can navigate to the 'fetch data' page
+        // Can navigate to the 'Fetch Data' page
         await page.ClickAsync("a[href=fetchdata] >> text=Fetch data");
         await page.WaitForSelectorAsync("h1 >> text=Weather forecast");
 
@@ -180,7 +161,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
     }
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
+    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
     [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]

@@ -137,6 +137,7 @@ $locJson = @{
         @{
             LanguageSet = $LanguageSet
             CloneLanguageSet = "VS_macOS_CloneLanguages"
+            LssFiles = @( ".\eng\common\loc\P22DotNetHtmlLocalization.lss" )
             LocItems = @(
                 $macosHtmlFiles | ForEach-Object {
                     $outputPath = "$($_.Directory.FullName | Resolve-Path -Relative)\"

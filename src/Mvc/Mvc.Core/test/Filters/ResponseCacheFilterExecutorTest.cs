@@ -142,6 +142,16 @@ public class ResponseCacheFilterExecutorTest
                     {
                         new CacheProfile
                         {
+                            Duration = null,
+                            Location = ResponseCacheLocation.None,
+                            NoStore = false,
+                            VaryByHeader = null
+                        },
+                        "no-cache"
+                    },
+                    {
+                        new CacheProfile
+                        {
                             Duration = 31536000,
                             Location = ResponseCacheLocation.Any,
                             NoStore = false,
