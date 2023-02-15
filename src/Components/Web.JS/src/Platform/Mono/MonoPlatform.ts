@@ -239,6 +239,7 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     if (type !== undefined) {
       const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
       asset.pendingDownload = res;
+      totalResources++;
       res.response.then(setProgress);
       return res;
     }
@@ -307,7 +308,6 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
     assets.push(asset);
     downloadResource(asset);
   }
-  totalResources = assets.length;
 
   if (!hasIcuData) {
     config.globalizationMode = 'invariant';
@@ -320,8 +320,8 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
 
   if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Sharded) {
     environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
-
   }
+
   if (resourceLoader.startOptions.applicationCulture) {
     // If a culture is specified via start options use that to initialize the Emscripten \  .NET culture.
     environmentVariables['LANG'] = `${resourceLoader.startOptions.applicationCulture}.UTF-8`;
