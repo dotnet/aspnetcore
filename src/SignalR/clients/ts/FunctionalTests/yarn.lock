@@ -2524,6 +2524,11 @@ minimist@>=1.2.6, minimist@^1.2.6:
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha1-waRk52kzAuCCoHXO4MBXdBrEdyw=
 
+mitt@^3.0.0:
+  version "3.0.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/mitt/-/mitt-3.0.0.tgz#69ef9bd5c80ff6f57473e8d89326d01c414be0bd"
+  integrity sha1-ae+b1cgP9vV0c+jYkybQHEFL4L0=
+
 mkdirp-classic@^0.5.2:
   version "0.5.3"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz#fa10c9115cc6d8865be221ba47ee9bed78601113"
