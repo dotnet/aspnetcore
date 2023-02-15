@@ -1,2 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispatch(System.Action<System.IServiceProvider!>! action) -> void
+Microsoft.AspNetCore.Components.WebView.WebViewManager.DispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebView.WebViewManager.DispatchAsync<TResult>(System.Func<System.IServiceProvider!, TResult>! workItem) -> System.Threading.Tasks.Task<TResult>!
+Microsoft.AspNetCore.Components.WebView.WebViewManager.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!

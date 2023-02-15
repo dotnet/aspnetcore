@@ -113,22 +113,61 @@ public abstract class WebViewManager : IAsyncDisposable
     }
 
     /// <summary>
-    /// Calls the specified <paramref name="action"/> and passes in the scoped services available to Blazor components.
+    /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
     /// </summary>
-    /// <param name="action">The action to invoke.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="action"/> is <c>null</c>.</exception>
+    /// <param name="workItem">The action to call.</param>
+    /// <returns>A <see cref="Task"/> that will be completed when the action has finished executing.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
     /// <exception cref="InvalidOperationException">Thrown if this method is called before Blazor has started in the web view.</exception>
-    public void Dispatch(Action<IServiceProvider> action)
+    public async Task DispatchAsync(Action<IServiceProvider> workItem)
     {
-        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(workItem);
         if (_currentPageContext is null)
         {
-            throw new InvalidOperationException($"{nameof(Dispatch)} can't be called until after Blazor has started in the web view.");
+            throw new InvalidOperationException($"{nameof(DispatchAsync)} can't be called until after Blazor has started in the web view.");
         }
 
-        action(_currentPageContext.ServiceProvider);
+        await _currentPageContext.Renderer.Dispatcher.InvokeAsync(() => workItem(_currentPageContext.ServiceProvider));
     }
 
+    /// <summary>
+    /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="workItem">The action to call.</param>
+    /// <returns>A <see cref="Task"/> representing a value of type <typeparamref name="TResult"/> returned by the called <paramref name="workItem"/> that will be completed when the action has finished executing.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if this method is called before Blazor has started in the web view.</exception>
+    public async Task<TResult> DispatchAsync<TResult>(Func<IServiceProvider, TResult> workItem)
+    {
+        ArgumentNullException.ThrowIfNull(workItem);
+        if (_currentPageContext is null)
+        {
+            throw new InvalidOperationException($"{nameof(DispatchAsync)} can't be called until after Blazor has started in the web view.");
+        }
+
+        return await _currentPageContext.Renderer.Dispatcher.InvokeAsync(() => workItem(_currentPageContext.ServiceProvider));
+    }
+
+    /// <summary>
+    /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+    /// </summary>
+    /// <param name="workItem">The action to call.</param>
+    /// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+    public async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+    {
+        ArgumentNullException.ThrowIfNull(workItem);
+
+        if (_currentPageContext is null)
+        {
+            return false;
+        }
+
+        await _currentPageContext.Renderer.Dispatcher.InvokeAsync(() => workItem(_currentPageContext.ServiceProvider));
+
+        return true;
+    }
     /// <summary>
     /// Removes a previously-attached root component from the current page.
     /// </summary>
