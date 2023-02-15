@@ -239,10 +239,11 @@
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
-  
+
   <PropertyGroup>
-    <!-- Set the arcade before common targets so we compute ExcludeFromBuild before arcade uses it -->
-    <_ArcadeOverriddenCustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</_ArcadeOverriddenCustomBeforeMicrosoftCommonTargets>
+    <!-- Set the arcade before common targets so we compute ExcludeFromBuild before arcade uses it. -->
+    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonTargets>
+    <CustomBeforeMicrosoftCommonCrossTargetingTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonCrossTargetingTargets>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
