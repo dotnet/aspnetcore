@@ -183,8 +183,6 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
-    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
-    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
         => Json<object>(data, options, contentType, statusCode);
 
@@ -239,8 +237,6 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
-    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
-    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters

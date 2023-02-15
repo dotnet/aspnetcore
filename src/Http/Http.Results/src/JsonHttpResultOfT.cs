@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +21,6 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
     /// <param name="contentType">The value for the <c>Content-Type</c> header</param>
-    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
     internal JsonHttpResult(TValue? value, JsonSerializerOptions? jsonSerializerOptions, int? statusCode = null, string? contentType = null)
     {
         Value = value;
@@ -35,11 +32,6 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
             statusCode ??= problemDetails.Status;
         }
         StatusCode = statusCode;
-
-        if (jsonSerializerOptions is not null && !jsonSerializerOptions.IsReadOnly)
-        {
-            jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
-        }
 
         JsonSerializerOptions = jsonSerializerOptions;
     }

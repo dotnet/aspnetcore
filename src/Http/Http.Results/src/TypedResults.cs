@@ -193,8 +193,6 @@ public static class TypedResults
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
-    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
-    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
         => new(data, options, statusCode, contentType);
 
