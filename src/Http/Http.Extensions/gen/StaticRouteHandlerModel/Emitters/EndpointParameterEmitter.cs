@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -20,8 +18,8 @@ internal static class EndpointParameterEmitter
         var builder = new StringBuilder();
 
         // Preamble for diagnostics purposes.
-        builder.AppendLine($$"""
-                        // Endpoint Parameter: {{endpointParameter.Name}} (Type = {{endpointParameter.Type}}, IsOptional = {{endpointParameter.IsOptional}}, Source = {{endpointParameter.Source}})
+        builder.AppendLine($"""
+                        {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
         // Grab raw input from HttpContext.
@@ -44,13 +42,42 @@ internal static class EndpointParameterEmitter
             builder.AppendLine($$"""
                         if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw))
                         {
-                            httpContext.Response.StatusCode = 400;
-                            return Task.CompletedTask;
-                        }                             
+                            wasParamCheckFailure = true;
+                        }
                         var {{endpointParameter.HandlerArgument}} = {{endpointParameter.Name}}_raw.ToString();
 """);
         }
 
         return builder.ToString();
     }
+
+    internal static string EmitJsonBodyParameterPreparationString(this EndpointParameter endpointParameter)
+    {
+        var builder = new StringBuilder();
+
+        // Preamble for diagnostics purposes.
+        builder.AppendLine($"""
+                        {endpointParameter.EmitParameterDiagnosticComment()}
+""");
+
+        // Grab raw input from HttpContext.
+        builder.AppendLine($$"""
+                        var (isSuccessful, {{endpointParameter.Name}}_local) = {{endpointParameter.AssigningCode}};
+""");
+
+        // If binding from the JSON body fails, we exit early. Don't
+        // set the status code here because assume it has been set by the
+        // TryResolveBody method.
+        builder.AppendLine("""
+                        if (!isSuccessful)
+                        {
+                            return;
+                        }
+""");
+
+        return builder.ToString();
+    }
+
+    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) =>
+        $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, Source = {endpointParameter.Source})";
 }

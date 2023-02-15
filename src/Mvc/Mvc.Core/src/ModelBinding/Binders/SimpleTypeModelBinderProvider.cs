@@ -18,7 +18,7 @@ public class SimpleTypeModelBinderProvider : IModelBinderProvider
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (!context.Metadata.IsComplexType)
+        if (context.Metadata.IsConvertibleType)
         {
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
             return new SimpleTypeModelBinder(context.Metadata.ModelType, loggerFactory);
