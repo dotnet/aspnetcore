@@ -987,8 +987,7 @@ public class ResultsTests
         string type)
     {
         // Act
-        var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;
-        
+        var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;        
         // Assert
         Assert.Null(result.ProblemDetails.Detail);
         Assert.Null(result.ProblemDetails.Instance);
