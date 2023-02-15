@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Channels;
@@ -26,7 +27,7 @@ internal sealed class HtmlRenderer : Renderer
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
     private readonly IViewBufferScope _viewBufferScope;
     private readonly IServiceProvider _serviceProvider;
-    private Channel<RenderBatch> _streamingRenderBatches;
+    private Channel<StreamingComponentUpdate> _streamingRenderBatches;
 
     public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope)
         : base(serviceProvider, loggerFactory)
@@ -44,7 +45,7 @@ internal sealed class HtmlRenderer : Renderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public ChannelReader<RenderBatch> StreamingRenderBatches { get; private set; }
+    public ChannelReader<StreamingComponentUpdate> StreamingRenderBatches { get; private set; }
 
     /// <inheritdoc />
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -64,8 +65,19 @@ internal sealed class HtmlRenderer : Renderer
 
         if (_streamingRenderBatches is not null)
         {
-            return _streamingRenderBatches.Writer.WriteAsync(renderBatch).AsTask()
-                .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
+            // Note that we cannot pass the actual RenderBatch here because ChannelWriter<T>.WriteAsync
+            // and the actual write-to-HTTP-response process are asynchronous, and in the meantime, the
+            // underlying RenderBatch buffer may get reused by a subsequent render. But that's OK because
+            // we weren't going to use the diffs anyway. All we actually have to pass is the list of
+            // components being updated, and then PassiveComponentRenderer can (at an arbitrary later time)
+            // flush out the latest content from those components, whether or not it has updated again.
+
+            var update = StreamingComponentUpdate.SnapshotFromRenderBatch(renderBatch);
+            if (update.UpdatedComponentIds.Count > 0)
+            {
+                return _streamingRenderBatches.Writer.WriteAsync(update).AsTask()
+                    .ContinueWith(_ => CanceledRenderTask, TaskScheduler.Current);
+            }
         }
 
         return CanceledRenderTask;
@@ -82,7 +94,7 @@ internal sealed class HtmlRenderer : Renderer
         // For any subsequent render batches, we'll advertise them through a channel so that
         // streaming rendering can observe them
         var streamingQuiescenceTask = WaitForStreamingQuiescence();
-        _streamingRenderBatches = Channel.CreateUnbounded<RenderBatch>();
+        _streamingRenderBatches = Channel.CreateUnbounded<StreamingComponentUpdate>();
         StreamingRenderBatches = _streamingRenderBatches.Reader;
         _ = streamingQuiescenceTask.ContinueWith(task =>
         {
@@ -104,7 +116,7 @@ internal sealed class HtmlRenderer : Renderer
     private string RenderTreeToHtmlString(ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
     {
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
+        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider, null);
         RenderFrames(context, frames, position, maxElements);
 
         using var sw = new StringWriter();
@@ -165,6 +177,7 @@ internal sealed class HtmlRenderer : Renderer
         int position)
     {
         ref var frame = ref frames.Array[position];
+        context.ComponentRenderingTracker?.Add(frame.ComponentId);
 
         var interactiveMarker = (InteractiveComponentMarker?)null;
 
@@ -173,6 +186,19 @@ internal sealed class HtmlRenderer : Renderer
             interactiveMarker = context.SerializeInvocation(frames, position, frame.ComponentRenderMode);
             interactiveMarker.Value.AppendPreamble(context.HtmlContentBuilder);
         }
+        else
+        {
+            // In case we have streaming rendering available, we want streaming SSR to be able to update arbitrary
+            // subtrees within the output instead of having to resend the entire tree from the root. So we have to
+            // let the client keep track of which parts of the document correspond to which components.
+            // TODO: Try to find a way to avoid emitting any such markers before <!DOCTYPE html> as that could confuse
+            //       some not-strictly-compliant tech. For example, keep track of whether we've yet called RenderElement
+            //       within this flow, and only output the markers when we have. Then if the client can't find the marker
+            //       for some content it is given, it assumes it to replace the whole document.
+            context.HtmlContentBuilder.AppendHtml("<!--c");
+            context.HtmlContentBuilder.AppendHtml(frame.ComponentId.ToString(CultureInfo.InvariantCulture)); // TODO: Avoid this allocation
+            context.HtmlContentBuilder.AppendHtml("-->");
+        }
 
         var childFrames = GetCurrentRenderTreeFrames(frame.ComponentId);
         RenderFrames(context, childFrames, 0, childFrames.Count);
@@ -180,6 +206,10 @@ internal sealed class HtmlRenderer : Renderer
         if (interactiveMarker.HasValue)
         {
             interactiveMarker.Value.AppendEpilogue(context.HtmlContentBuilder);
+        }
+        else
+        {
+            context.HtmlContentBuilder.AppendHtml("<!--/c-->");
         }
 
         return position + frame.ComponentSubtreeLength;
@@ -322,16 +352,59 @@ internal sealed class HtmlRenderer : Renderer
         return position + maxElements;
     }
 
-    private ViewBuffer GetRenderedHtmlContent(int componentId)
+    internal ViewBuffer GetRenderedHtmlContent(int componentId, HashSet<int> componentRenderingTracker)
     {
+        // We're about to walk through buffers (RenderTreeBuilder instances) that can get mutated during rendering
+        // so it's essential that:
+        // [1] ... our access is exclusive, which we validate by calling Dispatcher.AssertAccess
+        // [2] ... this method's output is self-contained (i.e., doesn't point to anything in the mutable buffers)
+        // [3] ... this method is synchronous, because if we yield, then during that time the buffers could mutate
+        Dispatcher.AssertAccess();
+
         var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider);
+        var context = new HtmlRenderingContext(this, viewBuffer, _serviceProvider, componentRenderingTracker);
 
         var frames = GetCurrentRenderTreeFrames(componentId);
         var newPosition = RenderFrames(context, frames, 0, frames.Count);
         Debug.Assert(newPosition == frames.Count);
 
         return viewBuffer;
+    }
+
+    public Task VisitRenderedHtmlSubtrees(IReadOnlyList<int> componentIds, Func<int, ViewBuffer, Task> visitor)
+    {
+        return Dispatcher.InvokeAsync(async () =>
+        {
+            // Each time we transmit the HTML for a component, we also transmit the HTML for its descendants.
+            // So, if we transmitted *everything* in 'componentIds' separately, there would be a lot of duplication.
+            // That is, the subtrees projected from each entry in 'componentIds' will overlap a lot.
+            //
+            // To avoid duplicated HTML transmission and unnecessary work on the client, we want to pick a subset
+            // of 'componentIds' such that, when we transmit that subset, it includes every member of 'componentIds'
+            // without any duplication.
+            //
+            // This is quite easy if we first sort the list into depth order. As long as we process parents before
+            // their descendants, we can keep a log of the descendants we rendered implicitly, and then skip over
+            // those if we see them later in the list.
+            var componentsInDepthOrder = new (int Depth, int ComponentId)[componentIds.Count];
+            for (var index = 0; index < componentsInDepthOrder.Length; index++)
+            {
+                var id = componentIds[index];
+                componentsInDepthOrder[index] = (Depth: GetComponentDepth(id), ComponentId: id);
+            }
+            Array.Sort(componentsInDepthOrder, (left, right) => left.Depth - right.Depth);
+
+            // Now we have them in depth order, process them and skip those already rendered
+            var componentRenderingTracker = new HashSet<int>();
+            foreach (var (_, componentId) in componentsInDepthOrder)
+            {
+                if (!componentRenderingTracker.Contains(componentId))
+                {
+                    var viewBuffer = GetRenderedHtmlContent(componentId, componentRenderingTracker);
+                    await visitor(componentId, viewBuffer);
+                }
+            }
+        });
     }
 
     private readonly struct InteractiveComponentMarker
@@ -391,14 +464,17 @@ internal sealed class HtmlRenderer : Renderer
         private ServerComponentSerializer _serverComponentSerializer;
         private ServerComponentInvocationSequence _serverComponentSequence;
 
-        public HtmlRenderingContext(HtmlRenderer htmlRenderer, ViewBuffer viewBuffer, IServiceProvider serviceProvider)
+        public HtmlRenderingContext(HtmlRenderer htmlRenderer, ViewBuffer viewBuffer, IServiceProvider serviceProvider, HashSet<int> componentRenderingTracker)
         {
             HtmlContentBuilder = viewBuffer;
+            ComponentRenderingTracker = componentRenderingTracker;
             _htmlRenderer = htmlRenderer;
             _serviceProvider = serviceProvider;
         }
 
         public ViewBuffer HtmlContentBuilder { get; }
+
+        public HashSet<int> ComponentRenderingTracker { get; }
 
         public string ClosestSelectValueAsString { get; set; }
 
@@ -525,7 +601,7 @@ internal sealed class HtmlRenderer : Renderer
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            var actualHtmlContent = _renderer.GetRenderedHtmlContent(_componentId);
+            var actualHtmlContent = _renderer.GetRenderedHtmlContent(_componentId, null);
             actualHtmlContent.WriteTo(writer, encoder);
         }
     }

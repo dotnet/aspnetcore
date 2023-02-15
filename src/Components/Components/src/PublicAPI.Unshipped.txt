@@ -13,6 +13,7 @@ Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> strin
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, Microsoft.AspNetCore.Components.ComponentRenderMode renderMode) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentDepth(int componentId) -> int
 Microsoft.AspNetCore.Components.RenderTree.Renderer.WaitForStreamingQuiescence() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentRenderMode.get -> Microsoft.AspNetCore.Components.ComponentRenderMode
 Microsoft.AspNetCore.Components.RouteData.FormValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>?

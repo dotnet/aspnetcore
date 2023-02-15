@@ -13,6 +13,7 @@ import { enableNavigationEnhancement, performEnhancedPageLoad } from './Navigati
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { synchronizeDOMContent } from './DomSync/DomSync';
+import { synchronizeComponentContent } from './DomSync/ComponentSync';
 
 let booted = false;
 let hasStartedWebAssembly = false;
@@ -20,6 +21,10 @@ let hasStartedServer = false;
 
 Blazor._internal.mergePassiveContentIntoDOM = function (html: string) {
   synchronizeDOMContent({ parent: document }, html);
+}
+
+Blazor._internal.mergePassiveComponentIntoDOM = function (componentId: number, html: string) {
+  synchronizeComponentContent(componentId, html);
 }
 
 async function boot(options?: Partial<UnitedStartOptions>): Promise<void> {

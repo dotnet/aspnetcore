@@ -184,6 +184,10 @@ export function getLogicalChildrenArray(element: LogicalElement): LogicalElement
   return element[logicalChildrenPropname] as LogicalElement[];
 }
 
+export function isKnownLogicalElement(element: Node): boolean {
+  return !!element[logicalChildrenPropname];
+}
+
 export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]): void {
   // The permutationList must represent a valid permutation, i.e., the list of 'from' indices
   // is distinct, and the list of 'to' indices is a permutation of it. The algorithm here
