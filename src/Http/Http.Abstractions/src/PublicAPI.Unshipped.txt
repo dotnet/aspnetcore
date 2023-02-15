@@ -1,4 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.IProblemDetailsService.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
