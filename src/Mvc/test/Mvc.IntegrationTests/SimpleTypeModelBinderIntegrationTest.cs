@@ -746,6 +746,50 @@ public class SimpleTypeModelBinderIntegrationTest
         Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
     }
 
+    [Fact]
+    public async Task BindParameter_BindsUsingTryParse()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo(),
+            ParameterType = typeof(SampleTryParsableModel)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = QueryString.Create("Parameter1", "someValue");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
+
+        // Model
+        var model = Assert.IsType<SampleTryParsableModel>(modelBindingResult.Model);
+        Assert.Equal("someValue", model.Value);
+        Assert.Equal("TryParse", model.Source);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+
+        Assert.Single(modelState.Keys);
+        var key = Assert.Single(modelState.Keys);
+        Assert.Equal("Parameter1", key);
+        Assert.Equal("someValue", modelState[key].AttemptedValue);
+        Assert.Equal("someValue", modelState[key].RawValue);
+        Assert.Empty(modelState[key].Errors);
+        Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+    }
+
     private class Person
     {
         public Address Address { get; set; }
@@ -769,6 +813,18 @@ public class SimpleTypeModelBinderIntegrationTest
         public static bool TryParse([NotNullWhen(true)] string s, [MaybeNullWhen(false)] out SampleModel result)
         {
             result = new SampleModel() { Value = s, Source = "TryParse" };
+            return true;
+        }
+    }
+
+    private class SampleTryParsableModel
+    {
+        public string Value { get; set; }
+        public string Source { get; set; }
+
+        public static bool TryParse([NotNullWhen(true)] string s, [MaybeNullWhen(false)] out SampleTryParsableModel result)
+        {
+            result = new SampleTryParsableModel() { Value = s, Source = "TryParse" };
             return true;
         }
     }
