@@ -12,10 +12,15 @@ import { enableFormEnhancement } from './FormEnhancement';
 import { enableNavigationEnhancement, performEnhancedPageLoad } from './NavigationEnhancement';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { synchronizeDOMContent } from './DomSync/DomSync';
 
 let booted = false;
 let hasStartedWebAssembly = false;
 let hasStartedServer = false;
+
+Blazor._internal.mergePassiveContentIntoDOM = function (html: string) {
+  synchronizeDOMContent({ parent: document }, html);
+}
 
 async function boot(options?: Partial<UnitedStartOptions>): Promise<void> {
   if (booted) {

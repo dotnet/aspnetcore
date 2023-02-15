@@ -179,11 +179,10 @@ internal class PassiveComponentRenderer
         using var streamReader = new StreamReader(memoryStream);
         var htmlString = streamReader.ReadToEnd();
         var htmlStringJson = JsonSerializer.Serialize(htmlString);
-
+        
         using var writer = _writerFactory.CreateWriter(httpContext.Response.BodyWriter.AsStream(), Encoding.UTF8);
-        await writer.WriteAsync("\n<script>(function() { const newHtml = ");
+        await writer.WriteAsync("\n<script>Blazor._internal.mergePassiveContentIntoDOM(");
         await writer.WriteAsync(htmlStringJson);
-        await writer.WriteAsync("; document.body.innerHTML = new DOMParser().parseFromString(newHtml, 'text/html').querySelector('body').innerHTML;");
-        await writer.WriteAsync("})()</script>");
+        await writer.WriteAsync(");</script>");
     }
 }
