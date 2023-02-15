@@ -18,13 +18,12 @@ public class ProblemDetailsJsonConverterTest
     {
         // Arrange
         var json = "{";
-        var converter = new ProblemDetailsJsonConverter();
 
         // Act & Assert
         var ex = Record.Exception(() =>
         {
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
-            converter.Read(ref reader, typeof(ProblemDetails), JsonSerializerOptions);
+            JsonSerializer.Deserialize(ref reader, typeof(ProblemDetails), JsonSerializerOptions);;
         });
         Assert.IsAssignableFrom<JsonException>(ex);
     }
@@ -40,14 +39,14 @@ public class ProblemDetailsJsonConverterTest
         var instance = "http://example.com/products/14";
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
         var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"detail\":\"{detail}\", \"instance\":\"{instance}\",\"traceId\":\"{traceId}\"}}";
-        var converter = new ProblemDetailsJsonConverter();
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
         reader.Read();
 
         // Act
-        var problemDetails = converter.Read(ref reader, typeof(ProblemDetails), JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(ref reader, JsonSerializerOptions);
 
         //Assert
+        Assert.NotNull(problemDetails);
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -135,14 +134,14 @@ public class ProblemDetailsJsonConverterTest
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
         var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"traceId\":\"{traceId}\"}}";
-        var converter = new ProblemDetailsJsonConverter();
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
         reader.Read();
 
         // Act
-        var problemDetails = converter.Read(ref reader, typeof(ProblemDetails), JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(ref reader, JsonSerializerOptions);
 
         // Assert
+        Assert.NotNull(problemDetails);
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -174,13 +173,12 @@ public class ProblemDetailsJsonConverterTest
                 }
         };
         var expected = $"{{\"type\":\"{JsonEncodedText.Encode(value.Type)}\",\"title\":\"{value.Title}\",\"status\":{value.Status},\"detail\":\"{value.Detail}\",\"instance\":\"{JsonEncodedText.Encode(value.Instance)}\",\"traceId\":\"{traceId}\",\"some-data\":[\"value1\",\"value2\"]}}";
-        var converter = new ProblemDetailsJsonConverter();
         var stream = new MemoryStream();
 
         // Act
         using (var writer = new Utf8JsonWriter(stream))
         {
-            converter.Write(writer, value, JsonSerializerOptions);
+            JsonSerializer.Serialize(writer, value, JsonSerializerOptions);
         }
 
         // Assert
@@ -199,13 +197,12 @@ public class ProblemDetailsJsonConverterTest
             Status = 404,
         };
         var expected = $"{{\"type\":\"{JsonEncodedText.Encode(value.Type)}\",\"title\":\"{value.Title}\",\"status\":{value.Status}}}";
-        var converter = new ProblemDetailsJsonConverter();
         var stream = new MemoryStream();
 
         // Act
         using (var writer = new Utf8JsonWriter(stream))
         {
-            converter.Write(writer, value, JsonSerializerOptions);
+            JsonSerializer.Serialize(writer, value, JsonSerializerOptions);
         }
 
         // Assert
@@ -231,13 +228,12 @@ public class ProblemDetailsJsonConverterTest
                 }
         };
         var expected = $"{{\"type\":\"{JsonEncodedText.Encode(value.Type)}\",\"title\":\"{value.Title}\",\"status\":{value.Status},\"detail\":\"{value.Detail}\",\"instance\":\"{JsonEncodedText.Encode(value.Instance)}\",\"traceId\":null,\"some-data\":[\"value1\",\"value2\"]}}";
-        var converter = new ProblemDetailsJsonConverter();
         var stream = new MemoryStream();
 
         // Act
         using (var writer = new Utf8JsonWriter(stream))
         {
-            converter.Write(writer, value, JsonSerializerOptions);
+            JsonSerializer.Serialize(writer, value, JsonSerializerOptions);
         }
 
         // Assert
