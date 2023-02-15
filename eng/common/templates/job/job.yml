@@ -134,7 +134,7 @@ jobs:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@0
 
-  - ${{ if or(eq(parameters.artifacts.download, 'true'), ne(parameters.artifacts.download, '')) }}:
+  - ${{ if and(ne(parameters.artifacts.download, 'false'), ne(parameters.artifacts.download, '')) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: current
@@ -171,7 +171,7 @@ jobs:
           TeamName: $(_TeamName)
 
   - ${{ if ne(parameters.artifacts.publish, '') }}:
-    - ${{ if or(eq(parameters.artifacts.publish.artifacts, 'true'), ne(parameters.artifacts.publish.artifacts, '')) }}:
+    - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
       - task: CopyFiles@2
         displayName: Gather binaries for publish to artifacts
         inputs:
@@ -192,7 +192,7 @@ jobs:
           ArtifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
         continueOnError: true
         condition: always()
-    - ${{ if or(eq(parameters.artifacts.publish.logs, 'true'), ne(parameters.artifacts.publish.logs, '')) }}:
+    - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
       - publish: artifacts/log
         artifact: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
         displayName: Publish logs

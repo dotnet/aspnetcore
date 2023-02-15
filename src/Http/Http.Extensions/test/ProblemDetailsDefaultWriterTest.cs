@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public partial class DefaultProblemDetailsWriterTest
 {
+    private static readonly JsonSerializerOptions SerializerOptions = JsonOptions.DefaultSerializerOptions;
+
     [Fact]
     public async Task WriteAsync_Works()
     {
@@ -43,7 +45,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);
@@ -81,7 +83,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);
@@ -119,7 +121,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);
@@ -156,7 +158,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<HttpValidationProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<HttpValidationProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);
@@ -197,7 +199,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<HttpValidationProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<HttpValidationProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);
@@ -352,7 +354,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Collection(problemDetails.Extensions,
             (extension) =>
@@ -393,7 +395,7 @@ public partial class DefaultProblemDetailsWriterTest
         //Assert
         stream.Position = 0;
 
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, options.SerializerOptions);
         Assert.NotNull(problemDetails);
 
         Assert.Collection(problemDetails.Extensions,
@@ -420,7 +422,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status500InternalServerError, problemDetails.Status);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
@@ -453,7 +455,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(StatusCodes.Status406NotAcceptable, problemDetails.Status);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
@@ -484,7 +486,7 @@ public partial class DefaultProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
         Assert.NotNull(problemDetails);
         Assert.Equal(statusCode, problemDetails.Status);
         Assert.Equal(type, problemDetails.Type);
