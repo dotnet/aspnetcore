@@ -109,25 +109,20 @@ internal class EndpointParameter
         [NotNullWhen(true)] out string? assigningCode,
         out bool isOptional)
     {
-        var attributes = parameter.GetAttributes();
         assigningCode = null;
         isOptional = false;
-        foreach (var attribute in attributes)
+        if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
         {
-            if (WellKnownTypes.Implements(attribute.AttributeClass, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata)))
+            foreach (var namedArgument in fromBodyAttribute.NamedArguments)
             {
-                foreach (var namedArgument in attribute.NamedArguments)
+                if (namedArgument.Key == "AllowEmpty")
                 {
-                    if (namedArgument.Key == "AllowEmpty")
-                    {
-                        isOptional |= namedArgument.Value.Value is true;
-                    }
+                    isOptional |= namedArgument.Value.Value is true;
                 }
-                isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
-                assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{parameter.Type}>(httpContext, {(isOptional ? "true" : "false")});";
-                return true;
-
             }
+            isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
+            assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{parameter.Type}>(httpContext, {(isOptional ? "true" : "false")})";
+            return true;
         }
         return false;
     }

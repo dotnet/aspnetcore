@@ -39,20 +39,20 @@ internal static class StaticRouteHandlerModelEmitter
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response.IsVoid ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response.IsVoid ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
         }
         else
         {
             var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
-                p => p.Type.ToDisplayString(p.IsOptional is true ? NullableFlowState.MaybeNull : NullableFlowState.NotNull)));
+                p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull)));
 
             if (endpoint.Response.IsVoid)
             {
-                return $"System.Action<{parameterTypeList}>";
+                return $"Action<{parameterTypeList}>";
             }
             else
             {
-                return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
+                return $"Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
             }
         }
     }

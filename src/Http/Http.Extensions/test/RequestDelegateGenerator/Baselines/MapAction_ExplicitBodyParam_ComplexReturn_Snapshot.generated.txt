@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (System.Func<TestMapActions.Todo, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>>)del;
+                    var handler = (Func<TestMapActions.Todo, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: todo (Type = TestMapActions.Todo, IsOptional = False, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo>(httpContext, false);;
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo>(httpContext, false);
                         if (!isSuccessful)
                         {
                             return;
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: todo (Type = TestMapActions.Todo, IsOptional = False, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo>(httpContext, false);;
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo>(httpContext, false);
                         if (!isSuccessful)
                         {
                             return;
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (System.Func<TestMapActions.Todo?, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>>)del;
+                    var handler = (Func<TestMapActions.Todo?, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: todo (Type = TestMapActions.Todo?, IsOptional = True, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo?>(httpContext, true);;
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo?>(httpContext, true);
                         if (!isSuccessful)
                         {
                             return;
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: todo (Type = TestMapActions.Todo?, IsOptional = True, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo?>(httpContext, true);;
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<TestMapActions.Todo?>(httpContext, true);
                         if (!isSuccessful)
                         {
                             return;
