@@ -235,6 +235,10 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
 
   // it would not `loadResource` on types for which there is no typesMap mapping
   const downloadResource = (asset: AssetEntry): LoadingResource | undefined => {
+    // GOTCHA: the mapping to blazor asset type may not cover all mono asset types in the future in which case:
+    // A) we may need to add such asset types to the mapping and to WebAssemblyBootResourceType
+    // B) or we could add generic "runtime" type to WebAssemblyBootResourceType as fallback
+    // C) or we could return `undefined` and let the runtime to load the asset. In which case the progress will not be reported on it and blazor will not be able to cache it.
     const type = monoToBlazorAssetTypeMap[asset.behavior];
     if (type !== undefined) {
       const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
