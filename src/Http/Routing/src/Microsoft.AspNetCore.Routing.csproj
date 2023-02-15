@@ -30,7 +30,6 @@
     <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />

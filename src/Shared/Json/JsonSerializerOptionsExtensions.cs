@@ -16,13 +16,7 @@ internal static class JsonSerializerOptionsExtensions
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or ensure Microsoft.AspNetCore.EnsureJsonTrimmability=true for native AOT applications.")]
     public static void InitializeForReflection(this JsonSerializerOptions options)
     {
-        _defaultJsonTypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
-
-        options.TypeInfoResolver = options.TypeInfoResolver switch
-        {
-            null => _defaultJsonTypeInfoResolver,
-            _ => JsonTypeInfoResolver.Combine(options.TypeInfoResolver, _defaultJsonTypeInfoResolver),
-        };
+        options.TypeInfoResolver ??= _defaultJsonTypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
     }
 
     public static JsonSerializerOptions EnsureConfigured(this JsonSerializerOptions options, bool markAsReadOnly = false)

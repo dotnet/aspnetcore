@@ -2314,7 +2314,7 @@ public static partial class RequestDelegateFactory
 
     private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
     {
-        return ExecuteHandlerHelper.WriteJsonResponseAsync(response, value, options, jsonTypeInfo);
+        return jsonTypeInfo.WriteToResponseAsync(response, value, options);
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)

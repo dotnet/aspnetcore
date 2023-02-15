@@ -32,10 +32,7 @@ public static class HttpRequestJsonExtensions
         this HttpRequest request,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var options = ResolveSerializerOptions(request.HttpContext);
-        return request.ReadFromJsonAsync(jsonTypeInfo: (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)), cancellationToken);
+        return request.ReadFromJsonAsync<TValue>(options: null, cancellationToken);
     }
 
     /// <summary>
@@ -111,10 +108,7 @@ public static class HttpRequestJsonExtensions
         Type type,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var options = ResolveSerializerOptions(request.HttpContext);
-        return request.ReadFromJsonAsync(jsonTypeInfo: options.GetTypeInfo(type), cancellationToken);
+        return request.ReadFromJsonAsync(type, options: null, cancellationToken);
     }
 
     /// <summary>

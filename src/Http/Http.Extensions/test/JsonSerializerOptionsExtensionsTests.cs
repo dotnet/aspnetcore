@@ -4,17 +4,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
-public partial class JsonOptionsTests
+public partial class JsonSerializerOptionsExtensionsTests
 {
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void Configure_ThrowsForNullTypeInfoResolver_WhenEnsureJsonTrimmabilityTrue_AndMarkReadonly()
+    public void EnsureConfigured_ThrowsForNullTypeInfoResolver_WhenEnsureJsonTrimmabilityTrue_AndMarkReadonly()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
@@ -27,7 +26,7 @@ public partial class JsonOptionsTests
     }
 
     [Fact]
-    public void Configure_MarkAsReadOnly_WhenRequested()
+    public void EnsureConfigured_MarkAsReadOnly_WhenRequested()
     {
         // Arrange
         var options = new JsonSerializerOptions();
@@ -41,7 +40,7 @@ public partial class JsonOptionsTests
 
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void Configure_Works_WhenEnsureJsonTrimmabilityTrue()
+    public void EnsureConfigured_Works_WhenEnsureJsonTrimmabilityTrue()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
@@ -64,7 +63,7 @@ public partial class JsonOptionsTests
 
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_Works_WhenEnsureJsonTrimmabilityFalse()
+    public void EnsureConfigured_Works_WhenNullTypeInfoResolverAndEnsureJsonTrimmabilityFalse()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
@@ -83,7 +82,7 @@ public partial class JsonOptionsTests
 
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_Combines_WhenEnsureJsonTrimmabilityFalse()
+    public void EnsureConfigured_DoesNotCombine_WhenResolverAlreadySetAndEnsureJsonTrimmabilityFalse()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
@@ -99,9 +98,8 @@ public partial class JsonOptionsTests
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);
-            Assert.IsNotType<DefaultJsonTypeInfoResolver>(options.TypeInfoResolver);
-            Assert.IsNotType<JsonSerializerExtensionsTestsContext>(options.TypeInfoResolver);
-            Assert.NotNull(options.TypeInfoResolver.GetTypeInfo(typeof(string), options));
+            Assert.IsType<JsonSerializerExtensionsTestsContext>(options.TypeInfoResolver);
+            Assert.NotNull(options.TypeInfoResolver.GetTypeInfo(typeof(object), options));
             Assert.False(options.IsReadOnly);
         }, options);
     }
