@@ -44,7 +44,7 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
             }
             catch (Exception ex)
             {
-                if ((ex is OperationCanceledException || ex is IOException) && _requestAborted)
+                if ((ex is OperationCanceledException || ex is IOException) && ClientDisconnected)
                 {
                     ReportRequestAborted();
                 }
@@ -92,7 +92,7 @@ internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContex
             else if (!HasResponseStarted && _requestRejectedException == null)
             {
                 // If the request was aborted and no response was sent, we use status code 499 for logging               
-                StatusCode = StatusCodes.Status499ClientClosedRequest;
+                StatusCode = ClientDisconnected ? StatusCodes.Status499ClientClosedRequest : 0;
                 success = false;
             }
 
