@@ -22,12 +22,7 @@ internal class EndpointParameter
         var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
         var fromServiceMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
 
-        if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
-        {
-            Source = EndpointParameterSource.SpecialType;
-            AssigningCode = specialTypeAssigningCode;
-        }
-        else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
+        if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
         {
             Source = EndpointParameterSource.Query;
             AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
@@ -35,6 +30,12 @@ internal class EndpointParameter
             {
                 NullableAnnotation: NullableAnnotation.Annotated
             };
+        }
+        else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var jsonBodyAssigningCode, out var isOptional))
+        {
+            Source = EndpointParameterSource.JsonBody;
+            AssigningCode = jsonBodyAssigningCode;
+            IsOptional = isOptional;
         }
         else if (parameter.HasAttributeImplementingInterface(fromServiceMetadataInterfaceType))
         {
@@ -44,11 +45,10 @@ internal class EndpointParameter
                 $"httpContext.RequestServices.GetService<{parameter.Type}>();" :
                 $"httpContext.RequestServices.GetRequiredService<{parameter.Type}>()";
         }
-        else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var jsonBodyAssigningCode, out var isOptional))
+        else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
         {
-            Source = EndpointParameterSource.JsonBody;
-            AssigningCode = jsonBodyAssigningCode;
-            IsOptional = isOptional;
+            Source = EndpointParameterSource.SpecialType;
+            AssigningCode = specialTypeAssigningCode;
         }
         else
         {
@@ -68,7 +68,7 @@ internal class EndpointParameter
 
     public string EmitArgument() => Source switch
     {
-        EndpointParameterSource.SpecialType or EndpointParameterSource.Query => HandlerArgument,
+        EndpointParameterSource.SpecialType or EndpointParameterSource.Query or EndpointParameterSource.Service => HandlerArgument,
         EndpointParameterSource.JsonBody => IsOptional ? HandlerArgument : $"{HandlerArgument}!",
         _ => throw new Exception("Unreachable!")
     };

@@ -712,14 +712,48 @@ app.MapPost("/", postServiceWithDefault);
     public async Task MapAction_ExplicitServiceParam_SimpleReturn_Snapshot()
     {
         var source = $$"""
-app.MapPost("/fromServiceRequired", ([FromServices]{{typeof(TestService)}} svc) => svc.TestServiceMethod());
-app.MapPost("/enumerableFromService", ([FromServices]IEnumerable<{{typeof(TestService)}}> svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);
-app.MapPost("/multipleFromService", ([FromServices]{{typeof(TestService)}}? svc, [FromServices]IEnumerable<{{typeof(TestService)}}> svcs) =>
+app.MapGet("/fromServiceRequired", ([FromServices]{{typeof(TestService)}} svc) => svc.TestServiceMethod());
+app.MapGet("/enumerableFromService", ([FromServices]IEnumerable<{{typeof(TestService)}}> svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);
+app.MapGet("/multipleFromService", ([FromServices]{{typeof(TestService)}}? svc, [FromServices]IEnumerable<{{typeof(TestService)}}> svcs) =>
     $"{(svcs?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty)}, {svc?.TestServiceMethod()}");
 """;
+        var httpContext = CreateHttpContext();
+        var expectedBody = "Produced from service!";
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<TestService>(new TestService());
+        var services = serviceCollection.BuildServiceProvider();
+        var emptyServices = new ServiceCollection().BuildServiceProvider();
+
         var (_, compilation) = await RunGeneratorAsync(source);
 
         await VerifyAgainstBaselineUsingFile(compilation);
+
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(3, endpoints.Length);
+
+        // fromServiceRequired throws on null input
+        httpContext.RequestServices = emptyServices;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => endpoints[0].RequestDelegate(httpContext));
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        // fromServiceRequired accepts a provided input
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[0].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // enumerableFromService
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // multipleFromService
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[2].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, $"{expectedBody}, {expectedBody}");
     }
 
     [Fact]
