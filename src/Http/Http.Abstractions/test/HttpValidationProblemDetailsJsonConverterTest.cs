@@ -10,10 +10,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class HttpValidationProblemDetailsJsonConverterTest
 {
-    private static JsonSerializerOptions JsonSerializerOptions => new JsonSerializerOptions(new JsonOptions().SerializerOptions)
-    {
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-    };
+    private static JsonSerializerOptions JsonSerializerOptions => JsonOptions.DefaultSerializerOptions;
 
     [Fact]
     public void Write_Works()

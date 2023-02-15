@@ -37,7 +37,6 @@ public class RouteHandlerTest
             .ConfigureServices(services =>
             {
                 services.AddRouting();
-                services.AddDefaultHttpJsonOptions();
             })
             .Build();
 

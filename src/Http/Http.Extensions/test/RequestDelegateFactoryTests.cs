@@ -1643,7 +1643,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         var jsonOptions = new JsonOptions();
-        jsonOptions.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
 
         var mock = new Mock<IServiceProvider>();
@@ -1882,7 +1881,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         var jsonOptions = new JsonOptions();
-        jsonOptions.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
 
         var mock = new Mock<IServiceProvider>();

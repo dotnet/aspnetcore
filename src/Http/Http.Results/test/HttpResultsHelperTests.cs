@@ -27,15 +27,11 @@ public partial class HttpResultsHelperTests
         };
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext(responseBodyStream);
-        var serializerOptions = new JsonOptions().SerializerOptions;
+        var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
-        }
-        else
-        {
-            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
@@ -62,15 +58,11 @@ public partial class HttpResultsHelperTests
         };
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext(responseBodyStream);
-        var serializerOptions = new JsonOptions().SerializerOptions;
+        var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
-        }
-        else
-        {
-            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
@@ -99,15 +91,11 @@ public partial class HttpResultsHelperTests
         };
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext(responseBodyStream);
-        var serializerOptions = new JsonOptions().SerializerOptions;
+        var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
-        }
-        else
-        {
-            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
@@ -137,15 +125,11 @@ public partial class HttpResultsHelperTests
         };
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext(responseBodyStream);
-        var serializerOptions = new JsonOptions().SerializerOptions;
+        var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
         if (useJsonContext)
         {
             serializerOptions.AddContext<TestJsonContext>();
-        }
-        else
-        {
-            serializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
         }
 
         // Act
