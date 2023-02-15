@@ -44,13 +44,16 @@ jobs:
   ${{ if eq(parameters.platform.pool, '') }}:
     # The default VM host AzDO pool. This should be capable of running Docker containers: almost all
     # source-build builds run in Docker, including the default managed platform.
+    # /eng/common/templates/variables/pool-providers.yml can't be used here (some customers declare variables already), so duplicate its logic
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: NetCore-Svc-Public
+        name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore-Svc-Public' ), False, 'NetCore-Public')]
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
+
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: NetCore1ESPool-Svc-Internal
+        name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore1ESPool-Svc-Internal'), False, 'NetCore1ESPool-Internal')]
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+
   ${{ if ne(parameters.platform.pool, '') }}:
     pool: ${{ parameters.platform.pool }}
 

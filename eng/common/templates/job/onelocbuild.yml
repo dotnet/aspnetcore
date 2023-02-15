@@ -14,6 +14,7 @@ parameters:
   ReusePr: true
   UseLfLineEndings: true
   UseCheckedInLocProjectJson: false
+  SkipLocProjectJsonGeneration: false
   LanguageSet: VS_Main_Languages
   LclSource: lclFilesInRepo
   LclPackageId: ''
@@ -22,13 +23,25 @@ parameters:
   MirrorRepo: ''
   MirrorBranch: main
   condition: ''
+  JobNameSuffix: ''
 
 jobs:
-- job: OneLocBuild
+- job: OneLocBuild${{ parameters.JobNameSuffix }}
   
   dependsOn: ${{ parameters.dependsOn }}
 
-  displayName: OneLocBuild
+  displayName: OneLocBuild${{ parameters.JobNameSuffix }}
+
+  variables:
+    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+    - name: _GenerateLocProjectArguments
+      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
+        -LanguageSet "${{ parameters.LanguageSet }}"
+        -CreateNeutralXlfs
+    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
+      - name: _GenerateLocProjectArguments
+        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
+    - template: /eng/common/templates/variables/pool-providers.yml
 
   ${{ if ne(parameters.pool, '') }}:
     pool: ${{ parameters.pool }}
@@ -40,27 +53,17 @@ jobs:
         demands: Cmd
       # If it's not devdiv, it's dnceng
       ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-        name: NetCore1ESPool-Svc-Internal
+        name: $(DncEngInternalBuildPool)
         demands: ImageOverride -equals windows.vs2019.amd64
 
-  variables:
-    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
-    - name: _GenerateLocProjectArguments
-      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
-        -LanguageSet "${{ parameters.LanguageSet }}"
-        -CreateNeutralXlfs
-    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
-      - name: _GenerateLocProjectArguments
-        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
-      
-
   steps:
-    - task: Powershell@2
-      inputs:
-        filePath: $(Build.SourcesDirectory)/eng/common/generate-locproject.ps1
-        arguments: $(_GenerateLocProjectArguments)
-      displayName: Generate LocProject.json
-      condition: ${{ parameters.condition }}
+    - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
+      - task: Powershell@2
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/generate-locproject.ps1
+          arguments: $(_GenerateLocProjectArguments)
+        displayName: Generate LocProject.json
+        condition: ${{ parameters.condition }}
 
     - task: OneLocBuild@2
       displayName: OneLocBuild
