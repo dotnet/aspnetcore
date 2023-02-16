@@ -18,6 +18,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private X509Certificate2? _clientCert;
     private ReadOnlyMemory<byte>? _applicationProtocol;
     private SslProtocols? _protocol;
+    private TlsCipherSuite? _cipherSuite;
     private CipherAlgorithmType? _cipherAlgorithm;
     private int? _cipherStrength;
     private HashAlgorithmType? _hashAlgorithm;
@@ -66,6 +67,14 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     }
 
     // We don't store the values for these because they could be changed by a renegotiation.
+    TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite { get => NegotiatedCipherSuite; }
+    // Split the writable property from the interface implementation because it doesn't make sense to allow setting null
+    internal TlsCipherSuite NegotiatedCipherSuite
+    {
+        get => _cipherSuite ?? _sslStream.NegotiatedCipherSuite;
+        set => _cipherSuite = value;
+    }
+
     public CipherAlgorithmType CipherAlgorithm
     {
         get => _cipherAlgorithm ?? _sslStream.CipherAlgorithm;
