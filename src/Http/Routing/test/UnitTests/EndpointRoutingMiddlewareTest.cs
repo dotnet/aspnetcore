@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -155,6 +156,71 @@ public class EndpointRoutingMiddlewareTest
             .Verify(f => f.CreateMatcher(It.IsAny<EndpointDataSource>()), Times.Exactly(2));
     }
 
+    [Fact]
+    public async Task ShortCurcuitWithoutStatusCode()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var middleware = CreateMiddleware(
+            matcherFactory: new ShortCircuitMatcherFactory(null, false, false),
+            next: context =>
+            {
+                // should not be reched here.
+                throw new Exception();
+            });
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.True((bool)httpContext.Items["ShortCircuit"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ShortCurcuitWitStatusCode()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var middleware = CreateMiddleware(
+            matcherFactory: new ShortCircuitMatcherFactory(404, false, false),
+            next: context =>
+            {
+                // should not be reched here.
+                throw new Exception();
+            });
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.True((bool)httpContext.Items["ShortCircuit"]);
+        Assert.Equal(404, httpContext.Response.StatusCode);
+    }
+
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [Theory]
+    public async Task ThrowIfSecurityMetadataPresent(bool hasAuthMetadata, bool hasCorsMetadata)
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var middleware = CreateMiddleware(
+            matcherFactory: new ShortCircuitMatcherFactory(404, hasAuthMetadata, hasCorsMetadata),
+            next: context =>
+            {
+                // should not be reched here.
+                throw new Exception();
+            });
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+    }
+
     private HttpContext CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext
@@ -182,6 +248,7 @@ public class EndpointRoutingMiddlewareTest
             new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>()),
             new DefaultEndpointDataSource(),
             listener,
+            Options.Create(new RouteOptions()),
             next);
 
         return middleware;

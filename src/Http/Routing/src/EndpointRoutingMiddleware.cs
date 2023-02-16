@@ -4,9 +4,13 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Routing.ShortCircuit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -19,7 +23,7 @@ internal sealed partial class EndpointRoutingMiddleware
     private readonly EndpointDataSource _endpointDataSource;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly RequestDelegate _next;
-
+    private readonly RouteOptions _routeOptions;
     private Task<Matcher>? _initializationTask;
 
     public EndpointRoutingMiddleware(
@@ -28,6 +32,7 @@ internal sealed partial class EndpointRoutingMiddleware
         IEndpointRouteBuilder endpointRouteBuilder,
         EndpointDataSource rootCompositeEndpointDataSource,
         DiagnosticListener diagnosticListener,
+        IOptions<RouteOptions> routeOptions,
         RequestDelegate next)
     {
         ArgumentNullException.ThrowIfNull(endpointRouteBuilder);
@@ -36,6 +41,7 @@ internal sealed partial class EndpointRoutingMiddleware
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _next = next ?? throw new ArgumentNullException(nameof(next));
+        _routeOptions = routeOptions.Value;
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
@@ -102,6 +108,35 @@ internal sealed partial class EndpointRoutingMiddleware
             }
 
             Log.MatchSuccess(_logger, endpoint);
+
+            var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
+            if (shortCircuitMetadata is not null)
+            {
+                if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
+                {
+                    if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null)
+                    {
+                        ThrowMissingAuthMiddlewareException(endpoint);
+                    }
+
+                    if (endpoint.Metadata.GetMetadata<ICorsMetadata>() is not null)
+                    {
+                        ThrowMissingCorsMiddlewareException(endpoint);
+                    }
+                }
+
+                if (shortCircuitMetadata.StatusCode.HasValue)
+                {
+                    httpContext.Response.StatusCode = shortCircuitMetadata.StatusCode.Value;
+                }
+
+                if (endpoint.RequestDelegate is not null)
+                {
+                    return endpoint.RequestDelegate(httpContext);
+                }
+
+                return Task.CompletedTask;
+            }
         }
 
         return _next(httpContext);
@@ -163,6 +198,18 @@ internal sealed partial class EndpointRoutingMiddleware
             initialization.SetException(ex);
             return initialization.Task;
         }
+    }
+
+    private static void ThrowMissingAuthMiddlewareException(Endpoint endpoint)
+    {
+        throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains authorization metadata, " +
+            "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
+    }
+
+    private static void ThrowMissingCorsMiddlewareException(Endpoint endpoint)
+    {
+        throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains CORS metadata, " +
+            "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
     }
 
     private static partial class Log
