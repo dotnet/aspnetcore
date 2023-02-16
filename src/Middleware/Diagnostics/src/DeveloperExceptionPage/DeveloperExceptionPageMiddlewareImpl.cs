@@ -101,6 +101,18 @@ internal class DeveloperExceptionPageMiddlewareImpl
         }
         catch (Exception ex)
         {
+            if ((ex is OperationCanceledException || ex is IOException) && context.RequestAborted.IsCancellationRequested)
+            {
+                _logger.RequestAbortedException();
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
+                }
+
+                return;
+            }
+
             _logger.UnhandledException(ex);
 
             if (context.Response.HasStarted)

@@ -1,4 +1,5 @@
 #nullable enable
+const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
 *REMOVED*Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object?[]! arguments) -> void
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
