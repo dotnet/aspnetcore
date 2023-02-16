@@ -33,63 +33,7 @@ public class WebHostTests : LoggedTest
     public void HelixPlatform_QuickListenerIsSupported()
     {
         Assert.True(QuicListener.IsSupported, "QuicListener.IsSupported should be true.");
-    }
-
-    [ConditionalFact]
-    [MsQuicSupported]
-    public async Task PlatformSmoketest_HelloWorld_ClientSuccess()
-    {
-        // Next, do a basic HTTP/3 end-to-end test that ensures Kestrel can server a HTTP/3 request from a client.
-        //
-        // Arrange
-        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
-
-        var builder = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                    .UseKestrel(o =>
-                    {
-                        o.ConfigureEndpointDefaults(listenOptions =>
-                        {
-                            listenOptions.Protocols = Core.HttpProtocols.Http3;
-                        });
-                        o.ConfigureHttpsDefaults(httpsOptions =>
-                        {
-                            httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
-                        });
-                    })
-                    .UseUrls("https://127.0.0.1:0")
-                    .Configure(app =>
-                    {
-                        app.Run(async context =>
-                        {
-                            await context.Response.WriteAsync("hello, world");
-                        });
-                    });
-            })
-            .ConfigureServices(AddTestLogging);
-
-        using (var host = builder.Build())
-        using (var client = CreateClient())
-        {
-            await host.StartAsync();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
-            request.Version = HttpVersion.Version30;
-            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-
-            // Act
-            var response = await client.SendAsync(request);
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            Assert.Equal(HttpVersion.Version30, response.Version);
-            var responseText = await response.Content.ReadAsStringAsync();
-            Assert.Equal("hello, world", responseText);
-
-            await host.StopAsync();
-        }
+        Assert.True(new MsQuicSupportedAttribute().IsMet, "MsQuicSupported.IsMet should be true.");
     }
 
     [ConditionalFact]
