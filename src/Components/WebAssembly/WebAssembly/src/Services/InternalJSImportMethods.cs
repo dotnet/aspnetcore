@@ -22,6 +22,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public byte[]? GetConfig(string configFile)
         => GetConfigCore(configFile);
 
+    public Task InitHotReloadAsync(string url)
+        => InitHotReloadCore(url);
+
     public void NavigationManager_EnableNavigationInterception()
         => NavigationManager_EnableNavigationInterceptionCore();
 
@@ -60,6 +63,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport("Blazor._internal.getConfig", "blazor-internal")]
     private static partial byte[] GetConfigCore(string configFile);
+
+    [JSImport("Blazor._internal.initHotReload", "blazor-internal")]
+    private static partial Task InitHotReloadCore(string url);
 
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
     private static partial void NavigationManager_EnableNavigationInterceptionCore();

@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
@@ -11,7 +13,7 @@ using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
+internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
     internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
@@ -20,7 +22,7 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
     [DynamicDependency(nameof(BeginInvokeDotNet))]
-    [DynamicDependency(nameof(NotifyByteArrayAvailable))]
+    [DynamicDependency(nameof(ReceiveByteArray))]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
@@ -75,21 +77,10 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         });
     }
 
-    /// <summary>
-    /// Invoked via Mono's JS interop mechanism (invoke_method)
-    ///
-    /// Notifies .NET of an array that's available for transfer from JS to .NET
-    ///
-    /// Ideally that byte array would be transferred directly as a parameter on this
-    /// call, however that's not currently possible due to: <see href="https://github.com/dotnet/runtime/issues/53378"/>.
-    /// </summary>
-    /// <param name="id">Id of the byte array</param>
-    public static void NotifyByteArrayAvailable(int id)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    private static void ReceiveByteArrayFromJS(int id, byte[] data)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
-#pragma warning restore CS0618 // Type or member is obsolete
-
         DotNetDispatcher.ReceiveByteArray(Instance, id, data);
     }
 

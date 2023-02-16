@@ -11,6 +11,8 @@ internal interface IInternalJSImportMethods
 
     byte[]? GetConfig(string configFile);
 
+    Task InitHotReloadAsync(string url);
+
     void NavigationManager_EnableNavigationInterception();
 
     string NavigationManager_GetLocationHref();
