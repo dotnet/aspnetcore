@@ -104,7 +104,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
     }
 
     [Fact]
-    public void AddProblemDetails_Throws_ForReadOnlyJsonOptions()
+    public void AddProblemDetails_CombinesProblemDetailsContext_ForReadOnlyJsonOptions()
     {
         // Arrange
         var collection = new ServiceCollection();
@@ -121,7 +121,10 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         var services = collection.BuildServiceProvider();
         var jsonOptions = services.GetService<IOptions<JsonOptions>>();
 
-        Assert.Throws<System.InvalidOperationException>(() => jsonOptions.Value);
+        Assert.NotNull(jsonOptions.Value);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(ProblemDetails), jsonOptions.Value.SerializerOptions));
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(TypeA), jsonOptions.Value.SerializerOptions));
     }
 
     [Fact]
@@ -162,28 +165,6 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
 
         Assert.NotNull(jsonOptions.Value);
         Assert.IsType<DefaultJsonTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
-    }
-
-    [Fact]
-    public void AddProblemDetails_CombineProblemDetailsContext_WhenDefaultypeInfoResolver()
-    {
-        // Arrange
-        var collection = new ServiceCollection();
-        collection.AddOptions<JsonOptions>();
-        collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver());
-
-        // Act
-        collection.AddProblemDetails();
-
-        // Assert
-        var services = collection.BuildServiceProvider();
-        var jsonOptions = services.GetService<IOptions<JsonOptions>>();
-
-        Assert.NotNull(jsonOptions.Value);
-        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
-        Assert.IsNotType<DefaultJsonTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
-        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(ProblemDetails), jsonOptions.Value.SerializerOptions));
-        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(TypeA), jsonOptions.Value.SerializerOptions));
     }
 
     [JsonSerializable(typeof(TypeA))]

@@ -28,7 +28,7 @@ public class JsonOptions
     /// <summary>
     /// Gets the <see cref="JsonSerializerOptions"/>.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions(_defaultSerializerOptions);
+    public JsonSerializerOptions SerializerOptions { get; internal set; } = new JsonSerializerOptions(_defaultSerializerOptions);
 
     /// <summary>
     ///  Gets the default <see cref="JsonSerializerOptions"/> instance.
