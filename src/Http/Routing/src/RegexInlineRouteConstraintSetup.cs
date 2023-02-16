@@ -7,9 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal sealed class RegexInlineRouteConstraintSetup : IPostConfigureOptions<RouteOptions>
+internal sealed class RegexInlineRouteConstraintSetup : IConfigureOptions<RouteOptions>
 {
-    public void PostConfigure(string? name, RouteOptions options)
+    public void Configure(RouteOptions options)
     {
         var existingRegexConstraintType = options.TrimmerSafeConstraintMap["regex"];
 

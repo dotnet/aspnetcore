@@ -28,7 +28,7 @@ public static class RoutingServiceCollectionExtensions
     public static IServiceCollection AddRouting(this IServiceCollection services)
     {
         services.AddRoutingCore();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RouteOptions>, RegexInlineRouteConstraintSetup>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RouteOptions>, RegexInlineRouteConstraintSetup>());
         return services;
     }
 
