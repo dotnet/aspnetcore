@@ -1,10 +1,17 @@
-namespace Company.WebApplication1.Controllers
+﻿namespace Company.WebApplication1.Controllers
 
+open System
+open System.Collections.Generic
+open System.Linq
+open System.Threading.Tasks
 open System.Diagnostics
+
 open Microsoft.AspNetCore.Mvc
+open Microsoft.Extensions.Logging
+
 open Company.WebApplication1.Models
 
-type HomeController () =
+type HomeController (logger : ILogger<HomeController>) =
     inherit Controller()
 
     member this.Index () =
@@ -15,7 +22,7 @@ type HomeController () =
 
     [<ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)>]
     member this.Error () =
-        let reqId =
+        let reqId = 
             if isNull Activity.Current then
                 this.HttpContext.TraceIdentifier
             else

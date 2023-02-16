@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -491,6 +495,126 @@ app.MapGet(route, () => "Hello world!");
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
+    public static object[][] MapAction_ExplicitBodyParam_ComplexReturn_Data
+    {
+        get
+        {
+            var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";
+            var todo = new Todo()
+            {
+                Id = 0,
+                Name = "Test Item",
+                IsComplete = false
+            };
+            var withFilter = """
+.AddEndpointFilter((c, n) => n(c));
+""";
+            var fromBodyRequiredSource = """app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo));""";
+            var fromBodyAllowEmptySource = """app.MapPost("/", ([FromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo));""";
+            var fromBodyNullableSource = """app.MapPost("/", ([FromBody] Todo? todo) => TypedResults.Ok(todo));""";
+            var fromBodyDefaultValueSource = """
+#nullable disable
+IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo);
+app.MapPost("/", postTodoWithDefault);
+#nullable restore
+""";
+            var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([FromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyNullableWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo? todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyDefaultValueWithFilterSource = $"""
+#nullable disable
+IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo);
+app.MapPost("/", postTodoWithDefault){withFilter}
+#nullable restore
+""";
+
+            return new[]
+            {
+                new object[] { fromBodyRequiredSource, todo, 200, expectedBody },
+                new object[] { fromBodyRequiredSource, null, 400, string.Empty },
+                new object[] { fromBodyAllowEmptySource, todo, 200, expectedBody },
+                new object[] { fromBodyAllowEmptySource, null, 200, string.Empty },
+                new object[] { fromBodyNullableSource, todo, 200, expectedBody },
+                new object[] { fromBodyNullableSource, null, 200, string.Empty },
+                new object[] { fromBodyDefaultValueSource, todo, 200, expectedBody },
+                new object[] { fromBodyDefaultValueSource, null, 200, string.Empty },
+                new object[] { fromBodyRequiredWithFilterSource, todo, 200, expectedBody },
+                new object[] { fromBodyRequiredWithFilterSource, null, 400, string.Empty },
+                new object[] { fromBodyAllowEmptyWithFilterSource, todo, 200, expectedBody },
+                new object[] { fromBodyAllowEmptyWithFilterSource, null, 200, string.Empty },
+                new object[] { fromBodyNullableWithFilterSource, todo, 200, expectedBody },
+                new object[] { fromBodyNullableWithFilterSource, null, 200, string.Empty },
+                new object[] { fromBodyDefaultValueWithFilterSource, todo, 200, expectedBody },
+                new object[] { fromBodyDefaultValueSource, null, 200, string.Empty },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MapAction_ExplicitBodyParam_ComplexReturn_Data))]
+    public async Task MapAction_ExplicitBodyParam_ComplexReturn(string source, Todo requestData, int expectedStatusCode, string expectedBody)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(requestData);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitBodyParam_ComplexReturn_Snapshot()
+    {
+        var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";
+        var todo = new Todo()
+        {
+            Id = 0,
+            Name = "Test Item",
+            IsComplete = false
+        };
+        var source = """
+app.MapPost("/fromBodyRequired", ([FromBody] Todo todo) => TypedResults.Ok(todo));
+#pragma warning disable CS8622
+app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo));
+#pragma warning restore CS8622
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(2, endpoints.Length);
+
+        // formBodyRequired accepts a provided input
+        var httpContext = CreateHttpContextWithBody(todo);
+        await endpoints[0].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // formBodyRequired throws on null input
+        httpContext = CreateHttpContextWithBody(null);
+        await endpoints[0].RequestDelegate(httpContext);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        // formBodyOptional accepts a provided input
+        httpContext = CreateHttpContextWithBody(todo);
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // formBodyOptional accepts a null input
+        httpContext = CreateHttpContextWithBody(null);
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, string.Empty);
+    }
+
     [Fact]
     public async Task MapAction_UnknownParameter_EmitsDiagnostic_NoSource()
     {
@@ -514,6 +638,122 @@ app.MapGet("/", (IServiceProvider provider) => "Hello world!");
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    public static object[][] MapAction_ExplicitServiceParam_SimpleReturn_Data
+    {
+        get
+        {
+            var fromServiceRequiredSource = $$"""app.MapPost("/", ([FromServices]{{typeof(TestService)}} svc) => svc.TestServiceMethod());""";
+            var fromServiceNullableSource = $$"""app.MapPost("/", ([FromServices]{{typeof(TestService)}}? svc) => svc?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceDefaultValueSource = $$"""
+#nullable disable
+string postServiceWithDefault([FromServices]{{typeof(TestService)}} svc = null) => svc?.TestServiceMethod() ?? string.Empty;
+app.MapPost("/", postServiceWithDefault);
+#nullable restore
+""";
+
+            var fromServiceEnumerableRequiredSource = $$"""app.MapPost("/", ([FromServices]IEnumerable<{{typeof(TestService)}}>  svc) => svc.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceEnumerableNullableSource = $$"""app.MapPost("/", ([FromServices]IEnumerable<{{typeof(TestService)}}>? svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceEnumerableDefaultValueSource = $$"""
+#nullable disable
+string postServiceWithDefault([FromServices]IEnumerable<{{typeof(TestService)}}> svc = null) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty;
+app.MapPost("/", postServiceWithDefault);
+#nullable restore
+""";
+
+            return new[]
+            {
+                new object[] { fromServiceRequiredSource, true, true },
+                new object[] { fromServiceRequiredSource, false, false },
+                new object[] { fromServiceNullableSource, true, true },
+                new object[] { fromServiceNullableSource, false, true },
+                new object[] { fromServiceDefaultValueSource, true, true },
+                new object[] { fromServiceDefaultValueSource, false, true },
+                new object[] { fromServiceEnumerableRequiredSource, true, true },
+                new object[] { fromServiceEnumerableRequiredSource, false, true },
+                new object[] { fromServiceEnumerableNullableSource, true, true },
+                new object[] { fromServiceEnumerableNullableSource, false, true },
+                new object[] { fromServiceEnumerableDefaultValueSource, true, true },
+                new object[] { fromServiceEnumerableDefaultValueSource, false, true }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MapAction_ExplicitServiceParam_SimpleReturn_Data))]
+    public async Task MapAction_ExplicitServiceParam_SimpleReturn(string source, bool hasService, bool isValid)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        if (hasService)
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<TestService>(new TestService());
+            var services = serviceCollection.BuildServiceProvider();
+            httpContext.RequestServices = services;
+        }
+
+        if (isValid)
+        {
+            await endpoint.RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, hasService ? "Produced from service!" : string.Empty);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitServiceParam_SimpleReturn_Snapshot()
+    {
+        var source = $$"""
+app.MapGet("/fromServiceRequired", ([FromServices]{{typeof(TestService)}} svc) => svc.TestServiceMethod());
+app.MapGet("/enumerableFromService", ([FromServices]IEnumerable<{{typeof(TestService)}}> svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);
+app.MapGet("/multipleFromService", ([FromServices]{{typeof(TestService)}}? svc, [FromServices]IEnumerable<{{typeof(TestService)}}> svcs) =>
+    $"{(svcs?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty)}, {svc?.TestServiceMethod()}");
+""";
+        var httpContext = CreateHttpContext();
+        var expectedBody = "Produced from service!";
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<TestService>(new TestService());
+        var services = serviceCollection.BuildServiceProvider();
+        var emptyServices = new ServiceCollection().BuildServiceProvider();
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(3, endpoints.Length);
+
+        // fromServiceRequired throws on null input
+        httpContext.RequestServices = emptyServices;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => endpoints[0].RequestDelegate(httpContext));
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        // fromServiceRequired accepts a provided input
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[0].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // enumerableFromService
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // multipleFromService
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[2].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, $"{expectedBody}, {expectedBody}");
     }
 
     [Fact]

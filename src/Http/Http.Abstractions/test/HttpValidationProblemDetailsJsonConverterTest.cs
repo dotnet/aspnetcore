@@ -14,7 +14,6 @@ public class HttpValidationProblemDetailsJsonConverterTest
     [Fact]
     public void Write_Works()
     {
-        var converter = new HttpValidationProblemDetailsJsonConverter();
         var problemDetails = new HttpValidationProblemDetails();
 
         problemDetails.Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
@@ -28,7 +27,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
 
         var ms = new MemoryStream();
         var writer = new Utf8JsonWriter(ms);
-        converter.Write(writer, problemDetails, JsonSerializerOptions);
+        JsonSerializer.Serialize(writer, problemDetails, JsonSerializerOptions);
         writer.Flush();
 
         ms.Seek(0, SeekOrigin.Begin);
@@ -57,13 +56,13 @@ public class HttpValidationProblemDetailsJsonConverterTest
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
         var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"detail\":\"{detail}\", \"instance\":\"{instance}\",\"traceId\":\"{traceId}\"," +
             "\"errors\":{\"key0\":[\"error0\"],\"key1\":[\"error1\",\"error2\"]}}";
-        var converter = new HttpValidationProblemDetailsJsonConverter();
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
         reader.Read();
 
         // Act
-        var problemDetails = converter.Read(ref reader, typeof(HttpValidationProblemDetails), JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(ref reader, JsonSerializerOptions);
 
+        Assert.NotNull(problemDetails);
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -100,13 +99,13 @@ public class HttpValidationProblemDetailsJsonConverterTest
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
         var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"traceId\":\"{traceId}\"," +
             "\"errors\":{\"key0\":[\"error0\"],\"key1\":[\"error1\",\"error2\"]}}";
-        var converter = new HttpValidationProblemDetailsJsonConverter();
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
         reader.Read();
 
         // Act
-        var problemDetails = converter.Read(ref reader, typeof(HttpValidationProblemDetails), JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(ref reader, JsonSerializerOptions);
 
+        Assert.NotNull(problemDetails);
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);

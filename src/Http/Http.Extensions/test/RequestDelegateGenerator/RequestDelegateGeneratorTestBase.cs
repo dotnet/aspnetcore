@@ -1,11 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis;
@@ -15,6 +19,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -147,6 +152,8 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(LoggerFactory);
+        var jsonOptions = new JsonOptions();
+        serviceCollection.AddSingleton(Options.Create(jsonOptions));
         httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
         var outStream = new MemoryStream();
@@ -155,13 +162,26 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
         return httpContext;
     }
 
-    internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody)
+    internal HttpContext CreateHttpContextWithBody(Todo requestData)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(requestData);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        return httpContext;
+    }
+
+    internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody, int expectedStatusCode = 200)
     {
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
         var body = await streamReader.ReadToEndAsync();
-        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
         Assert.Equal(expectedBody, body);
     }
 
@@ -173,6 +193,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
@@ -196,6 +217,11 @@ public static class TestMapActions
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
+    }
+
+    public class FromBodyAttribute : Attribute, IFromBodyMetadata
+    {
+        public bool AllowEmpty { get; set; }
     }
 }
 """;
@@ -238,7 +264,7 @@ public static class TestMapActions
     {
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
-        var generatedCode = generatedSyntaxTree.GetText();
+        var generatedCode = await generatedSyntaxTree.GetTextAsync();
         var baseline = await File.ReadAllTextAsync(baselineFilePath);
         var expectedLines = baseline
             .TrimEnd() // Trim newlines added by autoformat
@@ -346,5 +372,22 @@ Actual Line:
         public ICollection<EndpointDataSource> DataSources { get; }
 
         public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
+    }
+
+    public class Todo
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "Todo";
+        public bool IsComplete { get; set; }
+    }
+
+    internal sealed class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
+    {
+        public RequestBodyDetectionFeature(bool canHaveBody)
+        {
+            CanHaveBody = canHaveBody;
+        }
+
+        public bool CanHaveBody { get; }
     }
 }
