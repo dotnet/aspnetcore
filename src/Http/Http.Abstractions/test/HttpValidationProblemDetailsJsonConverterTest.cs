@@ -3,7 +3,6 @@
 
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 
 namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
