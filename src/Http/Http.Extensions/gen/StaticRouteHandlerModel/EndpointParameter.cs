@@ -34,6 +34,9 @@ internal class EndpointParameter
             Source = EndpointParameterSource.Query;
             Name = GetParameterName(fromQueryAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
+            AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
+            IsParsable = TryGetParsability(parameter, out var parsingBlockEmitter);
+            ParsingBlockEmitter = parsingBlockEmitter;
         }
         else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType, out var fromHeaderAttribute))
         {
@@ -68,6 +71,36 @@ internal class EndpointParameter
         }
     }
 
+    private static bool TryGetParsability(IParameterSymbol parameter, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
+    {
+        if (parameter.Type.SpecialType == SpecialType.System_String)
+        {
+            parsingBlockEmitter = default;
+            return false;
+        }
+        else
+        {
+            // HACK: This switch will be replaced by a more comprehensive method that will
+            //       return that will return Func<string, string, string> that will emit
+            //       the correct TryParse call for each scenario. This is just a stub to
+            //       build out the various test cases and get things working end-to-end.
+            Func<string, string, string> preferredTryParseInvocation = parameter.Type switch
+            {
+                { BaseType.SpecialType: SpecialType.System_Enum } => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<global::{{parameter.Type}}>({{inputArgument}}, out var {{outputArgument}})""",
+                { SpecialType: SpecialType.System_Int32 } => (string inputArgument, string outputArgument) => $$"""int.TryParse({{inputArgument}}, out var {{outputArgument}})""",
+                _ => (string inputArgument, string outputArgument) => $$"""global::{{parameter.Type}}.TryParse({{inputArgument}}, out var {{outputArgument}})"""
+            };
+
+            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
+            if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
+            {
+                wasParamCheckFailure = true;
+            }
+            """;
+            return true;
+        }
+    }
+
     public ITypeSymbol Type { get; }
     public EndpointParameterSource Source { get; }
 
@@ -76,6 +109,8 @@ internal class EndpointParameter
     internal string? AssigningCode { get; set; }
     public string Name { get; }
     public bool IsOptional { get; }
+    public bool IsParsable { get; }
+    public Func<string, string, string> ParsingBlockEmitter { get; }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
     private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out string? callingCode)

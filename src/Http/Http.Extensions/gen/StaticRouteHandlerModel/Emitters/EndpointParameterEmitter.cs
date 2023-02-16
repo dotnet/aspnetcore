@@ -36,6 +36,7 @@ internal static class EndpointParameterEmitter
         {
             builder.AppendLine($$"""
                         var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.EmitAssigningCodeResult()}}.Count > 0 ? {{endpointParameter.EmitAssigningCodeResult()}}.ToString() : null;
+                        var {{endpointParameter.Name}}_temp = {{endpointParameter.Name}}_raw.Count > 0 ? {{endpointParameter.Name}}_raw.ToString() : null;
 """);
         }
         else
@@ -46,6 +47,23 @@ internal static class EndpointParameterEmitter
                             wasParamCheckFailure = true;
                         }
                         var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.EmitAssigningCodeResult()}}.ToString();
+                        var {{endpointParameter.Name}}_temp = {{endpointParameter.EmitAssigningCodeResult()}}.ToString();
+""");
+        }
+
+        if (endpointParameter.IsParsable)
+        {
+            var parsingBlock = endpointParameter.ParsingBlockEmitter($"{endpointParameter.Name}_temp", $"{endpointParameter.Name}_parsed_temp");
+            builder.AppendLine($$"""
+                {{parsingBlock}}
+                var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_parsed_temp!;
+""");
+
+        }
+        else
+        {
+            builder.AppendLine($$"""
+                        var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_temp;
 """);
         }
 

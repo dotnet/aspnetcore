@@ -96,6 +96,93 @@ app.MapGet("/", getQueryWithDefault);
     }
 
     [Fact]
+    public async Task MapAction_SingleInt32Param_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]int p) => p.ToString());
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=42");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "42");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_SingleComplexTypeParam_StringReturn()
+    {
+        // HACK! Notice the return value of p.Name! - this is because TestMapActions.cs has #nullable enable
+        // set and the compiler is returning when it is simply p.Name:
+        //
+        //     CS8603: Possible null reference return.
+        //
+        // Without source gen this same code isn't a problem.
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]Todo p) => p.Name!);
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=1");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Knit kitten mittens.");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_SingleEnumParam_StringReturn()
+    {
+        // HACK! Notice the return value of p.Name! - this is because TestMapActions.cs has #nullable enable
+        // set and the compiler is returning when it is simply p.Name:
+        //
+        //     CS8603: Possible null reference return.
+        //
+        // Without source gen this same code isn't a problem.
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]TodoStatus p) => p.ToString());
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=Done");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Done");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    // [Fact]
+    // public async Task MapAction_SingleNullableStringParam_WithQueryStringValueProvided_StringReturn()
+
+    [Fact]
     public async Task MapAction_SingleNullableStringParam_WithEmptyQueryStringValueProvided_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
