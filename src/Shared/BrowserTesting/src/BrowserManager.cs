@@ -18,6 +18,15 @@ public class BrowserManager
     private readonly BrowserManagerConfiguration _browserManagerConfiguration;
     private readonly Dictionary<string, IBrowser> _launchBrowsers = new(StringComparer.Ordinal);
 
+#pragma warning disable CA1802 // Allow declaring this 'static readonly' (instead of 'const') to avoid compiler detecting unused branches.
+    private static readonly bool IsPlaywrightDisabled =
+#if DISABLE_PLAYWRIGHT
+                                                        true;
+#else
+                                                        false;
+#endif
+#pragma warning restore CA1802
+
     private object _lock = new();
     private Task _initializeTask;
     private bool _disposed;
@@ -47,6 +56,11 @@ public class BrowserManager
 
         async Task InitializeCore()
         {
+            if (IsPlaywrightDisabled)
+            {
+                return;
+            }
+
             Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
             foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
             {
@@ -75,10 +89,7 @@ public class BrowserManager
 
     public Task<IBrowserContext> GetBrowserInstance(string browserInstance, ContextInformation contextInfo)
     {
-        if (!_launchBrowsers.TryGetValue(browserInstance, out var browser))
-        {
-            throw new InvalidOperationException("Invalid browser instance.");
-        }
+        var browser = GetBrowser(browserInstance);
 
         return AttachContextInfo(
             browser.NewContextAsync(contextInfo.ConfigureUniqueHarPath(_browserManagerConfiguration.GetContextOptions(browserInstance))),
@@ -90,10 +101,7 @@ public class BrowserManager
 
     public Task<IBrowserContext> GetBrowserInstance(string browserInstance, string contextName, ContextInformation contextInfo)
     {
-        if (_launchBrowsers.TryGetValue(browserInstance, out var browser))
-        {
-            throw new InvalidOperationException("Invalid browser instance.");
-        }
+        var browser = GetBrowser(browserInstance);
 
         return AttachContextInfo(
             browser.NewContextAsync(contextInfo.ConfigureUniqueHarPath(_browserManagerConfiguration.GetContextOptions(browserInstance, contextName))),
@@ -105,14 +113,25 @@ public class BrowserManager
 
     public Task<IBrowserContext> GetBrowserInstance(string browserInstance, string contextName, BrowserNewContextOptions options, ContextInformation contextInfo)
     {
-        if (_launchBrowsers.TryGetValue(browserInstance, out var browser))
-        {
-            throw new InvalidOperationException("Invalid browser instance.");
-        }
+        var browser = GetBrowser(browserInstance);
 
         return AttachContextInfo(
             browser.NewContextAsync(contextInfo.ConfigureUniqueHarPath(_browserManagerConfiguration.GetContextOptions(browserInstance, contextName, options))),
             contextInfo);
+    }
+
+    private IBrowser GetBrowser(string browserInstance)
+    {
+        if (IsPlaywrightDisabled)
+        {
+            return null;
+        }
+
+        if (!_launchBrowsers.TryGetValue(browserInstance, out var browser))
+        {
+            throw new InvalidOperationException("Invalid browser instance.");
+        }
+        return browser;
     }
 
     private async Task<IBrowserContext> AttachContextInfo(Task<IBrowserContext> browserContextTask, ContextInformation contextInfo)
@@ -139,14 +158,16 @@ public class BrowserManager
         {
             await browser.DisposeAsync();
         }
-        Playwright.Dispose();
+        Playwright?.Dispose();
     }
 
     public bool IsAvailable(BrowserKind browserKind) =>
         _launchBrowsers.ContainsKey(browserKind.ToString());
 
     public bool IsExplicitlyDisabled(BrowserKind browserKind) =>
-        _browserManagerConfiguration.IsDisabled || _browserManagerConfiguration.DisabledBrowsers.Contains(browserKind.ToString());
+        _browserManagerConfiguration.IsDisabled ||
+        _browserManagerConfiguration.DisabledBrowsers.Contains(browserKind.ToString()) ||
+        IsPlaywrightDisabled;
 
     public static IEnumerable<object[]> WithBrowsers<T>(IEnumerable<BrowserKind> browsers, IEnumerable<T[]> data)
     {

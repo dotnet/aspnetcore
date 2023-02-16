@@ -6,6 +6,7 @@
     <IsShippingPackage>false</IsShippingPackage>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <DefineConstants Condition="'$(IsPlaywrightAvailable)' != 'true'">$(DefineConstants);DISABLE_PLAYWRIGHT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
