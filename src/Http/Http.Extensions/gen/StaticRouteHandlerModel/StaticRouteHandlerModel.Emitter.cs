@@ -2,13 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Cache;
 using System.Text;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -22,7 +19,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else
         {
-            var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type));
+            var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
 
             if (endpoint.Response.IsVoid)
             {
@@ -44,7 +41,7 @@ internal static class StaticRouteHandlerModelEmitter
         else
         {
             var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
-                p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull)));
+                p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)));
 
             if (endpoint.Response.IsVoid)
             {

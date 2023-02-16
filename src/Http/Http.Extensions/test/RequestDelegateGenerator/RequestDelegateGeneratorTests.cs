@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -637,6 +638,122 @@ app.MapGet("/", (IServiceProvider provider) => "Hello world!");
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    public static object[][] MapAction_ExplicitServiceParam_SimpleReturn_Data
+    {
+        get
+        {
+            var fromServiceRequiredSource = $$"""app.MapPost("/", ([FromServices]{{typeof(TestService)}} svc) => svc.TestServiceMethod());""";
+            var fromServiceNullableSource = $$"""app.MapPost("/", ([FromServices]{{typeof(TestService)}}? svc) => svc?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceDefaultValueSource = $$"""
+#nullable disable
+string postServiceWithDefault([FromServices]{{typeof(TestService)}} svc = null) => svc?.TestServiceMethod() ?? string.Empty;
+app.MapPost("/", postServiceWithDefault);
+#nullable restore
+""";
+
+            var fromServiceEnumerableRequiredSource = $$"""app.MapPost("/", ([FromServices]IEnumerable<{{typeof(TestService)}}>  svc) => svc.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceEnumerableNullableSource = $$"""app.MapPost("/", ([FromServices]IEnumerable<{{typeof(TestService)}}>? svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceEnumerableDefaultValueSource = $$"""
+#nullable disable
+string postServiceWithDefault([FromServices]IEnumerable<{{typeof(TestService)}}> svc = null) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty;
+app.MapPost("/", postServiceWithDefault);
+#nullable restore
+""";
+
+            return new[]
+            {
+                new object[] { fromServiceRequiredSource, true, true },
+                new object[] { fromServiceRequiredSource, false, false },
+                new object[] { fromServiceNullableSource, true, true },
+                new object[] { fromServiceNullableSource, false, true },
+                new object[] { fromServiceDefaultValueSource, true, true },
+                new object[] { fromServiceDefaultValueSource, false, true },
+                new object[] { fromServiceEnumerableRequiredSource, true, true },
+                new object[] { fromServiceEnumerableRequiredSource, false, true },
+                new object[] { fromServiceEnumerableNullableSource, true, true },
+                new object[] { fromServiceEnumerableNullableSource, false, true },
+                new object[] { fromServiceEnumerableDefaultValueSource, true, true },
+                new object[] { fromServiceEnumerableDefaultValueSource, false, true }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MapAction_ExplicitServiceParam_SimpleReturn_Data))]
+    public async Task MapAction_ExplicitServiceParam_SimpleReturn(string source, bool hasService, bool isValid)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        if (hasService)
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<TestService>(new TestService());
+            var services = serviceCollection.BuildServiceProvider();
+            httpContext.RequestServices = services;
+        }
+
+        if (isValid)
+        {
+            await endpoint.RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, hasService ? "Produced from service!" : string.Empty);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitServiceParam_SimpleReturn_Snapshot()
+    {
+        var source = $$"""
+app.MapGet("/fromServiceRequired", ([FromServices]{{typeof(TestService)}} svc) => svc.TestServiceMethod());
+app.MapGet("/enumerableFromService", ([FromServices]IEnumerable<{{typeof(TestService)}}> svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);
+app.MapGet("/multipleFromService", ([FromServices]{{typeof(TestService)}}? svc, [FromServices]IEnumerable<{{typeof(TestService)}}> svcs) =>
+    $"{(svcs?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty)}, {svc?.TestServiceMethod()}");
+""";
+        var httpContext = CreateHttpContext();
+        var expectedBody = "Produced from service!";
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<TestService>(new TestService());
+        var services = serviceCollection.BuildServiceProvider();
+        var emptyServices = new ServiceCollection().BuildServiceProvider();
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(3, endpoints.Length);
+
+        // fromServiceRequired throws on null input
+        httpContext.RequestServices = emptyServices;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => endpoints[0].RequestDelegate(httpContext));
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        // fromServiceRequired accepts a provided input
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[0].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // enumerableFromService
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+
+        // multipleFromService
+        httpContext = CreateHttpContext();
+        httpContext.RequestServices = services;
+        await endpoints[2].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, $"{expectedBody}, {expectedBody}");
     }
 
     [Fact]
