@@ -60,9 +60,18 @@ public class WebHostBuilderKestrelExtensionsTests
             .Configure(app => { });
 
         var transportFactories = hostBuilder.Build().Services.GetServices<IConnectionListenerFactory>();
-        Assert.Collection(transportFactories,
-            t => Assert.IsType<SocketTransportFactory>(t),
-            t => Assert.IsType<NamedPipeTransportFactory>(t));
+
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Collection(transportFactories,
+                t => Assert.IsType<SocketTransportFactory>(t),
+                t => Assert.IsType<NamedPipeTransportFactory>(t));
+        }
+        else
+        {
+            Assert.Collection(transportFactories,
+                t => Assert.IsType<SocketTransportFactory>(t));
+        }
     }
 
     [Fact]

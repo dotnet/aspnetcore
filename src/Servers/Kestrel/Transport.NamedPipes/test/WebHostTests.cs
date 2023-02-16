@@ -24,7 +24,116 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
 public class WebHostTests : LoggedTest
 {
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Test expects not supported error. Skip Windows because named pipes supports Windows.")]
+    public async Task ListenNamedPipeEndpoint_NonWindowsOperatingSystem_ErrorAsync()
+    {
+        // Arrange
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(o =>
+                    {
+                        o.ListenNamedPipe("Pipename");
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("hello, world");
+                        });
+                    });
+            });
+
+        using var host = builder.Build();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<PlatformNotSupportedException>(() => host.StartAsync());
+
+        // Assert
+        Assert.Equal("Named pipes transport requires a Windows operating system.", ex.Message);
+    }
+
     [Fact]
+    public async Task ListenNamedPipeEndpoint_CustomNamedPipeEndpointTransport()
+    {
+        // Arrange
+        var transport = new TestConnectionListenerFactory();
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(o =>
+                    {
+                        o.ListenNamedPipe("Pipename");
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("hello, world");
+                        });
+                    });
+                webHostBuilder.ConfigureServices(services =>
+                 {
+                     services.AddSingleton<IConnectionListenerFactory>(transport);
+                 });
+            });
+
+        using var host = builder.Build();
+
+        // Act
+        await host.StartAsync();
+        await host.StopAsync();
+
+        // Assert
+        Assert.Equal("Pipename", transport.BoundEndPoint.PipeName);
+    }
+
+    private sealed class TestConnectionListenerFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
+    {
+        public NamedPipeEndPoint BoundEndPoint { get; private set; }
+
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult<IConnectionListener>(new TestConnectionListener());
+        }
+
+        public bool CanBind(EndPoint endpoint)
+        {
+            if (endpoint is NamedPipeEndPoint ep)
+            {
+                BoundEndPoint = ep;
+                return true;
+            }
+            return false;
+        }
+
+        private sealed class TestConnectionListener : IConnectionListener
+        {
+            public EndPoint EndPoint { get; }
+
+            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+            {
+                return ValueTask.FromResult<ConnectionContext>(null);
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                return default;
+            }
+
+            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+            {
+                return default;
+            }
+        }
+    }
+
+    [ConditionalFact]
+    [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_HelloWorld_ClientSuccess()
     {
         // Arrange
@@ -74,7 +183,7 @@ public class WebHostTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Impersonation is only supported on Windows.")]
+    [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_Impersonation_ClientSuccess()
     {
         AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
@@ -159,7 +268,8 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [Theory]
+    [ConditionalTheory]
+    [NamedPipesSupported]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ListenNamedPipeEndpoint_ProtocolVersion_ClientSuccess(HttpProtocols protocols)
@@ -226,6 +336,7 @@ public class WebHostTests : LoggedTest
 
     [ConditionalTheory]
     [TlsAlpnSupported]
+    [NamedPipesSupported]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     public async Task ListenNamedPipeEndpoint_Tls_ClientSuccess(HttpProtocols protocols)
@@ -281,7 +392,8 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [Fact]
+    [ConditionalFact]
+    [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_FromUrl_HelloWorld_ClientSuccess()
     {
         // Arrange

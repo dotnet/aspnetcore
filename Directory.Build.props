@@ -240,6 +240,12 @@
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Set the arcade before common targets so we compute ExcludeFromBuild before arcade uses it. -->
+    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonTargets>
+    <CustomBeforeMicrosoftCommonCrossTargetingTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonCrossTargetingTargets>
+  </PropertyGroup>
+
   <Import Project="eng\Workarounds.props" />
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />

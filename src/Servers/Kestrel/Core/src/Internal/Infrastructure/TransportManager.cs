@@ -53,6 +53,14 @@ internal sealed class TransportManager
             }
         }
 
+        // Special case situation where a named pipe endpoint is specified and there is no matching transport.
+        // The named pipe transport is only registered on Windows. The test is done at this point so there is
+        // the opportunity for the app to register their own transport to handle named pipe endpoints.
+        if (endPoint is NamedPipeEndPoint && !OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException("Named pipes transport requires a Windows operating system.");
+        }
+
         throw new InvalidOperationException($"No registered {nameof(IConnectionListenerFactory)} supports endpoint {endPoint.GetType().Name}: {endPoint}");
     }
 

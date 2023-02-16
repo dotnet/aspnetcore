@@ -82,7 +82,7 @@ public static partial class RequestDelegateFactory
     private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
     private static readonly ParameterExpression BoundValuesArrayExpr = Expression.Parameter(typeof(object[]), "boundValues");
 
-    private static readonly ParameterExpression HttpContextExpr = ParameterBindingMethodCache.HttpContextExpr;
+    private static readonly ParameterExpression HttpContextExpr = ParameterBindingMethodCache.SharedExpressions.HttpContextExpr;
     private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestServices))!);
     private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Request))!);
     private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
@@ -98,7 +98,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
     private static readonly NewExpression EmptyHttpResultValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(EmptyHttpResult) })!, Expression.Property(null, typeof(EmptyHttpResult), nameof(EmptyHttpResult.Instance)));
-    private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
+    private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.SharedExpressions.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
@@ -1055,7 +1055,7 @@ public static partial class RequestDelegateFactory
                 {
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
 
-                    if (jsonTypeInfo.IsPolymorphicSafe() == true)
+                    if (jsonTypeInfo.HasKnownPolymorphism())
                     {
                         return Expression.Call(
                             ExecuteTaskOfTFastMethod.MakeGenericMethod(typeArg),
@@ -1096,7 +1096,7 @@ public static partial class RequestDelegateFactory
                 {
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
 
-                    if (jsonTypeInfo.IsPolymorphicSafe() == true)
+                    if (jsonTypeInfo.HasKnownPolymorphism())
                     {
                         return Expression.Call(
                             ExecuteValueTaskOfTFastMethod.MakeGenericMethod(typeArg),
@@ -1140,7 +1140,7 @@ public static partial class RequestDelegateFactory
         {
             var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(returnType);
 
-            if (jsonTypeInfo.IsPolymorphicSafe() == true)
+            if (jsonTypeInfo.HasKnownPolymorphism())
             {
                 return Expression.Call(
                     JsonResultWriteResponseOfTFastAsyncMethod.MakeGenericMethod(returnType),
@@ -1551,7 +1551,7 @@ public static partial class RequestDelegateFactory
         if (tryParseMethodCall is null)
         {
             var typeName = TypeNameHelper.GetTypeDisplayName(targetParseType, fullName: false);
-            throw new InvalidOperationException($"No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
+            throw new InvalidOperationException($"{parameter.Name} must have a valid TryParse method to support converting from a string. No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
         }
 
         // string tempSourceString;

@@ -47,11 +47,13 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         {
             builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
             builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArray, default));
+            builder.SetUpdatesAttributeName("value");
         }
         else
         {
             builder.AddAttribute(6, "value", CurrentValueAsString);
             builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
+            builder.SetUpdatesAttributeName("value");
         }
 
         builder.AddElementReferenceCapture(8, __selectReference => Element = __selectReference);

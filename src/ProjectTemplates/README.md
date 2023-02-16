@@ -61,15 +61,27 @@ Then, use one of:
 1. Install the templates to an existing Visual Studio installation.
     1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
         - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
-    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new -i "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
+    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new install "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
     3. Run Visual Studio and test out templates manually.
-    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new --uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
+    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
 **Note** Because the templates build against the version of `Microsoft.AspNetCore.App` that was built during the
 previous step, it is NOT advised that you install templates created on your local machine using just
 `dotnet new -i [nupkgPath]`.
+
+#### Running Blazor Playwright Template Tests
+
+1. From the root of the repo, build the templates: `.\eng\build.cmd -all -pack`
+2. `cd .\src\ProjectTemplates\test\Templates.Blazor.Tests`
+3. `dotnet test .\Templates.Blazor.Tests.csproj` with optional `--filter` arg to run a specific test.
+
+The requisite browsers should be automatically installed. If you encounter browser errors, the browsers can be manually installed via the following script, replacing `[TFM]` with the current target TFM (ex. `net8.0`).
+
+```cmd
+.\bin\Debug\[TFM]\playwright.ps1 install
+```
 
 #### Conditional tests & skipping test platforms
 
@@ -87,7 +99,7 @@ An entire test project can be configured to skip specific platforms using the `<
 
 ```xml
 <SkipHelixQueues>
-    $(HelixQueueArmDebian11);
+    $(HelixQueueArmDebian12);
 </SkipHelixQueues>
 ```
 

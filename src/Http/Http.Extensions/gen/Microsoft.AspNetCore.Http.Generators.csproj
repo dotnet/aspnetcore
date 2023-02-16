@@ -14,15 +14,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HashCode.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypeData.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\SymbolExtensions.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

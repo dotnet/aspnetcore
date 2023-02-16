@@ -6,7 +6,15 @@
 #include <random>
 #include <map>
 
+// Minimum port number that can be used.
+// This is lower than 'MIN_PORT_RANDOM' since we allow people to choose
+// low-numbered ports when they are not using random assignment.
 #define MIN_PORT                                    1025
+// Minimum number used for automatic random port assignment.
+// This value is somewhat arbitrary. Fixed-port services tend to
+// use ports near the minimum (1025) so this number is much higher
+// to reduce the chance of collisions.
+#define MIN_PORT_RANDOM                             10000
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
 #define MAX_ACTIVE_CHILD_PROCESSES                  16

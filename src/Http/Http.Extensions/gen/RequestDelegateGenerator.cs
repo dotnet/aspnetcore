@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -24,7 +26,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var endpoints = context.SyntaxProvider.CreateSyntaxProvider(
+        var endpointsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
             predicate: (node, _) => node is InvocationExpressionSyntax
             {
                 Expression: MemberAccessExpressionSyntax
@@ -39,74 +41,102 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             transform: (context, token) =>
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token) as IInvocationOperation;
-                return StaticRouteHandlerModelParser.GetEndpointFromOperation(operation);
+                var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
+                return new Endpoint(operation, wellKnownTypes);
             })
-            .Where(endpoint => endpoint.Response.ResponseType == "string")
-            .WithTrackingName("EndpointModel");
+            .WithTrackingName(GeneratorSteps.EndpointModelStep);
+
+        context.RegisterSourceOutput(endpointsWithDiagnostics, (context, endpoint) =>
+        {
+            var (filePath, _) = endpoint.Location;
+            foreach (var diagnostic in endpoint.Diagnostics)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(diagnostic, endpoint.Operation.Syntax.GetLocation(), filePath));
+            }
+        });
+
+        var endpoints = endpointsWithDiagnostics
+            .Where(endpoint => endpoint.Diagnostics.Count == 0)
+            .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
 
         var thunks = endpoints.Select((endpoint, _) => $$"""
-[{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
-           (methodInfo, options) =>
-            {
-                if (options == null)
+            [{{endpoint.EmitSourceKey()}}] = (
+               (methodInfo, options) =>
                 {
-                    return new RequestDelegateMetadataResult { EndpointMetadata = ReadOnlyCollection<object>.Empty };
-                }
-                options.EndpointBuilder.Metadata.Add(new SourceKey{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}});
-                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
-            },
-            (del, options, inferredMetadataResult) =>
-            {
-                var handler = ({{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}})del;
-                EndpointFilterDelegate? filteredInvocation = null;
+                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey{{endpoint.EmitSourceKey()}});
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    var handler = ({{endpoint.EmitHandlerDelegateCast()}})del;
+                    EndpointFilterDelegate? filteredInvocation = null;
 
-                if (options.EndpointBuilder.FilterFactories.Count > 0)
-                {
-                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
-                        if (ic.HttpContext.Response.StatusCode == 400)
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
-                            return ValueTask.FromResult<object?>(Results.Empty);
-                        }
-                        {{StaticRouteHandlerModelEmitter.EmitFilteredInvocation()}}
-                    },
-                    options.EndpointBuilder,
-                    handler.Method);
-                }
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            {{endpoint.EmitFilteredInvocation()}}
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
 
-                {{StaticRouteHandlerModelEmitter.EmitRequestHandler()}}
-                {{StaticRouteHandlerModelEmitter.EmitFilteredRequestHandler()}}
+{{endpoint.EmitRequestHandler()}}
+{{endpoint.EmitFilteredRequestHandler()}}
 
-                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
-                var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
-                return new RequestDelegateResult(targetDelegate, metadata);
-            }),
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
 """);
 
-        var stronglyTypedEndpointDefinitions = endpoints.Select((endpoint, _) => $$"""
+        var stronglyTypedEndpointDefinitions = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                var dedupedByDelegate = endpoints.Distinct(EndpointDelegateComparer.Instance);
+                var code = new StringBuilder();
+                foreach (var endpoint in dedupedByDelegate)
+                {
+                    code.AppendLine($$"""
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::{{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}} handler,
+            global::{{endpoint.EmitHandlerDelegateType()}} handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(endpoints, pattern, handler, {{StaticRouteHandlerModelEmitter.EmitVerb(endpoint)}}, filePath, lineNumber);
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                    endpoints,
+                    pattern,
+                    handler,
+                    {{endpoint.EmitVerb()}},
+                    filePath,
+                    lineNumber);
         }
 """);
+               }
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions.Collect());
+                return code.ToString();
+            });
+
+        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var (thunks, endpoints) = sources;
+            var (thunks, endpointsCode) = sources;
 
-            var endpointsCode = new StringBuilder();
-            var thunksCode = new StringBuilder();
-            foreach (var endpoint in endpoints)
+            if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
-                endpointsCode.AppendLine(endpoint);
+                return;
             }
+
+            var thunksCode = new StringBuilder();
             foreach (var thunk in thunks)
             {
                 thunksCode.AppendLine(thunk);
@@ -115,7 +145,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(
                 genericThunks: string.Empty,
                 thunks: thunksCode.ToString(),
-                endpoints: endpointsCode.ToString());
+                endpoints: endpointsCode);
+
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
     }

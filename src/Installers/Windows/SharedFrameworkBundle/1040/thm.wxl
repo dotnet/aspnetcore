@@ -22,7 +22,7 @@
   <String Id="ProgressHeader">Stato installazione</String>
   <String Id="ProgressLabel">Elaborazione di:</String>
   <String Id="OverallProgressPackageText">Inizializzazione in corso...</String>
-  <String Id="ProgressCancelButton">Ann&amp;ulla</String>
+  <String Id="ProgressCancelButton">&amp;Annulla</String>
   <String Id="ModifyHeader">Modifica installazione</String>
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>

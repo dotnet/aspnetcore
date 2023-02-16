@@ -10,6 +10,8 @@
   "symbols/kestrelHttpsPort/description": "Número de puerto que se va a usar para el punto de conexión HTTPS en launchSettings.json. Esta opción solo es aplicable cuando no se usa el parámetro no-https (no-https se omitirá si se usa IndividualAuth o OrganizationalAuth).",
   "symbols/UseProgramMain/displayName": "No usar instrucciones de _nivel superior",
   "symbols/UseProgramMain/description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior.",
+  "symbols/NativeAot/displayName": "Habilitar publicación de AOT _native",
+  "symbols/NativeAot/description": "Indica si se debe habilitar el proyecto para publicarlo como AOT nativo.",
   "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
   "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\""
 }

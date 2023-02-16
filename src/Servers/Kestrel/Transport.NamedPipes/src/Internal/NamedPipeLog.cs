@@ -30,7 +30,7 @@ internal static partial class NamedPipeLog
         }
     }
 
-    [LoggerMessage(3, LogLevel.Debug, "Named pipe listener aborted.", EventName = "ConnectionListenerAborted")]
+    [LoggerMessage(3, LogLevel.Error, "Named pipe listener aborted.", EventName = "ConnectionListenerAborted")]
     public static partial void ConnectionListenerAborted(ILogger logger, Exception exception);
 
     [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" paused.", EventName = "ConnectionPause", SkipEnabledCheck = true)]
@@ -79,4 +79,7 @@ internal static partial class NamedPipeLog
 
     [LoggerMessage(8, LogLevel.Debug, "Named pipe listener received broken pipe while waiting for a connection.", EventName = "ConnectionListenerBrokenPipe")]
     public static partial void ConnectionListenerBrokenPipe(ILogger logger, Exception ex);
+
+    [LoggerMessage(9, LogLevel.Trace, "Named pipe listener queue exited.", EventName = "ConnectionListenerQueueExited")]
+    public static partial void ConnectionListenerQueueExited(ILogger logger);
 }

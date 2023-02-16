@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 /// <summary>
 /// Constrains a route parameter to represent only Boolean values.
 /// </summary>
-public class BoolRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class BoolRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
 {
     /// <inheritdoc />
     public bool Match(

@@ -4,8 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
-    <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
-    <SignAssembly>false</SignAssembly>
     <SkipHelixAlpine>true</SkipHelixAlpine>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
@@ -34,8 +32,6 @@
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
-    <Reference Include="Selenium.WebDriver" />
-    <Reference Include="Selenium.WebDriver.ChromeDriver" />
   </ItemGroup>
 
 </Project>

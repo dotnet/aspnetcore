@@ -1,15 +1,44 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System.Buffers;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Headers;
+namespace Microsoft.Net.Http.Headers;
 
-internal static class HttpTokenParsingRules
+internal static class HttpRuleParser
 {
-    private static readonly bool[] TokenChars = CreateTokenChars();
+    // token = 1*<any CHAR except CTLs or separators>
+    // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+    private static readonly IndexOfAnyValues<char> TokenChars =
+        IndexOfAnyValues.Create("!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+
     private const int MaxNestedCount = 5;
+    private static readonly string[] DateFormats = new string[]
+    {
+        // "r", // RFC 1123, required output format but too strict for input
+        "ddd, d MMM yyyy H:m:s 'GMT'", // RFC 1123 (r, except it allows both 1 and 01 for date and time)
+        "ddd, d MMM yyyy H:m:s", // RFC 1123, no zone - assume GMT
+        "d MMM yyyy H:m:s 'GMT'", // RFC 1123, no day-of-week
+        "d MMM yyyy H:m:s", // RFC 1123, no day-of-week, no zone
+        "ddd, d MMM yy H:m:s 'GMT'", // RFC 1123, short year
+        "ddd, d MMM yy H:m:s", // RFC 1123, short year, no zone
+        "d MMM yy H:m:s 'GMT'", // RFC 1123, no day-of-week, short year
+        "d MMM yy H:m:s", // RFC 1123, no day-of-week, short year, no zone
+
+        "dddd, d'-'MMM'-'yy H:m:s 'GMT'", // RFC 850, short year
+        "dddd, d'-'MMM'-'yy H:m:s", // RFC 850 no zone
+        "ddd, d'-'MMM'-'yyyy H:m:s 'GMT'", // RFC 850, long year
+        "ddd MMM d H:m:s yyyy", // ANSI C's asctime() format
+
+        "ddd, d MMM yyyy H:m:s zzz", // RFC 5322
+        "ddd, d MMM yyyy H:m:s", // RFC 5322 no zone
+        "d MMM yyyy H:m:s zzz", // RFC 5322 no day-of-week
+        "d MMM yyyy H:m:s", // RFC 5322 no day-of-week, no zone
+    };
 
     internal const char CR = '\r';
     internal const char LF = '\n';
@@ -19,56 +48,26 @@ internal static class HttpTokenParsingRules
     internal const int MaxInt32Digits = 10;
 
     // iso-8859-1, Western European (ISO)
-    internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding(28591);
+    internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding("iso-8859-1");
 
-    private static bool[] CreateTokenChars()
+    [Pure]
+    internal static int GetTokenLength(StringSegment input, int startIndex)
     {
-        // token = 1*<any CHAR except CTLs or separators>
-        // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+        Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
 
-        var tokenChars = new bool[128]; // everything is false
-
-        for (var i = 33; i < 127; i++) // skip Space (32) & DEL (127)
+        if (startIndex >= input.Length)
         {
-            tokenChars[i] = true;
+            return 0;
         }
 
-        // remove separators: these are not valid token characters
-        tokenChars[(byte)'('] = false;
-        tokenChars[(byte)')'] = false;
-        tokenChars[(byte)'<'] = false;
-        tokenChars[(byte)'>'] = false;
-        tokenChars[(byte)'@'] = false;
-        tokenChars[(byte)','] = false;
-        tokenChars[(byte)';'] = false;
-        tokenChars[(byte)':'] = false;
-        tokenChars[(byte)'\\'] = false;
-        tokenChars[(byte)'"'] = false;
-        tokenChars[(byte)'/'] = false;
-        tokenChars[(byte)'['] = false;
-        tokenChars[(byte)']'] = false;
-        tokenChars[(byte)'?'] = false;
-        tokenChars[(byte)'='] = false;
-        tokenChars[(byte)'{'] = false;
-        tokenChars[(byte)'}'] = false;
-
-        return tokenChars;
+        var subspan = input.AsSpan(startIndex);
+        var firstNonTokenCharIdx = subspan.IndexOfAnyExcept(TokenChars);
+        return (firstNonTokenCharIdx == -1) ? subspan.Length : firstNonTokenCharIdx;
     }
 
-    internal static bool IsTokenChar(char character)
+    internal static int GetWhitespaceLength(StringSegment input, int startIndex)
     {
-        // Must be between 'space' (32) and 'DEL' (127)
-        if (character > 127)
-        {
-            return false;
-        }
-
-        return TokenChars[character];
-    }
-
-    internal static int GetTokenLength(string input, int startIndex)
-    {
-        Debug.Assert(input != null);
+        Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
 
         if (startIndex >= input.Length)
         {
@@ -77,31 +76,10 @@ internal static class HttpTokenParsingRules
 
         var current = startIndex;
 
+        char c;
         while (current < input.Length)
         {
-            if (!IsTokenChar(input[current]))
-            {
-                return current - startIndex;
-            }
-            current++;
-        }
-        return input.Length - startIndex;
-    }
-
-    internal static int GetWhitespaceLength(string input, int startIndex)
-    {
-        Debug.Assert(input != null);
-
-        if (startIndex >= input.Length)
-        {
-            return 0;
-        }
-
-        var current = startIndex;
-
-        while (current < input.Length)
-        {
-            var c = input[current];
+            c = input[current];
 
             if ((c == SP) || (c == Tab))
             {
@@ -130,7 +108,51 @@ internal static class HttpTokenParsingRules
         return input.Length - startIndex;
     }
 
-    internal static HttpParseResult GetQuotedStringLength(string input, int startIndex, out int length)
+    internal static int GetNumberLength(StringSegment input, int startIndex, bool allowDecimal)
+    {
+        Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
+        Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
+
+        var current = startIndex;
+        char c;
+
+        // If decimal values are not allowed, we pretend to have read the '.' character already. I.e. if a dot is
+        // found in the string, parsing will be aborted.
+        var haveDot = !allowDecimal;
+
+        // The RFC doesn't allow decimal values starting with dot. I.e. value ".123" is invalid. It must be in the
+        // form "0.123". Also, there are no negative values defined in the RFC. So we'll just parse non-negative
+        // values.
+        // The RFC only allows decimal dots not ',' characters as decimal separators. Therefore value "1,23" is
+        // considered invalid and must be represented as "1.23".
+        if (input[current] == '.')
+        {
+            return 0;
+        }
+
+        while (current < input.Length)
+        {
+            c = input[current];
+            if ((c >= '0') && (c <= '9'))
+            {
+                current++;
+            }
+            else if (!haveDot && (c == '.'))
+            {
+                // Note that value "1." is valid.
+                haveDot = true;
+                current++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return current - startIndex;
+    }
+
+    internal static HttpParseResult GetQuotedStringLength(StringSegment input, int startIndex, out int length)
     {
         var nestedCount = 0;
         return GetExpressionLength(input, startIndex, '"', '"', false, ref nestedCount, out length);
@@ -138,11 +160,9 @@ internal static class HttpTokenParsingRules
 
     // quoted-pair = "\" CHAR
     // CHAR = <any US-ASCII character (octets 0 - 127)>
-    internal static HttpParseResult GetQuotedPairLength(string input, int startIndex, out int length)
+    internal static HttpParseResult GetQuotedPairLength(StringSegment input, int startIndex, out int length)
     {
-        Debug.Assert(input != null);
-        Debug.Assert((startIndex >= 0) && (startIndex < input.Length));
-
+        Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
         length = 0;
 
         if (input[startIndex] != '\\')
@@ -162,6 +182,12 @@ internal static class HttpTokenParsingRules
         return HttpParseResult.Parsed;
     }
 
+    // Try the various date formats in the order listed above.
+    // We should accept a wide verity of common formats, but only output RFC 1123 style dates.
+    internal static bool TryStringToDate(StringSegment input, out DateTimeOffset result) =>
+        DateTimeOffset.TryParseExact(input.ToString(), DateFormats, DateTimeFormatInfo.InvariantInfo,
+            DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out result);
+
     // TEXT = <any OCTET except CTLs, but including LWS>
     // LWS = [CRLF] 1*( SP | HT )
     // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
@@ -174,7 +200,7 @@ internal static class HttpTokenParsingRules
     // comments, resulting in a stack overflow exception. In addition having more than 1 nested comment (if any)
     // is unusual.
     private static HttpParseResult GetExpressionLength(
-        string input,
+        StringSegment input,
         int startIndex,
         char openChar,
         char closeChar,
@@ -182,8 +208,8 @@ internal static class HttpTokenParsingRules
         ref int nestedCount,
         out int length)
     {
-        Debug.Assert(input != null);
-        Debug.Assert((startIndex >= 0) && (startIndex < input.Length));
+        Contract.Requires(input != null);
+        Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
 
         length = 0;
 
@@ -219,14 +245,9 @@ internal static class HttpTokenParsingRules
                         return HttpParseResult.InvalidFormat;
                     }
 
-                    var nestedResult = GetExpressionLength(
-                        input,
-                        current,
-                        openChar,
-                        closeChar,
-                        supportsNesting,
-                        ref nestedCount,
-                        out var nestedLength);
+                    var nestedLength = 0;
+                    var nestedResult = GetExpressionLength(input, current, openChar, closeChar,
+                        supportsNesting, ref nestedCount, out nestedLength);
 
                     switch (nestedResult)
                     {
@@ -235,7 +256,7 @@ internal static class HttpTokenParsingRules
                             break;
 
                         case HttpParseResult.NotParsed:
-                            Debug.Fail("'NotParsed' is unexpected: We started nested expression " +
+                            Contract.Assert(false, "'NotParsed' is unexpected: We started nested expression " +
                                 "parsing, because we found the open-char. So either it's a valid nested " +
                                 "expression or it has invalid format.");
                             break;
@@ -245,7 +266,7 @@ internal static class HttpTokenParsingRules
                             return HttpParseResult.InvalidFormat;
 
                         default:
-                            Debug.Fail("Unknown enum result: " + nestedResult);
+                            Contract.Assert(false, "Unknown enum result: " + nestedResult);
                             break;
                     }
                 }
@@ -267,11 +288,3 @@ internal static class HttpTokenParsingRules
         return HttpParseResult.InvalidFormat;
     }
 }
-
-internal enum HttpParseResult
-{
-    Parsed,
-    NotParsed,
-    InvalidFormat,
-}
-

@@ -611,12 +611,21 @@ public partial class HubConnection : IAsyncDisposable
     private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(string methodName, object?[] args, CancellationTokenSource cts)
     {
         var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token).ConfigureAwait(false);
-        while (await reader.WaitToReadAsync(cts.Token).ConfigureAwait(false))
+
+        try
         {
-            while (reader.TryRead(out var item))
+            while (await reader.WaitToReadAsync(cts.Token).ConfigureAwait(false))
             {
-                yield return (T)item!;
+                while (reader.TryRead(out var item))
+                {
+                    yield return (T)item!;
+                }
             }
+        }
+        finally
+        {
+            // Needed to avoid UnobservedTaskExceptions
+            _ = reader.Completion.Exception;
         }
     }
 

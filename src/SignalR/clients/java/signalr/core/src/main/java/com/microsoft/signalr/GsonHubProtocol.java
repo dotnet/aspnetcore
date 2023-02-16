@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -19,10 +18,18 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
-class JsonHubProtocol implements HubProtocol {
+public final class GsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
-    private final Gson gson = new Gson();
+    private final Gson gson;
     private static final String RECORD_SEPARATOR = "\u001e";
+
+    public GsonHubProtocol() {
+        this(new Gson());
+    }
+
+    public GsonHubProtocol(Gson gson) {
+        this.gson = gson;
+    }
 
     @Override
     public String getName() {

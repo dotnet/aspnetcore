@@ -10,6 +10,8 @@
   "symbols/kestrelHttpsPort/description": "launchSettings.json で HTTPS エンドポイントに使用するポート番号。このオプションは、HTTPS 以外のパラメーターが使用されていない場合にのみ適用されます (IndividualAuth または OrganizationalAuth が使用されている場合は、HTTPS 以外は無視されます)。",
   "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",
   "symbols/UseProgramMain/description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。",
+  "symbols/NativeAot/displayName": "_native AOT 発行を有効にする",
+  "symbols/NativeAot/description": "プロジェクトをネイティブ AOT として発行できるようにするかどうかを指定します。",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
 }

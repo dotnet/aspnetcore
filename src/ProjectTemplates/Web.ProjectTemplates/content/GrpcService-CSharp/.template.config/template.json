@@ -124,6 +124,13 @@
       "defaultValue": "false",
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "NativeAot" : {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Enable _native AOT publish",
+      "description": "Whether to enable the project for publishing as native AOT."
     }
   },
   "primaryOutputs": [
