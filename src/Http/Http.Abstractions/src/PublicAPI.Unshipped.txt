@@ -1,6 +1,5 @@
 #nullable enable
 const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
-static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
 *REMOVED*Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object?[]! arguments) -> void
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
@@ -8,3 +7,4 @@ Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.Asp
 Microsoft.AspNetCore.Http.IProblemDetailsService.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void
+static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
