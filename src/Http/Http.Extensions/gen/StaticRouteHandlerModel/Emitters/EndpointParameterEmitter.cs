@@ -9,11 +9,11 @@ internal static class EndpointParameterEmitter
     internal static string EmitSpecialParameterPreparation(this EndpointParameter endpointParameter)
     {
         return $"""
-                        var {endpointParameter.Name}_local = {endpointParameter.AssigningCode};
+                        var {endpointParameter.HandlerArgument} = {endpointParameter.AssigningCode};
 """;
     }
 
-    internal static string EmitQueryParameterPreparation(this EndpointParameter endpointParameter)
+    internal static string EmitQueryOrHeaderParameterPreparation(this EndpointParameter endpointParameter)
     {
         var builder = new StringBuilder();
 
@@ -24,7 +24,7 @@ internal static class EndpointParameterEmitter
 
         // Grab raw input from HttpContext.
         builder.AppendLine($$"""
-                        var {{endpointParameter.Name}}_raw = {{endpointParameter.AssigningCode}};
+                        var {{endpointParameter.AssigningCodeResult}} = {{endpointParameter.AssigningCode}};
 """);
 
         // If we are not optional, then at this point we can just assign the string value to the handler argument,
@@ -34,19 +34,85 @@ internal static class EndpointParameterEmitter
         if (endpointParameter.IsOptional)
         {
             builder.AppendLine($$"""
-                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.Name}}_raw.Count > 0 ? {{endpointParameter.Name}}_raw.ToString() : null;
+                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.AssigningCodeResult}}.Count > 0 ? {{endpointParameter.AssigningCodeResult}}.ToString() : null;
 """);
         }
         else
         {
             builder.AppendLine($$"""
-                        if (StringValues.IsNullOrEmpty({{endpointParameter.Name}}_raw))
+                        if (StringValues.IsNullOrEmpty({{endpointParameter.AssigningCodeResult}}))
                         {
                             wasParamCheckFailure = true;
                         }
-                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.Name}}_raw.ToString();
+                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.AssigningCodeResult}}.ToString();
 """);
         }
+
+        return builder.ToString();
+    }
+
+    internal static string EmitRouteParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine($"""
+                        {endpointParameter.EmitParameterDiagnosticComment()}
+""");
+
+        // Throw an exception of if the route parameter name that was specific in the `FromRoute`
+        // attribute or in the parameter name does not appear in the actual route.
+        builder.AppendLine($$"""
+                        if (options?.RouteParameterNames?.Contains("{{endpointParameter.Name}}", StringComparer.OrdinalIgnoreCase) != true)
+                        {
+                            throw new InvalidOperationException($"'{{endpointParameter.Name}}' is not a route parameter.");
+                        }
+""");
+
+        builder.AppendLine($$"""
+                        var {{endpointParameter.AssigningCodeResult}} = {{endpointParameter.AssigningCode}};
+""");
+
+        if (!endpointParameter.IsOptional)
+        {
+            builder.AppendLine($$"""
+                        if ({{endpointParameter.AssigningCodeResult}} == null)
+                        {
+                            wasParamCheckFailure = true;
+                        }
+""");
+        }
+        builder.AppendLine($"""
+                        var {endpointParameter.HandlerArgument} = {endpointParameter.AssigningCodeResult};
+""");
+
+        return builder.ToString();
+    }
+
+    internal static string EmitRouteOrQueryParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine($"""
+                        {endpointParameter.EmitParameterDiagnosticComment()}
+""");
+
+        builder.AppendLine($$"""
+                        var {{endpointParameter.AssigningCodeResult}} = {{endpointParameter.AssigningCode}};
+""");
+
+        if (!endpointParameter.IsOptional)
+        {
+            builder.AppendLine($$"""
+                        if ({{endpointParameter.AssigningCodeResult}} is StringValues { Count: 0 })
+                        {
+                            wasParamCheckFailure = true;
+                        }
+""");
+        }
+
+        builder.AppendLine($"""
+                        var {endpointParameter.HandlerArgument} = {endpointParameter.AssigningCodeResult};
+""");
 
         return builder.ToString();
     }
@@ -62,7 +128,7 @@ internal static class EndpointParameterEmitter
 
         // Grab raw input from HttpContext.
         builder.AppendLine($$"""
-                        var (isSuccessful, {{endpointParameter.Name}}_local) = {{endpointParameter.AssigningCode}};
+                        var (isSuccessful, {{endpointParameter.HandlerArgument}}) = {{endpointParameter.AssigningCode}};
 """);
 
         // If binding from the JSON body fails, we exit early. Don't

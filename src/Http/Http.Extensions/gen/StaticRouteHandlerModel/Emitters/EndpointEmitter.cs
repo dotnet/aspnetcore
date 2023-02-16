@@ -21,8 +21,14 @@ internal static class EndpointEmitter
                     Source: EndpointParameterSource.SpecialType
                 } => parameter.EmitSpecialParameterPreparation(),
                 {
-                    Source: EndpointParameterSource.Query,
-                } => parameter.EmitQueryParameterPreparation(),
+                    Source: EndpointParameterSource.Query or EndpointParameterSource.Header,
+                } => parameter.EmitQueryOrHeaderParameterPreparation(),
+                {
+                  Source: EndpointParameterSource.Route,
+                } => parameter.EmitRouteParameterPreparation(),
+                {
+                    Source: EndpointParameterSource.RouteOrQuery
+                } => parameter.EmitRouteOrQueryParameterPreparation(),
                 {
                     Source: EndpointParameterSource.JsonBody
                 } => parameter.EmitJsonBodyParameterPreparationString(),
