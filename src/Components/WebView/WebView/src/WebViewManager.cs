@@ -168,7 +168,8 @@ public abstract class WebViewManager : IAsyncDisposable
 
         return true;
     }
-    /// <summary>
+
+        /// <summary>
     /// Removes a previously-attached root component from the current page.
     /// </summary>
     /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
