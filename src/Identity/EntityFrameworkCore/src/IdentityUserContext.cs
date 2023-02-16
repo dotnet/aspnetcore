@@ -95,6 +95,11 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// </summary>
     public virtual DbSet<TUserToken> UserTokens { get; set; } = default!;
 
+    /// <summary>
+    /// Gets the schema version used for versioning.
+    /// </summary>
+    protected virtual Version SchemaVersion { get => GetStoreOptions()?.SchemaVersion ?? IdentityVersions.Version1; }
+
     private StoreOptions? GetStoreOptions() => this.GetService<IDbContextOptions>()
                         .Extensions.OfType<CoreOptionsExtension>()
                         .FirstOrDefault()?.ApplicationServiceProvider
@@ -126,7 +131,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// The builder being used to construct the model for this context.
     /// </param>
     /// <param name="schemaVersion">The schema version.</param>
-    protected virtual void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
+    internal virtual void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
     {
         if (schemaVersion >= IdentityVersions.Version2)
         {
@@ -144,7 +149,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <param name="builder">
     /// The builder being used to construct the model for this context.
     /// </param>
-    protected virtual void OnModelCreatingVersion2(ModelBuilder builder)
+    internal virtual void OnModelCreatingVersion2(ModelBuilder builder)
     {
         // Differences from Version 1:
         // - maxKeyLength defaults to 128
@@ -246,7 +251,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <param name="builder">
     /// The builder being used to construct the model for this context.
     /// </param>
-    protected virtual void OnModelCreatingVersion1(ModelBuilder builder)
+    internal virtual void OnModelCreatingVersion1(ModelBuilder builder)
     {
         var storeOptions = GetStoreOptions();
         var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;

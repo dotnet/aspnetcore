@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Identity;
 public static class IdentityVersions
 {
     /// <summary>
+    /// Represents the default version of the identity schema 
+    /// </summary>
+    public static readonly Version Default = new Version(0, 0);
+
+    /// <summary>
     /// Represents the initial 1.0 version of the identity schema 
     /// </summary>
     public static readonly Version Version1 = new Version(1, 0);

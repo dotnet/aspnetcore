@@ -37,8 +37,6 @@ public class VersionOneSchemaTest : IClassFixture<ScratchDatabaseFixture>
         {
             var db = scope.ServiceProvider.GetRequiredService<VersionOneDbContext>();
             db.Database.EnsureCreated();
-            Assert.True(db.OnModelCreatingVersion1Called);
-            Assert.False(db.OnModelCreatingVersion2Called);
         }
     }
 

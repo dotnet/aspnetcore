@@ -14,21 +14,6 @@ public class VersionOneDbContext : IdentityDbContext<IdentityUser, IdentityRole,
         : base(options)
     {
     }
-
-    public bool OnModelCreatingVersion1Called = false;
-    public bool OnModelCreatingVersion2Called = false;
-
-    protected override void OnModelCreatingVersion1(ModelBuilder builder)
-    {
-        base.OnModelCreatingVersion1(builder);
-        OnModelCreatingVersion1Called = true;
-    }
-
-    protected override void OnModelCreatingVersion2(ModelBuilder builder)
-    {
-        base.OnModelCreatingVersion2(builder);
-        OnModelCreatingVersion2Called = true;
-    }
 }
 
 public class VersionTwoDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
@@ -36,21 +21,6 @@ public class VersionTwoDbContext : IdentityDbContext<IdentityUser, IdentityRole,
     public VersionTwoDbContext(DbContextOptions options)
         : base(options)
     {
-    }
-
-    public bool OnModelCreatingVersion1Called = false;
-    public bool OnModelCreatingVersion2Called = false;
-
-    protected override void OnModelCreatingVersion1(ModelBuilder builder)
-    {
-        base.OnModelCreatingVersion1(builder);
-        OnModelCreatingVersion1Called = true;
-    }
-
-    protected override void OnModelCreatingVersion2(ModelBuilder builder)
-    {
-        base.OnModelCreatingVersion2(builder);
-        OnModelCreatingVersion2Called = true;
     }
 }
 
@@ -64,9 +34,9 @@ public class EmptyDbContext : IdentityDbContext<IdentityUser, IdentityRole, stri
     public bool OnModelCreatingVersion1Called = false;
     public bool OnModelCreatingVersion2Called = false;
 
-    protected override void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        if (schemaVersion >= new Version(10, 0))
+        if (SchemaVersion >= new Version(10, 0))
         {
             builder.Ignore<IdentityUser>();
 
@@ -85,20 +55,8 @@ public class EmptyDbContext : IdentityDbContext<IdentityUser, IdentityRole, stri
         }
         else
         {
-            base.OnModelCreatingVersion(builder, schemaVersion);
+            base.OnModelCreating(builder);
         }
-    }
-
-    protected override void OnModelCreatingVersion1(ModelBuilder builder)
-    {
-        base.OnModelCreatingVersion1(builder);
-        OnModelCreatingVersion1Called = true;
-    }
-
-    protected override void OnModelCreatingVersion2(ModelBuilder builder)
-    {
-        base.OnModelCreatingVersion2(builder);
-        OnModelCreatingVersion2Called = true;
     }
 }
 
@@ -116,20 +74,16 @@ public class CustomVersionDbContext : IdentityDbContext<IdentityUser, IdentityRo
 
     public DbSet<CustomColumn> CustomColumns { get; set; }
 
-    protected override void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        if (schemaVersion >= new Version(3, 0))
-        {
-            base.OnModelCreatingVersion2(builder);
+        base.OnModelCreating(builder);
 
+        if (SchemaVersion >= new Version(3, 0))
+        {
             builder.Entity<CustomColumn>(b =>
             {
                 b.HasKey(b => b.Id);
             });
-        }
-        else
-        {
-            base.OnModelCreatingVersion(builder, schemaVersion);
         }
     }
 }

@@ -127,7 +127,7 @@ public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRol
     /// <param name="builder">
     /// The builder being used to construct the model for this context.
     /// </param>
-    protected override void OnModelCreatingVersion2(ModelBuilder builder)
+    internal override void OnModelCreatingVersion2(ModelBuilder builder)
     {
         base.OnModelCreatingVersion2(builder);
 
@@ -170,7 +170,7 @@ public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRol
     /// <param name="builder">
     /// The builder being used to construct the model for this context.
     /// </param>
-    protected override void OnModelCreatingVersion1(ModelBuilder builder)
+    internal override void OnModelCreatingVersion1(ModelBuilder builder)
     {
         base.OnModelCreatingVersion1(builder);
         builder.Entity<TUser>(b =>
