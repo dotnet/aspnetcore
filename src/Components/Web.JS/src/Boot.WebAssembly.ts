@@ -73,12 +73,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  // Configure navigation via JS Interop
-  const getBaseUri = Blazor._internal.navigationManager.getBaseURI;
-  const getLocationHref = Blazor._internal.navigationManager.getLocationHref;
-  Blazor._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
-  Blazor._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
-
   Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
@@ -114,13 +108,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
     getId: (index) => componentAttacher.getId(index),
-    getAssembly: (id) => BINDING.js_string_to_mono_string(componentAttacher.getAssembly(id)),
-    getTypeName: (id) => BINDING.js_string_to_mono_string(componentAttacher.getTypeName(id)),
-    getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterDefinitions(id) || ''),
-    getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
+    getAssembly: (id) => componentAttacher.getAssembly(id),
+    getTypeName: (id) => componentAttacher.getTypeName(id),
+    getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
+    getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
   };
 
-  Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
+  Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);

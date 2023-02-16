@@ -40,19 +40,19 @@ interface IBlazor {
     endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
     retrieveByteArray?: () => System_Object;
-    getPersistedState?: () => System_String;
+    getPersistedState?: () => string;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number,
       getId: (index) => number,
-      getAssembly: (id) => System_String,
-      getTypeName: (id) => System_String,
-      getParameterDefinitions: (id) => System_String,
+      getAssembly: (id) => string,
+      getTypeName: (id) => string,
+      getParameterDefinitions: (id) => string,
       getParameterValues: (id) => any,
     };
     renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void,
-    getConfig?: (dotNetFileName: System_String) => System_Object | undefined,
-    getApplicationEnvironment?: () => System_String,
+    getConfig?: (fileName: string) => Uint8Array | undefined,
+    getApplicationEnvironment?: () => string,
     dotNetCriticalError?: any
     loadLazyAssembly?: any,
     loadSatelliteAssemblies?: any,

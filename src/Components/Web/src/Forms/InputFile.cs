@@ -14,8 +14,6 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
 {
     private ElementReference _inputFileElement;
 
-    private IJSUnmarshalledRuntime? _jsUnmarshalledRuntime;
-
     private InputFileJsCallbacksRelay? _jsCallbacksRelay;
 
     [Inject]
@@ -49,7 +47,6 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     /// <inheritdoc/>
     protected override void OnInitialized()
     {
-        _jsUnmarshalledRuntime = JSRuntime as IJSUnmarshalledRuntime;
     }
 
     /// <inheritdoc/>
