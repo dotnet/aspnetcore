@@ -39,6 +39,6 @@ public interface IProblemDetailsService
     async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
     {
         await WriteAsync(context);
-        return true;
+        return context.HttpContext.Response.HasStarted;
     }
 }
