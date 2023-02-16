@@ -11,15 +11,18 @@ internal sealed class ProblemDetailsJsonOptionsSetup : IPostConfigureOptions<Jso
 {
     public void PostConfigure(string? name, JsonOptions options)
     {
-        if (options.SerializerOptions.TypeInfoResolver is not null)
+        switch (options.SerializerOptions.TypeInfoResolver)
         {
-            if (options.SerializerOptions.IsReadOnly)
-            {
-                options.SerializerOptions = new(options.SerializerOptions);
-            }
-
-            // Combine the current resolver with our internal problem details context
-            options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(options.SerializerOptions.TypeInfoResolver!, ProblemDetailsJsonContext.Default);
+            case DefaultJsonTypeInfoResolver:
+                // Prepend our internal problem details context
+                options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(ProblemDetailsJsonContext.Default, options.SerializerOptions.TypeInfoResolver);
+                break;
+            case not null:
+                // Combine the current resolver with our internal problem details context
+                options.SerializerOptions.AddContext<ProblemDetailsJsonContext>();
+                break;
+            default:
+                break;
         }
     }
 }
