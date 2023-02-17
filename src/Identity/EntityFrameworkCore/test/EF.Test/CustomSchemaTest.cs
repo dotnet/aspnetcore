@@ -17,8 +17,8 @@ public class CustomSchemaTest : IClassFixture<ScratchDatabaseFixture>
     public CustomSchemaTest(ScratchDatabaseFixture fixture)
     {
         var services = new ServiceCollection();
-
         services
+            .AddLogging()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
             .AddDbContext<CustomVersionDbContext>(o =>
                 o.UseSqlite(fixture.Connection)
@@ -30,36 +30,20 @@ public class CustomSchemaTest : IClassFixture<ScratchDatabaseFixture>
             })
             .AddEntityFrameworkStores<CustomVersionDbContext>();
 
-        services.AddLogging();
-
         _builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-        using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<CustomVersionDbContext>();
-            db.Database.EnsureCreated();
-        }
+        using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CustomVersionDbContext>();
+        db.Database.EnsureCreated();
     }
 
     [Fact]
     public void CanAddCustomColumn()
     {
-        using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<CustomVersionDbContext>();
-
-            VersionTwoSchemaTest.VerifyVersion2Schema(db);
-
-            var sqlConn = (SqliteConnection)db.Database.GetDbConnection();
-            try
-            {
-                sqlConn.Open();
-                Assert.True(DbUtil.VerifyColumns(sqlConn, "CustomColumns", "Id"));
-            }
-            finally
-            {
-                sqlConn.Close();
-            }
-        }
+        using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CustomVersionDbContext>();
+        VersionTwoSchemaTest.VerifyVersion2Schema(db);
+        using var sqlConn = (SqliteConnection)db.Database.GetDbConnection();
+        sqlConn.Open();
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "CustomColumns", "Id"));
     }
 }

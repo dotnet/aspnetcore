@@ -46,32 +46,21 @@ public class EmptySchemaTest : IClassFixture<ScratchDatabaseFixture>
     [Fact]
     public void CanIgnoreEverything()
     {
-        using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<EmptyDbContext>();
-
-            VerifyEmptySchema(db);
-        }
+        using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EmptyDbContext>();
+        VerifyEmptySchema(db);
     }
 
     private static void VerifyEmptySchema(EmptyDbContext dbContext)
     {
-        var sqlConn = (SqliteConnection)dbContext.Database.GetDbConnection();
-
-        try
-        {
-            sqlConn.Open();
-            Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUsers"));
-            Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetRoles"));
-            Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserRoles"));
-            Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserClaims"));
-            Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserLogins"));
-            Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens"));
-        }
-        finally
-        {
-            sqlConn.Close();
-        }
+        using var sqlConn = (SqliteConnection)dbContext.Database.GetDbConnection();
+        sqlConn.Open();
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUsers"));
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetRoles"));
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserRoles"));
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserClaims"));
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserLogins"));
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens"));
     }
 }
 
