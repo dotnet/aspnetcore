@@ -69,7 +69,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = ({{endpoint.EmitHandlerDelegateType()}})del;
+                    var handler = ({{endpoint.EmitHandlerDelegateCast()}})del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -120,7 +120,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     lineNumber);
         }
 """);
-                }
+               }
 
                 return code.ToString();
             });

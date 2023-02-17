@@ -9,8 +9,6 @@ namespace Microsoft.AspNetCore.Http;
 
 [JsonSerializable(typeof(ProblemDetails))]
 [JsonSerializable(typeof(HttpValidationProblemDetails))]
-// ExtensionData
-[JsonSerializable(typeof(IDictionary<string, object?>))]
 // Additional values are specified on JsonSerializerContext to support some values for extensions.
 // For example, the DeveloperExceptionMiddleware serializes its complex type to JsonElement, which problem details then needs to serialize.
 [JsonSerializable(typeof(JsonElement))]

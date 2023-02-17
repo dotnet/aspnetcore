@@ -36,6 +36,7 @@ internal class Endpoint
         }
 
         Response = new EndpointResponse(method, wellKnownTypes);
+        IsAwaitable = Response.IsAwaitable;
 
         if (method.Parameters.Length == 0)
         {
@@ -58,9 +59,11 @@ internal class Endpoint
         }
 
         Parameters = parameters;
+        IsAwaitable |= parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
     }
 
     public string HttpMethod { get; }
+    public bool IsAwaitable { get; set; }
     public string? RoutePattern { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
@@ -88,7 +91,7 @@ internal class Endpoint
 
         for (var i = 0; i < a.Parameters.Length; i++)
         {
-            if (a.Parameters[i].Equals(b.Parameters[i]))
+            if (!a.Parameters[i].Equals(b.Parameters[i]))
             {
                 return false;
             }

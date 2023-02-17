@@ -3546,7 +3546,8 @@ public class DfaMatcherBuilderTest
                 ConstraintMap =
                 {
                         ["slugify"] = typeof(SlugifyParameterTransformer),
-                        ["upper-case"] = typeof(UpperCaseParameterTransform)
+                        ["upper-case"] = typeof(UpperCaseParameterTransform),
+                        ["regex"] = typeof(RegexInlineRouteConstraint) // Regex not included by default since introduction of CreateSlimBuilder
                 }
             }),
             serviceCollection.BuildServiceProvider());

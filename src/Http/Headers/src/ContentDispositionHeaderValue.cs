@@ -35,6 +35,11 @@ public class ContentDispositionHeaderValue
     private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
     private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
 
+    // attr-char definition from RFC5987
+    // Same as token except ( "*" / "'" / "%" )
+    private static readonly IndexOfAnyValues<char> AttrChar =
+        IndexOfAnyValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
 
@@ -631,7 +636,7 @@ public class ContentDispositionHeaderValue
                 // This is an ASCII char. Let's handle it ourselves.
 
                 char c = (char)inputBytes[totalBytesConsumed];
-                if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
+                if (!AttrChar.Contains(c))
                 {
                     HexEscape(builder, c);
                 }
