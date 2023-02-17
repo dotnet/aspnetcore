@@ -12,7 +12,7 @@ import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
-import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_String } from './Platform/Platform';
+import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
@@ -57,6 +57,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Configure JS interop
   Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
+  Blazor._internal.invokeJSJson = invokeJSJson;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveByteArray = receiveByteArray;
 
@@ -189,17 +190,21 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
   }
 }
 
-function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String): void {
-  const callIdString = BINDING.conv_string(callId)!;
-  const successBool = (success as any as number) !== 0;
-  const resultJsonOrErrorMessageString = BINDING.conv_string(resultJsonOrErrorMessage)!;
-  DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callIdString, successBool, resultJsonOrErrorMessageString);
+function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number): string | null {
+  if (asyncHandle !== 0) {
+    DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(asyncHandle, identifier, argsJson, resultType, targetInstanceId);
+    return null;
+  } else {
+    return DotNet.jsCallDispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId);
+  }
 }
 
-function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
-  const idLong = id as unknown as number;
-  const dataByteArray = monoPlatform.toUint8Array(data);
-  DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
+function endInvokeDotNetFromJS(callId: string, success: boolean, resultJsonOrErrorMessage: string): void {
+  DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage);
+}
+
+function receiveByteArray(id: number, data: Uint8Array): void {
+  DotNet.jsCallDispatcher.receiveByteArray(id, data);
 }
 
 function inAuthRedirectIframe(): boolean {

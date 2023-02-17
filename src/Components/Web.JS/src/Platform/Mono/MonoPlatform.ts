@@ -504,17 +504,7 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
 
-function bindStaticMethod(assembly: string, typeName: string, method: string) {
-  // Fully qualified name looks like this: "[debugger-test] Math:IntAdd"
-  const fqn = `[${assembly}] ${typeName}:${method}`;
-  return BINDING.bind_static_method(fqn);
-}
-
 function attachInteropInvoker(): void {
-  const dotNetDispatcherInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'InvokeDotNet');
-  const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'BeginInvokeDotNet');
-  const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
-
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
       assertHeapIsNotLocked();
@@ -527,7 +517,7 @@ function attachInteropInvoker(): void {
         ? dotNetObjectId.toString()
         : assemblyName;
 
-      dotNetDispatcherBeginInvokeMethodHandle(
+      Blazor._internal.BeginInvokeDotNet!(
         callId ? callId.toString() : null,
         assemblyNameOrDotNetObjectId,
         methodIdentifier,
@@ -535,17 +525,17 @@ function attachInteropInvoker(): void {
       );
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      dotNetDispatcherEndInvokeJSMethodHandle(serializedArgs);
+      Blazor._internal.EndInvokeJS!(serializedArgs);
     },
     sendByteArray: (id: number, data: Uint8Array): void => {
       Blazor._internal.ReceiveByteArrayFromJS!(id, data);
     },
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       assertHeapIsNotLocked();
-      return dotNetDispatcherInvokeMethodHandle(
+      return Blazor._internal.InvokeDotNet!(
         assemblyName ? assemblyName : null,
         methodIdentifier,
-        dotNetObjectId ? dotNetObjectId.toString() : null,
+        dotNetObjectId ?? 0,
         argsJson,
       ) as string;
     },

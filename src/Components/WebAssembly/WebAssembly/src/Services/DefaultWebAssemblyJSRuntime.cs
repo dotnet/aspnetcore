@@ -31,14 +31,20 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
-    // The following methods are invoke via Mono's JS interop mechanism (invoke_method)
-    public static string? InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static string? InvokeDotNet(
+        string? assemblyName,
+        string methodIdentifier,
+        [JSMarshalAs<JSType.Number>] long dotNetObjectId,
+        string argsJson)
     {
-        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId, CultureInfo.InvariantCulture), callId: null);
+        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId: null);
         return DotNetDispatcher.Invoke(Instance, callInfo, argsJson);
     }
 
-    // Invoked via Mono's JS interop mechanism (invoke_method)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
     public static void EndInvokeJS(string argsJson)
     {
         WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
@@ -49,8 +55,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         });
     }
 
-    // Invoked via Mono's JS interop mechanism (invoke_method)
-    public static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
     {
         // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
         // We only need one for any given call. This helps to work around the limitation that we can

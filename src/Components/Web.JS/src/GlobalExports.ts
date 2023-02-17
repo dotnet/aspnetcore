@@ -29,44 +29,48 @@ interface IBlazor {
   rootComponents: typeof RootComponentsFunctions;
 
   _internal: {
-    navigationManager: typeof navigationManagerInternalFunctions | any,
-    domWrapper: typeof domFunctions,
-    Virtualize: typeof Virtualize,
-    PageTitle: typeof PageTitle,
+    navigationManager: typeof navigationManagerInternalFunctions | any;
+    domWrapper: typeof domFunctions;
+    Virtualize: typeof Virtualize;
+    PageTitle: typeof PageTitle;
     forceCloseConnection?: () => Promise<void>;
-    InputFile?: typeof InputFile,
-    NavigationLock: typeof NavigationLock,
+    InputFile?: typeof InputFile;
+    NavigationLock: typeof NavigationLock;
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
-    endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
-    receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
+    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number) => string | null;
+    endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
+    receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
-      getRegisteredComponentsCount: () => number,
-      getId: (index) => number,
-      getAssembly: (id) => string,
-      getTypeName: (id) => string,
-      getParameterDefinitions: (id) => string,
-      getParameterValues: (id) => any,
+      getRegisteredComponentsCount: () => number;
+      getId: (index) => number;
+      getAssembly: (id) => string;
+      getTypeName: (id) => string;
+      getParameterDefinitions: (id) => string;
+      getParameterValues: (id) => any;
     };
-    renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void,
-    getConfig?: (fileName: string) => Uint8Array | undefined,
-    getApplicationEnvironment?: () => string,
-    dotNetCriticalError?: any
-    loadLazyAssembly?: any,
-    loadSatelliteAssemblies?: any,
-    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
-    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
-    receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,
-    attachWebRendererInterop?: typeof attachWebRendererInterop,
+    renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void;
+    getConfig?: (fileName: string) => Uint8Array | undefined;
+    getApplicationEnvironment?: () => string;
+    dotNetCriticalError?: any;
+    loadLazyAssembly?: any;
+    loadSatelliteAssemblies?: any;
+    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void;
+    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>;
+    receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
+    attachWebRendererInterop?: typeof attachWebRendererInterop;
 
     // JSExport APIs
+    InvokeDotNet?: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => string | null;
+    EndInvokeJS?: (argsJson: string) => void;
+    BeginInvokeDotNet?: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
     ReceiveByteArrayFromJS?: (id: number, data: Uint8Array) => void;
 
     // APIs invoked by hot reload
     initHotReload?: (url: string) => Promise<void>;
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void,
-    getApplyUpdateCapabilities?: () => string,
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void;
+    getApplyUpdateCapabilities?: () => string;
   }
 }
 
