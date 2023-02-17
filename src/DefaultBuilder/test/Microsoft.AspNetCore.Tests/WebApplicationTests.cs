@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Tests;
@@ -2349,6 +2350,141 @@ public class WebApplicationTests
 
         Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+    }
+
+    [Fact]
+    public async Task UsingCreateBuilderResultsInRegexConstraintBeingPresent()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("RegexRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd1234");
+        Assert.Equal("RegexRoute", chosenRoute);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderResultsInAlphaConstraintStillWorking()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:alpha:minlength(4):maxlength(4)}", (string productId) => productId).WithDisplayName("AlphaRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd");
+        Assert.Equal("AlphaRoute", chosenRoute);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderResultsInErrorWhenTryingToUseRegexConstraint()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("AlphaRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        var ex = await Record.ExceptionAsync(async () =>
+        {
+            _ = await client.GetAsync("https://localhost/products/abcd1234");
+        });
+
+        Assert.IsType<RouteCreationException>(ex);
+        Assert.IsType<InvalidOperationException>(ex.InnerException.InnerException);
+        Assert.Equal(
+            "A route parameter uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure<RouteOptions>(options => options.SetParameterPolicy<RegexInlineRouteConstraint>(\"regex\"));",
+            ex.InnerException.InnerException.Message);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderWorksIfRegexConstraintAddedViaAddRouting()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRouting();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("RegexRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd1234");
+        Assert.Equal("RegexRoute", chosenRoute);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderWorksIfRegexConstraintAddedViaAddRoutingCoreWithActionDelegate()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRoutingCore().Configure<RouteOptions>(options =>
+        {
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("RegexRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd1234");
+        Assert.Equal("RegexRoute", chosenRoute);
     }
 
     private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>
