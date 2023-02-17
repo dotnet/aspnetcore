@@ -28,7 +28,7 @@ internal sealed class TestLinkGenerator : LinkGenerator
 
     private string AssertAddressAndReturnUrl<TAddress>(TAddress address)
     {
-        RouteValuesAddress = Assert.IsAssignableFrom<RouteValuesAddress>(address);
+        RouteValuesAddress = Assert.IsType<RouteValuesAddress>(address);
         return Url;
     }
 }
