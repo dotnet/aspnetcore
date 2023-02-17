@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Components.Sections.SectionContent.IsDefaultContent.get -> 
 Microsoft.AspNetCore.Components.Sections.SectionContent.IsDefaultContent.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.Name.get -> string!
 Microsoft.AspNetCore.Components.Sections.SectionContent.Name.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionContent() -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.Dispose() -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.Name.get -> string!
