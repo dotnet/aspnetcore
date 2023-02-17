@@ -26,5 +26,5 @@ public class StoreOptions
     /// The schema version for the store, the default is 0.0 which leaves it up to the store
     /// to determine what version should be used.
     /// </summary>
-    public Version SchemaVersion { get; set; } = IdentityVersions.Default;
+    public Version SchemaVersion { get; set; } = IdentitySchemaVersions.Default;
 }

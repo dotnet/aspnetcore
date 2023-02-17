@@ -26,7 +26,7 @@ public class VersionTwoSchemaTest : IClassFixture<ScratchDatabaseFixture>
             .AddIdentity<IdentityUser, IdentityRole>(o =>
             {
                 // MaxKeyLength does not need to be set in version 2
-                o.Stores.SchemaVersion = IdentityVersions.Version2;
+                o.Stores.SchemaVersion = IdentitySchemaVersions.Version2;
             })
             .AddEntityFrameworkStores<VersionTwoDbContext>();
 

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Contains various identity version constants.
 /// </summary>
-public static class IdentityVersions
+public static class IdentitySchemaVersions
 {
     /// <summary>
     /// Represents the default version of the identity schema 

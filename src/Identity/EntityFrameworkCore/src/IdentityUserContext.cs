@@ -98,7 +98,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <summary>
     /// Gets the schema version used for versioning.
     /// </summary>
-    protected virtual Version SchemaVersion { get => GetStoreOptions()?.SchemaVersion ?? IdentityVersions.Version1; }
+    protected virtual Version SchemaVersion { get => GetStoreOptions()?.SchemaVersion ?? IdentitySchemaVersions.Version1; }
 
     private StoreOptions? GetStoreOptions() => this.GetService<IDbContextOptions>()
                         .Extensions.OfType<CoreOptionsExtension>()
@@ -120,7 +120,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// </param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        var version = GetStoreOptions()?.SchemaVersion ?? IdentityVersions.Version1;
+        var version = GetStoreOptions()?.SchemaVersion ?? IdentitySchemaVersions.Version1;
         OnModelCreatingVersion(builder, version);
     }
 
@@ -133,7 +133,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <param name="schemaVersion">The schema version.</param>
     internal virtual void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
     {
-        if (schemaVersion >= IdentityVersions.Version2)
+        if (schemaVersion >= IdentitySchemaVersions.Version2)
         {
             OnModelCreatingVersion2(builder);
         }
