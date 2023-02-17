@@ -264,6 +264,10 @@ public static class WebHost
             {
                 services.AddRoutingCore();
             }
+            else
+            {
+                configureRouting(services);
+            }
         });
     }
 
