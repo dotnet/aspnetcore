@@ -184,19 +184,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
     {
         var httpContext = errorContext.HttpContext;
 
-        if (_problemDetailsService != null)
-        {
-            var problemDetails = CreateProblemDetails(errorContext, httpContext);
-
-            await _problemDetailsService.WriteAsync(new()
-            {
-                HttpContext = httpContext,
-                ProblemDetails = problemDetails
-            });
-        }
-
-        // If the response has not started, assume the problem details was not written.
-        if (!httpContext.Response.HasStarted)
+        if (_problemDetailsService == null ||
+            !await _problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = CreateProblemDetails(errorContext, httpContext) }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
 

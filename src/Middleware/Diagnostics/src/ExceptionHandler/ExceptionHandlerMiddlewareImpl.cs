@@ -154,13 +154,14 @@ internal class ExceptionHandlerMiddlewareImpl
             context.Response.StatusCode = DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
+            var problemDetailsWritten = false;
             if (_options.ExceptionHandler != null)
             {
                 await _options.ExceptionHandler!(context);
             }
             else
             {
-                await _problemDetailsService!.WriteAsync(new ()
+                problemDetailsWritten = await _problemDetailsService!.TryWriteAsync(new()
                 {
                     HttpContext = context,
                     AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
@@ -169,7 +170,7 @@ internal class ExceptionHandlerMiddlewareImpl
             }
 
             // If the response has already started, assume exception handler was successful.
-            if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (context.Response.HasStarted || problemDetailsWritten || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
                 if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))
