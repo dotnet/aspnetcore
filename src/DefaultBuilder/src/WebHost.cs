@@ -233,7 +233,7 @@ public static class WebHost
             .UseIISIntegration();
     }
 
-    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting = default)
+    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting = null)
     {
         builder.UseKestrel((builderContext, options) =>
         {
