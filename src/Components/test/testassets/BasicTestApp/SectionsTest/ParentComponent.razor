@@ -4,4 +4,21 @@
 
 <SectionOutlet Name="test" />
 
-<Counter></Counter>
+<select id="child-component" @bind=SelectedComponent>
+    <option value="none" name="none">Choose...</option>
+    <option value="counter" name="counter">Counter</option>
+    <option value="simple-component" name="simple-component">Simple Component</option>
+</select>
+
+@code {
+    string SelectedComponent { get; set; } = "none";
+}
+
+@if (SelectedComponent == "counter")
+{
+    <Counter></Counter>
+}
+else if (SelectedComponent == "simple-component")
+{
+    <SimpleComponent></SimpleComponent>
+}
