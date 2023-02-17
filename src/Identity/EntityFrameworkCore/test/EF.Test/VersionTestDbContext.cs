@@ -31,9 +31,6 @@ public class EmptyDbContext : IdentityDbContext<IdentityUser, IdentityRole, stri
     {
     }
 
-    public bool OnModelCreatingVersion1Called = false;
-    public bool OnModelCreatingVersion2Called = false;
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         if (SchemaVersion >= new Version(10, 0))

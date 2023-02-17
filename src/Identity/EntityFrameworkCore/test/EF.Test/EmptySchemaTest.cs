@@ -17,8 +17,8 @@ public class EmptySchemaTest : IClassFixture<ScratchDatabaseFixture>
     public EmptySchemaTest(ScratchDatabaseFixture fixture)
     {
         var services = new ServiceCollection();
-
         services
+            .AddLogging()
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
             .AddDbContext<EmptyDbContext>(o =>
                 o.UseSqlite(fixture.Connection)
@@ -30,17 +30,10 @@ public class EmptySchemaTest : IClassFixture<ScratchDatabaseFixture>
             })
             .AddEntityFrameworkStores<EmptyDbContext>();
 
-        services.AddLogging();
-
         _builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-        using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<EmptyDbContext>();
-            db.Database.EnsureCreated();
-            Assert.False(db.OnModelCreatingVersion2Called);
-            Assert.False(db.OnModelCreatingVersion1Called);
-        }
+        using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EmptyDbContext>();
+        db.Database.EnsureCreated();
     }
 
     [Fact]
@@ -63,4 +56,3 @@ public class EmptySchemaTest : IClassFixture<ScratchDatabaseFixture>
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens"));
     }
 }
-
