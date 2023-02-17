@@ -113,26 +113,6 @@ public abstract class WebViewManager : IAsyncDisposable
     }
 
     /// <summary>
-    /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
-    /// </summary>
-    /// <param name="workItem">The action to call.</param>
-    /// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
-    public async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
-    {
-        ArgumentNullException.ThrowIfNull(workItem);
-
-        if (_currentPageContext is null)
-        {
-            return false;
-        }
-
-        await _currentPageContext.Renderer.Dispatcher.InvokeAsync(() => workItem(_currentPageContext.ServiceProvider));
-
-        return true;
-    }
-
-    /// <summary>
     /// Removes a previously-attached root component from the current page.
     /// </summary>
     /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
@@ -183,6 +163,37 @@ public abstract class WebViewManager : IAsyncDisposable
                 _ipcSender.NotifyUnhandledException(ex);
                 throw;
             }
+        });
+    }
+
+    /// <summary>
+    /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+    /// </summary>
+    /// <param name="workItem">The action to call.</param>
+    /// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+    public async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+    {
+        ArgumentNullException.ThrowIfNull(workItem);
+
+        if (_currentPageContext is null)
+        {
+            return false;
+        }
+
+        var capturedCurrentPageContext = _currentPageContext;
+
+        return await _currentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
+        {
+            if (capturedCurrentPageContext != _currentPageContext)
+            {
+                // If the captured context doesn't match the current context, that means that there was something like
+                // a navigation event that caused the original page to be detached and a new one attached. Thus, we
+                // cancel out of the operation and return failure.
+                return false;
+            }
+            workItem(_currentPageContext.ServiceProvider);
+            return true;
         });
     }
 
