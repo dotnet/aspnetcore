@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Text.Json;
+    using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
     using Microsoft.AspNetCore.Routing;
@@ -107,6 +109,21 @@ namespace Microsoft.AspNetCore.Http.Generated
             return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
                 ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
                 : (httpContext) => httpContext.Request.Query[parameterName];
+        }
+
+        private static bool IsValid(JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
+            => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null;
+
+        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
+        {
+            var runtimeType = value?.GetType();
+
+            if (IsValid(jsonTypeInfo, runtimeType))
+            {
+                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
+            }
+
+            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
         }
 
         private static async ValueTask<(bool, T?)> TryResolveBody<T>(HttpContext httpContext, bool allowEmpty)
