@@ -176,14 +176,14 @@ public abstract class WebViewManager : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(workItem);
 
-        if (_currentPageContext is null)
+        var capturedCurrentPageContext = _currentPageContext;
+
+        if (capturedCurrentPageContext is null)
         {
             return false;
         }
 
-        var capturedCurrentPageContext = _currentPageContext;
-
-        return await _currentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
+        return await capturedCurrentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
         {
             if (capturedCurrentPageContext != _currentPageContext)
             {
