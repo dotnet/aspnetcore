@@ -223,9 +223,7 @@ public static class WebHost
             }
         });
 
-        ConfigureWebDefaultsCore(builder);
-
-        builder.ConfigureServices(services =>
+        ConfigureWebDefaultsCore(builder, services =>
         {
             services.AddRouting();
         });
@@ -235,7 +233,7 @@ public static class WebHost
             .UseIISIntegration();
     }
 
-    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder)
+    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting = default)
     {
         builder.UseKestrel((builderContext, options) =>
         {
@@ -262,7 +260,10 @@ public static class WebHost
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
-            services.AddRoutingCore();
+            if (configureRouting == default)
+            {
+                services.AddRoutingCore();
+            }
         });
     }
 
