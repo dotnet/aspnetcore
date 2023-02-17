@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// <summary>
 /// Renders content provided by <see cref="SectionContent"/> components with matching <see cref="Name"/>s.
 /// </summary>
-internal sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisposable
+public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisposable
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };
 
