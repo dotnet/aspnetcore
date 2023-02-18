@@ -137,7 +137,7 @@ public class RequestLocalizationMiddleware
             // the CultureInfo ctor
             if (cultureName != null)
             {
-                var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
+                var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures, currentDepth: 0);
                 if (cultureInfo != null)
                 {
                     return cultureInfo;
@@ -148,24 +148,26 @@ public class RequestLocalizationMiddleware
         return null;
     }
 
-    private static CultureInfo? GetCultureInfo(StringSegment cultureName, IList<CultureInfo>? supportedCultures, bool fallbackToParentCultures)
+    private static CultureInfo? GetCultureInfo(
+        StringSegment cultureName,
+        IList<CultureInfo>? supportedCultures,
+        bool fallbackToParentCultures,
+        int currentDepth)
     {
-        var currentDepth = 0;
-        CultureInfo? culture;
-        do
+        var culture = GetCultureInfo(cultureName, supportedCultures);
+
+        if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
         {
-            culture = GetCultureInfo(cultureName.Value, supportedCultures);
-
-            if (culture != null || !fallbackToParentCultures || currentDepth > MaxCultureFallbackDepth)
+            try
             {
-                break;
+                culture = CultureInfo.GetCultureInfo(cultureName.ToString());
+
+                culture = GetCultureInfo(culture.Parent.Name, supportedCultures, fallbackToParentCultures, currentDepth + 1);
             }
-
-            culture = CultureInfo.GetCultureInfo(cultureName.Value);
-
-            culture = culture.Parent;
-            ++currentDepth;
-        } while (culture.Parent != CultureInfo.InvariantCulture);
+            catch (CultureNotFoundException)
+            {
+            }
+        }
 
         return culture;
     }
