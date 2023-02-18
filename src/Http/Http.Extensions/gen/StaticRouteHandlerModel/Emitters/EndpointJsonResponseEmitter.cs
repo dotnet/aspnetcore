@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 
-internal static class JsonEndpointEmitter
+internal static class EndpointJsonResponseEmitter
 {
     internal static string EmitJsonPreparation(this Endpoint endpoint)
     {
