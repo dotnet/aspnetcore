@@ -3,7 +3,7 @@
 //!
 //! This is generated file, see src/mono/wasm/runtime/rollup.config.js
 
-//! This is not considered public API with backward compatibility guarantees.
+//! This is not considered public API with backward compatibility guarantees. 
 
 declare interface ManagedPointer {
     __brandManagedPointer: "ManagedPointer";
@@ -27,8 +27,8 @@ interface MonoArray extends MonoObject {
 interface MonoObjectRef extends ManagedPointer {
     __brandMonoObjectRef: "MonoObjectRef";
 }
-declare type MemOffset = number | VoidPtr | NativePointer | ManagedPointer;
-declare type NumberOrPointer = number | VoidPtr | NativePointer | ManagedPointer;
+type MemOffset = number | VoidPtr | NativePointer | ManagedPointer;
+type NumberOrPointer = number | VoidPtr | NativePointer | ManagedPointer;
 interface WasmRoot<T extends MonoObject> {
     get_address(): MonoObjectRef;
     get_address_32(): number;
@@ -60,7 +60,7 @@ interface WasmRootBuffer {
 /**
  * @deprecated Please use methods in top level API object instead
  */
-declare type BINDINGType = {
+type BINDINGType = {
     /**
      * @deprecated Please use [JSExportAttribute] instead
      */
@@ -137,7 +137,7 @@ declare type BINDINGType = {
 /**
  * @deprecated Please use methods in top level API object instead
  */
-declare type MONOType = {
+type MONOType = {
     /**
      * @deprecated Please use setEnvironmentVariable() instead
      */
