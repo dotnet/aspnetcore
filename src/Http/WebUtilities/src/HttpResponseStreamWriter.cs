@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.WebUtilities;
 /// </summary>
 public class HttpResponseStreamWriter : TextWriter
 {
+    // It's important that MemoryPoolHttpResponseStreamWriterFactory's DefaultBufferSize is larger than this,
+    // because HttpResponseStreamWriter fills _charBuffer buffer with this many chars, then HTML-encodes them
+    // to fill the larger _byteBuffer. If MemoryPoolHttpResponseStreamWriterFactory produces a PipeWriter whose
+    // buffer is smaller than _byteBuffer, then when HttpResponseStreamWriter's FlushInternal tries to write
+    // synchronously to a stream wrapped around that PipeWriter, it will block forever.
     internal const int DefaultBufferSize = 16 * 1024;
 
     private readonly Stream _stream;
