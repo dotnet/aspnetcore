@@ -10,10 +10,6 @@
     <option value="simple-component" name="simple-component">Simple Component</option>
 </select>
 
-@code {
-    string SelectedComponent { get; set; } = "none";
-}
-
 @if (SelectedComponent == "counter")
 {
     <Counter></Counter>
@@ -21,4 +17,8 @@
 else if (SelectedComponent == "simple-component")
 {
     <SimpleComponent></SimpleComponent>
+}
+
+@code {
+    string SelectedComponent { get; set; } = "none";
 }

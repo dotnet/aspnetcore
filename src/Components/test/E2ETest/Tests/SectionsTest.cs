@@ -32,12 +32,12 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void SectionOutletInParentComponentRendersSectionContentOfChildComponent()
     {
         //Nothing is chosen yet
-        Assert.False(TryGetElementById(out _, "counter"));
+        Browser.DoesNotExist(By.Id("counter"));
         var options = _appElement.FindElement(By.Id("child-component"));
 
         // Choose Counter
         options.FindElement(By.Name("counter")).Click();
-        Assert.True(TryGetElementById(out var counter, "counter"));
+        var counter = Browser.Exists(By.Id("counter"));
 
         Assert.Equal("0", counter.Text);
         var incrememntButton = _appElement.FindElement(By.Id("increment_button"));
@@ -53,26 +53,12 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
 
         // Choose Counter
         options.FindElement(By.Name("counter")).Click();
-        Assert.True(TryGetElementById(out _, "counter"));
+        Browser.Exists(By.Id("counter"));
 
         // Choose Simple Component
         options.FindElement(By.Name("simple-component")).Click();
-        Assert.True(TryGetElementById(out var simpleComponentText, "text"));
+        var simpleComponentText = Browser.Exists(By.Id("text"));
         Assert.Equal("Hello!", simpleComponentText.Text);
-        Assert.False(TryGetElementById(out _, "counter"));
-    }
-
-    private bool TryGetElementById(out IWebElement counter, string id)
-    {
-        try
-        {
-            counter = _appElement.FindElement(By.Id(id));
-            return true;
-        }
-        catch (OpenQA.Selenium.NoSuchElementException)
-        {
-            counter = null;
-            return false;
-        }
+        Browser.DoesNotExist(By.Id("counter"));
     }
 }
