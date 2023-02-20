@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -35,7 +36,7 @@ internal class EndpointParameter
             Name = GetParameterName(fromQueryAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
             AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
-            IsParsable = TryGetParsability(parameter, out var parsingBlockEmitter);
+            IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
         else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType, out var fromHeaderAttribute))
@@ -71,34 +72,40 @@ internal class EndpointParameter
         }
     }
 
-    private static bool TryGetParsability(IParameterSymbol parameter, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
+    private static bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
     {
         if (parameter.Type.SpecialType == SpecialType.System_String)
         {
-            parsingBlockEmitter = default;
+            parsingBlockEmitter = null;
             return false;
         }
-        else
-        {
-            // HACK: This switch will be replaced by a more comprehensive method that will
-            //       return that will return Func<string, string, string> that will emit
-            //       the correct TryParse call for each scenario. This is just a stub to
-            //       build out the various test cases and get things working end-to-end.
-            Func<string, string, string> preferredTryParseInvocation = parameter.Type switch
-            {
-                { BaseType.SpecialType: SpecialType.System_Enum } => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<global::{{parameter.Type}}>({{inputArgument}}, out var {{outputArgument}})""",
-                { SpecialType: SpecialType.System_Int32 } => (string inputArgument, string outputArgument) => $$"""int.TryParse({{inputArgument}}, out var {{outputArgument}})""",
-                _ => (string inputArgument, string outputArgument) => $$"""global::{{parameter.Type}}.TryParse({{inputArgument}}, out var {{outputArgument}})"""
-            };
 
-            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
-            if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
-            {
-                wasParamCheckFailure = true;
-            }
-            """;
-            return true;
+        if (ParsabilityHelper.GetParsability(parameter.Type, wellKnownTypes) == Parsability.NotParsable)
+        {
+            parsingBlockEmitter = null;
+            return false;
         }
+
+        // This is the default TryParse call that we support, but subsequent statements override as appropriate.
+        var preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""";
+
+        if (parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.System_IParsable_T)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""";
+        }
+
+        if (parameter.Type.BaseType.SpecialType == SpecialType.System_Enum)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""";
+        }
+
+        parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
+        if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
+        {
+            wasParamCheckFailure = true;
+        }
+        """;
+        return true;
     }
 
     public ITypeSymbol Type { get; }
