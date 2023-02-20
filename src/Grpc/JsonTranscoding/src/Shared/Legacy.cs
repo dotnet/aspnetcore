@@ -42,7 +42,7 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Type = System.Type;
 
-namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
+namespace Grpc.Shared;
 
 // Source here is from https://github.com/protocolbuffers/protobuf
 // Most of this code will be replaced over time with optimized implementations.
