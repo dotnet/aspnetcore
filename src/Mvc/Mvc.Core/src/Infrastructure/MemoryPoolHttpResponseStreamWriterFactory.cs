@@ -25,7 +25,11 @@ internal sealed class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseS
     /// <see cref="MemoryPoolHttpResponseStreamWriterFactory"/> maintains <see cref="ArrayPool{T}"/>s
     /// for these arrays.
     /// </remarks>
-    public const int DefaultBufferSize = 16 * 1024;
+    ///
+    // stevesa: At 16KB this was too small and led to deadlocks. See the comment in HttpResponseStreamWriter.
+    //          I'm not 100% sure whether or not the same problem will occur in a real PassiveComponentRenderer
+    //          implementation.
+    public const int DefaultBufferSize = 32 * 1024;
 
     private readonly ArrayPool<byte> _bytePool;
     private readonly ArrayPool<char> _charPool;
