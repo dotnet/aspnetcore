@@ -241,7 +241,7 @@ public class KestrelConfigurationLoaderTests
                 }).Load();
 
             Assert.True(ran1);
-            Assert.NotNull(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DefaultCertificate); // Not used since configuration cert is present
         }
         finally
         {
@@ -390,7 +390,7 @@ public class KestrelConfigurationLoaderTests
             }).Load();
 
         Assert.True(ran1);
-        Assert.NotNull(serverOptions.DefaultCertificate);
+        Assert.Null(serverOptions.DefaultCertificate); // Not used since configuration cert is present
     }
 
     [Fact]

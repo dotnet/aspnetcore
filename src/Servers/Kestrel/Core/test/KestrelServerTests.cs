@@ -54,7 +54,7 @@ public class KestrelServerTests
     public void StartWithHttpsAddressConfiguresHttpsEndpoints()
     {
         var options = CreateServerOptions();
-        options.DefaultCertificate = TestResources.GetTestCertificate();
+        options.TestOverrideDefaultCertificate = TestResources.GetTestCertificate();
         using (var server = CreateServer(options))
         {
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");

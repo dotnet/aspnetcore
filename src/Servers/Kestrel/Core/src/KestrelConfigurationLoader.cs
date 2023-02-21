@@ -77,6 +77,7 @@ public class KestrelConfigurationLoader
     private IList<Action> EndpointsToAdd { get; } = new List<Action>();
 
     private CertificateConfig? DefaultCertificateConfig { get; set; }
+    internal X509Certificate2? DefaultCertificate { get; set; }
 
     /// <summary>
     /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
@@ -273,6 +274,7 @@ public class KestrelConfigurationLoader
 
         Options.ConfigurationBackedListenOptions.Clear();
         DefaultCertificateConfig = null;
+        DefaultCertificate = null;
 
         ConfigurationReader = new ConfigurationReader(Configuration);
 
@@ -404,7 +406,7 @@ public class KestrelConfigurationLoader
             if (defaultCert != null)
             {
                 DefaultCertificateConfig = defaultCertConfig;
-                Options.DefaultCertificate = defaultCert;
+                DefaultCertificate = defaultCert;
             }
         }
         else
@@ -414,7 +416,7 @@ public class KestrelConfigurationLoader
             {
                 Logger.LocatedDevelopmentCertificate(certificate);
                 DefaultCertificateConfig = certificateConfig;
-                Options.DefaultCertificate = certificate;
+                DefaultCertificate = certificate;
             }
         }
     }
