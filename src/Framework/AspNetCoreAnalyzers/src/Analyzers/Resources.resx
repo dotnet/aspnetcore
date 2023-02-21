@@ -208,7 +208,7 @@
     <value>Suggest using IHeaderDictionary.Append or the indexer</value>
   </data>
   <data name="Analyzer_MultipleFromBody_Message" xml:space="preserve">
-    <value>Route handler has multiple parameters with the [FromBody] attribute. Only one parameter can have a [FromBody] attribute.</value>
+    <value>Route handler has multiple parameters with the [FromBody] attribute or a parameter with an [AsParameters] attribute where the parameter type contains multiple members with [FromBody] attributes. Only one parameter can have a [FromBody] attribute.</value>
   </data>
   <data name="Analyzer_MultipleFromBody_Title" xml:space="preserve">
     <value>Route handler has multiple parameters with the [FromBody] attribute.</value>
