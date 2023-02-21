@@ -1,0 +1,29 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<div>
+    <h2>Text Component</h2>
+
+    <p>TextComponent SectionContent was rendered = @SectionContentExists.ToString()</p>
+
+    <p>TextComponent SectionContent Name @SectionName</p>
+
+    <p>TextComponent SectionContent IsDefaultContent = @IsDefaultContent.ToString()</p>
+
+    @if (SectionContentExists)
+    {
+        <SectionContent Name="@SectionName" IsDefaultContent="@IsDefaultContent">
+            <p id="text">Hello!</p>
+        </SectionContent>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public bool SectionContentExists { get; set; }
+
+    [Parameter]
+    public bool IsDefaultContent { get; set; }
+
+    [Parameter]
+    public string SectionName { get; set; }
+}

@@ -1,0 +1,97 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<h1>Parent Component</h1>
+
+@if (SectionOutletExists)
+{
+    <SectionOutlet Name="@firstSectionName" />
+}
+
+<p>Text between two section outlets</p>
+
+<SectionOutlet Name="@secondSectionName" />
+
+<button id="section_outlet_dispose"
+        @onclick="@(() => SectionOutletExists = false)">
+        Dispose first SectionOutlet
+</button>
+
+<Counter
+    SectionContentExists="@CounterSectionContentExists"
+    SectionName="@CounterSectionContentName"
+    IsDefaultContent="@CounterIsDefaultContent">
+</Counter>
+
+<br />
+
+<button id="counter_render_section_content"
+    @onclick="@(() => CounterSectionContentExists = true)">
+    Render Counter SectionContent
+</button><br />
+
+<button id="counter_dispose_section_content"
+        @onclick="@(() => CounterSectionContentExists = false)">
+    Dispose Counter SectionContent
+</button><br />
+
+<button id="counter_change_section_content_name"
+        @onclick="@(() => CounterSectionContentName = secondSectionName)">
+        Change Counter SectionContent Name
+</button><br />
+
+<button id="counter_change_section_content_name_nonexisting"
+        @onclick="@(() => CounterSectionContentName = "test3")">
+    Change Counter SectionContent Name to non sexisting
+</button>
+<br />
+
+<button id="counter_section_content_make_default"
+        @onclick="@(() => CounterIsDefaultContent = true)">
+    Make Counter's SectionContent Default
+</button>
+
+<TextComponent
+    SectionContentExists="@TextComponentSectionContentExists"
+    SectionName="@TextComponentSectionContentName"
+    IsDefaultContent="@TextComponentIsDefaultContent">
+</TextComponent>
+
+<button id="text_render_section_content"
+        @onclick="@(() => TextComponentSectionContentExists= true)">
+    Render TextComponent SectionContent
+</button><br />
+
+<button id="text_dispose_section_content"
+        @onclick="@(() => TextComponentSectionContentExists = false)">
+    Dispose TextComponent SectionContent
+</button><br />
+
+<button id="text_section_content_make_default"
+        @onclick="@(() => TextComponentIsDefaultContent = true)">
+    Make TextComponent's SectionContent Default
+</button>
+
+
+
+@code {
+    private const string firstSectionName = "test1";
+    private const string secondSectionName = "test2";
+
+    [Parameter]
+    public bool CounterSectionContentExists { get; set; } = false;
+    [Parameter]
+    public bool TextComponentSectionContentExists { get; set; } = false;   
+
+    [Parameter]
+    public string CounterSectionContentName { get; set; } = firstSectionName;
+    [Parameter]
+    public string TextComponentSectionContentName { get; set; } = firstSectionName;
+
+    [Parameter]
+    public bool CounterIsDefaultContent { get; set; } = false;
+    [Parameter]
+    public bool TextComponentIsDefaultContent { get; set; } = false;
+
+    [Parameter]
+    public bool SectionOutletExists { get; set; } = true;
+}

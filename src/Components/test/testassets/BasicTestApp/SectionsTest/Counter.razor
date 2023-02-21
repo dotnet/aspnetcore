@@ -1,16 +1,36 @@
 ﻿@using Microsoft.AspNetCore.Components.Sections
 
-<PageTitle>Counter</PageTitle>
+<div>
+    <PageTitle>Counter</PageTitle>
 
-<h1>Counter</h1>
+    <h2>Counter</h2>
 
-<SectionContent Name="test">
-    <p id="counter">@currentCount</p>
-</SectionContent>
+    <p>Counter SectionContent was rendered = @SectionContentExists.ToString()</p>
 
-<button id="increment_button" @onclick="IncrementCount">Click me</button>
+    <p>Counter SectionContent Name = @SectionName</p>
+
+    <p>Counter IsDefaultContent = @IsDefaultContent.ToString()</p>
+
+    @if (SectionContentExists)
+    {
+        <SectionContent Name="@SectionName" IsDefaultContent="@IsDefaultContent">
+            <p id="counter">@currentCount</p>
+        </SectionContent>
+    }
+
+    <button id="increment_button" @onclick="IncrementCount">Click me</button>
+</div>
 
 @code {
+    [Parameter]
+    public bool SectionContentExists { get; set; }
+
+    [Parameter]
+    public bool IsDefaultContent { get; set; }
+
+    [Parameter]
+    public string SectionName { get; set; }
+
     int currentCount = 0;
 
     void IncrementCount()
