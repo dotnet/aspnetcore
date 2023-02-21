@@ -22,6 +22,7 @@
     <SkipHelixQueues>
       $(HelixQueueArmDebian11);
     </SkipHelixQueues>
+    <HelixTimeout>01:00:00</HelixTimeout>
   </PropertyGroup>
 
   <ItemGroup>
