@@ -106,4 +106,68 @@ public class Product
             expectedDiagnostic2
             );
     }
+
+    [Fact]
+    public async Task Handler_Handler_With_AsParameters_Argument_With_TwoFromBody_Attributes_Fails()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapPost(""/products/{productId}"", ([AsParameters]GetProductRequest request) => {});
+
+public class GetProductRequest
+{
+    {|#0:[FromBody]
+    public Product Product1 { get; set; }|}
+
+    {|#1:[FromBody]
+    public Product Product2 { get; set; }|}
+}
+
+public class Product
+{
+}
+";
+
+        var expectedDiagnostic1 = new DiagnosticResult(DiagnosticDescriptors.AtMostOneFromBodyAttribute).WithLocation(0);
+        var expectedDiagnostic2 = new DiagnosticResult(DiagnosticDescriptors.AtMostOneFromBodyAttribute).WithLocation(1);
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(
+            source,
+            expectedDiagnostic1,
+            expectedDiagnostic2
+            );
+    }
+
+    [Fact]
+    public async Task Handler_Handler_With_AsParameters_Argument_With_OneFromBody_Attributes_Works()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.MapPost(""/products/{productId}"", ([AsParameters]GetProductRequest request) => {});
+
+public class GetProductRequest
+{
+    {|#0:[FromBody]
+    public Product Product1 { get; set; }|}
+
+    public Product Product2 { get; set; }
+}
+
+public class Product
+{
+}
+";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
 }
