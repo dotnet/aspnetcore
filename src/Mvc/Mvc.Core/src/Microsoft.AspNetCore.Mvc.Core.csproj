@@ -31,7 +31,8 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TrimmingAppContextSwitches.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared"/>

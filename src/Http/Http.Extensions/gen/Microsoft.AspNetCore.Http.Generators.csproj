@@ -9,21 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Bcl.HashCode" PrivateAssets="all" GeneratePathProperty="true" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-  </PropertyGroup>
-
-  <Target Name="GetDependencyTargetPaths">
-    <ItemGroup>
-      <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Bcl_HashCode)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
@@ -31,8 +19,11 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HashCode.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypeData.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\SymbolExtensions.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

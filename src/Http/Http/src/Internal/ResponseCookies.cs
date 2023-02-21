@@ -87,7 +87,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString()[1..];
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString().AsSpan(1);
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
@@ -98,7 +98,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
         }
 
         // Can't use += as StringValues does not override operator+
-        // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+        // and the implicit conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
         Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookies);
     }
 

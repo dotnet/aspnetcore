@@ -737,7 +737,7 @@ public class RequestDecompressionMiddlewareTests
         if (isRequestSizeLimitDisabled)
         {
             AssertLog(Assert.Single(logMessages), LogLevel.Debug,
-                "The maximum request body size as been disabled.");
+                "The maximum request body size has been disabled.");
         }
         else
         {

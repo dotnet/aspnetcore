@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -125,7 +125,7 @@ internal static class AcceptHeaderParser
         Debug.Assert(startIndex <= input.Length); // it's OK if index == value.Length.
 
         separatorFound = false;
-        var current = startIndex + HttpTokenParsingRules.GetWhitespaceLength(input, startIndex);
+        var current = startIndex + HttpRuleParser.GetWhitespaceLength(input, startIndex);
 
         if ((current == input.Length) || (input[current] != ','))
         {
@@ -136,12 +136,12 @@ internal static class AcceptHeaderParser
         // continue until the current character is neither a separator nor a whitespace.
         separatorFound = true;
         current++; // skip delimiter.
-        current = current + HttpTokenParsingRules.GetWhitespaceLength(input, current);
+        current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
         while ((current < input.Length) && (input[current] == ','))
         {
             current++; // skip delimiter.
-            current = current + HttpTokenParsingRules.GetWhitespaceLength(input, current);
+            current = current + HttpRuleParser.GetWhitespaceLength(input, current);
         }
 
         return current;

@@ -93,7 +93,7 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
-        var url = linkGenerator.GetUriByAddress(
+        var url = linkGenerator.GetUriByRouteValues(
             httpContext,
             RouteName,
             RouteValues,

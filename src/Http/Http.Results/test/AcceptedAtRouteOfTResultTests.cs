@@ -97,6 +97,7 @@ public class AcceptedAtRouteOfTResultTests
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, httpContext.Response.StatusCode);
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
+        Assert.Equal(new RouteValueDictionary(values), linkGenerator.RouteValuesAddress.ExplicitValues);
     }
 
     [Fact]

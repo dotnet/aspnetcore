@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Quic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +20,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 [Collection(nameof(NoParallelCollection))]
 public class WebHostTests : LoggedTest
 {
+    // This test isn't conditional on QuicListener.IsSupported. Instead, it verifies that HTTP/3 runs on expected CI platforms:
+    // 1. Windows 11 or later.
+    // 2. Linux with libmsquic package installed.
+    [ConditionalFact]
+    [SkipNonHelix]
+    [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
+    [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/46616", Queues = "Debian.12.Arm64.Open;")]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
+    public void HelixPlatform_QuickListenerIsSupported()
+    {
+        Assert.True(QuicListener.IsSupported, "QuicListener.IsSupported should be true.");
+        Assert.True(new MsQuicSupportedAttribute().IsMet, "MsQuicSupported.IsMet should be true.");
+    }
+
     [ConditionalFact]
     [MsQuicSupported]
     public async Task UseUrls_HelloWorld_ClientSuccess()

@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using NamedPipeOptions = System.IO.Pipes.PipeOptions;
 using PipeOptions = System.IO.Pipelines.PipeOptions;
 
@@ -19,6 +20,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly ILogger _log;
     private readonly NamedPipeEndPoint _endpoint;
     private readonly NamedPipeTransportOptions _options;
+    private readonly ObjectPool<NamedPipeServerStream> _namedPipeServerStreamPool;
     private readonly CancellationTokenSource _listeningTokenSource = new CancellationTokenSource();
     private readonly CancellationToken _listeningToken;
     private readonly Channel<ConnectionContext> _acceptedQueue;
@@ -26,13 +28,14 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly PipeOptions _inputOptions;
     private readonly PipeOptions _outputOptions;
     private readonly Mutex _mutex;
-    private Task? _listeningTask;
+    private Task? _completeListeningTask;
     private int _disposed;
 
     public NamedPipeConnectionListener(
         NamedPipeEndPoint endpoint,
         NamedPipeTransportOptions options,
         ILoggerFactory loggerFactory,
+        ObjectPoolProvider objectPoolProvider,
         Mutex mutex)
     {
         _log = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes");
@@ -41,11 +44,13 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _mutex = mutex;
         _memoryPool = options.MemoryPoolFactory();
         _listeningToken = _listeningTokenSource.Token;
+        // Have to create the pool here (instead of DI) because the pool is specific to an endpoint.
+        _namedPipeServerStreamPool = objectPoolProvider.Create(new NamedPipeServerStreamPoolPolicy(endpoint, options));
 
         // The OS maintains a backlog of clients that are waiting to connect, so the app queue only stores a single connection.
         // We want to have a queue plus a background task that populates the queue, rather than creating NamedPipeServerStream
         // when AcceptAsync is called, so that the server is always the owner of the pipe name.
-        _acceptedQueue = Channel.CreateBounded<ConnectionContext>(new BoundedChannelOptions(capacity: 1) { SingleWriter = true });
+        _acceptedQueue = Channel.CreateBounded<ConnectionContext>(new BoundedChannelOptions(capacity: 1));
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
         var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
@@ -54,105 +59,89 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _outputOptions = new PipeOptions(_memoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
     }
 
+    internal void ReturnStream(NamedPipeServerStream stream)
+    {
+        Debug.Assert(!stream.IsConnected, "Stream should have been successfully disconnected to reach this point.");
+
+        // The stream is automatically disposed if there isn't space in the pool.
+        _namedPipeServerStreamPool.Return(stream);
+    }
+
     public void Start()
     {
-        Debug.Assert(_listeningTask == null, "Already started");
+        Debug.Assert(_completeListeningTask == null, "Already started");
 
-        // Start first stream inline to catch creation errors.
-        var initialStream = CreateServerStream();
+        var listeningTasks = new Task[_options.ListenerQueueCount];
 
-        _listeningTask = StartAsync(initialStream);
+        for (var i = 0; i < listeningTasks.Length; i++)
+        {
+            // Start first stream inline to catch creation errors.
+            var initialStream = _namedPipeServerStreamPool.Get();
+
+            listeningTasks[i] = Task.Run(() => StartAsync(initialStream));
+        }
+
+        _completeListeningTask = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.WhenAll(listeningTasks);
+                _acceptedQueue.Writer.TryComplete();
+            }
+            catch (Exception ex)
+            {
+                _acceptedQueue.Writer.TryComplete(ex);
+                NamedPipeLog.ConnectionListenerAborted(_log, ex);
+            }
+        });
     }
 
     public EndPoint EndPoint => _endpoint;
 
     private async Task StartAsync(NamedPipeServerStream nextStream)
     {
-        try
+        while (true)
         {
-            while (true)
+            try
             {
-                try
+                var stream = nextStream;
+
+                await stream.WaitForConnectionAsync(_listeningToken);
+
+                var connection = new NamedPipeConnection(this, stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
+                connection.Start();
+
+                // Create the next stream before writing connected stream to the channel.
+                // This ensures there is always a created stream and another process can't
+                // create a stream with the same name with different a access policy.
+                nextStream = _namedPipeServerStreamPool.Get();
+
+                while (!_acceptedQueue.Writer.TryWrite(connection))
                 {
-                    var stream = nextStream;
-
-                    await stream.WaitForConnectionAsync(_listeningToken);
-
-                    var connection = new NamedPipeConnection(stream, _endpoint, _log, _memoryPool, _inputOptions, _outputOptions);
-                    connection.Start();
-
-                    // Create the next stream before writing connected stream to the channel.
-                    // This ensures there is always a created stream and another process can't
-                    // create a stream with the same name with different a access policy.
-                    nextStream = CreateServerStream();
-
-                    while (!_acceptedQueue.Writer.TryWrite(connection))
+                    if (!await _acceptedQueue.Writer.WaitToWriteAsync(_listeningToken))
                     {
-                        if (!await _acceptedQueue.Writer.WaitToWriteAsync(_listeningToken))
-                        {
-                            throw new InvalidOperationException("Accept queue writer was unexpectedly closed.");
-                        }
+                        throw new InvalidOperationException("Accept queue writer was unexpectedly closed.");
                     }
                 }
-                catch (IOException ex) when (!_listeningToken.IsCancellationRequested)
-                {
-                    // WaitForConnectionAsync can throw IOException when the pipe is broken.
-                    NamedPipeLog.ConnectionListenerBrokenPipe(_log, ex);
-
-                    // Dispose existing pipe, create a new one and continue accepting.
-                    nextStream.Dispose();
-                    nextStream = CreateServerStream();
-                }
-                catch (OperationCanceledException ex) when (_listeningToken.IsCancellationRequested)
-                {
-                    // Cancelled the current token
-                    NamedPipeLog.ConnectionListenerAborted(_log, ex);
-                    break;
-                }
             }
+            catch (IOException ex) when (!_listeningToken.IsCancellationRequested)
+            {
+                // WaitForConnectionAsync can throw IOException when the pipe is broken.
+                NamedPipeLog.ConnectionListenerBrokenPipe(_log, ex);
 
-            nextStream.Dispose();
-            _acceptedQueue.Writer.TryComplete();
-        }
-        catch (Exception ex)
-        {
-            _acceptedQueue.Writer.TryComplete(ex);
-        }
-    }
-
-    private NamedPipeServerStream CreateServerStream()
-    {
-        NamedPipeServerStream stream;
-        var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
-        if (_options.CurrentUserOnly)
-        {
-            pipeOptions |= NamedPipeOptions.CurrentUserOnly;
+                // Dispose existing pipe, create a new one and continue accepting.
+                nextStream.Dispose();
+                nextStream = _namedPipeServerStreamPool.Get();
+            }
+            catch (OperationCanceledException) when (_listeningToken.IsCancellationRequested)
+            {
+                // Token was canceled. The listener is shutting down.
+                break;
+            }
         }
 
-        if (_options.PipeSecurity != null)
-        {
-            stream = NamedPipeServerStreamAcl.Create(
-                _endpoint.PipeName,
-                PipeDirection.InOut,
-                NamedPipeServerStream.MaxAllowedServerInstances,
-                PipeTransmissionMode.Byte,
-                pipeOptions,
-                inBufferSize: 0, // Buffer in System.IO.Pipelines
-                outBufferSize: 0, // Buffer in System.IO.Pipelines
-                _options.PipeSecurity);
-        }
-        else
-        {
-            stream = new NamedPipeServerStream(
-                _endpoint.PipeName,
-                PipeDirection.InOut,
-                NamedPipeServerStream.MaxAllowedServerInstances,
-                PipeTransmissionMode.Byte,
-                pipeOptions,
-                inBufferSize: 0,
-                outBufferSize: 0);
-        }
-        return stream;
+        NamedPipeLog.ConnectionListenerQueueExited(_log);
+        nextStream.Dispose();
     }
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -182,9 +171,62 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
         _listeningTokenSource.Dispose();
         _mutex.Dispose();
-        if (_listeningTask != null)
+        if (_completeListeningTask != null)
         {
-            await _listeningTask;
+            await _completeListeningTask;
         }
+
+        // Dispose pool after listening tasks are complete so there is no chance a stream is fetched from the pool after the pool is disposed.
+        // Important to dispose because this empties and disposes streams in the pool.
+        (_namedPipeServerStreamPool as IDisposable)?.Dispose();
+    }
+
+    private sealed class NamedPipeServerStreamPoolPolicy : IPooledObjectPolicy<NamedPipeServerStream>
+    {
+        private readonly NamedPipeEndPoint _endpoint;
+        private readonly NamedPipeTransportOptions _options;
+
+        public NamedPipeServerStreamPoolPolicy(NamedPipeEndPoint endpoint, NamedPipeTransportOptions options)
+        {
+            _endpoint = endpoint;
+            _options = options;
+        }
+
+        public NamedPipeServerStream Create()
+        {
+            NamedPipeServerStream stream;
+            var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
+            if (_options.CurrentUserOnly)
+            {
+                pipeOptions |= NamedPipeOptions.CurrentUserOnly;
+            }
+
+            if (_options.PipeSecurity != null)
+            {
+                stream = NamedPipeServerStreamAcl.Create(
+                    _endpoint.PipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    pipeOptions,
+                    inBufferSize: 0, // Buffer in System.IO.Pipelines
+                    outBufferSize: 0, // Buffer in System.IO.Pipelines
+                    _options.PipeSecurity);
+            }
+            else
+            {
+                stream = new NamedPipeServerStream(
+                    _endpoint.PipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    pipeOptions,
+                    inBufferSize: 0,
+                    outBufferSize: 0);
+            }
+            return stream;
+        }
+
+        public bool Return(NamedPipeServerStream obj) => !obj.IsConnected;
     }
 }

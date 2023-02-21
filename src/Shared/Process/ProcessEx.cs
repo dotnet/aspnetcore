@@ -179,6 +179,7 @@ internal sealed class ProcessEx : IDisposable
                 _output.WriteLine("Process exited.");
             }
         }
+        // Don't remove this line - There is a race condition where the process exits and we grab the output before the stdout/stderr completed writing.
         _process.WaitForExit();
         _stdoutLines.CompleteAdding();
         _stdoutLines = null;

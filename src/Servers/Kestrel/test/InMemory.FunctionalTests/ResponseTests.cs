@@ -294,7 +294,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 return Task.CompletedTask;
             },
             expectedClientStatusCode: null,
-            expectedServerStatusCode: 0);
+            expectedServerStatusCode: (HttpStatusCode)499);
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 throw new Exception();
             },
             expectedClientStatusCode: null,
-            expectedServerStatusCode: 0);
+            expectedServerStatusCode: (HttpStatusCode)499);
     }
 
     [Fact]

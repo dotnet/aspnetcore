@@ -65,7 +65,7 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
         return (WebTransportSession)await appCompletedTcs.Task;

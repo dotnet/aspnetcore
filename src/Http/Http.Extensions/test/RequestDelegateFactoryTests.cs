@@ -1278,7 +1278,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     public void CreateThrowsInvalidOperationExceptionWhenAttributeRequiresTryParseMethodThatDoesNotExist(Delegate action)
     {
         var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
-        Assert.Equal("No public static bool object.TryParse(string, out object) method found for notTryParsable.", ex.Message);
+        Assert.Equal("notTryParsable must have a valid TryParse method to support converting from a string. No public static bool object.TryParse(string, out object) method found for notTryParsable.", ex.Message);
     }
 
     [Fact]
@@ -6019,7 +6019,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
-        var decodedResponseBody = JsonSerializer.Deserialize<Mvc.ProblemDetails>(responseBodyStream.ToArray());
+        var decodedResponseBody = JsonSerializer.Deserialize<Mvc.ProblemDetails>(responseBodyStream.ToArray(), JsonOptions.DefaultSerializerOptions);
         Assert.Equal(400, httpContext.Response.StatusCode);
         Assert.Equal("New response", decodedResponseBody!.Detail);
     }

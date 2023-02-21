@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -379,9 +380,9 @@ public readonly struct MediaType
             var current = startIndex;
 
             current++; // skip ';'
-            current += HttpTokenParsingRules.GetWhitespaceLength(input, current);
+            current += HttpRuleParser.GetWhitespaceLength(input, current);
 
-            var nameLength = HttpTokenParsingRules.GetTokenLength(input, current);
+            var nameLength = HttpRuleParser.GetTokenLength(input, current);
             if (nameLength == 0)
             {
                 name = default(StringSegment);
@@ -391,7 +392,7 @@ public readonly struct MediaType
             name = new StringSegment(input, current, nameLength);
 
             current += nameLength;
-            current += HttpTokenParsingRules.GetWhitespaceLength(input, current);
+            current += HttpRuleParser.GetWhitespaceLength(input, current);
 
             return current - startIndex;
         }
@@ -401,14 +402,14 @@ public readonly struct MediaType
             var current = startIndex;
 
             current++; // skip '='.
-            current += HttpTokenParsingRules.GetWhitespaceLength(input, current);
+            current += HttpRuleParser.GetWhitespaceLength(input, current);
 
-            var valueLength = HttpTokenParsingRules.GetTokenLength(input, current);
+            var valueLength = HttpRuleParser.GetTokenLength(input, current);
 
             if (valueLength == 0)
             {
                 // A value can either be a token or a quoted string. Check if it is a quoted string.
-                var result = HttpTokenParsingRules.GetQuotedStringLength(input, current, out valueLength);
+                var result = HttpRuleParser.GetQuotedStringLength(input, current, out valueLength);
                 if (result != HttpParseResult.Parsed)
                 {
                     // We have an invalid value. Reset the name and return.
@@ -425,7 +426,7 @@ public readonly struct MediaType
             }
 
             current += valueLength;
-            current += HttpTokenParsingRules.GetWhitespaceLength(input, current);
+            current += HttpRuleParser.GetWhitespaceLength(input, current);
 
             return current - startIndex;
         }
