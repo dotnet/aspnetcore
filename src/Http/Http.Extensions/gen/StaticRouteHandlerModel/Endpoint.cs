@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal class Endpoint
 {
-    private string? _argumentListCache;
-
     public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
     {
         Operation = operation;
@@ -67,8 +65,6 @@ internal class Endpoint
     public string? RoutePattern { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
-    public string EmitArgumentList() => _argumentListCache ??= string.Join(", ", Parameters.Select(p => p.EmitArgument()));
-
     public List<DiagnosticDescriptor> Diagnostics { get; } = new List<DiagnosticDescriptor>();
 
     public (string File, int LineNumber) Location { get; }

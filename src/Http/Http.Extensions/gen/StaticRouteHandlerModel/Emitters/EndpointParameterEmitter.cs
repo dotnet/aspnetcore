@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -9,22 +10,22 @@ internal static class EndpointParameterEmitter
     internal static string EmitSpecialParameterPreparation(this EndpointParameter endpointParameter)
     {
         return $"""
-                        var {endpointParameter.HandlerArgument} = {endpointParameter.AssigningCode};
+                        var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.AssigningCode};
 """;
     }
 
     internal static string EmitQueryOrHeaderParameterPreparation(this EndpointParameter endpointParameter)
     {
         var builder = new StringBuilder();
-
-        // Preamble for diagnostics purposes.
         builder.AppendLine($"""
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
-        // Grab raw input from HttpContext.
+        var assigningCode = endpointParameter.Source is EndpointParameterSource.Header
+            ? $"httpContext.Request.Headers[\"{endpointParameter.Name}\"]"
+            : $"httpContext.Request.Query[\"{endpointParameter.Name}\"]";
         builder.AppendLine($$"""
-                        var {{endpointParameter.AssigningCodeResult}} = {{endpointParameter.AssigningCode}};
+                        var {{endpointParameter.EmitAssigningCodeResult()}} = {{assigningCode}};
 """);
 
         // If we are not optional, then at this point we can just assign the string value to the handler argument,
@@ -34,17 +35,17 @@ internal static class EndpointParameterEmitter
         if (endpointParameter.IsOptional)
         {
             builder.AppendLine($$"""
-                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.AssigningCodeResult}}.Count > 0 ? {{endpointParameter.AssigningCodeResult}}.ToString() : null;
+                        var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.EmitAssigningCodeResult()}}.Count > 0 ? {{endpointParameter.EmitAssigningCodeResult()}}.ToString() : null;
 """);
         }
         else
         {
             builder.AppendLine($$"""
-                        if (StringValues.IsNullOrEmpty({{endpointParameter.AssigningCodeResult}}))
+                        if (StringValues.IsNullOrEmpty({{endpointParameter.EmitAssigningCodeResult()}}))
                         {
                             wasParamCheckFailure = true;
                         }
-                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.AssigningCodeResult}}.ToString();
+                        var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.EmitAssigningCodeResult()}}.ToString();
 """);
         }
 
@@ -54,7 +55,6 @@ internal static class EndpointParameterEmitter
     internal static string EmitRouteParameterPreparation(this EndpointParameter endpointParameter)
     {
         var builder = new StringBuilder();
-
         builder.AppendLine($"""
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
@@ -68,21 +68,22 @@ internal static class EndpointParameterEmitter
                         }
 """);
 
+        var assigningCode = $"httpContext.Request.RouteValues[\"{endpointParameter.Name}\"]?.ToString()";
         builder.AppendLine($$"""
-                        var {{endpointParameter.AssigningCodeResult}} = {{endpointParameter.AssigningCode}};
+                        var {{endpointParameter.EmitAssigningCodeResult()}} = {{assigningCode}};
 """);
 
         if (!endpointParameter.IsOptional)
         {
             builder.AppendLine($$"""
-                        if ({{endpointParameter.AssigningCodeResult}} == null)
+                        if ({{endpointParameter.EmitAssigningCodeResult()}} == null)
                         {
                             wasParamCheckFailure = true;
                         }
 """);
         }
         builder.AppendLine($"""
-                        var {endpointParameter.HandlerArgument} = {endpointParameter.AssigningCodeResult};
+                        var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()};
 """);
 
         return builder.ToString();
@@ -91,19 +92,20 @@ internal static class EndpointParameterEmitter
     internal static string EmitRouteOrQueryParameterPreparation(this EndpointParameter endpointParameter)
     {
         var builder = new StringBuilder();
-
         builder.AppendLine($"""
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
+        var assigningCode = $"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(httpContext, \"{endpointParameter.Name}\", options?.RouteParameterNames)";
+
         builder.AppendLine($$"""
-                        var {{endpointParameter.AssigningCodeResult}} = {{endpointParameter.AssigningCode}};
+                        var {{endpointParameter.EmitAssigningCodeResult()}} = {{assigningCode}};
 """);
 
         if (!endpointParameter.IsOptional)
         {
             builder.AppendLine($$"""
-                        if ({{endpointParameter.AssigningCodeResult}} is StringValues { Count: 0 })
+                        if ({{endpointParameter.EmitAssigningCodeResult()}} is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
                         }
@@ -111,7 +113,7 @@ internal static class EndpointParameterEmitter
         }
 
         builder.AppendLine($"""
-                        var {endpointParameter.HandlerArgument} = {endpointParameter.AssigningCodeResult};
+                        var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()};
 """);
 
         return builder.ToString();
@@ -120,15 +122,13 @@ internal static class EndpointParameterEmitter
     internal static string EmitJsonBodyParameterPreparationString(this EndpointParameter endpointParameter)
     {
         var builder = new StringBuilder();
-
-        // Preamble for diagnostics purposes.
         builder.AppendLine($"""
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
-        // Grab raw input from HttpContext.
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{endpointParameter.Type}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         builder.AppendLine($$"""
-                        var (isSuccessful, {{endpointParameter.HandlerArgument}}) = {{endpointParameter.AssigningCode}};
+                        var (isSuccessful, {{endpointParameter.EmitHandlerArgument()}}) = {{assigningCode}};
 """);
 
         // If binding from the JSON body fails, we exit early. Don't
@@ -153,10 +153,14 @@ internal static class EndpointParameterEmitter
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
+        var assigningCode = endpointParameter.IsOptional ?
+            $"httpContext.RequestServices.GetService<{endpointParameter.Type}>();" :
+            $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type}>()";
+
         // Requiredness checks for services are handled by the distinction
         // between GetRequiredService and GetService in the AssigningCode.
         builder.AppendLine($$"""
-                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.AssigningCode}};
+                        var {{endpointParameter.EmitHandlerArgument()}} = {{assigningCode}};
 """);
 
         return builder.ToString();
@@ -164,4 +168,16 @@ internal static class EndpointParameterEmitter
 
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) =>
         $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, Source = {endpointParameter.Source})";
+
+    private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_local";
+    private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_raw";
+
+    public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
+    {
+        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery => endpointParameter.IsOptional
+            ? endpointParameter.EmitHandlerArgument()
+            : $"{endpointParameter.EmitHandlerArgument()}!",
+        EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
+        _ => endpointParameter.EmitHandlerArgument()
+    };
 }
