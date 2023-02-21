@@ -641,21 +641,16 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.SendingCancellation(_logger, irq.InvocationId);
 
-                    // Fire and forget, if it fails that means we aren't connected anymore so the cancel isn't needed.
-                    _ = SendWithoutException(this, _state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
-                    static async Task SendWithoutException(HubConnection connection, ConnectionState state, CancelInvocationMessage cancelInvocationMessage, CancellationToken cancellationToken)
-                    {
-                        try
-                        {
-                            await connection.SendHubMessage(state, cancelInvocationMessage, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch { }
-                    }
+                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     Log.UnableToSendCancellation(_logger, irq.InvocationId);
                 }
+            }
+            catch
+            {
+                // Connection closed while trying to cancel a stream. This is fine to ignore.
             }
             finally
             {
