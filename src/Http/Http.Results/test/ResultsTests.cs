@@ -95,6 +95,38 @@ public partial class ResultsTests
     }
 
     [Fact]
+    public void AcceptedAtRoute_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        object value = new { };
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.AcceptedAtRoute(null, null) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
     public void AcceptedAtRouteOfT_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -110,6 +142,52 @@ public partial class ResultsTests
         Assert.Equal(routeName, result.RouteName);
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
         Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<Todo>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithNullRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.AcceptedAtRoute<object>(null, null, null) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithNullRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.AcceptedAtRoute(null, null, null) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
     [Fact]
@@ -643,6 +721,52 @@ public partial class ResultsTests
     }
 
     [Fact]
+    public void CreatedAtRoute_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        object value = new { };
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.CreatedAtRoute(null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithNullRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.CreatedAtRoute(null, null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
     public void CreatedAtRouteOfT_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -657,6 +781,24 @@ public partial class ResultsTests
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
         Assert.Equal(routeName, result.RouteName);
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteOfT_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<Todo>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
         Assert.Equal(value, result.Value);
     }
 
@@ -692,6 +834,20 @@ public partial class ResultsTests
         Assert.Equal(routeName, result.RouteName);
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
         Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteOfT_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.CreatedAtRoute<object>(null, null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
     [Fact]
@@ -1260,6 +1416,25 @@ public partial class ResultsTests
     }
 
     [Fact]
+    public void RedirectToRoute_WithRouteNameAndRouteValueDictionaryAndFragment_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        var fragment = "test";
+
+        // Act
+        var result = Results.RedirectToRoute(routeName, routeValues, true, true, fragment) as RedirectToRouteHttpResult;
+
+        // Assert
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.True(result.Permanent);
+        Assert.True(result.PreserveMethod);
+        Assert.Equal(fragment, result.Fragment);
+    }
+
+    [Fact]
     public void RedirectToRoute_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -1267,7 +1442,18 @@ public partial class ResultsTests
 
         // Assert
         Assert.Null(result.RouteName);
-        Assert.Null(result.RouteValues);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void RedirectToRoute_WithNoArgs_RouteValueDictionary_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.RedirectToRoute(null, null) as RedirectToRouteHttpResult;
+
+        // Assert
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
     [Fact]
@@ -1425,6 +1611,8 @@ public partial class ResultsTests
     {
         (() => Results.Accepted(null, null), typeof(Accepted)),
         (() => Results.Accepted(null, new()), typeof(Accepted<object>)),
+        (() => Results.AcceptedAtRoute("routeName", (object)null, null), typeof(AcceptedAtRoute)),
+        (() => Results.AcceptedAtRoute("routeName", (object)null, new()), typeof(AcceptedAtRoute<object>)),
         (() => Results.AcceptedAtRoute("routeName", null, null), typeof(AcceptedAtRoute)),
         (() => Results.AcceptedAtRoute("routeName", null, new()), typeof(AcceptedAtRoute<object>)),
         (() => Results.BadRequest(null), typeof(BadRequest)),
@@ -1438,6 +1626,8 @@ public partial class ResultsTests
         (() => Results.Created("/path", null), typeof(Created)),
         (() => Results.Created(), typeof(Created)),
         (() => Results.Created("/path", new()), typeof(Created<object>)),
+        (() => Results.CreatedAtRoute("routeName", (object)null, null), typeof(CreatedAtRoute)),
+        (() => Results.CreatedAtRoute("routeName", (object)null, new()), typeof(CreatedAtRoute<object>)),
         (() => Results.CreatedAtRoute("routeName", null, null), typeof(CreatedAtRoute)),
         (() => Results.CreatedAtRoute("routeName", null, new()), typeof(CreatedAtRoute<object>)),
         (() => Results.Empty, typeof(EmptyHttpResult)),
@@ -1459,6 +1649,7 @@ public partial class ResultsTests
         (() => Results.Text("content", null, null, null), typeof(ContentHttpResult)),
         (() => Results.Redirect("/path", false, false), typeof(RedirectHttpResult)),
         (() => Results.LocalRedirect("/path", false, false), typeof(RedirectHttpResult)),
+        (() => Results.RedirectToRoute("routeName", (object)null, false, false, null), typeof(RedirectToRouteHttpResult)),
         (() => Results.RedirectToRoute("routeName", null, false, false, null), typeof(RedirectToRouteHttpResult)),
         (() => Results.SignIn(new(), null, null), typeof(SignInHttpResult)),
         (() => Results.SignOut(new(), null), typeof(SignOutHttpResult)),

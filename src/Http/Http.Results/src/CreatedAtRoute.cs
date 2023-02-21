@@ -50,10 +50,10 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatus
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     internal CreatedAtRoute(
         string? routeName,
-        RouteValueDictionary routeValues)
+        RouteValueDictionary? routeValues)
     {
         RouteName = routeName;
-        RouteValues = routeValues;
+        RouteValues = routeValues ?? new RouteValueDictionary();
     }
 
     /// <summary>
