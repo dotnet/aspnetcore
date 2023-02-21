@@ -165,7 +165,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
     }
 
     [Fact]
-    public void AddProblemDetails_CombineProblemDetailsContext_WhenDefaultypeInfoResolver()
+    public void AddProblemDetails_CombineProblemDetailsContext_WhenDefaultTypeInfoResolver()
     {
         // Arrange
         var collection = new ServiceCollection();
