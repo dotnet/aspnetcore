@@ -253,6 +253,80 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    public void DevelopmentCertificateCanBeRemoved()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+
+            var devCert = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var devCertBytes = devCert.Export(X509ContentType.Pkcs12, "1234");
+            var devCertPath = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(devCertPath));
+            File.WriteAllBytes(devCertPath, devCertBytes);
+
+            var defaultCertPath = TestResources.TestCertificatePath;
+            var defaultCert = TestResources.GetTestCertificate();
+            Assert.NotEqual(devCert.SerialNumber, defaultCert.SerialNumber); // Need to be able to distinguish them
+
+            var endpointConfig = new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            };
+            var devCertConfig = new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            };
+            var defaultCertConfig = new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Default:path", defaultCertPath),
+                new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig)).Build();
+
+            serverOptions.Configure(config).Load();
+
+            CheckCertificates(devCert);
+
+            // Add Default certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig).Concat(defaultCertConfig)).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            // Default is preferred to Development
+            CheckCertificates(defaultCert);
+
+            // Remove Default certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig)).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            // Back to Development
+            CheckCertificates(devCert);
+
+            // Remove Development certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            void CheckCertificates(X509Certificate2 expectedCert)
+            {
+                var httpsOptions = new HttpsConnectionAdapterOptions();
+                serverOptions.ApplyDefaultCert(httpsOptions);
+                Assert.Equal(expectedCert.SerialNumber, httpsOptions.ServerCertificate.SerialNumber);
+                Assert.Equal(expectedCert.SerialNumber, serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber);
+            }
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
     {
         var serverOptions = CreateServerOptions();
