@@ -271,8 +271,8 @@ public class KestrelConfigurationLoader
     {
         var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
         var endpointsToStart = new List<ListenOptions>();
+        var endpointsToReuse = new List<ListenOptions>();
 
-        Options.ConfigurationBackedListenOptions.Clear();
         DefaultCertificateConfig = null;
         DefaultCertificate = null;
 
@@ -352,7 +352,7 @@ public class KestrelConfigurationLoader
             if (matchingBoundEndpoints.Count > 0)
             {
                 endpointsToStop.RemoveAll(o => o.EndpointConfig == endpoint);
-                Options.ConfigurationBackedListenOptions.AddRange(matchingBoundEndpoints);
+                endpointsToReuse.AddRange(matchingBoundEndpoints);
                 continue;
             }
 
@@ -392,8 +392,15 @@ public class KestrelConfigurationLoader
             listenOptions.EndpointConfig = endpoint;
 
             endpointsToStart.Add(listenOptions);
-            Options.ConfigurationBackedListenOptions.Add(listenOptions);
         }
+
+        // Update ConfigurationBackedListenOptions after everything else has been processed so that
+        // it's left in a good state (i.e. its former state) if something above throws an exception.
+        // Note that this isn't foolproof - we could run out of memory or something - but it covers
+        // exceptions resulting from user misconfiguration (e.g. bad endpoint cert password).
+        Options.ConfigurationBackedListenOptions.Clear();
+        Options.ConfigurationBackedListenOptions.AddRange(endpointsToReuse);
+        Options.ConfigurationBackedListenOptions.AddRange(endpointsToStart);
 
         return (endpointsToStop, endpointsToStart);
     }
