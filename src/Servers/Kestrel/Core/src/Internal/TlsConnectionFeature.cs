@@ -66,7 +66,13 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         set => _protocol = value;
     }
 
+    public SslStream? SslStream
+    {
+        get => _sslStream;
+    }
+
     // We don't store the values for these because they could be changed by a renegotiation.
+
     TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite { get => NegotiatedCipherSuite; }
     // Split the writable property from the interface implementation because it doesn't make sense to allow setting null
     internal TlsCipherSuite NegotiatedCipherSuite
