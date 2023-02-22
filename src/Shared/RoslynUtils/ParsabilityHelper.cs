@@ -16,7 +16,7 @@ using WellKnownType = WellKnownTypeData.WellKnownType;
 
 internal static class ParsabilityHelper
 {
-    private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out ParsabilityMethod? parsabilityMethod)
+    private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out ParsabilityMethod? parsabilityMethod)
     {
         // Any enum is valid.
         if (typeSymbol.TypeKind == TypeKind.Enum)
