@@ -94,7 +94,11 @@ internal class EndpointParameter
             ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
             ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""",
             ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""",
-            _ => null // ... everything that is parsable is covered above except strings ...
+            ParsabilityMethod.Uri => (string inputArgument, string outputArgument) => $$"""Uri.TryCreate({{inputArgument}}, UriKind.RelativeOrAbsolute, out var {{outputArgument}})""",
+            ParsabilityMethod.String => null, // string parameters don't require parsing
+            Parsability.NotParsable => null,
+            // The following is probably unnecessary. Would usually be an UnreachableException.
+            // _ => throw new Exception("Unreachable!"),
         };
 
         // ... so for strings (null) we bail.
