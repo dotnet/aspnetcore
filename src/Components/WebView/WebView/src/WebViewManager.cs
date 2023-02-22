@@ -168,6 +168,7 @@ public abstract class WebViewManager : IAsyncDisposable
 
     /// <summary>
     /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+    /// This method will not throw any exceptions if it is unable to call the specified <paramref name="workItem"/>, but if it does call it, then exceptions may still be thrown by the <paramref name="workItem"/> itself.
     /// </summary>
     /// <param name="workItem">The action to call.</param>
     /// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
