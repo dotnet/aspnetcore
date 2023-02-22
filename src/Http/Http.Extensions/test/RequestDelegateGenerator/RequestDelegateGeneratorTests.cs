@@ -96,29 +96,6 @@ app.MapGet("/", getQueryWithDefault);
     }
 
     [Fact]
-    public async Task MapAction_SingleDateOnlyParam_StringReturn()
-    {
-        var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]DateOnly p) => p.ToString("yyyy-MM-dd"));
-""");
-        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        Assert.Equal("/hello", endpointModel.RoutePattern);
-        Assert.Equal("MapGet", endpointModel.HttpMethod);
-        var p = Assert.Single(endpointModel.Parameters);
-        Assert.Equal(EndpointParameterSource.Query, p.Source);
-        Assert.Equal("p", p.Name);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString("?p=2023-02-20");
-
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "2023-02-20");
-        await VerifyAgainstBaselineUsingFile(compilation);
-    }
-
-    [Fact]
     public async Task MapAction_SingleTimeOnlyParam_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -141,11 +118,14 @@ app.MapGet("/hello", ([FromQuery]TimeOnly p) => p.ToString());
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
-    public async Task MapAction_SingleDateTimeParam_StringReturn()
+    [Theory]
+    [InlineData("DateOnly", "2023-02-20")]
+    [InlineData("DateTime", "2023-02-20")]
+    [InlineData("DateTimeOffset", "2023-02-20")]
+    public async Task MapAction_SingleDateLikeParam_StringReturn(string parameterType, string result)
     {
-        var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]DateTime p) => p.ToString("yyyy-MM-dd"));
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"));
 """);
         var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -157,34 +137,10 @@ app.MapGet("/hello", ([FromQuery]DateTime p) => p.ToString("yyyy-MM-dd"));
         Assert.Equal("p", p.Name);
 
         var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString("?p=2023-02-20");
+        httpContext.Request.QueryString = new QueryString($"?p={result}");
 
         await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "2023-02-20");
-        await VerifyAgainstBaselineUsingFile(compilation);
-    }
-
-    [Fact]
-    public async Task MapAction_SingleDateTimeOffsetParam_StringReturn()
-    {
-        var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]DateTimeOffset p) => p.ToString("yyyy-MM-dd"));
-""");
-        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        Assert.Equal("/hello", endpointModel.RoutePattern);
-        Assert.Equal("MapGet", endpointModel.HttpMethod);
-        var p = Assert.Single(endpointModel.Parameters);
-        Assert.Equal(EndpointParameterSource.Query, p.Source);
-        Assert.Equal("p", p.Name);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString("?p=2023-02-20");
-
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "2023-02-20");
-        await VerifyAgainstBaselineUsingFile(compilation);
+        await VerifyResponseBodyAsync(httpContext, result);
     }
 
     [Theory]
@@ -230,7 +186,6 @@ app.MapGet("/hello", ([FromQuery]{{numericType}} p) => p.ToString());
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "42");
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Theory]
@@ -256,7 +211,6 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.MagicValue);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, result);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]

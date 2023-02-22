@@ -51,6 +51,15 @@ internal static class EndpointParameterEmitter
 """);
         }
 
+        builder.Append(endpointParameter.EmitParsingBlock());
+
+        return builder.ToString();
+    }
+
+    internal static string EmitParsingBlock(this EndpointParameter endpointParameter)
+    {
+        var builder = new StringBuilder();
+
         if (endpointParameter.IsParsable)
         {
             var parsingBlock = endpointParameter.ParsingBlockEmitter($"{endpointParameter.Name}_temp", $"{endpointParameter.Name}_parsed_temp");

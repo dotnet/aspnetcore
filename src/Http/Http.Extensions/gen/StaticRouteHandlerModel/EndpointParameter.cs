@@ -74,27 +74,37 @@ internal class EndpointParameter
 
     private static bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
     {
+        // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
+        // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
+        // support usage in the code generator an optiona out parameter has been added to hint at what variant of the various
+        // TryParse methods should be used (this implies that the preferences are baked into ParsabilityHelper). If we aren't
+        // parsable at all we bail.
         if (ParsabilityHelper.GetParsability(parameter.Type, wellKnownTypes, out var parsabilityMethod) == Parsability.NotParsable)
         {
             parsingBlockEmitter = null;
             return false;
         }
 
+        // If we are parsable we need to emit code based on the enumeration ParsabilityMethod which has a bunch of members
+        // which spell out the preferred TryParse uage. This swtich statement makes slight variations to them based on
+        // which method was encountered.
         Func<string, string, string>? preferredTryParseInvocation = parsabilityMethod switch
         {
             ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
             ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
             ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""",
             ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""",
-            _ => null
+            _ => null // ... everything that is parsable is covered above except strings ...
         };
 
+        // ... so for strings (null) we bail.
         if (preferredTryParseInvocation == null)
         {
             parsingBlockEmitter = null;
             return false;
         }
 
+        // Wrap the TryParse method call in an if-block and if it doesn't work set param check failure.
         parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
                         if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
                         {
@@ -112,6 +122,7 @@ internal class EndpointParameter
     internal string? AssigningCode { get; set; }
     public string Name { get; }
     public bool IsOptional { get; }
+    [MemberNotNull("ParsingBlockEmitter")]
     public bool IsParsable { get; }
     public Func<string, string, string> ParsingBlockEmitter { get; }
 
