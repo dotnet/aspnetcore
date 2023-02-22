@@ -327,6 +327,51 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    public void ConfigureEndpoint_RecoverFromBadPassword()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var configRoot = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", TestResources.TestCertificatePath),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", "testPassword")
+        }).Build();
+        var configProvider = configRoot.Providers.Single();
+
+        var testCertificate = TestResources.GetTestCertificate();
+
+        var otherCertificatePath = TestResources.GetCertPath("aspnetdevcert.pfx");
+        var otherCertificate = new X509Certificate2(otherCertificatePath, "testPassword");
+
+        serverOptions.Configure(configRoot).Load();
+        CheckListenOptions(testCertificate);
+
+        // Update cert but use incorrect password
+        configProvider.Set("Endpoints:End1:Certificate:Path", otherCertificatePath);
+        configProvider.Set("Endpoints:End1:Certificate:Password", "badPassword");
+
+        // Fails to load certificate because password is bad
+        Assert.ThrowsAny<CryptographicException>(() => serverOptions.ConfigurationLoader.Reload());
+
+        // ConfigurationBackedListenOptions still contains prior value
+        CheckListenOptions(testCertificate);
+
+        // Correct password
+        configProvider.Set("Endpoints:End1:Certificate:Password", "testPassword");
+        _ = serverOptions.ConfigurationLoader.Reload();
+
+        // ConfigurationBackedListenOptions contains new value
+        CheckListenOptions(otherCertificate);
+
+        void CheckListenOptions(X509Certificate2 expectedCert)
+        {
+            var listenOptions = Assert.Single(serverOptions.ConfigurationBackedListenOptions);
+            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions.ServerCertificate.SerialNumber);
+        }
+    }
+
+    [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
     {
         var serverOptions = CreateServerOptions();
