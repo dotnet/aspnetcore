@@ -624,6 +624,10 @@ public static class RoutePatternFactory
         }
     }
 
+    /// <summary>
+    /// String policy references are infered to be regex constraints. Creating them is moved here to its own method so apps can
+    /// trim away the regex dependency when RoutePatternFactory.Parse(string) is used. This is the method typically used by the various Map methods.
+    /// </summary>
     private static Dictionary<string, List<RoutePatternParameterPolicyReference>>? CreateRoutePatternPolicyReferences(RouteValueDictionary? parameterPolicies)
     {
         Dictionary<string, List<RoutePatternParameterPolicyReference>>? updatedParameterPolicies = null;
