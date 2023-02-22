@@ -71,7 +71,7 @@ internal static class ParsabilityHelper
             return Parsability.Parsable;
         }
 
-        if (tryParseMethods.Any(m => IsTryParse(m)))
+        if (tryParseMethods.Any(IsTryParse))
         {
             parsabilityMethod = ParsabilityMethod.TryParse;
             return Parsability.Parsable;
