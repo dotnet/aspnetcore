@@ -664,7 +664,7 @@ public partial class ParameterViewTest
             {
                 if (!kvp.Cascading)
                 {
-                    builder.AddAttribute(1, kvp.Name, kvp.Value);
+                    builder.AddComponentParameter(1, kvp.Name, kvp.Value);
                 }
             }
             builder.CloseComponent();

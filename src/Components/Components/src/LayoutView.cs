@@ -69,7 +69,7 @@ public class LayoutView : IComponent
         void Render(RenderTreeBuilder builder)
         {
             builder.OpenComponent(0, layoutType);
-            builder.AddAttribute(1, LayoutComponentBase.BodyPropertyName, bodyParam);
+            builder.AddComponentParameter(1, LayoutComponentBase.BodyPropertyName, bodyParam);
             builder.CloseComponent();
         };
 

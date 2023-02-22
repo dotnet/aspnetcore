@@ -58,7 +58,7 @@ internal sealed class QueryParameterValueSupplier
             {
                 ref var destination = ref _destinations[destinationIndex];
                 var blankValue = destination.IsArray ? destination.Parser.ParseMultiple(default, string.Empty) : null;
-                builder.AddAttribute(0, destination.ComponentParameterName, blankValue);
+                builder.AddComponentParameter(0, destination.ComponentParameterName, blankValue);
             }
             return;
         }
@@ -101,7 +101,7 @@ internal sealed class QueryParameterValueSupplier
                         ? default
                         : destination.Parser.Parse(values[0].Span, destination.ComponentParameterName);
 
-                builder.AddAttribute(0, destination.ComponentParameterName, parsedValue);
+                builder.AddComponentParameter(0, destination.ComponentParameterName, parsedValue);
             }
         }
         finally

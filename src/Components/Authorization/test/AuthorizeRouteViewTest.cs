@@ -411,11 +411,11 @@ public class AuthorizeRouteViewTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<CascadingValue<Task<AuthenticationState>>>(0);
-            builder.AddAttribute(1, nameof(CascadingValue<object>.Value), _authenticationState);
-            builder.AddAttribute(2, nameof(CascadingValue<object>.ChildContent), (RenderFragment)(builder =>
+            builder.AddComponentParameter(1, nameof(CascadingValue<object>.Value), _authenticationState);
+            builder.AddComponentParameter(2, nameof(CascadingValue<object>.ChildContent), (RenderFragment)(builder =>
             {
                 builder.OpenComponent<AuthorizeRouteView>(0);
-                builder.AddAttribute(1, nameof(AuthorizeRouteView.RouteData), _routeData);
+                builder.AddComponentParameter(1, nameof(AuthorizeRouteView.RouteData), _routeData);
                 builder.CloseComponent();
             }));
             builder.CloseComponent();
