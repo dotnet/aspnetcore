@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints;
 public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
 {
     private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
-    private readonly string _regexPattern;
+    private readonly Func<Regex>? _regexFactory;
     private Regex? _constraint;
 
     /// <summary>
@@ -27,7 +28,6 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         ArgumentNullException.ThrowIfNull(regex);
 
         _constraint = regex;
-        _regexPattern = regex.ToString();
     }
 
     /// <summary>
@@ -35,12 +35,17 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     /// </summary>
     /// <param name="regexPattern">A string containing the regex pattern.</param>
     public RegexRouteConstraint(
-        [StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
+        [StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase)]
         string regexPattern)
     {
         ArgumentNullException.ThrowIfNull(regexPattern);
 
-        _regexPattern = regexPattern;
+        // Create regex instance lazily to avoid compiling regexes at app startup. Delay creation until Constraint is first evaluated.
+        // This is not thread safe. No side effect but multiple instances of a regex instance could be created from a burst of requests.
+        _regexFactory = () => new Regex(
+            regexPattern,
+            RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase,
+            RegexMatchTimeout);
     }
 
     /// <summary>
@@ -50,12 +55,12 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     {
         get
         {
-            // Create regex instance lazily to avoid compiling regexes at app startup. Delay creation until constraint is first evaluated.
-            // This is not thread safe. No side effect but multiple instances of a regex instance could be created from a burst of requests.
-            _constraint ??= new Regex(
-                _regexPattern,
-                RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase,
-                RegexMatchTimeout);
+            if (_constraint is null)
+            {
+                Debug.Assert(_regexFactory is not null);
+
+                _constraint = _regexFactory();
+            }
 
             return _constraint;
         }
