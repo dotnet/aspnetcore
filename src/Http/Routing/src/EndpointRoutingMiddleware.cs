@@ -112,16 +112,17 @@ internal sealed partial class EndpointRoutingMiddleware
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
             {
+                // This check should be kept in sync with the one in EndpointMiddleware
                 if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
                 {
                     if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null)
                     {
-                        ThrowMissingAuthMiddlewareException(endpoint);
+                        ThrowCannotShortCircuitAnAuthRouteException(endpoint);
                     }
 
                     if (endpoint.Metadata.GetMetadata<ICorsMetadata>() is not null)
                     {
-                        ThrowMissingCorsMiddlewareException(endpoint);
+                        ThrowCannotShortCircuitACorsRouteException(endpoint);
                     }
                 }
 
@@ -129,6 +130,8 @@ internal sealed partial class EndpointRoutingMiddleware
                 {
                     httpContext.Response.StatusCode = shortCircuitMetadata.StatusCode.Value;
                 }
+
+                Log.EndpointShortCircuited(_logger, endpoint);
 
                 if (endpoint.RequestDelegate is not null)
                 {
@@ -200,13 +203,13 @@ internal sealed partial class EndpointRoutingMiddleware
         }
     }
 
-    private static void ThrowMissingAuthMiddlewareException(Endpoint endpoint)
+    private static void ThrowCannotShortCircuitAnAuthRouteException(Endpoint endpoint)
     {
         throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains authorization metadata, " +
             "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
     }
 
-    private static void ThrowMissingCorsMiddlewareException(Endpoint endpoint)
+    private static void ThrowCannotShortCircuitACorsRouteException(Endpoint endpoint)
     {
         throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains CORS metadata, " +
             "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
@@ -228,5 +231,11 @@ internal sealed partial class EndpointRoutingMiddleware
 
         [LoggerMessage(3, LogLevel.Debug, "Endpoint '{EndpointName}' already set, skipping route matching.", EventName = "MatchingSkipped")]
         private static partial void MatchingSkipped(ILogger logger, string? endpointName);
+
+        public static void EndpointShortCircuited(ILogger logger, Endpoint endpoint)
+            => EndpointShortCircuited(logger, endpoint.DisplayName);
+
+        [LoggerMessage(4, LogLevel.Information, "Endpoint '{EndpointName}'  is being executed without running additional middleware.", EventName = "EndpointShortCircuited")]
+        private static partial void EndpointShortCircuited(ILogger logger, string? endpointName);
     }
 }
