@@ -27,6 +27,20 @@ public static class RoutingServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddRouting(this IServiceCollection services)
     {
+        services.AddRoutingCore();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RouteOptions>, RegexInlineRouteConstraintSetup>());
+        return services;
+    }
+
+    /// <summary>
+    /// Adds services required for routing requests. This is similar to
+    /// <see cref="AddRouting(IServiceCollection)" /> except that it
+    /// excludes certain options that can be opted in separately, if needed.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddRoutingCore(this IServiceCollection services)
+    {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();

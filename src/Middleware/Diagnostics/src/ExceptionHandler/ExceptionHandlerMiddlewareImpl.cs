@@ -112,6 +112,18 @@ internal class ExceptionHandlerMiddlewareImpl
 
     private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
     {
+        if ((edi.SourceException is OperationCanceledException || edi.SourceException is IOException) && context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.RequestAbortedException();
+
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
+            }
+
+            return;
+        }
+
         _logger.UnhandledException(edi.SourceException);
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
@@ -142,13 +154,14 @@ internal class ExceptionHandlerMiddlewareImpl
             context.Response.StatusCode = DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
+            var problemDetailsWritten = false;
             if (_options.ExceptionHandler != null)
             {
                 await _options.ExceptionHandler!(context);
             }
             else
             {
-                await _problemDetailsService!.WriteAsync(new ()
+                problemDetailsWritten = await _problemDetailsService!.TryWriteAsync(new()
                 {
                     HttpContext = context,
                     AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
@@ -157,7 +170,7 @@ internal class ExceptionHandlerMiddlewareImpl
             }
 
             // If the response has already started, assume exception handler was successful.
-            if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (context.Response.HasStarted || problemDetailsWritten || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
                 if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))

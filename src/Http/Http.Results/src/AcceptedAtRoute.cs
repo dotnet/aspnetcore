@@ -50,10 +50,10 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider, IStatu
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     internal AcceptedAtRoute(
         string? routeName,
-        RouteValueDictionary routeValues)
+        RouteValueDictionary? routeValues)
     {
         RouteName = routeName;
-        RouteValues = routeValues;
+        RouteValues = routeValues ?? new RouteValueDictionary();
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider, IStatu
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
-        var url = linkGenerator.GetUriByAddress(
+        var url = linkGenerator.GetUriByRouteValues(
             httpContext,
             RouteName,
             RouteValues,

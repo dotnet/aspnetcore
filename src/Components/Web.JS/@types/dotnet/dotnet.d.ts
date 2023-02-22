@@ -3,7 +3,7 @@
 //!
 //! This is generated file, see src/mono/wasm/runtime/rollup.config.js
 
-//! This is not considered public API with backward compatibility guarantees.
+//! This is not considered public API with backward compatibility guarantees. 
 
 interface DotnetHostBuilder {
     withConfig(config: MonoConfig): DotnetHostBuilder;
@@ -75,7 +75,7 @@ declare interface EmscriptenModule {
         (error: any): void;
     };
 }
-type InstantiateWasmSuccessCallback = (instance: WebAssembly.Instance, module: WebAssembly.Module) => void;
+type InstantiateWasmSuccessCallback = (instance: WebAssembly.Instance, module: WebAssembly.Module | undefined) => void;
 type InstantiateWasmCallBack = (imports: WebAssembly.Imports, successCallback: InstantiateWasmSuccessCallback) => any;
 declare type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
 
@@ -100,6 +100,10 @@ type MonoConfig = {
      * We are throttling parallel downloads in order to avoid net::ERR_INSUFFICIENT_RESOURCES on chrome. The default value is 16.
      */
     maxParallelDownloads?: number;
+    /**
+     * We are making up to 2 more delayed attempts to download same asset. Default true.
+     */
+    enableDownloadRetry?: boolean;
     /**
      * Name of the assembly with main entrypoint
      */
@@ -170,8 +174,8 @@ interface AssetEntry extends ResourceRequest {
 }
 type AssetBehaviours = "resource" | "assembly" | "pdb" | "heap" | "icu" | "vfs" | "dotnetwasm" | "js-module-threads";
 type GlobalizationMode = "icu" | // load ICU globalization data from any runtime assets with behavior "icu".
-    "invariant" | //  operate in invariant globalization mode.
-    "auto";
+"invariant" | //  operate in invariant globalization mode.
+"auto";
 type DotnetModuleConfig = {
     disableDotnet6Compatibility?: boolean;
     config?: MonoConfig;
@@ -270,4 +274,4 @@ declare global {
 declare const dotnet: ModuleAPI["dotnet"];
 declare const exit: ModuleAPI["exit"];
 
-export { CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, RuntimeAPI, AssetEntry, ResourceRequest, createDotnetRuntime as default, dotnet, exit };
+export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };

@@ -17,11 +17,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DisallowNonParsableComplexTypesOnParameters(
         in OperationAnalysisContext context,
+        WellKnownTypes wellKnownTypes,
         RouteUsageModel routeUsage,
         IMethodSymbol methodSymbol)
     {
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.Compilation);
-
         foreach (var handlerDelegateParameter in methodSymbol.Parameters)
         {
             // If the parameter is decorated with a FromServices attribute then we can skip it.

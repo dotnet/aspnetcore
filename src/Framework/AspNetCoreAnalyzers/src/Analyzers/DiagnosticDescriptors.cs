@@ -196,4 +196,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor AtMostOneFromBodyAttribute = new(
+        "ASP0024",
+        new LocalizableResourceString(nameof(Resources.Analyzer_MultipleFromBody_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Analyzer_MultipleFromBody_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

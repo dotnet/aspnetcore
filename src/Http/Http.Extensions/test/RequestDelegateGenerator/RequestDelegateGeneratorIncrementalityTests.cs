@@ -41,5 +41,17 @@ public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGenera
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
     }
 
+    [Fact]
+    public async Task MapAction_ChangeBodyParamNullability_TriggersUpdate()
+    {
+        var source = @"app.MapGet(""/"", ([FromBody] Todo todo) => TypedResults.Ok(todo));";
+        var updatedSource = @"app.MapGet(""/"", ([FromBody] Todo? todo) => TypedResults.Ok(todo));";
+
+        var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
+        var outputSteps = GetRunStepOutputs(result);
+
+        Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
+    }
+
     private static IEnumerable<(object Value, IncrementalStepRunReason Reason)> GetRunStepOutputs(GeneratorRunResult result) => result.TrackedOutputSteps.SelectMany(step => step.Value).SelectMany(value => value.Outputs);
 }
