@@ -55,7 +55,7 @@ internal static class EndpointParameterEmitter
         {
             var parsingBlock = endpointParameter.ParsingBlockEmitter($"{endpointParameter.Name}_temp", $"{endpointParameter.Name}_parsed_temp");
             builder.AppendLine($$"""
-                {{parsingBlock}}
+{{parsingBlock}}
                 var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_parsed_temp!;
 """);
 

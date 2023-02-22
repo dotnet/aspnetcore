@@ -74,37 +74,33 @@ internal class EndpointParameter
 
     private static bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
     {
-        if (parameter.Type.SpecialType == SpecialType.System_String)
+        if (ParsabilityHelper.GetParsability(parameter.Type, wellKnownTypes, out var parsabilityMethod) == Parsability.NotParsable)
         {
             parsingBlockEmitter = null;
             return false;
         }
 
-        if (ParsabilityHelper.GetParsability(parameter.Type, wellKnownTypes) == Parsability.NotParsable)
+        Func<string, string, string>? preferredTryParseInvocation = parsabilityMethod switch
+        {
+            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""",
+            ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""",
+            _ => null
+        };
+
+        if (preferredTryParseInvocation == null)
         {
             parsingBlockEmitter = null;
             return false;
-        }
-
-        // This is the default TryParse call that we support, but subsequent statements override as appropriate.
-        var preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""";
-
-        if (parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.System_IParsable_T)))
-        {
-            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""";
-        }
-
-        if (parameter.Type.BaseType.SpecialType == SpecialType.System_Enum)
-        {
-            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""";
         }
 
         parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
-        if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
-        {
-            wasParamCheckFailure = true;
-        }
-        """;
+                        if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
+                        {
+                            wasParamCheckFailure = true;
+                        }
+""";
         return true;
     }
 

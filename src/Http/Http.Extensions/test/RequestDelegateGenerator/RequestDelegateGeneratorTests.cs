@@ -233,6 +233,32 @@ app.MapGet("/hello", ([FromQuery]{{numericType}} p) => p.ToString());
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
+    [Theory]
+    [InlineData("PrecedenceCheckTodoWithoutFormat", "24")]
+    [InlineData("PrecedenceCheckTodo", "42")]
+    public async Task MapAction_TryParsePrecedenceCheck(string parameterType, string result)
+    {
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.MagicValue);
+""");
+
+        var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Equal("/hello", endpointModel.RoutePattern);
+        Assert.Equal("MapGet", endpointModel.HttpMethod);
+        var p = Assert.Single(endpointModel.Parameters);
+        Assert.Equal(EndpointParameterSource.Query, p.Source);
+        Assert.Equal("p", p.Name);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=1");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, result);
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
     [Fact]
     public async Task MapAction_SingleComplexTypeParam_StringReturn()
     {

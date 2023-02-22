@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::TestMapActions.TodoStatus, global::System.String> handler,
+            global::System.Func<global::System.DateTime, global::System.String> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::TestMapActions.TodoStatus, global::System.String>)del;
+                    var handler = (Func<global::System.DateTime, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<TestMapActions.TodoStatus>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<System.DateTime>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -114,14 +114,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = TestMapActions.TodoStatus, IsOptional = False, Source = Query)
+                        // Endpoint Parameter: p (Type = System.DateTime, IsOptional = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         if (StringValues.IsNullOrEmpty(p_raw))
                         {
                             wasParamCheckFailure = true;
                         }
                         var p_temp = p_raw.ToString();
-                        if (!Enum.TryParse<global::TestMapActions.TodoStatus>(p_temp, out var p_parsed_temp))
+                        if (!global::System.DateTime.TryParse(p_temp, CultureInfo.InvariantCulture, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = TestMapActions.TodoStatus, IsOptional = False, Source = Query)
+                        // Endpoint Parameter: p (Type = System.DateTime, IsOptional = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         if (StringValues.IsNullOrEmpty(p_raw))
                         {
                             wasParamCheckFailure = true;
                         }
                         var p_temp = p_raw.ToString();
-                        if (!Enum.TryParse<global::TestMapActions.TodoStatus>(p_temp, out var p_parsed_temp))
+                        if (!global::System.DateTime.TryParse(p_temp, CultureInfo.InvariantCulture, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<TestMapActions.TodoStatus>(httpContext, p_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<System.DateTime>(httpContext, p_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
