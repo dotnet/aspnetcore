@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Components.Sections;
 public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
 {
     private string? _registeredName;
+    private bool? _registeredIsDefaultContent;
     private SectionRegistry _registry = default!;
 
     /// <summary>
@@ -44,7 +45,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
             throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(Name)}'.");
         }
 
-        if (Name != _registeredName)
+        if (Name != _registeredName || IsDefaultContent != _registeredIsDefaultContent)
         {
             if (_registeredName is not null)
             {
@@ -53,6 +54,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
 
             _registry.AddProvider(Name, this, IsDefaultContent);
             _registeredName = Name;
+            _registeredIsDefaultContent = IsDefaultContent;
         }
 
         _registry.NotifyContentChanged(Name, this);

@@ -42,12 +42,16 @@
 <button id="counter-change-section-content-name-nonexisting"
         @onclick="@(() => CounterSectionContentName = "test3")">
     Change Counter SectionContent Name to non sexisting
-</button>
-<br />
+</button><br />
 
 <button id="counter-section-content-make-default"
         @onclick="@(() => CounterIsDefaultContent = true)">
     Make Counter's SectionContent Default
+</button><br />
+
+<button id="counter-section-content-make-non-default"
+        @onclick="@(() => CounterIsDefaultContent = false)">
+    Make Counter's SectionContent Non Default
 </button>
 
 <TextComponent
@@ -69,29 +73,20 @@
 <button id="text-section-content-make-default"
         @onclick="@(() => TextComponentIsDefaultContent = true)">
     Make TextComponent's SectionContent Default
-</button>
-
-
+</button><br />
 
 @code {
     private const string firstSectionName = "test1";
     private const string secondSectionName = "test2";
 
-    [Parameter]
     public bool CounterSectionContentExists { get; set; } = false;
-    [Parameter]
     public bool TextComponentSectionContentExists { get; set; } = false;   
 
-    [Parameter]
     public string CounterSectionContentName { get; set; } = firstSectionName;
-    [Parameter]
     public string TextComponentSectionContentName { get; set; } = firstSectionName;
 
-    [Parameter]
     public bool CounterIsDefaultContent { get; set; } = false;
-    [Parameter]
     public bool TextComponentIsDefaultContent { get; set; } = false;
 
-    [Parameter]
     public bool SectionOutletExists { get; set; } = true;
 }

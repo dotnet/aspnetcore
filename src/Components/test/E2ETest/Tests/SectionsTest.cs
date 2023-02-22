@@ -24,7 +24,9 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     private IWebElement _changeCounterSectionContentName;
     private IWebElement _changeCounterSectionContentNameToNonExisting;
 
+    private IWebElement _makeCounterSectionContentDefault;
     private IWebElement _makeTextSectionContentDefault;
+    private IWebElement _makeCounterSectionContentNonDefault;
 
     private IWebElement _disposeSectionOutlet;
 
@@ -50,7 +52,9 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
         _changeCounterSectionContentName = _appElement.FindElement(By.Id("counter-change-section-content-name"));
         _changeCounterSectionContentNameToNonExisting = _appElement.FindElement(By.Id("counter-change-section-content-name-nonexisting"));
 
+        _makeCounterSectionContentDefault = _appElement.FindElement(By.Id("counter-section-content-make-default"));
         _makeTextSectionContentDefault = _appElement.FindElement(By.Id("text-section-content-make-default"));
+        _makeCounterSectionContentNonDefault = _appElement.FindElement(By.Id("counter-section-content-make-non-default"));
 
         _disposeSectionOutlet = _appElement.FindElement(By.Id("section-outlet-dispose"));
     }
@@ -93,7 +97,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void SecondSectionContentGetsDisposed_SectionOutletRendersFirstSectionContent()
     {
         //Render Counter and TextComponent SectionContents with same Name
-        // TextComponent's SectionContent overrides Counter SectionContent
+        // TextComponent SectionContent overrides Counter SectionContent
         _renderCounterSectionContent.Click();
         _renderTextSectionContent.Click();
 
@@ -119,7 +123,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void SectionContentNameChanges_MatchingSectionOutletRendersContent()
     {
         // Render Counter and TextComponent SectionContents with same Name
-        // TextComponent's SectionContent overrides Counter SectionContent
+        // TextComponent SectionContent overrides Counter SectionContent
         _renderCounterSectionContent.Click();
         _renderTextSectionContent.Click();
 
@@ -132,7 +136,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void SectionContentNameChangesToNonExisting_NoMatchingSectionOutletResultingNoRendering()
     {
         // Render Counter and TextComponent SectionContents with same Name
-        // TextComponent's SectionContent overrides Counter SectionContent
+        // TextComponent SectionContent overrides Counter SectionContent
         _renderCounterSectionContent.Click();
         _renderTextSectionContent.Click();
 
@@ -148,7 +152,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
         _renderCounterSectionContent.Click();
         _renderTextSectionContent.Click();
 
-        // TextComponent's SectionContent overrides Counter SectionContent
+        // TextComponent SectionContent overrides Counter SectionContent
         Browser.Exists(By.Id("text"));
 
         _disposeSectionOutlet.Click();
@@ -165,15 +169,9 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
         _renderCounterSectionContent.Click();
         _renderTextSectionContent.Click();
 
-        // TextComponent's SectionContent IsDefaultContent=true does not override Counter's SectionContent
+        // TextComponent SectionContent IsDefaultContent=true does not override Counter SectionContent
         Browser.DoesNotExist(By.Id("text"));
         Browser.Exists(By.Id("counter"));
-    }
-
-    [Fact]
-    public void BothDefaultSectionContents_()
-    {
-        //TODO
     }
 
     [Fact]
@@ -190,7 +188,6 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
         Browser.Exists(By.Id("text"));
     }
 
-    // TODO support changing IsDefaultContent
     [Fact]
     public void IsDefaultContentChanges_DoesNotOverrideAnotherSectionContent()
     {
@@ -199,7 +196,41 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
 
         _makeTextSectionContentDefault.Click();
 
-        // TextComponent's SectionContent IsDefaultContent=true does not override Counter's SectionContent
+        // TextComponent SectionContent IsDefaultContent=true does not override Counter SectionContent
+        Browser.DoesNotExist(By.Id("text"));
+        Browser.Exists(By.Id("counter"));
+    }
+
+    [Fact]
+    public void BothDefaultSectionContents_LastRenderedIsMoreDefault()
+    {
+        // Order of default doesn't matter before rendering
+        _makeTextSectionContentDefault.Click();
+        _makeCounterSectionContentDefault.Click();
+
+        // Counter SectionContent rendered last so it is more "default" than TextComponent
+        _renderTextSectionContent.Click();
+        _renderCounterSectionContent.Click();
+
+        Browser.Exists(By.Id("text"));
+        Browser.DoesNotExist(By.Id("counter"));
+    }
+
+    [Fact]
+    public void BothDefaultSectionContents_LastRenderedChanges_FirstRenderedIsNowDefault()
+    {
+        // Order of default doesn't matter before rendering
+        _makeTextSectionContentDefault.Click();
+        _makeCounterSectionContentDefault.Click();
+
+        // Counter SectionContent rendered last so it is more "default" than TextComponent
+        _renderTextSectionContent.Click();
+        _renderCounterSectionContent.Click();
+
+        // Change Counter SectionContent to non default
+        _makeCounterSectionContentNonDefault.Click();
+
+        // TextComponent SectionContent is default
         Browser.DoesNotExist(By.Id("text"));
         Browser.Exists(By.Id("counter"));
     }
