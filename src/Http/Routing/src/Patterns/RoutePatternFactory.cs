@@ -58,7 +58,7 @@ public static class RoutePatternFactory
         ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
-        return PatternCore(original.RawText, Wrap(defaults), Wrap(parameterPolicies), requiredValues: null, original.PathSegments);
+        return PatternCore(original.RawText, Wrap(defaults), CreateRoutePatternPolicyReferences(Wrap(parameterPolicies)), requiredValues: null, original.PathSegments);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class RoutePatternFactory
         ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
-        return PatternCore(original.RawText, defaults, parameterPolicies, requiredValues: null, original.PathSegments);
+        return PatternCore(original.RawText, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, original.PathSegments);
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public static class RoutePatternFactory
         ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
-        return PatternCore(original.RawText, Wrap(defaults), Wrap(parameterPolicies), Wrap(requiredValues), original.PathSegments);
+        return PatternCore(original.RawText, Wrap(defaults), CreateRoutePatternPolicyReferences(Wrap(parameterPolicies)), Wrap(requiredValues), original.PathSegments);
     }
 
     /// <summary>
@@ -140,7 +140,7 @@ public static class RoutePatternFactory
         ArgumentNullException.ThrowIfNull(pattern);
 
         var original = RoutePatternParser.Parse(pattern);
-        return PatternCore(original.RawText, defaults, parameterPolicies, requiredValues, original.PathSegments);
+        return PatternCore(original.RawText, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues, original.PathSegments);
     }
 
     /// <summary>
@@ -193,7 +193,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+        return PatternCore(null, Wrap(defaults), CreateRoutePatternPolicyReferences(Wrap(parameterPolicies)), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(null, defaults, parameterPolicies, requiredValues: null, segments);
+        return PatternCore(null, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -250,7 +250,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+        return PatternCore(rawText, Wrap(defaults), CreateRoutePatternPolicyReferences(Wrap(parameterPolicies)), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -279,7 +279,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(rawText, defaults, parameterPolicies, requiredValues: null, segments);
+        return PatternCore(rawText, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -332,7 +332,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(null, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+        return PatternCore(null, Wrap(defaults), CreateRoutePatternPolicyReferences(Wrap(parameterPolicies)), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -359,7 +359,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(null, defaults, parameterPolicies, requiredValues: null, segments);
+        return PatternCore(null, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -389,7 +389,7 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(parameterPolicies), requiredValues: null, segments);
+        return PatternCore(rawText, Wrap(defaults), CreateRoutePatternPolicyReferences(Wrap(parameterPolicies)), requiredValues: null, segments);
     }
 
     /// <summary>
@@ -418,13 +418,13 @@ public static class RoutePatternFactory
     {
         ArgumentNullException.ThrowIfNull(segments);
 
-        return PatternCore(rawText, defaults, parameterPolicies, requiredValues: null, segments);
+        return PatternCore(rawText, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, segments);
     }
 
     private static RoutePattern PatternCore(
         string? rawText,
         RouteValueDictionary? defaults,
-        RouteValueDictionary? parameterPolicies,
+        Dictionary<string, List<RoutePatternParameterPolicyReference>>? parameterPolicyReferences,
         RouteValueDictionary? requiredValues,
         IEnumerable<RoutePatternPathSegment> segments)
     {
@@ -447,43 +447,6 @@ public static class RoutePatternFactory
             foreach (var kvp in defaults)
             {
                 updatedDefaults.Add(kvp.Key, kvp.Value);
-            }
-        }
-
-        Dictionary<string, List<RoutePatternParameterPolicyReference>>? updatedParameterPolicies = null;
-        if (parameterPolicies != null && parameterPolicies.Count > 0)
-        {
-            updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(parameterPolicies.Count, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var kvp in parameterPolicies)
-            {
-                var policyReferences = new List<RoutePatternParameterPolicyReference>();
-
-                if (kvp.Value is IParameterPolicy parameterPolicy)
-                {
-                    policyReferences.Add(ParameterPolicy(parameterPolicy));
-                }
-                else if (kvp.Value is string)
-                {
-                    // Constraint will convert string values into regex constraints
-                    policyReferences.Add(Constraint(kvp.Value));
-                }
-                else if (kvp.Value is IEnumerable multiplePolicies)
-                {
-                    foreach (var item in multiplePolicies)
-                    {
-                        // Constraint will convert string values into regex constraints
-                        policyReferences.Add(item is IParameterPolicy p ? ParameterPolicy(p) : Constraint(item));
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException(Resources.FormatRoutePattern_InvalidConstraintReference(
-                        kvp.Value ?? "null",
-                        typeof(IRouteConstraint)));
-                }
-
-                updatedParameterPolicies.Add(kvp.Key, policyReferences);
             }
         }
 
@@ -554,8 +517,8 @@ public static class RoutePatternFactory
         return new RoutePattern(
             rawText,
             updatedDefaults ?? EmptyDictionary,
-            updatedParameterPolicies != null
-                ? updatedParameterPolicies.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternParameterPolicyReference>)kvp.Value.ToArray())
+            parameterPolicyReferences != null
+                ? parameterPolicyReferences.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternParameterPolicyReference>)kvp.Value.ToArray())
                 : EmptyPoliciesDictionary,
             requiredValues ?? EmptyDictionary,
             (IReadOnlyList<RoutePatternParameterPart>?)parameters ?? Array.Empty<RoutePatternParameterPart>(),
@@ -627,16 +590,16 @@ public static class RoutePatternFactory
             }
 
             List<RoutePatternParameterPolicyReference>? parameterConstraints = null;
-            if ((updatedParameterPolicies == null || !updatedParameterPolicies.TryGetValue(parameter.Name, out parameterConstraints)) &&
+            if ((parameterPolicyReferences == null || !parameterPolicyReferences.TryGetValue(parameter.Name, out parameterConstraints)) &&
                 parameter.ParameterPolicies.Count > 0)
             {
-                if (updatedParameterPolicies == null)
+                if (parameterPolicyReferences == null)
                 {
-                    updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(StringComparer.OrdinalIgnoreCase);
+                    parameterPolicyReferences = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(StringComparer.OrdinalIgnoreCase);
                 }
 
                 parameterConstraints = new List<RoutePatternParameterPolicyReference>(parameter.ParameterPolicies.Count);
-                updatedParameterPolicies.Add(parameter.Name, parameterConstraints);
+                parameterPolicyReferences.Add(parameter.Name, parameterConstraints);
             }
 
             if (parameter.ParameterPolicies.Count > 0)
@@ -659,6 +622,48 @@ public static class RoutePatternFactory
                 parameterConstraints?.ToArray() ?? Array.Empty<RoutePatternParameterPolicyReference>(),
                 parameter.EncodeSlashes);
         }
+    }
+
+    private static Dictionary<string, List<RoutePatternParameterPolicyReference>>? CreateRoutePatternPolicyReferences(RouteValueDictionary? parameterPolicies)
+    {
+        Dictionary<string, List<RoutePatternParameterPolicyReference>>? updatedParameterPolicies = null;
+        if (parameterPolicies != null && parameterPolicies.Count > 0)
+        {
+            updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(parameterPolicies.Count, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var kvp in parameterPolicies)
+            {
+                var policyReferences = new List<RoutePatternParameterPolicyReference>();
+
+                if (kvp.Value is IParameterPolicy parameterPolicy)
+                {
+                    policyReferences.Add(ParameterPolicy(parameterPolicy));
+                }
+                else if (kvp.Value is string)
+                {
+                    // Constraint will convert string values into regex constraints
+                    policyReferences.Add(Constraint(kvp.Value));
+                }
+                else if (kvp.Value is IEnumerable multiplePolicies)
+                {
+                    foreach (var item in multiplePolicies)
+                    {
+                        // Constraint will convert string values into regex constraints
+                        policyReferences.Add(item is IParameterPolicy p ? ParameterPolicy(p) : Constraint(item));
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException(Resources.FormatRoutePattern_InvalidConstraintReference(
+                        kvp.Value ?? "null",
+                        typeof(IRouteConstraint)));
+                }
+
+                updatedParameterPolicies.Add(kvp.Key, policyReferences);
+            }
+        }
+
+        return updatedParameterPolicies;
     }
 
     /// <summary>
