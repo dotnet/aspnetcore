@@ -3,7 +3,7 @@
 
 using System.Security.Authentication;
 
-#if NET7_0_OR_GREATER
+#if NETCOREAPP
 using System.Net.Security;
 #endif
 
@@ -19,7 +19,7 @@ public interface ITlsHandshakeFeature
     /// </summary>
     SslProtocols Protocol { get; }
 
-#if NET7_0_OR_GREATER
+#if NETCOREAPP
     /// <summary>
     /// Gets the <see cref="TlsCipherSuite"/>.
     /// </summary>
