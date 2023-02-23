@@ -23,21 +23,30 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RequestDelegateGeneratorTestBase : LoggedTest
+public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 {
-    internal static async Task<(GeneratorRunResult, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
+    protected abstract bool IsGeneratorEnabled { get; }
+
+    internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
         var compilation = await CreateCompilationAsync(sources);
-        var generator = new RequestDelegateGenerator().AsSourceGenerator();
 
-        // Enable the source generator in tests
+        // Return the compilation immediately if
+        // the generator is not enabled.
+        if (!IsGeneratorEnabled)
+        {
+            return (null, compilation);
+        }
+
+        // Configure the generator driver and run
+        // the compilation with it if the generator
+        // is enabled.
+        var generator = new RequestDelegateGenerator().AsSourceGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
             {
                 generator
             },
             driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
-
-        // Run the source generator
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         foreach (var updatedSource in updatedSources)
@@ -72,13 +81,30 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
         return Array.Empty<StaticRouteHandlerModel.Endpoint>();
     }
 
-    internal static Endpoint GetEndpointFromCompilation(Compilation compilation, bool expectSourceKey = true) =>
-        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKey));
+    internal static void VerifyStaticEndpointModel(GeneratorRunResult? result, Action<StaticRouteHandlerModel.Endpoint> runAssertions)
+    {
+        if (result.HasValue)
+        {
+            runAssertions(GetStaticEndpoint(result.Value, GeneratorSteps.EndpointModelStep));
+        }
+    }
 
-    internal static Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool expectSourceKey = true)
+    internal static void VerifyStaticEndpointModels(GeneratorRunResult? result, Action<StaticRouteHandlerModel.Endpoint[]> runAssertions)
+    {
+        if (result.HasValue)
+        {
+            runAssertions(GetStaticEndpoints(result.Value, GeneratorSteps.EndpointModelStep));
+        }
+    }
+
+    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null) =>
+        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride));
+
+    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
+        var expectSourceKey = (expectSourceKeyOverride ?? true) && IsGeneratorEnabled;
 
         var output = new MemoryStream();
         var pdb = new MemoryStream();
@@ -353,6 +379,10 @@ public class Todo
 
     internal async Task VerifyAgainstBaselineUsingFile(Compilation compilation, [CallerMemberName] string callerName = "")
     {
+        if (!IsGeneratorEnabled)
+        {
+            return;
+        }
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
