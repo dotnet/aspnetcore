@@ -158,11 +158,8 @@ internal sealed partial class EndpointRoutingMiddleware
                     Log.ExecutedEndpoint(_logger, endpoint);
                     return Task.CompletedTask;
                 }
-                else
-                {
-                    Log.ExecutedEndpoint(_logger, endpoint);
-                    return Task.CompletedTask;
-                }
+
+                return Task.CompletedTask;
 
                 static async Task AwaitRequestTask(Endpoint endpoint, Task requestTask, ILogger logger)
                 {
