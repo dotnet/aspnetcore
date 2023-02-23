@@ -6,7 +6,7 @@ using System.Net.Security;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 /// <summary>
-/// Feature to set access the TLS application protocol
+/// Feature to get access the connection's <see cref="SslStream" />.
 /// </summary>
 public interface ISslStreamFeature
 {
