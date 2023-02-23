@@ -24,11 +24,6 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="TlsCipherSuite"/>.
     /// </summary>
     TlsCipherSuite? NegotiatedCipherSuite { get => default; }
-
-    /// <summary>
-    /// Gets the <see cref="SslStream"/>.
-    /// </summary>
-    SslStream? SslStream { get => default; }
 #endif
 
     /// <summary>

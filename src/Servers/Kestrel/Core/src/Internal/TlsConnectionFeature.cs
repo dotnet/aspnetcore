@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
+internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ISslStreamFeature
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
@@ -66,7 +66,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         set => _protocol = value;
     }
 
-    public SslStream? SslStream
+    public SslStream SslStream
     {
         get => _sslStream;
     }
