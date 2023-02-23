@@ -16,15 +16,6 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
     private X509Certificate2? _clientCert;
-    private ReadOnlyMemory<byte>? _applicationProtocol;
-    private SslProtocols? _protocol;
-    private TlsCipherSuite? _cipherSuite;
-    private CipherAlgorithmType? _cipherAlgorithm;
-    private int? _cipherStrength;
-    private HashAlgorithmType? _hashAlgorithm;
-    private int? _hashStrength;
-    private ExchangeAlgorithmType? _keyExchangeAlgorithm;
-    private int? _keyExchangeStrength;
     private Task<X509Certificate2?>? _clientCertTask;
 
     public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
@@ -54,68 +45,27 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     // Used for event source, not part of any of the feature interfaces.
     public string? HostName { get; set; }
 
-    public ReadOnlyMemory<byte> ApplicationProtocol
-    {
-        get => _applicationProtocol ?? _sslStream.NegotiatedApplicationProtocol.Protocol;
-        set => _applicationProtocol = value;
-    }
+    public ReadOnlyMemory<byte> ApplicationProtocol => _sslStream.NegotiatedApplicationProtocol.Protocol;
 
-    public SslProtocols Protocol
-    {
-        get => _protocol ?? _sslStream.SslProtocol;
-        set => _protocol = value;
-    }
+    public SslProtocols Protocol => _sslStream.SslProtocol;
 
-    public SslStream SslStream
-    {
-        get => _sslStream;
-    }
+    public SslStream SslStream => _sslStream;
 
     // We don't store the values for these because they could be changed by a renegotiation.
 
-    TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite { get => NegotiatedCipherSuite; }
-    // Split the writable property from the interface implementation because it doesn't make sense to allow setting null
-    internal TlsCipherSuite NegotiatedCipherSuite
-    {
-        get => _cipherSuite ?? _sslStream.NegotiatedCipherSuite;
-        set => _cipherSuite = value;
-    }
+    public TlsCipherSuite? NegotiatedCipherSuite => _sslStream.NegotiatedCipherSuite;
 
-    public CipherAlgorithmType CipherAlgorithm
-    {
-        get => _cipherAlgorithm ?? _sslStream.CipherAlgorithm;
-        set => _cipherAlgorithm = value;
-    }
+    public CipherAlgorithmType CipherAlgorithm => _sslStream.CipherAlgorithm;
 
-    public int CipherStrength
-    {
-        get => _cipherStrength ?? _sslStream.CipherStrength;
-        set => _cipherStrength = value;
-    }
+    public int CipherStrength => _sslStream.CipherStrength;
 
-    public HashAlgorithmType HashAlgorithm
-    {
-        get => _hashAlgorithm ?? _sslStream.HashAlgorithm;
-        set => _hashAlgorithm = value;
-    }
+    public HashAlgorithmType HashAlgorithm => _sslStream.HashAlgorithm;
 
-    public int HashStrength
-    {
-        get => _hashStrength ?? _sslStream.HashStrength;
-        set => _hashStrength = value;
-    }
+    public int HashStrength => _sslStream.HashStrength;
 
-    public ExchangeAlgorithmType KeyExchangeAlgorithm
-    {
-        get => _keyExchangeAlgorithm ?? _sslStream.KeyExchangeAlgorithm;
-        set => _keyExchangeAlgorithm = value;
-    }
+    public ExchangeAlgorithmType KeyExchangeAlgorithm => _sslStream.KeyExchangeAlgorithm;
 
-    public int KeyExchangeStrength
-    {
-        get => _keyExchangeStrength ?? _sslStream.KeyExchangeStrength;
-        set => _keyExchangeStrength = value;
-    }
+    public int KeyExchangeStrength => _sslStream.KeyExchangeStrength;
 
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
     {
