@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+
 namespace Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 
 // One awkwardness of the way QuickGrid collects its list of child columns is that, during OnParametersSetAsync,
@@ -30,7 +32,8 @@ namespace Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 /// For internal use only. Do not use.
 /// </summary>
 /// <typeparam name="TGridItem">For internal use only. Do not use.</typeparam>
-public class ColumnsCollectedNotifier<TGridItem> : IComponent
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class ColumnsCollectedNotifier<TGridItem> : IComponent
 {
     private bool _isFirstRender = true;
 

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// Represents a sort order specification used within <see cref="QuickGrid{TGridItem}"/>.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public class GridSort<TGridItem>
+public sealed class GridSort<TGridItem>
 {
     private const string ExpressionNotRepresentableMessage = "The supplied expression can't be represented as a property name for sorting. Only simple member expressions, such as @(x => x.SomeProperty), can be converted to property names.";
 
