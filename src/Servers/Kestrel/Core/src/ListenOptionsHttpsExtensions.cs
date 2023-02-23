@@ -4,12 +4,12 @@
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -201,7 +201,8 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {
-        var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
 
         listenOptions.IsTls = true;
         listenOptions.HttpsOptions = httpsOptions;
@@ -210,7 +211,7 @@ public static class ListenOptionsHttpsExtensions
         {
             // Set the list of protocols from listen options
             httpsOptions.HttpProtocols = listenOptions.Protocols;
-            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
 
@@ -265,7 +266,8 @@ public static class ListenOptionsHttpsExtensions
             throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
         }
 
-        var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
 
         listenOptions.IsTls = true;
         listenOptions.HttpsCallbackOptions = callbackOptions;
@@ -276,7 +278,7 @@ public static class ListenOptionsHttpsExtensions
             // Set it inside Use delegate so Protocols and UseHttps can be called out of order.
             callbackOptions.HttpProtocols = listenOptions.Protocols;
 
-            var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
+            var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
 

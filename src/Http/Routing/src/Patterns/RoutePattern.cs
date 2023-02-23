@@ -149,6 +149,10 @@ public sealed class RoutePattern
         return null;
     }
 
+    // Used for:
+    // 1. RoutePattern debug string.
+    // 2. Default IRouteDiagnosticsMetadata value.
+    // 3. RouteEndpoint display name.
     internal string DebuggerToString()
     {
         return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));

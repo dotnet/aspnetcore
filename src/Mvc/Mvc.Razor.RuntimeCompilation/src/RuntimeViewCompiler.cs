@@ -420,12 +420,10 @@ internal partial class RuntimeViewCompiler : IViewCompiler
             if (startTimestamp != 0)
             {
                 var currentTimestamp = Stopwatch.GetTimestamp();
-                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                var elapsed = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
                 GeneratedCodeToAssemblyCompilationEnd(logger, filePath, elapsed.TotalMilliseconds);
             }
         }
-
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         [LoggerMessage(3, LogLevel.Debug, "Initializing Razor view compiler with compiled view: '{ViewName}'.")]
         public static partial void ViewCompilerLocatedCompiledView(ILogger logger, string viewName);

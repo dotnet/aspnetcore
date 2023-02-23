@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -27,7 +30,9 @@ public class KestrelServer : IServer
         _innerKestrelServer = new KestrelServerImpl(
             options,
             new[] { transportFactory ?? throw new ArgumentNullException(nameof(transportFactory)) },
-            loggerFactory);
+            Array.Empty<IMultiplexedConnectionListenerFactory>(),
+            loggerFactory,
+            new KestrelMetrics(new DummyMeterFactory()));
     }
 
     /// <inheritdoc />
@@ -56,5 +61,13 @@ public class KestrelServer : IServer
     public void Dispose()
     {
         _innerKestrelServer.Dispose();
+    }
+
+    // This factory used when type is created without DI. For example, via KestrelServer.
+    private sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter CreateMeter(string name) => new Meter(name);
+
+        public Meter CreateMeter(MeterOptions options) => new Meter(options.Name, options.Version);
     }
 }

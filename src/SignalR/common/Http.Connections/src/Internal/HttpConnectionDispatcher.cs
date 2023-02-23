@@ -238,7 +238,7 @@ internal sealed partial class HttpConnectionDispatcher
 
                         // We should be able to safely dispose because there's no more data being written
                         // We don't need to wait for close here since we've already waited for both sides
-                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                     }
                     else
                     {
@@ -252,7 +252,7 @@ internal sealed partial class HttpConnectionDispatcher
                     currentRequestTcs.TrySetCanceled();
                     // We should be able to safely dispose because there's no more data being written
                     // We don't need to wait for close here since we've already waited for both sides
-                    await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                    await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                 }
                 else
                 {
@@ -280,7 +280,7 @@ internal sealed partial class HttpConnectionDispatcher
             // Wait for any of them to end
             await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
-            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
         }
     }
 
@@ -503,7 +503,7 @@ internal sealed partial class HttpConnectionDispatcher
         Log.TerminatingConnection(_logger);
 
         // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
-        connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+        connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
 
         context.Response.StatusCode = StatusCodes.Status202Accepted;
         context.Response.ContentType = "text/plain";

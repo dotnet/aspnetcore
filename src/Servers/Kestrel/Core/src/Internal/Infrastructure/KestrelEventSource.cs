@@ -55,16 +55,19 @@ internal sealed class KestrelEventSource : EventSource
     [NonEvent]
     public void ConnectionStart(BaseConnectionContext connection)
     {
-        // avoid allocating strings unless this event source is enabled
-        Interlocked.Increment(ref _totalConnections);
-        Interlocked.Increment(ref _currentConnections);
-
-        if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+        if (IsEnabled())
         {
-            ConnectionStart(
-                connection.ConnectionId,
-                connection.LocalEndPoint?.ToString(),
-                connection.RemoteEndPoint?.ToString());
+            Interlocked.Increment(ref _totalConnections);
+            Interlocked.Increment(ref _currentConnections);
+
+            // avoid allocating strings unless this event source is enabled
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                ConnectionStart(
+                    connection.ConnectionId,
+                    connection.LocalEndPoint?.ToString(),
+                    connection.RemoteEndPoint?.ToString());
+            }
         }
     }
 
@@ -78,11 +81,14 @@ internal sealed class KestrelEventSource : EventSource
     [NonEvent]
     public void ConnectionStop(BaseConnectionContext connection)
     {
-        Interlocked.Decrement(ref _currentConnections);
-
-        if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+        if (IsEnabled())
         {
-            ConnectionStop(connection.ConnectionId);
+            Interlocked.Decrement(ref _currentConnections);
+
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                ConnectionStop(connection.ConnectionId);
+            }
         }
     }
 
@@ -156,24 +162,33 @@ internal sealed class KestrelEventSource : EventSource
     [NonEvent]
     public void ConnectionQueuedStart(BaseConnectionContext connection)
     {
-        Interlocked.Increment(ref _connectionQueueLength);
+        if (IsEnabled())
+        {
+            Interlocked.Increment(ref _connectionQueueLength);
+        }
     }
 
     [NonEvent]
     public void ConnectionQueuedStop(BaseConnectionContext connection)
     {
-        Interlocked.Decrement(ref _connectionQueueLength);
+        if (IsEnabled())
+        {
+            Interlocked.Decrement(ref _connectionQueueLength);
+        }
     }
 
     [NonEvent]
     public void TlsHandshakeStart(BaseConnectionContext connectionContext, SslServerAuthenticationOptions sslOptions)
     {
-        Interlocked.Increment(ref _currentTlsHandshakes);
-        Interlocked.Increment(ref _totalTlsHandshakes);
-
-        if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+        if (IsEnabled())
         {
-            TlsHandshakeStart(connectionContext.ConnectionId, sslOptions.EnabledSslProtocols.ToString());
+            Interlocked.Increment(ref _currentTlsHandshakes);
+            Interlocked.Increment(ref _totalTlsHandshakes);
+
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                TlsHandshakeStart(connectionContext.ConnectionId, sslOptions.EnabledSslProtocols.ToString());
+            }
         }
     }
 
@@ -187,15 +202,18 @@ internal sealed class KestrelEventSource : EventSource
     [NonEvent]
     public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature? feature)
     {
-        Interlocked.Decrement(ref _currentTlsHandshakes);
-
-        if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+        if (IsEnabled())
         {
-            // TODO: Write this without a string allocation using WriteEventData
-            var applicationProtocol = feature == null ? string.Empty : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
-            var sslProtocols = feature?.Protocol.ToString() ?? string.Empty;
-            var hostName = feature?.HostName ?? string.Empty;
-            TlsHandshakeStop(connectionContext.ConnectionId, sslProtocols, applicationProtocol, hostName);
+            Interlocked.Decrement(ref _currentTlsHandshakes);
+
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                // TODO: Write this without a string allocation using WriteEventData
+                var applicationProtocol = feature == null ? string.Empty : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
+                var sslProtocols = feature?.Protocol.ToString() ?? string.Empty;
+                var hostName = feature?.HostName ?? string.Empty;
+                TlsHandshakeStop(connectionContext.ConnectionId, sslProtocols, applicationProtocol, hostName);
+            }
         }
     }
 
@@ -211,11 +229,14 @@ internal sealed class KestrelEventSource : EventSource
     [Event(10, Level = EventLevel.Error)]
     public void TlsHandshakeFailed(string connectionId)
     {
-        Interlocked.Increment(ref _failedTlsHandshakes);
-
-        if (IsEnabled(EventLevel.Error, EventKeywords.None))
+        if (IsEnabled())
         {
-            WriteEvent(10, connectionId);
+            Interlocked.Increment(ref _failedTlsHandshakes);
+
+            if (IsEnabled(EventLevel.Error, EventKeywords.None))
+            {
+                WriteEvent(10, connectionId);
+            }
         }
     }
 
@@ -277,25 +298,37 @@ internal sealed class KestrelEventSource : EventSource
     [NonEvent]
     public void RequestQueuedStart(HttpProtocol httpProtocol, string httpVersion)
     {
-        Interlocked.Increment(ref _httpRequestQueueLength);
+        if (IsEnabled())
+        {
+            Interlocked.Increment(ref _httpRequestQueueLength);
+        }
     }
 
     [NonEvent]
     public void RequestQueuedStop(HttpProtocol httpProtocol, string httpVersion)
     {
-        Interlocked.Decrement(ref _httpRequestQueueLength);
+        if (IsEnabled())
+        {
+            Interlocked.Decrement(ref _httpRequestQueueLength);
+        }
     }
 
     [NonEvent]
     public void RequestUpgradedStart(HttpProtocol httpProtocol)
     {
-        Interlocked.Increment(ref _currentUpgradedHttpRequests);
+        if (IsEnabled())
+        {
+            Interlocked.Increment(ref _currentUpgradedHttpRequests);
+        }
     }
 
     [NonEvent]
     public void RequestUpgradedStop(HttpProtocol httpProtocol)
     {
-        Interlocked.Decrement(ref _currentUpgradedHttpRequests);
+        if (IsEnabled())
+        {
+            Interlocked.Decrement(ref _currentUpgradedHttpRequests);
+        }
     }
 
     protected override void OnEventCommand(EventCommandEventArgs command)

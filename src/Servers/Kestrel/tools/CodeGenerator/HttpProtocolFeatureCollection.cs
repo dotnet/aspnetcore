@@ -15,11 +15,12 @@ public class HttpProtocolFeatureCollection
             "IRouteValuesFeature",
             "IEndpointFeature",
             "IServiceProvidersFeature",
-            "IHttpActivityFeature"
         };
 
         var commonFeatures = new[]
         {
+            "IHttpActivityFeature",
+            "IHttpMetricsTagsFeature",
             "IItemsFeature",
             "IQueryFeature",
             "IRequestBodyPipeFeature",

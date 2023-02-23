@@ -12,6 +12,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Metrics\**\*.cs" LinkBase="Metrics" />
+  </ItemGroup>
+
+  <!-- Temporary hack to make prototype Metrics DI integration types available -->
+  <!-- TODO: Remove when Metrics DI intergration package is available -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Core.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
+    <InternalsVisibleTo Include="InMemory.FunctionalTests" />
+    <InternalsVisibleTo Include="Sockets.BindTests" />
+    <InternalsVisibleTo Include="Sockets.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />

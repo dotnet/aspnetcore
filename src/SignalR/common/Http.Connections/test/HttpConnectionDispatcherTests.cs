@@ -35,6 +35,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
@@ -3384,7 +3385,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         var connectionOptions = new ConnectionOptions();
         connectionOptions.DisconnectTimeout = disconnectTimeout;
-        return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(), Options.Create(connectionOptions));
+        return new HttpConnectionManager(
+            loggerFactory ?? new LoggerFactory(),
+            new EmptyApplicationLifetime(),
+            Options.Create(connectionOptions),
+            new HttpConnectionsMetrics(new TestMeterFactory()));
     }
 
     private string GetContentAsString(Stream body)

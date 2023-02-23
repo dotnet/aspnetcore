@@ -19,19 +19,21 @@ internal sealed partial class HttpConnectionManager
     // TODO: Consider making this configurable? At least for testing?
     private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
 
-    private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections =
-        new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, long StartTimestamp)> _connections =
+        new ConcurrentDictionary<string, (HttpConnectionContext Connection, long StartTimestamp)>(StringComparer.Ordinal);
     private readonly PeriodicTimer _nextHeartbeat;
     private readonly ILogger<HttpConnectionManager> _logger;
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly long _disconnectTimeoutTicks;
+    private readonly HttpConnectionsMetrics _metrics;
 
-    public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
+    public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, HttpConnectionsMetrics metrics)
     {
         _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
         _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
         _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
         _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout).TotalMilliseconds;
+        _metrics = metrics;
 
         // Register these last as the callbacks could run immediately
         appLifetime.ApplicationStarted.Register(Start);
@@ -78,22 +80,31 @@ internal sealed partial class HttpConnectionManager
             connectionToken = id;
         }
 
+        var startTimestamp = HttpConnectionsEventSource.Log.IsEnabled() || _metrics.IsEnabled()
+            ? Stopwatch.GetTimestamp()
+            : default;
+
         Log.CreatedNewConnection(_logger, id);
-        var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
+        HttpConnectionsEventSource.Log.ConnectionStart(id);
+        _metrics.ConnectionStart();
+
         var pair = DuplexPipe.CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
         var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, pair.Application, pair.Transport, options);
 
-        _connections.TryAdd(connectionToken, (connection, connectionTimer));
+        _connections.TryAdd(connectionToken, (connection, startTimestamp));
 
         return connection;
     }
 
-    public void RemoveConnection(string id)
+    public void RemoveConnection(string id, HttpTransportType transportType, HttpConnectionStopStatus status)
     {
         if (_connections.TryRemove(id, out var pair))
         {
             // Remove the connection completely
-            HttpConnectionsEventSource.Log.ConnectionStop(id, pair.Timer);
+            var currentTimestamp = (pair.StartTimestamp > 0) ? Stopwatch.GetTimestamp() : default;
+
+            HttpConnectionsEventSource.Log.ConnectionStop(id, pair.StartTimestamp, currentTimestamp);
+            _metrics.ConnectionStop(transportType, status, pair.StartTimestamp, currentTimestamp);
             Log.RemovedConnection(_logger, id);
         }
     }
@@ -153,7 +164,7 @@ internal sealed partial class HttpConnectionManager
                 // This is most likely a long polling connection. The transport here ends because
                 // a poll completed and has been inactive for > 5 seconds so we wait for the
                 // application to finish gracefully
-                _ = DisposeAndRemoveAsync(connection, closeGracefully: true);
+                _ = DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.Timeout);
             }
             else
             {
@@ -187,13 +198,13 @@ internal sealed partial class HttpConnectionManager
         foreach (var c in _connections)
         {
             // We're shutting down so don't wait for closing the application
-            tasks.Add(DisposeAndRemoveAsync(c.Value.Connection, closeGracefully: false));
+            tasks.Add(DisposeAndRemoveAsync(c.Value.Connection, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
         }
 
         Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
     }
 
-    internal async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully)
+    internal async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully, HttpConnectionStopStatus status)
     {
         try
         {
@@ -215,7 +226,7 @@ internal sealed partial class HttpConnectionManager
         {
             // Remove it from the list after disposal so that's it's easy to see
             // connections that might be in a hung state via the connections list
-            RemoveConnection(connection.ConnectionToken);
+            RemoveConnection(connection.ConnectionToken, connection.TransportType, status);
         }
     }
 }

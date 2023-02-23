@@ -62,12 +62,12 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
 #pragma warning restore CS0618 // Type or member is obsolete
 
             services.Configure<GenericWebHostServiceOptions>(options =>
-        {
-            // Set the options
-            options.WebHostOptions = webHostOptions;
-            // Store and forward any startup errors
-            options.HostingStartupExceptions = _hostingStartupErrors;
-        });
+            {
+                // Set the options
+                options.WebHostOptions = webHostOptions;
+                // Store and forward any startup errors
+                options.HostingStartupExceptions = _hostingStartupErrors;
+            });
 
             // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
             // We need to flow this differently
@@ -79,6 +79,9 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
             services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
+
+            services.AddMetrics();
+            services.TryAddSingleton<HostingMetrics>();
 
             // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
             _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);

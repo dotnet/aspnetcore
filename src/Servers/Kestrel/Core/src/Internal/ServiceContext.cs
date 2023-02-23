@@ -32,4 +32,6 @@ internal class ServiceContext
     public KestrelServerOptions ServerOptions { get; set; } = default!;
 
     public DiagnosticSource? DiagnosticSource { get; set; }
+
+    public KestrelMetrics Metrics { get; set; } = default!;
 }

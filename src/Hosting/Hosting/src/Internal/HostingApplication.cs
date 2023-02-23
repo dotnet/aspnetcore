@@ -23,10 +23,12 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         DiagnosticListener diagnosticSource,
         ActivitySource activitySource,
         DistributedContextPropagator propagator,
-        IHttpContextFactory httpContextFactory)
+        IHttpContextFactory httpContextFactory,
+        HostingEventSource eventSource,
+        HostingMetrics metrics)
     {
         _application = application;
-        _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource, propagator);
+        _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource, propagator, eventSource, metrics);
         if (httpContextFactory is DefaultHttpContextFactory factory)
         {
             _defaultHttpContextFactory = factory;
@@ -110,7 +112,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
             _httpContextFactory!.Dispose(httpContext);
         }
 
-        HostingApplicationDiagnostics.ContextDisposed(context);
+        _diagnostics.ContextDisposed(context);
 
         // Reset the context as it may be pooled
         context.Reset();
@@ -139,9 +141,10 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
 
         public long StartTimestamp { get; set; }
         internal bool HasDiagnosticListener { get; set; }
-        public bool EventLogEnabled { get; set; }
+        public bool EventLogOrMetricsEnabled { get; set; }
 
         internal IHttpActivityFeature? HttpActivityFeature;
+        internal IHttpMetricsTagsFeature? MetricsTagsFeature;
 
         public void Reset()
         {
@@ -153,7 +156,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
 
             StartTimestamp = 0;
             HasDiagnosticListener = false;
-            EventLogEnabled = false;
+            EventLogOrMetricsEnabled = false;
         }
     }
 }

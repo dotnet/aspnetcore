@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Connections.Features.IConnectionMetricsTagsFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionMetricsTagsFeature.Tags.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.get -> System.IO.Pipes.NamedPipeServerStream!
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector

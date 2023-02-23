@@ -6,17 +6,21 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
-public class DeveloperExceptionPageMiddlewareTest
+public class DeveloperExceptionPageMiddlewareTest : LoggedTest
 {
     [Fact]
     public async Task ExceptionHandlerFeatureIsAvailableInCustomizeProblemDetailsWhenUsingExceptionPage()
@@ -480,6 +484,61 @@ public class DeveloperExceptionPageMiddlewareTest
         Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
         Assert.Null(listener.DiagnosticHandledException?.HttpContext);
         Assert.Null(listener.DiagnosticHandledException?.Exception);
+    }
+
+    [Fact]
+    public async Task UnhandledError_ExceptionNameTagAdded()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+        var instrumentRecorder = new InstrumentRecorder<double>(meterRegistry, "Microsoft.AspNetCore.Hosting", "request-duration");
+        instrumentRecorder.Register(m =>
+        {
+            tcs.SetResult();
+        });
+
+        using var host = new HostBuilder()
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton<IMeterFactory>(meterFactory);
+                s.AddSingleton(LoggerFactory);
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        var response = await server.CreateClient().GetAsync("/path");
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        await tcs.Task.DefaultTimeout();
+
+        // Assert
+        Assert.Collection(
+            instrumentRecorder.GetMeasurements(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal(500, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
+                Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+            });
     }
 
     public class CustomCompilationException : Exception, ICompilationException

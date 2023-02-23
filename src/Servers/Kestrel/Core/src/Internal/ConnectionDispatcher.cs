@@ -57,6 +57,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
                     Log.ConnectionAccepted(connection.ConnectionId);
                     KestrelEventSource.Log.ConnectionQueuedStart(connection);
+                    _serviceContext.Metrics.ConnectionQueuedStart(connection);
 
                     ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
                 }
