@@ -4,19 +4,19 @@
 namespace Microsoft.AspNetCore.Components.Sections;
 
 /// <summary>
-/// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="Name"/>s.
+/// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
 public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
 {
-    private string? _registeredName;
+    private object? _registeredSectionId;
     private bool? _registeredIsDefaultContent;
     private SectionRegistry _registry = default!;
 
     /// <summary>
-    /// Gets or sets the name that determines which <see cref="SectionOutlet"/> instance will render
+    /// Gets or sets the Id that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
-    [Parameter] public string Name { get; set; } = default!;
+    [Parameter] public object SectionId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets whether this component should provide the default content for the target
@@ -40,24 +40,24 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     {
         parameters.SetParameterProperties(this);
 
-        if (string.IsNullOrEmpty(Name))
+        if (SectionId is null)
         {
-            throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(Name)}'.");
+            throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(SectionId)}'.");
         }
 
-        if (Name != _registeredName || IsDefaultContent != _registeredIsDefaultContent)
+        if (SectionId != _registeredSectionId! || IsDefaultContent != _registeredIsDefaultContent)
         {
-            if (_registeredName is not null)
+            if (_registeredSectionId is not null)
             {
-                _registry.RemoveProvider(_registeredName, this);
+                _registry.RemoveProvider(_registeredSectionId, this);
             }
 
-            _registry.AddProvider(Name, this, IsDefaultContent);
-            _registeredName = Name;
+            _registry.AddProvider(SectionId, this, IsDefaultContent);
+            _registeredSectionId = SectionId;
             _registeredIsDefaultContent = IsDefaultContent;
         }
 
-        _registry.NotifyContentChanged(Name, this);
+        _registry.NotifyContentChanged(SectionId, this);
 
         return Task.CompletedTask;
     }
@@ -65,9 +65,9 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_registeredName is not null)
+        if (_registeredSectionId is not null)
         {
-            _registry.RemoveProvider(_registeredName, this);
+            _registry.RemoveProvider(_registeredSectionId, this);
         }
     }
 }

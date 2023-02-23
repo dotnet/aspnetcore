@@ -4,12 +4,14 @@
 
 @if (SectionOutletExists)
 {
-    <SectionOutlet Name="@FirstSectionName" />
+    <SectionOutlet SectionId="@FirstSectionId" />
 }
+
+<SectionOutlet SectionId="@FirstSectionId" />
 
 <p>Text between two section outlets</p>
 
-<SectionOutlet Name="@SecondSectionName" />
+<SectionOutlet SectionId="@SecondSectionId" />
 
 <button id="section-outlet-dispose"
         @onclick="@(() => SectionOutletExists = false)">
@@ -18,7 +20,7 @@
 
 <Counter
     SectionContentExists="@CounterSectionContentExists"
-    SectionName="@CounterSectionContentName"
+    SectionId="@CounterSectionContentName"
     IsDefaultContent="@CounterIsDefaultContent">
 </Counter>
 
@@ -35,7 +37,7 @@
 </button><br />
 
 <button id="counter-change-section-content-name"
-        @onclick="@(() => CounterSectionContentName = SecondSectionName)">
+        @onclick="@(() => CounterSectionContentName = SecondSectionId)">
         Change Counter SectionContent Name
 </button><br />
 
@@ -56,7 +58,7 @@
 
 <TextComponent
     SectionContentExists="@TextComponentSectionContentExists"
-    SectionName="@TextComponentSectionContentName"
+    SectionId="@TextComponentSectionContentName"
     IsDefaultContent="@TextComponentIsDefaultContent">
 </TextComponent>
 
@@ -76,14 +78,14 @@
 </button><br />
 
 @code {
-    private const string FirstSectionName = "test1";
-    private const string SecondSectionName = "test2";
+    private static object FirstSectionId = new();
+    private static object SecondSectionId = new();
 
     private bool CounterSectionContentExists = false;
     private bool TextComponentSectionContentExists = false;
 
-    private string CounterSectionContentName = FirstSectionName;
-    private string TextComponentSectionContentName = FirstSectionName;
+    private object CounterSectionContentName = FirstSectionId;
+    private object TextComponentSectionContentName = FirstSectionId;
 
     private bool CounterIsDefaultContent = false;
     private bool TextComponentIsDefaultContent = false;

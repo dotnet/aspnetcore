@@ -9,12 +9,12 @@ Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.Dispose() -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.IsDefaultContent.get -> bool
 Microsoft.AspNetCore.Components.Sections.SectionContent.IsDefaultContent.set -> void
-Microsoft.AspNetCore.Components.Sections.SectionContent.Name.get -> string!
-Microsoft.AspNetCore.Components.Sections.SectionContent.Name.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.SectionContent() -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.get -> object!
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.Dispose() -> void
-Microsoft.AspNetCore.Components.Sections.SectionOutlet.Name.get -> string!
-Microsoft.AspNetCore.Components.Sections.SectionOutlet.Name.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.get -> object!
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionOutlet() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
