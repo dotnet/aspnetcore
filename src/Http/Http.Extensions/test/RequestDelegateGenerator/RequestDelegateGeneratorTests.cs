@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -520,7 +521,7 @@ app.MapGet(route, () => "Hello world!");
 .AddEndpointFilter((c, n) => n(c));
 """;
             var fromBodyRequiredSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
-            var fromBodyAllowEmptySource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}(AllowEmpty = true)] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
+            var fromBodyAllowEmptySource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}(EmptyBodyBehavior = {typeof(EmptyBodyBehavior)}.Allow)] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
             var fromBodyNullableSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? todo) => TypedResults.Ok(todo));""";
             var fromBodyDefaultValueSource = $"""
 #nullable disable
@@ -529,7 +530,7 @@ app.MapPost("/", postTodoWithDefault);
 #nullable restore
 """;
             var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo)){withFilter}""";
-            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}(AllowEmpty = true)] {typeof(Todo)} todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}(EmptyBodyBehavior = {typeof(EmptyBodyBehavior)}.Allow)] {typeof(Todo)} todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyNullableWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}?  todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyDefaultValueWithFilterSource = $"""
 #nullable disable
@@ -940,10 +941,11 @@ app.MapGet("/multipleFromService", ([{{typeof(FromServicesAttribute)}}]{{typeof(
     public async Task MapAction_ExplicitSource_SimpleReturn_Snapshot()
     {
         var source = $$"""
-app.MapGet("/fromQuery", ([{{typeof(FromQueryAttribute)}}] string? queryValue) => queryValue ?? string.Empty);
-app.MapGet("/fromHeader", ([{{typeof(FromHeaderAttribute)}}] string? headerValue) => headerValue ?? string.Empty);
-app.MapGet("/fromHeader/{routeValue}", ([{{typeof(FromRouteAttribute)}}] string? routeValue) => routeValue ?? string.Empty);
-app.MapGet("/{value}", (string? value) => value ?? string.Empty);
+app.MapGet("/fromQuery", ([{{typeof(FromQueryAttribute)}}] string queryValue) => queryValue ?? string.Empty);
+app.MapGet("/fromHeader", ([{{typeof(FromHeaderAttribute)}}] string headerValue) => headerValue ?? string.Empty);
+app.MapGet("/fromRoute/{routeValue}", ([{{typeof(FromRouteAttribute)}}] string routeValue) => routeValue ?? string.Empty);
+app.MapGet("/fromRouteRequiredImplicit/{value}", (string value) => value);
+app.MapGet("/fromQueryRequiredImplicit", (string value) => value);
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
 

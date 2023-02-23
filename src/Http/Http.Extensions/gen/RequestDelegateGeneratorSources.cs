@@ -134,13 +134,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             return (false, default);
         }
-
-        private static StringValues ResolveFromRouteOrQuery(HttpContext httpContext, string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
-                : httpContext.Request.Query[$"{parameterName}"];
-        }
     }
 
     {{GeneratedCodeAttribute}}

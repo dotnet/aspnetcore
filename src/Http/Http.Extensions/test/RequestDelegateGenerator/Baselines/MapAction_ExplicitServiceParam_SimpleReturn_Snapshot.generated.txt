@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.TestService>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.TestService?>(0), ic.GetArgument<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(1)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService?>(0), ic.GetArgument<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(1)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -377,13 +377,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
             }
             return (false, default);
-        }
-
-        private static StringValues ResolveFromRouteOrQuery(HttpContext httpContext, string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
-                : httpContext.Request.Query[$"{parameterName}"];
         }
     }
 

@@ -96,7 +96,10 @@ internal static class EndpointParameterEmitter
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
-        var assigningCode = $"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(httpContext, \"{endpointParameter.Name}\", options?.RouteParameterNames)";
+        var parameterName = endpointParameter.Name;
+        var assigningCode = $@"options?.RouteParameterNames?.Contains(""{parameterName}"", StringComparer.OrdinalIgnoreCase) == true";
+        assigningCode += $@"? new StringValues(httpContext.Request.RouteValues[$""{parameterName}""]?.ToString())";
+        assigningCode += $@": httpContext.Request.Query[$""{parameterName}""];";
 
         builder.AppendLine($$"""
                         var {{endpointParameter.EmitAssigningCodeResult()}} = {{assigningCode}};
@@ -153,12 +156,14 @@ internal static class EndpointParameterEmitter
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
+        // Requiredness checks for services are handled by the distinction
+        // between GetRequiredService and GetService in the assigningCode.
+        // Unlike other scenarios, this will result in an exception being thrown
+        // at runtime.
         var assigningCode = endpointParameter.IsOptional ?
             $"httpContext.RequestServices.GetService<{endpointParameter.Type}>();" :
             $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type}>()";
 
-        // Requiredness checks for services are handled by the distinction
-        // between GetRequiredService and GetService in the AssigningCode.
         builder.AppendLine($$"""
                         var {{endpointParameter.EmitHandlerArgument()}} = {{assigningCode}};
 """);

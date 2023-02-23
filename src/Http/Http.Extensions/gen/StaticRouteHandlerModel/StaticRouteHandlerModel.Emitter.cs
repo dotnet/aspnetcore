@@ -185,7 +185,7 @@ return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList(
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type}>({i})");
+            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})");
 
             if (i < endpoint.Parameters.Length - 1)
             {

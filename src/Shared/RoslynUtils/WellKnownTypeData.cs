@@ -101,6 +101,7 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Mvc_ViewFeatures_SaveTempDataAttribute,
         Microsoft_AspNetCore_Mvc_SkipStatusCodePagesAttribute,
         Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
+        Microsoft_AspNetCore_Mvc_ModelBinding_EmptyBodyBehavior,
         Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
         Microsoft_AspNetCore_Authorization_AuthorizeAttribute
     }
@@ -201,6 +202,7 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute",
         "Microsoft.AspNetCore.Mvc.SkipStatusCodePagesAttribute",
         "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
+        "Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior",
         "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
         "Microsoft.AspNetCore.Authorization.AuthorizeAttribute"
     };

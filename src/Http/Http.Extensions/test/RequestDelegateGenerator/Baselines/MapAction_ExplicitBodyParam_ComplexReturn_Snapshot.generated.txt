@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -298,13 +298,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
             }
             return (false, default);
-        }
-
-        private static StringValues ResolveFromRouteOrQuery(HttpContext httpContext, string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
-                : httpContext.Request.Query[$"{parameterName}"];
         }
     }
 

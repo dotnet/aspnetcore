@@ -15,15 +15,3 @@ public class Todo
     public string Name { get; set; } = "Todo";
     public bool IsComplete { get; set; }
 }
-
-public interface ITodo
-{
-    public int Id { get; }
-    public string Name { get; }
-    public bool IsComplete { get; }
-}
-
-public class FromBodyAttribute : Attribute, IFromBodyMetadata
-{
-    public bool AllowEmpty { get; set; }
-}

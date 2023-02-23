@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::System.String?, global::System.String> handler,
+            global::System.Func<global::System.String, global::System.String> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::System.String?, global::System.String>)del;
+                    var handler = (Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<string?>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -113,9 +113,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: queryValue (Type = string?, IsOptional = True, Source = Query)
+                        // Endpoint Parameter: queryValue (Type = string, IsOptional = False, Source = Query)
                         var queryValue_raw = httpContext.Request.Query["queryValue"];
-                        var queryValue_local = queryValue_raw.Count > 0 ? queryValue_raw.ToString() : null;
+                        if (StringValues.IsNullOrEmpty(queryValue_raw))
+                        {
+                            wasParamCheckFailure = true;
+                        }
+                        var queryValue_local = queryValue_raw.ToString();
 
                         if (wasParamCheckFailure)
                         {
@@ -129,15 +133,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: queryValue (Type = string?, IsOptional = True, Source = Query)
+                        // Endpoint Parameter: queryValue (Type = string, IsOptional = False, Source = Query)
                         var queryValue_raw = httpContext.Request.Query["queryValue"];
-                        var queryValue_local = queryValue_raw.Count > 0 ? queryValue_raw.ToString() : null;
+                        if (StringValues.IsNullOrEmpty(queryValue_raw))
+                        {
+                            wasParamCheckFailure = true;
+                        }
+                        var queryValue_local = queryValue_raw.ToString();
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string?>(httpContext, queryValue_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string>(httpContext, queryValue_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -154,7 +162,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::System.String?, global::System.String>)del;
+                    var handler = (Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -165,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<string?>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -174,9 +182,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: headerValue (Type = string?, IsOptional = True, Source = Header)
+                        // Endpoint Parameter: headerValue (Type = string, IsOptional = False, Source = Header)
                         var headerValue_raw = httpContext.Request.Headers["headerValue"];
-                        var headerValue_local = headerValue_raw.Count > 0 ? headerValue_raw.ToString() : null;
+                        if (StringValues.IsNullOrEmpty(headerValue_raw))
+                        {
+                            wasParamCheckFailure = true;
+                        }
+                        var headerValue_local = headerValue_raw.ToString();
 
                         if (wasParamCheckFailure)
                         {
@@ -190,15 +202,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: headerValue (Type = string?, IsOptional = True, Source = Header)
+                        // Endpoint Parameter: headerValue (Type = string, IsOptional = False, Source = Header)
                         var headerValue_raw = httpContext.Request.Headers["headerValue"];
-                        var headerValue_local = headerValue_raw.Count > 0 ? headerValue_raw.ToString() : null;
+                        if (StringValues.IsNullOrEmpty(headerValue_raw))
+                        {
+                            wasParamCheckFailure = true;
+                        }
+                        var headerValue_local = headerValue_raw.ToString();
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string?>(httpContext, headerValue_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string>(httpContext, headerValue_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -215,7 +231,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::System.String?, global::System.String>)del;
+                    var handler = (Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -226,7 +242,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<string?>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -235,12 +251,16 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: routeValue (Type = string?, IsOptional = True, Source = Route)
+                        // Endpoint Parameter: routeValue (Type = string, IsOptional = False, Source = Route)
                         if (options?.RouteParameterNames?.Contains("routeValue", StringComparer.OrdinalIgnoreCase) != true)
                         {
                             throw new InvalidOperationException($"'routeValue' is not a route parameter.");
                         }
                         var routeValue_raw = httpContext.Request.RouteValues["routeValue"]?.ToString();
+                        if (routeValue_raw == null)
+                        {
+                            wasParamCheckFailure = true;
+                        }
                         var routeValue_local = routeValue_raw;
 
                         if (wasParamCheckFailure)
@@ -249,25 +269,29 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(routeValue_local);
+                        var result = handler(routeValue_local!);
                         return httpContext.Response.WriteAsync(result);
                     }
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: routeValue (Type = string?, IsOptional = True, Source = Route)
+                        // Endpoint Parameter: routeValue (Type = string, IsOptional = False, Source = Route)
                         if (options?.RouteParameterNames?.Contains("routeValue", StringComparer.OrdinalIgnoreCase) != true)
                         {
                             throw new InvalidOperationException($"'routeValue' is not a route parameter.");
                         }
                         var routeValue_raw = httpContext.Request.RouteValues["routeValue"]?.ToString();
+                        if (routeValue_raw == null)
+                        {
+                            wasParamCheckFailure = true;
+                        }
                         var routeValue_local = routeValue_raw;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string?>(httpContext, routeValue_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string>(httpContext, routeValue_local!));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -284,7 +308,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::System.String?, global::System.String>)del;
+                    var handler = (Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -295,7 +319,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<string?>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -304,8 +328,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: value (Type = string?, IsOptional = True, Source = RouteOrQuery)
-                        var value_raw = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(httpContext, "value", options?.RouteParameterNames);
+                        // Endpoint Parameter: value (Type = string, IsOptional = False, Source = RouteOrQuery)
+                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString()): httpContext.Request.Query[$"value"];;
+                        if (value_raw is StringValues { Count: 0 })
+                        {
+                            wasParamCheckFailure = true;
+                        }
                         var value_local = value_raw;
 
                         if (wasParamCheckFailure)
@@ -314,21 +342,94 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(value_local);
+                        var result = handler(value_local!);
                         return httpContext.Response.WriteAsync(result);
                     }
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: value (Type = string?, IsOptional = True, Source = RouteOrQuery)
-                        var value_raw = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(httpContext, "value", options?.RouteParameterNames);
+                        // Endpoint Parameter: value (Type = string, IsOptional = False, Source = RouteOrQuery)
+                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString()): httpContext.Request.Query[$"value"];;
+                        if (value_raw is StringValues { Count: 0 })
+                        {
+                            wasParamCheckFailure = true;
+                        }
                         var value_local = value_raw;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string?>(httpContext, value_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string>(httpContext, value_local!));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 20)] = (
+               (methodInfo, options) =>
+                {
+                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 20));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    var handler = (Func<global::System.String, global::System.String>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)));
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    Task RequestHandler(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        // Endpoint Parameter: value (Type = string, IsOptional = False, Source = RouteOrQuery)
+                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString()): httpContext.Request.Query[$"value"];;
+                        if (value_raw is StringValues { Count: 0 })
+                        {
+                            wasParamCheckFailure = true;
+                        }
+                        var value_local = value_raw;
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return Task.CompletedTask;
+                        }
+                        httpContext.Response.ContentType ??= "text/plain";
+                        var result = handler(value_local!);
+                        return httpContext.Response.WriteAsync(result);
+                    }
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        // Endpoint Parameter: value (Type = string, IsOptional = False, Source = RouteOrQuery)
+                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString()): httpContext.Request.Query[$"value"];;
+                        if (value_raw is StringValues { Count: 0 })
+                        {
+                            wasParamCheckFailure = true;
+                        }
+                        var value_local = value_raw;
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                        }
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string>(httpContext, value_local!));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -416,13 +517,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
             }
             return (false, default);
-        }
-
-        private static StringValues ResolveFromRouteOrQuery(HttpContext httpContext, string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
-                : httpContext.Request.Query[$"{parameterName}"];
         }
     }
 
