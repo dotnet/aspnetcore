@@ -25,6 +25,7 @@ internal sealed class PageContext : IAsyncDisposable
     public WebViewNavigationManager NavigationManager { get; }
     public WebViewJSRuntime JSRuntime { get; }
     public WebViewRenderer Renderer { get; }
+    public IServiceProvider ServiceProvider => _serviceScope.ServiceProvider;
 
     public PageContext(
         Dispatcher dispatcher,
@@ -35,17 +36,16 @@ internal sealed class PageContext : IAsyncDisposable
         string startUrl)
     {
         _serviceScope = serviceScope;
-        var services = serviceScope.ServiceProvider;
 
-        NavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
+        NavigationManager = (WebViewNavigationManager)ServiceProvider.GetRequiredService<NavigationManager>();
         NavigationManager.AttachToWebView(ipcSender, baseUrl, startUrl);
 
-        JSRuntime = (WebViewJSRuntime)services.GetRequiredService<IJSRuntime>();
+        JSRuntime = (WebViewJSRuntime)ServiceProvider.GetRequiredService<IJSRuntime>();
         JSRuntime.AttachToWebView(ipcSender);
 
-        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        var loggerFactory = ServiceProvider.GetRequiredService<ILoggerFactory>();
         var jsComponents = new JSComponentInterop(jsComponentsConfiguration);
-        Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
+        Renderer = new WebViewRenderer(ServiceProvider, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
     }
 
     public async ValueTask DisposeAsync()
