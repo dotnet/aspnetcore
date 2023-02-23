@@ -2,7 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System;
 using System.Globalization;
+using System.Net.Sockets;
+using System.Net;
+using System.Numerics;
+using System.Reflection.Metadata;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
@@ -143,49 +149,66 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
         await VerifyResponseBodyAsync(httpContext, result);
     }
 
+    public static object?[][] TryParsableParameters
+    {
+        get
+        {
+            var now = DateTime.Now;
+
+            return new[]
+            {
+                    // string is not technically "TryParsable", but it's the special case.
+                    new object[] { "string", "plain string", "plain string" },
+                    new object[] { "int", "-42", -42 },
+                    new object[] { "uint", "42", 42U },
+                    new object[] { "bool", "true", true },
+                    new object[] { "short", "-42", (short)-42 },
+                    new object[] { "ushort", "42", (ushort)42 },
+                    new object[] { "long", "-42", -42L },
+                    new object[] { "ulong", "42", 42UL },
+                    new object[] { "IntPtr", "-42", new IntPtr(-42) },
+                    //new object[] { "char", "A", 'A' },
+                    new object[] { "double", "0.5", 0.5 },
+                    new object[] { "float", "0.5", 0.5f },
+                    new object[] { "Half", "0.5", (Half)0.5f },
+                    new object[] { "decimal", "0.5", 0.5m },
+                    new object[] { "Uri", "https://example.org", new Uri("https://example.org") },
+                    //new object[] { "DateTime", now.ToString("o"), now.ToUniversalTime() },
+                    //new object[] { "DateTimeOffset", "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
+                    new object[] { "TimeSpan", "00:00:42", TimeSpan.FromSeconds(42) },
+                    new object[] { "Guid", "00000000-0000-0000-0000-000000000000", Guid.Empty },
+                    new object[] { "Version", "6.0.0.42", new Version("6.0.0.42") },
+                    new object[] { "BigInteger", "-42", new BigInteger(-42) },
+                    new object[] { "IPAddress", "127.0.0.1", IPAddress.Loopback },
+                    new object[] { "IPEndPoint", "127.0.0.1:80", new IPEndPoint(IPAddress.Loopback, 80) },
+                    new object[] { "AddressFamily", "Unix", AddressFamily.Unix },
+                    new object[] { "ILOpCode", "Nop", ILOpCode.Nop },
+                    new object[] { "AssemblyFlags", "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
+                    new object[] { "int?", "42", 42 },
+                    new object?[] { "int?", null, null },
+                };
+        }
+    }
+
     [Theory]
-    [InlineData("sbyte")]
-    [InlineData("SByte")]
-    [InlineData("byte")]
-    [InlineData("Byte")]
-    [InlineData("short")]
-    [InlineData("Int16")]
-    [InlineData("ushort")]
-    [InlineData("UInt16")]
-    [InlineData("int")]
-    [InlineData("Int32")]
-    [InlineData("uint")]
-    [InlineData("UInt32")]
-    [InlineData("long")]
-    [InlineData("Int64")]
-    [InlineData("ulong")]
-    [InlineData("UInt64")]
-    [InlineData("float")]
-    [InlineData("Single")]
-    [InlineData("double")]
-    [InlineData("Double")]
-    [InlineData("decimal")]
-    [InlineData("Decimal")]
-    public async Task MapAction_SingleNumericParam_StringReturn(string numericType)
+    [MemberData(nameof(TryParsableParameters))]
+    public async Task MapAction_SingleParsable_StringReturn(string typeName, string queryStringInput, object? expectedParameterValue)
     {
         var (results, compilation) = await RunGeneratorAsync($$"""
-app.MapGet("/hello", ([FromQuery]{{numericType}} p) => p.ToString());
+app.MapGet("/hello", (HttpContext context, [FromQuery]{{typeName}} p) =>
+{
+    context.Items["tryParsable"] = p;
+});
 """);
 
         var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        Assert.Equal("/hello", endpointModel.RoutePattern);
-        Assert.Equal("MapGet", endpointModel.HttpMethod);
-        var p = Assert.Single(endpointModel.Parameters);
-        Assert.Equal(EndpointParameterSource.Query, p.Source);
-        Assert.Equal("p", p.Name);
-
         var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString("?p=42");
+        httpContext.Request.QueryString = new QueryString($"?p={queryStringInput}");
 
         await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "42");
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
     [Theory]

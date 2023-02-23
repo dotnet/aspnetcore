@@ -74,12 +74,14 @@ internal class EndpointParameter
 
     private static bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
     {
+        var parameterType = parameter.Type.UnwrapTypeSymbol();
+
         // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
         // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
         // support usage in the code generator an optiona out parameter has been added to hint at what variant of the various
         // TryParse methods should be used (this implies that the preferences are baked into ParsabilityHelper). If we aren't
         // parsable at all we bail.
-        if (ParsabilityHelper.GetParsability(parameter.Type, wellKnownTypes, out var parsabilityMethod) == Parsability.NotParsable)
+        if (ParsabilityHelper.GetParsability(parameterType, wellKnownTypes, out var parsabilityMethod) == Parsability.NotParsable)
         {
             parsingBlockEmitter = null;
             return false;
@@ -90,15 +92,13 @@ internal class EndpointParameter
         // which method was encountered.
         Func<string, string, string>? preferredTryParseInvocation = parsabilityMethod switch
         {
-            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
-            ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
-            ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""",
-            ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""",
+            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""",
+            ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""",
             ParsabilityMethod.Uri => (string inputArgument, string outputArgument) => $$"""Uri.TryCreate({{inputArgument}}, UriKind.RelativeOrAbsolute, out var {{outputArgument}})""",
             ParsabilityMethod.String => null, // string parameters don't require parsing
-            Parsability.NotParsable => null,
-            // The following is probably unnecessary. Would usually be an UnreachableException.
-            // _ => throw new Exception("Unreachable!"),
+            _ => null
         };
 
         // ... so for strings (null) we bail.
@@ -116,6 +116,7 @@ internal class EndpointParameter
                         }
 """;
         return true;
+
     }
 
     public ITypeSymbol Type { get; }

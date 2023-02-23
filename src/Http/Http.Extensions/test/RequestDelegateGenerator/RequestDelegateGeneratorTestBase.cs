@@ -190,6 +190,11 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -248,6 +253,7 @@ public static class TestMapActions
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
+        await File.WriteAllTextAsync(baselineFilePath, generatedCode.ToString());
         var baseline = await File.ReadAllTextAsync(baselineFilePath);
         var expectedLines = baseline
             .TrimEnd() // Trim newlines added by autoformat

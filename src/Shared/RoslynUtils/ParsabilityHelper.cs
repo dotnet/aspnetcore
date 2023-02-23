@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
 

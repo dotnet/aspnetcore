@@ -5,7 +5,6 @@ namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
 
 internal enum ParsabilityMethod
 {
-    NotParsable,
     String,
     IParsable,
     Enum,
