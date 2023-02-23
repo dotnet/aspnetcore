@@ -145,6 +145,7 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ITlsConnectionFeature>(feature);
         context.Features.Set<ITlsHandshakeFeature>(feature);
         context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+        context.Features.Set<ISslStreamFeature>(feature);
 
         try
         {
