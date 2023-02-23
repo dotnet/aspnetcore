@@ -87,6 +87,14 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     {
         // This is a GC hazard - it would be ideal to pin 'batch' and all its contents to prevent
         // it from getting moved, or pause the GC for the duration of the 'RenderBatch()' call.
+        // The key mitigation is that the JS-side code always processes renderbatches synchronously
+        // and never calls back into .NET during that process, so GC cannot run (assuming it would
+        // only run on the current thread).
+        // As an early-warning system in case we accidentally introduce bugs and violate that rule,
+        // or for edge cases where user code can be invoked during rendering (e.g., DOM mutation
+        // observers) we further enforce it on the JS side using a notion of "locking the heap"
+        // during rendering, which prevents any JS-to-.NET calls that go through Blazor APIs such
+        // as DotNet.invokeMethod or event handlers.
         var batchCopy = batch;
         RenderBatch(RendererId, Unsafe.AsPointer(ref batchCopy));
 
