@@ -15,21 +15,6 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
 {
     private IWebElement _appElement;
 
-    private IWebElement _renderCounterSectionContent;
-    private IWebElement _renderTextSectionContent;
-
-    private IWebElement _disposeCounterSectionContent;
-    private IWebElement _disposeTextSectionContent;
-
-    private IWebElement _changeCounterSectionContentName;
-    private IWebElement _changeCounterSectionContentNameToNonExisting;
-
-    private IWebElement _makeCounterSectionContentDefault;
-    private IWebElement _makeTextSectionContentDefault;
-    private IWebElement _makeCounterSectionContentNonDefault;
-
-    private IWebElement _disposeSectionOutlet;
-
     public SectionsTest
         (BrowserFixture browserFixture,
         ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -42,21 +27,6 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     {
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
         _appElement = Browser.MountTestComponent<BasicTestApp.SectionsTest.ParentComponentWithTwoChildren>();
-
-        _renderCounterSectionContent = _appElement.FindElement(By.Id("counter-render-section-content"));
-        _renderTextSectionContent = _appElement.FindElement(By.Id("text-render-section-content"));
-
-        _disposeCounterSectionContent = _appElement.FindElement(By.Id("counter-dispose-section-content"));
-        _disposeTextSectionContent = _appElement.FindElement(By.Id("text-dispose-section-content"));
-
-        _changeCounterSectionContentName = _appElement.FindElement(By.Id("counter-change-section-content-name"));
-        _changeCounterSectionContentNameToNonExisting = _appElement.FindElement(By.Id("counter-change-section-content-name-nonexisting"));
-
-        _makeCounterSectionContentDefault = _appElement.FindElement(By.Id("counter-section-content-make-default"));
-        _makeTextSectionContentDefault = _appElement.FindElement(By.Id("text-section-content-make-default"));
-        _makeCounterSectionContentNonDefault = _appElement.FindElement(By.Id("counter-section-content-make-non-default"));
-
-        _disposeSectionOutlet = _appElement.FindElement(By.Id("section-outlet-dispose"));
     }
 
     [Fact]
@@ -70,7 +40,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void RenderOneSectionContent_MatchingSectionOutletRendersContentSuccessfully()
     {
-        _renderCounterSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
 
         var counter = Browser.Exists(By.Id("counter"));
         Assert.Equal("0", counter.Text);
@@ -83,11 +53,11 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void RenderTwoSectionContentsWithSameName_LastRenderedOverridesSectionOutletContent()
     {
-        _renderCounterSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
 
         Browser.Exists(By.Id("counter"));
 
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
         Browser.Exists(By.Id("text"));
         Browser.DoesNotExist(By.Id("counter"));
@@ -98,10 +68,10 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     {
         //Render Counter and TextComponent SectionContents with same Name
         // TextComponent SectionContent overrides Counter SectionContent
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
-        _disposeTextSectionContent.Click();
+        _appElement.FindElement(By.Id("text-dispose-section-content")).Click();
 
         Browser.Exists(By.Id("counter"));
     }
@@ -109,11 +79,11 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void BothSectionContentsGetDisposed_SectionOutletsRenderNothing()
     {
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
-        _disposeCounterSectionContent.Click();
-        _disposeTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-dispose-section-content")).Click();
+        _appElement.FindElement(By.Id("text-dispose-section-content")).Click();
 
         Browser.DoesNotExist(By.Id("counter"));
         Browser.DoesNotExist(By.Id("text"));
@@ -124,10 +94,10 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     {
         // Render Counter and TextComponent SectionContents with same Name
         // TextComponent SectionContent overrides Counter SectionContent
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
-        _changeCounterSectionContentName.Click();
+        _appElement.FindElement(By.Id("counter-change-section-content-name")).Click();
 
         Browser.Exists(By.Id("counter"));
     }
@@ -137,10 +107,10 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     {
         // Render Counter and TextComponent SectionContents with same Name
         // TextComponent SectionContent overrides Counter SectionContent
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
-        _changeCounterSectionContentNameToNonExisting.Click();
+        _appElement.FindElement(By.Id("counter-change-section-content-name-nonexisting")).Click();
 
         Browser.DoesNotExist(By.Id("counter"));
     }
@@ -149,13 +119,13 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void SectionOutletGetsDisposed_NoContentsRendered()
     {
         // Render Counter and TextComponent SectionContents with same Name      
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
         // TextComponent SectionContent overrides Counter SectionContent
         Browser.Exists(By.Id("text"));
 
-        _disposeSectionOutlet.Click();
+        _appElement.FindElement(By.Id("section-outlet-dispose")).Click();
 
         Browser.DoesNotExist(By.Id("counter"));
         Browser.DoesNotExist(By.Id("text"));
@@ -164,10 +134,10 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void DefaultSectionContent_DoesNotOverrideAnotherSectionContent()
     {
-        _makeTextSectionContentDefault.Click();
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
 
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
         // TextComponent SectionContent IsDefaultContent=true does not override Counter SectionContent
         Browser.DoesNotExist(By.Id("text"));
@@ -177,12 +147,12 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void DefaultSectionContent_RendersWhenAnotherSectionContentGetsDisposed()
     {
-        _makeTextSectionContentDefault.Click();
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
 
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
-        _disposeCounterSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-dispose-section-content")).Click();
 
         Browser.DoesNotExist(By.Id("counter"));
         Browser.Exists(By.Id("text"));
@@ -191,10 +161,10 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void IsDefaultContentChanges_DoesNotOverrideAnotherSectionContent()
     {
-        _renderCounterSectionContent.Click();
-        _renderTextSectionContent.Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
 
-        _makeTextSectionContentDefault.Click();
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
 
         // TextComponent SectionContent IsDefaultContent=true does not override Counter SectionContent
         Browser.DoesNotExist(By.Id("text"));
@@ -205,12 +175,12 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void BothDefaultSectionContents_LastRenderedIsMoreDefault()
     {
         // Order of default doesn't matter before rendering
-        _makeTextSectionContentDefault.Click();
-        _makeCounterSectionContentDefault.Click();
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+        _appElement.FindElement(By.Id("counter-section-content-make-default")).Click();
 
         // Counter SectionContent rendered last so it is more "default" than TextComponent
-        _renderTextSectionContent.Click();
-        _renderCounterSectionContent.Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
 
         Browser.Exists(By.Id("text"));
         Browser.DoesNotExist(By.Id("counter"));
@@ -220,15 +190,15 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     public void BothDefaultSectionContents_LastRenderedChanges_FirstRenderedIsNowDefault()
     {
         // Order of default doesn't matter before rendering
-        _makeTextSectionContentDefault.Click();
-        _makeCounterSectionContentDefault.Click();
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+        _appElement.FindElement(By.Id("counter-section-content-make-default")).Click();
 
         // Counter SectionContent rendered last so it is more "default" than TextComponent
-        _renderTextSectionContent.Click();
-        _renderCounterSectionContent.Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
 
         // Change Counter SectionContent to non default
-        _makeCounterSectionContentNonDefault.Click();
+        _appElement.FindElement(By.Id("counter-section-content-make-non-default")).Click();
 
         // TextComponent SectionContent is default
         Browser.DoesNotExist(By.Id("text"));
