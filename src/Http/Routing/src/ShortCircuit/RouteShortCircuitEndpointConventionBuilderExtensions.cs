@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class RouteShortCircuitEndpointConventionBuilderExtensions
 {
+    private static readonly ShortCircuitMetadata _200ShortCircuitMetadata = new ShortCircuitMetadata(200);
+    private static readonly ShortCircuitMetadata _401ShortCircuitMetadata = new ShortCircuitMetadata(401);
+    private static readonly ShortCircuitMetadata _404ShortCircuitMetadata = new ShortCircuitMetadata(404);
     private static readonly ShortCircuitMetadata _nullShortCircuitMetadata = new ShortCircuitMetadata(null);
 
     /// <summary>
@@ -21,15 +24,16 @@ public static class RouteShortCircuitEndpointConventionBuilderExtensions
     /// <returns>The original convention builder parameter.</returns>
     public static IEndpointConventionBuilder ShortCircuit(this IEndpointConventionBuilder builder, int? statusCode = null)
     {
-        if (statusCode is null)
+        var metadata = statusCode switch
         {
-            builder.Add(b => b.Metadata.Add(_nullShortCircuitMetadata));
-        }
-        else
-        {
-            builder.Add(b => b.Metadata.Add(new ShortCircuitMetadata(statusCode)));
-        }
+            200 => _200ShortCircuitMetadata,
+            401 => _401ShortCircuitMetadata,
+            404 => _404ShortCircuitMetadata,
+            null => _nullShortCircuitMetadata,
+            _ => new ShortCircuitMetadata(statusCode)
+        };
 
+        builder.Add(b => b.Metadata.Add(metadata));
         return builder;
     }
 }
