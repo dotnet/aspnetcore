@@ -54,6 +54,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46836")]
     public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
     {
         Browser.MountTestComponent<ReliabilityComponent>();
