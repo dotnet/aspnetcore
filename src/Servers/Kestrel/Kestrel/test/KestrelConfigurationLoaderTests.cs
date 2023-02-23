@@ -305,7 +305,18 @@ public class KestrelConfigurationLoaderTests
 
             // Remove Development certificate
             serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig).Build();
-            _ = serverOptions.ConfigurationLoader.Reload();
+            try
+            {
+                _ = serverOptions.ConfigurationLoader.Reload();
+            }
+            catch (InvalidOperationException e)
+            {
+                // Since there are no longer any IConfiguration certificates, we'll fall back to the certificate store.
+                // Unfortunately, the state of the store varies by box (usually there is a cert on dev boxes, but not
+                // on CI boxes) and modifying the state of the real store at test-time seems inappropriate.  An alternative
+                // approach would be make it possible to replace CertificateManager.Instance in individual tests, but that
+                // seems like overkill since we only want to confirm that the configuration loader no longer has a cert.
+            }
 
             Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
 
