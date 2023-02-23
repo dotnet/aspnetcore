@@ -131,14 +131,50 @@ internal sealed partial class EndpointRoutingMiddleware
                     httpContext.Response.StatusCode = shortCircuitMetadata.StatusCode.Value;
                 }
 
-                Log.EndpointShortCircuited(_logger, endpoint);
-
                 if (endpoint.RequestDelegate is not null)
                 {
-                    return endpoint.RequestDelegate(httpContext);
+                    if (!_logger.IsEnabled(LogLevel.Information))
+                    {
+                        // Avoid the AwaitRequestTask state machine allocation if logging is disabled.
+                        return endpoint.RequestDelegate(httpContext);
+                    }
+
+                    Log.ExecutingEndpoint(_logger, endpoint);
+
+                    try
+                    {
+                        var requestTask = endpoint.RequestDelegate(httpContext);
+                        if (!requestTask.IsCompletedSuccessfully)
+                        {
+                            return AwaitRequestTask(endpoint, requestTask, _logger);
+                        }
+                    }
+                    catch
+                    {
+                        Log.ExecutedEndpoint(_logger, endpoint);
+                        throw;
+                    }
+
+                    Log.ExecutedEndpoint(_logger, endpoint);
+                    return Task.CompletedTask;
+                }
+                else
+                {
+                    Log.ExecutedEndpoint(_logger, endpoint);
+                    return Task.CompletedTask;
                 }
 
-                return Task.CompletedTask;
+                static async Task AwaitRequestTask(Endpoint endpoint, Task requestTask, ILogger logger)
+                {
+                    try
+                    {
+                        await requestTask;
+                    }
+                    finally
+                    {
+                        Log.ExecutedEndpoint(logger, endpoint);
+                    }
+                }
             }
         }
 
@@ -232,10 +268,10 @@ internal sealed partial class EndpointRoutingMiddleware
         [LoggerMessage(3, LogLevel.Debug, "Endpoint '{EndpointName}' already set, skipping route matching.", EventName = "MatchingSkipped")]
         private static partial void MatchingSkipped(ILogger logger, string? endpointName);
 
-        public static void EndpointShortCircuited(ILogger logger, Endpoint endpoint)
-            => EndpointShortCircuited(logger, endpoint.DisplayName);
+        [LoggerMessage(4, LogLevel.Information, "The endpoint '{EndpointName}' is being executed without running additional middleware.", EventName = "ExecutingEndpoint")]
+        public static partial void ExecutingEndpoint(ILogger logger, Endpoint endpointName);
 
-        [LoggerMessage(4, LogLevel.Information, "Endpoint '{EndpointName}'  is being executed without running additional middleware.", EventName = "EndpointShortCircuited")]
-        private static partial void EndpointShortCircuited(ILogger logger, string? endpointName);
+        [LoggerMessage(5, LogLevel.Information, "The endpoint '{EndpointName}' has been executed without running additional middleware.", EventName = "ExecutedEndpoint")]
+        public static partial void ExecutedEndpoint(ILogger logger, Endpoint endpointName);
     }
 }

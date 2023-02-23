@@ -7,21 +7,22 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// 
+/// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to add short circuited endpoints.
 /// </summary>
 public static class RouteShortCircuitEndpointRouteBuilderExtensions
 {
     private static readonly RequestDelegate _shortCircuitDelegate = (context) => Task.CompletedTask;
     /// <summary>
-    /// 
+    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+    /// for the specified prefixes.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="statusCode"></param>
-    /// <param name="routePrefixes"></param>
-    /// <returns></returns>
+    ///<param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+    /// <param name="statusCode">The status code to set in the response.</param>
+    /// <param name="routePrefixes">An array of route prefixes to be short circuited.</param>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapShortCircuit(this IEndpointRouteBuilder builder, int statusCode, params string[] routePrefixes)
     {
-        var group = builder.MapGroup("");
+        var group = builder.MapGroup("").WithDisplayName("ShortCircuit");
         foreach (var routePrefix in routePrefixes)
         {
             string route;
@@ -39,4 +40,3 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
         return group.ShortCircuit(statusCode);
     }
 }
-
