@@ -18,14 +18,12 @@ public class BrowserManager
     private readonly BrowserManagerConfiguration _browserManagerConfiguration;
     private readonly Dictionary<string, IBrowser> _launchBrowsers = new(StringComparer.Ordinal);
 
-#pragma warning disable CA1802 // Allow declaring this 'static readonly' (instead of 'const') to avoid compiler detecting unused branches.
-    private static readonly bool IsPlaywrightDisabled =
+    private static bool IsPlaywrightDisabled =>
 #if DISABLE_PLAYWRIGHT
-                                                        true;
+                                        true;
 #else
-                                                        false;
+                                        false;
 #endif
-#pragma warning restore CA1802
 
     private object _lock = new();
     private Task _initializeTask;
