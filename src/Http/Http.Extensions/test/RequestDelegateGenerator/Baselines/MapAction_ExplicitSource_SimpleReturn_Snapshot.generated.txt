@@ -84,11 +84,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 16)] = (
+            [(@"TestMapActions.cs", 18)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 16));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 18));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -153,11 +153,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 17)] = (
+            [(@"TestMapActions.cs", 19)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 17));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 19));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -222,11 +222,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 18)] = (
+            [(@"TestMapActions.cs", 20)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 18));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 20));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -299,11 +299,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 19)] = (
+            [(@"TestMapActions.cs", 21)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 19));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 21));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -368,11 +368,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 20)] = (
+            [(@"TestMapActions.cs", 22)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 20));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 22));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>

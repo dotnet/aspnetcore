@@ -43,12 +43,12 @@ public class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
         get
         {
             var expectedBody = "TestQueryValue";
-            var fromQueryRequiredSource = $"""app.MapGet("/", ([{typeof(FromQueryAttribute)}] string queryValue) => queryValue);""";
-            var fromQueryWithNameRequiredSource = $"""app.MapGet("/", ([{typeof(FromQueryAttribute)}(Name = "queryValue")] string parameterName) => parameterName);""";
-            var fromQueryNullableSource = $"""app.MapGet("/", ([{typeof(FromQueryAttribute)}] string? queryValue) => queryValue ?? string.Empty);""";
-            var fromQueryDefaultValueSource = $"""
+            var fromQueryRequiredSource = """app.MapGet("/", ([FromQuery] string queryValue) => queryValue);""";
+            var fromQueryWithNameRequiredSource = """app.MapGet("/", ([FromQuery(Name = "queryValue")] string parameterName) => parameterName);""";
+            var fromQueryNullableSource = """app.MapGet("/", ([FromQuery] string? queryValue) => queryValue ?? string.Empty);""";
+            var fromQueryDefaultValueSource = """
 #nullable disable
-string getQueryWithDefault([{typeof(FromQueryAttribute)}] string queryValue = null) => queryValue ?? string.Empty;
+string getQueryWithDefault([FromQuery] string queryValue = null) => queryValue ?? string.Empty;
 app.MapGet("/", getQueryWithDefault);
 #nullable restore
 """;
@@ -279,12 +279,12 @@ app.MapGet("/hello", () => "Hello world!")
 
     public static IEnumerable<object[]> MapAction_NoParam_ComplexReturn_Data => new List<object[]>()
     {
-        new object[] { $$"""app.MapGet("/", () => new {{typeof(Todo)}}() { Name = "Test Item"});""" },
-        new object[] { $$"""
-object GetTodo() => new {{typeof(Todo)}}() { Name = "Test Item"};
+        new object[] { """app.MapGet("/", () => new Todo() { Name = "Test Item"});""" },
+        new object[] { """
+object GetTodo() => new Todo() { Name = "Test Item"};
 app.MapGet("/", GetTodo);
 """},
-        new object[] { $$"""app.MapGet("/", () => TypedResults.Ok(new {{typeof(Todo)}}() { Name = "Test Item"}));""" }
+        new object[] { """app.MapGet("/", () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" }
     };
 
     [Theory]
@@ -310,7 +310,7 @@ app.MapGet("/", GetTodo);
         new object[] { @"app.MapGet(""/"", () => Console.WriteLine(""Returns void""));", null },
         new object[] { @"app.MapGet(""/"", () => TypedResults.Ok(""Alright!""));", null },
         new object[] { @"app.MapGet(""/"", () => Results.NotFound(""Oops!""));", null },
-        new object[] { $$"""app.MapGet("/", () => Task.FromResult(new {{typeof(Todo)}}() { Name = "Test Item"}));""", "application/json" },
+        new object[] { @"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item"" }));", "application/json" },
         new object[] { @"app.MapGet(""/"", () => ""Hello world!"");", "text/plain" }
     };
 
@@ -330,8 +330,8 @@ app.MapGet("/", GetTodo);
     public static IEnumerable<object[]>  MapAction_NoParam_TaskOfTReturn_Data => new List<object[]>()
     {
         new object[] { @"app.MapGet(""/"", () => Task.FromResult(""Hello world!""));", "Hello world!" },
-        new object[] { $$"""app.MapGet("/", () => Task.FromResult(new {{typeof(Todo)}}() { Name = "Test Item"}));""", """{"id":0,"name":"Test Item","isComplete":false}""" },
-        new object[] { $$"""app.MapGet("/", () => Task.FromResult(TypedResults.Ok(new {{typeof(Todo)}}() { Name = "Test Item"})));""", """{"id":0,"name":"Test Item","isComplete":false}""" }
+        new object[] { @"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item"" }));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", () => Task.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item"" })));", """{"id":0,"name":"Test Item","isComplete":false}""" }
     };
 
     [Theory]
@@ -355,8 +355,8 @@ app.MapGet("/", GetTodo);
     public static IEnumerable<object[]> MapAction_NoParam_ValueTaskOfTReturn_Data => new List<object[]>()
     {
         new object[] { @"app.MapGet(""/"", () => ValueTask.FromResult(""Hello world!""));", "Hello world!" },
-        new object[] { $$"""app.MapGet("/", () => ValueTask.FromResult(new {{typeof(Todo)}}() { Name = "Test Item"}));""", """{"id":0,"name":"Test Item","isComplete":false}""" },
-        new object[] { $$"""app.MapGet("/", () => ValueTask.FromResult(TypedResults.Ok(new {{typeof(Todo)}}() { Name = "Test Item"})));""", """{"id":0,"name":"Test Item","isComplete":false}""" }
+        new object[] { @"app.MapGet(""/"", () => ValueTask.FromResult(new Todo() { Name = ""Test Item""}));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", () => ValueTask.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item""})));", """{"id":0,"name":"Test Item","isComplete":false}""" }
     };
 
     [Theory]
@@ -381,10 +381,10 @@ app.MapGet("/", GetTodo);
     {
         new object[] { @"app.MapGet(""/"", () => new ValueTask<object>(""Hello world!""));", "Hello world!" },
         new object[] { @"app.MapGet(""/"", () => Task<object>.FromResult(""Hello world!""));", "Hello world!" },
-        new object[] { $$"""app.MapGet("/", () => new ValueTask<object>(new {{typeof(Todo)}}() { Name = "Test Item"}));""", """{"id":0,"name":"Test Item","isComplete":false}""" },
-        new object[] { $$"""app.MapGet("/", () => Task<object>.FromResult(new {{typeof(Todo)}}() { Name = "Test Item"}));""", """{"id":0,"name":"Test Item","isComplete":false}""" },
-        new object[] { $$"""app.MapGet("/", () => new ValueTask<object>(TypedResults.Ok(new {{typeof(Todo)}}() { Name = "Test Item"})));""", """{"id":0,"name":"Test Item","isComplete":false}""" },
-        new object[] { $$"""app.MapGet("/", () => Task<object>.FromResult(TypedResults.Ok(new {{typeof(Todo)}}() { Name = "Test Item"})));""", """{"id":0,"name":"Test Item","isComplete":false}""" }
+        new object[] { @"app.MapGet(""/"", () => new ValueTask<object>(new Todo() { Name = ""Test Item""}));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", () => Task<object>.FromResult(new Todo() { Name = ""Test Item""}));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", () => new ValueTask<object>(TypedResults.Ok(new Todo() { Name = ""Test Item""})));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", () => Task<object>.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item""})));", """{"id":0,"name":"Test Item","isComplete":false}""" }
     };
 
     [Theory]
@@ -520,21 +520,21 @@ app.MapGet(route, () => "Hello world!");
             var withFilter = """
 .AddEndpointFilter((c, n) => n(c));
 """;
-            var fromBodyRequiredSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
-            var fromBodyAllowEmptySource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}(EmptyBodyBehavior = {typeof(EmptyBodyBehavior)}.Allow)] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
-            var fromBodyNullableSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? todo) => TypedResults.Ok(todo));""";
-            var fromBodyDefaultValueSource = $"""
+            var fromBodyRequiredSource = """app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo));""";
+            var fromBodyAllowEmptySource = """app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo));""";
+            var fromBodyNullableSource = """app.MapPost("/", ([FromBody] Todo? todo) => TypedResults.Ok(todo));""";
+            var fromBodyDefaultValueSource = """
 #nullable disable
-IResult postTodoWithDefault([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo = null) => TypedResults.Ok(todo);
+IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo);
 app.MapPost("/", postTodoWithDefault);
 #nullable restore
 """;
-            var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo)){withFilter}""";
-            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}(EmptyBodyBehavior = {typeof(EmptyBodyBehavior)}.Allow)] {typeof(Todo)} todo) => TypedResults.Ok(todo)){withFilter}""";
-            var fromBodyNullableWithFilterSource = $"""app.MapPost("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}?  todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyNullableWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo?  todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyDefaultValueWithFilterSource = $"""
 #nullable disable
-IResult postTodoWithDefault([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo = null) => TypedResults.Ok(todo);
+IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo);
 app.MapPost("/", postTodoWithDefault){withFilter}
 #nullable restore
 """;
@@ -592,9 +592,9 @@ app.MapPost("/", postTodoWithDefault){withFilter}
             IsComplete = false
         };
         var source = $"""
-app.MapPost("/fromBodyRequired", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo));
+app.MapPost("/fromBodyRequired", ([FromBody] Todo todo) => TypedResults.Ok(todo));
 #pragma warning disable CS8622
-app.MapPost("/fromBodyOptional", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? todo) => TypedResults.Ok(todo));
+app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo));
 #pragma warning restore CS8622
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
@@ -631,12 +631,12 @@ app.MapPost("/fromBodyOptional", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? 
         get
         {
             var expectedBody = "Test header value";
-            var fromHeaderRequiredSource = $"""app.MapGet("/", ([{typeof(FromHeaderAttribute)}] string headerValue) => headerValue);""";
-            var fromHeaderWithNameRequiredSource = $"""app.MapGet("/", ([{typeof(FromHeaderAttribute)}(Name = "headerValue")] string parameterName) => parameterName);""";
-            var fromHeaderNullableSource = $"""app.MapGet("/", ([{typeof(FromHeaderAttribute)}] string? headerValue) => headerValue ?? string.Empty);""";
-            var fromHeaderDefaultValueSource = $"""
+            var fromHeaderRequiredSource = """app.MapGet("/", ([FromHeader] string headerValue) => headerValue);""";
+            var fromHeaderWithNameRequiredSource = """app.MapGet("/", ([FromHeader(Name = "headerValue")] string parameterName) => parameterName);""";
+            var fromHeaderNullableSource = """app.MapGet("/", ([FromHeader] string? headerValue) => headerValue ?? string.Empty);""";
+            var fromHeaderDefaultValueSource = """
 #nullable disable
-string getHeaderWithDefault([{typeof(FromHeaderAttribute)}] string headerValue = null) => headerValue ?? string.Empty;
+string getHeaderWithDefault([FromHeader] string headerValue = null) => headerValue ?? string.Empty;
 app.MapGet("/", getHeaderWithDefault);
 #nullable restore
 """;
@@ -677,12 +677,12 @@ app.MapGet("/", getHeaderWithDefault);
         get
         {
             var expectedBody = "Test route value";
-            var fromRouteRequiredSource = $$"""app.MapGet("/{routeValue}", ([{{typeof(FromRouteAttribute)}}] string routeValue) => routeValue);""";
-            var fromRouteWithNameRequiredSource = $$"""app.MapGet("/{routeValue}", ([{{typeof(FromRouteAttribute)}}(Name = "routeValue" )] string parameterName) => parameterName);""";
-            var fromRouteNullableSource = $$"""app.MapGet("/{routeValue}", ([{{typeof(FromRouteAttribute)}}] string? routeValue) => routeValue ?? string.Empty);""";
-            var fromRouteDefaultValueSource = $$"""
+            var fromRouteRequiredSource = """app.MapGet("/{routeValue}", ([FromRoute] string routeValue) => routeValue);""";
+            var fromRouteWithNameRequiredSource = """app.MapGet("/{routeValue}", ([FromRoute(Name = "routeValue" )] string parameterName) => parameterName);""";
+            var fromRouteNullableSource = """app.MapGet("/{routeValue}", ([FromRoute] string? routeValue) => routeValue ?? string.Empty);""";
+            var fromRouteDefaultValueSource = """
 #nullable disable
-string getRouteWithDefault([{{typeof(FromRouteAttribute)}}] string routeValue = null) => routeValue ?? string.Empty;
+string getRouteWithDefault([FromRoute] string routeValue = null) => routeValue ?? string.Empty;
 app.MapGet("/{routeValue}", getRouteWithDefault);
 #nullable restore
 """;
@@ -721,7 +721,7 @@ app.MapGet("/{routeValue}", getRouteWithDefault);
     [Fact]
     public async Task MapAction_ExplicitRouteParamWithInvalidName_SimpleReturn()
     {
-        var source = $$"""app.MapGet("/{routeValue}", ([{{typeof(FromRouteAttribute)}}(Name = "invalidName" )] string parameterName) => parameterName);""";
+        var source = $$"""app.MapGet("/{routeValue}", ([FromRoute(Name = "invalidName" )] string parameterName) => parameterName);""";
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
@@ -825,20 +825,20 @@ app.MapGet("/", (IServiceProvider provider) => "Hello world!");
     {
         get
         {
-            var fromServiceRequiredSource = $$"""app.MapPost("/", ([{{typeof(FromServicesAttribute)}}]{{typeof(TestService)}} svc) => svc.TestServiceMethod());""";
-            var fromServiceNullableSource = $$"""app.MapPost("/", ([{{typeof(FromServicesAttribute)}}]{{typeof(TestService)}}? svc) => svc?.TestServiceMethod() ?? string.Empty);""";
-            var fromServiceDefaultValueSource = $$"""
+            var fromServiceRequiredSource = """app.MapPost("/", ([FromServices]TestService svc) => svc.TestServiceMethod());""";
+            var fromServiceNullableSource = """app.MapPost("/", ([FromServices]TestService? svc) => svc?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceDefaultValueSource = """
 #nullable disable
-string postServiceWithDefault([{{typeof(FromServicesAttribute)}}]{{typeof(TestService)}} svc = null) => svc?.TestServiceMethod() ?? string.Empty;
+string postServiceWithDefault([FromServices]TestService svc = null) => svc?.TestServiceMethod() ?? string.Empty;
 app.MapPost("/", postServiceWithDefault);
 #nullable restore
 """;
 
-            var fromServiceEnumerableRequiredSource = $$"""app.MapPost("/", ([{{typeof(FromServicesAttribute)}}]IEnumerable<{{typeof(TestService)}}>  svc) => svc.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
-            var fromServiceEnumerableNullableSource = $$"""app.MapPost("/", ([{{typeof(FromServicesAttribute)}}]IEnumerable<{{typeof(TestService)}}>? svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
-            var fromServiceEnumerableDefaultValueSource = $$"""
+            var fromServiceEnumerableRequiredSource = """app.MapPost("/", ([FromServices]IEnumerable<TestService>  svc) => svc.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceEnumerableNullableSource = """app.MapPost("/", ([FromServices]IEnumerable<TestService>? svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);""";
+            var fromServiceEnumerableDefaultValueSource = """
 #nullable disable
-string postServiceWithDefault([{{typeof(FromServicesAttribute)}}]IEnumerable<{{typeof(TestService)}}> svc = null) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty;
+string postServiceWithDefault([FromServices]IEnumerable<TestService> svc = null) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty;
 app.MapPost("/", postServiceWithDefault);
 #nullable restore
 """;
@@ -892,10 +892,10 @@ app.MapPost("/", postServiceWithDefault);
     [Fact]
     public async Task MapAction_ExplicitServiceParam_SimpleReturn_Snapshot()
     {
-        var source = $$"""
-app.MapGet("/fromServiceRequired", ([{{typeof(FromServicesAttribute)}}]{{typeof(TestService)}} svc) => svc.TestServiceMethod());
-app.MapGet("/enumerableFromService", ([{{typeof(FromServicesAttribute)}}]IEnumerable<{{typeof(TestService)}}> svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);
-app.MapGet("/multipleFromService", ([{{typeof(FromServicesAttribute)}}]{{typeof(TestService)}}? svc, [FromServices]IEnumerable<{{typeof(TestService)}}> svcs) =>
+        var source = """
+app.MapGet("/fromServiceRequired", ([FromServices]TestService svc) => svc.TestServiceMethod());
+app.MapGet("/enumerableFromService", ([FromServices]IEnumerable<TestService> svc) => svc?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty);
+app.MapGet("/multipleFromService", ([FromServices]TestService? svc, [FromServices]IEnumerable<TestService> svcs) =>
     $"{(svcs?.FirstOrDefault()?.TestServiceMethod() ?? string.Empty)}, {svc?.TestServiceMethod()}");
 """;
         var httpContext = CreateHttpContext();
@@ -940,10 +940,10 @@ app.MapGet("/multipleFromService", ([{{typeof(FromServicesAttribute)}}]{{typeof(
     [Fact]
     public async Task MapAction_ExplicitSource_SimpleReturn_Snapshot()
     {
-        var source = $$"""
-app.MapGet("/fromQuery", ([{{typeof(FromQueryAttribute)}}] string queryValue) => queryValue ?? string.Empty);
-app.MapGet("/fromHeader", ([{{typeof(FromHeaderAttribute)}}] string headerValue) => headerValue ?? string.Empty);
-app.MapGet("/fromRoute/{routeValue}", ([{{typeof(FromRouteAttribute)}}] string routeValue) => routeValue ?? string.Empty);
+        var source = """
+app.MapGet("/fromQuery", ([FromQuery] string queryValue) => queryValue ?? string.Empty);
+app.MapGet("/fromHeader", ([FromHeader] string headerValue) => headerValue ?? string.Empty);
+app.MapGet("/fromRoute/{routeValue}", ([FromRoute] string routeValue) => routeValue ?? string.Empty);
 app.MapGet("/fromRouteRequiredImplicit/{value}", (string value) => value);
 app.MapGet("/fromQueryRequiredImplicit", (string value) => value);
 """;
