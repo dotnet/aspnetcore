@@ -123,9 +123,9 @@ public class EditForm : ComponentBase
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
         builder.OpenComponent<CascadingValue<EditContext>>(3);
-        builder.AddAttribute(4, "IsFixed", true);
-        builder.AddAttribute(5, "Value", _editContext);
-        builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.AddComponentParameter(4, "IsFixed", true);
+        builder.AddComponentParameter(5, "Value", _editContext);
+        builder.AddComponentParameter(6, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
         builder.CloseElement();
 

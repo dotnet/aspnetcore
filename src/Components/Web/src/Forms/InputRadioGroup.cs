@@ -57,8 +57,8 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         // Note that we must not set IsFixed=true on the CascadingValue, because the mutations to _context
         // are what cause the descendant InputRadio components to re-render themselves
         builder.OpenComponent<CascadingValue<InputRadioContext>>(0);
-        builder.AddAttribute(2, "Value", _context);
-        builder.AddAttribute(3, "ChildContent", ChildContent);
+        builder.AddComponentParameter(2, "Value", _context);
+        builder.AddComponentParameter(3, "ChildContent", ChildContent);
         builder.CloseComponent();
     }
 

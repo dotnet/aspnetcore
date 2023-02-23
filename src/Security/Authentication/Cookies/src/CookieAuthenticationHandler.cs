@@ -93,7 +93,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             {
                 ShouldRenew = timeRemaining < timeElapsed,
             };
-            await Options.Events.CheckSlidingExpiration(eventContext);
+            await Events.CheckSlidingExpiration(eventContext);
 
             if (eventContext.ShouldRenew)
             {

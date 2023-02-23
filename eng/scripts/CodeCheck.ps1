@@ -26,12 +26,16 @@ function LogError {
         [Parameter(Mandatory = $true, Position = 0)]
         [string]$message,
         [string]$FilePath,
+        [string]$LineNumber, # Ignored if -FilePath not specified.
         [string]$Code
     )
     if ($env:TF_BUILD) {
         $prefix = "##vso[task.logissue type=error"
         if ($FilePath) {
             $prefix = "${prefix};sourcepath=$FilePath"
+            if ($LineNumber) {
+                $prefix = "${prefix};linenumber=$LineNumber"
+            }
         }
         if ($Code) {
             $prefix = "${prefix};code=$Code"
@@ -40,7 +44,11 @@ function LogError {
     }
     $fullMessage = "error ${Code}: $message"
     if ($FilePath) {
-        $fullMessage += " [$FilePath]"
+        $fullMessage += " [$FilePath"
+        if ($LineNumber) {
+            $fullMessage += ":$LineNumber"
+        }
+        $fullMessage += "]"
     }
     Write-Host -f Red $fullMessage
     $script:errors += $fullMessage
@@ -68,7 +76,10 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" |
-    Where-Object { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } |
+    Where-Object {
+        $_.FullName -NotLike '*\submodules\*' -and $_.FullName -NotLike '*\node_modules\*' -and
+        $_.FullName -NotLike '*\bin\*' -and $_.FullName -NotLike '*\src\ProjectTemplates\*\content\*'
+    } |
     Where-Object { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } |
     ForEach-Object {
         $fileName = [io.path]::GetFileNameWithoutExtension($_)
@@ -77,6 +88,23 @@ try {
                 ("Multiple project files named '$fileName' exist. Project files should have a unique name " +
                  "to avoid conflicts in build output.")
         }
+    }
+
+    #
+    # Check for unexpected (not from dotnet-public-npm) yarn resolutions in lock files.
+    #
+
+    $registry = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/'
+    Get-ChildItem src\yarn.lock -Recurse |
+    ForEach-Object FullName |
+    Where-Object {$_ -NotLike '*\node_modules\*'} |
+    ForEach-Object {
+        # -List to limit complaints to one per file.
+        Select-String '^  resolved ' $_ | Select-String -List -NotMatch $registry
+    } |
+    ForEach-Object {
+        LogError -filePath "${_.Path}" -lineNumber $_.LineNumber `
+            "Packages in yarn.lock file resolved from wrong registry. All dependencies must be resolved from $registry"
     }
 
     #

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
@@ -14,17 +15,20 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
     private const string LocalComputerServerName = ".";
 
     private readonly ILoggerFactory _loggerFactory;
+    private readonly ObjectPoolProvider _objectPoolProvider;
     private readonly NamedPipeTransportOptions _options;
 
     public NamedPipeTransportFactory(
         ILoggerFactory loggerFactory,
-        IOptions<NamedPipeTransportOptions> options)
+        IOptions<NamedPipeTransportOptions> options,
+        ObjectPoolProvider objectPoolProvider)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         Debug.Assert(OperatingSystem.IsWindows(), "Named pipes transport requires a Windows operating system.");
 
         _loggerFactory = loggerFactory;
+        _objectPoolProvider = objectPoolProvider;
         _options = options.Value;
     }
 
@@ -52,7 +56,7 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
             throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use by Kestrel.");
         }
 
-        var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, mutex);
+        var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, _objectPoolProvider, mutex);
         listener.Start();
 
         return new ValueTask<IConnectionListener>(listener);

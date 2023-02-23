@@ -467,6 +467,7 @@ public class MvcServiceCollectionExtensionsTest
                         {
                             typeof(MvcCoreRouteOptionsSetup),
                             typeof(MvcCoreRouteOptionsSetup),
+                            typeof(RegexInlineRouteConstraintSetup),
                         }
                     },
                     {

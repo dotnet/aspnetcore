@@ -42,7 +42,7 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Type = System.Type;
 
-namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
+namespace Grpc.Shared;
 
 // Source here is from https://github.com/protocolbuffers/protobuf
 // Most of this code will be replaced over time with optimized implementations.
@@ -235,6 +235,11 @@ internal static class Legacy
         {
             throw new InvalidOperationException("Non-normalized duration value.");
         }
+    }
+
+    public static string GetFieldMaskText(IList<string> paths)
+    {
+        return string.Join(",", paths.Select(ToJsonName));
     }
 
     /// <summary>

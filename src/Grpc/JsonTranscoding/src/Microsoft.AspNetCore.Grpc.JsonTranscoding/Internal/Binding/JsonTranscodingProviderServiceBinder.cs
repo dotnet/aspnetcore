@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Google.Api;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -27,10 +28,13 @@ internal class TreeRouterMatcherBuilder : MatcherBuilder
 
     public override Matcher Build()
     {
+        var routeOptions = new RouteOptions();
+        routeOptions.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+
         var builder = new TreeRouteBuilder(
             NullLoggerFactory.Instance,
             new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
-            new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider()));
+            new DefaultInlineConstraintResolver(Options.Create(routeOptions), new TestServiceProvider()));
 
         var selector = new DefaultEndpointSelector();
 

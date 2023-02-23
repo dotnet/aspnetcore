@@ -96,7 +96,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
         bool preserveMethod,
         string? fragment) : this(
             routeName,
-            routeValues == null ? null : new RouteValueDictionary(routeValues),
+            new RouteValueDictionary(routeValues),
             permanent,
             preserveMethod,
             fragment)
@@ -122,7 +122,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
         string? fragment)
     {
         RouteName = routeName;
-        RouteValues = routeValues;
+        RouteValues = routeValues ?? new RouteValueDictionary();
         PreserveMethod = preserveMethod;
         Permanent = permanent;
         Fragment = fragment;
@@ -136,7 +136,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// <summary>
     /// Gets the route data to use for generating the URL.
     /// </summary>
-    public RouteValueDictionary? RouteValues { get; }
+    public RouteValueDictionary RouteValues { get; }
 
     /// <summary>
     /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.

@@ -17,3 +17,4 @@ Microsoft.AspNetCore.Components.Sections.SectionOutlet.Dispose() -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.Name.get -> string!
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.Name.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionOutlet() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void

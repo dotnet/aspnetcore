@@ -163,33 +163,24 @@ public static class ListenOptionsHttpsExtensions
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        configureOptions(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
-
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        return listenOptions.UseHttps(new Lazy<HttpsConnectionAdapterOptions>(() =>
         {
-            throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
-        }
+            // We defer configuration of the https options until build time so that the IConfiguration will be available.
+            // This is particularly important in docker containers, where the docker tools use IConfiguration to tell
+            // us where the development certificates have been mounted.
 
-        return listenOptions.UseHttps(options);
-    }
+            var options = new HttpsConnectionAdapterOptions();
+            listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
+            configureOptions(options);
+            listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
 
-    // Use Https if a default cert is available
-    internal static bool TryUseHttps(this ListenOptions listenOptions)
-    {
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
+            if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+            {
+                throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+            }
 
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
-        {
-            return false;
-        }
-
-        listenOptions.UseHttps(options);
-        return true;
+            return options;
+        }));
     }
 
     /// <summary>
@@ -201,16 +192,28 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {
-        var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+        return listenOptions.UseHttps(new Lazy<HttpsConnectionAdapterOptions>(httpsOptions));
+    }
 
+    /// <summary>
+    /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+    /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
+    /// </summary>
+    /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+    /// <param name="lazyHttpsOptions">Options to configure HTTPS.</param>
+    /// <returns>The <see cref="ListenOptions"/>.</returns>
+    private static ListenOptions UseHttps(this ListenOptions listenOptions, Lazy<HttpsConnectionAdapterOptions> lazyHttpsOptions)
+    {
         listenOptions.IsTls = true;
-        listenOptions.HttpsOptions = httpsOptions;
+        listenOptions.HttpsOptions = lazyHttpsOptions;
 
+        // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
-            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+            // Evaluate the HttpsConnectionAdapterOptions, now that the configuration, if any, has been loaded
+            var httpsOptions = listenOptions.HttpsOptions.Value;
+            var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, listenOptions.Protocols, loggerFactory);
             return middleware.OnConnectionAsync;
         });
 
@@ -270,6 +273,7 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.HttpsCallbackOptions = callbackOptions;
 
+        // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
             // Set the list of protocols from listen options.
