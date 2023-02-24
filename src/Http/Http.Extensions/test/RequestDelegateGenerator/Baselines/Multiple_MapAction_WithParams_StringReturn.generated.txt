@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<Microsoft.AspNetCore.Http.HttpRequest>(httpContext, req_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::Microsoft.AspNetCore.Http.HttpRequest>(httpContext, req_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<Microsoft.AspNetCore.Http.HttpResponse>(httpContext, res_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::Microsoft.AspNetCore.Http.HttpResponse>(httpContext, res_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 

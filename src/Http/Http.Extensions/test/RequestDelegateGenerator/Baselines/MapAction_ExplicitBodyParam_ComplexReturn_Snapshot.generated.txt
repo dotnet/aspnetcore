@@ -113,8 +113,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, false);
+                        // Endpoint Parameter: todo (Type = global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, Source = JsonBody)
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, false);
                         if (!isSuccessful)
                         {
                             return;
@@ -132,8 +132,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, false);
+                        // Endpoint Parameter: todo (Type = global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, Source = JsonBody)
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, false);
                         if (!isSuccessful)
                         {
                             return;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, todo_local!));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, todo_local!));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -180,8 +180,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo?, IsOptional = True, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, true);
+                        // Endpoint Parameter: todo (Type = global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?, IsOptional = True, Source = JsonBody)
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, true);
                         if (!isSuccessful)
                         {
                             return;
@@ -199,8 +199,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo?, IsOptional = True, Source = JsonBody)
-                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, true);
+                        // Endpoint Parameter: todo (Type = global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?, IsOptional = True, Source = JsonBody)
+                        var (isSuccessful, todo_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveBody<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, true);
                         if (!isSuccessful)
                         {
                             return;
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, todo_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, todo_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 

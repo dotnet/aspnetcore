@@ -45,6 +45,7 @@ public class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
             var expectedBody = "TestQueryValue";
             var fromQueryRequiredSource = """app.MapGet("/", ([FromQuery] string queryValue) => queryValue);""";
             var fromQueryWithNameRequiredSource = """app.MapGet("/", ([FromQuery(Name = "queryValue")] string parameterName) => parameterName);""";
+            var fromQueryWithNullNameRequiredSource = """app.MapGet("/", ([FromQuery(Name = null)] string queryValue) => queryValue);""";
             var fromQueryNullableSource = """app.MapGet("/", ([FromQuery] string? queryValue) => queryValue ?? string.Empty);""";
             var fromQueryDefaultValueSource = """
 #nullable disable
@@ -59,6 +60,8 @@ app.MapGet("/", getQueryWithDefault);
                 new object[] { fromQueryRequiredSource, null, 400, string.Empty },
                 new object[] { fromQueryWithNameRequiredSource, expectedBody, 200, expectedBody },
                 new object[] { fromQueryWithNameRequiredSource, null, 400, string.Empty },
+                new object[] { fromQueryWithNullNameRequiredSource, expectedBody, 200, expectedBody },
+                new object[] { fromQueryWithNullNameRequiredSource, null, 400, string.Empty },
                 new object[] { fromQueryNullableSource, expectedBody, 200, expectedBody },
                 new object[] { fromQueryNullableSource, null, 200, string.Empty },
                 new object[] { fromQueryDefaultValueSource, expectedBody, 200, expectedBody },
@@ -521,7 +524,8 @@ app.MapGet(route, () => "Hello world!");
 .AddEndpointFilter((c, n) => n(c));
 """;
             var fromBodyRequiredSource = """app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo));""";
-            var fromBodyAllowEmptySource = """app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo));""";
+            var fromBodyEmptyBodyBehaviorSource = """app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo));""";
+            var fromBodyAllowEmptySource = """app.MapPost("/", ([CustomFromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo));""";
             var fromBodyNullableSource = """app.MapPost("/", ([FromBody] Todo? todo) => TypedResults.Ok(todo));""";
             var fromBodyDefaultValueSource = """
 #nullable disable
@@ -530,7 +534,8 @@ app.MapPost("/", postTodoWithDefault);
 #nullable restore
 """;
             var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
-            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyEmptyBehaviorWithFilterSource = $"""app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
+            var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([CustomFromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyNullableWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo?  todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyDefaultValueWithFilterSource = $"""
 #nullable disable
@@ -543,6 +548,8 @@ app.MapPost("/", postTodoWithDefault){withFilter}
             {
                 new object[] { fromBodyRequiredSource, todo, 200, expectedBody },
                 new object[] { fromBodyRequiredSource, null, 400, string.Empty },
+                new object[] { fromBodyEmptyBodyBehaviorSource, todo, 200, expectedBody },
+                new object[] { fromBodyEmptyBodyBehaviorSource, null, 200, string.Empty },
                 new object[] { fromBodyAllowEmptySource, todo, 200, expectedBody },
                 new object[] { fromBodyAllowEmptySource, null, 200, string.Empty },
                 new object[] { fromBodyNullableSource, todo, 200, expectedBody },
@@ -551,6 +558,8 @@ app.MapPost("/", postTodoWithDefault){withFilter}
                 new object[] { fromBodyDefaultValueSource, null, 200, string.Empty },
                 new object[] { fromBodyRequiredWithFilterSource, todo, 200, expectedBody },
                 new object[] { fromBodyRequiredWithFilterSource, null, 400, string.Empty },
+                new object[] { fromBodyEmptyBehaviorWithFilterSource, todo, 200, expectedBody },
+                new object[] { fromBodyEmptyBehaviorWithFilterSource, null, 200, string.Empty },
                 new object[] { fromBodyAllowEmptyWithFilterSource, todo, 200, expectedBody },
                 new object[] { fromBodyAllowEmptyWithFilterSource, null, 200, string.Empty },
                 new object[] { fromBodyNullableWithFilterSource, todo, 200, expectedBody },
@@ -633,6 +642,7 @@ app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo
             var expectedBody = "Test header value";
             var fromHeaderRequiredSource = """app.MapGet("/", ([FromHeader] string headerValue) => headerValue);""";
             var fromHeaderWithNameRequiredSource = """app.MapGet("/", ([FromHeader(Name = "headerValue")] string parameterName) => parameterName);""";
+            var fromHeaderWithNullNameRequiredSource = """app.MapGet("/", ([FromHeader(Name = null)] string headerValue) => headerValue);""";
             var fromHeaderNullableSource = """app.MapGet("/", ([FromHeader] string? headerValue) => headerValue ?? string.Empty);""";
             var fromHeaderDefaultValueSource = """
 #nullable disable
@@ -647,6 +657,8 @@ app.MapGet("/", getHeaderWithDefault);
                 new object[] { fromHeaderRequiredSource, null, 400, string.Empty },
                 new object[] { fromHeaderWithNameRequiredSource, expectedBody, 200, expectedBody },
                 new object[] { fromHeaderWithNameRequiredSource, null, 400, string.Empty },
+                new object[] { fromHeaderWithNullNameRequiredSource, expectedBody, 200, expectedBody },
+                new object[] { fromHeaderWithNullNameRequiredSource, null, 400, string.Empty },
                 new object[] { fromHeaderNullableSource, expectedBody, 200, expectedBody },
                 new object[] { fromHeaderNullableSource, null, 200, string.Empty },
                 new object[] { fromHeaderDefaultValueSource, expectedBody, 200, expectedBody },
@@ -679,6 +691,7 @@ app.MapGet("/", getHeaderWithDefault);
             var expectedBody = "Test route value";
             var fromRouteRequiredSource = """app.MapGet("/{routeValue}", ([FromRoute] string routeValue) => routeValue);""";
             var fromRouteWithNameRequiredSource = """app.MapGet("/{routeValue}", ([FromRoute(Name = "routeValue" )] string parameterName) => parameterName);""";
+            var fromRouteWithNullNameRequiredSource = """app.MapGet("/{routeValue}", ([FromRoute(Name = null )] string routeValue) => routeValue);""";
             var fromRouteNullableSource = """app.MapGet("/{routeValue}", ([FromRoute] string? routeValue) => routeValue ?? string.Empty);""";
             var fromRouteDefaultValueSource = """
 #nullable disable
@@ -693,6 +706,8 @@ app.MapGet("/{routeValue}", getRouteWithDefault);
                 new object[] { fromRouteRequiredSource, null, 400, string.Empty },
                 new object[] { fromRouteWithNameRequiredSource, expectedBody, 200, expectedBody },
                 new object[] { fromRouteWithNameRequiredSource, null, 400, string.Empty },
+                new object[] { fromRouteWithNullNameRequiredSource, expectedBody, 200, expectedBody },
+                new object[] { fromRouteWithNullNameRequiredSource, null, 400, string.Empty },
                 new object[] { fromRouteNullableSource, expectedBody, 200, expectedBody },
                 new object[] { fromRouteNullableSource, null, 200, string.Empty },
                 new object[] { fromRouteDefaultValueSource, expectedBody, 200, expectedBody },

@@ -15,3 +15,8 @@ public class Todo
     public string Name { get; set; } = "Todo";
     public bool IsComplete { get; set; }
 }
+
+public class CustomFromBodyAttribute : Attribute, IFromBodyMetadata
+{
+    public bool AllowEmpty { get; set; }
+}

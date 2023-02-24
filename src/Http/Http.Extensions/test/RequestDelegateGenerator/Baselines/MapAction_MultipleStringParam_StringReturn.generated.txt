@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p1 (Type = string, IsOptional = False, Source = Query)
+                        // Endpoint Parameter: p1 (Type = global::System.String, IsOptional = False, Source = Query)
                         var p1_raw = httpContext.Request.Query["p1"];
                         if (StringValues.IsNullOrEmpty(p1_raw))
                         {
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var p1_local = p1_raw.ToString();
 
-                        // Endpoint Parameter: p2 (Type = string, IsOptional = False, Source = Query)
+                        // Endpoint Parameter: p2 (Type = global::System.String, IsOptional = False, Source = Query)
                         var p2_raw = httpContext.Request.Query["p2"];
                         if (StringValues.IsNullOrEmpty(p2_raw))
                         {
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p1 (Type = string, IsOptional = False, Source = Query)
+                        // Endpoint Parameter: p1 (Type = global::System.String, IsOptional = False, Source = Query)
                         var p1_raw = httpContext.Request.Query["p1"];
                         if (StringValues.IsNullOrEmpty(p1_raw))
                         {
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var p1_local = p1_raw.ToString();
 
-                        // Endpoint Parameter: p2 (Type = string, IsOptional = False, Source = Query)
+                        // Endpoint Parameter: p2 (Type = global::System.String, IsOptional = False, Source = Query)
                         var p2_raw = httpContext.Request.Query["p2"];
                         if (StringValues.IsNullOrEmpty(p2_raw))
                         {
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string, string>(httpContext, p1_local, p2_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::System.String, global::System.String>(httpContext, p1_local, p2_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 

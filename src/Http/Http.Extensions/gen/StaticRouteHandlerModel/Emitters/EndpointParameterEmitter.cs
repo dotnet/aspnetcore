@@ -129,7 +129,7 @@ internal static class EndpointParameterEmitter
                         {endpointParameter.EmitParameterDiagnosticComment()}
 """);
 
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{endpointParameter.Type}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         builder.AppendLine($$"""
                         var (isSuccessful, {{endpointParameter.EmitHandlerArgument()}}) = {{assigningCode}};
 """);
@@ -172,7 +172,7 @@ internal static class EndpointParameterEmitter
     }
 
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) =>
-        $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, Source = {endpointParameter.Source})";
+        $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}, IsOptional = {endpointParameter.IsOptional}, Source = {endpointParameter.Source})";
 
     private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_local";
     private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_raw";

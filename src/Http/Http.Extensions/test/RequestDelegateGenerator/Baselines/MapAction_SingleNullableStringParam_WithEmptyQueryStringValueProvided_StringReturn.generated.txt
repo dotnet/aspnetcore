@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = string?, IsOptional = True, Source = Query)
+                        // Endpoint Parameter: p (Type = global::System.String?, IsOptional = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         var p_local = p_raw.Count > 0 ? p_raw.ToString() : null;
 
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = string?, IsOptional = True, Source = Query)
+                        // Endpoint Parameter: p (Type = global::System.String?, IsOptional = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         var p_local = p_raw.Count > 0 ? p_raw.ToString() : null;
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<string?>(httpContext, p_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::System.String?>(httpContext, p_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 

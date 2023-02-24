@@ -89,15 +89,15 @@ internal static class SymbolExtensions
             NullableAnnotation: NullableAnnotation.Annotated
         } || parameterSymbol.HasExplicitDefaultValue;
 
-    public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, [NotNullWhen(true)] out T? argumentValue)
+    public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? argumentValue)
     {
         argumentValue = default;
         foreach (var namedArgument in attribute.NamedArguments)
         {
-            if (namedArgument.Key == argumentName)
+            if (string.Equals(namedArgument.Key, argumentName, StringComparison.Ordinal))
             {
                 var routeParameterNameConstant = namedArgument.Value;
-                argumentValue = (T)routeParameterNameConstant.Value!;
+                argumentValue = (T?)routeParameterNameConstant.Value;
                 return true;
             }
         }

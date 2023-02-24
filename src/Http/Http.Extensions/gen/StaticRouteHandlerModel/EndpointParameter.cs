@@ -26,25 +26,19 @@ internal class EndpointParameter
         if (parameter.HasAttributeImplementingInterface(fromRouteMetadataInterfaceType, out var fromRouteAttribute))
         {
             Source = EndpointParameterSource.Route;
-            Name = fromRouteAttribute.TryGetNamedArgumentValue<string>("Name", out var fromRouteName)
-                ? fromRouteName
-                : parameter.Name;
+            Name = GetParameterName(fromRouteAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
         }
         else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType, out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
-            Name = fromQueryAttribute.TryGetNamedArgumentValue<string>("Name", out var fromQueryName)
-                ? fromQueryName
-                : parameter.Name;
+            Name = GetParameterName(fromQueryAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
         }
         else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType, out var fromHeaderAttribute))
         {
             Source = EndpointParameterSource.Header;
-            Name = fromHeaderAttribute.TryGetNamedArgumentValue<string>("Name", out var fromHeaderName)
-                ? fromHeaderName
-                : parameter.Name;
+            Name = GetParameterName(fromHeaderAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
         }
         else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
@@ -77,7 +71,7 @@ internal class EndpointParameter
     public ITypeSymbol Type { get; }
     public EndpointParameterSource Source { get; }
 
-    // Omly used for SpecialType parameters that need
+    // Only used for SpecialType parameters that need
     // to be resolved by a specific WellKnownType
     internal string? AssigningCode { get; set; }
     public string Name { get; }
@@ -136,9 +130,15 @@ internal class EndpointParameter
             return false;
         }
         isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<int>("EmptyBodyBehavior", out var emptyBodyBehaviorValue) && emptyBodyBehaviorValue == 1;
+        isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<bool>("AllowEmpty", out var allowEmptyValue) && allowEmptyValue;
         isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
         return true;
     }
+
+    private static string GetParameterName(AttributeData attribute, string parameterName) =>
+        attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName)
+            ? (fromSourceName ?? parameterName)
+            : parameterName;
 
     public override bool Equals(object obj) =>
         obj is EndpointParameter other &&
