@@ -13,7 +13,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     private SectionRegistry _registry = default!;
 
     /// <summary>
-    /// Gets or sets the Id that determines which <see cref="SectionOutlet"/> instance will render
+    /// Gets or sets the ID that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
     [Parameter] public object SectionId { get; set; } = default!;
