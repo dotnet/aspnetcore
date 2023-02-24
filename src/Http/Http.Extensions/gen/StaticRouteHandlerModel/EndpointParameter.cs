@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using System.Linq;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -72,7 +74,7 @@ internal class EndpointParameter
         }
     }
 
-    private static bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
+    private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
     {
         var parameterType = parameter.Type.UnwrapTypeSymbol();
 
@@ -101,6 +103,24 @@ internal class EndpointParameter
             _ => null
         };
 
+        // Special case handling for specific types
+        if (parameterType.SpecialType == SpecialType.System_Char)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""";
+        }
+        else if (parameterType.SpecialType == SpecialType.System_DateTime)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateTimeOffset)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateOnly)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+
         // ... so for strings (null) we bail.
         if (preferredTryParseInvocation == null)
         {
@@ -108,13 +128,35 @@ internal class EndpointParameter
             return false;
         }
 
-        // Wrap the TryParse method call in an if-block and if it doesn't work set param check failure.
-        parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
+        if (IsOptional)
+        {
+            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
+                        {{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}} {{outputArgument}} = default;
+                        if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})
+                        {
+                            {{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};
+                        }
+                        else if (string.IsNullOrEmpty({{inputArgument}}))
+                        {
+                            {{outputArgument}} = null;
+                        }
+                        else
+                        {
+                            wasParamCheckFailure = true;
+                        }
+""";
+        }
+        else
+        {
+            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
                         if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
                         {
                             wasParamCheckFailure = true;
                         }
 """;
+        }
+
+        // Wrap the TryParse method call in an if-block and if it doesn't work set param check failure.
         return true;
 
     }

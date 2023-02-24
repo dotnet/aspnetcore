@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -157,7 +160,7 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
 
             return new[]
             {
-                    // string is not technically "TryParsable", but it's the special case.
+                    //// string is not technically "TryParsable", but it's the special case.
                     new object[] { "string", "plain string", "plain string" },
                     new object[] { "int", "-42", -42 },
                     new object[] { "uint", "42", 42U },
@@ -167,14 +170,14 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
                     new object[] { "long", "-42", -42L },
                     new object[] { "ulong", "42", 42UL },
                     new object[] { "IntPtr", "-42", new IntPtr(-42) },
-                    //new object[] { "char", "A", 'A' },
+                    new object[] { "char", "A", 'A' },
                     new object[] { "double", "0.5", 0.5 },
                     new object[] { "float", "0.5", 0.5f },
                     new object[] { "Half", "0.5", (Half)0.5f },
                     new object[] { "decimal", "0.5", 0.5m },
                     new object[] { "Uri", "https://example.org", new Uri("https://example.org") },
-                    //new object[] { "DateTime", now.ToString("o"), now.ToUniversalTime() },
-                    //new object[] { "DateTimeOffset", "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
+                    new object[] { "DateTime", now.ToString("o"), now.ToUniversalTime() },
+                    new object[] { "DateTimeOffset", "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
                     new object[] { "TimeSpan", "00:00:42", TimeSpan.FromSeconds(42) },
                     new object[] { "Guid", "00000000-0000-0000-0000-000000000000", Guid.Empty },
                     new object[] { "Version", "6.0.0.42", new Version("6.0.0.42") },
@@ -203,11 +206,13 @@ app.MapGet("/hello", (HttpContext context, [FromQuery]{{typeName}} p) =>
 
         var endpointModel = GetStaticEndpoint(results, GeneratorSteps.EndpointModelStep);
         var endpoint = GetEndpointFromCompilation(compilation);
-
         var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString($"?p={queryStringInput}");
+
+        var encodedQueryStringInput = queryStringInput != null ? UrlEncoder.Default.Encode(queryStringInput) : null;
+        httpContext.Request.QueryString = new QueryString($"?p={encodedQueryStringInput}");
 
         await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(200, httpContext.Response.StatusCode);
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 

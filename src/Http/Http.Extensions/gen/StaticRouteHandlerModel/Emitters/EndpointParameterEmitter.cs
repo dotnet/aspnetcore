@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 internal static class EndpointParameterEmitter
@@ -65,18 +66,16 @@ internal static class EndpointParameterEmitter
             var parsingBlock = endpointParameter.ParsingBlockEmitter($"{endpointParameter.Name}_temp", $"{endpointParameter.Name}_parsed_temp");
             builder.AppendLine($$"""
 {{parsingBlock}}
-                var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_parsed_temp!;
+                        {{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}} {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_parsed_temp!;
 """);
 
         }
         else
         {
             builder.AppendLine($$"""
-                        var {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_temp;
+                        {{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}} {{endpointParameter.EmitHandlerArgument()}} = {{endpointParameter.Name}}_temp!;
 """);
-        }
 
-        return builder.ToString();
     }
 
     internal static string EmitRouteParameterPreparation(this EndpointParameter endpointParameter)
@@ -199,8 +198,6 @@ internal static class EndpointParameterEmitter
     }
 
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) =>
-        $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}, IsOptional = {endpointParameter.IsOptional}, Source = {endpointParameter.Source})";
-
     private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_local";
     private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_raw";
 
@@ -212,4 +209,3 @@ internal static class EndpointParameterEmitter
         EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
         _ => endpointParameter.EmitHandlerArgument()
     };
-}
