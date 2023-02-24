@@ -336,7 +336,6 @@ public class KestrelServerOptions
             if (!CertificateManager.Instance.IsTrusted(cert))
             {
                 logger.DeveloperCertificateNotTrusted();
-                return null;
             }
 
             return cert;
