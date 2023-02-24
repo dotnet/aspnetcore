@@ -32,7 +32,7 @@ public partial class JsonSerializerOptionsExtensionsTests
         var options = new JsonSerializerOptions();
 
         // Act
-        _ = options.EnsureConfigured(markAsReadOnly: true);
+        options.EnsureConfigured(markAsReadOnly: true);
 
         // Assert
         Assert.True(options.IsReadOnly);
@@ -52,7 +52,7 @@ public partial class JsonSerializerOptionsExtensionsTests
             options.AddContext<JsonSerializerExtensionsTestsContext>();
 
             // Act
-            _ = options.EnsureConfigured();
+            options.EnsureConfigured();
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);
@@ -71,7 +71,8 @@ public partial class JsonSerializerOptionsExtensionsTests
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
             // Act
-            var options = new JsonSerializerOptions().EnsureConfigured();
+            var options = new JsonSerializerOptions();
+            options.EnsureConfigured();
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);
@@ -94,7 +95,7 @@ public partial class JsonSerializerOptionsExtensionsTests
             options.AddContext<JsonSerializerExtensionsTestsContext>();
 
             // Act
-            _ = options.EnsureConfigured();
+            options.EnsureConfigured();
 
             // Assert
             Assert.NotNull(options.TypeInfoResolver);

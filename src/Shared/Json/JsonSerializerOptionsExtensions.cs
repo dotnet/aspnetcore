@@ -19,7 +19,7 @@ internal static class JsonSerializerOptionsExtensions
         options.TypeInfoResolver ??= _defaultJsonTypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
     }
 
-    public static JsonSerializerOptions EnsureConfigured(this JsonSerializerOptions options, bool markAsReadOnly = false)
+    public static void EnsureConfigured(this JsonSerializerOptions options, bool markAsReadOnly = false)
     {
         if (!options.IsReadOnly)
         {
@@ -38,7 +38,5 @@ internal static class JsonSerializerOptionsExtensions
                 options.MakeReadOnly();
             }
         }
-
-        return options;
     }
 }
