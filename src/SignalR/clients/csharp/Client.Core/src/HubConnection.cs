@@ -624,7 +624,8 @@ public partial class HubConnection : IAsyncDisposable
                     Log.SendingCancellation(_logger, irq.InvocationId);
 
                     // Fire and forget, if it fails that means we aren't connected anymore.
-                    _ = SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
+                    // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
+                    _ = SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default);
                 }
                 else
                 {
