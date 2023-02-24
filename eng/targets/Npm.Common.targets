@@ -76,7 +76,7 @@
     DependsOnTargets="GetBuildInputCacheFile"
     Inputs="@(TSFiles);$(BaseIntermediateOutputPath)tsfiles.cache"
     Outputs="@(BuildOutputFiles)">
-    <Yarn Command="$(NpmBuildArgs) --openssl-legacy-provider" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
   </Target>
 
