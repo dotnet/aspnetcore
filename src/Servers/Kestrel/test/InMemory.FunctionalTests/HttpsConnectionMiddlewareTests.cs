@@ -228,8 +228,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     public void ThrowsWhenNoServerCertificateIsProvided()
     {
         Assert.Throws<ArgumentException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask,
-            new HttpsConnectionAdapterOptions(),
-            ListenOptions.DefaultHttpProtocols)
+            new HttpsConnectionAdapterOptions())
             );
     }
 
@@ -1269,8 +1268,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
         {
             ServerCertificate = cert,
-        },
-        ListenOptions.DefaultHttpProtocols);
+        });
     }
 
     [Theory]
@@ -1288,8 +1286,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
         {
             ServerCertificate = cert,
-        },
-        ListenOptions.DefaultHttpProtocols);
+        });
     }
 
     [Theory]
@@ -1308,7 +1305,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
             {
                 ServerCertificate = cert,
-            }, ListenOptions.DefaultHttpProtocols));
+            }));
 
         Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
     }
@@ -1355,10 +1352,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
+            HttpProtocols = HttpProtocols.Http1AndHttp2
         };
-        var middleware = new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions, HttpProtocols.Http1AndHttp2);
+        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
 
-        Assert.Equal(HttpProtocols.Http1, middleware._httpProtocols);
+        Assert.Equal(HttpProtocols.Http1, httpConnectionAdapterOptions.HttpProtocols);
     }
 
     [ConditionalFact]
@@ -1369,10 +1367,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
+            HttpProtocols = HttpProtocols.Http1AndHttp2
         };
-        var middleware = new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions, HttpProtocols.Http1AndHttp2);
+        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
 
-        Assert.Equal(HttpProtocols.Http1AndHttp2, middleware._httpProtocols);
+        Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
     }
 
     [ConditionalFact]
@@ -1383,9 +1382,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
+            HttpProtocols = HttpProtocols.Http2
         };
 
-        Assert.Throws<NotSupportedException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions, HttpProtocols.Http2));
+        Assert.Throws<NotSupportedException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions));
     }
 
     [ConditionalFact]
@@ -1396,10 +1396,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
+            HttpProtocols = HttpProtocols.Http2
         };
 
         // Does not throw
-        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions, HttpProtocols.Http2);
+        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
     }
 
     private static async Task App(HttpContext httpContext)
