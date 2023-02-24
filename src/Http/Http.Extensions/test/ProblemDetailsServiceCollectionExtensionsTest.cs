@@ -164,7 +164,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         var jsonOptions = services.GetService<IOptions<JsonOptions>>();
 
         Assert.NotNull(jsonOptions.Value);
-        Assert.IsType<DefaultJsonTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.Null(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
     }
 
     [JsonSerializable(typeof(TypeA))]

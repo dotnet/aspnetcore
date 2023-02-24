@@ -31,7 +31,7 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        jsonSerializerOptions ??= httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
+        jsonSerializerOptions ??= httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
         jsonSerializerOptions.EnsureConfigured();
 
         var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));

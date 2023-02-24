@@ -84,7 +84,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
     private static ExtensionsExceptionJsonContext CreateSerializationContext(JsonOptions? jsonOptions)
     {
         // Create context from configured options to get settings such as PropertyNamePolicy and DictionaryKeyPolicy.
-        return new ExtensionsExceptionJsonContext(new JsonSerializerOptions(jsonOptions?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions));
+        return new ExtensionsExceptionJsonContext(new JsonSerializerOptions(jsonOptions?.SerializerOptions ?? new JsonOptions().SerializerOptions));
     }
 
     /// <summary>

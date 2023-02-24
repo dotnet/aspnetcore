@@ -37,9 +37,6 @@ public static class ProblemDetailsServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Adding default HttpJsonOptions.
-        services.AddDefaultHttpJsonOptions();
-
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());

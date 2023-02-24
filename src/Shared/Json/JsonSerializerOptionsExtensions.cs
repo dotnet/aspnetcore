@@ -23,6 +23,7 @@ internal static class JsonSerializerOptionsExtensions
     {
         if (!options.IsReadOnly)
         {
+            // This might be removed once https://github.com/dotnet/runtime/issues/80529 is fixed
             if (!TrimmingAppContextSwitches.EnsureJsonTrimmability)
             {
 #pragma warning disable IL2026 // Suppressed in Microsoft.AspNetCore.Http.Extensions.WarningSuppressions.xml
