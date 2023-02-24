@@ -152,7 +152,7 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
         await VerifyResponseBodyAsync(httpContext, result);
     }
 
-    public static object?[][] TryParsableParameters
+    public static object[][] TryParsableParameters
     {
         get
         {
@@ -188,14 +188,14 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
                     new object[] { "ILOpCode", "Nop", ILOpCode.Nop },
                     new object[] { "AssemblyFlags", "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
                     new object[] { "int?", "42", 42 },
-                    new object?[] { "int?", null, null },
+                    new object[] { "int?", null, null },
                 };
         }
     }
 
     [Theory]
     [MemberData(nameof(TryParsableParameters))]
-    public async Task MapAction_SingleParsable_StringReturn(string typeName, string queryStringInput, object? expectedParameterValue)
+    public async Task MapAction_SingleParsable_StringReturn(string typeName, string queryStringInput, object expectedParameterValue)
     {
         var (results, compilation) = await RunGeneratorAsync($$"""
 app.MapGet("/hello", (HttpContext context, [FromQuery]{{typeName}} p) =>
