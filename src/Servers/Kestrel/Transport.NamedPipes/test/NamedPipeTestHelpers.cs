@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
@@ -22,18 +23,20 @@ internal static class NamedPipeTestHelpers
 
     public static NamedPipeTransportFactory CreateTransportFactory(
         ILoggerFactory loggerFactory = null,
-        NamedPipeTransportOptions options = null)
+        NamedPipeTransportOptions options = null,
+        ObjectPoolProvider objectPoolProvider = null)
     {
         options ??= new NamedPipeTransportOptions();
-        return new NamedPipeTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(options));
+        return new NamedPipeTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(options), objectPoolProvider ?? new DefaultObjectPoolProvider());
     }
 
     public static async Task<NamedPipeConnectionListener> CreateConnectionListenerFactory(
         ILoggerFactory loggerFactory = null,
         string pipeName = null,
-        NamedPipeTransportOptions options = null)
+        NamedPipeTransportOptions options = null,
+        ObjectPoolProvider objectPoolProvider = null)
     {
-        var transportFactory = CreateTransportFactory(loggerFactory, options);
+        var transportFactory = CreateTransportFactory(loggerFactory, options, objectPoolProvider);
 
         var endpoint = new NamedPipeEndPoint(pipeName ?? GetUniquePipeName());
 

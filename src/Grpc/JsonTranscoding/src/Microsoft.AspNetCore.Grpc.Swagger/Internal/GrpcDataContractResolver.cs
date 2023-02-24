@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Google.Protobuf;
@@ -64,33 +65,39 @@ internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
         return _innerContractResolver.GetDataContractForType(type);
     }
 
-    private DataContract ConvertMessage(MessageDescriptor messageDescriptor)
+    private bool TryCustomizeMessage(MessageDescriptor messageDescriptor, [NotNullWhen(true)] out DataContract? dataContract)
     {
+        // The messages serialized here should be kept in sync with SericeDescriptionHelper.IsCustomType.
         if (ServiceDescriptorHelpers.IsWellKnownType(messageDescriptor))
         {
             if (ServiceDescriptorHelpers.IsWrapperType(messageDescriptor))
             {
                 var field = messageDescriptor.Fields[Int32Value.ValueFieldNumber];
 
-                return _innerContractResolver.GetDataContractForType(MessageDescriptorHelpers.ResolveFieldType(field));
+                dataContract = _innerContractResolver.GetDataContractForType(MessageDescriptorHelpers.ResolveFieldType(field));
+                return true;
             }
             if (messageDescriptor.FullName == Timestamp.Descriptor.FullName ||
                 messageDescriptor.FullName == Duration.Descriptor.FullName ||
                 messageDescriptor.FullName == FieldMask.Descriptor.FullName)
             {
-                return DataContract.ForPrimitive(messageDescriptor.ClrType, DataType.String, dataFormat: null);
+                dataContract = DataContract.ForPrimitive(messageDescriptor.ClrType, DataType.String, dataFormat: null);
+                return true;
             }
             if (messageDescriptor.FullName == Struct.Descriptor.FullName)
             {
-                return DataContract.ForObject(messageDescriptor.ClrType, Array.Empty<DataProperty>(), extensionDataType: typeof(Value));
+                dataContract = DataContract.ForObject(messageDescriptor.ClrType, Array.Empty<DataProperty>(), extensionDataType: typeof(Value));
+                return true;
             }
             if (messageDescriptor.FullName == ListValue.Descriptor.FullName)
             {
-                return DataContract.ForArray(messageDescriptor.ClrType, typeof(Value));
+                dataContract = DataContract.ForArray(messageDescriptor.ClrType, typeof(Value));
+                return true;
             }
             if (messageDescriptor.FullName == Value.Descriptor.FullName)
             {
-                return DataContract.ForPrimitive(messageDescriptor.ClrType, DataType.Unknown, dataFormat: null);
+                dataContract = DataContract.ForPrimitive(messageDescriptor.ClrType, DataType.Unknown, dataFormat: null);
+                return true;
             }
             if (messageDescriptor.FullName == Any.Descriptor.FullName)
             {
@@ -98,8 +105,20 @@ internal sealed class GrpcDataContractResolver : ISerializerDataContractResolver
                 {
                     new DataProperty("@type", typeof(string), isRequired: true)
                 };
-                return DataContract.ForObject(messageDescriptor.ClrType, anyProperties, extensionDataType: typeof(Value));
+                dataContract = DataContract.ForObject(messageDescriptor.ClrType, anyProperties, extensionDataType: typeof(Value));
+                return true;
             }
+        }
+
+        dataContract = null;
+        return false;
+    }
+
+    private DataContract ConvertMessage(MessageDescriptor messageDescriptor)
+    {
+        if (TryCustomizeMessage(messageDescriptor, out var dataContract))
+        {
+            return dataContract;
         }
 
         var properties = new List<DataProperty>();

@@ -5,13 +5,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -20,9 +18,11 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Tests;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -556,9 +556,57 @@ public class WebApplicationTests
         builder.WebHost.UseContentRoot("");
 
         Assert.Equal(NormalizePath(AppContext.BaseDirectory), NormalizePath(builder.Environment.ContentRootPath));
+    }
 
-        static string NormalizePath(string unnormalizedPath) =>
-            Path.TrimEndingDirectorySeparator(Path.GetFullPath(unnormalizedPath));
+    private static string NormalizePath(string unnormalizedPath) =>
+        Path.TrimEndingDirectorySeparator(Path.GetFullPath(unnormalizedPath));
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void ContentRootIsDefaultedToCurrentDirectory()
+    {
+        var tmpDir = Directory.CreateTempSubdirectory();
+
+        try
+        {
+            var options = new RemoteInvokeOptions();
+            options.StartInfo.WorkingDirectory = tmpDir.FullName;
+
+            using var remoteHandle = RemoteExecutor.Invoke(static () =>
+            {
+                foreach (object[] data in CreateBuilderFuncs)
+                {
+                    var createBuilder = (CreateBuilderFunc)data[0];
+                    var builder = createBuilder();
+
+                    Assert.Equal(NormalizePath(Environment.CurrentDirectory), NormalizePath(builder.Environment.ContentRootPath));
+                }
+            }, options);
+        }
+        finally
+        {
+            tmpDir.Delete(recursive: true);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    [RemoteExecutionSupported]
+    public void ContentRootIsBaseDirectoryWhenCurrentIsSpecialFolderSystem()
+    {
+        var options = new RemoteInvokeOptions();
+        options.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System);
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            foreach (object[] data in CreateBuilderFuncs)
+            {
+                var createBuilder = (CreateBuilderFunc)data[0];
+                var builder = createBuilder();
+
+                Assert.Equal(NormalizePath(AppContext.BaseDirectory), NormalizePath(builder.Environment.ContentRootPath));
+            }
+        }, options);
     }
 
     [Theory]
@@ -795,6 +843,43 @@ public class WebApplicationTests
         Assert.Equal(assemblyName, webHostEnv.ApplicationName);
     }
 
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void WebApplicationBuilderConfigurationSourcesOrderedCorrectly()
+    {
+        // all WebApplicationBuilders have the following configuration sources ordered highest to lowest priority:
+        // 1. Command-line arguments
+        // 2. Non-prefixed environment variables
+        // 3. DOTNET_-prefixed environment variables
+        // 4. ASPNETCORE_-prefixed environment variables
+
+        var options = new RemoteInvokeOptions();
+        options.StartInfo.EnvironmentVariables.Add("one", "unprefixed_one");
+        options.StartInfo.EnvironmentVariables.Add("two", "unprefixed_two");
+        options.StartInfo.EnvironmentVariables.Add("DOTNET_one", "DOTNET_one");
+        options.StartInfo.EnvironmentVariables.Add("DOTNET_two", "DOTNET_two");
+        options.StartInfo.EnvironmentVariables.Add("DOTNET_three", "DOTNET_three");
+        options.StartInfo.EnvironmentVariables.Add("ASPNETCORE_one", "ASPNETCORE_one");
+        options.StartInfo.EnvironmentVariables.Add("ASPNETCORE_two", "ASPNETCORE_two");
+        options.StartInfo.EnvironmentVariables.Add("ASPNETCORE_three", "ASPNETCORE_three");
+        options.StartInfo.EnvironmentVariables.Add("ASPNETCORE_four", "ASPNETCORE_four");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var args = new[] { "--one=command_line_one" };
+            foreach (object[] data in CreateBuilderArgsFuncs)
+            {
+                var createBuilder = (CreateBuilderArgsFunc)data[0];
+                var builder = createBuilder(args);
+
+                Assert.Equal("command_line_one", builder.Configuration["one"]);
+                Assert.Equal("unprefixed_two", builder.Configuration["two"]);
+                Assert.Equal("DOTNET_three", builder.Configuration["three"]);
+                Assert.Equal("ASPNETCORE_four", builder.Configuration["four"]);
+            }
+        }, options);
+    }
+
     [Theory]
     [MemberData(nameof(CreateBuilderArgsFuncs))]
     public void WebApplicationBuilderCanFlowCommandLineConfigurationToApplication(CreateBuilderArgsFunc createBuilder)
@@ -976,7 +1061,7 @@ public class WebApplicationTests
 
     [Theory]
     [MemberData(nameof(CreateBuilderOptionsFuncs))]
-    public async Task WebApplicationCanObserveSourcesClearedInConfiguratHostConfiguration(CreateBuilderOptionsFunc createBuilder)
+    public async Task WebApplicationCanObserveSourcesClearedInHostConfiguration(CreateBuilderOptionsFunc createBuilder)
     {
         // This mimics what WebApplicationFactory<T> does and runs configure
         // services callbacks
@@ -2265,6 +2350,141 @@ public class WebApplicationTests
 
         Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+    }
+
+    [Fact]
+    public async Task UsingCreateBuilderResultsInRegexConstraintBeingPresent()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("RegexRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd1234");
+        Assert.Equal("RegexRoute", chosenRoute);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderResultsInAlphaConstraintStillWorking()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:alpha:minlength(4):maxlength(4)}", (string productId) => productId).WithDisplayName("AlphaRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd");
+        Assert.Equal("AlphaRoute", chosenRoute);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderResultsInErrorWhenTryingToUseRegexConstraint()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("AlphaRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        var ex = await Record.ExceptionAsync(async () =>
+        {
+            _ = await client.GetAsync("https://localhost/products/abcd1234");
+        });
+
+        Assert.IsType<RouteCreationException>(ex);
+        Assert.IsType<InvalidOperationException>(ex.InnerException.InnerException);
+        Assert.Equal(
+            "A route parameter uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure<RouteOptions>(options => options.SetParameterPolicy<RegexInlineRouteConstraint>(\"regex\"));",
+            ex.InnerException.InnerException.Message);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderWorksIfRegexConstraintAddedViaAddRouting()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRouting();
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("RegexRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd1234");
+        Assert.Equal("RegexRoute", chosenRoute);
+    }
+
+    [Fact]
+    public async Task UsingCreateSlimBuilderWorksIfRegexConstraintAddedViaAddRoutingCoreWithActionDelegate()
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Services.AddRoutingCore().Configure<RouteOptions>(options =>
+        {
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+
+        var chosenRoute = string.Empty;
+
+        app.Use((context, next) =>
+        {
+            chosenRoute = context.GetEndpoint()?.DisplayName;
+            return next(context);
+        });
+
+        app.MapGet("/products/{productId:regex(^[a-z]{{4}}\\d{{4}}$)}", (string productId) => productId).WithDisplayName("RegexRoute");
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        _ = await client.GetAsync("https://localhost/products/abcd1234");
+        Assert.Equal("RegexRoute", chosenRoute);
     }
 
     private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>

@@ -78,6 +78,24 @@ internal static class EndpointParameterEmitter
         return builder.ToString();
     }
 
+    internal static string EmitServiceParameterPreparation(this EndpointParameter endpointParameter)
+    {
+        var builder = new StringBuilder();
+
+        // Preamble for diagnostics purposes.
+        builder.AppendLine($"""
+                        {endpointParameter.EmitParameterDiagnosticComment()}
+""");
+
+        // Requiredness checks for services are handled by the distinction
+        // between GetRequiredService and GetService in the AssigningCode.
+        builder.AppendLine($$"""
+                        var {{endpointParameter.HandlerArgument}} = {{endpointParameter.AssigningCode}};
+""");
+
+        return builder.ToString();
+    }
+
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) =>
         $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, Source = {endpointParameter.Source})";
 }

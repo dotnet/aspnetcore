@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapPost(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<TestMapActions.Todo, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>> handler,
+            global::System.Func<global::TestMapActions.Todo, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::TestMapActions.Todo>> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<TestMapActions.Todo, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>>)del;
+                    var handler = (Func<global::TestMapActions.Todo, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::TestMapActions.Todo>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<TestMapActions.Todo?, Microsoft.AspNetCore.Http.HttpResults.Ok<TestMapActions.Todo>>)del;
+                    var handler = (Func<global::TestMapActions.Todo?, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::TestMapActions.Todo>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)

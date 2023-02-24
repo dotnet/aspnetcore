@@ -641,13 +641,16 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.SendingCancellation(_logger, irq.InvocationId);
 
-                    // Fire and forget, if it fails that means we aren't connected anymore.
-                    _ = SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
+                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     Log.UnableToSendCancellation(_logger, irq.InvocationId);
                 }
+            }
+            catch
+            {
+                // Connection closed while trying to cancel a stream. This is fine to ignore.
             }
             finally
             {
@@ -848,6 +851,10 @@ public partial class HubConnection : IAsyncDisposable
             {
                 Log.CompletingStreamNotSent(_logger, streamId);
             }
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorSendingStreamCompletion(_logger, streamId, ex);
         }
         finally
         {
@@ -1995,6 +2002,10 @@ public partial class HubConnection : IAsyncDisposable
 
                         await _hubConnection.SendHubMessage(this, PingMessage.Instance).ConfigureAwait(false);
                     }
+                }
+                catch
+                {
+                    // The exception from send should be seen elsewhere in the client. We'll ignore it here.
                 }
                 finally
                 {

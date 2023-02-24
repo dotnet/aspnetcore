@@ -54,12 +54,12 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// <param name="value">The value to format in the entity body.</param>
     internal AcceptedAtRoute(
         string? routeName,
-        RouteValueDictionary routeValues,
+        RouteValueDictionary? routeValues,
         TValue? value)
     {
         Value = value;
         RouteName = routeName;
-        RouteValues = routeValues;
+        RouteValues = routeValues ?? new RouteValueDictionary();
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
@@ -93,7 +93,7 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
-        var url = linkGenerator.GetUriByAddress(
+        var url = linkGenerator.GetUriByRouteValues(
             httpContext,
             RouteName,
             RouteValues,

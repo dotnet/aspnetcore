@@ -5,6 +5,7 @@ using System.IO.Pipes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
@@ -24,11 +25,70 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.Null(await connectionListener.AcceptAsync().DefaultTimeout());
     }
 
+    private class TestObjectPoolProvider : ObjectPoolProvider
+    {
+        public List<ITestObjectPool> Pools { get; } = new List<ITestObjectPool>();
+
+        public override ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy)
+        {
+            var pool = new TestObjectPool<T>(policy);
+            Pools.Add(pool);
+
+            return pool;
+        }
+
+        private class TestObjectPool<T> : ObjectPool<T>, ITestObjectPool where T : class
+        {
+            private readonly IPooledObjectPolicy<T> _policy;
+
+            public TestObjectPool(IPooledObjectPolicy<T> policy)
+            {
+                _policy = policy;
+            }
+
+            public int GetCount { get; private set; }
+            public int ReturnSuccessCount { get; private set; }
+            public int ReturnFailureCount { get; private set; }
+
+            public override T Get()
+            {
+                GetCount++;
+                return _policy.Create();
+            }
+
+            public override void Return(T obj)
+            {
+                if (_policy.Return(obj))
+                {
+                    ReturnSuccessCount++;
+                }
+                else
+                {
+                    ReturnFailureCount++;
+                }
+            }
+        }
+    }
+
+    private interface ITestObjectPool
+    {
+        int GetCount { get; }
+        int ReturnSuccessCount { get; }
+        int ReturnFailureCount { get; }
+    }
+
     [ConditionalFact]
     public async Task AcceptAsync_ClientCreatesConnection_ServerAccepts()
     {
         // Arrange
-        await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+        var testObjectPoolProvider = new TestObjectPoolProvider();
+        var options = new NamedPipeTransportOptions
+        {
+            ListenerQueueCount = 2
+        };
+        await using var connectionListener = await NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, options: options, objectPoolProvider: testObjectPoolProvider);
+        var pool = Assert.Single(testObjectPoolProvider.Pools);
+        Assert.Equal(options.ListenerQueueCount, pool.GetCount);
 
         // Stream 1
         var acceptTask1 = connectionListener.AcceptAsync();
@@ -40,6 +100,10 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         await serverConnection1.DisposeAsync().AsTask().DefaultTimeout();
         Assert.True(serverConnection1.ConnectionClosed.IsCancellationRequested, "Connection 1 should be closed");
 
+        Assert.Equal(options.ListenerQueueCount + 1, pool.GetCount);
+        Assert.Equal(1, pool.ReturnSuccessCount);
+        Assert.Equal(0, pool.ReturnFailureCount);
+
         // Stream 2
         var acceptTask2 = connectionListener.AcceptAsync();
         await using var clientStream2 = NamedPipeTestHelpers.CreateClientStream(connectionListener.EndPoint);
@@ -49,6 +113,10 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.False(serverConnection2.ConnectionClosed.IsCancellationRequested, "Connection 2 should be open");
         await serverConnection2.DisposeAsync().AsTask().DefaultTimeout();
         Assert.True(serverConnection2.ConnectionClosed.IsCancellationRequested, "Connection 2 should be closed");
+
+        Assert.Equal(options.ListenerQueueCount + 2, pool.GetCount);
+        Assert.Equal(2, pool.ReturnSuccessCount);
+        Assert.Equal(0, pool.ReturnFailureCount);
     }
 
     [ConditionalFact]

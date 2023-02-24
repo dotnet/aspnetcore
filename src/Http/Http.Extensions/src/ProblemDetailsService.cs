@@ -15,44 +15,33 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         _writers = writers.ToArray();
     }
 
-    public ValueTask WriteAsync(ProblemDetailsContext context)
+    public async ValueTask WriteAsync(ProblemDetailsContext context)
+    {
+        if (!await TryWriteAsync(context))
+        {
+            throw new InvalidOperationException("Unable to find a registered `IProblemDetailsWriter` that can write to the given context.");
+        }
+    }
+
+    public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(context.ProblemDetails);
         ArgumentNullException.ThrowIfNull(context.HttpContext);
 
-        if (context.HttpContext.Response.HasStarted ||
-            context.HttpContext.Response.StatusCode < 400 ||
-            _writers.Length == 0)
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        IProblemDetailsWriter? selectedWriter = null;
-
-        if (_writers.Length == 1)
-        {
-            selectedWriter = _writers[0];
-
-            return selectedWriter.CanWrite(context) ?
-                selectedWriter.WriteAsync(context) :
-                ValueTask.CompletedTask;
-        }
-
+        // Try to write using all registered writers
+        // sequentially and stop at the first one that
+        // `canWrite`.
         for (var i = 0; i < _writers.Length; i++)
         {
-            if (_writers[i].CanWrite(context))
+            var selectedWriter = _writers[i];
+            if (selectedWriter.CanWrite(context))
             {
-                selectedWriter = _writers[i];
-                break;
+                await selectedWriter.WriteAsync(context);
+                return true;
             }
         }
 
-        if (selectedWriter != null)
-        {
-            return selectedWriter.WriteAsync(context);
-        }
-
-        return ValueTask.CompletedTask;
+        return false;
     }
 }
