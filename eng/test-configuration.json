@@ -16,6 +16,7 @@
     {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testName": {"contains": "POST_ServerAbortAfterWrite_ClientReceivesAbort"}},
+    {"testName": {"contains": "ServerReset_BeforeRequestBody_ClientBodyThrows"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
