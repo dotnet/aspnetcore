@@ -84,12 +84,13 @@ internal sealed partial class SocketConnection : TransportConnection
         {
             _logger.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
         }
+        SimpleSocketAwaitableEventArgs.OnStart(_socket.RemoteEndPoint);
     }
 
     public override void Abort(ConnectionAbortedException abortReason)
     {
         // Try to gracefully close the socket to match libuv behavior.
-        Shutdown(abortReason);
+        _ = Shutdown(abortReason, async: false);
 
         // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
         Output.CancelPendingRead();
@@ -332,7 +333,7 @@ internal sealed partial class SocketConnection : TransportConnection
         }
         finally
         {
-            Shutdown(shutdownReason);
+            await Shutdown(shutdownReason, async: true);
 
             // Complete the output after disposing the socket
             Output.Complete(unexpectedError);
@@ -362,13 +363,13 @@ internal sealed partial class SocketConnection : TransportConnection
         preferLocal: false);
     }
 
-    private void Shutdown(Exception? shutdownReason)
+    private Task Shutdown(Exception? shutdownReason, bool async)
     {
         lock (_shutdownLock)
         {
             if (_socketDisposed)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             // Make sure to close the connection only after the _aborted flag is set.
@@ -380,8 +381,15 @@ internal sealed partial class SocketConnection : TransportConnection
             // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
             // to half close the connection which is currently unsupported.
             _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
-            SocketsLog.ConnectionWriteFin(_logger, this, _shutdownReason.Message);
+        }
+        SocketsLog.ConnectionWriteFin(_logger, this, _shutdownReason.Message);
 
+        if (async)
+        {
+            return SimpleSocketAwaitableEventArgs.SharedRecycleSocketAsync(_socket);
+        }
+        else
+        {
             try
             {
                 // Try to gracefully close the socket even for aborts to match libuv behavior.
@@ -391,8 +399,8 @@ internal sealed partial class SocketConnection : TransportConnection
             {
                 // Ignore any errors from Socket.Shutdown() since we're tearing down the connection anyway.
             }
-
-            _socket.Dispose();
+            SimpleSocketAwaitableEventArgs.BestEffortsClose(_socket);
+            return Task.CompletedTask;
         }
     }
 
