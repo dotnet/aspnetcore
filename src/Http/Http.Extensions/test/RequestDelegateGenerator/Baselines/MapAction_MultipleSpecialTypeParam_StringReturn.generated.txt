@@ -84,11 +84,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 16)] = (
+            [(@"TestMapActions.cs", 18)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 16));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 18));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.HttpRequest>(0), ic.GetArgument<Microsoft.AspNetCore.Http.HttpResponse>(1)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpRequest>(0), ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpResponse>(1)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new EndpointFilterInvocationContext<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
+                        var result = await filteredInvocation(new EndpointFilterInvocationContext<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 

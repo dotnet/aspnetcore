@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGeneratorTestBase
@@ -44,8 +46,12 @@ public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGenera
     [Fact]
     public async Task MapAction_ChangeBodyParamNullability_TriggersUpdate()
     {
-        var source = @"app.MapGet(""/"", ([FromBody] Todo todo) => TypedResults.Ok(todo));";
-        var updatedSource = @"app.MapGet(""/"", ([FromBody] Todo? todo) => TypedResults.Ok(todo));";
+        var source = $"""app.MapGet("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
+        var updatedSource = $"""
+#pragma warning disable CS8622
+app.MapGet("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? todo) => TypedResults.Ok(todo));
+#pragma warning disable CS8622
+""";
 
         var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);

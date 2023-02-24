@@ -17,38 +17,49 @@ internal class EndpointParameter
         Type = parameter.Type;
         Name = parameter.Name;
         Source = EndpointParameterSource.Unknown;
-        HandlerArgument = $"{parameter.Name}_local";
 
         var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
         var fromServiceMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+        var fromRouteMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
+        var fromHeaderMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata);
 
-        if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
+        if (parameter.HasAttributeImplementingInterface(fromRouteMetadataInterfaceType, out var fromRouteAttribute))
+        {
+            Source = EndpointParameterSource.Route;
+            Name = GetParameterName(fromRouteAttribute, parameter.Name);
+            IsOptional = parameter.IsOptional();
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType, out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
-            AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
-            IsOptional = parameter.Type is INamedTypeSymbol
-            {
-                NullableAnnotation: NullableAnnotation.Annotated
-            };
+            Name = GetParameterName(fromQueryAttribute, parameter.Name);
+            IsOptional = parameter.IsOptional();
         }
-        else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var jsonBodyAssigningCode, out var isOptional))
+        else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType, out var fromHeaderAttribute))
+        {
+            Source = EndpointParameterSource.Header;
+            Name = GetParameterName(fromHeaderAttribute, parameter.Name);
+            IsOptional = parameter.IsOptional();
+        }
+        else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
         {
             Source = EndpointParameterSource.JsonBody;
-            AssigningCode = jsonBodyAssigningCode;
             IsOptional = isOptional;
         }
         else if (parameter.HasAttributeImplementingInterface(fromServiceMetadataInterfaceType))
         {
             Source = EndpointParameterSource.Service;
             IsOptional = parameter.Type is INamedTypeSymbol { NullableAnnotation: NullableAnnotation.Annotated } || parameter.HasExplicitDefaultValue;
-            AssigningCode = IsOptional ?
-                $"httpContext.RequestServices.GetService<{parameter.Type}>();" :
-                $"httpContext.RequestServices.GetRequiredService<{parameter.Type}>()";
         }
         else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
         {
             Source = EndpointParameterSource.SpecialType;
             AssigningCode = specialTypeAssigningCode;
+        }
+        else if (parameter.Type.SpecialType == SpecialType.System_String)
+        {
+            Source = EndpointParameterSource.RouteOrQuery;
+            IsOptional = parameter.IsOptional();
         }
         else
         {
@@ -60,18 +71,11 @@ internal class EndpointParameter
     public ITypeSymbol Type { get; }
     public EndpointParameterSource Source { get; }
 
-    // TODO: If the parameter has [FromRoute("AnotherName")] or similar, prefer that.
+    // Only used for SpecialType parameters that need
+    // to be resolved by a specific WellKnownType
+    internal string? AssigningCode { get; set; }
     public string Name { get; }
-    public string? AssigningCode { get; }
-    public string HandlerArgument { get; }
     public bool IsOptional { get; }
-
-    public string EmitArgument() => Source switch
-    {
-        EndpointParameterSource.SpecialType or EndpointParameterSource.Query or EndpointParameterSource.Service => HandlerArgument,
-        EndpointParameterSource.JsonBody => IsOptional ? HandlerArgument : $"{HandlerArgument}!",
-        _ => throw new Exception("Unreachable!")
-    };
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
     private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out string? callingCode)
@@ -118,31 +122,32 @@ internal class EndpointParameter
 
     private static bool TryGetExplicitFromJsonBody(IParameterSymbol parameter,
         WellKnownTypes wellKnownTypes,
-        [NotNullWhen(true)] out string? assigningCode,
         out bool isOptional)
     {
-        assigningCode = null;
         isOptional = false;
-        if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
+        if (!parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
         {
-            foreach (var namedArgument in fromBodyAttribute.NamedArguments)
-            {
-                if (namedArgument.Key == "AllowEmpty")
-                {
-                    isOptional |= namedArgument.Value.Value is true;
-                }
-            }
-            isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
-            assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{parameter.Type}>(httpContext, {(isOptional ? "true" : "false")})";
-            return true;
+            return false;
         }
-        return false;
+        isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<int>("EmptyBodyBehavior", out var emptyBodyBehaviorValue) && emptyBodyBehaviorValue == 1;
+        isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<bool>("AllowEmpty", out var allowEmptyValue) && allowEmptyValue;
+        isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
+        return true;
     }
+
+    private static string GetParameterName(AttributeData attribute, string parameterName) =>
+        attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName)
+            ? (fromSourceName ?? parameterName)
+            : parameterName;
 
     public override bool Equals(object obj) =>
         obj is EndpointParameter other &&
         other.Source == Source &&
         other.Name == Name &&
+        SymbolEqualityComparer.Default.Equals(other.Type, Type);
+
+    public bool SignatureEquals(object obj) =>
+        obj is EndpointParameter other &&
         SymbolEqualityComparer.Default.Equals(other.Type, Type);
 
     public override int GetHashCode()

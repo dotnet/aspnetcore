@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -21,8 +22,14 @@ internal static class EndpointEmitter
                     Source: EndpointParameterSource.SpecialType
                 } => parameter.EmitSpecialParameterPreparation(),
                 {
-                    Source: EndpointParameterSource.Query,
-                } => parameter.EmitQueryParameterPreparation(),
+                    Source: EndpointParameterSource.Query or EndpointParameterSource.Header,
+                } => parameter.EmitQueryOrHeaderParameterPreparation(),
+                {
+                  Source: EndpointParameterSource.Route,
+                } => parameter.EmitRouteParameterPreparation(),
+                {
+                    Source: EndpointParameterSource.RouteOrQuery
+                } => parameter.EmitRouteOrQueryParameterPreparation(),
                 {
                     Source: EndpointParameterSource.JsonBody
                 } => parameter.EmitJsonBodyParameterPreparationString(),
@@ -45,4 +52,6 @@ internal static class EndpointEmitter
 
         return parameterPreparationBuilder.ToString();
     }
+
+    public static string EmitArgumentList(this Endpoint endpoint) => string.Join(", ", endpoint.Parameters.Select(p => p.EmitArgument()));
 }

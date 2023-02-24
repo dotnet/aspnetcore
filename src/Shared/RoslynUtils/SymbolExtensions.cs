@@ -82,4 +82,25 @@ internal static class SymbolExtensions
 
     public static ISymbol? GetAnySymbol(this SymbolInfo info)
         => info.Symbol ?? info.CandidateSymbols.FirstOrDefault();
+
+    public static bool IsOptional(this IParameterSymbol parameterSymbol) =>
+        parameterSymbol.Type is INamedTypeSymbol
+        {
+            NullableAnnotation: NullableAnnotation.Annotated
+        } || parameterSymbol.HasExplicitDefaultValue;
+
+    public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? argumentValue)
+    {
+        argumentValue = default;
+        foreach (var namedArgument in attribute.NamedArguments)
+        {
+            if (string.Equals(namedArgument.Key, argumentName, StringComparison.Ordinal))
+            {
+                var routeParameterNameConstant = namedArgument.Value;
+                argumentValue = (T?)routeParameterNameConstant.Value;
+                return true;
+            }
+        }
+        return false;
+    }
 }

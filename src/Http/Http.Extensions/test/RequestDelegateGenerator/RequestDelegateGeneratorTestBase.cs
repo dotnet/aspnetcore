@@ -195,7 +195,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Http.Generators.Tests;
 
 public static class TestMapActions
 {
@@ -203,25 +205,6 @@ public static class TestMapActions
     {
         {{sources}}
         return app;
-    }
-
-    public interface ITodo
-    {
-        public int Id { get; }
-        public string? Name { get; }
-        public bool IsComplete { get; }
-    }
-
-    public class Todo
-    {
-        public int Id { get; set; }
-        public string? Name { get; set; } = "Todo";
-        public bool IsComplete { get; set; }
-    }
-
-    public class FromBodyAttribute : Attribute, IFromBodyMetadata
-    {
-        public bool AllowEmpty { get; set; }
     }
 }
 """;
@@ -372,13 +355,6 @@ Actual Line:
         public ICollection<EndpointDataSource> DataSources { get; }
 
         public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
-    }
-
-    public class Todo
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "Todo";
-        public bool IsComplete { get; set; }
     }
 
     internal sealed class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
