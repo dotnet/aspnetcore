@@ -3,7 +3,9 @@
   "name": "MVC Controller",
   "description": "MVC Controller with or without read/write actions",
   "symbols/namespace/description": "namespace for the generated code",
+  "_symbols/namespace/description.comment": "Should this start w/ 'Namespace'?",
   "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
+  "_symbols/actions/description.comment": "Should this start w/ 'Create'?",
+  "symbols/actions/displayName": "Add Read/Write Actions",
   "postActions/openInEditor/description": "Opens HomeController.cs in the editor"
 }

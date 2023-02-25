@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Razor View",
-  "description": "A Razor view without a page model",
+  "description": "An empty Razor view",
+  "_description.comment": "Reviewers: Could also be 'A Razor view without a page model'. And should View be capitalized?",
   "postActions/openInEditor/description": "Opens Index.cshtml in the editor"
 }

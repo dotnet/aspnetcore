@@ -28,7 +28,7 @@
     },
     "actions": {
       "description": "create controller with read/write actions",
-      "displayName": "Add ReadWrite Actions",
+      "displayName": "Add Read/Write Actions",
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"
@@ -46,7 +46,7 @@
     {
       "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "description": "Opens the created controller in the editor",
+      "description": "Opens HomeController.cs in the editor",
       "manualInstructions": [ ],
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "args": {

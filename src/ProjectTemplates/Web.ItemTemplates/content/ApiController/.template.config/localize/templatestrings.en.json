@@ -3,7 +3,9 @@
   "name": "API Controller",
   "description": "API Controller with or without read/write actions",
   "symbols/namespace/description": "namespace for the generated code",
+  "_symbols/namespace/description.comment": "Should this start w/ 'Namespace'?",
   "symbols/actions/description": "create controller with read/write actions",
+  "_symbols/actions/description.comment": "Should this start w/ 'Create'?",
   "symbols/actions/displayName": "Add ReadWrite Actions",
   "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
 }
