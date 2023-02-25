@@ -39,6 +39,17 @@ public class JsonSubKeyClaimAction : JsonKeyClaimAction
         {
             identity.AddClaim(new Claim(ClaimType, value, ValueType, issuer));
         }
+        //JsonSubkeyClaimAction arrays #46864
+        if (userData.TryGetProperty(JsonKey, out var jsonkeyvalue))
+        {
+            if (jsonkeyvalue.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var v in jsonkeyvalue.EnumerateArray())
+                {
+                    identity.AddClaim(new Claim(ClaimType, v.ToString()!, ValueType, issuer));
+                }
+            }
+        }
     }
 
     // Get the given subProperty from a property.
