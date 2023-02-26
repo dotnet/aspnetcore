@@ -47,9 +47,9 @@ internal static class EndpointMetadataPopulator
 
         // Get metadata from return type
         var returnType = methodInfo.ReturnType;
-        if (AwaitableInfo.IsTypeAwaitable(returnType, out var awaitableInfo))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            returnType = awaitableInfo.ResultType;
+            returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
