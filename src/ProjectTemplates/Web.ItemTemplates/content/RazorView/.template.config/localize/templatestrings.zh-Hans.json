@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor View",
+  "description": "A Razor view without a page model",
+  "postActions/openInEditor/description": "在编辑器中打开 Index.cshtml"
+}

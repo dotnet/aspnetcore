@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Exibição do Razor",
+  "description": "Uma exibição do Razor sem um modelo de página",
+  "postActions/openInEditor/description": "Abre Index.cshtml no editor"
+}

@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor View",
+  "description": "A Razor view without a page model",
+  "postActions/openInEditor/description": "편집기에서 Index.cshtml을 엽니다."
+}
