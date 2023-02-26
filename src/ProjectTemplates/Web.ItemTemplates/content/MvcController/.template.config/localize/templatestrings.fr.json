@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC Controller",
+  "description": "MVC Controller with or without read/write actions",
+  "symbols/namespace/description": "espace de noms pour le code généré",
+  "symbols/actions/description": "create controller with read/write actions",
+  "symbols/actions/displayName": "Add ReadWrite Actions",
+  "postActions/openInEditor/description": "Opens HomeController.cs in the editor"
+}

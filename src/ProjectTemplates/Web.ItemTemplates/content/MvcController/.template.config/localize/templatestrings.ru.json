@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Контроллер MVC",
+  "description": "Контроллер MVC с действиями чтения и записи или без них",
+  "symbols/namespace/description": "пространство имен для созданного кода",
+  "symbols/actions/description": "создать контроллер с действиями чтения и записи",
+  "symbols/actions/displayName": "Добавить действия ReadWrite",
+  "postActions/openInEditor/description": "Открывает HomeController.cs в редакторе"
+}
