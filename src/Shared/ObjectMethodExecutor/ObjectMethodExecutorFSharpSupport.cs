@@ -31,6 +31,26 @@ internal static class ObjectMethodExecutorFSharpSupport
     private static PropertyInfo _fsharpOptionOfTaskCreationOptionsNoneProperty;
     private static PropertyInfo _fsharpOptionOfCancellationTokenNoneProperty;
 
+    /// <summary>
+    /// Builds a <see cref="LambdaExpression"/> for converting a value of the given generic instantiation of
+    /// <see href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1.html">FSharp.Control.FSharpAsync&lt;T&gt;</see>
+    /// to a <see cref="Task{TResult}"/>, if <paramref name="possibleFSharpAsyncType"/> is in fact a closed F# async type.
+    /// </summary>
+    /// <param name="possibleFSharpAsyncType">
+    /// The type that is a potential generic instantiation of
+    /// <see href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1.html">FSharp.Control.FSharpAsync&lt;T&gt;</see>.
+    /// </param>
+    /// <param name="coerceToAwaitableExpression">
+    /// When this method returns, contains a <see cref="LambdaExpression"/> for converting a value of type <paramref name="possibleFSharpAsyncType"/>
+    /// to a <see cref="Task{TResult}"/>, if <paramref name="possibleFSharpAsyncType"/> is a generic instantiation of
+    /// <see href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1.html">FSharp.Control.FSharpAsync&lt;T&gt;</see>,
+    /// or <see langword="null"/> if it is not.
+    /// </param>
+    /// <param name="awaitableType">
+    /// When this method returns, contains the type of the closed generic instantiation of <see cref="Task{TResult}"/> that will be returned
+    /// by the coercer expression, if it was possible to build a coercer, or <see langword="null"/> if not.
+    /// </param>
+    /// <returns><see langword="true"/> if it was possible to build a coercer; otherwise, <see langword="false"/>.</returns>
     [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Reflecting over the async FSharpAsync<> contract.")]
     public static bool TryBuildCoercerFromFSharpAsyncToAwaitable(
         Type possibleFSharpAsyncType,
