@@ -51,25 +51,27 @@ internal static class ObjectMethodExecutorFSharpSupport
         var awaiterResultType = possibleFSharpAsyncType.GetGenericArguments().Single();
         awaitableType = typeof(Task<>).MakeGenericType(awaiterResultType);
 
-        // coerceToAwaitableExpression = (object fsharpAsync) =>
-        // {
-        //     return (object)FSharpAsync.StartAsTask<TResult>(
-        //         (Microsoft.FSharp.Control.FSharpAsync<TResult>)fsharpAsync,
-        //         FSharpOption<TaskCreationOptions>.None,
-        //         FSharpOption<CancellationToken>.None);
-        // };
+        // We simply want to call `FSharpAsync.StartAsTask` on the F# async value:
+        //
+        //     coerceToAwaitableExpression = (FSharpAsync<TResult> fsharpAsync) =>
+        //     {
+        //         return FSharpAsync.StartAsTask<TResult>(
+        //             fsharpAsync,
+        //             FSharpOption<TaskCreationOptions>.None,
+        //             FSharpOption<CancellationToken>.None);
+        //     };
+        //
         var startAsTaskClosedMethod = _fsharpAsyncStartAsTaskGenericMethod
             .MakeGenericMethod(awaiterResultType);
-        var coerceToAwaitableParam = Expression.Parameter(typeof(object));
-        coerceToAwaitableExpression = Expression.Lambda(
-            Expression.Convert(
-                Expression.Call(
-                    startAsTaskClosedMethod,
-                    Expression.Convert(coerceToAwaitableParam, possibleFSharpAsyncType),
-                    Expression.MakeMemberAccess(null, _fsharpOptionOfTaskCreationOptionsNoneProperty),
-                    Expression.MakeMemberAccess(null, _fsharpOptionOfCancellationTokenNoneProperty)),
-                typeof(object)),
-            coerceToAwaitableParam);
+        var coerceToAwaitableParam = Expression.Parameter(possibleFSharpAsyncType);
+        coerceToAwaitableExpression =
+            Expression.Lambda(
+                body: Expression.Call(
+                    method: startAsTaskClosedMethod,
+                    arg0: Expression.Convert(coerceToAwaitableParam, possibleFSharpAsyncType),
+                    arg1: Expression.MakeMemberAccess(null, _fsharpOptionOfTaskCreationOptionsNoneProperty),
+                    arg2: Expression.MakeMemberAccess(null, _fsharpOptionOfCancellationTokenNoneProperty)),
+                parameters: coerceToAwaitableParam);
 
         return true;
     }
