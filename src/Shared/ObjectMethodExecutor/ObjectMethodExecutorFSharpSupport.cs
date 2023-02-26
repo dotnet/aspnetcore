@@ -3,13 +3,10 @@
 
 #nullable disable
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Internal;
 
