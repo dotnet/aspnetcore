@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "API Controller",
+  "description": "API Controller with or without read/write actions",
+  "symbols/namespace/description": "spazio dei nomi per il codice generato",
+  "symbols/actions/description": "create controller with read/write actions",
+  "symbols/actions/displayName": "Add ReadWrite Actions",
+  "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
+}

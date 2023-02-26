@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Контроллер API",
+  "description": "Контроллер API с действиями чтения и записи или без них",
+  "symbols/namespace/description": "пространство имен для созданного кода",
+  "symbols/actions/description": "создать контроллер с действиями чтения и записи",
+  "symbols/actions/displayName": "Добавить действия ReadWrite",
+  "postActions/openInEditor/description": "Открывает ValueController.cs в редакторе"
+}
