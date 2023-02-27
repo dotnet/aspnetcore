@@ -45,7 +45,7 @@ public static class WebAssemblyHotReload
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
-// Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
+        // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
 #pragma warning disable IDE0200 // Remove unnecessary lambda expression
         if (_hotReloadAgent == null)
         {
