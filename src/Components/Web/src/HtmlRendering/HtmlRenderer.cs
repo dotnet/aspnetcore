@@ -35,9 +35,18 @@ public class HtmlRenderer : IAsyncDisposable
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <returns>A <see cref="HtmlContent"/> instance representing the render output.</returns>
-    public async Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent: IComponent
+    public Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
+        => RenderComponentAsync<TComponent>(ParameterView.Empty);
+
+    /// <summary>
+    /// Adds an instance of the specified component and instructs it to render.
+    /// </summary>
+    /// <typeparam name="TComponent">The component type.</typeparam>
+    /// <returns>A <see cref="HtmlContent"/> instance representing the render output.</returns>
+    public async Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+        ParameterView parameters) where TComponent : IComponent
     {
         return await _passiveHtmlRenderer.Dispatcher.InvokeAsync(() =>
-            _passiveHtmlRenderer.RenderComponentAsync(typeof(TComponent), ParameterView.Empty));
+            _passiveHtmlRenderer.RenderComponentAsync(typeof(TComponent), parameters));
     }
 }

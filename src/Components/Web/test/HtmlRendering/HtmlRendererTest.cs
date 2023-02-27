@@ -9,14 +9,22 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering;
 public class HtmlRendererTest
 {
     [Fact]
-    public async Task CanRenderSimpleComponentAsHtml()
+    public async Task CanRenderSimpleComponent()
     {
         await using var htmlRenderer = CreateTestHtmlRenderer();
         var result = await htmlRenderer.RenderComponentAsync<SimpleComponent>();
-        Assert.Equal($"Hello from {nameof(SimpleComponent)}", result.ToHtmlString());
+        Assert.Equal($"Hello, world!", result.ToHtmlString());
     }
 
-    // TODO: Support passing parameters.
+    [Fact]
+    public async Task CanRenderSimpleComponentWithParameters()
+    {
+        await using var htmlRenderer = CreateTestHtmlRenderer();
+        var parameters = new Dictionary<string, object> { { nameof(SimpleComponent.Name), "Bert" } };
+        var result = await htmlRenderer.RenderComponentAsync<SimpleComponent>(ParameterView.FromDictionary(parameters));
+        Assert.Equal($"Hello, Bert!", result.ToHtmlString());
+    }
+
     // TODO: Loads of test cases to represent every behavior you can spot in HtmlRenderingContext (i.e., the
     // actual HTML-stringification of the render trees).
     // TODO: Test cases to specify the exact asynchrony/quiescence behaviors of RenderComponentAsync.
@@ -32,14 +40,22 @@ public class HtmlRendererTest
         return new HtmlRenderer(serviceProvider);
     }
 
-    class SimpleComponent : IComponent
+    class SimpleComponent : IComponent // Using IComponent directly in at least some tests to show we don't rely on ComponentBase
     {
-        public void Attach(RenderHandle renderHandle) => renderHandle.Render(builder =>
+        private RenderHandle _renderHandle;
+
+        [Parameter] public string Name { get; set; } = "world";
+
+        public void Attach(RenderHandle renderHandle)
         {
-            builder.AddContent(0, $"Hello from {nameof(SimpleComponent)}");
-        });
+            _renderHandle = renderHandle;
+        }
 
         public Task SetParametersAsync(ParameterView parameters)
-            => Task.CompletedTask;
+        {
+            parameters.SetParameterProperties(this);
+            _renderHandle.Render(builder => builder.AddContent(0, $"Hello, {Name}!"));
+            return Task.CompletedTask;
+        }
     }
 }
