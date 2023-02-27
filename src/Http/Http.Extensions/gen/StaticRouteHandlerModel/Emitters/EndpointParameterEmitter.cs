@@ -46,11 +46,11 @@ internal static class EndpointParameterEmitter
         {
             var parsingBlock = endpointParameter.ParsingBlockEmitter(endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
             codeWriter.WriteLine(parsingBlock);
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.Name}_parsed_temp!;");
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
         else
         {
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.Name}_temp!;");
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
         }
     }
 
@@ -85,9 +85,11 @@ internal static class EndpointParameterEmitter
 
         var parameterName = endpointParameter.Name;
         codeWriter.Write($"var {endpointParameter.EmitAssigningCodeResult()} = ");
-        codeWriter.Write($@"options?.RouteParameterNames?.Contains(""{parameterName}"", StringComparer.OrdinalIgnoreCase) == true");
+        codeWriter.WriteLine($@"options?.RouteParameterNames?.Contains(""{parameterName}"", StringComparer.OrdinalIgnoreCase) == true");
+        codeWriter.Indent++;
         codeWriter.WriteLine($@"? new StringValues(httpContext.Request.RouteValues[$""{parameterName}""]?.ToString())");
         codeWriter.WriteLine($@": httpContext.Request.Query[$""{parameterName}""];");
+        codeWriter.Indent--;
 
         if (!endpointParameter.IsOptional)
         {
