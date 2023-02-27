@@ -24,7 +24,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         Assert.Equal("<p></p>", result.ToHtmlString());
@@ -44,7 +44,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -64,7 +64,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -84,7 +84,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -106,7 +106,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -140,7 +140,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -162,7 +162,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -183,7 +183,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -204,7 +204,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -227,7 +227,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -257,7 +257,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -305,7 +305,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -327,7 +327,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -349,7 +349,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -370,7 +370,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -391,7 +391,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -412,7 +412,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -432,7 +432,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -454,7 +454,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -491,7 +491,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -520,7 +520,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -550,7 +550,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -612,7 +612,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
@@ -641,7 +641,7 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
-        var result = await htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
         AssertHtmlContentEquals(expectedHtml, result);
