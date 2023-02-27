@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
+  "name": "API コントローラー",
+  "description": "読み取り/書き込みアクションの有無にかかわらない API コントローラー",
   "symbols/namespace/description": "生成されたコードの名前空間",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
+  "symbols/actions/description": "読み取り/書き込みアクションを使用してコントローラーを作成する",
+  "symbols/actions/displayName": "ReadWrite アクションの追加",
+  "postActions/openInEditor/description": "エディターで ValueController.cs を開きます"
 }

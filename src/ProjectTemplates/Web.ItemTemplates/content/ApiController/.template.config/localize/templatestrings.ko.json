@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
+  "name": "API 컨트롤러",
+  "description": "읽기/쓰기 동작이 포함 또는 포함되지 않은 API 컨트롤러",
   "symbols/namespace/description": "생성된 코드의 네임스페이스",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
+  "symbols/actions/description": "읽기/쓰기 작업이 포함된 컨트롤러 만들기",
+  "symbols/actions/displayName": "ReadWrite 작업 추가",
+  "postActions/openInEditor/description": "편집기에서 ValueController.cs를 엽니다."
 }

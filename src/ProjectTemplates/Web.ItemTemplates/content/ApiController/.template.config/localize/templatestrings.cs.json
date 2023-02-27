@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
+  "name": "Kontroler rozhraní API",
+  "description": "Kontroler rozhraní API s akcemi čtení a zápisu nebo bez nich",
   "symbols/namespace/description": "obor názvů pro vygenerovaný kód",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
+  "symbols/actions/description": "vytvoření kontroleru s akcemi čtení/zápisu",
+  "symbols/actions/displayName": "Přidat akce ReadWrite",
+  "postActions/openInEditor/description": "Otevře soubor ValueController.cs v editoru."
 }

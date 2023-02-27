@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
+  "name": "Contrôleur API",
+  "description": "Contrôleur API avec ou sans des actions de lecture/écriture",
   "symbols/namespace/description": "espace de noms pour le code généré",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
+  "symbols/actions/description": "créer un contrôleur avec des actions de lecture/écriture",
+  "symbols/actions/displayName": "Ajouter des actions ReadWrite",
+  "postActions/openInEditor/description": "Ouvre ValueController.cs dans l’éditeur"
 }
