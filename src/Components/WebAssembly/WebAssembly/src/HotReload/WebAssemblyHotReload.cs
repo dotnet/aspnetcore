@@ -53,6 +53,7 @@ public static class WebAssemblyHotReload
 #pragma warning restore IDE0200 // Remove unnecessary lambda expression
 
         var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
+
         _updateDeltas[0].ModuleId = moduleId;
         _updateDeltas[0].MetadataDelta = metadataDelta;
         _updateDeltas[0].ILDelta = ilDelta;
