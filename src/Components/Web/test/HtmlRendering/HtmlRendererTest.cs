@@ -776,10 +776,12 @@ public class HtmlRendererTest
         var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
 
         var result = await htmlRenderer.RenderComponentAsync<AsyncLoadingComponent>(awaitQuiescence: false);
+        var quiescenceTask = result.WaitForQuiescenceAsync();
+        Assert.False(quiescenceTask.IsCompleted);
         Assert.Equal("Loading...", await result.ToHtmlStringAsync());
 
         completionTcs.SetResult();
-        await result.WaitForQuiescenceAsync();
+        await quiescenceTask;
         Assert.Equal("Finished loading", await result.ToHtmlStringAsync());
     }
 
