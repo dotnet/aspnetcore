@@ -85,7 +85,7 @@ internal static class ObjectMethodExecutorFSharpSupport
             Expression.Lambda(
                 body: Expression.Call(
                     method: startAsTaskClosedMethod,
-                    arg0: Expression.Convert(coerceToAwaitableParam, possibleFSharpAsyncType),
+                    arg0: coerceToAwaitableParam,
                     arg1: Expression.MakeMemberAccess(null, _fsharpOptionOfTaskCreationOptionsNoneProperty),
                     arg2: Expression.MakeMemberAccess(null, _fsharpOptionOfCancellationTokenNoneProperty)),
                 parameters: coerceToAwaitableParam);
