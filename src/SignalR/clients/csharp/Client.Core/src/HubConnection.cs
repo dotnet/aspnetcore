@@ -1010,6 +1010,11 @@ public partial class HubConnection : IAsyncDisposable
                 // The server can't receive a response, so we just drop the message and log
                 // REVIEW: Is this the right approach?
                 Log.ArgumentBindingFailure(_logger, bindingFailure.InvocationId, bindingFailure.Target, bindingFailure.BindingFailure.SourceException);
+
+                if (!string.IsNullOrEmpty(bindingFailure.InvocationId))
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, "Client failed to parse argument(s)."), cancellationToken: default).ConfigureAwait(false);
+                }
                 break;
             case InvocationMessage invocation:
                 Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
