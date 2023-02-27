@@ -16,6 +16,13 @@ public class HtmlRendererTest
         Assert.Equal($"Hello from {nameof(SimpleComponent)}", result.ToHtmlString());
     }
 
+    // TODO: Support passing parameters.
+    // TODO: Loads of test cases to represent every behavior you can spot in HtmlRenderingContext (i.e., the
+    // actual HTML-stringification of the render trees).
+    // TODO: Test cases to specify the exact asynchrony/quiescence behaviors of RenderComponentAsync.
+    // TODO: Test cases showing the exception-handling behaviors.
+    // TODO: Support output to a some kind of stream or writer.
+
     HtmlRenderer CreateTestHtmlRenderer()
     {
         var services = new ServiceCollection();
