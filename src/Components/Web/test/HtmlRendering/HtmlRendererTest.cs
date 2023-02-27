@@ -767,6 +767,22 @@ public class HtmlRendererTest
         Assert.Equal("<p>Hey!</p>", actual);
     }
 
+    [Fact]
+    public async Task RenderComponentAsync_CanObserveStateBeforeAndAfterQuiescence()
+    {
+        var completionTcs = new TaskCompletionSource();
+        var services = new ServiceCollection();
+        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task });
+        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+
+        var result = await htmlRenderer.RenderComponentAsync<AsyncLoadingComponent>(awaitQuiescence: false);
+        Assert.Equal("Loading...", await result.ToHtmlStringAsync());
+
+        completionTcs.SetResult();
+        await result.QuiescenceTask;
+        Assert.Equal("Finished loading", await result.ToHtmlStringAsync());
+    }
+
     Task AssertHtmlContentEqualsAsync(IEnumerable<string> expected, HtmlContent actual)
         => AssertHtmlContentEqualsAsync(string.Join(string.Empty, expected), actual);
 
@@ -871,6 +887,30 @@ public class HtmlRendererTest
             _renderHandle.Render(Fragment);
             return Task.CompletedTask;
         }
+    }
+
+    private class AsyncLoadingComponent : ComponentBase
+    {
+        string status;
+
+        [Inject]
+        public AsyncLoadingComponentCompletion Completion { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            status = "Loading...";
+            await Completion.Task;
+            await Task.Yield(); // So that the test has to await the quiescence task to observe the final outcome
+            status = "Finished loading";
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, status);
+    }
+
+    private class AsyncLoadingComponentCompletion
+    {
+        public Task Task { get; init; }
     }
 
     // TODO: Test cases to specify the exact asynchrony/quiescence behaviors of RenderComponentAsync.

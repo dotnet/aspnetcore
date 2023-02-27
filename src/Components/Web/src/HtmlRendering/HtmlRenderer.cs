@@ -34,19 +34,40 @@ public class HtmlRenderer : IAsyncDisposable
     /// Adds an instance of the specified component and instructs it to render.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
-    /// <returns>A <see cref="HtmlContent"/> instance representing the render output.</returns>
+    /// <returns>A task that completes with <see cref="HtmlContent"/> instance representing the render output.</returns>
     public Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
-        => RenderComponentAsync<TComponent>(ParameterView.Empty);
+        => RenderComponentAsync<TComponent>(ParameterView.Empty, awaitQuiescence: true);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
-    /// <returns>A <see cref="HtmlContent"/> instance representing the render output.</returns>
-    public async Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+    /// <param name="awaitQuiescence">An flag indicating whether or not to wait for the component hierarchy to complete asynchronous tasks such as loading.</param>
+    /// <returns>A task that completes with <see cref="HtmlContent"/> instance representing the render output.</returns>
+    public Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(bool awaitQuiescence) where TComponent : IComponent
+        => RenderComponentAsync<TComponent>(ParameterView.Empty, awaitQuiescence);
+
+    /// <summary>
+    /// Adds an instance of the specified component and instructs it to render.
+    /// </summary>
+    /// <typeparam name="TComponent">The component type.</typeparam>
+    /// <param name="parameters">Parameters for the component.</param>
+    /// <returns>A task that completes with <see cref="HtmlContent"/> instance representing the render output.</returns>
+    public Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         ParameterView parameters) where TComponent : IComponent
+        => RenderComponentAsync<TComponent>(parameters, awaitQuiescence: true);
+
+    /// <summary>
+    /// Adds an instance of the specified component and instructs it to render.
+    /// </summary>
+    /// <typeparam name="TComponent">The component type.</typeparam>
+    /// <param name="parameters">Parameters for the component.</param>
+    /// <param name="awaitQuiescence">An flag indicating whether or not to wait for the component hierarchy to complete asynchronous tasks such as loading. Defaults to true.</param>
+    /// <returns>A task that completes with <see cref="HtmlContent"/> instance representing the render output.</returns>
+    public async Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+        ParameterView parameters, bool awaitQuiescence) where TComponent : IComponent
     {
         return await _passiveHtmlRenderer.Dispatcher.InvokeAsync(() =>
-            _passiveHtmlRenderer.RenderComponentAsync(typeof(TComponent), parameters));
+            _passiveHtmlRenderer.RenderComponentAsync(typeof(TComponent), parameters, awaitQuiescence));
     }
 }

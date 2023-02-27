@@ -22,13 +22,20 @@ internal sealed class HtmlRendererCore : Renderer
 
     public async Task<HtmlContent> RenderComponentAsync(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
-        ParameterView initialParameters)
+        ParameterView initialParameters,
+        bool awaitQuiescence)
     {
         var component = InstantiateComponent(componentType);
         var componentId = AssignRootComponentId(component);
 
-        await RenderRootComponentAsync(componentId, initialParameters);
-        return new HtmlContent(this, componentId);
+        var quiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
+
+        if (awaitQuiescence)
+        {
+            await quiescenceTask;
+        }
+
+        return new HtmlContent(this, componentId, quiescenceTask);
     }
 
     protected override void HandleException(Exception exception)

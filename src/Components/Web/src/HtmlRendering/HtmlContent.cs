@@ -13,11 +13,17 @@ public sealed class HtmlContent
     private readonly HtmlRendererCore _renderer;
     private readonly int _componentId;
 
-    internal HtmlContent(HtmlRendererCore renderer, int componentId)
+    internal HtmlContent(HtmlRendererCore renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
         _componentId = componentId;
+        QuiescenceTask = quiescenceTask;
     }
+
+    /// <summary>
+    /// A <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.
+    /// </summary>
+    public Task QuiescenceTask { get; }
 
     /// <summary>
     /// Returns an HTML string representation of the component's latest output.
