@@ -35,5 +35,5 @@ public sealed class HtmlContent
     /// </summary>
     /// <param name="output">The output destination.</param>
     public void WriteTo(TextWriter output)
-        => HtmlRenderingContext.Render(_renderer, _componentId, output);
+        => HtmlContentWriter.Write(_renderer, _componentId, output);
 }

@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Web;
 
-// This is OK to be a struct because it never gets passed around anywhere. External code can't even get an instance
+// This is OK to be a struct because it never gets passed around anywhere. Other code can't even get an instance
 // of it. It just keeps track of some contextual information during a single synchronous HTML output operation.
-internal ref struct HtmlRenderingContext
+internal ref struct HtmlContentWriter
 {
     private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -22,13 +22,13 @@ internal ref struct HtmlRenderingContext
     private readonly TextWriter _output;
     private string? _closestSelectValueAsString;
 
-    public static void Render(PassiveHtmlRenderer renderer, int componentId, TextWriter output)
+    public static void Write(PassiveHtmlRenderer renderer, int componentId, TextWriter output)
     {
-        var context = new HtmlRenderingContext(renderer, output);
+        var context = new HtmlContentWriter(renderer, output);
         context.RenderComponent(componentId);
     }
 
-    private HtmlRenderingContext(PassiveHtmlRenderer renderer, TextWriter output)
+    private HtmlContentWriter(PassiveHtmlRenderer renderer, TextWriter output)
     {
         _renderer = renderer;
         _output = output;
