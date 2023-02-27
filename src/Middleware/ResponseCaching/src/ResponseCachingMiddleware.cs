@@ -438,7 +438,7 @@ public class ResponseCachingMiddleware
                 return true;
             }
 
-            EntityTagHeaderValue eTag;
+            EntityTagHeaderValue?    eTag;
             if (!StringValues.IsNullOrEmpty(cachedResponseHeaders.ETag)
                 && EntityTagHeaderValue.TryParse(cachedResponseHeaders.ETag.ToString(), out eTag)
                 && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))
