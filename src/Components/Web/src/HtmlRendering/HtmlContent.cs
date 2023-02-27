@@ -22,11 +22,11 @@ public sealed class HtmlContent
     /// <summary>
     /// Returns an HTML string representation of the component's latest output.
     /// </summary>
-    /// <returns>An HTML string.</returns>
-    public string ToHtmlString()
+    /// <returns>A task that completes with the HTML string.</returns>
+    public async Task<string> ToHtmlStringAsync()
     {
         using var writer = new StringWriter();
-        WriteTo(writer);
+        await WriteToAsync(writer);
         return writer.ToString();
     }
 
@@ -34,6 +34,11 @@ public sealed class HtmlContent
     /// Writes the component's latest output as HTML to the specified writer.
     /// </summary>
     /// <param name="output">The output destination.</param>
-    public void WriteTo(TextWriter output)
-        => HtmlContentWriter.Write(_renderer, _componentId, output);
+    /// <returns>A task representing the completion of the operation.</returns>
+    public Task WriteToAsync(TextWriter output) => _renderer.Dispatcher.InvokeAsync(() =>
+    {
+        // The HTML-stringification process itself is synchronous, but WriteToAsync needs to be
+        // async because we have to dispatch to the renderer's sync context.
+        HtmlContentWriter.Write(_renderer, _componentId, output);
+    });
 }

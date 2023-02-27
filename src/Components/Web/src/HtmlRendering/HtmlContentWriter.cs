@@ -24,6 +24,10 @@ internal ref struct HtmlContentWriter
 
     public static void Write(HtmlRendererCore renderer, int componentId, TextWriter output)
     {
+        // We're about to walk over some buffers inside the renderer that can be mutated during rendering.
+        // So, we require exclusive access to the renderer during this synchronous process.
+        renderer.Dispatcher.AssertAccess();
+
         var context = new HtmlContentWriter(renderer, output);
         context.RenderComponent(componentId);
     }

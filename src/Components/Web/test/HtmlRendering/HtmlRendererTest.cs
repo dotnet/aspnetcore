@@ -28,7 +28,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        Assert.Equal("<p></p>", result.ToHtmlString());
+        Assert.Equal("<p></p>", await result.ToHtmlStringAsync());
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -231,7 +231,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -331,7 +331,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -353,7 +353,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -374,7 +374,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -395,7 +395,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -416,7 +416,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -436,7 +436,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -458,7 +458,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -495,7 +495,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -524,7 +524,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -554,7 +554,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -590,7 +590,7 @@ public class HtmlRendererTest
             }));
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -616,7 +616,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -645,7 +645,7 @@ public class HtmlRendererTest
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     private class ComponentWithParameters : IComponent
@@ -684,7 +684,7 @@ public class HtmlRendererTest
         }));
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -709,7 +709,7 @@ public class HtmlRendererTest
         }));
 
         // Assert
-        AssertHtmlContentEquals(expectedHtml, result);
+        await AssertHtmlContentEqualsAsync(expectedHtml, result);
     }
 
     [Fact]
@@ -726,7 +726,7 @@ public class HtmlRendererTest
             { nameof(SectionOutlet.Name), "testsection" }
         }));
 
-        Assert.Empty(first.ToHtmlString());
+        Assert.Empty(await first.ToHtmlStringAsync());
 
         // Act/Assert 2: cause it to be updated
         var second = await renderer.RenderComponentAsync<SectionContent>(ParameterView.FromDictionary(new Dictionary<string, object>
@@ -739,8 +739,8 @@ public class HtmlRendererTest
             }
         }));
 
-        Assert.Empty(second.ToHtmlString());
-        Assert.Equal("Hello from the section content provider", first.ToHtmlString());
+        Assert.Empty(await second.ToHtmlStringAsync());
+        Assert.Equal("Hello from the section content provider", await first.ToHtmlStringAsync());
     }
 
     [Fact]
@@ -759,7 +759,7 @@ public class HtmlRendererTest
 
         // Act
         var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
-        result.WriteTo(writer);
+        await result.WriteToAsync(writer);
         writer.Flush();
 
         // Assert
@@ -767,12 +767,13 @@ public class HtmlRendererTest
         Assert.Equal("<p>Hey!</p>", actual);
     }
 
-    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlContent actual)
-        => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
+    Task AssertHtmlContentEqualsAsync(IEnumerable<string> expected, HtmlContent actual)
+        => AssertHtmlContentEqualsAsync(string.Join(string.Empty, expected), actual);
 
-    void AssertHtmlContentEquals(string expected, HtmlContent actual)
+    async Task AssertHtmlContentEqualsAsync(string expected, HtmlContent actual)
     {
-        Assert.Equal(expected, actual.ToHtmlString());
+        var actualHtml = await actual.ToHtmlStringAsync();
+        Assert.Equal(expected, actualHtml);
     }
 
     private class NestedAsyncComponent : ComponentBase
