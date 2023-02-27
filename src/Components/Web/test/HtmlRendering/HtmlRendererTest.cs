@@ -913,7 +913,6 @@ public class HtmlRendererTest
         public Task Task { get; init; }
     }
 
-    // TODO: Test cases to specify the exact asynchrony/quiescence behaviors of RenderComponentAsync.
     // TODO: Test cases showing the exception-handling behaviors.
 
     HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider = null)
