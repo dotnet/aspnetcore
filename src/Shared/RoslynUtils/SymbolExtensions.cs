@@ -11,6 +11,29 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class SymbolExtensions
 {
+    public static INamedTypeSymbol? UnwrapTypeSymbol(this ITypeSymbol typeSymbol)
+    {
+        INamedTypeSymbol? unwrappedTypeSymbol = null;
+
+        // If it is an array, unwrap it.
+        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            unwrappedTypeSymbol = arrayTypeSymbol.ElementType as INamedTypeSymbol;
+        }
+        else if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+        {
+            unwrappedTypeSymbol = namedTypeSymbol;
+        }
+
+        // If it is nullable, unwrap it.
+        if (unwrappedTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+        {
+            unwrappedTypeSymbol = unwrappedTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
+        }
+
+        return unwrappedTypeSymbol;
+    }
+
     public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attributeType)
     {
         foreach (var attributeData in symbol.GetAttributes())

@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -119,7 +120,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var p1_local = p1_raw.ToString();
+                        var p1_temp = p1_raw.ToString();
+                        var p1_local = p1_temp;
 
                         // Endpoint Parameter: p2 (Type = global::System.String, IsOptional = False, Source = Query)
                         var p2_raw = httpContext.Request.Query["p2"];
@@ -127,7 +129,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var p2_local = p2_raw.ToString();
+                        var p2_temp = p2_raw.ToString();
+                        var p2_local = p2_temp;
 
                         if (wasParamCheckFailure)
                         {
@@ -147,7 +150,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var p1_local = p1_raw.ToString();
+                        var p1_temp = p1_raw.ToString();
+                        var p1_local = p1_temp;
 
                         // Endpoint Parameter: p2 (Type = global::System.String, IsOptional = False, Source = Query)
                         var p2_raw = httpContext.Request.Query["p2"];
@@ -155,7 +159,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var p2_local = p2_raw.ToString();
+                        var p2_temp = p2_raw.ToString();
+                        var p2_local = p2_temp;
 
                         if (wasParamCheckFailure)
                         {

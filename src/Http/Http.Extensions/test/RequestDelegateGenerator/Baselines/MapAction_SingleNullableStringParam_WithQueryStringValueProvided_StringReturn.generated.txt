@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -115,7 +116,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: p (Type = string?, IsOptional = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
-                        var p_local = p_raw.Count > 0 ? p_raw.ToString() : null;
+                        var p_temp = p_raw.Count > 0 ? p_raw.ToString() : null;
+                        var p_local = p_temp;
 
                         if (wasParamCheckFailure)
                         {
@@ -131,7 +133,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: p (Type = string?, IsOptional = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
-                        var p_local = p_raw.Count > 0 ? p_raw.ToString() : null;
+                        var p_temp = p_raw.Count > 0 ? p_raw.ToString() : null;
+                        var p_local = p_temp;
 
                         if (wasParamCheckFailure)
                         {

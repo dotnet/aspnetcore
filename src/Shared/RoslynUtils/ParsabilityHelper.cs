@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
 
@@ -16,32 +17,41 @@ using WellKnownType = WellKnownTypeData.WellKnownType;
 
 internal static class ParsabilityHelper
 {
-    private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out ParsabilityMethod? parsabilityMethod)
     {
         // Any enum is valid.
         if (typeSymbol.TypeKind == TypeKind.Enum)
         {
+            parsabilityMethod = ParsabilityMethod.Enum;
             return true;
         }
 
         // Uri is valid.
         if (SymbolEqualityComparer.Default.Equals(typeSymbol, wellKnownTypes.Get(WellKnownType.System_Uri)))
         {
+            parsabilityMethod = ParsabilityMethod.Uri;
             return true;
         }
 
         // Strings are valid.
         if (typeSymbol.SpecialType == SpecialType.System_String)
         {
+            parsabilityMethod = ParsabilityMethod.String;
             return true;
         }
 
+        parsabilityMethod = null;
         return false;
     }
 
     internal static Parsability GetParsability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
-        if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes))
+        return GetParsability(typeSymbol, wellKnownTypes, out var _);
+    }
+
+    internal static Parsability GetParsability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out ParsabilityMethod? parsabilityMethod)
+    {
+        if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes, out parsabilityMethod))
         {
             return Parsability.Parsable;
         }
@@ -49,17 +59,23 @@ internal static class ParsabilityHelper
         // MyType : IParsable<MyType>()
         if (IsParsableViaIParsable(typeSymbol, wellKnownTypes))
         {
+            parsabilityMethod = ParsabilityMethod.IParsable;
             return Parsability.Parsable;
         }
 
         // Check if the parameter type has a public static TryParse method.
         var tryParseMethods = typeSymbol.GetMembers("TryParse").OfType<IMethodSymbol>();
-        foreach (var tryParseMethodSymbol in tryParseMethods)
+
+        if (tryParseMethods.Any(m => IsTryParseWithFormat(m, wellKnownTypes)))
         {
-            if (IsTryParse(tryParseMethodSymbol) || IsTryParseWithFormat(tryParseMethodSymbol, wellKnownTypes))
-            {
-                return Parsability.Parsable;
-            }
+            parsabilityMethod = ParsabilityMethod.TryParseWithFormatProvider;
+            return Parsability.Parsable;
+        }
+
+        if (tryParseMethods.Any(IsTryParse))
+        {
+            parsabilityMethod = ParsabilityMethod.TryParse;
+            return Parsability.Parsable;
         }
 
         return Parsability.NotParsable;
@@ -86,7 +102,7 @@ internal static class ParsabilityHelper
             methodSymbol.Parameters[2].RefKind == RefKind.Out;
     }
 
-    private static bool IsParsableViaIParsable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    internal static bool IsParsableViaIParsable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         var iParsableTypeSymbol = wellKnownTypes.Get(WellKnownType.System_IParsable_T);
         var implementsIParsable = typeSymbol.AllInterfaces.Any(
@@ -134,7 +150,7 @@ internal static class ParsabilityHelper
 
     internal static Bindability GetBindability(INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
-        if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes))
+        if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes, out var _))
         {
             return Bindability.Bindable;
         }

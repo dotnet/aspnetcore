@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using System.Linq;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -34,6 +37,9 @@ internal class EndpointParameter
             Source = EndpointParameterSource.Query;
             Name = GetParameterName(fromQueryAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
+            AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
+            IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+            ParsingBlockEmitter = parsingBlockEmitter;
         }
         else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType, out var fromHeaderAttribute))
         {
@@ -68,6 +74,93 @@ internal class EndpointParameter
         }
     }
 
+    private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
+    {
+        var parameterType = parameter.Type.UnwrapTypeSymbol();
+
+        // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
+        // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
+        // support usage in the code generator an optiona out parameter has been added to hint at what variant of the various
+        // TryParse methods should be used (this implies that the preferences are baked into ParsabilityHelper). If we aren't
+        // parsable at all we bail.
+        if (ParsabilityHelper.GetParsability(parameterType, wellKnownTypes, out var parsabilityMethod) == Parsability.NotParsable)
+        {
+            parsingBlockEmitter = null;
+            return false;
+        }
+
+        // If we are parsable we need to emit code based on the enumeration ParsabilityMethod which has a bunch of members
+        // which spell out the preferred TryParse uage. This swtich statement makes slight variations to them based on
+        // which method was encountered.
+        Func<string, string, string>? preferredTryParseInvocation = parsabilityMethod switch
+        {
+            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""",
+            ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}, out var {{outputArgument}})""",
+            ParsabilityMethod.Uri => (string inputArgument, string outputArgument) => $$"""Uri.TryCreate({{inputArgument}}, UriKind.RelativeOrAbsolute, out var {{outputArgument}})""",
+            ParsabilityMethod.String => null, // string parameters don't require parsing
+            _ => null
+        };
+
+        // Special case handling for specific types
+        if (parameterType.SpecialType == SpecialType.System_Char)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, out var {{outputArgument}})""";
+        }
+        else if (parameterType.SpecialType == SpecialType.System_DateTime)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateTimeOffset)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateOnly)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+
+        // ... so for strings (null) we bail.
+        if (preferredTryParseInvocation == null)
+        {
+            parsingBlockEmitter = null;
+            return false;
+        }
+
+        if (IsOptional)
+        {
+            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
+                        {{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}} {{outputArgument}} = default;
+                        if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})
+                        {
+                            {{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};
+                        }
+                        else if (string.IsNullOrEmpty({{inputArgument}}))
+                        {
+                            {{outputArgument}} = null;
+                        }
+                        else
+                        {
+                            wasParamCheckFailure = true;
+                        }
+""";
+        }
+        else
+        {
+            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
+                        if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
+                        {
+                            wasParamCheckFailure = true;
+                        }
+""";
+        }
+
+        // Wrap the TryParse method call in an if-block and if it doesn't work set param check failure.
+        return true;
+
+    }
+
     public ITypeSymbol Type { get; }
     public EndpointParameterSource Source { get; }
 
@@ -76,6 +169,9 @@ internal class EndpointParameter
     internal string? AssigningCode { get; set; }
     public string Name { get; }
     public bool IsOptional { get; }
+    [MemberNotNull("ParsingBlockEmitter")]
+    public bool IsParsable { get; }
+    public Func<string, string, string> ParsingBlockEmitter { get; }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
     private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out string? callingCode)
