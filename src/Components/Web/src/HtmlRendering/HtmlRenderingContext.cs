@@ -8,31 +8,30 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Web;
 
-internal class HtmlRenderingContext
+// This is OK to be a struct because it never gets passed around anywhere. External code can't even get an instance
+// of it. It just keeps track of some contextual information during a single synchronous HTML output operation.
+internal ref struct HtmlRenderingContext
 {
     private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
     };
 
+    private static readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
     private readonly PassiveHtmlRenderer _renderer;
-    private readonly int _rootComponentId;
     private readonly TextWriter _output;
-    private readonly HtmlEncoder _htmlEncoder;
     private string? _closestSelectValueAsString;
 
-    public HtmlRenderingContext(PassiveHtmlRenderer renderer, int componentId, TextWriter output, HtmlEncoder htmlEncoder)
+    public static void Render(PassiveHtmlRenderer renderer, int componentId, TextWriter output)
     {
-        _renderer = renderer;
-        _rootComponentId = componentId;
-        _output = output;
-        _htmlEncoder = htmlEncoder;
+        var context = new HtmlRenderingContext(renderer, output);
+        context.RenderComponent(componentId);
     }
 
-    public void Render()
+    private HtmlRenderingContext(PassiveHtmlRenderer renderer, TextWriter output)
     {
-        var frames = _renderer.GetCurrentRenderTreeFrames(_rootComponentId);
-        RenderFrames(frames, 0, frames.Count);
+        _renderer = renderer;
+        _output = output;
     }
 
     private int RenderFrames(ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
@@ -221,12 +220,17 @@ internal class HtmlRenderingContext
         return RenderFrames(frames, position, maxElements);
     }
 
+    private void RenderComponent(int componentId)
+    {
+        var frames = _renderer.GetCurrentRenderTreeFrames(componentId);
+        RenderFrames(frames, 0, frames.Count);
+    }
+
     private int RenderChildComponent(ArrayRange<RenderTreeFrame> frames, int position)
     {
         ref var frame = ref frames.Array[position];
 
-        var childFrames = _renderer.GetCurrentRenderTreeFrames(frame.ComponentId);
-        RenderFrames(childFrames, 0, childFrames.Count);
+        RenderComponent(frame.ComponentId);
 
         return position + frame.ComponentSubtreeLength;
     }

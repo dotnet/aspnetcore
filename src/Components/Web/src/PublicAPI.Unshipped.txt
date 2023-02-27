@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Web.HtmlContent
 Microsoft.AspNetCore.Components.Web.HtmlContent.ToHtmlString() -> string!
+Microsoft.AspNetCore.Components.Web.HtmlContent.WriteTo(System.IO.TextWriter! output) -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

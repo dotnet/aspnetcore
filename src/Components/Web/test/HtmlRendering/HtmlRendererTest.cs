@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Web;
@@ -742,6 +743,30 @@ public class HtmlRendererTest
         Assert.Equal("Hello from the section content provider", first.ToHtmlString());
     }
 
+    [Fact]
+    public async Task RenderComponentAsync_CanOutputToTextWriter()
+    {
+        // Arrange
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(builder =>
+        {
+            builder.OpenElement(0, "p");
+            builder.AddContent(1, "Hey!");
+            builder.CloseElement();
+        })).BuildServiceProvider();
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        using var ms = new MemoryStream();
+        using var writer = new StreamWriter(ms, new UTF8Encoding(false));
+
+        // Act
+        var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+        result.WriteTo(writer);
+        writer.Flush();
+
+        // Assert
+        var actual = Encoding.UTF8.GetString(ms.ToArray());
+        Assert.Equal("<p>Hey!</p>", actual);
+    }
+
     void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlContent actual)
         => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
 
@@ -849,7 +874,6 @@ public class HtmlRendererTest
 
     // TODO: Test cases to specify the exact asynchrony/quiescence behaviors of RenderComponentAsync.
     // TODO: Test cases showing the exception-handling behaviors.
-    // TODO: Support output to a some kind of stream or writer.
 
     HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider = null)
     {
