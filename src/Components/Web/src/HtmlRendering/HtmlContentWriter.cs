@@ -18,17 +18,17 @@ internal ref struct HtmlContentWriter
     };
 
     private static readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
-    private readonly PassiveHtmlRenderer _renderer;
+    private readonly HtmlRendererCore _renderer;
     private readonly TextWriter _output;
     private string? _closestSelectValueAsString;
 
-    public static void Write(PassiveHtmlRenderer renderer, int componentId, TextWriter output)
+    public static void Write(HtmlRendererCore renderer, int componentId, TextWriter output)
     {
         var context = new HtmlContentWriter(renderer, output);
         context.RenderComponent(componentId);
     }
 
-    private HtmlContentWriter(PassiveHtmlRenderer renderer, TextWriter output)
+    private HtmlContentWriter(HtmlRendererCore renderer, TextWriter output)
     {
         _renderer = renderer;
         _output = output;

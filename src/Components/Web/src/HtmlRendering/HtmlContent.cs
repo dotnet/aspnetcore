@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public sealed class HtmlContent
 {
-    private readonly PassiveHtmlRenderer _renderer;
+    private readonly HtmlRendererCore _renderer;
     private readonly int _componentId;
 
-    internal HtmlContent(PassiveHtmlRenderer renderer, int componentId)
+    internal HtmlContent(HtmlRendererCore renderer, int componentId)
     {
         _renderer = renderer;
         _componentId = componentId;

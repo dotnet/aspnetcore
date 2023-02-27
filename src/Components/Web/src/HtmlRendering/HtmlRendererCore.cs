@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering;
 
-internal sealed class PassiveHtmlRenderer : Renderer
+internal sealed class HtmlRendererCore : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
-    public PassiveHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
+    public HtmlRendererCore(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
         : base(serviceProvider, loggerFactory, componentActivator)
     {
     }

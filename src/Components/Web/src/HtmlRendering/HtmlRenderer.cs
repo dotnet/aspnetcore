@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public class HtmlRenderer : IAsyncDisposable
 {
-    private readonly PassiveHtmlRenderer _passiveHtmlRenderer;
+    private readonly HtmlRendererCore _passiveHtmlRenderer;
 
     /// <summary>
     /// Constructs an instance of <see cref="HtmlRenderer"/>.
@@ -23,7 +23,7 @@ public class HtmlRenderer : IAsyncDisposable
     public HtmlRenderer(IServiceProvider services, ILoggerFactory loggerFactory)
     {
         var componentActivator = services.GetService<IComponentActivator>() ?? DefaultComponentActivator.Instance;
-        _passiveHtmlRenderer = new PassiveHtmlRenderer(services, loggerFactory, componentActivator);
+        _passiveHtmlRenderer = new HtmlRendererCore(services, loggerFactory, componentActivator);
     }
 
     /// <inheritdoc />
