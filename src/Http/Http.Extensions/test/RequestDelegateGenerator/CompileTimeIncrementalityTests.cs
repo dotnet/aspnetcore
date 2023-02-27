@@ -5,8 +5,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RequestDelegateGeneratorIncrementalityTests : RequestDelegateGeneratorTestBase
+public class CompileTimeIncrementalityTests : RequestDelegateGeneratorTestBase
 {
+    protected override bool IsGeneratorEnabled { get; } = true;
+
     [Fact]
     public async Task MapAction_SameReturnType_DoesNotTriggerUpdate()
     {
@@ -59,5 +61,5 @@ app.MapGet("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? todo) => TypedRes
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
     }
 
-    private static IEnumerable<(object Value, IncrementalStepRunReason Reason)> GetRunStepOutputs(GeneratorRunResult result) => result.TrackedOutputSteps.SelectMany(step => step.Value).SelectMany(value => value.Outputs);
+    private static IEnumerable<(object Value, IncrementalStepRunReason Reason)> GetRunStepOutputs(GeneratorRunResult? result) => result?.TrackedOutputSteps.SelectMany(step => step.Value).SelectMany(value => value.Outputs);
 }
