@@ -68,16 +68,13 @@ internal static class ObjectMethodExecutorFSharpSupport
         var awaiterResultType = possibleFSharpAsyncType.GetGenericArguments().Single();
         awaitableType = typeof(Task<>).MakeGenericType(awaiterResultType);
 
-        // We simply want to call `FSharpAsync.StartAsTask` on the F# async value:
-        //
-        //     coerceToAwaitableExpression = (FSharpAsync<TResult> fsharpAsync) =>
-        //     {
-        //         return FSharpAsync.StartAsTask<TResult>(
-        //             fsharpAsync,
-        //             FSharpOption<TaskCreationOptions>.None,
-        //             FSharpOption<CancellationToken>.None);
-        //     };
-        //
+        // coerceToAwaitableExpression = (FSharpAsync<TResult> fsharpAsync) =>
+        // {
+        //     return FSharpAsync.StartAsTask<TResult>(
+        //         fsharpAsync,
+        //         FSharpOption<TaskCreationOptions>.None,
+        //         FSharpOption<CancellationToken>.None);
+        // };
         var startAsTaskClosedMethod = _fsharpAsyncStartAsTaskGenericMethod
             .MakeGenericMethod(awaiterResultType);
         var coerceToAwaitableParam = Expression.Parameter(possibleFSharpAsyncType);
