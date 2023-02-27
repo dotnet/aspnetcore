@@ -19,6 +19,7 @@ import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let MONO_INTERNAL: any = undefined as any;
 
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -146,7 +147,7 @@ export const monoPlatform: Platform = {
 
   beginHeapLock: function beginHeapLock() {
     assertHeapIsNotLocked();
-    currentHeapLock = new MonoHeapLock();
+    currentHeapLock = MonoHeapLock.create();
     return currentHeapLock;
   },
 
@@ -358,10 +359,11 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
   (dotnet as any).withModuleConfig(moduleConfig);
 
   const runtime = await dotnet.create();
-  const { MONO: mono, BINDING: binding, Module: module, setModuleImports } = runtime;
+  const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
   Module = module;
   BINDING = binding;
   MONO = mono;
+  MONO_INTERNAL = mono_internal;
 
   Blazor._internal.dotNetCriticalError = printErr;
   Blazor._internal.loadLazyAssembly = (assemblyNameToLoad) => loadLazyAssembly(resourceLoader, assemblyNameToLoad);
@@ -554,6 +556,10 @@ class MonoHeapLock implements HeapLock {
       throw new Error('Trying to release a lock which isn\'t current');
     }
 
+    if (typeof MONO_INTERNAL !== 'undefined' && typeof MONO_INTERNAL.mono_wasm_gc_unlock === 'function') {
+      MONO_INTERNAL.mono_wasm_gc_unlock();
+    }
+
     currentHeapLock = null;
 
     while (this.postReleaseActions?.length) {
@@ -565,5 +571,12 @@ class MonoHeapLock implements HeapLock {
       nextQueuedAction();
       assertHeapIsNotLocked();
     }
+  }
+
+  static create(): MonoHeapLock {
+    if (typeof MONO_INTERNAL !== 'undefined' && typeof MONO_INTERNAL.mono_wasm_gc_lock === 'function') {
+      MONO_INTERNAL.mono_wasm_gc_lock();
+    }
+    return new MonoHeapLock();
   }
 }
