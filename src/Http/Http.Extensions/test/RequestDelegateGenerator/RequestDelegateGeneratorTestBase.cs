@@ -212,6 +212,109 @@ public static class TestMapActions
         return app;
     }
 }
+
+public enum TodoStatus
+{
+    Trap, // A trap for Enum.TryParse<T>!
+    Done,
+    InProgress,
+    NotDone
+}
+
+public interface ITodo
+{
+    public int Id { get; }
+    public string? Name { get; }
+    public bool IsComplete { get; }
+    public TodoStatus Status { get; }
+}
+
+public class PrecedenceCheckTodo
+{
+    public PrecedenceCheckTodo(int magicValue)
+    {
+        MagicValue = magicValue;
+    }
+    public int MagicValue { get; }
+    public static bool TryParse(string? input, IFormatProvider? provider, out PrecedenceCheckTodo result)
+    {
+        result = new PrecedenceCheckTodo(42);
+        return true;
+    }
+    public static bool TryParse(string? input, out PrecedenceCheckTodo result)
+    {
+        result = new PrecedenceCheckTodo(24);
+        return true;
+    }
+}
+
+public class PrecedenceCheckTodoWithoutFormat
+{
+    public PrecedenceCheckTodoWithoutFormat(int magicValue)
+    {
+        MagicValue = magicValue;
+    }
+    public int MagicValue { get; }
+    public static bool TryParse(string? input, out PrecedenceCheckTodoWithoutFormat result)
+    {
+        result = new PrecedenceCheckTodoWithoutFormat(24);
+        return true;
+    }
+}
+
+public class ParsableTodo : IParsable<ParsableTodo>
+{
+    public int Id { get; set; }
+    public string? Name { get; set; } = "Todo";
+    public bool IsComplete { get; set; }
+    public static ParsableTodo Parse(string s, IFormatProvider? provider)
+    {
+        return new ParsableTodo();
+    }
+    public static bool TryParse(string? input, IFormatProvider? provider, out ParsableTodo result)
+    {
+        if (input == "1")
+        {
+            result = new ParsableTodo
+            {
+            Id = 1,
+            Name = "Knit kitten mittens.",
+            IsComplete = false
+            };
+            return true;
+        }
+        else
+        {
+        result = null!;
+        return false;
+        }
+    }
+}
+
+public class Todo
+{
+    public int Id { get; set; }
+    public string? Name { get; set; } = "Todo";
+    public bool IsComplete { get; set; }
+    public static bool TryParse(string input, out Todo? result)
+    {
+        if (input == "1")
+        {
+            result = new Todo
+            {
+            Id = 1,
+            Name = "Knit kitten mittens.",
+            IsComplete = false
+            };
+            return true;
+        }
+        else
+        {
+        result = null;
+        return false;
+        }
+    }
+}
 """;
     private static Task<Compilation> CreateCompilationAsync(string sources)
     {
