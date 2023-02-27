@@ -779,7 +779,7 @@ public class HtmlRendererTest
         Assert.Equal("Loading...", await result.ToHtmlStringAsync());
 
         completionTcs.SetResult();
-        await result.QuiescenceTask;
+        await result.WaitForQuiescenceAsync();
         Assert.Equal("Finished loading", await result.ToHtmlStringAsync());
     }
 

@@ -1,7 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Web.HtmlContent
-Microsoft.AspNetCore.Components.Web.HtmlContent.QuiescenceTask.get -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlContent.ToHtmlStringAsync() -> System.Threading.Tasks.Task<string!>!
+Microsoft.AspNetCore.Components.Web.HtmlContent.WaitForQuiescenceAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlContent.WriteToAsync(System.IO.TextWriter! output) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
