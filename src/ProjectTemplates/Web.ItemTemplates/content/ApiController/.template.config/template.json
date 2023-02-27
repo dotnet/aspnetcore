@@ -28,7 +28,7 @@
     },
     "actions": {
       "description": "create controller with read/write actions",
-      "displayName": "Add ReadWrite Actions",
+      "displayName": "Add Read/Write Actions",
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"
