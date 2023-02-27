@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor View",
-  "description": "A Razor view without a page model",
+  "name": "Razor ビュー",
+  "description": "ページ モデルのない Razor ビュー",
   "postActions/openInEditor/description": "エディターで Index.cshtml を開きます"
 }

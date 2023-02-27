@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor View",
-  "description": "A Razor view without a page model",
+  "name": "Zobrazení Razor",
+  "description": "Zobrazení Razor bez modelu stránky",
   "postActions/openInEditor/description": "Otevře soubor Index.cshtml v editoru."
 }

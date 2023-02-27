@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor View",
-  "description": "A Razor view without a page model",
+  "name": "Vue Razor",
+  "description": "Vue Razor sans modèle de page",
   "postActions/openInEditor/description": "Ouvre Index.cshtml dans l’éditeur"
 }
