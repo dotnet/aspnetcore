@@ -81,19 +81,20 @@ internal class HtmlRenderingContext
         }
     }
 
-    private int RenderElement(
-        ArrayRange<RenderTreeFrame> frames,
-        int position)
+    private int RenderElement(ArrayRange<RenderTreeFrame> frames, int position)
     {
         ref var frame = ref frames.Array[position];
         _output.Write('<');
         _output.Write(frame.ElementName);
-        var afterAttributes = RenderAttributes(frames, position + 1, frame.ElementSubtreeLength - 1, out var capturedValueAttribute);
+        int afterElement;
+        var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
+        // We don't want to include value attribute of textarea element.
+        var afterAttributes = RenderAttributes(frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
         // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
         // a way of converting Blazor's select binding feature to regular static HTML.
-        if (_closestSelectValueAsString is not null
+        if (_closestSelectValueAsString != null
             && string.Equals(frame.ElementName, "option", StringComparison.OrdinalIgnoreCase)
             && string.Equals(capturedValueAttribute, _closestSelectValueAsString, StringComparison.Ordinal))
         {
@@ -101,7 +102,7 @@ internal class HtmlRenderingContext
         }
 
         var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
-        if (remainingElements > 0)
+        if (remainingElements > 0 || isTextArea)
         {
             _output.Write('>');
 
@@ -111,8 +112,6 @@ internal class HtmlRenderingContext
                 _closestSelectValueAsString = capturedValueAttribute;
             }
 
-            var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
-            int afterElement;
             if (isTextArea && !string.IsNullOrEmpty(capturedValueAttribute))
             {
                 // Textarea is a special type of form field where the value is given as text content instead of a 'value' attribute
@@ -122,7 +121,6 @@ internal class HtmlRenderingContext
             }
             else
             {
-                // Render descendants
                 afterElement = RenderChildren(frames, afterAttributes, remainingElements);
             }
 
@@ -157,7 +155,7 @@ internal class HtmlRenderingContext
     }
 
     private int RenderAttributes(
-        ArrayRange<RenderTreeFrame> frames, int position, int maxElements, out string? capturedValueAttribute)
+        ArrayRange<RenderTreeFrame> frames, int position, int maxElements, bool includeValueAttribute, out string? capturedValueAttribute)
     {
         capturedValueAttribute = null;
 
@@ -170,14 +168,25 @@ internal class HtmlRenderingContext
         {
             var candidateIndex = position + i;
             ref var frame = ref frames.Array[candidateIndex];
+
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
+                if (frame.FrameType == RenderTreeFrameType.ElementReferenceCapture)
+                {
+                    continue;
+                }
+
                 return candidateIndex;
             }
 
             if (frame.AttributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 capturedValueAttribute = frame.AttributeValue as string;
+
+                if (!includeValueAttribute)
+                {
+                    continue;
+                }
             }
 
             switch (frame.AttributeValue)
@@ -189,7 +198,7 @@ internal class HtmlRenderingContext
                 case string value:
                     _output.Write(' ');
                     _output.Write(frame.AttributeName);
-                    _output.Write("=");
+                    _output.Write('=');
                     _output.Write('\"');
                     _htmlEncoder.Encode(_output, value);
                     _output.Write('\"');

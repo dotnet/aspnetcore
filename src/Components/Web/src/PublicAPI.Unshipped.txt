@@ -3,6 +3,6 @@ Microsoft.AspNetCore.Components.Web.HtmlContent
 Microsoft.AspNetCore.Components.Web.HtmlContent.ToHtmlString() -> string!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlContent!>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlContent!>!

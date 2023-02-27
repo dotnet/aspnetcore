@@ -19,10 +19,10 @@ public class HtmlRenderer : IAsyncDisposable
     /// Constructs an instance of <see cref="HtmlRenderer"/>.
     /// </summary>
     /// <param name="services">The services to use when rendering components.</param>
-    public HtmlRenderer(IServiceProvider services)
+    /// <param name="loggerFactory">The logger factory to use.</param>
+    public HtmlRenderer(IServiceProvider services, ILoggerFactory loggerFactory)
     {
         var componentActivator = services.GetService<IComponentActivator>() ?? DefaultComponentActivator.Instance;
-        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
         _passiveHtmlRenderer = new PassiveHtmlRenderer(services, loggerFactory, componentActivator);
     }
 
