@@ -45,7 +45,6 @@ public static class WebAssemblyHotReload
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
-        var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
 #pragma warning disable IDE0200 // Remove unnecessary lambda expression
         if (_hotReloadAgent == null)
         {
@@ -53,6 +52,7 @@ public static class WebAssemblyHotReload
         }
 #pragma warning restore IDE0200 // Remove unnecessary lambda expression
 
+        var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
         _updateDeltas[0].ModuleId = moduleId;
         _updateDeltas[0].MetadataDelta = metadataDelta;
         _updateDeltas[0].ILDelta = ilDelta;
