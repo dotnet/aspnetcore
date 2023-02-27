@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -24,10 +27,13 @@ public class KestrelServer : IServer
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public KestrelServer(IOptions<KestrelServerOptions> options, IConnectionListenerFactory transportFactory, ILoggerFactory loggerFactory)
     {
+        ArgumentNullException.ThrowIfNull(transportFactory);
+
+        var serviceContext = new ServiceContext(options, loggerFactory);
         _innerKestrelServer = new KestrelServerImpl(
-            options,
-            new[] { transportFactory ?? throw new ArgumentNullException(nameof(transportFactory)) },
-            loggerFactory);
+            serviceContext,
+            new UseHttpsHelper(),
+            new TransportManager(serviceContext, new[] { transportFactory }));
     }
 
     /// <inheritdoc />

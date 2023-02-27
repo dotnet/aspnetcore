@@ -218,6 +218,15 @@ public class KestrelServerOptions
     }
 
     /// <summary>
+    /// If false, the <see cref="KestrelConfigurationLoader"/>, if any, and the the <see cref="CertificateManager"/>
+    /// will be checked for a default certificate.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to false.
+    /// </remarks>
+    internal bool DisableDefaultCertificate { get; set; }
+
+    /// <summary>
     /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
     /// the prior action.
     /// </summary>
@@ -244,15 +253,18 @@ public class KestrelServerOptions
 
     internal void ApplyHttpsDefaults(HttpsConnectionAdapterOptions httpsOptions)
     {
+        // If there is a configuration loader, the configuration provides defaults,
+        // and the loader does not support https, it will throw.
+        // Otherwise, we should be fine using whatever the user configured.
         ConfigurationLoader?.ApplyHttpsDefaults(httpsOptions);
         HttpsDefaults(httpsOptions);
     }
 
     internal void ApplyDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions)
     {
-        if (httpsOptions.ServerCertificate != null || httpsOptions.ServerCertificateSelector != null)
+        if (DisableDefaultCertificate)
         {
-            return;
+            throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
         }
 
         if (TestOverrideDefaultCertificate is X509Certificate2 certificateFromTest)
@@ -393,10 +405,11 @@ public class KestrelServerOptions
         }
 
         var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
-        var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+        var serverLogger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
         var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+        var tlsLoader = ApplicationServices.GetService<ITlsConfigurationLoader>();
 
-        var loader = new KestrelConfigurationLoader(this, config, hostEnvironment, reloadOnChange, logger, httpsLogger);
+        var loader = new KestrelConfigurationLoader(this, config, reloadOnChange, tlsLoader);
         ConfigurationLoader = loader;
         return loader;
     }

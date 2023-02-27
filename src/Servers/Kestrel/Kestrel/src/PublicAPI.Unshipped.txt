@@ -1,1 +1,3 @@
 #nullable enable
+static Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.UseHttpsConfiguration(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.UseKestrelSlim(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

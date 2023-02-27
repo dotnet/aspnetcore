@@ -164,32 +164,24 @@ public static class ListenOptionsHttpsExtensions
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        configureOptions(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
 
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        // This will throw if there are configured defaults and defaults are not supported (i.e. in slim scenarios)
+        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
+
+        configureOptions(options);
+
+        if (!options.HasServerCertificateOrSelector)
+        {
+            // This will throw if default certificates are not enabled (i.e. in slim scenarios)
+            listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
+        }
+
+        if (!options.HasServerCertificateOrSelector)
         {
             throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
         }
 
         return listenOptions.UseHttps(options);
-    }
-
-    // Use Https if a default cert is available
-    internal static bool TryUseHttps(this ListenOptions listenOptions)
-    {
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
-
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
-        {
-            return false;
-        }
-
-        listenOptions.UseHttps(options);
-        return true;
     }
 
     /// <summary>

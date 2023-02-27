@@ -56,7 +56,7 @@ internal sealed class HttpsConnectionMiddleware
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        if (!options.HasServerCertificateOrSelector)
         {
             throw new ArgumentException(CoreStrings.ServerCertificateRequired, nameof(options));
         }

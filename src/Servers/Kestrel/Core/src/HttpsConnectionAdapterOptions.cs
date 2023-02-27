@@ -56,6 +56,11 @@ public class HttpsConnectionAdapterOptions
     public Func<ConnectionContext?, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
 
     /// <summary>
+    /// A convenience property for checking whether a server certificate or selector has been set.
+    /// </summary>
+    internal bool HasServerCertificateOrSelector => ServerCertificate is not null || ServerCertificateSelector is not null;
+
+    /// <summary>
     /// Specifies the client certificate requirements for a HTTPS connection. Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.
     /// </summary>
     public ClientCertificateMode ClientCertificateMode { get; set; }

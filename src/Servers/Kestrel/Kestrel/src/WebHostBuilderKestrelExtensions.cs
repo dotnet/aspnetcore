@@ -4,8 +4,10 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -19,6 +21,21 @@ namespace Microsoft.AspNetCore.Hosting;
 public static class WebHostBuilderKestrelExtensions
 {
     /// <summary>
+    /// TODO (acasey): doc
+    /// </summary>
+    /// <param name="hostBuilder"></param>
+    /// <returns></returns>
+    public static IWebHostBuilder UseHttpsConfiguration(this IWebHostBuilder hostBuilder)
+    {
+        return hostBuilder.ConfigureServices(services =>
+        {
+            services.AddSingleton<IMultiplexedTransportManager, MultiplexedTransportManager>();
+            services.AddSingleton<ITlsConfigurationLoader, TlsConfigurationLoader>();
+            services.AddSingleton<IUseHttpsHelper, UseHttpsHelper>();
+        });
+    }
+
+    /// <summary>
     /// Specify Kestrel as the server to be used by the web host.
     /// </summary>
     /// <param name="hostBuilder">
@@ -29,21 +46,42 @@ public static class WebHostBuilderKestrelExtensions
     /// </returns>
     public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
     {
+        return UseKestrelSlim(hostBuilder)
+            .UseQuic(options =>
+            {
+                // Configure server defaults to match client defaults.
+                // https://github.com/dotnet/runtime/blob/a5f3676cc71e176084f0f7f1f6beeecd86fbeafc/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/ConnectHelper.cs#L118-L119
+                options.DefaultStreamErrorCode = (long)Http3ErrorCode.RequestCancelled;
+                options.DefaultCloseErrorCode = (long)Http3ErrorCode.NoError;
+            })
+            .UseHttpsConfiguration();
+    }
+
+    // TODO (acasey): comment
+    /// <summary>
+    /// Specify Kestrel as the server to be used by the web host.
+    /// Quic support will not be configured, regardless of other settings.
+    /// </summary>
+    /// <param name="hostBuilder">
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+    /// </param>
+    /// <returns>
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+    /// </returns>
+    public static IWebHostBuilder UseKestrelSlim(this IWebHostBuilder hostBuilder)
+    {
         hostBuilder.ConfigureServices(services =>
         {
             // Don't override an already-configured transport
             services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
 
             services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
-            services.AddSingleton<IServer, KestrelServerImpl>();
-        });
 
-        hostBuilder.UseQuic(options =>
-        {
-            // Configure server defaults to match client defaults.
-            // https://github.com/dotnet/runtime/blob/a5f3676cc71e176084f0f7f1f6beeecd86fbeafc/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/ConnectHelper.cs#L118-L119
-            options.DefaultStreamErrorCode = (long)Http3ErrorCode.RequestCancelled;
-            options.DefaultCloseErrorCode = (long)Http3ErrorCode.NoError;
+            services.AddSingleton<ServiceContext>();
+            services.AddSingleton<ITransportManager, TransportManager>();
+            services.AddSingleton<IServer, KestrelServerImpl>();
+
+            services.AddSingleton<IUseHttpsHelper, InvalidUseHttpsHelper>();
         });
 
         if (OperatingSystem.IsWindows())

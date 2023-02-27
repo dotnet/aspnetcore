@@ -70,7 +70,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
         var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-        var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
+        var loader = new KestrelConfigurationLoader(options, configuration, reloadOnChange: false, new TlsConfigurationLoader(env.Object, logger, httpsLogger));
         options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 

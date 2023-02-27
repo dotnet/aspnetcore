@@ -17,12 +17,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class AddressBinder
 {
     // note this doesn't copy the ListenOptions[], only call this with an array that isn't mutated elsewhere
-    public static async Task BindAsync(ListenOptions[] listenOptions, AddressBindContext context, CancellationToken cancellationToken)
+    public static async Task BindAsync(ListenOptions[] listenOptions, AddressBindContext context, IUseHttpsHelper useHttpsHelper, CancellationToken cancellationToken)
     {
         var strategy = CreateStrategy(
             listenOptions,
             context.Addresses.ToArray(),
-            context.ServerAddressesFeature.PreferHostingUrls);
+            context.ServerAddressesFeature.PreferHostingUrls,
+            useHttpsHelper);
 
         // reset options. The actual used options and addresses will be populated
         // by the address binding feature
@@ -32,7 +33,7 @@ internal sealed class AddressBinder
         await strategy.BindAsync(context, cancellationToken).ConfigureAwait(false);
     }
 
-    private static IStrategy CreateStrategy(ListenOptions[] listenOptions, string[] addresses, bool preferAddresses)
+    private static IStrategy CreateStrategy(ListenOptions[] listenOptions, string[] addresses, bool preferAddresses, IUseHttpsHelper useHttpsHelper)
     {
         var hasListenOptions = listenOptions.Length > 0;
         var hasAddresses = addresses.Length > 0;
@@ -41,10 +42,10 @@ internal sealed class AddressBinder
         {
             if (hasListenOptions)
             {
-                return new OverrideWithAddressesStrategy(addresses);
+                return new OverrideWithAddressesStrategy(addresses, useHttpsHelper);
             }
 
-            return new AddressesStrategy(addresses);
+            return new AddressesStrategy(addresses, useHttpsHelper);
         }
         else if (hasListenOptions)
         {
@@ -58,7 +59,7 @@ internal sealed class AddressBinder
         else if (hasAddresses)
         {
             // If no endpoints are configured directly using KestrelServerOptions, use those configured via the IServerAddressesFeature.
-            return new AddressesStrategy(addresses);
+            return new AddressesStrategy(addresses, useHttpsHelper);
         }
         else
         {
@@ -71,6 +72,9 @@ internal sealed class AddressBinder
     /// Returns an <see cref="IPEndPoint"/> for the given host an port.
     /// If the host parameter isn't "localhost" or an IP address, use IPAddress.Any.
     /// </summary>
+    /// <remarks>
+    /// Internal for testing.
+    /// </remarks>
     internal static bool TryCreateIPEndPoint(BindingAddress address, [NotNullWhen(true)] out IPEndPoint? endpoint)
     {
         if (!IPAddress.TryParse(address.Host, out var ip))
@@ -162,8 +166,8 @@ internal sealed class AddressBinder
 
     private sealed class OverrideWithAddressesStrategy : AddressesStrategy
     {
-        public OverrideWithAddressesStrategy(IReadOnlyCollection<string> addresses)
-            : base(addresses)
+        public OverrideWithAddressesStrategy(IReadOnlyCollection<string> addresses, IUseHttpsHelper useHttpsHelper)
+            : base(addresses, useHttpsHelper)
         {
         }
 
@@ -216,10 +220,12 @@ internal sealed class AddressBinder
     private class AddressesStrategy : IStrategy
     {
         protected readonly IReadOnlyCollection<string> _addresses;
+        private readonly IUseHttpsHelper _useHttpsHelper;
 
-        public AddressesStrategy(IReadOnlyCollection<string> addresses)
+        public AddressesStrategy(IReadOnlyCollection<string> addresses, IUseHttpsHelper useHttpsHelper)
         {
             _addresses = addresses;
+            _useHttpsHelper = useHttpsHelper;
         }
 
         public virtual async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
@@ -231,7 +237,7 @@ internal sealed class AddressBinder
 
                 if (https && !options.IsTls)
                 {
-                    options.UseHttps();
+                    _useHttpsHelper.UseHttps(options);
                 }
 
                 await options.BindAsync(context, cancellationToken).ConfigureAwait(false);

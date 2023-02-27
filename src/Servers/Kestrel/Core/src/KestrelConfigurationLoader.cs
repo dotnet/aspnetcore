@@ -1,21 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Certificates.Generation;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
@@ -24,26 +16,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel;
 /// </summary>
 public class KestrelConfigurationLoader
 {
+    private readonly ITlsConfigurationLoader? _tlsLoader;
     private bool _loaded;
 
     internal KestrelConfigurationLoader(
         KestrelServerOptions options,
         IConfiguration configuration,
-        IHostEnvironment hostEnvironment,
         bool reloadOnChange,
-        ILogger<KestrelServer> logger,
-        ILogger<HttpsConnectionMiddleware> httpsLogger)
+        ITlsConfigurationLoader? tlsLoader)
     {
-        Options = options ?? throw new ArgumentNullException(nameof(options));
-        Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        HostEnvironment = hostEnvironment ?? throw new ArgumentNullException(nameof(hostEnvironment));
-        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        HttpsLogger = httpsLogger ?? throw new ArgumentNullException(nameof(logger));
-
+        Options = options;
+        Configuration = configuration;
+        ConfigurationReader = new ConfigurationReader(configuration);
         ReloadOnChange = reloadOnChange;
 
-        ConfigurationReader = new ConfigurationReader(configuration);
-        CertificateConfigLoader = new CertificateConfigLoader(hostEnvironment, logger);
+        _tlsLoader = tlsLoader;
     }
 
     /// <summary>
@@ -62,19 +49,13 @@ public class KestrelConfigurationLoader
     /// </summary>
     internal bool ReloadOnChange { get; }
 
-    private IHostEnvironment HostEnvironment { get; }
-    private ILogger<KestrelServer> Logger { get; }
-    private ILogger<HttpsConnectionMiddleware> HttpsLogger { get; }
-
     private ConfigurationReader ConfigurationReader { get; set; }
 
-    private ICertificateConfigLoader CertificateConfigLoader { get; }
-
-    private IDictionary<string, Action<EndpointConfiguration>> EndpointConfigurations { get; }
+    private Dictionary<string, Action<EndpointConfiguration>> EndpointConfigurations { get; }
         = new Dictionary<string, Action<EndpointConfiguration>>(0, StringComparer.OrdinalIgnoreCase);
 
     // Actions that will be delayed until Load so that they aren't applied if the configuration loader is replaced.
-    private IList<Action> EndpointsToAdd { get; } = new List<Action>();
+    private List<Action> EndpointsToAdd { get; } = new List<Action>();
 
     private CertificateConfig? DefaultCertificateConfig { get; set; }
     internal X509Certificate2? DefaultCertificate { get; set; }
@@ -236,11 +217,25 @@ public class KestrelConfigurationLoader
 
         if (defaults.SslProtocols.HasValue)
         {
+            if (_tlsLoader is null)
+            {
+                // There's no trimming benefit to disabling this, but it would be a confusing
+                // user experience to allow this but not certificates.
+                throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
+            }
+
             httpsOptions.SslProtocols = defaults.SslProtocols.Value;
         }
 
         if (defaults.ClientCertificateMode.HasValue)
         {
+            if (_tlsLoader is null)
+            {
+                // There's no trimming benefit to disabling this, but it would be a confusing
+                // user experience to allow this but not certificates.
+                throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
+            }
+
             httpsOptions.ClientCertificateMode = defaults.ClientCertificateMode.Value;
         }
     }
@@ -278,13 +273,24 @@ public class KestrelConfigurationLoader
 
         ConfigurationReader = new ConfigurationReader(Configuration);
 
-        LoadDefaultCert();
+        if (_tlsLoader?.LoadDefaultCertificate(ConfigurationReader) is CertificateAndConfig certPair)
+        {
+            DefaultCertificate = certPair.Certificate;
+            DefaultCertificateConfig = certPair.CertificateConfig;
+        }
 
         foreach (var endpoint in ConfigurationReader.Endpoints)
         {
             var listenOptions = AddressBinder.ParseAddress(endpoint.Url, out var https);
 
-            if (!https)
+            if (https)
+            {
+                if (_tlsLoader is null)
+                {
+                    throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
+                }
+            }
+            else
             {
                 ConfigurationReader.ThrowIfContainsHttpsOnlyConfiguration(endpoint);
             }
@@ -307,42 +313,7 @@ public class KestrelConfigurationLoader
 
             if (https)
             {
-                // Defaults
-                Options.ApplyHttpsDefaults(httpsOptions);
-
-                if (endpoint.SslProtocols.HasValue)
-                {
-                    httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
-                }
-                else
-                {
-                    // Ensure endpoint is reloaded if it used the default protocol and the SslProtocols changed.
-                    endpoint.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols;
-                }
-
-                if (endpoint.ClientCertificateMode.HasValue)
-                {
-                    httpsOptions.ClientCertificateMode = endpoint.ClientCertificateMode.Value;
-                }
-                else
-                {
-                    // Ensure endpoint is reloaded if it used the default mode and the ClientCertificateMode changed.
-                    endpoint.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode;
-                }
-
-                // A cert specified directly on the endpoint overrides any defaults.
-                var (serverCert, fullChain) = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name);
-                httpsOptions.ServerCertificate = serverCert ?? httpsOptions.ServerCertificate;
-                httpsOptions.ServerCertificateChain = fullChain ?? httpsOptions.ServerCertificateChain;
-
-                if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
-                {
-                    // Fallback
-                    Options.ApplyDefaultCertificate(httpsOptions);
-
-                    // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
-                    endpoint.Certificate = DefaultCertificateConfig;
-                }
+                _tlsLoader!.ApplyHttpsDefaults(Options, endpoint, httpsOptions, DefaultCertificateConfig, ConfigurationReader);
             }
 
             // Now that defaults have been loaded, we can compare to the currently bound endpoints to see if the config changed.
@@ -370,30 +341,9 @@ public class KestrelConfigurationLoader
             }
 
             // EndpointDefaults or configureEndpoint may have added an https adapter.
-            if (https && !listenOptions.IsTls)
+            if (https)
             {
-                if (endpoint.Sni.Count == 0)
-                {
-                    if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
-                    {
-                        throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
-                    }
-
-                    listenOptions.UseHttps(httpsOptions);
-                }
-                else
-                {
-                    var sniOptionsSelector = new SniOptionsSelector(endpoint.Name, endpoint.Sni, CertificateConfigLoader,
-                        httpsOptions, listenOptions.Protocols, HttpsLogger);
-                    var tlsCallbackOptions = new TlsHandshakeCallbackOptions()
-                    {
-                        OnConnection = SniOptionsSelector.OptionsCallback,
-                        HandshakeTimeout = httpsOptions.HandshakeTimeout,
-                        OnConnectionState = sniOptionsSelector,
-                    };
-
-                    listenOptions.UseHttps(tlsCallbackOptions);
-                }
+                _tlsLoader!.UseHttps(listenOptions, endpoint, httpsOptions);
             }
 
             listenOptions.EndpointConfig = endpoint;
@@ -410,88 +360,5 @@ public class KestrelConfigurationLoader
         Options.ConfigurationBackedListenOptions.AddRange(endpointsToStart);
 
         return (endpointsToStop, endpointsToStart);
-    }
-
-    private void LoadDefaultCert()
-    {
-        if (ConfigurationReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
-        {
-            var (defaultCert, _ /* cert chain */) = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
-            if (defaultCert != null)
-            {
-                DefaultCertificateConfig = defaultCertConfig;
-                DefaultCertificate = defaultCert;
-            }
-        }
-        else
-        {
-            var (certificate, certificateConfig) = FindDeveloperCertificateFile();
-            if (certificate != null)
-            {
-                Logger.LocatedDevelopmentCertificate(certificate);
-                DefaultCertificateConfig = certificateConfig;
-                DefaultCertificate = certificate;
-            }
-        }
-    }
-
-    private (X509Certificate2?, CertificateConfig?) FindDeveloperCertificateFile()
-    {
-        string? certificatePath = null;
-        if (ConfigurationReader.Certificates.TryGetValue("Development", out var certificateConfig) &&
-            certificateConfig.Path == null &&
-            certificateConfig.Password != null &&
-            TryGetCertificatePath(out certificatePath) &&
-            File.Exists(certificatePath))
-        {
-            try
-            {
-                var certificate = new X509Certificate2(certificatePath, certificateConfig.Password);
-
-                if (IsDevelopmentCertificate(certificate))
-                {
-                    return (certificate, certificateConfig);
-                }
-            }
-            catch (CryptographicException)
-            {
-                Logger.FailedToLoadDevelopmentCertificate(certificatePath);
-            }
-        }
-        else if (!string.IsNullOrEmpty(certificatePath))
-        {
-            Logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
-        }
-
-        return (null, null);
-    }
-
-    private static bool IsDevelopmentCertificate(X509Certificate2 certificate)
-    {
-        if (!string.Equals(certificate.Subject, "CN=localhost", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        foreach (var ext in certificate.Extensions)
-        {
-            if (string.Equals(ext.Oid?.Value, CertificateManager.AspNetHttpsOid, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool TryGetCertificatePath([NotNullWhen(true)] out string? path)
-    {
-        // See https://github.com/aspnet/Hosting/issues/1294
-        var appData = Environment.GetEnvironmentVariable("APPDATA");
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
-        basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
-        path = basePath != null ? Path.Combine(basePath, $"{HostEnvironment.ApplicationName}.pfx") : null;
-        return path != null;
     }
 }

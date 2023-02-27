@@ -54,7 +54,7 @@ internal sealed class SniOptionsSelector
 
             if (sslOptions.ServerCertificate is null)
             {
-                if (fallbackHttpsOptions.ServerCertificate is null && _fallbackServerCertificateSelector is null)
+                if (!fallbackHttpsOptions.HasServerCertificateOrSelector)
                 {
                     throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
                 }

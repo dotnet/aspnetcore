@@ -24,6 +24,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
             .AddSingleton<IHostEnvironment>(env)
+            .AddSingleton<ITlsConfigurationLoader, TlsConfigurationLoader>()
             .BuildServiceProvider();
         return serverOptions;
     }

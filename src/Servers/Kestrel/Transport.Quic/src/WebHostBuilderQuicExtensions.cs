@@ -20,6 +20,13 @@ public static class WebHostBuilderQuicExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
+        // In order to be able to provide useful error messages in slim scenarios, we have to be able
+        // to distinguish between QUIC-was-not-requested and QUIC-is-not-available.
+        hostBuilder.ConfigureServices(services =>
+        {
+            services.AddSingleton<MultiplexedConnectionMarkerService>();
+        });
+
         if (QuicListener.IsSupported)
         {
             return hostBuilder.ConfigureServices(services =>

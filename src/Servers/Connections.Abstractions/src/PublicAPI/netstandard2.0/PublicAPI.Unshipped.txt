@@ -3,6 +3,8 @@ Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.get -> System.IO.Pipes.NamedPipeServerStream!
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool
+Microsoft.AspNetCore.Connections.MultiplexedConnectionMarkerService
+Microsoft.AspNetCore.Connections.MultiplexedConnectionMarkerService.MultiplexedConnectionMarkerService() -> void
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName) -> void
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName, string! serverName) -> void

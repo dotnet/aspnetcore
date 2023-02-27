@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -94,7 +95,11 @@ internal class TestServer : IAsyncDisposable, IStartup
                                 c.Configure(context.ServerOptions);
                             }
 
-                            return new KestrelServerImpl(sp.GetServices<IConnectionListenerFactory>(), Array.Empty<IMultiplexedConnectionListenerFactory>(), context);
+                            return new KestrelServerImpl(
+                                context,
+                                new UseHttpsHelper(),
+                                new TransportManager(context, sp.GetServices<IConnectionListenerFactory>()),
+                                new MultiplexedTransportManager(context, Array.Empty<IMultiplexedConnectionListenerFactory>()));
                         });
                         configureServices(services);
                     })
