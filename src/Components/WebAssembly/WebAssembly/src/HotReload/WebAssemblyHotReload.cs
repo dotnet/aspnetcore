@@ -26,11 +26,6 @@ public static class WebAssemblyHotReload
 
     internal static async Task InitializeAsync()
     {
-        // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
-#pragma warning disable IDE0200 // Remove unnecessary lambda expression
-        _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
-#pragma warning restore IDE0200 // Remove unnecessary lambda expression
-
         if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true")
         {
             // Attempt to read previously applied hot reload deltas if the ASP.NET Core browser tools are available (indicated by the presence of the Environment variable).
@@ -51,13 +46,19 @@ public static class WebAssemblyHotReload
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
         var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
+#pragma warning disable IDE0200 // Remove unnecessary lambda expression
+        if (_hotReloadAgent == null)
+        {
+            _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
+        }
+#pragma warning restore IDE0200 // Remove unnecessary lambda expression
 
         _updateDeltas[0].ModuleId = moduleId;
         _updateDeltas[0].MetadataDelta = metadataDelta;
         _updateDeltas[0].ILDelta = ilDelta;
         _updateDeltas[0].PdbBytes = pdbBytes;
 
-        _hotReloadAgent!.ApplyDeltas(_updateDeltas);
+        _hotReloadAgent.ApplyDeltas(_updateDeltas);
     }
 
     /// <summary>
