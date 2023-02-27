@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "MVC Controller",
-  "description": "MVC Controller with or without read/write actions",
+  "name": "MVC コントローラー",
+  "description": "読み取り/書き込みアクションの有無にかかわらない MVC コントローラー",
   "symbols/namespace/description": "生成されたコードの名前空間",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens HomeController.cs in the editor"
+  "symbols/actions/description": "読み取り/書き込みアクションを使用してコントローラーを作成する",
+  "symbols/actions/displayName": "ReadWrite アクションの追加",
+  "postActions/openInEditor/description": "エディターで HomeController.cs を開く"
 }

@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "MVC Controller",
-  "description": "MVC Controller with or without read/write actions",
+  "name": "Controller MVC",
+  "description": "Controller MVC con o senza azioni di lettura/scrittura",
   "symbols/namespace/description": "spazio dei nomi per il codice generato",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens HomeController.cs in the editor"
+  "symbols/actions/description": "Crea controller API con azioni di lettura/scrittura",
+  "symbols/actions/displayName": "Aggiungi azioni lettura/scrittura",
+  "postActions/openInEditor/description": "Apre HomeController.cs nell'editor"
 }

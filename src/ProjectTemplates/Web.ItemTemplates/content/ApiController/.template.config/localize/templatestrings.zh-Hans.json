@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
+  "name": "API 控制器",
+  "description": "具有或不具有读/写操作的 API 控制器",
   "symbols/namespace/description": "生成的代码的命名空间",
-  "symbols/actions/description": "create controller with read/write actions",
-  "symbols/actions/displayName": "Add ReadWrite Actions",
-  "postActions/openInEditor/description": "Opens ValueController.cs in the editor"
+  "symbols/actions/description": "使用读/写操作创建控制器",
+  "symbols/actions/displayName": "添加 ReadWrite 操作",
+  "postActions/openInEditor/description": "在编辑器中打开 ValueController.cs"
 }
