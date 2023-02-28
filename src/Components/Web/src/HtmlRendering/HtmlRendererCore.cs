@@ -21,7 +21,7 @@ internal sealed class HtmlRendererCore : Renderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public HtmlContent BeginRenderingComponentAsync(
+    public HtmlComponent BeginRenderingComponentAsync(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
@@ -34,7 +34,7 @@ internal sealed class HtmlRendererCore : Renderer
             ExceptionDispatchInfo.Capture(quiescenceTask.Exception.InnerException ?? quiescenceTask.Exception).Throw();
         }
 
-        return new HtmlContent(this, componentId, quiescenceTask);
+        return new HtmlComponent(this, componentId, quiescenceTask);
     }
 
     protected override void HandleException(Exception exception)

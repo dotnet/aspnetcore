@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 // This is OK to be a struct because it never gets passed around anywhere. Other code can't even get an instance
 // of it. It just keeps track of some contextual information during a single synchronous HTML output operation.
-internal ref struct HtmlContentWriter
+internal ref struct HtmlComponentWriter
 {
     private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -28,11 +28,11 @@ internal ref struct HtmlContentWriter
         // So, we require exclusive access to the renderer during this synchronous process.
         renderer.Dispatcher.AssertAccess();
 
-        var context = new HtmlContentWriter(renderer, output);
+        var context = new HtmlComponentWriter(renderer, output);
         context.RenderComponent(componentId);
     }
 
-    private HtmlContentWriter(HtmlRendererCore renderer, TextWriter output)
+    private HtmlComponentWriter(HtmlRendererCore renderer, TextWriter output)
     {
         _renderer = renderer;
         _output = output;

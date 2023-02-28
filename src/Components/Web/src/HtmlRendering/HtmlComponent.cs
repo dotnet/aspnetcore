@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// Represents the output of rendering a component as HTML. The content can change if the component instance re-renders.
 /// </summary>
-public sealed class HtmlContent
+public sealed class HtmlComponent
 {
     private readonly HtmlRendererCore _renderer;
     private readonly int _componentId;
     private readonly Task _quiescenceTask;
 
-    internal HtmlContent(HtmlRendererCore renderer, int componentId, Task quiescenceTask)
+    internal HtmlComponent(HtmlRendererCore renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
         _componentId = componentId;
@@ -35,7 +35,7 @@ public sealed class HtmlContent
     public string ToHtmlString()
     {
         using var writer = new StringWriter();
-        WriteTo(writer);
+        WriteHtmlTo(writer);
         return writer.ToString();
     }
 
@@ -43,8 +43,8 @@ public sealed class HtmlContent
     /// Writes the component's latest output as HTML to the specified writer.
     /// </summary>
     /// <param name="output">The output destination.</param>
-    public void WriteTo(TextWriter output)
+    public void WriteHtmlTo(TextWriter output)
     {
-        HtmlContentWriter.Write(_renderer, _componentId, output);
+        HtmlComponentWriter.Write(_renderer, _componentId, output);
     }
 }

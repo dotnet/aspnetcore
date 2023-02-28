@@ -40,24 +40,24 @@ public class HtmlRenderer : IAsyncDisposable
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
     /// initial synchronous rendering state, which may later change. To wait for the component hierarchy to complete
-    /// any asynchronous operations such as loading, use <see cref="HtmlContent.WaitForQuiescenceAsync"/> before
-    /// reading content from the <see cref="HtmlContent"/>.
+    /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
+    /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
-    /// <returns>A task that completes with <see cref="HtmlContent"/> instance representing the render output.</returns>
-    public HtmlContent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
+    /// <returns>A task that completes with <see cref="HtmlComponent"/> instance representing the render output.</returns>
+    public HtmlComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
         => BeginRenderingComponent<TComponent>(ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
     /// initial synchronous rendering state, which may later change. To wait for the component hierarchy to complete
-    /// any asynchronous operations such as loading, use <see cref="HtmlContent.WaitForQuiescenceAsync"/> before
-    /// reading content from the <see cref="HtmlContent"/>.
+    /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
+    /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <param name="parameters">Parameters for the component.</param>
-    /// <returns>A task that completes with <see cref="HtmlContent"/> instance representing the render output.</returns>
-    public HtmlContent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+    /// <returns>A task that completes with <see cref="HtmlComponent"/> instance representing the render output.</returns>
+    public HtmlComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         ParameterView parameters) where TComponent : IComponent
         => _passiveHtmlRenderer.BeginRenderingComponentAsync(typeof(TComponent), parameters);
 
@@ -66,8 +66,8 @@ public class HtmlRenderer : IAsyncDisposable
     /// for the component hierarchy to complete asynchronous tasks such as loading.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
-    /// <returns>A task that completes with <see cref="HtmlContent"/> once the component hierarchy has completed any asynchronous tasks such as loading.</returns>
-    public Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
+    /// <returns>A task that completes with <see cref="HtmlComponent"/> once the component hierarchy has completed any asynchronous tasks such as loading.</returns>
+    public Task<HtmlComponent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
         => RenderComponentAsync<TComponent>(ParameterView.Empty);
 
     /// <summary>
@@ -76,8 +76,8 @@ public class HtmlRenderer : IAsyncDisposable
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <param name="parameters">Parameters for the component.</param>
-    /// <returns>A task that completes with <see cref="HtmlContent"/> once the component hierarchy has completed any asynchronous tasks such as loading.</returns>
-    public async Task<HtmlContent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
+    /// <returns>A task that completes with <see cref="HtmlComponent"/> once the component hierarchy has completed any asynchronous tasks such as loading.</returns>
+    public async Task<HtmlComponent> RenderComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         ParameterView parameters) where TComponent : IComponent
     {
         var content = BeginRenderingComponent<TComponent>(parameters);

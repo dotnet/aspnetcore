@@ -1,8 +1,8 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Web.HtmlContent
-Microsoft.AspNetCore.Components.Web.HtmlContent.ToHtmlString() -> string!
-Microsoft.AspNetCore.Components.Web.HtmlContent.WaitForQuiescenceAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.Web.HtmlContent.WriteTo(System.IO.TextWriter! output) -> void
+Microsoft.AspNetCore.Components.Web.HtmlComponent
+Microsoft.AspNetCore.Components.Web.HtmlComponent.ToHtmlString() -> string!
+Microsoft.AspNetCore.Components.Web.HtmlComponent.WaitForQuiescenceAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Web.HtmlComponent.WriteHtmlTo(System.IO.TextWriter! output) -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>() -> Microsoft.AspNetCore.Components.Web.HtmlContent!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlContent!

@@ -37,7 +37,7 @@ public class HtmlRendererTest
         var htmlContent = await htmlRenderer.Dispatcher.InvokeAsync(htmlRenderer.BeginRenderingComponent<TestComponent>);
 
         // Act
-        var ex = Assert.Throws<InvalidOperationException>(() => htmlContent.WriteTo(new StringWriter()));
+        var ex = Assert.Throws<InvalidOperationException>(() => htmlContent.WriteHtmlTo(new StringWriter()));
         Assert.Contains("The current thread is not associated with the Dispatcher", ex.Message);
     }
 
@@ -858,7 +858,7 @@ public class HtmlRendererTest
         {
             // Act
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
-            result.WriteTo(writer);
+            result.WriteHtmlTo(writer);
             writer.Flush();
 
             // Assert
@@ -982,10 +982,10 @@ public class HtmlRendererTest
         });
     }
 
-    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlContent actual)
+    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlComponent actual)
         => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
 
-    void AssertHtmlContentEquals(string expected, HtmlContent actual)
+    void AssertHtmlContentEquals(string expected, HtmlComponent actual)
     {
         var actualHtml = actual.ToHtmlString();
         Assert.Equal(expected, actualHtml);
