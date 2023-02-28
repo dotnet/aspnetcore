@@ -78,7 +78,6 @@ internal static class EndpointParameterEmitter
 
         codeWriter.WriteLine($"var {endpointParameter.Name}_temp = {endpointParameter.EmitAssigningCodeResult()}?.ToString();");
         EmitParsingBlock(endpointParameter, codeWriter);
-        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
     }
 
     internal static void EmitRouteOrQueryParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)

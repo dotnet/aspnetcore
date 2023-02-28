@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             wasParamCheckFailure = true;
                         }
                         var p_temp = p_raw.ToString();
-                                                if (!global::System.TimeOnly.TryParse(p_temp, CultureInfo.InvariantCulture, out var p_parsed_temp))
+                                                if (!global::System.TimeOnly.TryParse(p_temp!, CultureInfo.InvariantCulture, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             wasParamCheckFailure = true;
                         }
                         var p_temp = p_raw.ToString();
-                                                if (!global::System.TimeOnly.TryParse(p_temp, CultureInfo.InvariantCulture, out var p_parsed_temp))
+                                                if (!global::System.TimeOnly.TryParse(p_temp!, CultureInfo.InvariantCulture, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
