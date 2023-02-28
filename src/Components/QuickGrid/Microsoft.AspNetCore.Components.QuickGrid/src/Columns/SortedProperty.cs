@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
 /// <summary>
-/// A ValueTuple that holds the name of a property and the direction to sort by.
+/// Holds the name of a property and the direction to sort by.
 /// </summary>
 public readonly struct SortedProperty
 {
