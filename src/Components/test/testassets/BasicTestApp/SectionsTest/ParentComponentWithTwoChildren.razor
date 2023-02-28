@@ -4,12 +4,12 @@
 
 @if (SectionOutletExists)
 {
-    <SectionOutlet SectionId="@FirstSectionId" />
+    <SectionOutlet SectionId="FirstSectionId" />
 }
 
 <p>Text between two section outlets</p>
 
-<SectionOutlet SectionId="@SecondSectionId" />
+<SectionOutlet SectionId="SecondSectionId" />
 
 <button id="section-outlet-dispose"
         @onclick="@(() => SectionOutletExists = false)">
@@ -17,9 +17,9 @@
 </button>
 
 <Counter
-    SectionContentExists="@CounterSectionContentExists"
-    SectionId="@CounterSectionContentName"
-    IsDefaultContent="@CounterIsDefaultContent">
+    SectionContentExists="CounterSectionContentExists"
+    SectionId="CounterSectionContentName"
+    IsDefaultContent="CounterIsDefaultContent">
 </Counter>
 
 <br />
@@ -55,9 +55,9 @@
 </button>
 
 <TextComponent
-    SectionContentExists="@TextComponentSectionContentExists"
-    SectionId="@TextComponentSectionContentName"
-    IsDefaultContent="@TextComponentIsDefaultContent">
+    SectionContentExists="TextComponentSectionContentExists"
+    SectionId="TextComponentSectionContentName"
+    IsDefaultContent="TextComponentIsDefaultContent">
 </TextComponent>
 
 <button id="text-render-section-content"
@@ -77,7 +77,7 @@
 
 @code {
     private static object FirstSectionId = new();
-    private static object SecondSectionId = new();
+    private static int SecondSectionId = 123;
 
     private bool CounterSectionContentExists = false;
     private bool TextComponentSectionContentExists = false;

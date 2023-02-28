@@ -51,7 +51,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void RenderTwoSectionContentsWithSameName_LastRenderedOverridesSectionOutletContent()
+    public void RenderTwoSectionContentsWithSameId_LastRenderedOverridesSectionOutletContent()
     {
         _appElement.FindElement(By.Id("counter-render-section-content")).Click();
 
@@ -90,7 +90,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void SectionContentNameChanges_MatchingSectionOutletRendersContent()
+    public void SectionContentIdChanges_MatchingSectionOutletRendersContent()
     {
         // Render Counter and TextComponent SectionContents with same Name
         // TextComponent SectionContent overrides Counter SectionContent
@@ -103,7 +103,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void SectionContentNameChangesToNonExisting_NoMatchingSectionOutletResultingNoRendering()
+    public void SectionContentIdChangesToNonExisting_NoMatchingSectionOutletResultingNoRendering()
     {
         // Render Counter and TextComponent SectionContents with same Name
         // TextComponent SectionContent overrides Counter SectionContent

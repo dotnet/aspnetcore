@@ -19,7 +19,7 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
     /// Gets or sets the Id that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
-    [Parameter] public object SectionId { get; set; } = default!;
+    [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -36,7 +36,7 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
             throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(SectionId)}'.");
         }
 
-        if (SectionId != _subscribedSectionId)
+        if (!object.Equals(SectionId, _subscribedSectionId))
         {
             if (_subscribedSectionId is not null)
             {

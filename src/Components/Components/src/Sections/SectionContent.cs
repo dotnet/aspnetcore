@@ -16,7 +16,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     /// Gets or sets the ID that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
-    [Parameter] public object SectionId { get; set; } = default!;
+    [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets whether this component should provide the default content for the target
@@ -45,7 +45,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
             throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(SectionId)}'.");
         }
 
-        if (SectionId != _registeredSectionId! || IsDefaultContent != _registeredIsDefaultContent)
+        if (!object.Equals(SectionId, _registeredSectionId) || IsDefaultContent != _registeredIsDefaultContent)
         {
             if (_registeredSectionId is not null)
             {
