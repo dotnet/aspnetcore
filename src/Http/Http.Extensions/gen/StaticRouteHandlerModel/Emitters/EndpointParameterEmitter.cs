@@ -76,6 +76,8 @@ internal static class EndpointParameterEmitter
             codeWriter.EndBlock();
         }
 
+        codeWriter.WriteLine($"var {endpointParameter.Name}_temp = {endpointParameter.EmitAssigningCodeResult()}?.ToString();");
+        EmitParsingBlock(endpointParameter, codeWriter);
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
     }
 

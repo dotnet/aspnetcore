@@ -166,7 +166,7 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
 
             return new[]
             {
-                    //// string is not technically "TryParsable", but it's the special case.
+                    // string is not technically "TryParsable", but it's the special case.
                     new object[] { "string", "plain string", "plain string" },
                     new object[] { "int", "-42", -42 },
                     new object[] { "uint", "42", 42U },
@@ -197,6 +197,25 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
                     new object[] { "int?", null, null },
                 };
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableParameters))]
+    public async Task MapAction_TryParsableRouteParameters(string typeName, string routeValue, object expectedParameterValue)
+    {
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/{routeValue}", (HttpContext context, [FromRoute]{{typeName}} routeValue) =>
+{
+    context.Items["tryParsable"] = routeValue;
+});
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["routeValue"] = routeValue;
+
+        await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
     [Theory]
