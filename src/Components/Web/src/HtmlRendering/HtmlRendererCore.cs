@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -20,19 +21,17 @@ internal sealed class HtmlRendererCore : Renderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public async Task<HtmlContent> RenderComponentAsync(
+    public HtmlContent BeginRenderingComponentAsync(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
-        ParameterView initialParameters,
-        bool awaitQuiescence)
+        ParameterView initialParameters)
     {
         var component = InstantiateComponent(componentType);
         var componentId = AssignRootComponentId(component);
-
         var quiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
 
-        if (awaitQuiescence)
+        if (quiescenceTask.IsFaulted)
         {
-            await quiescenceTask;
+            ExceptionDispatchInfo.Capture(quiescenceTask.Exception.InnerException ?? quiescenceTask.Exception).Throw();
         }
 
         return new HtmlContent(this, componentId, quiescenceTask);
