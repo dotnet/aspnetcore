@@ -151,12 +151,12 @@ public class KestrelServerOptions
     private Action<HttpsConnectionAdapterOptions> HttpsDefaults { get; set; } = _ => { };
 
     /// <summary>
-    /// The default server certificate for https endpoints. This is applied lazily after HttpsDefaults and user options.
+    /// The development server certificate for https endpoints. This is applied lazily after HttpsDefaults and user options.
     /// </summary>
     /// <remarks>
     /// Getter exposed for testing.
     /// </remarks>
-    internal X509Certificate2? DefaultCertificate { get; private set; }
+    internal X509Certificate2? DevelopmentCertificate { get; private set; }
 
     /// <summary>
     /// Allow tests to explicitly set the default certificate.
@@ -166,7 +166,7 @@ public class KestrelServerOptions
     /// <summary>
     /// Has the default dev certificate load been attempted?
     /// </summary>
-    internal bool IsDevCertLoaded { get; set; }
+    internal bool IsDevelopmentCertificateLoaded { get; set; }
 
     /// <summary>
     /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
@@ -235,7 +235,7 @@ public class KestrelServerOptions
         HttpsDefaults(httpsOptions);
     }
 
-    internal void ApplyDefaultCert(HttpsConnectionAdapterOptions httpsOptions)
+    internal void ApplyDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions)
     {
         if (httpsOptions.ServerCertificate != null || httpsOptions.ServerCertificateSelector != null)
         {
@@ -254,15 +254,15 @@ public class KestrelServerOptions
             return;
         }
 
-        if (!IsDevCertLoaded)
+        if (!IsDevelopmentCertificateLoaded)
         {
-            IsDevCertLoaded = true;
-            Debug.Assert(DefaultCertificate is null);
+            IsDevelopmentCertificateLoaded = true;
+            Debug.Assert(DevelopmentCertificate is null);
             var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
-            DefaultCertificate = GetDevelopmentCertificateFromStore(logger);
+            DevelopmentCertificate = GetDevelopmentCertificateFromStore(logger);
         }
 
-        httpsOptions.ServerCertificate = DefaultCertificate;
+        httpsOptions.ServerCertificate = DevelopmentCertificate;
     }
 
     internal void Serialize(Utf8JsonWriter writer)
@@ -279,8 +279,8 @@ public class KestrelServerOptions
         writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
         writer.WriteBooleanValue(AllowResponseHeaderCompression);
 
-        writer.WritePropertyName(nameof(IsDevCertLoaded));
-        writer.WriteBooleanValue(IsDevCertLoaded);
+        writer.WritePropertyName(nameof(IsDevelopmentCertificateLoaded));
+        writer.WriteBooleanValue(IsDevelopmentCertificateLoaded);
 
         writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
         writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");

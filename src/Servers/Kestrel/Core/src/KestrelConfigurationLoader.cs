@@ -338,7 +338,7 @@ public class KestrelConfigurationLoader
                 if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                 {
                     // Fallback
-                    Options.ApplyDefaultCert(httpsOptions);
+                    Options.ApplyDefaultCertificate(httpsOptions);
 
                     // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
                     endpoint.Certificate = DefaultCertificateConfig;

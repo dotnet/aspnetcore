@@ -241,7 +241,7 @@ public class KestrelConfigurationLoaderTests
                 }).Load();
 
             Assert.True(ran1);
-            Assert.Null(serverOptions.DefaultCertificate); // Not used since configuration cert is present
+            Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
         }
         finally
         {
@@ -308,8 +308,8 @@ public class KestrelConfigurationLoaderTests
 
             // With all of the configuration certs removed, the only place left to check is the CertificateManager.
             // We don't want to depend on machine state, so we cheat and say we already looked.
-            serverOptions.IsDevCertLoaded = true;
-            Assert.Null(serverOptions.DefaultCertificate);
+            serverOptions.IsDevelopmentCertificateLoaded = true;
+            Assert.Null(serverOptions.DevelopmentCertificate);
 
             // Since there are no configuration certs and we bypassed the CertificateManager, there will be an
             // exception about not finding any certs at all.
@@ -320,7 +320,7 @@ public class KestrelConfigurationLoaderTests
             void CheckCertificates(X509Certificate2 expectedCert)
             {
                 var httpsOptions = new HttpsConnectionAdapterOptions();
-                serverOptions.ApplyDefaultCert(httpsOptions);
+                serverOptions.ApplyDefaultCertificate(httpsOptions);
                 Assert.Equal(expectedCert.SerialNumber, httpsOptions.ServerCertificate.SerialNumber);
                 Assert.Equal(expectedCert.SerialNumber, serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber);
             }
@@ -517,7 +517,7 @@ public class KestrelConfigurationLoaderTests
             }).Load();
 
         Assert.True(ran1);
-        Assert.Null(serverOptions.DefaultCertificate); // Not used since configuration cert is present
+        Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
     }
 
     [Fact]
@@ -541,7 +541,7 @@ public class KestrelConfigurationLoaderTests
                 .Configure(config)
                 .Load();
 
-            Assert.Null(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate);
         }
         finally
         {
@@ -572,7 +572,7 @@ public class KestrelConfigurationLoaderTests
                 .Configure(config)
                 .Load();
 
-            Assert.Null(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate);
         }
         finally
         {

@@ -51,7 +51,7 @@ public class HttpsTests : LoggedTest
             options.UseHttps();
         });
 
-        Assert.False(serverOptions.IsDevCertLoaded);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
 
         serverOptions.ListenLocalhost(5001, options =>
         {
@@ -61,7 +61,7 @@ public class HttpsTests : LoggedTest
                 Assert.Null(opt.ServerCertificate);
             });
         });
-        Assert.False(serverOptions.IsDevCertLoaded);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
     }
 
     [Fact]
@@ -115,8 +115,8 @@ public class HttpsTests : LoggedTest
             });
         });
         // Never lazy loaded
-        Assert.False(serverOptions.IsDevCertLoaded);
-        Assert.Null(serverOptions.DefaultCertificate);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
+        Assert.Null(serverOptions.DevelopmentCertificate);
     }
 
     [Fact]
@@ -143,8 +143,8 @@ public class HttpsTests : LoggedTest
             });
         });
         // Never lazy loaded
-        Assert.False(serverOptions.IsDevCertLoaded);
-        Assert.Null(serverOptions.DefaultCertificate);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
+        Assert.Null(serverOptions.DevelopmentCertificate);
     }
 
     [ConditionalFact]
