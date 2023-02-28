@@ -24,8 +24,7 @@ internal static class AsyncQueryExecutorSupplier
     private static readonly ConcurrentDictionary<Type, bool> IsEntityFrameworkProviderTypeCache = new();
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111",
-               Justification = "In the unlikely case a necessary interface is trimmed away and the error wasn't caught in developnent," +
-        " the developer only risks not noticing an oppurtunity to improve performance.")]
+               Justification = "The reflection is a best effort to warn developers about sync-over-async behavior which can cause thread pool starvation.")]
     public static IAsyncQueryExecutor? GetAsyncQueryExecutor<T>(IServiceProvider services, IQueryable<T>? queryable)
     {
         if (queryable is not null)
