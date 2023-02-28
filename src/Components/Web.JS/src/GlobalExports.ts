@@ -70,7 +70,6 @@ interface IBlazor {
     }
 
     // APIs invoked by hot reload
-    initHotReload?: (url: string) => Promise<void>;
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void;
     getApplyUpdateCapabilities?: () => string;
   }

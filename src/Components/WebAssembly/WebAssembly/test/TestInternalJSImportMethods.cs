@@ -23,9 +23,6 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetPersistedState()
         => null;
 
-    public Task InitHotReloadAsync(string url)
-        => Task.CompletedTask;
-
     public void NavigationManager_EnableNavigationInterception() { }
 
     public string NavigationManager_GetBaseUri()

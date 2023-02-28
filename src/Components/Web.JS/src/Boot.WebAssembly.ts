@@ -44,11 +44,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  Blazor._internal.initHotReload = async (url: string) => {
-    const module = await import(/* webpackIgnore: true */ url);
-    return module['receiveHotReload']();
-  };
-
   Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => {
     DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta);
   };
