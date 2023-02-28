@@ -4,7 +4,7 @@
   "classifications": [ "Web", "ASP.NET" ],
   "name": "Razor View",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "Am empty razor view",
+  "description": "An empty Razor View",
   "tags": {
     "language": "C#",
     "type": "item"
