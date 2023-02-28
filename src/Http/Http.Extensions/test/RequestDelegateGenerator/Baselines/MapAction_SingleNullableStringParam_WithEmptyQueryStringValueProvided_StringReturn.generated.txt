@@ -45,12 +45,12 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
             return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
-                    endpoints,
-                    pattern,
-                    handler,
-                    GetVerb,
-                    filePath,
-                    lineNumber);
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
         }
 
     }
@@ -85,11 +85,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 18)] = (
+            [(@"TestMapActions.cs", 23)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 18));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 23));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = global::System.String?, IsOptional = True, Source = Query)
+                        // Endpoint Parameter: p (Type = string?, IsOptional = True, IsParsable = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         var p_temp = p_raw.Count > 0 ? p_raw.ToString() : null;
-                        var p_local = p_temp;
+                        string p_local = p_temp!;
 
                         if (wasParamCheckFailure)
                         {
@@ -128,13 +128,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var result = handler(p_local);
                         return httpContext.Response.WriteAsync(result);
                     }
+
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = global::System.String?, IsOptional = True, Source = Query)
+                        // Endpoint Parameter: p (Type = string?, IsOptional = True, IsParsable = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         var p_temp = p_raw.Count > 0 ? p_raw.ToString() : null;
-                        var p_local = p_temp;
+                        string p_local = p_temp!;
 
                         if (wasParamCheckFailure)
                         {

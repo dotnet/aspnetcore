@@ -45,12 +45,12 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
             return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
-                    endpoints,
-                    pattern,
-                    handler,
-                    GetVerb,
-                    filePath,
-                    lineNumber);
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
         }
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
@@ -60,12 +60,12 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
             return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
-                    endpoints,
-                    pattern,
-                    handler,
-                    GetVerb,
-                    filePath,
-                    lineNumber);
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
         }
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
@@ -75,12 +75,12 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
             return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
-                    endpoints,
-                    pattern,
-                    handler,
-                    GetVerb,
-                    filePath,
-                    lineNumber);
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
         }
 
     }
@@ -115,11 +115,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 18)] = (
+            [(@"TestMapActions.cs", 23)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 18));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 23));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -145,6 +145,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         var req_local = httpContext.Request;
+
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
@@ -154,10 +155,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var result = handler(req_local);
                         return httpContext.Response.WriteAsync(result);
                     }
+
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
                         var req_local = httpContext.Request;
+
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
@@ -170,11 +173,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 19)] = (
+            [(@"TestMapActions.cs", 24)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 19));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 24));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -200,6 +203,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         var res_local = httpContext.Response;
+
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
@@ -209,10 +213,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var result = handler(res_local);
                         return httpContext.Response.WriteAsync(result);
                     }
+
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
                         var res_local = httpContext.Response;
+
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
@@ -225,11 +231,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 20)] = (
+            [(@"TestMapActions.cs", 25)] = (
                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 20));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -256,6 +262,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var wasParamCheckFailure = false;
                         var req_local = httpContext.Request;
                         var res_local = httpContext.Response;
+
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
@@ -265,11 +272,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var result = handler(req_local, res_local);
                         return httpContext.Response.WriteAsync(result);
                     }
+
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
                         var req_local = httpContext.Request;
                         var res_local = httpContext.Response;
+
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
