@@ -3,7 +3,7 @@
 
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
+namespace Microsoft.AspNetCore.Components.QuickGrid;
 
 /// <summary>
 /// Provides methods for asynchronous evaluation of queries against an <see cref="IQueryable{T}" />.

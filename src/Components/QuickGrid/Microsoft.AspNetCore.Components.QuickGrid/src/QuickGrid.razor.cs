@@ -70,12 +70,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public float ItemSize { get; set; } = 50;
 
     /// <summary>
-    /// If true, renders draggable handles around the column headers, allowing the user to resize the columns
-    /// manually. Size changes are not persisted.
-    /// </summary>
-    [Parameter] public bool ResizableColumns { get; set; }
-
-    /// <summary>
     /// Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
     /// unique identifier, such as a primary key value, for each data item.
     ///
@@ -203,16 +197,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     }
 
     // Invoked by descendant columns at a special time during rendering
-    internal void AddColumn(ColumnBase<TGridItem> column, SortDirection? isDefaultSortDirection)
+    internal void AddColumn(ColumnBase<TGridItem> column, SortDirection? initialSortDirection, bool isDefaultSortColumn)
     {
         if (_collectingColumns)
         {
             _columns.Add(column);
 
-            if (_sortByColumn is null && isDefaultSortDirection.HasValue)
+            if (isDefaultSortColumn && _sortByColumn is null && initialSortDirection.HasValue)
             {
                 _sortByColumn = column;
-                _sortByAscending = isDefaultSortDirection.Value != SortDirection.Descending;
+                _sortByAscending = initialSortDirection.Value != SortDirection.Descending;
             }
         }
     }
@@ -255,11 +249,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// options UI that was previously displayed.
     /// </summary>
     /// <param name="column">The column whose options are to be displayed, if any are available.</param>
-    public void ShowColumnOptions(ColumnBase<TGridItem> column)
+    public Task ShowColumnOptionsAsync(ColumnBase<TGridItem> column)
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -395,8 +390,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
     {
+        Align.Start => $"col-justify-start {column.Class}",
         Align.Center => $"col-justify-center {column.Class}",
-        Align.Right => $"col-justify-end {column.Class}",
+        Align.End => $"col-justify-end {column.Class}",
+        Align.Left => $"col-justify-left {column.Class}",
+        Align.Right => $"col-justify-right {column.Class}",
         _ => column.Class,
     };
 

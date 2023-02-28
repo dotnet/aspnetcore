@@ -20,8 +20,8 @@ public sealed class GridSort<TGridItem>
     private (LambdaExpression, bool) _firstExpression;
     private List<(LambdaExpression, bool)>? _thenExpressions;
 
-    private IReadOnlyCollection<(string PropertyName, SortDirection Direction)>? _cachedPropertyListAscending;
-    private IReadOnlyCollection<(string PropertyName, SortDirection Direction)>? _cachedPropertyListDescending;
+    private IReadOnlyCollection<SortedProperty>? _cachedPropertyListAscending;
+    private IReadOnlyCollection<SortedProperty>? _cachedPropertyListDescending;
 
     internal GridSort(Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> first, (LambdaExpression, bool) firstExpression)
     {
@@ -100,7 +100,7 @@ public sealed class GridSort<TGridItem>
         return orderedQueryable;
     }
 
-    internal IReadOnlyCollection<(string PropertyName, SortDirection Direction)> ToPropertyList(bool ascending)
+    internal IReadOnlyCollection<SortedProperty> ToPropertyList(bool ascending)
     {
         if (ascending)
         {
@@ -114,18 +114,18 @@ public sealed class GridSort<TGridItem>
         }
     }
 
-    private List<(string PropertyName, SortDirection Direction)> BuildPropertyList(bool ascending)
+    private List<SortedProperty> BuildPropertyList(bool ascending)
     {
-        var result = new List<(string, SortDirection)>
+        var result = new List<SortedProperty>
         {
-            (ToPropertyName(_firstExpression.Item1), (_firstExpression.Item2 ^ ascending) ? SortDirection.Descending : SortDirection.Ascending)
+            new SortedProperty { PropertyName = ToPropertyName(_firstExpression.Item1), Direction = (_firstExpression.Item2 ^ ascending) ? SortDirection.Descending : SortDirection.Ascending }
         };
 
         if (_thenExpressions is not null)
         {
             foreach (var (thenLambda, thenAscending) in _thenExpressions)
             {
-                result.Add((ToPropertyName(thenLambda), (thenAscending ^ ascending) ? SortDirection.Descending : SortDirection.Ascending));
+                result.Add(new SortedProperty { PropertyName = ToPropertyName(thenLambda), Direction = (thenAscending ^ ascending) ? SortDirection.Descending : SortDirection.Ascending });
             }
         }
 

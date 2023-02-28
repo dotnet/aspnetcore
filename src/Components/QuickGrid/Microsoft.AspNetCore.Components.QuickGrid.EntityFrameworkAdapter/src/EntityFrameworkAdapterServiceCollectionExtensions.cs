@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter;
-using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

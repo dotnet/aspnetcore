@@ -14,12 +14,12 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// <summary>
     /// The zero-based index of the first item to be supplied.
     /// </summary>
-    public int StartIndex { get; }
+    public int StartIndex { get; init; }
 
     /// <summary>
     /// If set, the maximum number of items to be supplied. If not set, the maximum number is unlimited.
     /// </summary>
-    public int? Count { get; }
+    public int? Count { get; init; }
 
     /// <summary>
     /// Specifies which column represents the sort order.
@@ -27,7 +27,7 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// Rather than inferring the sort rules manually, you should normally call either <see cref="ApplySorting(IQueryable{TGridItem})"/>
     /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
     /// </summary>
-    public ColumnBase<TGridItem>? SortByColumn { get; }
+    public ColumnBase<TGridItem>? SortByColumn { get; init; }
 
     /// <summary>
     /// Specifies the current sort direction.
@@ -35,12 +35,12 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// Rather than inferring the sort rules manually, you should normally call either <see cref="ApplySorting(IQueryable{TGridItem})"/>
     /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
     /// </summary>
-    public bool SortByAscending { get; }
+    public bool SortByAscending { get; init; }
 
     /// <summary>
     /// A token that indicates if the request should be cancelled.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken { get; init; }
 
     internal GridItemsProviderRequest(
         int startIndex, int? count, ColumnBase<TGridItem>? sortByColumn, bool sortByAscending,
@@ -75,10 +75,10 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// otherwise it will throw.
     /// </summary>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
-    public IReadOnlyCollection<(string PropertyName, SortDirection Direction)> GetSortByProperties() => SortByColumn switch
+    public IReadOnlyCollection<SortedProperty> GetSortByProperties() => SortByColumn switch
     {
-        ISortBuilderColumn<TGridItem> sbc => sbc.SortBuilder?.ToPropertyList(SortByAscending) ?? Array.Empty<(string, SortDirection)>(),
-        null => Array.Empty<(string, SortDirection)>(),
+        ISortBuilderColumn<TGridItem> sbc => sbc.SortBuilder?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>(),
+        null => Array.Empty<SortedProperty>(),
         _ => throw new NotSupportedException(ColumnNotSortableMessage(SortByColumn)),
     };
 

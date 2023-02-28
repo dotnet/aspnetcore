@@ -17,7 +17,7 @@
         <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true"/>
     </QuickGrid>
 </div>
-<Paginator Value="@pagination" />
+<Paginator State="@pagination" />
 
 @code {
     record Person(int PersonId, string firstName, string lastName, DateOnly BirthDate);

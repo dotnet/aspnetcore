@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 public enum Align
 {
     /// <summary>
-    /// Justifies the content against the start of the container.
+    /// Justifies the content against the start of the container
     /// </summary>
-    Left,
+    Start,
 
     /// <summary>
     /// Justifies the content at the center of the container.
@@ -19,7 +19,17 @@ public enum Align
     Center,
 
     /// <summary>
-    /// Justifies the content at the end of the container.
+    /// Justifies the content at the end of the container
+    /// </summary>
+    End,
+
+    /// <summary>
+    /// Justifies the content against the left of the container.
+    /// </summary>
+    Left,
+
+    /// <summary>
+    /// Justifies the content at the right of the container.
     /// </summary>
     Right,
 }

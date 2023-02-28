@@ -42,7 +42,7 @@ public abstract partial class ColumnBase<TGridItem>
     /// UI will be included in the header cell by default.
     ///
     /// If <see cref="HeaderTemplate" /> is used, it is left up to that template to render any relevant
-    /// "show options" UI and invoke the grid's <see cref="QuickGrid{TGridItem}.ShowColumnOptions(ColumnBase{TGridItem})" />).
+    /// "show options" UI and invoke the grid's <see cref="QuickGrid{TGridItem}.ShowColumnOptionsAsync(ColumnBase{TGridItem})" />).
     /// </summary>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
 
@@ -55,10 +55,15 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
-    /// If specified and not null, indicates that this column represents the initial sort order
-    /// for the grid. The supplied value controls the default sort direction.
+    /// Indicates which direction to sort in
+    /// if <see cref="IsDefaultSortColumn"/> is true.
     /// </summary>
-    [Parameter] public SortDirection? IsDefaultSort { get; set; }
+    [Parameter] public SortDirection InitialSortDirection { get; set; } = default;
+
+    /// <summary>
+    /// Indicates whether this column should be sorted by default.
+    /// </summary>
+    [Parameter] public bool IsDefaultSortColumn { get; set; } = false;
 
     /// <summary>
     /// If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.

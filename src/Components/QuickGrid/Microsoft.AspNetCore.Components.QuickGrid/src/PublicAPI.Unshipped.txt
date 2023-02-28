@@ -2,8 +2,10 @@
 abstract Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.Align.Center = 1 -> Microsoft.AspNetCore.Components.QuickGrid.Align
-Microsoft.AspNetCore.Components.QuickGrid.Align.Left = 0 -> Microsoft.AspNetCore.Components.QuickGrid.Align
-Microsoft.AspNetCore.Components.QuickGrid.Align.Right = 2 -> Microsoft.AspNetCore.Components.QuickGrid.Align
+Microsoft.AspNetCore.Components.QuickGrid.Align.End = 2 -> Microsoft.AspNetCore.Components.QuickGrid.Align
+Microsoft.AspNetCore.Components.QuickGrid.Align.Left = 3 -> Microsoft.AspNetCore.Components.QuickGrid.Align
+Microsoft.AspNetCore.Components.QuickGrid.Align.Right = 4 -> Microsoft.AspNetCore.Components.QuickGrid.Align
+Microsoft.AspNetCore.Components.QuickGrid.Align.Start = 0 -> Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Align.get -> Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Align.set -> void
@@ -17,8 +19,10 @@ Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderContent.ge
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderContent.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>!>?
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.HeaderTemplate.set -> void
-Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsDefaultSort.get -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection?
-Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsDefaultSort.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.InitialSortDirection.get -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.InitialSortDirection.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsDefaultSortColumn.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsDefaultSortColumn.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.PlaceholderTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext>?
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.PlaceholderTemplate.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Sortable.get -> bool?
@@ -29,23 +33,31 @@ Microsoft.AspNetCore.Components.QuickGrid.GridItemsProvider<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.ApplySorting(System.Linq.IQueryable<TGridItem>! source) -> System.Linq.IQueryable<TGridItem>!
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.CancellationToken.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.Count.get -> int?
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GetSortByProperties() -> System.Collections.Generic.IReadOnlyCollection<(string! PropertyName, Microsoft.AspNetCore.Components.QuickGrid.SortDirection Direction)>!
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.Count.init -> void
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GetSortByProperties() -> System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Components.QuickGrid.SortedProperty>!
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GridItemsProviderRequest() -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByAscending.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByAscending.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByColumn.get -> Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByColumn.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.StartIndex.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.StartIndex.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.GridItemsProviderResult() -> void
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.GridItemsProviderResult(System.Collections.Generic.ICollection<TGridItem>! items, int totalItemCount) -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.Items.get -> System.Collections.Generic.ICollection<TGridItem>!
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.Items.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.Items.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.TotalItemCount.get -> int
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.TotalItemCount.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult<TGridItem>.TotalItemCount.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ThenAscending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
 Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ThenDescending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.IAsyncQueryExecutor
+Microsoft.AspNetCore.Components.QuickGrid.IAsyncQueryExecutor.CountAsync<T>(System.Linq.IQueryable<T>! queryable) -> System.Threading.Tasks.Task<int>!
+Microsoft.AspNetCore.Components.QuickGrid.IAsyncQueryExecutor.IsSupported<T>(System.Linq.IQueryable<T>! queryable) -> bool
+Microsoft.AspNetCore.Components.QuickGrid.IAsyncQueryExecutor.ToArrayAsync<T>(System.Linq.IQueryable<T>! queryable) -> System.Threading.Tasks.Task<T[]!>!
 Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.ColumnsCollectedNotifier<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.ColumnsCollectedNotifier<TGridItem>.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.ColumnsCollectedNotifier<TGridItem>.ColumnsCollectedNotifier() -> void
@@ -55,10 +67,6 @@ Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.Defer.ChildContent.get 
 Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.Defer.ChildContent.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.Defer.Defer() -> void
 Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.EventHandlers
-Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.IAsyncQueryExecutor
-Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.IAsyncQueryExecutor.CountAsync<T>(System.Linq.IQueryable<T>! queryable) -> System.Threading.Tasks.Task<int>!
-Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.IAsyncQueryExecutor.IsSupported<T>(System.Linq.IQueryable<T>! queryable) -> bool
-Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.IAsyncQueryExecutor.ToArrayAsync<T>(System.Linq.IQueryable<T>! queryable) -> System.Threading.Tasks.Task<T[]!>!
 Microsoft.AspNetCore.Components.QuickGrid.ISortBuilderColumn<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.ISortBuilderColumn<TGridItem>.SortBuilder.get -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>?
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState
@@ -73,10 +81,10 @@ Microsoft.AspNetCore.Components.QuickGrid.PaginationState.TotalItemCountChanged 
 Microsoft.AspNetCore.Components.QuickGrid.Paginator
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.Dispose() -> void
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.Paginator() -> void
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.State.get -> Microsoft.AspNetCore.Components.QuickGrid.PaginationState!
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.State.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.SummaryTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.SummaryTemplate.set -> void
-Microsoft.AspNetCore.Components.QuickGrid.Paginator.Value.get -> Microsoft.AspNetCore.Components.QuickGrid.PaginationState!
-Microsoft.AspNetCore.Components.QuickGrid.Paginator.Value.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>
 Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Format.get -> string?
 Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Format.set -> void
@@ -101,18 +109,22 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Pagination.get ->
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Pagination.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QuickGrid() -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RefreshDataAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ResizableColumns.get -> bool
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ResizableColumns.set -> void
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ShowColumnOptions(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ShowColumnOptionsAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.SortByColumnAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column, Microsoft.AspNetCore.Components.QuickGrid.SortDirection direction = Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.get -> string?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.get -> bool
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection
-Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Ascending = 0 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
-Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto = 2 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
-Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Descending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Ascending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto = 0 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Descending = 2 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.SortedProperty
+Microsoft.AspNetCore.Components.QuickGrid.SortedProperty.Direction.get -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.SortedProperty.Direction.init -> void
+Microsoft.AspNetCore.Components.QuickGrid.SortedProperty.PropertyName.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.SortedProperty.PropertyName.init -> void
+Microsoft.AspNetCore.Components.QuickGrid.SortedProperty.SortedProperty() -> void
 Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TGridItem>!
 Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.ChildContent.set -> void

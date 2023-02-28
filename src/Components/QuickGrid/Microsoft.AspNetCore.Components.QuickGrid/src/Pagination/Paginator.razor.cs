@@ -15,7 +15,7 @@ public partial class Paginator : IDisposable
     /// <summary>
     /// Specifies the associated <see cref="PaginationState"/>. This parameter is required.
     /// </summary>
-    [Parameter, EditorRequired] public PaginationState Value { get; set; } = default!;
+    [Parameter, EditorRequired] public PaginationState State { get; set; } = default!;
 
     /// <summary>
     /// Optionally supplies a template for rendering the page count summary.
@@ -32,19 +32,19 @@ public partial class Paginator : IDisposable
     }
 
     private Task GoFirstAsync() => GoToPageAsync(0);
-    private Task GoPreviousAsync() => GoToPageAsync(Value.CurrentPageIndex - 1);
-    private Task GoNextAsync() => GoToPageAsync(Value.CurrentPageIndex + 1);
-    private Task GoLastAsync() => GoToPageAsync(Value.LastPageIndex.GetValueOrDefault(0));
+    private Task GoPreviousAsync() => GoToPageAsync(State.CurrentPageIndex - 1);
+    private Task GoNextAsync() => GoToPageAsync(State.CurrentPageIndex + 1);
+    private Task GoLastAsync() => GoToPageAsync(State.LastPageIndex.GetValueOrDefault(0));
 
-    private bool CanGoBack => Value.CurrentPageIndex > 0;
-    private bool CanGoForwards => Value.CurrentPageIndex < Value.LastPageIndex;
+    private bool CanGoBack => State.CurrentPageIndex > 0;
+    private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
 
     private Task GoToPageAsync(int pageIndex)
-        => Value.SetCurrentPageIndexAsync(pageIndex);
+        => State.SetCurrentPageIndexAsync(pageIndex);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => _totalItemCountChanged.SubscribeOrMove(Value.TotalItemCountChangedSubscribable);
+        => _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
 
     /// <inheritdoc />
     public void Dispose()

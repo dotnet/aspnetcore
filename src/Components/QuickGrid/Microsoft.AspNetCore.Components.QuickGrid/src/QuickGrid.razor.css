@@ -25,11 +25,11 @@ th ::deep .sort-indicator {
     text-align: center;
 }
 
-.col-sort-asc ::deep .sort-indicator, .col-sort-desc ::deep .sort-indicator {
+.col-sort-desc ::deep .sort-indicator, .col-sort-asc ::deep .sort-indicator {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
 }
 
-.col-sort-desc ::deep .sort-indicator {
+.col-sort-asc ::deep .sort-indicator {
     transform: scaleY(-1);
 }
 
