@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 /// <typeparam name="TProp">The type of the value being displayed in the column's cells.</typeparam>
-public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>, ISortBuilderColumn<TGridItem>
+public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
 {
     private Expression<Func<TGridItem, TProp>>? _lastAssignedProperty;
     private Func<TGridItem, string?>? _cellTextFunc;
@@ -29,7 +29,12 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>, ISortBuil
     /// </summary>
     [Parameter] public string? Format { get; set; }
 
-    GridSort<TGridItem>? ISortBuilderColumn<TGridItem>.SortBuilder => _sortBuilder;
+    /// <inheritdoc/>
+    public override GridSort<TGridItem>? SortBy
+    {
+        get => _sortBuilder;
+        set => throw new NotSupportedException($"PropertyColumn generates this member internally. For custom sorting rules, see '{typeof(TemplateColumn<TGridItem>)}'.");
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()

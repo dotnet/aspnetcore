@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// Represents a <see cref="QuickGrid{TGridItem}"/> column whose cells render a supplied template.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>, ISortBuilderColumn<TGridItem>
+public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>
 {
     private static readonly RenderFragment<TGridItem> EmptyChildContent = _ => builder => { };
 
@@ -18,12 +18,8 @@ public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>, ISortBuilderColu
     /// </summary>
     [Parameter] public RenderFragment<TGridItem> ChildContent { get; set; } = EmptyChildContent;
 
-    /// <summary>
-    /// Optionally specifies sorting rules for this column.
-    /// </summary>
-    [Parameter] public GridSort<TGridItem>? SortBy { get; set; }
-
-    GridSort<TGridItem>? ISortBuilderColumn<TGridItem>.SortBuilder => SortBy;
+    /// <inheritdoc/>
+    [Parameter] public override GridSort<TGridItem>? SortBy { get; set; }
 
     /// <inheritdoc />
     protected internal override void CellContent(RenderTreeBuilder builder, TGridItem item)

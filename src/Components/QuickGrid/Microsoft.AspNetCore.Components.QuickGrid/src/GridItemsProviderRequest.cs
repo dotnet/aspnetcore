@@ -55,33 +55,22 @@ public readonly struct GridItemsProviderRequest<TGridItem>
 
     /// <summary>
     /// Applies the request's sorting rules to the supplied <see cref="IQueryable{TGridItem}"/>.
-    ///
-    /// Note that this only works if the current <see cref="SortByColumn"/> implements <see cref="ISortBuilderColumn{TGridItem}"/>,
-    /// otherwise it will throw.
     /// </summary>
     /// <param name="source">An <see cref="IQueryable{TGridItem}"/>.</param>
     /// <returns>A new <see cref="IQueryable{TGridItem}"/> representing the <paramref name="source"/> with sorting rules applied.</returns>
     public IQueryable<TGridItem> ApplySorting(IQueryable<TGridItem> source) => SortByColumn switch
     {
-        ISortBuilderColumn<TGridItem> sbc => sbc.SortBuilder?.Apply(source, SortByAscending) ?? source,
+        ColumnBase<TGridItem> sbc => sbc.SortBy?.Apply(source, SortByAscending) ?? source,
         null => source,
-        _ => throw new NotSupportedException(ColumnNotSortableMessage(SortByColumn)),
     };
 
     /// <summary>
     /// Produces a collection of (property name, direction) pairs representing the sorting rules.
-    ///
-    /// Note that this only works if the current <see cref="SortByColumn"/> implements <see cref="ISortBuilderColumn{TGridItem}"/>,
-    /// otherwise it will throw.
     /// </summary>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
     public IReadOnlyCollection<SortedProperty> GetSortByProperties() => SortByColumn switch
     {
-        ISortBuilderColumn<TGridItem> sbc => sbc.SortBuilder?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>(),
+        ColumnBase<TGridItem> sbc => sbc.SortBy?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>(),
         null => Array.Empty<SortedProperty>(),
-        _ => throw new NotSupportedException(ColumnNotSortableMessage(SortByColumn)),
     };
-
-    private static string ColumnNotSortableMessage<T>(ColumnBase<T> col)
-        => $"The current sort column is of type '{col.GetType().FullName}', which does not implement {nameof(ISortBuilderColumn<TGridItem>)}, so its sorting rules cannot be applied automatically.";
 }

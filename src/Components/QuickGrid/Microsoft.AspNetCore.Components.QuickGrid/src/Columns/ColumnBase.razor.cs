@@ -55,6 +55,11 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
+    /// Specifies sorting rules for a column.
+    /// </summary>
+    public abstract GridSort<TGridItem>? SortBy { get; set; }
+
+    /// <summary>
     /// Indicates which direction to sort in
     /// if <see cref="IsDefaultSortColumn"/> is true.
     /// </summary>
