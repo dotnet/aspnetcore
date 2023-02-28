@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <Description>Provides an Entity Framework Core adapter for the <a href="https://www.nuget.org/packages/Microsoft.AspNetCore.Components.QuickGrid">Microsoft.AspNetCore.Components.QuickGrid</a> package.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 

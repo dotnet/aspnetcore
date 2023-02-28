@@ -39,11 +39,13 @@ public sealed class ColumnsCollectedNotifier<TGridItem> : IComponent
 
     [CascadingParameter] internal InternalGridContext<TGridItem> InternalGridContext { get; set; } = default!;
 
+    /// <inheritdoc/>
     public void Attach(RenderHandle renderHandle)
     {
         // This component never renders, so we can ignore the renderHandle
     }
 
+    /// <inheritdoc/>
     public Task SetParametersAsync(ParameterView parameters)
     {
         if (_isFirstRender)

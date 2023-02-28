@@ -35,7 +35,7 @@ public static class GridItemsProviderResult
     /// </summary>
     /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
     /// <param name="items">The items being supplied.</param>
-    /// <param name="totalItemCount">The total numer of items that exist. See <see cref="TotalItemCount"/> for details.</param>
+    /// <param name="totalItemCount">The total numer of items that exist. See <see cref="GridItemsProviderResult{TGridItem}.TotalItemCount"/> for details.</param>
     /// <returns>An instance of <see cref="GridItemsProviderResult{TGridItem}"/>.</returns>
     public static GridItemsProviderResult<TGridItem> From<TGridItem>(ICollection<TGridItem> items, int totalItemCount)
         => new() { Items = items, TotalItemCount = totalItemCount };

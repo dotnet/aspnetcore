@@ -74,10 +74,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// unique identifier, such as a primary key value, for each data item.
     ///
     /// This allows the grid to preserve the association between row elements and data items based on their
-    /// unique identifiers, even when the <see cref="TGridItem"/> instances are replaced by new copies (for
+    /// unique identifiers, even when the TGridItem instances are replaced by new copies (for
     /// example, after a new query against the underlying data store).
     ///
-    /// If not set, the @key will be the <see cref="TGridItem"/> instance itself.
+    /// If not set, the @key will be the TGridItem instance itself.
     /// </summary>
     [Parameter] public Func<TGridItem, object> ItemKey { get; set; } = x => x!;
 
@@ -181,6 +181,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
