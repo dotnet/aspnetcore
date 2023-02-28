@@ -47,10 +47,7 @@ public static class WebAssemblyHotReload
     {
         // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
 #pragma warning disable IDE0200 // Remove unnecessary lambda expression
-        if (_hotReloadAgent == null)
-        {
-            _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
-        }
+        Interlocked.CompareExchange(ref _hotReloadAgent, new HotReloadAgent(m => Debug.WriteLine(m)), null);
 #pragma warning restore IDE0200 // Remove unnecessary lambda expression
 
         var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
