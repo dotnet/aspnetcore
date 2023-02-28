@@ -58,19 +58,13 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// </summary>
     /// <param name="source">An <see cref="IQueryable{TGridItem}"/>.</param>
     /// <returns>A new <see cref="IQueryable{TGridItem}"/> representing the <paramref name="source"/> with sorting rules applied.</returns>
-    public IQueryable<TGridItem> ApplySorting(IQueryable<TGridItem> source) => SortByColumn switch
-    {
-        ColumnBase<TGridItem> sbc => sbc.SortBy?.Apply(source, SortByAscending) ?? source,
-        null => source,
-    };
+    public IQueryable<TGridItem> ApplySorting(IQueryable<TGridItem> source) =>
+        SortByColumn?.SortBy?.Apply(source, SortByAscending) ?? source;
 
     /// <summary>
     /// Produces a collection of (property name, direction) pairs representing the sorting rules.
     /// </summary>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
-    public IReadOnlyCollection<SortedProperty> GetSortByProperties() => SortByColumn switch
-    {
-        ColumnBase<TGridItem> sbc => sbc.SortBy?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>(),
-        null => Array.Empty<SortedProperty>(),
-    };
+    public IReadOnlyCollection<SortedProperty> GetSortByProperties() =>
+        SortByColumn?.SortBy?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>();
 }
