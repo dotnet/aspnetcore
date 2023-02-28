@@ -28,6 +28,8 @@ internal static class WellKnownTypeData
         System_Security_Claims_ClaimsPrincipal,
         Microsoft_AspNetCore_Http_IFormFileCollection,
         Microsoft_AspNetCore_Http_IFormFile,
+        System_DateOnly,
+        System_DateTimeOffset,
         System_IO_Stream,
         System_IO_Pipelines_PipeReader,
         System_IFormatProvider,
@@ -101,6 +103,7 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Mvc_ViewFeatures_SaveTempDataAttribute,
         Microsoft_AspNetCore_Mvc_SkipStatusCodePagesAttribute,
         Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
+        Microsoft_AspNetCore_Mvc_ModelBinding_EmptyBodyBehavior,
         Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
         Microsoft_AspNetCore_Authorization_AuthorizeAttribute
     }
@@ -128,6 +131,8 @@ internal static class WellKnownTypeData
         "System.Security.Claims.ClaimsPrincipal",
         "Microsoft.AspNetCore.Http.IFormFileCollection",
         "Microsoft.AspNetCore.Http.IFormFile",
+        "System.DateOnly",
+        "System.DateTimeOffset",
         "System.IO.Stream",
         "System.IO.Pipelines.PipeReader",
         "System.IFormatProvider",
@@ -201,6 +206,7 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute",
         "Microsoft.AspNetCore.Mvc.SkipStatusCodePagesAttribute",
         "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
+        "Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior",
         "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
         "Microsoft.AspNetCore.Authorization.AuthorizeAttribute"
     };

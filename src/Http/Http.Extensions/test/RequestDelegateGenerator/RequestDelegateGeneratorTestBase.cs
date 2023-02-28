@@ -23,21 +23,30 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RequestDelegateGeneratorTestBase : LoggedTest
+public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 {
-    internal static async Task<(GeneratorRunResult, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
+    protected abstract bool IsGeneratorEnabled { get; }
+
+    internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
         var compilation = await CreateCompilationAsync(sources);
-        var generator = new RequestDelegateGenerator().AsSourceGenerator();
 
-        // Enable the source generator in tests
+        // Return the compilation immediately if
+        // the generator is not enabled.
+        if (!IsGeneratorEnabled)
+        {
+            return (null, compilation);
+        }
+
+        // Configure the generator driver and run
+        // the compilation with it if the generator
+        // is enabled.
+        var generator = new RequestDelegateGenerator().AsSourceGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
             {
                 generator
             },
             driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
-
-        // Run the source generator
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         foreach (var updatedSource in updatedSources)
@@ -72,13 +81,30 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
         return Array.Empty<StaticRouteHandlerModel.Endpoint>();
     }
 
-    internal static Endpoint GetEndpointFromCompilation(Compilation compilation, bool expectSourceKey = true) =>
-        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKey));
+    internal static void VerifyStaticEndpointModel(GeneratorRunResult? result, Action<StaticRouteHandlerModel.Endpoint> runAssertions)
+    {
+        if (result.HasValue)
+        {
+            runAssertions(GetStaticEndpoint(result.Value, GeneratorSteps.EndpointModelStep));
+        }
+    }
 
-    internal static Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool expectSourceKey = true)
+    internal static void VerifyStaticEndpointModels(GeneratorRunResult? result, Action<StaticRouteHandlerModel.Endpoint[]> runAssertions)
+    {
+        if (result.HasValue)
+        {
+            runAssertions(GetStaticEndpoints(result.Value, GeneratorSteps.EndpointModelStep));
+        }
+    }
+
+    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null) =>
+        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride));
+
+    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
+        var expectSourceKey = (expectSourceKeyOverride ?? true) && IsGeneratorEnabled;
 
         var output = new MemoryStream();
         var pdb = new MemoryStream();
@@ -190,12 +216,19 @@ public class RequestDelegateGeneratorTestBase : LoggedTest
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Http.Generators.Tests;
 
 public static class TestMapActions
 {
@@ -204,24 +237,108 @@ public static class TestMapActions
         {{sources}}
         return app;
     }
+}
 
-    public interface ITodo
+public enum TodoStatus
+{
+    Trap, // A trap for Enum.TryParse<T>!
+    Done,
+    InProgress,
+    NotDone
+}
+
+public interface ITodo
+{
+    public int Id { get; }
+    public string? Name { get; }
+    public bool IsComplete { get; }
+    public TodoStatus Status { get; }
+}
+
+public class PrecedenceCheckTodo
+{
+    public PrecedenceCheckTodo(int magicValue)
     {
-        public int Id { get; }
-        public string? Name { get; }
-        public bool IsComplete { get; }
+        MagicValue = magicValue;
     }
-
-    public class Todo
+    public int MagicValue { get; }
+    public static bool TryParse(string? input, IFormatProvider? provider, out PrecedenceCheckTodo result)
     {
-        public int Id { get; set; }
-        public string? Name { get; set; } = "Todo";
-        public bool IsComplete { get; set; }
+        result = new PrecedenceCheckTodo(42);
+        return true;
     }
-
-    public class FromBodyAttribute : Attribute, IFromBodyMetadata
+    public static bool TryParse(string? input, out PrecedenceCheckTodo result)
     {
-        public bool AllowEmpty { get; set; }
+        result = new PrecedenceCheckTodo(24);
+        return true;
+    }
+}
+
+public class PrecedenceCheckTodoWithoutFormat
+{
+    public PrecedenceCheckTodoWithoutFormat(int magicValue)
+    {
+        MagicValue = magicValue;
+    }
+    public int MagicValue { get; }
+    public static bool TryParse(string? input, out PrecedenceCheckTodoWithoutFormat result)
+    {
+        result = new PrecedenceCheckTodoWithoutFormat(24);
+        return true;
+    }
+}
+
+public class ParsableTodo : IParsable<ParsableTodo>
+{
+    public int Id { get; set; }
+    public string? Name { get; set; } = "Todo";
+    public bool IsComplete { get; set; }
+    public static ParsableTodo Parse(string s, IFormatProvider? provider)
+    {
+        return new ParsableTodo();
+    }
+    public static bool TryParse(string? input, IFormatProvider? provider, out ParsableTodo result)
+    {
+        if (input == "1")
+        {
+            result = new ParsableTodo
+            {
+            Id = 1,
+            Name = "Knit kitten mittens.",
+            IsComplete = false
+            };
+            return true;
+        }
+        else
+        {
+        result = null!;
+        return false;
+        }
+    }
+}
+
+public class Todo
+{
+    public int Id { get; set; }
+    public string? Name { get; set; } = "Todo";
+    public bool IsComplete { get; set; }
+    public static bool TryParse(string input, out Todo? result)
+    {
+        if (input == "1")
+        {
+            result = new Todo
+            {
+            Id = 1,
+            Name = "Knit kitten mittens.",
+            IsComplete = false
+            };
+            return true;
+        }
+        else
+        {
+        result = null;
+        return false;
+        }
     }
 }
 """;
@@ -262,6 +379,10 @@ public static class TestMapActions
 
     internal async Task VerifyAgainstBaselineUsingFile(Compilation compilation, [CallerMemberName] string callerName = "")
     {
+        if (!IsGeneratorEnabled)
+        {
+            return;
+        }
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
@@ -372,13 +493,6 @@ Actual Line:
         public ICollection<EndpointDataSource> DataSources { get; }
 
         public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
-    }
-
-    public class Todo
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "Todo";
-        public bool IsComplete { get; set; }
     }
 
     internal sealed class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature

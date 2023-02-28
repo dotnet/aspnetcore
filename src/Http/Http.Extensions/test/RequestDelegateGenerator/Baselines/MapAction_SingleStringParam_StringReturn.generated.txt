@@ -45,12 +45,12 @@ namespace Microsoft.AspNetCore.Builder
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
             return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
-                    endpoints,
-                    pattern,
-                    handler,
-                    GetVerb,
-                    filePath,
-                    lineNumber);
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
         }
 
     }
@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -119,7 +120,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var p_local = p_raw.ToString();
+                        var p_temp = p_raw.ToString();
+                        var p_local = p_temp;
 
                         if (wasParamCheckFailure)
                         {
@@ -130,6 +132,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         var result = handler(p_local);
                         return httpContext.Response.WriteAsync(result);
                     }
+
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
@@ -139,7 +142,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var p_local = p_raw.ToString();
+                        var p_temp = p_raw.ToString();
+                        var p_local = p_temp;
 
                         if (wasParamCheckFailure)
                         {
@@ -233,6 +237,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
             }
             return (false, default);
+        }
+
+        private static StringValues ResolveFromRouteOrQuery(HttpContext httpContext, string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
+                : httpContext.Request.Query[$"{parameterName}"];
         }
     }
 

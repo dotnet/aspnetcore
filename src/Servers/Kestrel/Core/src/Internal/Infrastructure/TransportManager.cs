@@ -77,7 +77,7 @@ internal sealed class TransportManager
         // The QUIC transport will check if TlsConnectionCallbackOptions is missing.
         if (listenOptions.HttpsOptions != null)
         {
-            var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions.Value);
+            var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions);
             features.Set(new TlsConnectionCallbackOptions
             {
                 ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols ?? new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
