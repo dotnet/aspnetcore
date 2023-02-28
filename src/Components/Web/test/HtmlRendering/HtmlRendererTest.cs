@@ -770,19 +770,104 @@ public class HtmlRendererTest
     [Fact]
     public async Task RenderComponentAsync_CanObserveStateBeforeAndAfterQuiescence()
     {
+        // Arrange
         var completionTcs = new TaskCompletionSource();
         var services = new ServiceCollection();
         services.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task });
         var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
 
+        // Act/Assert: state before quiescence
         var result = await htmlRenderer.RenderComponentAsync<AsyncLoadingComponent>(awaitQuiescence: false);
         var quiescenceTask = result.WaitForQuiescenceAsync();
         Assert.False(quiescenceTask.IsCompleted);
         Assert.Equal("Loading...", await result.ToHtmlStringAsync());
 
+        // Act/Assert: state after quiescence
         completionTcs.SetResult();
         await quiescenceTask;
         Assert.Equal("Finished loading", await result.ToHtmlStringAsync());
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_ThrowsSync()
+    {
+        // This test is for when the component throws synchronously from the point of view of its own
+        // rendering flow. The external observer still sees it as async because it has to wait for the
+        // operation to be dispatched onto the sync context.
+
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = new TaskCompletionSource().Task });
+        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+
+        // Act/Assert
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(async () =>
+        {
+            await htmlRenderer.RenderComponentAsync<ErrorThrowingComponent>(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(ErrorThrowingComponent.ThrowSync), true }
+            }));
+        });
+        Assert.Equal("sync", ex.Message);
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_ThrowsAsync()
+    {
+        // Arrange
+        var completionTcs = new TaskCompletionSource();
+        var services = new ServiceCollection();
+        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = Task.Delay(0) });
+        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+
+        // Act/Assert
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
+            htmlRenderer.RenderComponentAsync<ErrorThrowingComponent>(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(ErrorThrowingComponent.ThrowAsync), true }
+            })));
+        Assert.Equal("async", ex.Message);
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_ThrowsSyncDuringWaitForQuiescenceAsync()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = new TaskCompletionSource().Task });
+        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+
+        // Act/Assert
+        var content = await htmlRenderer.RenderComponentAsync<ErrorThrowingComponent>(ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            { nameof(ErrorThrowingComponent.ThrowSync), true }
+        }), awaitQuiescence: false);
+
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(content.WaitForQuiescenceAsync);
+        Assert.Equal("sync", ex.Message);
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_ThrowsAsyncDuringWaitForQuiescenceAsync()
+    {
+        // Arrange
+        var completionTcs = new TaskCompletionSource();
+        var services = new ServiceCollection();
+        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task });
+        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+
+        // Act/Assert
+        var content = await htmlRenderer.RenderComponentAsync<ErrorThrowingComponent>(ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            { nameof(ErrorThrowingComponent.ThrowAsync), true }
+        }), awaitQuiescence: false);
+
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
+        {
+            completionTcs.SetResult();
+            return content.WaitForQuiescenceAsync();
+        });
+        Assert.Equal("async", ex.Message);
     }
 
     Task AssertHtmlContentEqualsAsync(IEnumerable<string> expected, HtmlContent actual)
@@ -910,12 +995,42 @@ public class HtmlRendererTest
             => builder.AddContent(0, status);
     }
 
+    private class ErrorThrowingComponent : ComponentBase
+    {
+        [Parameter] public bool ThrowSync { get; set; }
+        [Parameter] public bool ThrowAsync { get; set; }
+
+        [Inject]
+        public AsyncLoadingComponentCompletion Completion { get; set; }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            await Completion.Task;
+            await Task.Yield();
+
+            if (ThrowAsync)
+            {
+                throw new InvalidTimeZoneException("async");
+            }
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "Hello");
+
+            if (ThrowSync)
+            {
+                throw new InvalidTimeZoneException("sync");
+            }
+
+            builder.AddContent(1, "Goodbye");
+        }
+    }
+
     private class AsyncLoadingComponentCompletion
     {
         public Task Task { get; init; }
     }
-
-    // TODO: Test cases showing the exception-handling behaviors.
 
     HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider = null)
     {
