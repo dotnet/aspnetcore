@@ -20,3 +20,26 @@ public class CustomFromBodyAttribute : Attribute, IFromBodyMetadata
 {
     public bool AllowEmpty { get; set; }
 }
+
+public enum MyEnum { ValueA, ValueB, }
+
+public record MyTryParseRecord(Uri Uri)
+{
+    public static bool TryParse(string value, out MyTryParseRecord result)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+        {
+            result = null;
+            return false;
+        }
+
+        result = new MyTryParseRecord(uri);
+        return true;
+    }
+}
+
+public struct BodyStruct
+{
+    public int Id { get; set; }
+}
+

@@ -244,6 +244,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return (false, default);
                 }
             }
+
+            if (!allowEmpty)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
+
             return (false, default);
         }
     }
