@@ -53,9 +53,6 @@ internal sealed class SocketConnectionListener : IConnectionListener
 
         listenSocket.Listen(_options.Backlog);
 
-        // try to connect to ourselves to see if socket re-use is enabled
-        using var args = SimpleSocketAwaitableEventArgs.GetArgs();
-        
         _listenSocket = listenSocket;
     }
 
@@ -64,16 +61,13 @@ internal sealed class SocketConnectionListener : IConnectionListener
         Debug.Assert(_listenSocket != null, "Bind must be called first.");
 
         using var args = SimpleSocketAwaitableEventArgs.GetArgs(); // note: simple pool implementation
-        bool reuseSocket = false;
-        Socket? client = null;
         while (true)
         {
             try
             {
-                args.AcceptSocket = client = reuseSocket ? SimpleSocketAwaitableEventArgs.TryGetSocket() : null;
+                args.AcceptSocket = null;
                 await args.AcceptAsync(_listenSocket);
                 var acceptSocket = args.AcceptSocket!;
-                SimpleSocketAwaitableEventArgs.OnAccepted();
 
                 // Only apply no delay to Tcp based endpoints
                 if (acceptSocket.LocalEndPoint is IPEndPoint)
@@ -82,14 +76,6 @@ internal sealed class SocketConnectionListener : IConnectionListener
                 }
 
                 return _factory.Create(acceptSocket);
-            }
-            catch (PlatformNotSupportedException ex) when (reuseSocket && client is not null)
-            {
-                Console.WriteLine(ex.Message);
-                // AcceptAsync doesn't allow pre-existing socket in all scenarios
-                reuseSocket = false;
-                client?.Dispose();
-                continue; // retry, now without re-use
             }
             catch (ObjectDisposedException ex)
             {
