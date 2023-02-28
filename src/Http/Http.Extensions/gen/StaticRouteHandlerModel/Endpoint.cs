@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal class Endpoint
 {
-    private string? _argumentListCache;
-
     public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
     {
         Operation = operation;
@@ -36,6 +34,7 @@ internal class Endpoint
         }
 
         Response = new EndpointResponse(method, wellKnownTypes);
+        IsAwaitable = Response.IsAwaitable;
 
         if (method.Parameters.Length == 0)
         {
@@ -58,14 +57,14 @@ internal class Endpoint
         }
 
         Parameters = parameters;
+        IsAwaitable |= parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
     }
 
     public string HttpMethod { get; }
+    public bool IsAwaitable { get; set; }
     public string? RoutePattern { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
-    public string EmitArgumentList() => _argumentListCache ??= string.Join(", ", Parameters.Select(p => p.EmitArgument()));
-
     public List<DiagnosticDescriptor> Diagnostics { get; } = new List<DiagnosticDescriptor>();
 
     public (string File, int LineNumber) Location { get; }
@@ -88,7 +87,7 @@ internal class Endpoint
 
         for (var i = 0; i < a.Parameters.Length; i++)
         {
-            if (a.Parameters[i].Equals(b.Parameters[i]))
+            if (!a.Parameters[i].SignatureEquals(b.Parameters[i]))
             {
                 return false;
             }
@@ -105,7 +104,7 @@ internal class Endpoint
 
         foreach (var parameter in endpoint.Parameters)
         {
-            hashCode.Add(parameter);
+            hashCode.Add(parameter.Type, SymbolEqualityComparer.Default);
         }
 
         return hashCode.ToHashCode();

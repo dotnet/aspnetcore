@@ -81,8 +81,8 @@ public class RouteView : IComponent
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
-        builder.AddAttribute(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddAttribute(2, nameof(LayoutView.ChildContent), _renderPageWithParametersDelegate);
+        builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), _renderPageWithParametersDelegate);
         builder.CloseComponent();
     }
 
@@ -92,7 +92,7 @@ public class RouteView : IComponent
 
         foreach (var kvp in RouteData.RouteValues)
         {
-            builder.AddAttribute(1, kvp.Key, kvp.Value);
+            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
         }
 
         var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);

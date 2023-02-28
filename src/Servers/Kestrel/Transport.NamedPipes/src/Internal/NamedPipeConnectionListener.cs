@@ -35,15 +35,17 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         NamedPipeEndPoint endpoint,
         NamedPipeTransportOptions options,
         ILoggerFactory loggerFactory,
+        ObjectPoolProvider objectPoolProvider,
         Mutex mutex)
     {
         _log = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes");
         _endpoint = endpoint;
         _options = options;
-        _namedPipeServerStreamPool = new DefaultObjectPoolProvider().Create(new NamedPipeServerStreamPoolPolicy(this));
         _mutex = mutex;
         _memoryPool = options.MemoryPoolFactory();
         _listeningToken = _listeningTokenSource.Token;
+        // Have to create the pool here (instead of DI) because the pool is specific to an endpoint.
+        _namedPipeServerStreamPool = objectPoolProvider.Create(new NamedPipeServerStreamPoolPolicy(endpoint, options));
 
         // The OS maintains a backlog of clients that are waiting to connect, so the app queue only stores a single connection.
         // We want to have a queue plus a background task that populates the queue, rather than creating NamedPipeServerStream
@@ -57,10 +59,12 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _outputOptions = new PipeOptions(_memoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
     }
 
-    internal void ReturnStream(NamedPipeServerStream namedPipeServerStream)
+    internal void ReturnStream(NamedPipeServerStream stream)
     {
+        Debug.Assert(!stream.IsConnected, "Stream should have been successfully disconnected to reach this point.");
+
         // The stream is automatically disposed if there isn't space in the pool.
-        _namedPipeServerStreamPool.Return(namedPipeServerStream);
+        _namedPipeServerStreamPool.Return(stream);
     }
 
     public void Start()
@@ -174,43 +178,45 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
 
         // Dispose pool after listening tasks are complete so there is no chance a stream is fetched from the pool after the pool is disposed.
         // Important to dispose because this empties and disposes streams in the pool.
-        ((IDisposable)_namedPipeServerStreamPool).Dispose();
+        (_namedPipeServerStreamPool as IDisposable)?.Dispose();
     }
 
     private sealed class NamedPipeServerStreamPoolPolicy : IPooledObjectPolicy<NamedPipeServerStream>
     {
-        public NamedPipeConnectionListener _listener;
+        private readonly NamedPipeEndPoint _endpoint;
+        private readonly NamedPipeTransportOptions _options;
 
-        public NamedPipeServerStreamPoolPolicy(NamedPipeConnectionListener listener)
+        public NamedPipeServerStreamPoolPolicy(NamedPipeEndPoint endpoint, NamedPipeTransportOptions options)
         {
-            _listener = listener;
+            _endpoint = endpoint;
+            _options = options;
         }
 
         public NamedPipeServerStream Create()
         {
             NamedPipeServerStream stream;
             var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
-            if (_listener._options.CurrentUserOnly)
+            if (_options.CurrentUserOnly)
             {
                 pipeOptions |= NamedPipeOptions.CurrentUserOnly;
             }
 
-            if (_listener._options.PipeSecurity != null)
+            if (_options.PipeSecurity != null)
             {
                 stream = NamedPipeServerStreamAcl.Create(
-                    _listener._endpoint.PipeName,
+                    _endpoint.PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte,
                     pipeOptions,
                     inBufferSize: 0, // Buffer in System.IO.Pipelines
                     outBufferSize: 0, // Buffer in System.IO.Pipelines
-                    _listener._options.PipeSecurity);
+                    _options.PipeSecurity);
             }
             else
             {
                 stream = new NamedPipeServerStream(
-                    _listener._endpoint.PipeName,
+                    _endpoint.PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte,
@@ -221,6 +227,6 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             return stream;
         }
 
-        public bool Return(NamedPipeServerStream obj) => true;
+        public bool Return(NamedPipeServerStream obj) => !obj.IsConnected;
     }
 }

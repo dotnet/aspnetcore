@@ -99,6 +99,11 @@ internal static class TemplatePackageInstaller
             .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
             .ToArray();
 
+        if (builtPackages.Length == 0)
+        {
+            throw new InvalidOperationException($"Failed to find required templates in {packagesDir}. Please ensure the *Templates*.nupkg have been built.");
+        }
+
         Assert.Equal(4, builtPackages.Length);
 
         await VerifyCannotFindTemplateAsync(output, "web");

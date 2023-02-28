@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -69,7 +71,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = ({{endpoint.EmitHandlerDelegateType()}})del;
+                    var handler = ({{endpoint.EmitHandlerDelegateCast()}})del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -86,9 +88,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                         handler.Method);
                     }
 
-{{endpoint.EmitRequestHandler()}}
-{{endpoint.EmitFilteredRequestHandler()}}
-
+                    {{endpoint.EmitRequestHandler(baseIndent: 5)}}
+                    {{endpoint.EmitFilteredRequestHandler(baseIndent: 5)}}
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
@@ -101,28 +102,32 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             {
                 var dedupedByDelegate = endpoints.Distinct(EndpointDelegateComparer.Instance);
                 var code = new StringBuilder();
+                using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+                using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
                 foreach (var endpoint in dedupedByDelegate)
                 {
-                    code.AppendLine($$"""
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
-            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::{{endpoint.EmitHandlerDelegateType()}} handler,
-            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
-            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
-        {
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
-                    endpoints,
-                    pattern,
-                    handler,
-                    {{endpoint.EmitVerb()}},
-                    filePath,
-                    lineNumber);
-        }
-""");
+                    codeWriter.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint.HttpMethod}(");
+                    codeWriter.Indent++;
+                    codeWriter.WriteLine("this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
+                    codeWriter.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
+                    codeWriter.WriteLine($"global::{endpoint.EmitHandlerDelegateType()} handler,");
+                    codeWriter.WriteLine(@"[global::System.Runtime.CompilerServices.CallerFilePath] string filePath = """",");
+                    codeWriter.WriteLine("[global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)");
+                    codeWriter.Indent--;
+                    codeWriter.StartBlock();
+                    codeWriter.WriteLine("return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(");
+                    codeWriter.Indent++;
+                    codeWriter.WriteLine("endpoints,");
+                    codeWriter.WriteLine("pattern,");
+                    codeWriter.WriteLine("handler,");
+                    codeWriter.WriteLine($"{endpoint.EmitVerb()},");
+                    codeWriter.WriteLine("filePath,");
+                    codeWriter.WriteLine("lineNumber);");
+                    codeWriter.Indent--;
+                    codeWriter.EndBlock();
                 }
 
-                return code.ToString();
+                return stringWriter.ToString();
             });
 
         var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions);

@@ -506,6 +506,18 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Appends a frame representing a component parameter.
+    /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="name">The name of the attribute.</param>
+    /// <param name="value">The value of the attribute.</param>
+    public void AddComponentParameter(int sequence, string name, object? value)
+    {
+        AssertCanAddComponentParameter();
+        _entries.AppendAttribute(sequence, name, value);
+    }
+
+    /// <summary>
     /// Assigns the specified key value to the current element or component.
     /// </summary>
     /// <param name="value">The value for the key.</param>
@@ -646,6 +658,14 @@ public sealed class RenderTreeBuilder : IDisposable
             && _lastNonAttributeFrameType != RenderTreeFrameType.Component)
         {
             throw new InvalidOperationException($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}");
+        }
+    }
+
+    private void AssertCanAddComponentParameter()
+    {
+        if (_lastNonAttributeFrameType != RenderTreeFrameType.Component)
+        {
+            throw new InvalidOperationException($"Component parameters may only be added immediately after frames of type {RenderTreeFrameType.Component}");
         }
     }
 

@@ -228,13 +228,14 @@ internal sealed class NamedPipeConnection : TransportConnection, IConnectionName
 
             try
             {
-                // Try to gracefully close the socket even for aborts to match libuv behavior.
+                // Try to gracefully disconnect the pipe even for aborts to match other transport behavior.
                 _stream.Disconnect();
                 _streamDisconnected = true;
             }
             catch
             {
-                // Ignore any errors from NamedPipeStream.Disconnect() since we're tearing down the connection anyway.
+                // Ignore any errors from NamedPipeServerStream.Disconnect() since we're tearing down the connection anyway.
+                // _streamDisconnected is not set to true so the stream won't be pooled for reuse.
             }
         }
     }

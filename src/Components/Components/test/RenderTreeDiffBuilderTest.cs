@@ -210,7 +210,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange
         oldTree.OpenComponent<CaptureSetParametersComponent>(0);
         oldTree.SetKey("retained key");
-        oldTree.AddAttribute(1, "ParamName", "Param old value");
+        oldTree.AddComponentParameter(1, "ParamName", "Param old value");
         oldTree.CloseComponent();
         using var initial = new RenderTreeBuilder();
         GetRenderedBatch(initial, oldTree, false); // Assign initial IDs
@@ -218,12 +218,12 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         newTree.OpenComponent<CaptureSetParametersComponent>(0);
         newTree.SetKey("new key");
-        newTree.AddAttribute(1, "ParamName", "New component param value");
+        newTree.AddComponentParameter(1, "ParamName", "New component param value");
         newTree.CloseComponent();
 
         newTree.OpenComponent<CaptureSetParametersComponent>(0);
         newTree.SetKey("retained key");
-        newTree.AddAttribute(1, "ParamName", "Param new value");
+        newTree.AddComponentParameter(1, "ParamName", "Param new value");
         newTree.CloseComponent();
 
         // Without the key, it would modify the param on the first component,
@@ -251,12 +251,12 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange
         oldTree.OpenComponent<FakeComponent>(0);
         oldTree.SetKey("will delete");
-        oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Anything");
+        oldTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "Anything");
         oldTree.CloseComponent();
 
         oldTree.OpenComponent<FakeComponent>(0);
         oldTree.SetKey("will retain");
-        oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Retained param value");
+        oldTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "Retained param value");
         oldTree.CloseComponent();
 
         // Instantiate initial components
@@ -266,7 +266,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         newTree.OpenComponent<FakeComponent>(0);
         newTree.SetKey("will retain");
-        newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Retained param value");
+        newTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "Retained param value");
         newTree.CloseComponent();
 
         // Without the key, it updates the param on the first component, then
@@ -289,11 +289,11 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange
         oldTree.OpenComponent<FakeComponent>(0);
         oldTree.SetKey("will delete");
-        oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Will delete");
+        oldTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "Will delete");
         oldTree.CloseComponent();
 
         oldTree.OpenComponent<FakeComponent>(2);
-        oldTree.AddAttribute(3, nameof(FakeComponent.StringProperty), "Retained param value");
+        oldTree.AddComponentParameter(3, nameof(FakeComponent.StringProperty), "Retained param value");
         oldTree.CloseComponent();
 
         // Instantiate initial components
@@ -302,7 +302,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         var oldComponents = GetComponents(oldTree);
 
         newTree.OpenComponent<FakeComponent>(2);
-        newTree.AddAttribute(3, nameof(FakeComponent.StringProperty), "Retained param value");
+        newTree.AddComponentParameter(3, nameof(FakeComponent.StringProperty), "Retained param value");
         newTree.CloseComponent();
 
         // Act
@@ -1587,9 +1587,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange
         var testObject = new object();
         newTree.OpenComponent<FakeComponent>(0);
-        newTree.AddAttribute(1, nameof(FakeComponent.IntProperty), 123);
-        newTree.AddAttribute(2, nameof(FakeComponent.StringProperty), "some string");
-        newTree.AddAttribute(3, nameof(FakeComponent.ObjectProperty), testObject);
+        newTree.AddComponentParameter(1, nameof(FakeComponent.IntProperty), 123);
+        newTree.AddComponentParameter(2, nameof(FakeComponent.StringProperty), "some string");
+        newTree.AddComponentParameter(3, nameof(FakeComponent.ObjectProperty), testObject);
         newTree.CloseComponent();
 
         // Act
@@ -1703,12 +1703,12 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange
         var objectWillNotChange = new object();
         oldTree.OpenComponent<FakeComponent>(12);
-        oldTree.AddAttribute(13, nameof(FakeComponent.StringProperty), "String will change");
-        oldTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
+        oldTree.AddComponentParameter(13, nameof(FakeComponent.StringProperty), "String will change");
+        oldTree.AddComponentParameter(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
         oldTree.CloseComponent();
         newTree.OpenComponent<FakeComponent>(12);
-        newTree.AddAttribute(13, nameof(FakeComponent.StringProperty), "String did change");
-        newTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
+        newTree.AddComponentParameter(13, nameof(FakeComponent.StringProperty), "String did change");
+        newTree.AddComponentParameter(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
         newTree.CloseComponent();
 
         using var batchBuilder = new RenderBatchBuilder();
@@ -1739,25 +1739,25 @@ public class RenderTreeDiffBuilderTest : IDisposable
         foreach (var tree in new[] { oldTree, newTree })
         {
             tree.OpenComponent<CaptureSetParametersComponent>(0);
-            tree.AddAttribute(1, "MyString", "Some fixed string");
-            tree.AddAttribute(1, "MyByte", (byte)123);
-            tree.AddAttribute(1, "MyInt", int.MaxValue);
-            tree.AddAttribute(1, "MyLong", long.MaxValue);
-            tree.AddAttribute(1, "MyBool", true);
-            tree.AddAttribute(1, "MyFloat", float.MaxValue);
-            tree.AddAttribute(1, "MyDouble", double.MaxValue);
-            tree.AddAttribute(1, "MyDecimal", decimal.MinusOne);
-            tree.AddAttribute(1, "MyDate", dateTimeWillNotChange);
-            tree.AddAttribute(1, "MyGuid", Guid.Empty);
-            tree.AddAttribute(1, "MySByte", (sbyte)123);
-            tree.AddAttribute(1, "MyShort", (short)123);
-            tree.AddAttribute(1, "MyUShort", (ushort)123);
-            tree.AddAttribute(1, "MyUInt", uint.MaxValue);
-            tree.AddAttribute(1, "MyULong", ulong.MaxValue);
-            tree.AddAttribute(1, "MyChar", 'c');
-            tree.AddAttribute(1, "MyEnum", StringComparison.OrdinalIgnoreCase);
-            tree.AddAttribute(1, "MyEventCallBack", EventCallback.Empty);
-            tree.AddAttribute(1, "MyEventCallBackOfT", EventCallback<int>.Empty);
+            tree.AddComponentParameter(1, "MyString", "Some fixed string");
+            tree.AddComponentParameter(1, "MyByte", (byte)123);
+            tree.AddComponentParameter(1, "MyInt", int.MaxValue);
+            tree.AddComponentParameter(1, "MyLong", long.MaxValue);
+            tree.AddComponentParameter(1, "MyBool", true);
+            tree.AddComponentParameter(1, "MyFloat", float.MaxValue);
+            tree.AddComponentParameter(1, "MyDouble", double.MaxValue);
+            tree.AddComponentParameter(1, "MyDecimal", decimal.MinusOne);
+            tree.AddComponentParameter(1, "MyDate", dateTimeWillNotChange);
+            tree.AddComponentParameter(1, "MyGuid", Guid.Empty);
+            tree.AddComponentParameter(1, "MySByte", (sbyte)123);
+            tree.AddComponentParameter(1, "MyShort", (short)123);
+            tree.AddComponentParameter(1, "MyUShort", (ushort)123);
+            tree.AddComponentParameter(1, "MyUInt", uint.MaxValue);
+            tree.AddComponentParameter(1, "MyULong", ulong.MaxValue);
+            tree.AddComponentParameter(1, "MyChar", 'c');
+            tree.AddComponentParameter(1, "MyEnum", StringComparison.OrdinalIgnoreCase);
+            tree.AddComponentParameter(1, "MyEventCallBack", EventCallback.Empty);
+            tree.AddComponentParameter(1, "MyEventCallBackOfT", EventCallback<int>.Empty);
             tree.CloseComponent();
         }
 
@@ -1787,7 +1787,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         foreach (var tree in new[] { oldTree, newTree })
         {
             tree.OpenComponent<CaptureSetParametersComponent>(0);
-            tree.AddAttribute(1, "MyFragment", fragmentWillNotChange);
+            tree.AddComponentParameter(1, "MyFragment", fragmentWillNotChange);
             tree.CloseComponent();
         }
 
@@ -2018,14 +2018,14 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange
         oldTree.OpenComponent<CaptureSetParametersComponent>(0);
         oldTree.SetKey("first key");
-        oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "First param");
+        oldTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "First param");
         oldTree.CloseComponent();
 
         oldTree.AddContent(2, "Unkeyed item");
 
         oldTree.OpenComponent<CaptureSetParametersComponent>(0);
         oldTree.SetKey("second key");
-        oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Second param");
+        oldTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "Second param");
         oldTree.CloseComponent();
 
         using var renderTreeBuilder = new RenderTreeBuilder();
@@ -2034,14 +2034,14 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         newTree.OpenComponent<CaptureSetParametersComponent>(0);
         newTree.SetKey("second key");
-        newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Second param");
+        newTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "Second param");
         newTree.CloseComponent();
 
         newTree.AddContent(2, "Unkeyed item");
 
         newTree.OpenComponent<CaptureSetParametersComponent>(0);
         newTree.SetKey("first key");
-        newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "First param modified");
+        newTree.AddComponentParameter(1, nameof(FakeComponent.StringProperty), "First param modified");
         newTree.CloseComponent();
 
         // Without the key, it changes the parameter on both

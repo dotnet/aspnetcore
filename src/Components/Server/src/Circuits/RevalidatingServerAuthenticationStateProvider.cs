@@ -31,7 +31,13 @@ public abstract class RevalidatingServerAuthenticationStateProvider
         // existing revalidation loop and start a new one
         AuthenticationStateChanged += authenticationStateTask =>
         {
-            _loopCancellationTokenSource?.Cancel();
+            var oldCancellationTokenSource = _loopCancellationTokenSource;
+            if (oldCancellationTokenSource is not null)
+            {
+                oldCancellationTokenSource.Cancel();
+                oldCancellationTokenSource.Dispose();
+            }
+            
             _loopCancellationTokenSource = new CancellationTokenSource();
             _ = RevalidationLoop(authenticationStateTask, _loopCancellationTokenSource.Token);
         };

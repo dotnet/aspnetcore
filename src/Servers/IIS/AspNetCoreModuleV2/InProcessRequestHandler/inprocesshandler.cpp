@@ -25,7 +25,8 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pRequestHandlerContext(pRequestHandlerContext),
    m_pAsyncCompletionHandler(pAsyncCompletion),
    m_pDisconnectHandler(pDisconnectHandler),
-   m_disconnectFired(false)
+   m_disconnectFired(false),
+   m_queueNotified(false)
 {
     InitializeSRWLock(&m_srwDisconnectLock);
 }
@@ -114,6 +115,14 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
     if (pManagedHttpContext != nullptr)
     {
         m_pDisconnectHandler(pManagedHttpContext);
+        {
+            // lock before notifying, this prevents the condition where m_queueNotified is already checked but
+            // the condition_variable isn't waiting yet, which would cause notify_all to NOOP and block
+            // IndicateManagedRequestComplete until a spurious wakeup
+            std::lock_guard<std::mutex> lock(m_lockQueue);
+            m_queueNotified = true;
+        }
+        m_queueCheck.notify_all();
     }
 }
 
@@ -122,11 +131,28 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
     VOID
 )
 {
+    bool disconnectFired = false;
     {
         SRWExclusiveLock lock(m_srwDisconnectLock);
         m_fManagedRequestComplete = TRUE;
         m_pManagedHttpContext = nullptr;
+        disconnectFired = m_disconnectFired;
     }
+
+    if (disconnectFired)
+    {
+        // Block until we know NotifyDisconnect completed
+        // this is because the caller of IndicateManagedRequestComplete will dispose the
+        // GCHandle pointing at m_pManagedHttpContext, and a new GCHandle could use the same address
+        // for the next request, this could cause an in-progress NotifyDisconnect call to disconnect the new request
+        std::unique_lock<std::mutex> lock(m_lockQueue);
+        // loop to handle spurious wakeups
+        while (!m_queueNotified)
+        {
+            m_queueCheck.wait(lock);
+        }
+    }
+
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_MANAGED_REQUEST_COMPLETION>(m_pW3Context, nullptr);
 }
 

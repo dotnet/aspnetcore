@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
@@ -25,7 +26,7 @@ internal class EndpointResponse
     {
         WellKnownTypes = wellKnownTypes;
         ResponseType = UnwrapResponseType(method);
-        WrappedResponseType = method.ReturnType.ToString();
+        WrappedResponseType = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
         IsAwaitable = GetIsAwaitable(method);
         IsVoid = method.ReturnsVoid;
         IsIResult = GetIsIResult();

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -29,6 +31,7 @@ public static class WebHostBuilderNamedPipeExtensions
 
         hostBuilder.ConfigureServices(services =>
         {
+            services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddSingleton<IConnectionListenerFactory, NamedPipeTransportFactory>();
         });
         return hostBuilder;
