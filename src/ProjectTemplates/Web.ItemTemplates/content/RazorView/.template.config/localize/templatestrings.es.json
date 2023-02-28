@@ -1,0 +1,6 @@
+{
+  "author": "Microsoft",
+  "name": "Razor View",
+  "description": "An empty Razor View",
+  "postActions/openInEditor/description": "Opens the created view in the editor"
+}
