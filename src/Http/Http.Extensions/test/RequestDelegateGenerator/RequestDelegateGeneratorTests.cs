@@ -201,7 +201,7 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
 
     [Theory]
     [MemberData(nameof(TryParsableParameters))]
-    public async Task MapAction_TryParsableRouteParameters(string typeName, string routeValue, object expectedParameterValue)
+    public async Task MapAction_TryParsableExplicitRouteParameters(string typeName, string routeValue, object expectedParameterValue)
     {
         var (results, compilation) = await RunGeneratorAsync($$"""
 app.MapGet("/{routeValue}", (HttpContext context, [FromRoute]{{typeName}} routeValue) =>
