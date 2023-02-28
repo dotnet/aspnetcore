@@ -44,8 +44,7 @@ internal static class EndpointParameterEmitter
     {
         if (endpointParameter.IsParsable)
         {
-            var parsingBlock = endpointParameter.ParsingBlockEmitter(endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
-            codeWriter.WriteLine(parsingBlock);
+            endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
         else
