@@ -371,7 +371,9 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
   });
   const exports = await runtime.getAssemblyExports('Microsoft.AspNetCore.Components.WebAssembly');
   Object.assign(Blazor._internal, {
-    ...exports.Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime,
+    dotNetExports: {
+      ...exports.Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime,
+    },
   });
   attachInteropInvoker();
   if (resourceLoader.bootConfig.debugBuild && resourceLoader.bootConfig.cacheBootResources) {
@@ -415,7 +417,6 @@ async function loadSatelliteAssemblies(resourceLoader: WebAssemblyResourceLoader
       loader(wrapper);
     }));
 }
-
 
 async function loadLazyAssembly(resourceLoader: WebAssemblyResourceLoader, assemblyNameToLoad: string): Promise<{ dll: Uint8Array, pdb: Uint8Array | null }> {
   const resources = resourceLoader.bootConfig.resources;
@@ -466,7 +467,7 @@ function attachInteropInvoker(): void {
         ? dotNetObjectId.toString()
         : assemblyName;
 
-      Blazor._internal.BeginInvokeDotNet!(
+      Blazor._internal.dotNetExports!.BeginInvokeDotNet!(
         callId ? callId.toString() : null,
         assemblyNameOrDotNetObjectId,
         methodIdentifier,
@@ -474,14 +475,14 @@ function attachInteropInvoker(): void {
       );
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      Blazor._internal.EndInvokeJS!(serializedArgs);
+      Blazor._internal.dotNetExports!.EndInvokeJS(serializedArgs);
     },
     sendByteArray: (id: number, data: Uint8Array): void => {
-      Blazor._internal.ReceiveByteArrayFromJS!(id, data);
+      Blazor._internal.dotNetExports!.ReceiveByteArrayFromJS(id, data);
     },
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       assertHeapIsNotLocked();
-      return Blazor._internal.InvokeDotNet!(
+      return Blazor._internal.dotNetExports!.InvokeDotNet(
         assemblyName ? assemblyName : null,
         methodIdentifier,
         dotNetObjectId ?? 0,

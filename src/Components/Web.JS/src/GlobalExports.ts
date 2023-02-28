@@ -12,7 +12,7 @@ import { NavigationLock } from './NavigationLock';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { Platform, Pointer, System_String, System_Array, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
+import { Platform, Pointer } from './Platform/Platform';
 import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
@@ -62,10 +62,12 @@ interface IBlazor {
     attachWebRendererInterop?: typeof attachWebRendererInterop;
 
     // JSExport APIs
-    InvokeDotNet?: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => string | null;
-    EndInvokeJS?: (argsJson: string) => void;
-    BeginInvokeDotNet?: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
-    ReceiveByteArrayFromJS?: (id: number, data: Uint8Array) => void;
+    dotNetExports?: {
+      InvokeDotNet: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => string | null;
+      EndInvokeJS: (argsJson: string) => void;
+      BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
+      ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
+    }
 
     // APIs invoked by hot reload
     initHotReload?: (url: string) => Promise<void>;

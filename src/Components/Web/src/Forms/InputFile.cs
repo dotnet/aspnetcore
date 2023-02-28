@@ -45,11 +45,6 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     }
 
     /// <inheritdoc/>
-    protected override void OnInitialized()
-    {
-    }
-
-    /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

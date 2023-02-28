@@ -450,7 +450,7 @@ export module DotNet {
 
   function formatError(error: Error | string): string {
       if (error instanceof Error) {
-          return `${error.message}\n${error.stack}`;
+          return error.stack ?? error.message;
       }
 
       return error ? error.toString() : "null";

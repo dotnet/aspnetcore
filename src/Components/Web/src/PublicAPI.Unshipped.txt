@@ -1,1 +1,2 @@
 #nullable enable
+*REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
