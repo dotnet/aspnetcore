@@ -22,7 +22,7 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapShortCircuit(this IEndpointRouteBuilder builder, int statusCode, params string[] routePrefixes)
     {
-        var group = builder.MapGroup("").WithDisplayName("ShortCircuit");
+        var group = builder.MapGroup("");
         foreach (var routePrefix in routePrefixes)
         {
             string route;
@@ -34,9 +34,29 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
             {
                 route = $"{routePrefix}/{{**catchall}}";
             }
-            group.Map(routePrefix, _shortCircuitDelegate);
+            group.Map(routePrefix, _shortCircuitDelegate).ShortCircuit(statusCode);
         }
 
-        return group.ShortCircuit(statusCode);
+        return new EndpointConventionBuilder(group);
+    }
+
+    private sealed class EndpointConventionBuilder : IEndpointConventionBuilder
+    {
+        private readonly IEndpointConventionBuilder _endpointConventionBuilder;
+
+        public EndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        {
+            _endpointConventionBuilder = endpointConventionBuilder;
+        }
+
+        public void Add(Action<EndpointBuilder> convention)
+        {
+            _endpointConventionBuilder.Add(convention);
+        }
+
+        public void Finally(Action<EndpointBuilder> finalConvention)
+        {
+            _endpointConventionBuilder.Finally(finalConvention);
+        }
     }
 }
