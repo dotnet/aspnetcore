@@ -16,7 +16,7 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
     private RenderFragment? _content;
 
     /// <summary>
-    /// Gets or sets the Id that determines which <see cref="SectionContent"/> instances will provide
+    /// Gets or sets the ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
     [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
