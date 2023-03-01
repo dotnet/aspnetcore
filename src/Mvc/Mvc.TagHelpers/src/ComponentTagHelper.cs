@@ -91,7 +91,7 @@ public sealed class ComponentTagHelper : TagHelper
         }
 
         var requestServices = ViewContext.HttpContext.RequestServices;
-        var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
+        var componentRenderer = requestServices.GetRequiredService<ComponentRenderer>();
         var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
         // Reset the TagName. We don't want `component` to render.

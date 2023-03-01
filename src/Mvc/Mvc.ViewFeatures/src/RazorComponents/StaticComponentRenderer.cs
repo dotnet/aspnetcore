@@ -4,9 +4,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,19 +18,21 @@ internal sealed class StaticComponentRenderer
     private readonly HtmlRenderer _renderer;
     private readonly object _lock = new();
 
+    public Dispatcher Dispatcher => _renderer.Dispatcher;
+
     public StaticComponentRenderer(HtmlRenderer renderer)
     {
         _renderer = renderer;
     }
 
-    public async ValueTask<IHtmlContent> PrerenderComponentAsync(
+    public async ValueTask<HtmlComponent> PrerenderComponentAsync(
         ParameterView parameters,
         HttpContext httpContext,
         Type componentType)
     {
         await InitializeStandardComponentServicesAsync(httpContext);
 
-        ComponentRenderedText result = default;
+        HtmlComponent result = default;
         try
         {
             result = await _renderer.Dispatcher.InvokeAsync(() => _renderer.RenderComponentAsync(
@@ -52,10 +53,10 @@ internal sealed class StaticComponentRenderer
             }
 
             httpContext.Response.Redirect(navigationException.Location);
-            return HtmlString.Empty;
+            return HtmlComponent.Empty;
         }
 
-        return result.HtmlContent;
+        return result;
     }
 
     private Task InitializeStandardComponentServicesAsync(HttpContext httpContext)

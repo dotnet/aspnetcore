@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal sealed class ComponentRenderer : IComponentRenderer
+internal sealed class ComponentRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
     private static readonly object InvokedRenderModesKey = new object();
@@ -54,7 +56,7 @@ internal sealed class ComponentRenderer : IComponentRenderer
             RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
             RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
             RenderMode.Static => await StaticComponentAsync(context, componentType, parameterView),
-            RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(context, componentType, parameterView),
+            RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(componentType, parameterView),
             RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(context, componentType, parameterView),
             _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(renderMode), nameof(renderMode)),
         };
@@ -111,12 +113,13 @@ internal sealed class ComponentRenderer : IComponentRenderer
         }
     }
 
-    private ValueTask<IHtmlContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<IHtmlContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
-        return _staticComponentRenderer.PrerenderComponentAsync(
+        var htmlComponent = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
             context,
             type);
+        return new PrerenderedComponentHtmlContent(_staticComponentRenderer.Dispatcher, htmlComponent, null, null);
     }
 
     private async Task<IHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
@@ -126,43 +129,33 @@ internal sealed class ComponentRenderer : IComponentRenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var currentInvocation = _serverComponentSerializer.SerializeInvocation(
+        var marker = _serverComponentSerializer.SerializeInvocation(
             invocationId,
             type,
             parametersCollection,
             prerendered: true);
 
-        var result = await _staticComponentRenderer.PrerenderComponentAsync(
+        var htmlComponent = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
             context,
             type);
 
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ViewBuffer.ViewPageSize);
-        ServerComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
-        viewBuffer.AppendHtml(result);
-        ServerComponentSerializer.AppendEpilogue(viewBuffer, currentInvocation);
-
-        return viewBuffer;
+        return new PrerenderedComponentHtmlContent(_staticComponentRenderer.Dispatcher, htmlComponent, marker, null);
     }
 
     private async ValueTask<IHtmlContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
-        var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(
+        var marker = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
             parametersCollection,
             prerendered: true);
 
-        var result = await _staticComponentRenderer.PrerenderComponentAsync(
+        var htmlComponent = await _staticComponentRenderer.PrerenderComponentAsync(
             parametersCollection,
             context,
             type);
 
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ViewBuffer.ViewPageSize);
-        WebAssemblyComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
-        viewBuffer.AppendHtml(result);
-        WebAssemblyComponentSerializer.AppendEpilogue(viewBuffer, currentInvocation);
-
-        return viewBuffer;
+        return new PrerenderedComponentHtmlContent(_staticComponentRenderer.Dispatcher, htmlComponent, null, marker);
     }
 
     private IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
@@ -172,18 +165,71 @@ internal sealed class ComponentRenderer : IComponentRenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
-
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ServerComponentSerializer.PreambleBufferSize);
-        ServerComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
-        return viewBuffer;
+        var marker = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
+        return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 
-    private IHtmlContent NonPrerenderedWebAssemblyComponent(HttpContext context, Type type, ParameterView parametersCollection)
+    private static IHtmlContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
     {
-        var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ServerComponentSerializer.PreambleBufferSize);
-        WebAssemblyComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
-        return viewBuffer;
+        var marker = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
+        return new PrerenderedComponentHtmlContent(null, null, null, marker);
+    }
+
+    private class PrerenderedComponentHtmlContent : IHtmlContent, IAsyncHtmlContent
+    {
+        private readonly Dispatcher _dispatcher;
+        private readonly HtmlComponent _htmlToEmitOrNull;
+        private readonly ServerComponentMarker? _serverMarker;
+        private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
+
+        public PrerenderedComponentHtmlContent(
+            Dispatcher dispatcher,
+            HtmlComponent htmlToEmitOrNull, // If null, we're only emitting the markers
+            ServerComponentMarker? serverMarker,
+            WebAssemblyComponentMarker? webAssemblyMarker)
+        {
+            _dispatcher = dispatcher;
+            _htmlToEmitOrNull = htmlToEmitOrNull;
+            _serverMarker = serverMarker;
+            _webAssemblyMarker = webAssemblyMarker;
+        }
+
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        {
+            if (_serverMarker.HasValue)
+            {
+                ServerComponentSerializer.AppendPreamble(writer, _serverMarker.Value);
+            }
+            else if (_webAssemblyMarker.HasValue)
+            {
+                WebAssemblyComponentSerializer.AppendPreamble(writer, _webAssemblyMarker.Value);
+            }
+
+            if (_htmlToEmitOrNull is { } htmlToEmit)
+            {
+                htmlToEmit.WriteHtmlTo(writer);
+
+                if (_serverMarker.HasValue)
+                {
+                    ServerComponentSerializer.AppendEpilogue(writer, _serverMarker.Value);
+                }
+                else if (_webAssemblyMarker.HasValue)
+                {
+                    WebAssemblyComponentSerializer.AppendPreamble(writer, _webAssemblyMarker.Value);
+                }
+            }
+        }
+
+        public async ValueTask WriteToAsync(TextWriter writer)
+        {
+            if (_dispatcher is null)
+            {
+                WriteTo(writer, HtmlEncoder.Default);
+            }
+            else
+            {
+                await _dispatcher.InvokeAsync(() => WriteTo(writer, HtmlEncoder.Default));
+            }
+        }
     }
 }

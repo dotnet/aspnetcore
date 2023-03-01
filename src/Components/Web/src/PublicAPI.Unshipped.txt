@@ -15,3 +15,4 @@ Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Typ
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
+static Microsoft.AspNetCore.Components.Web.HtmlComponent.Empty.get -> Microsoft.AspNetCore.Components.Web.HtmlComponent!

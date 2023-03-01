@@ -54,7 +54,7 @@ public static class HtmlHelperComponentExtensions
         ArgumentNullException.ThrowIfNull(componentType);
 
         var viewContext = htmlHelper.ViewContext;
-        var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
+        var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<ComponentRenderer>();
         return await componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters);
     }
 }
