@@ -50,6 +50,7 @@
         IgnoreExitCode="true">
           <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode" />
     </Yarn>
+    <Message Importance="High" Text="yarn install failed on $(MSBuildProjectFullPath), trying again" Condition="'$(_YarnExitCode)' != '0'" />
     <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
         StandardOutputImportance="High"
         StandardErrorImportance="High"
