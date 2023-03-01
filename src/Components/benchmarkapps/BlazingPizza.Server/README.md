@@ -13,9 +13,9 @@
 
 1. Install Crank as per instructions at https://github.com/dotnet/crank/blob/main/docs/getting_started.md (no need for the agent)
 1. In a command prompt in this directory, build and this project via `dotnet build` and test it works using `dotnet run`
-1. Now submit the crank job:
+1. Now submit the crank job. You can use `aspnet-perf-lin` or `aspnet-perf-win`, e.g.:
 
-    crank --config benchmarks.yml --scenario hello --profile aspnet-perf-win
+    crank --config benchmarks.yml --scenario hello --profile aspnet-perf-lin
 
 ## Notes
 
