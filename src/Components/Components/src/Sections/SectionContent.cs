@@ -42,7 +42,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
 
         if (SectionId is null)
         {
-            throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(SectionId)}'.");
+            throw new InvalidOperationException($"{nameof(SectionContent)} requires a non-null value for the parameter '{nameof(SectionId)}'.");
         }
 
         if (!object.Equals(SectionId, _registeredSectionId) || IsDefaultContent != _registeredIsDefaultContent)
