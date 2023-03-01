@@ -28,7 +28,14 @@ public class RouteTemplate
         // RequiredValues will be ignored. RouteTemplate doesn't support them.
 
         TemplateText = other.RawText;
-        Segments = new List<TemplateSegment>(other.PathSegments.Select(p => new TemplateSegment(p)));
+
+        var segments = new List<TemplateSegment>(other.PathSegments.Count);
+        foreach (var p in other.PathSegments)
+        {
+            segments.Add(new TemplateSegment(p));
+        }
+        Segments = segments;
+
         Parameters = new List<TemplatePart>();
         for (var i = 0; i < Segments.Count; i++)
         {

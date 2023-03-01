@@ -199,8 +199,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         for (var i = 0; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
-            var hosts = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(CreateEdgeKey).ToArray();
-            if (hosts == null || hosts.Length == 0)
+            var hosts = GetEdgeKeys(endpoint);
+            if (hosts is null || hosts.Length == 0)
             {
                 hosts = new[] { EdgeKey.WildcardEdgeKey };
             }
@@ -221,8 +221,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         {
             var endpoint = endpoints[i];
 
-            var endpointKeys = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(CreateEdgeKey).ToArray() ?? Array.Empty<EdgeKey>();
-            if (endpointKeys.Length == 0)
+            var endpointKeys = GetEdgeKeys(endpoint);
+            if (endpointKeys is null || endpointKeys.Length == 0)
             {
                 // OK this means that this endpoint matches *all* hosts.
                 // So, loop and add it to all states.
@@ -259,9 +259,27 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             }
         }
 
-        return edges
-            .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
-            .ToArray();
+        var result = new PolicyNodeEdge[edges.Count];
+        var index = 0;
+        foreach (var kvp in edges)
+        {
+            result[index++] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+        }
+        return result;
+    }
+
+    private static EdgeKey[]? GetEdgeKeys(Endpoint endpoint)
+    {
+        List<EdgeKey>? result = null;
+        var hostMetadata = endpoint.Metadata.GetMetadata<IHostMetadata>();
+        if (hostMetadata is not null)
+        {
+            foreach (var host in hostMetadata.Hosts)
+            {
+                (result ??= new()).Add(CreateEdgeKey(host));
+            }
+        }
+        return result?.ToArray();
     }
 
     /// <inheritdoc />
@@ -271,10 +289,13 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.
-        var ordered = edges
-            .Select(e => (host: (EdgeKey)e.State, destination: e.Destination))
-            .OrderBy(e => GetScore(e.host))
-            .ToArray();
+        var ordered = new (EdgeKey host, int destination)[edges.Count];
+        for (int i = 0; i < edges.Count; i++)
+        {
+            PolicyJumpTableEdge e = edges[i];
+            ordered[i] = (host: (EdgeKey)e.State, destination: e.Destination);
+        }
+        Array.Sort(ordered, (left, right) => GetScore(left.host).CompareTo(GetScore(right.host)));
 
         return new HostPolicyJumpTable(exitDestination, ordered);
     }
