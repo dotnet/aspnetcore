@@ -33,7 +33,7 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
 
         if (SectionId is null)
         {
-            throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(SectionId)}'.");
+            throw new InvalidOperationException($"{nameof(SectionOutlet)} requires a non-null value for the parameter '{nameof(SectionId)}'.");
         }
 
         if (!object.Equals(SectionId, _subscribedSectionId))
