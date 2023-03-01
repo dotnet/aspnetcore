@@ -1,1 +1,4 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.OnEndInvokeJSFromDotNetAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit! circuit, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.OnInvokeDotNetFromJSAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit! circuit, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.OnUnhandledExceptionAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit! circuit, System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!

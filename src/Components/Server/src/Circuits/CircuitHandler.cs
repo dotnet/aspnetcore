@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 /// <summary>
-/// A <see cref="CircuitHandler"/> allows running code during specific lifetime events of a <see cref="Circuit"/>.
+/// A <see cref="CircuitHandler"/> allows running code during specific <see cref="Circuit"/> events.
 /// <list type="bullet">
 /// <item><description>
 /// <see cref="OnCircuitOpenedAsync(Circuit, CancellationToken)"/> is invoked after an initial circuit to the client
@@ -72,4 +72,29 @@ public abstract class CircuitHandler
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
     public virtual Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Invoked when an unhandled exception is thrown in the circuit.
+    /// </summary>
+    /// <param name="circuit">The <see cref="Circuit"/>.</param>
+    /// <param name="exception">The unhandled <see cref="Exception"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
+    public virtual Task OnUnhandledExceptionAsync(Circuit circuit, Exception exception, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Invoked when a JS to .NET invocation starts.
+    /// </summary>
+    /// <param name="circuit">The <see cref="Circuit"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
+    public virtual Task OnInvokeDotNetFromJSAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Invoked when a .NET to JS invocation ends.
+    /// </summary>
+    /// <param name="circuit">The <see cref="Circuit"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
+    public virtual Task OnEndInvokeJSFromDotNetAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
 }
