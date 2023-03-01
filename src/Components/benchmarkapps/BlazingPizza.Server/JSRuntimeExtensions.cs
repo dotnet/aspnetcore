@@ -1,13 +1,11 @@
-﻿using Microsoft.JSInterop;
-using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
-namespace BlazingPizza.Server
+namespace BlazingPizza.Server;
+
+public static class JSRuntimeExtensions
 {
-    public static class JSRuntimeExtensions
+    public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, string message)
     {
-        public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, string message)
-        {
-            return jsRuntime.InvokeAsync<bool>("confirm", message);
-        }
+        return jsRuntime.InvokeAsync<bool>("confirm", message);
     }
 }

@@ -27,8 +27,6 @@
     protected override void OnInitialized()
     {
         // Try to recover any temporary saved order
-        OrderState.ReplaceOrder(new Order
-        {
-        });
+        OrderState.ReplaceOrder(new Order());
     }
 }
