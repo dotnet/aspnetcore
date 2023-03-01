@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
@@ -207,7 +206,7 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         //
         services.TryAddScoped<IComponentRenderer, ComponentRenderer>();
         services.TryAddScoped<StaticComponentRenderer>();
-        services.TryAddScoped<HtmlRenderer>();
+        services.TryAddScoped<Microsoft.AspNetCore.Components.Rendering.HtmlRenderer>();
         services.TryAddScoped<NavigationManager, HttpNavigationManager>();
         services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
