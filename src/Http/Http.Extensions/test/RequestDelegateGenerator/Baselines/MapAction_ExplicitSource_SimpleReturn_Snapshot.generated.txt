@@ -268,7 +268,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var routeValue_local = routeValue_raw;
+                        var routeValue_temp = routeValue_raw?.ToString();
+                        string routeValue_local = routeValue_temp!;
 
                         if (wasParamCheckFailure)
                         {
@@ -293,7 +294,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             wasParamCheckFailure = true;
                         }
-                        var routeValue_local = routeValue_raw;
+                        var routeValue_temp = routeValue_raw?.ToString();
+                        string routeValue_local = routeValue_temp!;
 
                         if (wasParamCheckFailure)
                         {
