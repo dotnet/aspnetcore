@@ -7,7 +7,7 @@ jobs:
       localFolder: ../../../../artifacts/bin/BlazingPizza.Server/Release/net8.0
 
 scenarios:
-  hello:
+  ssr:
     application:
       job: server
       framework: net8.0
