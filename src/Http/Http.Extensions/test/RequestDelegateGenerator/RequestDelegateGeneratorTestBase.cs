@@ -405,8 +405,8 @@ public class Todo
         var index = 0;
         foreach (var textLine in sourceText.Lines)
         {
-            var expectedLine = expectedLines[index].Trim().ReplaceLineEndings();
-            var actualLine = textLine.ToString().Trim().ReplaceLineEndings();
+            var expectedLine = expectedLines[index].ReplaceLineEndings();
+            var actualLine = textLine.ToString().ReplaceLineEndings();
             if (!expectedLine.Equals(actualLine, StringComparison.Ordinal))
             {
                 message = $"""
