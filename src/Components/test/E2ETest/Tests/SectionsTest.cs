@@ -66,7 +66,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     [Fact]
     public void SecondSectionContentGetsDisposed_SectionOutletRendersFirstSectionContent()
     {
-        //Render Counter and TextComponent SectionContents with same Name
+        // Render Counter and TextComponent SectionContents with same Name
         // TextComponent SectionContent overrides Counter SectionContent
         _appElement.FindElement(By.Id("counter-render-section-content")).Click();
         _appElement.FindElement(By.Id("text-render-section-content")).Click();
