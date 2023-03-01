@@ -22,13 +22,13 @@
   "defaultName": "HomeController",
   "symbols": {
     "namespace": {
-      "description": "namespace for the generated code",
+      "description": "Namespace for the generated code",
       "replaces": "MyApp.Namespace",
       "type": "parameter"
     },
     "actions": {
-      "description": "create controller with read/write actions",
-      "displayName": "Add ReadWrite Actions",
+      "description": "Create controller with read/write actions",
+      "displayName": "Add Read/Write Actions",
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"

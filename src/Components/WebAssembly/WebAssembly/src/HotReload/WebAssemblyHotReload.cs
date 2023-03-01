@@ -28,11 +28,6 @@ public static partial class WebAssemblyHotReload
 
     internal static async Task InitializeAsync()
     {
-        // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
-#pragma warning disable IDE0200 // Remove unnecessary lambda expression
-        _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
-#pragma warning restore IDE0200 // Remove unnecessary lambda expression
-
         if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
         {
@@ -50,6 +45,11 @@ public static partial class WebAssemblyHotReload
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
+        // Analyzer has a bug where it doesn't handle ConditionalAttribute: https://github.com/dotnet/roslyn/issues/63464
+#pragma warning disable IDE0200 // Remove unnecessary lambda expression
+        Interlocked.CompareExchange(ref _hotReloadAgent, new HotReloadAgent(m => Debug.WriteLine(m)), null);
+#pragma warning restore IDE0200 // Remove unnecessary lambda expression
+
         var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
 
         _updateDeltas[0].ModuleId = moduleId;
@@ -57,7 +57,7 @@ public static partial class WebAssemblyHotReload
         _updateDeltas[0].ILDelta = ilDelta;
         _updateDeltas[0].PdbBytes = pdbBytes;
 
-        _hotReloadAgent!.ApplyDeltas(_updateDeltas);
+        _hotReloadAgent.ApplyDeltas(_updateDeltas);
     }
 
     /// <summary>

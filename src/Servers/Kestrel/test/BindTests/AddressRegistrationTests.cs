@@ -506,7 +506,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
                     {
                         if (mockHttps)
                         {
-                            options.DefaultCertificate = TestResources.GetTestCertificate();
+                            options.TestOverrideDefaultCertificate = TestResources.GetTestCertificate();
                         }
                     })
                     .Configure(ConfigureEchoAddress);
