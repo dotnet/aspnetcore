@@ -1,7 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
+  "name": "Kontroler rozhraní API",
+  "description": "Kontroler rozhraní API s akcemi čtení a zápisu nebo bez nich",
   "symbols/namespace/description": "Namespace for the generated code",
   "symbols/actions/description": "Create controller with read/write actions",
   "symbols/actions/displayName": "Add Read/Write Actions",
