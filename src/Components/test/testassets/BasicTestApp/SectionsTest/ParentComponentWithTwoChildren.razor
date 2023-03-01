@@ -18,7 +18,7 @@
 
 <Counter
     SectionContentExists="CounterSectionContentExists"
-    SectionId="CounterSectionContentName"
+    SectionId="CounterSectionContentId"
     IsDefaultContent="CounterIsDefaultContent">
 </Counter>
 
@@ -35,12 +35,12 @@
 </button><br />
 
 <button id="counter-change-section-content-name"
-        @onclick="@(() => CounterSectionContentName = SecondSectionId)">
+        @onclick="@(() => CounterSectionContentId = SecondSectionId)">
         Change Counter SectionContent Name
 </button><br />
 
 <button id="counter-change-section-content-name-nonexisting"
-        @onclick="@(() => CounterSectionContentName = "test3")">
+        @onclick="@(() => CounterSectionContentId = "test3")">
     Change Counter SectionContent Name to non sexisting
 </button><br />
 
@@ -56,7 +56,7 @@
 
 <TextComponent
     SectionContentExists="TextComponentSectionContentExists"
-    SectionId="TextComponentSectionContentName"
+    SectionId="TextComponentSectionContentId"
     IsDefaultContent="TextComponentIsDefaultContent">
 </TextComponent>
 
@@ -82,8 +82,8 @@
     private bool CounterSectionContentExists = false;
     private bool TextComponentSectionContentExists = false;
 
-    private object CounterSectionContentName = FirstSectionId;
-    private object TextComponentSectionContentName = FirstSectionId;
+    private object CounterSectionContentId = FirstSectionId;
+    private object TextComponentSectionContentId = FirstSectionId;
 
     private bool CounterIsDefaultContent = false;
     private bool TextComponentIsDefaultContent = false;

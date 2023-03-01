@@ -37,14 +37,14 @@ public sealed class HeadOutlet : ComponentBase
     {
         // Render the title content
         builder.OpenComponent<SectionOutlet>(0);
-        builder.AddComponentParameter(1, nameof(SectionOutlet.SectionId), TitleSectionOutletId);
+        builder.AddComponentParameter(1, nameof(SectionOutlet.SectionId), TitleSectionId);
         builder.CloseComponent();
 
         // Render the default title if it exists
         if (!string.IsNullOrEmpty(_defaultTitle))
         {
             builder.OpenComponent<SectionContent>(2);
-            builder.AddComponentParameter(3, nameof(SectionContent.SectionId), TitleSectionOutletId);
+            builder.AddComponentParameter(3, nameof(SectionContent.SectionId), TitleSectionId);
             builder.AddComponentParameter(4, nameof(SectionContent.IsDefaultContent), true);
             builder.AddComponentParameter(5, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
             builder.CloseComponent();
@@ -52,7 +52,7 @@ public sealed class HeadOutlet : ComponentBase
 
         // Render the rest of the head metadata
         builder.OpenComponent<SectionOutlet>(6);
-        builder.AddComponentParameter(7, nameof(SectionOutlet.SectionId), HeadSectionOutletId);
+        builder.AddComponentParameter(7, nameof(SectionOutlet.SectionId), TitleSectionId);
         builder.CloseComponent();
     }
 
