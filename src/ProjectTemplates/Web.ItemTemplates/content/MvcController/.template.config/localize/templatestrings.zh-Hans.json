@@ -1,7 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "MVC Controller",
-  "description": "MVC Controller with or without read/write actions",
+  "name": "MVC 控制器",
+  "description": "具有或不具有读/写操作的 MVC 控制器",
   "symbols/namespace/description": "Namespace for the generated code",
   "symbols/actions/description": "Create controller with read/write actions",
   "symbols/actions/displayName": "Add Read/Write Actions",
