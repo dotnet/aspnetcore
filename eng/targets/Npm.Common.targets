@@ -47,7 +47,7 @@
         StandardOutputImportance="High"
         StandardErrorImportance="High"
         IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
-        IgnoreExitCode="true" >
+        IgnoreExitCode="true">
           <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode" />
     </Yarn>
     <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
