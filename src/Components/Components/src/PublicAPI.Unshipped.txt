@@ -4,3 +4,7 @@ Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Excep
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
+override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
