@@ -1,0 +1,41 @@
+imports:
+    - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+
+jobs:
+  server:
+    source:
+      localFolder: ../../../../artifacts/bin/BlazingPizza.Server/Debug/net8.0
+
+scenarios:
+  hello:
+    application:
+      job: server
+      framework: net8.0
+      runtimeVersion: 8.0.0-preview.2.23125.5
+      executable: dotnet
+      arguments: BlazingPizza.Server.dll
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /
+
+profiles:
+  local:
+    variables:
+      serverAddress: localhost
+    jobs:
+      application:
+        endpoints:
+          - http://localhost:5010
+      load:
+        endpoints:
+          - http://localhost:5010
+  aspnet-perf-win:
+    jobs:
+      application:
+        endpoints:
+          - http://asp-perf-win:5001
+      load:
+        endpoints:
+          - http://asp-perf-db:5001
