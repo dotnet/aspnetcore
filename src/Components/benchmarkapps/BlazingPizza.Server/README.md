@@ -4,7 +4,7 @@
 
 1. Install Crank *and* Crank Agent as per instructions at https://github.com/dotnet/crank/blob/main/docs/getting_started.md
 1. In a command prompt in any directory, start the agent by running `crank-agent`. Leave that running.
-1. In a command prompt in this directory, build and this project via `dotnet build` and test it works using `dotnet run`
+1. In a command prompt in this directory, build and this project via `dotnet build -c Release` and optionally test it works using `dotnet run -c Release`
 1. Now submit the crank job:
 
     crank --config benchmarks.yml --scenario hello --profile local
@@ -12,7 +12,7 @@
 ## To run the job in the ASP.NET Core perf infrastructure (works for .NET team only)
 
 1. Install Crank as per instructions at https://github.com/dotnet/crank/blob/main/docs/getting_started.md (no need for the agent)
-1. In a command prompt in this directory, build and this project via `dotnet build` and test it works using `dotnet run`
+1. In a command prompt in this directory, build and this project via `dotnet build -c Release` and optionally test it works using `dotnet run -c Release`
 1. Now submit the crank job. You can use `aspnet-perf-lin` or `aspnet-perf-win`, e.g.:
 
     crank --config benchmarks.yml --scenario hello --profile aspnet-perf-lin

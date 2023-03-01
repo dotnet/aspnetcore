@@ -1,6 +1,4 @@
-using BlazingPizza.Server.Model;
-
-namespace BlazingPizza.Server;
+namespace BlazingPizza.Server.Model;
 
 public class ToppingsService
 {
