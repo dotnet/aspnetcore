@@ -1,5 +1,6 @@
 imports:
-    - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
 
 jobs:
   server:
@@ -19,63 +20,3 @@ scenarios:
       variables:
         serverPort: 5000
         path: /
-
-profiles:
-  local:
-    variables:
-      serverAddress: localhost
-    jobs:
-      application:
-        endpoints:
-          - http://localhost:5010
-      load:
-        endpoints:
-          - http://localhost:5010
-  aspnet-perf-lin:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 12
-    jobs:
-      db:
-        endpoints:
-          - http://asp-perf-db:5001
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints:
-          - http://asp-perf-lin:5001
-        variables:
-          databaseServer: 10.0.0.103
-        aliases:
-          - main
-      load:
-        endpoints:
-          - http://asp-perf-load:5001
-        aliases:
-          - warmup
-          - secondary
-  aspnet-perf-win:
-    variables:
-      serverAddress: 10.0.0.110
-      cores: 12
-    jobs:
-      db:
-        endpoints:
-          - http://asp-perf-load:5001
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints:
-          - http://asp-perf-win:5001
-        variables:
-          databaseServer: 10.0.0.104
-        aliases:
-          - main
-      load:
-        endpoints:
-          - http://asp-perf-db:5001
-        aliases:
-          - warmup
-          - secondary
