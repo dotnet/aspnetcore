@@ -7,7 +7,6 @@ using System.IO;
 
 internal sealed class CodeWriter : IndentedTextWriter
 {
-    private bool _indentationInitialized;
     public CodeWriter(StringWriter stringWriter, int baseIndent) : base(stringWriter)
     {
         Indent = baseIndent;
@@ -39,15 +38,9 @@ internal sealed class CodeWriter : IndentedTextWriter
     // indented code as part of a larger string.
     public void InitializeIndent()
     {
-        if (_indentationInitialized)
-        {
-            return;
-        }
-
         for (var i = 0; i < Indent; i++)
         {
             Write(DefaultTabString);
         }
-        _indentationInitialized = true;
     }
 }

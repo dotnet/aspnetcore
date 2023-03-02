@@ -45,7 +45,6 @@ internal static class EndpointEmitter
 
     public static void EmitRouteOrQueryResolver(this Endpoint endpoint, CodeWriter codeWriter)
     {
-
         foreach (var parameter in endpoint.Parameters)
         {
             if (parameter.Source == EndpointParameterSource.RouteOrQuery)
