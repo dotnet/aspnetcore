@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
   "name": "Vista de Razor",
-  "description": "An empty Razor View",
-  "postActions/openInEditor/description": "Opens the created view in the editor"
+  "description": "Vista de Razor vacía",
+  "postActions/openInEditor/description": "Abre la vista creada en el editor"
 }
