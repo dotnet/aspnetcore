@@ -66,6 +66,11 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
 
     void IDictionary<string, StringValues>.Add(string key, StringValues value)
     {
+        if (ContainsKey(key))
+        {
+            ThrowDuplicateKeyException();
+        }
+
         if (!PropertiesTrySetValue(key, value))
         {
             Extra.Add(key, value);
@@ -216,7 +221,7 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         }
         set
         {
-            if (StringValues.IsNullOrEmpty(value))
+            if (value.Count == 0)
             {
                 Remove(key);
             }
@@ -249,6 +254,11 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         {
             throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
         }
+    }
+
+    private static void ThrowDuplicateKeyException()
+    {
+        throw new ArgumentException("An item with the same key has already been added.");
     }
 
     public IEnumerable<string> GetValues(string key)

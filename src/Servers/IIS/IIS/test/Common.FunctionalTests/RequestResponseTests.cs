@@ -440,6 +440,13 @@ public class RequestResponseTests
     }
 
     [ConditionalFact]
+    public async Task TestStringValuesEmptyForMissingHeaders()
+    {
+        var result = await _fixture.Client.GetStringAsync($"/TestRequestHeaders");
+        Assert.Equal("Success", result);
+    }
+
+    [ConditionalFact]
     public async Task TestReadOffsetWorks()
     {
         var result = await _fixture.Client.PostAsync($"/TestReadOffsetWorks", new StringContent("Hello World"));
