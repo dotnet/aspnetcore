@@ -4,7 +4,6 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
