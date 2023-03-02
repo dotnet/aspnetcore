@@ -48,6 +48,8 @@ internal class EndpointParameter
             Source = EndpointParameterSource.Header;
             Name = GetParameterName(fromHeaderAttribute, parameter.Name);
             IsOptional = parameter.IsOptional();
+            IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+            ParsingBlockEmitter = parsingBlockEmitter;
         }
         else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
         {
