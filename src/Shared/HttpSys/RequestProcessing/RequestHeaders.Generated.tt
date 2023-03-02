@@ -92,24 +92,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     <#=MarkRead(prop.Index)#>;
                 }
 
-                if (_<#=prop.Name#>.Count > 0)
-                {
-                    return _<#=prop.Name#>;
-                }
-                return StringValues.Empty;
+                return _<#=prop.Name#>.Count > 0 ? _<#=prop.Name#> : StringValues.Empty;
             }
             set
             {
                 <#=MarkRead(prop.Index)#>;
 
-                if (value.Count > 0)
-                {
-                    _<#=prop.Name#> = value;
-                }
-                else
-                {
-                    _<#=prop.Name#> = default;
-                }
+                _<#=prop.Name#> = value.Count > 0 ? value : default;
             }
         }
 
