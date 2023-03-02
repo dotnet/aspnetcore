@@ -2,8 +2,8 @@
   "author": "Microsoft",
   "name": "Controlador de API",
   "description": "Controlador de API con o sin acciones de lectura y escritura",
-  "symbols/namespace/description": "Namespace for the generated code",
-  "symbols/actions/description": "Create controller with read/write actions",
-  "symbols/actions/displayName": "Add Read/Write Actions",
-  "postActions/openInEditor/description": "Opens the created controller in the editor"
+  "symbols/namespace/description": "Espacio de nombres para el código generado",
+  "symbols/actions/description": "Crear controlador con acciones de lectura y escritura",
+  "symbols/actions/displayName": "Agregar acciones de lectura y escritura",
+  "postActions/openInEditor/description": "Abre el controlador creado en el editor"
 }
