@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -91,8 +92,9 @@ public sealed class ComponentTagHelper : TagHelper
         }
 
         var requestServices = ViewContext.HttpContext.RequestServices;
-        var componentRenderer = requestServices.GetRequiredService<ComponentRenderer>();
-        var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
+        var componentPrerenderer = requestServices.GetRequiredService<ComponentPrerenderer>();
+        var parameters = _parameters is null || _parameters.Count == 0 ? ParameterView.Empty : ParameterView.FromDictionary(_parameters);
+        var result = await componentPrerenderer.PrerenderComponentAsync(ViewContext, ComponentType, RenderMode, parameters);
 
         // Reset the TagName. We don't want `component` to render.
         output.TagName = null;

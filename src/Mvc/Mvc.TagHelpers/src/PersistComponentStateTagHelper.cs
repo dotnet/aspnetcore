@@ -53,7 +53,7 @@ public class PersistComponentStateTagHelper : TagHelper
         var renderer = services.GetRequiredService<HtmlRenderer>();
         var store = PersistenceMode switch
         {
-            null => ComponentRenderer.GetPersistStateRenderMode(ViewContext) switch
+            null => ComponentPrerenderer.GetPersistStateRenderMode(ViewContext) switch
             {
                 InvokedRenderModes.Mode.None =>
                     null,

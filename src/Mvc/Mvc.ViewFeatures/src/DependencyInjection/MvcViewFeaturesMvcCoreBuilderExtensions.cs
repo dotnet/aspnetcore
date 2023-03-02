@@ -204,8 +204,7 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         //
         // Component rendering
         //
-        services.TryAddScoped<ComponentRenderer>();
-        services.TryAddScoped<StaticComponentRenderer>();
+        services.TryAddScoped<ComponentPrerenderer>();
         services.TryAddScoped<HtmlRenderer>();
         services.TryAddScoped<NavigationManager, HttpNavigationManager>();
         services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
