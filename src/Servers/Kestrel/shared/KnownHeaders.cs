@@ -859,12 +859,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
             {{
-                StringValues value = StringValues.Empty;
                 if (_contentLength.HasValue)
                 {{
-                    value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    return new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                 }}
-                return value;
+                return StringValues.Empty;
             }}
             set
             {{
@@ -872,12 +871,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}" : $@"
             get
             {{
-                StringValues value = StringValues.Empty;
                 if ({header.TestBit()})
                 {{
-                    value = _headers._{header.Identifier};
+                    return _headers._{header.Identifier};
                 }}
-                return value;
+                return StringValues.Empty;
             }}
             set
             {{

@@ -389,12 +389,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x2L) != 0)
                 {
-                    value = _headers._Connection;
+                    return _headers._Connection;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -414,12 +413,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x4L) != 0)
                 {
-                    value = _headers._Host;
+                    return _headers._Host;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -439,12 +437,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x10L) != 0)
                 {
-                    value = _headers._Authority;
+                    return _headers._Authority;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -464,12 +461,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x20L) != 0)
                 {
-                    value = _headers._Method;
+                    return _headers._Method;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -489,12 +485,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x40L) != 0)
                 {
-                    value = _headers._Path;
+                    return _headers._Path;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -514,12 +509,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x80L) != 0)
                 {
-                    value = _headers._Protocol;
+                    return _headers._Protocol;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -539,12 +533,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x100L) != 0)
                 {
-                    value = _headers._Scheme;
+                    return _headers._Scheme;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -564,12 +557,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x80000000000L) != 0)
                 {
-                    value = _headers._TransferEncoding;
+                    return _headers._TransferEncoding;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -589,12 +581,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if (_contentLength.HasValue)
                 {
-                    value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    return new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -8701,12 +8692,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x1L) != 0)
                 {
-                    value = _headers._Connection;
+                    return _headers._Connection;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -8727,12 +8717,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x1000L) != 0)
                 {
-                    value = _headers._Allow;
+                    return _headers._Allow;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -8752,12 +8741,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x2000L) != 0)
                 {
-                    value = _headers._AltSvc;
+                    return _headers._AltSvc;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -8778,12 +8766,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if ((_bits & 0x100000000L) != 0)
                 {
-                    value = _headers._TransferEncoding;
+                    return _headers._TransferEncoding;
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
@@ -8804,12 +8791,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value = StringValues.Empty;
                 if (_contentLength.HasValue)
                 {
-                    value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    return new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                 }
-                return value;
+                return StringValues.Empty;
             }
             set
             {
