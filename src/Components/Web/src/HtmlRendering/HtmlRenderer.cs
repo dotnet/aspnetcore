@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// Provides a mechanism for rendering components non-interactively as HTML markup.
 /// </summary>
-public class HtmlRenderer : IAsyncDisposable
+public sealed class HtmlRenderer : IAsyncDisposable
 {
     private readonly HtmlRendererCore _passiveHtmlRenderer;
 
