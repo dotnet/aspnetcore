@@ -345,7 +345,14 @@ public class KestrelConfigurationLoader
 
             // Now that defaults have been loaded, we can compare to the currently bound endpoints to see if the config changed.
             // There's no reason to rerun an EndpointConfigurations callback if nothing changed.
-            var matchingBoundEndpoints = endpointsToStop.Where(o => o.EndpointConfig == endpoint).ToList();
+            var matchingBoundEndpoints = new List<ListenOptions>();
+            foreach (var o in endpointsToStop)
+            {
+                if (o.EndpointConfig == endpoint)
+                {
+                    matchingBoundEndpoints.Add(o);
+                }
+            }
 
             if (matchingBoundEndpoints.Count > 0)
             {

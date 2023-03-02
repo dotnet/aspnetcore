@@ -38,7 +38,20 @@ public class KestrelServerOptions
     // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
     internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
     internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();
-    internal IEnumerable<ListenOptions> ListenOptions => CodeBackedListenOptions.Concat(ConfigurationBackedListenOptions);
+
+    internal ListenOptions[] GetListenOptions()
+    {
+        int resultCount = CodeBackedListenOptions.Count + ConfigurationBackedListenOptions.Count;
+        if (resultCount == 0)
+        {
+            return Array.Empty<ListenOptions>();
+        }
+
+        var result = new ListenOptions[resultCount];
+        CodeBackedListenOptions.CopyTo(result);
+        ConfigurationBackedListenOptions.CopyTo(result, CodeBackedListenOptions.Count);
+        return result;
+    }
 
     // For testing and debugging.
     internal List<ListenOptions> OptionsInUse { get; } = new List<ListenOptions>();

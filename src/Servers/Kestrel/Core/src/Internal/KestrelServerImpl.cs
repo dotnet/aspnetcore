@@ -314,7 +314,7 @@ internal sealed class KestrelServerImpl : IServer
 
             Options.ConfigurationLoader?.Load();
 
-            await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!, cancellationToken).ConfigureAwait(false);
+            await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, cancellationToken).ConfigureAwait(false);
             _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
         }
         finally
@@ -364,7 +364,11 @@ internal sealed class KestrelServerImpl : IServer
 
                 // TODO: It would be nice to start binding to new endpoints immediately and reconfigured endpoints as soon
                 // as the unbinding finished for the given endpoint rather than wait for all transports to unbind first.
-                var configsToStop = endpointsToStop.Select(lo => lo.EndpointConfig!).ToList();
+                var configsToStop = new List<EndpointConfig>(endpointsToStop.Count);
+                foreach (var lo in endpointsToStop)
+                {
+                    configsToStop.Add(lo.EndpointConfig!);
+                }
                 await _transportManager.StopEndpointsAsync(configsToStop, combinedCts.Token).ConfigureAwait(false);
 
                 foreach (var listenOption in endpointsToStop)
