@@ -39,49 +39,49 @@ public class HtmlRenderer : IAsyncDisposable
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
-    /// initial synchronous rendering state, which may later change. To wait for the component hierarchy to complete
+    /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
     /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
-    /// <returns>A task that completes with <see cref="HtmlComponent"/> instance representing the render output.</returns>
+    /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
         => _passiveHtmlRenderer.BeginRenderingComponentAsync(typeof(TComponent), ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
-    /// initial synchronous rendering state, which may later change. To wait for the component hierarchy to complete
+    /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
     /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <param name="parameters">Parameters for the component.</param>
-    /// <returns>A task that completes with <see cref="HtmlComponent"/> instance representing the render output.</returns>
+    /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         ParameterView parameters) where TComponent : IComponent
         => _passiveHtmlRenderer.BeginRenderingComponentAsync(typeof(TComponent), parameters);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
-    /// initial synchronous rendering state, which may later change. To wait for the component hierarchy to complete
+    /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
     /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <param name="componentType">The component type. This must implement <see cref="IComponent"/>.</param>
-    /// <returns>A task that completes with <see cref="HtmlComponent"/> instance representing the render output.</returns>
+    /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType)
         => _passiveHtmlRenderer.BeginRenderingComponentAsync(componentType, ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
-    /// initial synchronous rendering state, which may later change. To wait for the component hierarchy to complete
+    /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
     /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <param name="componentType">The component type. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    /// <returns>A task that completes with <see cref="HtmlComponent"/> instance representing the render output.</returns>
+    /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView parameters)
