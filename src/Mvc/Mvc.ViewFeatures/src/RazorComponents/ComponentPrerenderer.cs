@@ -36,6 +36,8 @@ internal sealed class ComponentPrerenderer
         _htmlRenderer = htmlRenderer;
     }
 
+    public Dispatcher Dispatcher => _htmlRenderer.Dispatcher;
+
     public async ValueTask<IHtmlContent> PrerenderComponentAsync(
         ViewContext viewContext,
         Type componentType,
@@ -257,7 +259,7 @@ internal sealed class ComponentPrerenderer
                 }
                 else if (_webAssemblyMarker.HasValue)
                 {
-                    WebAssemblyComponentSerializer.AppendPreamble(writer, _webAssemblyMarker.Value);
+                    WebAssemblyComponentSerializer.AppendEpilogue(writer, _webAssemblyMarker.Value);
                 }
             }
         }
