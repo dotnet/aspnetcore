@@ -76,16 +76,13 @@ internal static class StaticRouteHandlerModelEmitter
     }
 
     /*
-     * TODO: Emit invocation to the request handler. The structure
+     * Emit invocation to the request handler. The structure
      * involved here consists of a call to bind parameters, check
      * their validity (optionality), invoke the underlying handler with
      * the arguments bound from HTTP context, and write out the response.
      */
-    public static string EmitRequestHandler(this Endpoint endpoint, int baseIndent = 0)
+    public static void EmitRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-        using var codeWriter = new CodeWriter(stringWriter, baseIndent);
-
         codeWriter.WriteLine(endpoint.IsAwaitable ? "async Task RequestHandler(HttpContext httpContext)" : "Task RequestHandler(HttpContext httpContext)");
         codeWriter.StartBlock(); // Start handler method block
         codeWriter.WriteLine("var wasParamCheckFailure = false;");
@@ -115,8 +112,6 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
         codeWriter.WriteLine(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall());
         codeWriter.EndBlock(); // End handler method block
-
-        return stringWriter.ToString();
     }
 
     private static string EmitResponseWritingCall(this Endpoint endpoint)
@@ -156,14 +151,11 @@ internal static class StaticRouteHandlerModelEmitter
      * can be used to reduce the boxing that happens at runtime when constructing
      * the context object.
      */
-    public static string EmitFilteredRequestHandler(this Endpoint endpoint, int baseIndent = 0)
+    public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
         var invocationConstructor = endpoint.Parameters.Length == 0 ? "DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext";
         var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
-
-        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-        using var codeWriter = new CodeWriter(stringWriter, baseIndent);
 
         codeWriter.WriteLine("async Task RequestHandlerFiltered(HttpContext httpContext)");
         codeWriter.StartBlock(); // Start handler method block
@@ -181,8 +173,6 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine($"var result = await filteredInvocation(new {invocationConstructor}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
-
-        return stringWriter.ToString();
     }
 
     public static string EmitFilteredInvocation(this Endpoint endpoint)

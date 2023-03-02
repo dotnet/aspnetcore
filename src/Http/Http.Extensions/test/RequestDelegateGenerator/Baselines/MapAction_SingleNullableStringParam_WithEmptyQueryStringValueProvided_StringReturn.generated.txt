@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
             [(@"TestMapActions.cs", 23)] = (
-               (methodInfo, options) =>
+                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 23));
@@ -195,6 +195,13 @@ namespace Microsoft.AspNetCore.Http.Generated
             {
                 return httpContext.Response.WriteAsJsonAsync(obj);
             }
+        }
+
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
+                : (httpContext) => httpContext.Request.Query[$"{parameterName}"];
         }
 
         private static async ValueTask<(bool, T?)> TryResolveBody<T>(HttpContext httpContext, bool allowEmpty)

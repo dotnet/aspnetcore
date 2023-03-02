@@ -7,6 +7,7 @@ using System.IO;
 
 internal sealed class CodeWriter : IndentedTextWriter
 {
+    private bool _indentationInitialized;
     public CodeWriter(StringWriter stringWriter, int baseIndent) : base(stringWriter)
     {
         Indent = baseIndent;
@@ -22,5 +23,31 @@ internal sealed class CodeWriter : IndentedTextWriter
     {
         this.Indent--;
         this.WriteLine("}");
+    }
+
+    public void EndBlockWithComma()
+    {
+        this.Indent--;
+        this.WriteLine("},");
+    }
+
+    // The IndentedTextWriter adds the indentation
+    // _after_ writing the first line of text. This
+    // method can be used ot initialize indentation
+    // when an emit method might only emit one line
+    // of code or when the code writer is emitting
+    // indented code as part of a larger string.
+    public void InitializeIndent()
+    {
+        if (_indentationInitialized)
+        {
+            return;
+        }
+
+        for (var i = 0; i < Indent; i++)
+        {
+            Write(DefaultTabString);
+        }
+        _indentationInitialized = true;
     }
 }

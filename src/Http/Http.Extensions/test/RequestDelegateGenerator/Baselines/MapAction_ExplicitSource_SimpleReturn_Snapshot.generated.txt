@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
             [(@"TestMapActions.cs", 23)] = (
-               (methodInfo, options) =>
+                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 23));
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
             [(@"TestMapActions.cs", 24)] = (
-               (methodInfo, options) =>
+                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 24));
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
             [(@"TestMapActions.cs", 25)] = (
-               (methodInfo, options) =>
+                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
             [(@"TestMapActions.cs", 26)] = (
-               (methodInfo, options) =>
+                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 26));
@@ -320,6 +320,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options?.RouteParameterNames);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -339,9 +340,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: value (Type = string, IsOptional = False, IsParsable = False, Source = RouteOrQuery)
-                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true
-                            ? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString())
-                            : httpContext.Request.Query[$"value"];
+                        var value_raw = value_RouteOrQueryResolver(httpContext);
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
@@ -362,9 +361,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: value (Type = string, IsOptional = False, IsParsable = False, Source = RouteOrQuery)
-                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true
-                            ? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString())
-                            : httpContext.Request.Query[$"value"];
+                        var value_raw = value_RouteOrQueryResolver(httpContext);
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
@@ -384,7 +381,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
             [(@"TestMapActions.cs", 27)] = (
-               (methodInfo, options) =>
+                (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
@@ -394,6 +391,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options?.RouteParameterNames);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -413,9 +411,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: value (Type = string, IsOptional = False, IsParsable = False, Source = RouteOrQuery)
-                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true
-                            ? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString())
-                            : httpContext.Request.Query[$"value"];
+                        var value_raw = value_RouteOrQueryResolver(httpContext);
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
@@ -436,9 +432,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: value (Type = string, IsOptional = False, IsParsable = False, Source = RouteOrQuery)
-                        var value_raw = options?.RouteParameterNames?.Contains("value", StringComparer.OrdinalIgnoreCase) == true
-                            ? new StringValues(httpContext.Request.RouteValues[$"value"]?.ToString())
-                            : httpContext.Request.Query[$"value"];
+                        var value_raw = value_RouteOrQueryResolver(httpContext);
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
@@ -503,6 +497,13 @@ namespace Microsoft.AspNetCore.Http.Generated
             {
                 return httpContext.Response.WriteAsJsonAsync(obj);
             }
+        }
+
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues(httpContext.Request.RouteValues[$"{parameterName}"]?.ToString())
+                : (httpContext) => httpContext.Request.Query[$"{parameterName}"];
         }
 
         private static async ValueTask<(bool, T?)> TryResolveBody<T>(HttpContext httpContext, bool allowEmpty)
