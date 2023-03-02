@@ -71,7 +71,7 @@ internal sealed class ComponentPrerenderer
         };
     }
 
-    public async ValueTask<HtmlComponent> PrerenderComponentCoreAsync(
+    private async ValueTask<HtmlComponent> PrerenderComponentCoreAsync(
         ParameterView parameters,
         HttpContext httpContext,
         Type componentType)
