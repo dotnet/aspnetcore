@@ -159,7 +159,7 @@ internal static class StaticRouteHandlerModelEmitter
     public static string EmitFilteredRequestHandler(this Endpoint endpoint, int baseIndent = 0)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-        var invocationConstructor = endpoint.Parameters.Length == 0 ? "DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext";
+        var invocationConstructor = endpoint.Parameters.Length == 0 ? "new DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext.Create";
         var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
 
         using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
@@ -178,7 +178,7 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.StartBlock(); // Start if-statement block
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
-        codeWriter.WriteLine($"var result = await filteredInvocation(new {invocationConstructor}{invocationGenericArgs}(httpContext{argumentList}));");
+        codeWriter.WriteLine($"var result = await filteredInvocation({invocationConstructor}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
 
