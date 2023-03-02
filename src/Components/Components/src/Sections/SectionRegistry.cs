@@ -30,14 +30,14 @@ internal sealed class SectionRegistry
     {
         if (!_providersBySectionId.TryGetValue(sectionId, out var providers))
         {
-            throw new InvalidOperationException($"There are no content providers with the given SectionId.");
+            throw new InvalidOperationException($"There are no content providers with the given section ID.");
         }
 
         var index = providers.LastIndexOf(provider);
 
         if (index < 0)
         {
-            throw new InvalidOperationException($"The provider was not found in the providers list of the given SectionId.");
+            throw new InvalidOperationException($"The provider was not found in the providers list of the given section ID.");
         }
 
         providers.RemoveAt(index);
@@ -55,7 +55,7 @@ internal sealed class SectionRegistry
     {
         if (_subscribersBySectionId.ContainsKey(sectionId))
         {
-            throw new InvalidOperationException($"There is already a subscriber to the content with the given SectionId.");
+            throw new InvalidOperationException($"There is already a subscriber to the content with the given section ID.");
         }
 
         // Notify the new subscriber with any existing content.
@@ -69,7 +69,7 @@ internal sealed class SectionRegistry
     {
         if (!_subscribersBySectionId.Remove(sectionId))
         {
-            throw new InvalidOperationException($"The subscriber with the given SectionId is already unsubscribed.");
+            throw new InvalidOperationException($"The subscriber with the given section ID is already unsubscribed.");
         }
     }
 
@@ -77,7 +77,7 @@ internal sealed class SectionRegistry
     {
         if (!_providersBySectionId.TryGetValue(sectionId, out var providers))
         {
-            throw new InvalidOperationException($"There are no content providers with the given SectionId.");
+            throw new InvalidOperationException($"There are no content providers with the given section ID.");
         }
 
         // We only notify content changed for subscribers when the content of the
