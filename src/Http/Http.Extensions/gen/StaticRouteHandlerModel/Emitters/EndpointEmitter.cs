@@ -43,5 +43,18 @@ internal static class EndpointEmitter
         return stringWriter.ToString();
     }
 
+    public static void EmitRouteOrQueryResolver(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Source == EndpointParameterSource.RouteOrQuery)
+            {
+                var parameterName = parameter.Name;
+                codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
+                codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
+            }
+        }
+    }
+
     public static string EmitArgumentList(this Endpoint endpoint) => string.Join(", ", endpoint.Parameters.Select(p => p.EmitArgument()));
 }
