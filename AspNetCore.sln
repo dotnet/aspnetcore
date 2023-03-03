@@ -1776,6 +1776,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Endpoints.Tests", "src\Components\Endpoints\test\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj", "{5D438258-CB19-4282-814F-974ABBC71411}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorUnitedApp", "src\Components\Samples\BlazorUnitedApp\BlazorUnitedApp.csproj", "{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10665,6 +10667,22 @@ Global
 		{5D438258-CB19-4282-814F-974ABBC71411}.Release|x64.Build.0 = Release|Any CPU
 		{5D438258-CB19-4282-814F-974ABBC71411}.Release|x86.ActiveCfg = Release|Any CPU
 		{5D438258-CB19-4282-814F-974ABBC71411}.Release|x86.Build.0 = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|arm64.Build.0 = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|x64.Build.0 = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Debug|x86.Build.0 = Debug|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|arm64.ActiveCfg = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|arm64.Build.0 = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x64.ActiveCfg = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x64.Build.0 = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x86.ActiveCfg = Release|Any CPU
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11542,6 +11560,7 @@ Global
 		{7BAEB9BF-28F4-4DFD-9A04-E5193683C261} = {60D51C98-2CC0-40DF-B338-44154EFEE2FF}
 		{AE4D272D-6F13-42C8-9404-C149188AFA33} = {7BAEB9BF-28F4-4DFD-9A04-E5193683C261}
 		{5D438258-CB19-4282-814F-974ABBC71411} = {7BAEB9BF-28F4-4DFD-9A04-E5193683C261}
+		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E} = {5FE1FBC1-8CE3-4355-9866-44FE1307C5F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
