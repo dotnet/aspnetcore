@@ -159,7 +159,7 @@ internal static class StaticRouteHandlerModelEmitter
     public static string EmitFilteredRequestHandler(this Endpoint endpoint, int baseIndent = 0)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-        var invocationConstructor = endpoint.Parameters.Length == 0 ? "new DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext.Create";
+        var invocationConstructor = endpoint.Parameters.Length == 0 || endpoint.Parameters.Length > 8 ? "new DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext.Create";
         var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
 
         using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);

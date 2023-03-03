@@ -34,6 +34,13 @@ public abstract class EndpointFilterInvocationContext
     /// Creates a strongly-typed implementation of a <see cref="EndpointFilterInvocationContext"/>
     /// given the provided type parameters.
     /// </summary>
+    public static EndpointFilterInvocationContext Create(HttpContext httpContext) =>
+        new DefaultEndpointFilterInvocationContext(httpContext);
+
+    /// <summary>
+    /// Creates a strongly-typed implementation of a <see cref="EndpointFilterInvocationContext"/>
+    /// given the provided type parameters.
+    /// </summary>
     public static EndpointFilterInvocationContext Create<T>(HttpContext httpContext, T arg) =>
         new EndpointFilterInvocationContext<T>(httpContext, arg);
 
@@ -85,18 +92,4 @@ public abstract class EndpointFilterInvocationContext
     /// </summary>
     public static EndpointFilterInvocationContext Create<T1, T2, T3, T4, T5, T6, T7, T8>(HttpContext httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) =>
         new EndpointFilterInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8>(httpContext, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-
-    /// <summary>
-    /// Creates a strongly-typed implementation of a <see cref="EndpointFilterInvocationContext"/>
-    /// given the provided type parameters.
-    /// </summary>
-    public static EndpointFilterInvocationContext Create<T1, T2, T3, T4, T5, T6, T7, T8, T9>(HttpContext httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9) =>
-        new EndpointFilterInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8, T9>(httpContext, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-
-    /// <summary>
-    /// Creates a strongly-typed implementation of a <see cref="EndpointFilterInvocationContext"/>
-    /// given the provided type parameters.
-    /// </summary>
-    public static EndpointFilterInvocationContext Create<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(HttpContext httpContext, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10) =>
-        new EndpointFilterInvocationContext<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(httpContext, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 }
