@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.get -> System.IO.Pipes.NamedPipeServerStream!
+Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.NegotiatedCipherSuite.get -> System.Net.Security.TlsCipherSuite?
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint
