@@ -154,8 +154,12 @@ internal static class StaticRouteHandlerModelEmitter
     public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-        var invocationConstructor = endpoint.Parameters.Length == 0 ? "DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext";
-        var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
+        var invocationCreator = endpoint.Parameters.Length > 8
+            ? "new DefaultEndpointFilterInvocationContext"
+            : "EndpointFilterInvocationContext.Create";
+        var invocationGenericArgs = endpoint.Parameters.Length is > 0 and < 8
+            ? $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>"
+            : string.Empty;
 
         codeWriter.WriteLine("async Task RequestHandlerFiltered(HttpContext httpContext)");
         codeWriter.StartBlock(); // Start handler method block
@@ -170,7 +174,7 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.StartBlock(); // Start if-statement block
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
-        codeWriter.WriteLine($"var result = await filteredInvocation(new {invocationConstructor}{invocationGenericArgs}(httpContext{argumentList}));");
+        codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
     }
