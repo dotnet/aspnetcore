@@ -76,7 +76,7 @@ internal class EndpointParameter
         }
     }
 
-    private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Func<string, string, string>? parsingBlockEmitter)
+    private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Action<CodeWriter, string, string>? parsingBlockEmitter)
     {
         var parameterType = parameter.Type.UnwrapTypeSymbol();
 
@@ -132,35 +132,36 @@ internal class EndpointParameter
 
         if (IsOptional)
         {
-            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
-                        {{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}} {{outputArgument}} = default;
-                        if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})
-                        {
-                            {{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};
-                        }
-                        else if (string.IsNullOrEmpty({{inputArgument}}))
-                        {
-                            {{outputArgument}} = null;
-                        }
-                        else
-                        {
-                            wasParamCheckFailure = true;
-                        }
-""";
+            parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
+            {
+                writer.WriteLine($"""{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {outputArgument} = default;""");
+                writer.WriteLine($$"""if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})""");
+                writer.StartBlock();
+                writer.WriteLine($$"""{{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};""");
+                writer.EndBlock();
+                writer.WriteLine($$"""else if (string.IsNullOrEmpty({{inputArgument}}))""");
+                writer.StartBlock();
+                writer.WriteLine($$"""{{outputArgument}} = null;""");
+                writer.EndBlock();
+                writer.WriteLine("else");
+                writer.StartBlock();
+                writer.WriteLine("wasParamCheckFailure = true;");
+                writer.EndBlock();
+            };
         }
         else
         {
-            parsingBlockEmitter = (inputArgument, outputArgument) => $$"""
-                        if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})
-                        {
-                            wasParamCheckFailure = true;
-                        }
-""";
+            parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
+            {
+                writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
+                writer.StartBlock();
+                writer.WriteLine("wasParamCheckFailure = true;");
+                writer.EndBlock();
+            };
         }
 
         // Wrap the TryParse method call in an if-block and if it doesn't work set param check failure.
         return true;
-
     }
 
     public ITypeSymbol Type { get; }
@@ -173,7 +174,7 @@ internal class EndpointParameter
     public bool IsOptional { get; }
     [MemberNotNull("ParsingBlockEmitter")]
     public bool IsParsable { get; }
-    public Func<string, string, string> ParsingBlockEmitter { get; }
+    public Action<CodeWriter, string, string> ParsingBlockEmitter { get; }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
     private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out string? callingCode)
