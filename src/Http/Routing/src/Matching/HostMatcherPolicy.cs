@@ -263,7 +263,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         var index = 0;
         foreach (var kvp in edges)
         {
-            result[index++] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            result[index] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            index++;
         }
         return result;
     }
@@ -295,7 +296,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             PolicyJumpTableEdge e = edges[i];
             ordered[i] = (host: (EdgeKey)e.State, destination: e.Destination);
         }
-        Array.Sort(ordered, (left, right) => GetScore(left.host).CompareTo(GetScore(right.host)));
+        Array.Sort(ordered, static (left, right) => GetScore(left.host).CompareTo(GetScore(right.host)));
 
         return new HostPolicyJumpTable(exitDestination, ordered);
     }

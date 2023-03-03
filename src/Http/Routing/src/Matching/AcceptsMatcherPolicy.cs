@@ -240,7 +240,8 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
         var index = 0;
         foreach (var kvp in edges)
         {
-            result[index++] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            result[index] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            index++;
         }
         return result;
     }
@@ -268,7 +269,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             PolicyJumpTableEdge e = edges[i];
             ordered[i] = (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination);
         }
-        Array.Sort(ordered, (left, right) => GetScore(left.mediaType).CompareTo(GetScore(right.mediaType)));
+        Array.Sort(ordered, static (left, right) => GetScore(left.mediaType).CompareTo(GetScore(right.mediaType)));
 
         // If any edge matches all content types, then treat that as the 'exit'. This will
         // always happen because we insert a 415 endpoint.
