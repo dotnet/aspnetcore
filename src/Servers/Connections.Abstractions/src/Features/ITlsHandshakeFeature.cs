@@ -23,7 +23,7 @@ public interface ITlsHandshakeFeature
     /// <summary>
     /// Gets the <see cref="TlsCipherSuite"/>.
     /// </summary>
-    TlsCipherSuite? NegotiatedCipherSuite { get => null; }
+    TlsCipherSuite? NegotiatedCipherSuite => null;
 #endif
 
     /// <summary>
