@@ -514,7 +514,11 @@ app.MapGet("/hello", () => "Hello world!")
 object GetTodo() => new Todo() { Name = "Test Item"};
 app.MapGet("/", GetTodo);
 """},
-        new object[] { """app.MapGet("/", () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" }
+        new object[] { """app.MapGet("/", () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" },
+        new object[] { """
+Todo GetTodo() => new Todo() { Name = "Test Item"};
+app.MapGet("/", GetTodo);
+"""}
     };
 
     [Theory]

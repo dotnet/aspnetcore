@@ -132,7 +132,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (!endpoint.Response.IsVoid)
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsJsonAsync(result);";
+            return $"{returnOrAwait} {endpoint.EmitJsonResponse()}";
         }
         else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
         {
