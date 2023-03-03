@@ -146,6 +146,7 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ITlsHandshakeFeature>(feature);
         context.Features.Set<ITlsApplicationProtocolFeature>(feature);
         context.Features.Set<ISslStreamFeature>(feature);
+        context.Features.Set<SslStream>(sslStream); // Anti-pattern, but retain for back compat
 
         try
         {
@@ -300,7 +301,6 @@ internal sealed class HttpsConnectionMiddleware
             selector = (sender, name) =>
             {
                 feature.HostName = name;
-                context.Features.Set(sslStream);
                 var cert = _serverCertificateSelector(context, name);
                 if (cert != null)
                 {
