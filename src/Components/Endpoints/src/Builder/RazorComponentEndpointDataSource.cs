@@ -14,8 +14,9 @@ internal class RazorComponentEndpointDataSource : EndpointDataSource
     private readonly List<Action<EndpointBuilder>> _conventions = new();
 
     private List<Endpoint>? _endpoints;
-    private CancellationTokenSource? _cancellationTokenSource;
-    private IChangeToken? _changeToken;
+    // TODO: Implement endpoint data source updates https://github.com/dotnet/aspnetcore/issues/47026
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly IChangeToken _changeToken;
 
     public RazorComponentEndpointDataSource()
     {

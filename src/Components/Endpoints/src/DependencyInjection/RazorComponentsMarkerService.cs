@@ -3,13 +3,6 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-/// <summary>
-/// 
-/// </summary>
-public interface IRazorComponentsBuilder
+internal class RazorComponentsMarkerService
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public IServiceCollection Services { get; }
 }
