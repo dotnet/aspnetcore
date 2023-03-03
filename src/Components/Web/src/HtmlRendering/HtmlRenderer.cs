@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// Provides a mechanism for rendering components non-interactively as HTML markup.
 /// </summary>
-public sealed class HtmlRenderer : IAsyncDisposable
+public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
 {
     private readonly HtmlRendererCore _passiveHtmlRenderer;
 
@@ -25,6 +25,10 @@ public sealed class HtmlRenderer : IAsyncDisposable
         var componentActivator = services.GetService<IComponentActivator>() ?? DefaultComponentActivator.Instance;
         _passiveHtmlRenderer = new HtmlRendererCore(services, loggerFactory, componentActivator);
     }
+
+    /// <inheritdoc />
+    public void Dispose()
+        => _passiveHtmlRenderer.Dispose();
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

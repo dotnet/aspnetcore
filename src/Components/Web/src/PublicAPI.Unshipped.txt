@@ -9,6 +9,7 @@ Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>() -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispose() -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
