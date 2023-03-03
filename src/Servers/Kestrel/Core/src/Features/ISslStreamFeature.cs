@@ -6,7 +6,7 @@ using System.Net.Security;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 /// <summary>
-/// Feature to get access the connection's <see cref="SslStream" />.
+/// Feature to get access to the connection's <see cref="SslStream" />.
 /// This feature will not be available for non-TLS connections or HTTP/3.
 /// </summary>
 public interface ISslStreamFeature
