@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
   "name": "Zobrazení Razor",
-  "description": "An empty Razor View",
-  "postActions/openInEditor/description": "Opens the created view in the editor"
+  "description": "Prázdné zobrazení Razor",
+  "postActions/openInEditor/description": "Otevře vytvořené zobrazení v editoru"
 }
