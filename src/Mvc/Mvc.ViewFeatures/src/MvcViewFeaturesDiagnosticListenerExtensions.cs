@@ -117,6 +117,52 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
         }
     }
 
+    public static void BeforeRazorComponent(
+        this DiagnosticListener diagnosticListener,
+        Type componentType,
+        RenderMode renderMode,
+        ActionContext actionContext)
+    {
+        // Inlinable fast-path check if Diagnositcs is enabled
+        if (diagnosticListener.IsEnabled())
+        {
+            BeforeRazorComponentImpl(diagnosticListener, componentType, renderMode, actionContext);
+        }
+    }
+
+    private static void BeforeRazorComponentImpl(DiagnosticListener diagnosticListener, Type componentType, RenderMode renderMode, ActionContext actionContext)
+    {
+        if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewEventData.EventName))
+        {
+            diagnosticListener.Write(
+                Diagnostics.BeforeRazorComponentEventData.EventName,
+                new BeforeRazorComponentEventData(componentType, renderMode, actionContext));
+        }
+    }
+
+    public static void AfterRazorComponent(
+        this DiagnosticListener diagnosticListener,
+        Type componentType,
+        RenderMode renderMode,
+        ActionContext actionContext)
+    {
+        // Inlinable fast-path check if Diagnositcs is enabled
+        if (diagnosticListener.IsEnabled())
+        {
+            AfterRazorComponentImpl(diagnosticListener, componentType, renderMode, actionContext);
+        }
+    }
+
+    private static void AfterRazorComponentImpl(DiagnosticListener diagnosticListener, Type componentType, RenderMode renderMode, ActionContext actionContext)
+    {
+        if (diagnosticListener.IsEnabled(Diagnostics.AfterViewEventData.EventName))
+        {
+            diagnosticListener.Write(
+                Diagnostics.AfterRazorComponentEventData.EventName,
+                new AfterRazorComponentEventData(componentType, renderMode, actionContext));
+        }
+    }
+
     public static void BeforeView(
         this DiagnosticListener diagnosticListener,
         IView view,

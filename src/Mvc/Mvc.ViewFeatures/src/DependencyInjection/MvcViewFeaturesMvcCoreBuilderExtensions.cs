@@ -212,6 +212,7 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
+        services.TryAddScoped<RazorComponentResultExecutor>();
 
         services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 
