@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
@@ -58,10 +59,12 @@ namespace Microsoft.AspNetCore.Http.Generated
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Json;
     using Microsoft.AspNetCore.Http.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Primitives;
+    using Microsoft.Extensions.Options;
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
@@ -111,14 +114,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 : (httpContext) => httpContext.Request.Query[parameterName];
         }
 
-        private static bool IsValid(JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
-            => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null;
-
         private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
         {
             var runtimeType = value?.GetType();
-
-            if (IsValid(jsonTypeInfo, runtimeType))
+            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
             {
                 return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
             }
