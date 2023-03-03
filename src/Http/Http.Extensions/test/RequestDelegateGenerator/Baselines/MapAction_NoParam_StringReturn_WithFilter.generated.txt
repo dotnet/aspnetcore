@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
