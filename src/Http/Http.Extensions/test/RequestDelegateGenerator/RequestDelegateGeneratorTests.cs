@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Numerics;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
@@ -1319,6 +1320,39 @@ app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
 
             Assert.Null(httpContext.Items["uri"]);
             Assert.Equal(400, httpContext.Response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_Snapshot()
+    {
+        var source = new StringBuilder();
+
+        var i = 0;
+        while (i < BindAsyncUriTypesAndOptionalitySupport.Length * 2)
+        {
+            var bindAsyncType = BindAsyncUriTypesAndOptionalitySupport[i / 2][0];
+            source.AppendLine(CultureInfo.InvariantCulture, $$"""app.MapGet("/{{i}}", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) => "Hello world! {{i}}");""");
+            i++;
+            source.AppendLine(CultureInfo.InvariantCulture, $$"""app.MapGet("/{{i}}", ({{bindAsyncType}}? myBindAsyncParam) => "Hello world! {{i}}");""");
+            i++;
+        }
+
+        var (_, compilation) = await RunGeneratorAsync(source.ToString());
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+
+        var endpoints = GetEndpointsFromCompilation(compilation);
+        Assert.Equal(BindAsyncUriTypesAndOptionalitySupport.Length * 2, endpoints.Length);
+
+        for (i = 0; i < BindAsyncUriTypesAndOptionalitySupport.Length * 2; i++)
+        {
+            var httpContext = CreateHttpContext();
+            // Set a referrer header so BindAsync always succeeds and the route handler is always called optional or not.
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            await endpoints[i].RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, $"Hello world! {i}");
         }
     }
 
