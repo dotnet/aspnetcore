@@ -220,6 +220,25 @@ app.MapGet("/{routeValue}", (HttpContext context, [FromRoute]{{typeName}} routeV
 
     [Theory]
     [MemberData(nameof(TryParsableParameters))]
+    public async Task MapAction_TryParsableExplicitHeaderParameters(string typeName, string headerValue, object expectedParameterValue)
+    {
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/", (HttpContext context, [FromHeader]{{typeName}} headerValue) =>
+{
+    context.Items["tryParsable"] = headerValue;
+});
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["headerValue"] = headerValue;
+
+        await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableParameters))]
     public async Task MapAction_SingleParsable_StringReturn(string typeName, string queryStringInput, object expectedParameterValue)
     {
         var (results, compilation) = await RunGeneratorAsync($$"""
