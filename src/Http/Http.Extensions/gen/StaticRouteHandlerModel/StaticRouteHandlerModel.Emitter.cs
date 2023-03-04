@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.CodeDom.Compiler;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -110,7 +107,14 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
-        codeWriter.WriteLine(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall());
+        if (!endpoint.Response.IsVoid)
+        {
+            codeWriter.WriteLine(endpoint.EmitResponseWritingCall());
+        }
+        else if (!endpoint.IsAwaitable)
+        {
+            codeWriter.WriteLine("return Task.CompletedTask;");
+        }
         codeWriter.EndBlock(); // End handler method block
     }
 

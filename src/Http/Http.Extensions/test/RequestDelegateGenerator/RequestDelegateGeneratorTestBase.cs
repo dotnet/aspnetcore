@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 {
+    // Change this to true and run tests in development to regenerate baseline files.
+    // Then: cp artifacts/bin/Microsoft.AspNetCore.Http.Extensions.Tests/Debug/net8.0/RequestDelegateGenerator/Baselines/* src/Http/Http.Extensions/test/RequestDelegateGenerator/Baselines
+    public bool RegenerateBaselines => false;
+
     protected abstract bool IsGeneratorEnabled { get; }
 
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
@@ -215,6 +219,7 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -341,6 +346,264 @@ public class Todo
         }
     }
 }
+
+public record MyBindAsyncRecord(Uri Uri)
+{
+    public static ValueTask<MyBindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        if (parameter.ParameterType != typeof(MyBindAsyncRecord))
+        {
+            throw new UnreachableException($"Unexpected parameter type: {parameter.ParameterType}");
+        }
+        if (parameter.Name != "myBindAsyncParam")
+        {
+            throw new UnreachableException("Unexpected parameter name");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(result: null);
+        }
+
+        return new(result: new(uri));
+    }
+
+    // BindAsync(HttpContext, ParameterInfo) should be preferred over TryParse(string, ...) if there's
+    // no [FromRoute] or [FromQuery] attributes.
+    public static bool TryParse(string? value, out MyBindAsyncRecord? result) =>
+        throw new NotImplementedException();
+}
+
+public record struct MyNullableBindAsyncStruct(Uri Uri)
+{
+    public static ValueTask<MyNullableBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        if (parameter.ParameterType != typeof(MyNullableBindAsyncStruct) && parameter.ParameterType != typeof(MyNullableBindAsyncStruct?))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+        if (parameter.Name != "myBindAsyncParam")
+        {
+            throw new UnreachableException("Unexpected parameter name");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(result: null);
+        }
+
+        return new(result: new(uri));
+    }
+
+    public static bool TryParse(string? value, out MyNullableBindAsyncStruct? result) =>
+        throw new NotImplementedException();
+}
+
+public record struct MyBindAsyncStruct(Uri Uri)
+{
+    public static ValueTask<MyBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        if (parameter.ParameterType != typeof(MyBindAsyncStruct) && parameter.ParameterType != typeof(MyBindAsyncStruct?))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+        if (parameter.Name != "myBindAsyncParam")
+        {
+            throw new UnreachableException("Unexpected parameter name");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            throw new BadHttpRequestException("The request is missing the required Referer header.");
+        }
+
+        return new(result: new(uri));
+    }
+
+    // BindAsync(HttpContext, ParameterInfo) should be preferred over TryParse(string, ...) if there's
+    // no [FromRoute] or [FromQuery] attributes.
+    public static bool TryParse(string? value, out MyBindAsyncStruct result) =>
+        throw new NotImplementedException();
+}
+
+public record struct MyBothBindAsyncStruct(Uri Uri)
+{
+    public static ValueTask<MyBothBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        if (parameter.ParameterType != typeof(MyBothBindAsyncStruct) && parameter.ParameterType != typeof(MyBothBindAsyncStruct?))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+        if (parameter.Name != "myBindAsyncParam")
+        {
+            throw new UnreachableException("Unexpected parameter name");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            throw new BadHttpRequestException("The request is missing the required Referer header.");
+        }
+
+        return new(result: new(uri));
+    }
+
+    // BindAsync with ParameterInfo is preferred
+    public static ValueTask<MyBothBindAsyncStruct> BindAsync(HttpContext context) =>
+        throw new NotImplementedException();
+}
+
+public record struct MySimpleBindAsyncStruct(Uri Uri)
+{
+    public static ValueTask<MySimpleBindAsyncStruct> BindAsync(HttpContext context)
+    {
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            throw new BadHttpRequestException("The request is missing the required Referer header.");
+        }
+
+        return new(result: new(uri));
+    }
+
+    public static bool TryParse(string? value, out MySimpleBindAsyncStruct result) =>
+        throw new NotImplementedException();
+}
+
+public record MySimpleBindAsyncRecord(Uri Uri)
+{
+    public static ValueTask<MySimpleBindAsyncRecord?> BindAsync(HttpContext context)
+    {
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(result: null);
+        }
+
+        return new(result: new(uri));
+    }
+
+    public static bool TryParse(string? value, out MySimpleBindAsyncRecord? result) =>
+        throw new NotImplementedException();
+}
+
+public interface IBindAsync<T>
+{
+    static ValueTask<T?> BindAsync(HttpContext context)
+    {
+        if (typeof(T) != typeof(MyBindAsyncFromInterfaceRecord))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(default(T));
+        }
+
+        return new(result: (T)(object)new MyBindAsyncFromInterfaceRecord(uri));
+    }
+}
+
+public class BindAsyncWrongType
+{
+    public static ValueTask<MyBindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter) =>
+        throw new UnreachableException("We shouldn't bind from the wrong type!");
+}
+
+public record MyBindAsyncFromInterfaceRecord(Uri Uri) : IBindAsync<MyBindAsyncFromInterfaceRecord>
+{
+}
+
+public interface IHaveUri
+{
+    Uri? Uri { get; set; }
+}
+
+public class BaseBindAsync<T> where T : IHaveUri, new()
+{
+    public static ValueTask<T?> BindAsync(HttpContext context)
+    {
+        if (typeof(T) != typeof(InheritBindAsync))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(default(T));
+        }
+
+        return new(result: new() { Uri = uri });
+    }
+}
+
+public class InheritBindAsync : BaseBindAsync<InheritBindAsync>, IHaveUri
+{
+    public Uri? Uri { get; set; }
+}
+
+// Using wrong T on purpose
+public class InheritBindAsyncWrongType : BaseBindAsync<InheritBindAsync>
+{
+}
+
+public class BindAsyncFromImplicitStaticAbstractInterface : IBindableFromHttpContext<BindAsyncFromImplicitStaticAbstractInterface>
+{
+    public Uri? Uri { get; init; }
+
+    public static ValueTask<BindAsyncFromImplicitStaticAbstractInterface?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        if (parameter.ParameterType != typeof(BindAsyncFromImplicitStaticAbstractInterface))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+        if (parameter.Name != "myBindAsyncParam")
+        {
+            throw new UnreachableException("Unexpected parameter name");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(result: null);
+        }
+
+        return new(result: new() { Uri = uri });
+    }
+}
+
+public class BindAsyncFromExplicitStaticAbstractInterface : IBindableFromHttpContext<BindAsyncFromExplicitStaticAbstractInterface>
+{
+    public Uri? Uri { get; init; }
+
+    static ValueTask<BindAsyncFromExplicitStaticAbstractInterface?> IBindableFromHttpContext<BindAsyncFromExplicitStaticAbstractInterface>.BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        if (parameter.ParameterType != typeof(BindAsyncFromExplicitStaticAbstractInterface))
+        {
+            throw new UnreachableException("Unexpected parameter type");
+        }
+        if (parameter.Name != "myBindAsyncParam")
+        {
+            throw new UnreachableException("Unexpected parameter name");
+        }
+
+        if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+        {
+            return new(result: null);
+        }
+
+        return new(result: new() { Uri = uri });
+    }
+}
+
+public class BindAsyncFromStaticAbstractInterfaceWrongType : IBindableFromHttpContext<BindAsyncFromImplicitStaticAbstractInterface>
+{
+    public static ValueTask<BindAsyncFromImplicitStaticAbstractInterface?> BindAsync(HttpContext context, ParameterInfo parameter) =>
+        throw new UnreachableException("We shouldn't bind from the wrong interface type!");
+}
+
+public class MyBindAsyncTypeThatThrows
+{
+    public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter) =>
+        throw new InvalidOperationException("BindAsync failed");
+}
 """;
     private static Task<Compilation> CreateCompilationAsync(string sources)
     {
@@ -383,9 +646,20 @@ public class Todo
         {
             return;
         }
+
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
+
+        if (RegenerateBaselines)
+        {
+            var newSource = generatedCode.ToString()
+                .Replace(RequestDelegateGeneratorSources.GeneratedCodeAttribute, "%GENERATEDCODEATTRIBUTE%")
+                + Environment.NewLine;
+            await File.WriteAllTextAsync(baselineFilePath, newSource);
+            Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
+        }
+
         var baseline = await File.ReadAllTextAsync(baselineFilePath);
         var expectedLines = baseline
             .TrimEnd() // Trim newlines added by autoformat
@@ -395,7 +669,7 @@ public class Todo
         Assert.True(CompareLines(expectedLines, generatedCode, out var errorMessage), errorMessage);
     }
 
-    private bool CompareLines(string[] expectedLines, SourceText sourceText, out string message)
+    private static bool CompareLines(string[] expectedLines, SourceText sourceText, out string message)
     {
         if (expectedLines.Length != sourceText.Lines.Count)
         {

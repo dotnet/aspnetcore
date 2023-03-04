@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Globalization;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 internal static class EndpointEmitter
@@ -17,24 +15,28 @@ internal static class EndpointEmitter
 
         foreach (var parameter in endpoint.Parameters)
         {
-            switch (parameter)
+            switch (parameter.Source)
             {
-                case { Source: EndpointParameterSource.SpecialType }:
+                case EndpointParameterSource.SpecialType:
                     parameter.EmitSpecialParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.Query or EndpointParameterSource.Header }:
+                case EndpointParameterSource.Query:
+                case EndpointParameterSource.Header:
                     parameter.EmitQueryOrHeaderParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.Route }:
+                case EndpointParameterSource.Route:
                     parameter.EmitRouteParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.RouteOrQuery }:
+                case EndpointParameterSource.RouteOrQuery:
                     parameter.EmitRouteOrQueryParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.JsonBody }:
+                case EndpointParameterSource.BindAsync:
+                    parameter.EmitBindAsyncPreparation(parameterPreparationBuilder);
+                    break;
+                case EndpointParameterSource.JsonBody:
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.Service }:
+                case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
             }
