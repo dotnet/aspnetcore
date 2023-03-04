@@ -1213,8 +1213,8 @@ app.MapGet("/", (HttpContext httpContext, int id) =>
         new object[] { "MySimpleBindAsyncStruct", true },
         new object[] { "BindAsyncFromImplicitStaticAbstractInterface", false },
         new object[] { "InheritBindAsync", false },
-        // TODO: Fix these
-        //new object[] { "BindAsyncFromExplicitStaticAbstractInterface", false },
+        new object[] { "BindAsyncFromExplicitStaticAbstractInterface", false },
+        // TODO: Fix this
         //new object[] { "MyBindAsyncFromInterfaceRecord", false },
     };
 

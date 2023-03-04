@@ -127,6 +127,8 @@ internal static class EndpointParameterEmitter
         switch (endpointParameter.BindMethod)
         {
             case BindabilityMethod.IBindableFromHttpContext:
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                break;
             case BindabilityMethod.BindAsyncWithParameter:
                 codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, parameters[{endpointParameter.Ordinal}]);");
                 break;
