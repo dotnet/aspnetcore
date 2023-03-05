@@ -184,9 +184,17 @@ internal static class HttpRuleParser
 
     // Try the various date formats in the order listed above.
     // We should accept a wide verity of common formats, but only output RFC 1123 style dates.
-    internal static bool TryStringToDate(StringSegment input, out DateTimeOffset result) =>
-        DateTimeOffset.TryParseExact(input.ToString(), DateFormats, DateTimeFormatInfo.InvariantInfo,
-            DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out result);
+    internal static bool TryStringToDate(StringSegment input, out DateTimeOffset result)
+    {
+        ReadOnlySpan<char> inputSpan = input.AsSpan();
+        DateTimeFormatInfo invariant = DateTimeFormatInfo.InvariantInfo;
+
+        // RFC 1123 is most common and has a fast path in TryParseExact.  Try it first, and only if that
+        // fails fall back to trying the rest of the formats.
+        return
+            DateTimeOffset.TryParseExact(inputSpan, "r", invariant, DateTimeStyles.None, out result) ||
+            DateTimeOffset.TryParseExact(inputSpan, DateFormats, invariant, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out result);
+    }
 
     // TEXT = <any OCTET except CTLs, but including LWS>
     // LWS = [CRLF] 1*( SP | HT )
