@@ -6,8 +6,8 @@
 /.azure/                                                                          @dotnet/aspnet-build @wtgodbe
 /.azuredevops/                                                                    @dotnet/aspnet-build @wtgodbe
 /.config/                                                                         @dotnet/aspnet-build @wtgodbe
-/.devcontainer/                                                                   @captainsafia @TanayParikh
-/.vscode/                                                                         @captainsafia @TanayParikh
+/.devcontainer/                                                                   @captainsafia
+/.vscode/                                                                         @captainsafia
 /.github/                                                                         @dotnet/aspnet-build @wtgodbe
 /.github/*_TEMPLATE/                                                              @dotnet/aspnet-build @wtgodbe @mkArtakMSFT
 /.github/workflows/                                                               @dotnet/aspnet-build @wtgodbe @tratcher
