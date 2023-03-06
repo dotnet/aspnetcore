@@ -176,6 +176,7 @@ public static class TestData
                 { "Microsoft.AspNetCore.Authorization" },
                 { "Microsoft.AspNetCore.Components.Authorization" },
                 { "Microsoft.AspNetCore.Components.Forms" },
+                { "Microsoft.AspNetCore.Components.Endpoints" },
                 { "Microsoft.AspNetCore.Components.Server" },
                 { "Microsoft.AspNetCore.Components.Web" },
                 { "Microsoft.AspNetCore.Components" },
