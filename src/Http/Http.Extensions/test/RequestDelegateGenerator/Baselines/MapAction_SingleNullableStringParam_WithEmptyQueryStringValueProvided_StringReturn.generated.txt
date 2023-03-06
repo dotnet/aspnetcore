@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
@@ -237,6 +238,13 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             return (false, default);
         }
+    }
+
+    %GENERATEDCODEATTRIBUTE%
+    file static class ParsableHelper<T> where T : IParsable<T>
+    {
+        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
+        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
     }
 
     %GENERATEDCODEATTRIBUTE%
