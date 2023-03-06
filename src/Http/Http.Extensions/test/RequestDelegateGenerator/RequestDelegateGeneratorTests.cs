@@ -110,7 +110,7 @@ app.MapGet("/", getQueryWithDefault);
     public async Task MapAction_SingleTimeOnlyParam_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]TimeOnly p) => p.ToString());
+app.MapGet("/hello", ([FromQuery]TimeOnly p) => p.ToString("o"));
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
@@ -127,7 +127,7 @@ app.MapGet("/hello", ([FromQuery]TimeOnly p) => p.ToString());
         httpContext.Request.QueryString = new QueryString("?p=13:30");
 
         await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "1:30 PM");
+        await VerifyResponseBodyAsync(httpContext, "13:30:00.0000000");
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
