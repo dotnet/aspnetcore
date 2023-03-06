@@ -15,4 +15,4 @@
 /src/Security/                  @tratcher
 /src/Servers/                   @tratcher @halter73 @BrennanConroy
 /src/SignalR/                   @BrennanConroy @halter73
-/modules                        @dotnet/aspnet-build @dougbu @wtgodbe
+/modules                        @dotnet/aspnet-build @wtgodbe
