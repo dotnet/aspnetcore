@@ -819,7 +819,7 @@ public class HtmlRendererTest
             // Arrange/Act/Assert 1: initially get some empty output
             var first = await htmlRenderer.RenderComponentAsync<SectionOutlet>(ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                { nameof(SectionOutlet.Name), "testsection" }
+                { nameof(SectionOutlet.SectionId), "testsection" }
             }));
 
             Assert.Empty(first.ToHtmlString());
@@ -827,7 +827,7 @@ public class HtmlRendererTest
             // Act/Assert 2: cause it to be updated
             var second = await htmlRenderer.RenderComponentAsync<SectionContent>(ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                { nameof(SectionContent.Name), "testsection" },
+                { nameof(SectionContent.SectionId), "testsection" },
                 { nameof(SectionContent.ChildContent), (RenderFragment)(builder =>
                     {
                         builder.AddContent(0, "Hello from the section content provider");
