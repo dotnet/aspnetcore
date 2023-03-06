@@ -61,6 +61,9 @@ internal class RazorComponentResultHost : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
+        // If we wanted to support rendering pre-instantiated component objects, it would probably go here
+        // as either a whole new RenderTreeFrame type or as some mechanism to attach the instance onto a
+        // regular Component frame (perhaps using a dummy ComponentState that represents 'not yet initialized')
         builder.OpenComponent(0, RazorComponentResult.ComponentType);
 
         if (RazorComponentResult.Parameters is not null)
