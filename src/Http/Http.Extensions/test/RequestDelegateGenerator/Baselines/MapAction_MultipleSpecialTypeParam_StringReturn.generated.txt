@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 23)] = (
+            [(@"TestMapActions.cs", 24)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 23));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 24));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -248,6 +248,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
             }
             return (false, default);
+        }
+
+        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
+            where T : class, IBindableFromHttpContext<T>
+        {
+            return T.BindAsync(context, parameter);
         }
     }
 }

@@ -158,6 +158,12 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             return (false, default);
         }
+
+        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
+            where T : class, IBindableFromHttpContext<T>
+        {
+            return T.BindAsync(context, parameter);
+        }
     }
 }
 """;

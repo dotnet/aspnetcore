@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <Content Include="RequestDelegateGenerator\Baselines\*.generated.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 </Project>

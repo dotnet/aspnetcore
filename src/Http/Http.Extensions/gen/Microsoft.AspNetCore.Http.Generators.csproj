@@ -24,10 +24,7 @@
     <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypeData.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\SymbolExtensions.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RoslynUtils\Bindability.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)RoslynUtils\Parsability.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityMethod.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityHelper.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\CodeWriter.cs" LinkBase="Shared" />
   </ItemGroup>
 

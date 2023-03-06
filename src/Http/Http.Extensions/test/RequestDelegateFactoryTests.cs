@@ -628,12 +628,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    private class MyBindAsyncTypeThatThrows
-    {
-        public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter) =>
-            throw new InvalidOperationException("BindAsync failed");
-    }
-
     private record MyBindAsyncRecord(Uri Uri)
     {
         public static ValueTask<MyBindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter)
@@ -1124,79 +1118,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegatePrefersBindAsyncOverTryParse()
-    {
-        var httpContext = CreateHttpContext();
-
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncRecord myBindAsyncRecord) =>
-        {
-            httpContext.Items["myBindAsyncRecord"] = myBindAsyncRecord;
-        });
-
-        var requestDelegate = resultFactory.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new MyBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["myBindAsyncRecord"]);
-    }
-
-    [Fact]
-    public async Task RequestDelegatePrefersBindAsyncOverTryParseForNonNullableStruct()
-    {
-        var httpContext = CreateHttpContext();
-
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct myBindAsyncStruct) =>
-        {
-            httpContext.Items["myBindAsyncStruct"] = myBindAsyncStruct;
-        });
-
-        var requestDelegate = resultFactory.RequestDelegate;
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBindAsyncStruct"]);
-    }
-
-    [Fact]
-    public async Task RequestDelegateUsesBindAsyncOverTryParseGivenNullableStruct()
-    {
-        var httpContext = CreateHttpContext();
-
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? myBindAsyncStruct) =>
-        {
-            httpContext.Items["myBindAsyncStruct"] = myBindAsyncStruct;
-        });
-
-        var requestDelegate = resultFactory.RequestDelegate;
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBindAsyncStruct"]);
-    }
-
-    [Fact]
-    public async Task RequestDelegateUsesParameterInfoBindAsyncOverOtherBindAsync()
-    {
-        var httpContext = CreateHttpContext();
-
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBothBindAsyncStruct? myBothBindAsyncStruct) =>
-        {
-            httpContext.Items["myBothBindAsyncStruct"] = myBothBindAsyncStruct;
-        });
-
-        var requestDelegate = resultFactory.RequestDelegate;
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new MyBothBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBothBindAsyncStruct"]);
-    }
-
-    [Fact]
     public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute()
     {
         var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
@@ -1552,19 +1473,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord1"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", badHttpRequestException.Message);
         Assert.Equal(400, badHttpRequestException.StatusCode);
-    }
-
-    [Fact]
-    public async Task BindAsyncExceptionsAreUncaught()
-    {
-        var httpContext = CreateHttpContext();
-
-        var factoryResult = RequestDelegateFactory.Create((MyBindAsyncTypeThatThrows arg1) => { });
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
-        Assert.Equal("BindAsync failed", ex.Message);
     }
 
     [Fact]
