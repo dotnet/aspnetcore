@@ -52,7 +52,7 @@ public sealed class HeadOutlet : ComponentBase
 
         // Render the rest of the head metadata
         builder.OpenComponent<SectionOutlet>(6);
-        builder.AddComponentParameter(7, nameof(SectionOutlet.SectionId), TitleSectionId);
+        builder.AddComponentParameter(7, nameof(SectionOutlet.SectionId), HeadSectionId);
         builder.CloseComponent();
     }
 
