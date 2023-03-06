@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -19,10 +20,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using Moq;
+using static Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-public class ComponentRendererTest
+public class ComponentPrerendererTest
 {
     private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
@@ -30,9 +32,9 @@ public class ComponentRendererTest
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
     private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
-    private readonly ComponentRenderer renderer;
+    private readonly ComponentPrerenderer renderer;
 
-    public ComponentRendererTest()
+    public ComponentPrerendererTest()
     {
         renderer = GetComponentRenderer();
     }
@@ -45,7 +47,7 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssembly, null);
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssembly, ParameterView.Empty);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -68,8 +70,8 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssemblyPrerendered, null);
-        result.WriteTo(writer, HtmlEncoder.Default);
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssemblyPrerendered, ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -106,12 +108,12 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent),
             RenderMode.WebAssembly,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                Name = "Daniel"
-            });
+                { "Name", "Daniel" }
+            }));
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -143,12 +145,12 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent),
             RenderMode.WebAssembly,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                Name = (string)null
-            });
+                { "Name", null }
+            }));
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -178,13 +180,13 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent),
             RenderMode.WebAssemblyPrerendered,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                Name = "Daniel"
-            });
-        result.WriteTo(writer, HtmlEncoder.Default);
+                { "Name", "Daniel" }
+            }));
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -227,13 +229,13 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent),
             RenderMode.WebAssemblyPrerendered,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                Name = (string)null
-            });
-        result.WriteTo(writer, HtmlEncoder.Default);
+                { "Name", null }
+            }));
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -275,8 +277,8 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Static, null);
-        result.WriteTo(writer, HtmlEncoder.Default);
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Static, ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
 
         // Assert
@@ -292,7 +294,7 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null);
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, ParameterView.Empty);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -324,8 +326,8 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null);
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -367,8 +369,9 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act
-        var server = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Steve" });
-        var client = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.WebAssemblyPrerendered, new { Name = "Steve" });
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
+        var server = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, parameters);
+        var client = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.WebAssemblyPrerendered, parameters);
 
         // Assert
         var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
@@ -384,12 +387,12 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var firstResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null);
-        var firstComponent = HtmlContentUtilities.HtmlContentToString(firstResult);
+        var firstResult = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
+        var firstComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(firstResult));
         var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
 
-        var secondResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null);
-        var secondComponent = HtmlContentUtilities.HtmlContentToString(secondResult);
+        var secondResult = await renderer.PrerenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, ParameterView.Empty);
+        var secondComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(secondResult));
         var secondMatch = Regex.Match(secondComponent, ComponentPattern);
 
         // Assert
@@ -424,11 +427,12 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Static, new { Name = "Steve" });
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Static, parameters);
 
         // Assert
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
-        Assert.Equal("<p>Hello Steve!</p>", content);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        Assert.Equal("<p>Hello SomeName!</p>", content);
     }
 
     [Fact]
@@ -440,7 +444,8 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = "Daniel" });
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, parameters);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -466,7 +471,7 @@ public class ComponentRendererTest
 
         var value = Assert.Single(serverComponent.ParameterValues);
         var rawValue = Assert.IsType<JsonElement>(value);
-        Assert.Equal("Daniel", rawValue.GetString());
+        Assert.Equal("SomeName", rawValue.GetString());
     }
 
     [Fact]
@@ -478,8 +483,8 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = (string)null });
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, parameters);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -513,13 +518,13 @@ public class ComponentRendererTest
     {
         // Arrange
         var viewContext = GetViewContext();
-        var writer = new StringWriter();
         var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Daniel" });
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, parameters);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -546,10 +551,10 @@ public class ComponentRendererTest
 
         var value = Assert.Single(serverComponent.ParameterValues);
         var rawValue = Assert.IsType<JsonElement>(value);
-        Assert.Equal("Daniel", rawValue.GetString());
+        Assert.Equal("SomeName", rawValue.GetString());
 
         var prerenderedContent = match.Groups["content"].Value;
-        Assert.Equal("<p>Hello Daniel!</p>", prerenderedContent);
+        Assert.Equal("<p>Hello SomeName!</p>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
         var epilogueMarker = JsonSerializer.Deserialize<ServerComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
@@ -564,13 +569,13 @@ public class ComponentRendererTest
     {
         // Arrange
         var viewContext = GetViewContext();
-        var writer = new StringWriter();
         var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = (string)null });
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, parameters);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -617,9 +622,10 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act & Assert
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
         var ex = await ExceptionAssert.ThrowsArgumentAsync(
-            async () => await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), default, new { Name = "Daniel" }),
-            "renderMode",
+            async () => await renderer.PrerenderComponentAsync(viewContext, typeof(GreetingComponent), default, parameters),
+            "prerenderMode",
             $"Unsupported RenderMode '{(RenderMode)default}'");
     }
 
@@ -631,10 +637,11 @@ public class ComponentRendererTest
 
         // Act
         var state = new OnAfterRenderState();
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(OnAfterRenderComponent), RenderMode.Static, new { state });
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "state", state } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(OnAfterRenderComponent), RenderMode.Static, parameters);
 
         // Assert
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
         Assert.Equal("<p>Hello</p>", content);
         Assert.False(state.OnAfterRenderRan);
     }
@@ -644,29 +651,28 @@ public class ComponentRendererTest
     {
         // Arrange
         var collection = CreateDefaultServiceCollection();
-        collection.TryAddScoped<ComponentRenderer>();
-        collection.TryAddScoped<StaticComponentRenderer>();
+        collection.TryAddScoped<ComponentPrerenderer>();
         collection.TryAddScoped<HtmlRenderer>();
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();
         collection.TryAddSingleton(_dataprotectorProvider);
         collection.TryAddSingleton<WebAssemblyComponentSerializer>();
-        collection.TryAddScoped<IViewBufferScope, TestViewBufferScope>();
 
         var provider = collection.BuildServiceProvider();
         var scope = provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var scopedProvider = scope.ServiceProvider;
         var context = new DefaultHttpContext() { RequestServices = scopedProvider };
         var viewContext = GetViewContext(context);
-        var renderer = scopedProvider.GetRequiredService<ComponentRenderer>();
+        var renderer = scopedProvider.GetRequiredService<ComponentPrerenderer>();
 
         // Act
         var state = new AsyncDisposableState();
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncDisposableComponent), RenderMode.Static, new { state });
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "state", state } });
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(AsyncDisposableComponent), RenderMode.Static, parameters);
 
         // Assert
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
         Assert.Equal("<p>Hello</p>", content);
         await ((IAsyncDisposable)scope).DisposeAsync();
 
@@ -680,14 +686,14 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.RenderComponentAsync(
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
             viewContext,
             typeof(ExceptionComponent),
             RenderMode.Static,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                IsAsync = false
-            }));
+                { "IsAsync", false }
+            })));
 
         // Assert
         Assert.Equal("Threw an exception synchronously", exception.Message);
@@ -700,14 +706,14 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.RenderComponentAsync(
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
             viewContext,
             typeof(ExceptionComponent),
             RenderMode.Static,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                IsAsync = true
-            }));
+                { "IsAsync", true }
+            })));
 
         // Assert
         Assert.Equal("Threw an exception asynchronously", exception.Message);
@@ -720,15 +726,14 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.RenderComponentAsync(
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
             viewContext,
             typeof(ExceptionComponent),
             RenderMode.Static,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                JsInterop = true
-            }
-        ));
+                { "JsInterop", true }
+            })));
 
         // Assert
         Assert.Equal("JavaScript interop calls cannot be issued during server-side prerendering, " +
@@ -753,14 +758,14 @@ public class ComponentRendererTest
         var viewContext = GetViewContext(ctx);
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.RenderComponentAsync(
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
             viewContext,
             typeof(RedirectComponent),
             RenderMode.Static,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                RedirectUri = "http://localhost/redirect"
-            }));
+                { "RedirectUri", "http://localhost/redirect" }
+            })));
 
         Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
                         "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
@@ -781,14 +786,14 @@ public class ComponentRendererTest
         var viewContext = GetViewContext(ctx);
 
         // Act
-        await renderer.RenderComponentAsync(
+        await renderer.PrerenderComponentAsync(
             viewContext,
             typeof(RedirectComponent),
             RenderMode.Static,
-            new
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                RedirectUri = "http://localhost/redirect"
-            });
+                { "RedirectUri", "http://localhost/redirect" }
+            }));
 
         // Assert
         Assert.Equal(302, ctx.Response.StatusCode);
@@ -844,20 +849,18 @@ public class ComponentRendererTest
 </table>";
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncComponent), RenderMode.Static, null);
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var result = await renderer.PrerenderComponentAsync(viewContext, typeof(AsyncComponent), RenderMode.Static, ParameterView.Empty);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
 
         // Assert
         Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
     }
 
-    private ComponentRenderer GetComponentRenderer(IServiceProvider services = null)
+    private ComponentPrerenderer GetComponentRenderer(IServiceProvider services = null)
     {
-        var viewBufferScope = new TestViewBufferScope();
-        return new ComponentRenderer(
-            new StaticComponentRenderer(new HtmlRenderer(services ?? _services, NullLoggerFactory.Instance, viewBufferScope)),
-            new ServerComponentSerializer(_dataprotectorProvider),
-            viewBufferScope);
+        return new ComponentPrerenderer(
+            new HtmlRenderer(services ?? _services, NullLoggerFactory.Instance),
+            new ServerComponentSerializer(_dataprotectorProvider));
     }
 
     private ViewContext GetViewContext(HttpContext context = null)

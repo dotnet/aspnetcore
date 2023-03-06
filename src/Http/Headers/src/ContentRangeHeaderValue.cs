@@ -212,10 +212,10 @@ public class ContentRangeHeaderValue
     /// <param name="input">The value to parse.</param>
     /// <param name="parsedValue">The parsed value.</param>
     /// <returns><see langword="true"/> if input is a valid <see cref="ContentRangeHeaderValue"/>, otherwise <see langword="false"/>.</returns>
-    public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentRangeHeaderValue parsedValue)
+    public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentRangeHeaderValue? parsedValue)
     {
         var index = 0;
-        return Parser.TryParseValue(input, ref index, out parsedValue!);
+        return Parser.TryParseValue(input, ref index, out parsedValue);
     }
 
     private static int GetContentRangeLength(StringSegment input, int startIndex, out ContentRangeHeaderValue? parsedValue)

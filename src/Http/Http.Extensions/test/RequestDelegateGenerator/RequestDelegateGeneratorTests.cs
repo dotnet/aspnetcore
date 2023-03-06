@@ -220,6 +220,25 @@ app.MapGet("/{routeValue}", (HttpContext context, [FromRoute]{{typeName}} routeV
 
     [Theory]
     [MemberData(nameof(TryParsableParameters))]
+    public async Task MapAction_TryParsableExplicitHeaderParameters(string typeName, string headerValue, object expectedParameterValue)
+    {
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/", (HttpContext context, [FromHeader]{{typeName}} headerValue) =>
+{
+    context.Items["tryParsable"] = headerValue;
+});
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["headerValue"] = headerValue;
+
+        await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableParameters))]
     public async Task MapAction_SingleParsable_StringReturn(string typeName, string queryStringInput, object expectedParameterValue)
     {
         var (results, compilation) = await RunGeneratorAsync($$"""
@@ -514,7 +533,11 @@ app.MapGet("/hello", () => "Hello world!")
 object GetTodo() => new Todo() { Name = "Test Item"};
 app.MapGet("/", GetTodo);
 """},
-        new object[] { """app.MapGet("/", () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" }
+        new object[] { """app.MapGet("/", () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" },
+        new object[] { """
+Todo GetTodo() => new Todo() { Name = "Test Item"};
+app.MapGet("/", GetTodo);
+"""}
     };
 
     [Theory]
@@ -1109,5 +1132,54 @@ app.MapGet("/fromQueryRequiredImplicit", (string value) => value);
         var (_, compilation) = await RunGeneratorAsync(source);
 
         await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    public static object[][] CanApplyFiltersOnHandlerWithVariousArguments_Data
+    {
+        get
+        {
+            var tooManyArguments = """
+string HelloName([FromQuery] int? one, [FromQuery] string? two, [FromQuery] int? three, [FromQuery] string? four,
+    [FromQuery] int? five, [FromQuery] bool? six, [FromQuery] string? seven, [FromQuery] string? eight,
+    [FromQuery] int? nine, [FromQuery] string? ten, [FromQuery] int? eleven) =>
+    "Too many arguments";
+""";
+            var noArguments = """
+string HelloName() => "No arguments";
+""";
+            var justRightArguments = """
+string HelloName([FromQuery] int? one, [FromQuery] string? two, [FromQuery] int? three, [FromQuery] string? four,
+    [FromQuery] int? five, [FromQuery] bool? six, [FromQuery] string? seven) =>
+    "Just right arguments";
+""";
+            return new object[][]
+            {
+                new [] { tooManyArguments, "True, 11, Too many arguments" },
+                new [] { noArguments, "True, 0, No arguments" },
+                new [] { justRightArguments, "False, 7, Just right arguments" },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(CanApplyFiltersOnHandlerWithVariousArguments_Data))]
+    public async Task CanApplyFiltersOnHandlerWithVariousArguments(string handlerMethod, string expectedBody)
+    {
+        var source = $$"""
+{{handlerMethod}}
+app.MapGet("/", HelloName)
+    .AddEndpointFilter(async (c, n) =>
+    {
+        var result = await n(c);
+        return $"{(c is DefaultEndpointFilterInvocationContext)}, {c.Arguments.Count}, {result}";
+    });
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 }

@@ -89,6 +89,7 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
     });
 
 app.MapPost("/todos", (TodoBindable todo) => todo);
+app.MapGet("/todos", () => new Todo[] { new Todo(1, "Walk the dog"), new Todo(2, "Come back home") });
 
 app.Run();
 

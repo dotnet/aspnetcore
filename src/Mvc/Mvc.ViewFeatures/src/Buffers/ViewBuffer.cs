@@ -232,6 +232,13 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
                     continue;
                 }
 
+                if (value.Value is IAsyncHtmlContent valueAsAsyncHtmlContent)
+                {
+                    await valueAsAsyncHtmlContent.WriteToAsync(writer);
+                    await writer.FlushAsync();
+                    continue;
+                }
+
                 if (value.Value is IHtmlContent valueAsHtmlContent)
                 {
                     valueAsHtmlContent.WriteTo(writer, encoder);

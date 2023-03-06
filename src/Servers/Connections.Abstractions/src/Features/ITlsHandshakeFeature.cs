@@ -3,6 +3,10 @@
 
 using System.Security.Authentication;
 
+#if NETCOREAPP
+using System.Net.Security;
+#endif
+
 namespace Microsoft.AspNetCore.Connections.Features;
 
 /// <summary>
@@ -14,6 +18,13 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="SslProtocols"/>.
     /// </summary>
     SslProtocols Protocol { get; }
+
+#if NETCOREAPP
+    /// <summary>
+    /// Gets the <see cref="TlsCipherSuite"/>.
+    /// </summary>
+    TlsCipherSuite? NegotiatedCipherSuite => null;
+#endif
 
     /// <summary>
     /// Gets the <see cref="CipherAlgorithmType"/>.

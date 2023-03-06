@@ -6607,68 +6607,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegateFactory_CanApplyFiltersOnHandlerWithManyArguments()
-    {
-        // Arrange
-        string HelloName(int? one, string? two, int? three, string? four, int? five, bool? six, string? seven, string? eight, int? nine, string? ten, int? eleven)
-        {
-            return "Too many arguments!";
-        };
-
-        var httpContext = CreateHttpContext();
-
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
-        {
-            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
-            {
-                (routeHandlerContext, next) => async (context) =>
-                {
-                    Assert.IsType<DefaultEndpointFilterInvocationContext>(context);
-                    Assert.Equal(11, context.Arguments.Count);
-                    return await next(context);
-                }
-            }),
-        });
-        var requestDelegate = factoryResult.RequestDelegate;
-        await requestDelegate(httpContext);
-    }
-
-    [Fact]
-    public async Task RequestDelegateFactory_CanApplyFiltersOnHandlerWithNoArguments()
-    {
-        // Arrange
-        string HelloName()
-        {
-            return "No arguments!";
-        };
-
-        var httpContext = CreateHttpContext();
-
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
-        {
-            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
-            {
-                (routeHandlerContext, next) => async (context) =>
-                {
-                    Assert.IsType<DefaultEndpointFilterInvocationContext>(context);
-                    Assert.Equal(0, context.Arguments.Count);
-                    return await next(context);
-                }
-            }),
-        });
-        var requestDelegate = factoryResult.RequestDelegate;
-        await requestDelegate(httpContext);
-    }
-
-    [Fact]
     public void Create_DoesNotAddDelegateMethodInfo_AsMetadata()
     {
         // Arrange

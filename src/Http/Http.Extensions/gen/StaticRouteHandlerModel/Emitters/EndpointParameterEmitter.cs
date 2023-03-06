@@ -44,8 +44,7 @@ internal static class EndpointParameterEmitter
     {
         if (endpointParameter.IsParsable)
         {
-            var parsingBlock = endpointParameter.ParsingBlockEmitter(endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
-            codeWriter.WriteLine(parsingBlock);
+            endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
         else
@@ -85,12 +84,7 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
         var parameterName = endpointParameter.Name;
-        codeWriter.Write($"var {endpointParameter.EmitAssigningCodeResult()} = ");
-        codeWriter.WriteLine($@"options?.RouteParameterNames?.Contains(""{parameterName}"", StringComparer.OrdinalIgnoreCase) == true");
-        codeWriter.Indent++;
-        codeWriter.WriteLine($@"? new StringValues(httpContext.Request.RouteValues[$""{parameterName}""]?.ToString())");
-        codeWriter.WriteLine($@": httpContext.Request.Query[$""{parameterName}""];");
-        codeWriter.Indent--;
+        codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {parameterName}_RouteOrQueryResolver(httpContext);");
 
         if (!endpointParameter.IsOptional)
         {
