@@ -55,7 +55,7 @@ __AlpinePackages+=" gettext-dev"
 __AlpinePackages+=" icu-dev"
 __AlpinePackages+=" libunwind-dev"
 __AlpinePackages+=" lttng-ust-dev"
-__AlpinePackages+=" compiler-rt-static"
+__AlpinePackages+=" compiler-rt"
 __AlpinePackages+=" numactl-dev"
 
 # runtime libraries' dependencies
@@ -150,7 +150,6 @@ while :; do
             __BuildArch=riscv64
             __AlpineArch=riscv64
             __AlpinePackages="${__AlpinePackages// lldb-dev/}"
-            __AlpinePackages="${__AlpinePackages// compiler-rt-static/}"
             __QEMUArch=riscv64
             __UbuntuArch=riscv64
             __UbuntuRepo="http://deb.debian.org/debian-ports"
@@ -159,10 +158,6 @@ while :; do
 
             if [[ -e "/usr/share/keyrings/debian-ports-archive-keyring.gpg" ]]; then
                 __Keyring="--keyring /usr/share/keyrings/debian-ports-archive-keyring.gpg --include=debian-ports-archive-keyring"
-            fi
-
-            if [[ "$version" != "edge" && ( -z "$__AlpineVersion" || -z "$__AlpineMajorVersion" )]]; then
-                __AlpineVersion=edge # minimum version with APKINDEX.tar.gz (packages archive)
             fi
             ;;
         ppc64le)
@@ -175,10 +170,6 @@ while :; do
             __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
             __UbuntuPackages="${__UbuntuPackages// libomp5/}"
             unset __LLDB_Package
-
-            if [[ "$version" != "edge" && ( -z "$__AlpineVersion" || -z "$__AlpineMajorVersion" )]]; then
-                __AlpineVersion=3.15 # minimum version that supports compiler-rt
-            fi
             ;;
         s390x)
             __BuildArch=s390x
@@ -190,10 +181,6 @@ while :; do
             __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
             __UbuntuPackages="${__UbuntuPackages// libomp5/}"
             unset __LLDB_Package
-
-            if [[ "$version" != "edge" && ( -z "$__AlpineVersion" || -z "$__AlpineMajorVersion" )]]; then
-                __AlpineVersion=3.15 # minimum version that supports compiler-rt
-            fi
             ;;
         x64)
             __BuildArch=x64
@@ -206,6 +193,7 @@ while :; do
         x86)
             __BuildArch=x86
             __UbuntuArch=i386
+            __AlpineArch=x86
             __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
             ;;
         lldb*)
@@ -311,29 +299,8 @@ while :; do
                 parts=(${version//./ })
                 __AlpineMajorVersion="${parts[0]}"
                 __AlpineMinoVersion="${parts[1]}"
-
-                if [[ -z "$__AlpineVersion" ]]; then
-                    __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinoVersion"
-                fi
+                __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinoVersion"
             fi
-
-            case "$__AlpineVersion" in
-                3.14) __AlpinePackages+=" llvm11-libs" ;;
-                3.15) __AlpinePackages+=" llvm12-libs" ;;
-                3.16) __AlpinePackages+=" llvm13-libs" ;;
-                3.17) __AlpinePackages+=" llvm15-libs" ;;
-                edge) __AlpineLlvmLibsLookup=1 ;;
-                *)
-                    if [[ "$__AlpineArch" =~ "s390x|ppc64le" ]]; then
-                        __AlpineVersion=3.15 # minimum version that supports compiler-rt
-                        __AlpinePackages+=" llvm12-libs"
-                    elif [[ "$__AlpineArch" == "riscv64" ]]; then
-                        __AlpineLlvmLibsLookup=1
-                        __AlpineVersion=edge # minimum version with APKINDEX.tar.gz (packages archive)
-                    else
-                        __AlpineVersion=3.13 # 3.13 to maximize compatibility
-                    fi
-            esac
             ;;
         freebsd12)
             __CodeName=freebsd
@@ -376,10 +343,41 @@ while :; do
     shift
 done
 
+case "$__AlpineVersion" in
+    3.14) __AlpinePackages+=" llvm11-libs" ;;
+    3.15) __AlpinePackages+=" llvm12-libs" ;;
+    3.16) __AlpinePackages+=" llvm13-libs" ;;
+    3.17) __AlpinePackages+=" llvm15-libs" ;;
+    edge) __AlpineLlvmLibsLookup=1 ;;
+    *)
+        if [[ "$__AlpineArch" =~ s390x|ppc64le ]]; then
+        echo boo
+            __AlpineVersion=3.15 # minimum version that supports lldb-dev
+            __AlpinePackages+=" llvm12-libs"
+        elif [[ "$__AlpineArch" == "x86" ]]; then
+            __AlpineVersion=3.17 # minimum version that supports lldb-dev
+            __AlpinePackages+=" llvm15-libs"
+        elif [[ "$__AlpineArch" == "riscv64" ]]; then
+            __AlpineLlvmLibsLookup=1
+            __AlpineVersion=edge # minimum version with APKINDEX.tar.gz (packages archive)
+        else
+            __AlpineVersion=3.13 # 3.13 to maximize compatibility
+            __AlpinePackages+=" llvm10-libs"
+
+            if [[ "$__AlpineArch" == "armv7" ]]; then
+                __AlpinePackages="${__AlpinePackages//numactl-dev/}"
+            fi
+        fi
+esac
+
+if [[ "$__AlpineVersion" =~ 3\.1[345] ]]; then
+    # compiler-rt--static was merged in compiler-rt package in alpine 3.16
+    # for older versions, we need compiler-rt--static, so replace the name
+    __AlpinePackages="${__AlpinePackages/compiler-rt/compiler-rt-static}"
+fi
+
 if [[ "$__BuildArch" == "armel" ]]; then
     __LLDB_Package="lldb-3.5-dev"
-elif [[ "$__BuildArch" == "arm" && "$__AlpineVersion" == "3.13" ]]; then
-    __AlpinePackages="${__AlpinePackages//numactl-dev/}"
 fi
 
 __UbuntuPackages+=" ${__LLDB_Package:-}"
@@ -422,25 +420,26 @@ if [[ "$__CodeName" == "alpine" ]]; then
         version="v$__AlpineVersion"
     fi
 
+    # initialize DB
     "$__ApkToolsDir/apk.static" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
-        -U --allow-untrusted --root "$__RootfsDir" --arch "$__AlpineArch" --initdb \
-        add $__AlpinePackages
+        -U --allow-untrusted --root "$__RootfsDir" --arch "$__AlpineArch" --initdb add
 
     if [[ "$__AlpineLlvmLibsLookup" == 1 ]]; then
-        "$__ApkToolsDir/apk.static" \
+        __AlpinePackages+=" $("$__ApkToolsDir/apk.static" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
             -U --allow-untrusted --root "$__RootfsDir" --arch "$__AlpineArch" \
-            search 'llvm*-libs' | sort | tail -1 | while IFS=- read name rest; do
-                "$__ApkToolsDir/apk.static" \
-                    -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
-                    -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
-                    -U --allow-untrusted --root "$__RootfsDir" --arch "$__AlpineArch" \
-                    add "$name-libs"
-            done
+            search 'llvm*-libs' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
+
+    # install all packages in one go
+    "$__ApkToolsDir/apk.static" \
+        -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
+        -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -U --allow-untrusted --root "$__RootfsDir" --arch "$__AlpineArch" \
+        add $__AlpinePackages
 
     rm -r "$__ApkToolsDir"
 elif [[ "$__CodeName" == "freebsd" ]]; then
