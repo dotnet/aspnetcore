@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -47,21 +47,36 @@ internal class Endpoint
         {
             var parameter = new EndpointParameter(method.Parameters[i], wellKnownTypes);
 
-            if (parameter.Source == EndpointParameterSource.Unknown)
+            switch (parameter.Source)
             {
-                Diagnostics.Add(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor(parameter.Name));
-                return;
+                case EndpointParameterSource.BindAsync:
+                    IsAwaitable = true;
+                    switch (parameter.BindMethod)
+                    {
+                        case BindabilityMethod.IBindableFromHttpContext:
+                        case BindabilityMethod.BindAsyncWithParameter:
+                            NeedsParameterArray = true;
+                            break;
+                    }
+                    break;
+                case EndpointParameterSource.JsonBody:
+                case EndpointParameterSource.JsonBodyOrService:
+                    IsAwaitable = true;
+                    break;
+                case EndpointParameterSource.Unknown:
+                    Diagnostics.Add(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor(parameter.Name));
+                    break;
             }
 
             parameters[i] = parameter;
         }
 
         Parameters = parameters;
-        IsAwaitable |= parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
     }
 
     public string HttpMethod { get; }
-    public bool IsAwaitable { get; set; }
+    public bool IsAwaitable { get; }
+    public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();

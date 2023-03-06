@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.CodeDom.Compiler;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -110,7 +107,14 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
-        codeWriter.WriteLine(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall());
+        if (!endpoint.Response.IsVoid)
+        {
+            codeWriter.WriteLine(endpoint.EmitResponseWritingCall());
+        }
+        else if (!endpoint.IsAwaitable)
+        {
+            codeWriter.WriteLine("return Task.CompletedTask;");
+        }
         codeWriter.EndBlock(); // End handler method block
     }
 
@@ -132,7 +136,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (!endpoint.Response.IsVoid)
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsJsonAsync(result);";
+            return $"{returnOrAwait} {endpoint.EmitJsonResponse()}";
         }
         else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
         {
@@ -154,8 +158,12 @@ internal static class StaticRouteHandlerModelEmitter
     public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-        var invocationConstructor = endpoint.Parameters.Length == 0 ? "DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext";
-        var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
+        var invocationCreator = endpoint.Parameters.Length > 8
+            ? "new DefaultEndpointFilterInvocationContext"
+            : "EndpointFilterInvocationContext.Create";
+        var invocationGenericArgs = endpoint.Parameters.Length is > 0 and < 8
+            ? $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>"
+            : string.Empty;
 
         codeWriter.WriteLine("async Task RequestHandlerFiltered(HttpContext httpContext)");
         codeWriter.StartBlock(); // Start handler method block
@@ -170,7 +178,7 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.StartBlock(); // Start if-statement block
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
-        codeWriter.WriteLine($"var result = await filteredInvocation(new {invocationConstructor}{invocationGenericArgs}(httpContext{argumentList}));");
+        codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
     }

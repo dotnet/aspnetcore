@@ -4,7 +4,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -51,25 +50,25 @@ internal sealed class ServerComponentSerializer
     /// <remarks>
     /// Remember to update <see cref="PreambleBufferSize"/> if the number of entries being appended in this function changes.
     /// </remarks>
-    internal static void AppendPreamble(IHtmlContentBuilder htmlContentBuilder, ServerComponentMarker record)
+    internal static void AppendPreamble(TextWriter writer, ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
-        htmlContentBuilder.AppendHtml("<!--Blazor:");
-        htmlContentBuilder.AppendHtml(serializedStartRecord);
-        htmlContentBuilder.AppendHtml("-->");
+        writer.Write("<!--Blazor:");
+        writer.Write(serializedStartRecord);
+        writer.Write("-->");
     }
 
-    internal static void AppendEpilogue(IHtmlContentBuilder htmlContentBuilder, ServerComponentMarker record)
+    internal static void AppendEpilogue(TextWriter writer, ServerComponentMarker record)
     {
         var endRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
-        htmlContentBuilder.AppendHtml("<!--Blazor:");
-        htmlContentBuilder.AppendHtml(endRecord);
-        htmlContentBuilder.AppendHtml("-->");
+        writer.Write("<!--Blazor:");
+        writer.Write(endRecord);
+        writer.Write("-->");
     }
 }

@@ -53,8 +53,12 @@ public static class HtmlHelperComponentExtensions
         ArgumentNullException.ThrowIfNull(htmlHelper);
         ArgumentNullException.ThrowIfNull(componentType);
 
+        var parameterView = parameters is null ?
+            ParameterView.Empty :
+            ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
+
         var viewContext = htmlHelper.ViewContext;
-        var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
-        return await componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters);
+        var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<ComponentPrerenderer>();
+        return await componentRenderer.PrerenderComponentAsync(viewContext, componentType, renderMode, parameterView);
     }
 }
