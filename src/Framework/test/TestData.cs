@@ -29,6 +29,7 @@ public static class TestData
                 "Microsoft.AspNetCore.Authorization.Policy",
                 "Microsoft.AspNetCore.Components",
                 "Microsoft.AspNetCore.Components.Authorization",
+                "Microsoft.AspNetCore.Components.Endpoints",
                 "Microsoft.AspNetCore.Components.Forms",
                 "Microsoft.AspNetCore.Components.Server",
                 "Microsoft.AspNetCore.Components.Web",

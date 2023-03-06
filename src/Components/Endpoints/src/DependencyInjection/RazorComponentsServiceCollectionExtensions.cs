@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -17,12 +18,12 @@ public static class RazorComponentsServiceCollectionExtensions
     /// <returns></returns>
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
-        services.AddSingleton<RazorComponentsMarkerService>();
+        services.TryAddSingleton<RazorComponentsMarkerService>();
 
         // Routing
         // This can't be a singleton
         // https://github.com/dotnet/aspnetcore/issues/46980
-        services.AddSingleton<RazorComponentEndpointDataSource>();
+        services.TryAddSingleton<RazorComponentEndpointDataSource>();
 
         // TODO: Register common services required for server side rendering
 
