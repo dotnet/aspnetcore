@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Components.Sections;
 public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
 {
     private object? _registeredSectionId;
-    private bool? _registeredIsDefaultContent;
     private SectionRegistry _registry = default!;
 
     /// <summary>
@@ -17,12 +16,6 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     /// the content of this instance.
     /// </summary>
     [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
-
-    /// <summary>
-    /// Gets or sets whether this component should provide the default content for the target
-    /// <see cref="SectionOutlet"/>.
-    /// </summary>
-    [Parameter] public bool IsDefaultContent { get; set; }
 
     /// <summary>
     /// Gets or sets the content to be rendered in corresponding <see cref="SectionOutlet"/> instances.
@@ -45,16 +38,15 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
             throw new InvalidOperationException($"{nameof(SectionContent)} requires a non-null value for the parameter '{nameof(SectionId)}'.");
         }
 
-        if (!object.Equals(SectionId, _registeredSectionId) || IsDefaultContent != _registeredIsDefaultContent)
+        if (!object.Equals(SectionId, _registeredSectionId))
         {
             if (_registeredSectionId is not null)
             {
                 _registry.RemoveProvider(_registeredSectionId, this);
             }
 
-            _registry.AddProvider(SectionId, this, IsDefaultContent);
+            _registry.AddProvider(SectionId, this);
             _registeredSectionId = SectionId;
-            _registeredIsDefaultContent = IsDefaultContent;
         }
 
         _registry.NotifyContentChanged(SectionId, this);

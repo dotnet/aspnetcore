@@ -18,8 +18,7 @@
 
 <Counter
     SectionContentExists="CounterSectionContentExists"
-    SectionId="CounterSectionContentId"
-    IsDefaultContent="CounterIsDefaultContent">
+    SectionId="CounterSectionContentId">
 </Counter>
 
 <br />
@@ -44,20 +43,9 @@
     Change Counter SectionContent Name to non sexisting
 </button><br />
 
-<button id="counter-section-content-make-default"
-        @onclick="@(() => CounterIsDefaultContent = true)">
-    Make Counter's SectionContent Default
-</button><br />
-
-<button id="counter-section-content-make-non-default"
-        @onclick="@(() => CounterIsDefaultContent = false)">
-    Make Counter's SectionContent Non Default
-</button>
-
 <TextComponent
     SectionContentExists="TextComponentSectionContentExists"
-    SectionId="TextComponentSectionContentId"
-    IsDefaultContent="TextComponentIsDefaultContent">
+    SectionId="TextComponentSectionContentId">
 </TextComponent>
 
 <button id="text-render-section-content"
@@ -70,11 +58,6 @@
     Dispose TextComponent SectionContent
 </button><br />
 
-<button id="text-section-content-make-default"
-        @onclick="@(() => TextComponentIsDefaultContent = true)">
-    Make TextComponent's SectionContent Default
-</button><br />
-
 @code {
     private static object FirstSectionId = new();
     private static int SecondSectionId = 123;
@@ -84,9 +67,6 @@
 
     private object CounterSectionContentId = FirstSectionId;
     private object TextComponentSectionContentId = FirstSectionId;
-
-    private bool CounterIsDefaultContent = false;
-    private bool TextComponentIsDefaultContent = false;
 
     private bool SectionOutletExists = true;
 }

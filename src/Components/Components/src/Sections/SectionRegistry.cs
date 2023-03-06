@@ -8,7 +8,7 @@ internal sealed class SectionRegistry
     private readonly Dictionary<object, ISectionContentSubscriber> _subscribersBySectionId = new();
     private readonly Dictionary<object, List<ISectionContentProvider>> _providersBySectionId = new();
 
-    public void AddProvider(object sectionId, ISectionContentProvider provider, bool isDefaultProvider)
+    public void AddProvider(object sectionId, ISectionContentProvider provider)
     {
         if (!_providersBySectionId.TryGetValue(sectionId, out var providers))
         {
@@ -16,14 +16,7 @@ internal sealed class SectionRegistry
             _providersBySectionId.Add(sectionId, providers);
         }
 
-        if (isDefaultProvider)
-        {
-            providers.Insert(0, provider);
-        }
-        else
-        {
-            providers.Add(provider);
-        }
+        providers.Add(provider);
     }
 
     public void RemoveProvider(object sectionId, ISectionContentProvider provider)

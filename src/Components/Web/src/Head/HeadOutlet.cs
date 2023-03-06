@@ -45,14 +45,13 @@ public sealed class HeadOutlet : ComponentBase
         {
             builder.OpenComponent<SectionContent>(2);
             builder.AddComponentParameter(3, nameof(SectionContent.SectionId), TitleSectionId);
-            builder.AddComponentParameter(4, nameof(SectionContent.IsDefaultContent), true);
-            builder.AddComponentParameter(5, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
+            builder.AddComponentParameter(4, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
             builder.CloseComponent();
         }
 
         // Render the rest of the head metadata
-        builder.OpenComponent<SectionOutlet>(6);
-        builder.AddComponentParameter(7, nameof(SectionOutlet.SectionId), HeadSectionId);
+        builder.OpenComponent<SectionOutlet>(5);
+        builder.AddComponentParameter(6, nameof(SectionOutlet.SectionId), HeadSectionId);
         builder.CloseComponent();
     }
 
