@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -62,8 +66,54 @@ internal class RazorComponentEndpointDataSource : EndpointDataSource
 
     private void UpdateEndpoints()
     {
-        // TODO: Logic for creating/updating endpoints
-        _endpoints = new List<Endpoint>();
+        // TODO: https://github.com/dotnet/aspnetcore/issues/46980
+
+        var entryPoint = Assembly.GetEntryAssembly() ??
+            throw new InvalidOperationException("Can't find entry assembly.");
+
+        var pages = entryPoint.GetExportedTypes()
+            .Select(t => (type: t, route: t.GetCustomAttribute<RouteAttribute>()))
+            .Where(p => p.route != null);
+
+        var endpoints = new List<Endpoint>();
+        foreach (var (type, route) in pages)
+        {
+            // TODO: Proper endpoint definition https://github.com/dotnet/aspnetcore/issues/46985
+            var endpoint = new RouteEndpoint(
+                CreateRouteDelegate(type),
+                RoutePatternFactory.Parse(route!.Template),
+                order: 0,
+                new EndpointMetadataCollection(type.GetCustomAttributes(inherit: true)),
+                route.Template);
+            endpoints.Add(endpoint);
+        }
+
+        _endpoints = endpoints;
+    }
+
+    private static RequestDelegate CreateRouteDelegate(Type type)
+    {
+        // TODO: Proper endpoint implementation https://github.com/dotnet/aspnetcore/issues/46988
+        return (ctx) =>
+        {
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/html; charset=utf-8";
+            return ctx.Response.WriteAsync($"""
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{type.FullName}</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+	<p>{type.FullName}</p>
+  </body>
+</html>
+""");
+        };
     }
 
     public override IChangeToken GetChangeToken()
