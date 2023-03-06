@@ -77,6 +77,7 @@ public class KestrelConfigurationLoader
     private IList<Action> EndpointsToAdd { get; } = new List<Action>();
 
     private CertificateConfig? DefaultCertificateConfig { get; set; }
+    internal X509Certificate2? DefaultCertificate { get; set; }
 
     /// <summary>
     /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
@@ -270,9 +271,10 @@ public class KestrelConfigurationLoader
     {
         var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
         var endpointsToStart = new List<ListenOptions>();
+        var endpointsToReuse = new List<ListenOptions>();
 
-        Options.ConfigurationBackedListenOptions.Clear();
         DefaultCertificateConfig = null;
+        DefaultCertificate = null;
 
         ConfigurationReader = new ConfigurationReader(Configuration);
 
@@ -336,7 +338,7 @@ public class KestrelConfigurationLoader
                 if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                 {
                     // Fallback
-                    Options.ApplyDefaultCert(httpsOptions);
+                    Options.ApplyDefaultCertificate(httpsOptions);
 
                     // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
                     endpoint.Certificate = DefaultCertificateConfig;
@@ -350,7 +352,7 @@ public class KestrelConfigurationLoader
             if (matchingBoundEndpoints.Count > 0)
             {
                 endpointsToStop.RemoveAll(o => o.EndpointConfig == endpoint);
-                Options.ConfigurationBackedListenOptions.AddRange(matchingBoundEndpoints);
+                endpointsToReuse.AddRange(matchingBoundEndpoints);
                 continue;
             }
 
@@ -390,8 +392,15 @@ public class KestrelConfigurationLoader
             listenOptions.EndpointConfig = endpoint;
 
             endpointsToStart.Add(listenOptions);
-            Options.ConfigurationBackedListenOptions.Add(listenOptions);
         }
+
+        // Update ConfigurationBackedListenOptions after everything else has been processed so that
+        // it's left in a good state (i.e. its former state) if something above throws an exception.
+        // Note that this isn't foolproof - we could run out of memory or something - but it covers
+        // exceptions resulting from user misconfiguration (e.g. bad endpoint cert password).
+        Options.ConfigurationBackedListenOptions.Clear();
+        Options.ConfigurationBackedListenOptions.AddRange(endpointsToReuse);
+        Options.ConfigurationBackedListenOptions.AddRange(endpointsToStart);
 
         return (endpointsToStop, endpointsToStart);
     }
@@ -404,7 +413,7 @@ public class KestrelConfigurationLoader
             if (defaultCert != null)
             {
                 DefaultCertificateConfig = defaultCertConfig;
-                Options.DefaultCertificate = defaultCert;
+                DefaultCertificate = defaultCert;
             }
         }
         else
@@ -414,7 +423,7 @@ public class KestrelConfigurationLoader
             {
                 Logger.LocatedDevelopmentCertificate(certificate);
                 DefaultCertificateConfig = certificateConfig;
-                Options.DefaultCertificate = certificate;
+                DefaultCertificate = certificate;
             }
         }
     }

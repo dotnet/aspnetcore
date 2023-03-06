@@ -1749,6 +1749,15 @@ public class RenderTreeDiffBuilderTest : IDisposable
             tree.AddComponentParameter(1, "MyDecimal", decimal.MinusOne);
             tree.AddComponentParameter(1, "MyDate", dateTimeWillNotChange);
             tree.AddComponentParameter(1, "MyGuid", Guid.Empty);
+            tree.AddComponentParameter(1, "MySByte", (sbyte)123);
+            tree.AddComponentParameter(1, "MyShort", (short)123);
+            tree.AddComponentParameter(1, "MyUShort", (ushort)123);
+            tree.AddComponentParameter(1, "MyUInt", uint.MaxValue);
+            tree.AddComponentParameter(1, "MyULong", ulong.MaxValue);
+            tree.AddComponentParameter(1, "MyChar", 'c');
+            tree.AddComponentParameter(1, "MyEnum", StringComparison.OrdinalIgnoreCase);
+            tree.AddComponentParameter(1, "MyEventCallBack", EventCallback.Empty);
+            tree.AddComponentParameter(1, "MyEventCallBackOfT", EventCallback<int>.Empty);
             tree.CloseComponent();
         }
 

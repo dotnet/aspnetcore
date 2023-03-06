@@ -54,7 +54,7 @@ public class KestrelServerTests
     public void StartWithHttpsAddressConfiguresHttpsEndpoints()
     {
         var options = CreateServerOptions();
-        options.DefaultCertificate = TestResources.GetTestCertificate();
+        options.TestOverrideDefaultCertificate = TestResources.GetTestCertificate();
         using (var server = CreateServer(options))
         {
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
@@ -70,7 +70,7 @@ public class KestrelServerTests
     public void KestrelServerThrowsUsefulExceptionIfDefaultHttpsProviderNotAdded()
     {
         var options = CreateServerOptions();
-        options.IsDevCertLoaded = true; // Prevent the system default from being loaded
+        options.IsDevelopmentCertificateLoaded = true; // Prevent the system default from being loaded
         using (var server = CreateServer(options, throwOnCriticalErrors: false))
         {
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");

@@ -1,5 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
@@ -16,3 +17,7 @@ Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.get -> object!
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionOutlet() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
+override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
+override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool

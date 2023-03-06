@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.CodeDom.Compiler;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
@@ -73,35 +76,42 @@ internal static class StaticRouteHandlerModelEmitter
     }
 
     /*
-     * TODO: Emit invocation to the request handler. The structure
+     * Emit invocation to the request handler. The structure
      * involved here consists of a call to bind parameters, check
      * their validity (optionality), invoke the underlying handler with
      * the arguments bound from HTTP context, and write out the response.
      */
-    public static string EmitRequestHandler(this Endpoint endpoint)
+    public static void EmitRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        var handlerSignature = endpoint.IsAwaitable ? "async Task RequestHandler(HttpContext httpContext)" : "Task RequestHandler(HttpContext httpContext)";
-        var resultAssignment = endpoint.Response.IsVoid ? string.Empty : "var result = ";
-        var awaitHandler = endpoint.Response.IsAwaitable ? "await " : string.Empty;
-        var setContentType = endpoint.Response.IsVoid ? string.Empty : $@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";";
+        codeWriter.WriteLine(endpoint.IsAwaitable ? "async Task RequestHandler(HttpContext httpContext)" : "Task RequestHandler(HttpContext httpContext)");
+        codeWriter.StartBlock(); // Start handler method block
+        codeWriter.WriteLine("var wasParamCheckFailure = false;");
 
-        var requestHandlerSource = $$"""
-                    {{handlerSignature}}
-                    {
-                        var wasParamCheckFailure = false;
-{{endpoint.EmitParameterPreparation()}}
-                        if (wasParamCheckFailure)
-                        {
-                            httpContext.Response.StatusCode = 400;
-                            {{(endpoint.IsAwaitable ? "return;" : "return Task.CompletedTask;")}}
-                        }
-                        {{setContentType}}
-                        {{resultAssignment}}{{awaitHandler}}handler({{endpoint.EmitArgumentList()}});
-                        {{(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall())}}
-                    }
-""";
+        if (endpoint.Parameters.Length > 0)
+        {
+            codeWriter.WriteLine(endpoint.EmitParameterPreparation(codeWriter.Indent));
+        }
 
-        return requestHandlerSource;
+        codeWriter.WriteLine("if (wasParamCheckFailure)");
+        codeWriter.StartBlock(); // Start if-statement block
+        codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
+        codeWriter.WriteLine(endpoint.IsAwaitable ? "return;" : "return Task.CompletedTask;");
+        codeWriter.EndBlock(); // End if-statement block
+        if (!endpoint.Response.IsVoid)
+        {
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";");
+        }
+        if (!endpoint.Response.IsVoid)
+        {
+            codeWriter.Write("var result = ");
+        }
+        if (endpoint.Response.IsAwaitable)
+        {
+            codeWriter.Write("await ");
+        }
+        codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
+        codeWriter.WriteLine(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall());
+        codeWriter.EndBlock(); // End handler method block
     }
 
     private static string EmitResponseWritingCall(this Endpoint endpoint)
@@ -122,7 +132,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (!endpoint.Response.IsVoid)
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsJsonAsync(result);";
+            return $"{returnOrAwait} {endpoint.EmitJsonResponse()}";
         }
         else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
         {
@@ -141,25 +151,32 @@ internal static class StaticRouteHandlerModelEmitter
      * can be used to reduce the boxing that happens at runtime when constructing
      * the context object.
      */
-    public static string EmitFilteredRequestHandler(this Endpoint endpoint)
+    public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-        var invocationConstructor = endpoint.Parameters.Length == 0 ? "DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext";
-        var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
+        var invocationCreator = endpoint.Parameters.Length > 8
+            ? "new DefaultEndpointFilterInvocationContext"
+            : "EndpointFilterInvocationContext.Create";
+        var invocationGenericArgs = endpoint.Parameters.Length is > 0 and < 8
+            ? $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>"
+            : string.Empty;
 
-        return $$"""
-                    async Task RequestHandlerFiltered(HttpContext httpContext)
-                    {
-                        var wasParamCheckFailure = false;
-{{endpoint.EmitParameterPreparation()}}
-                        if (wasParamCheckFailure)
-                        {
-                            httpContext.Response.StatusCode = 400;
-                        }
-                        var result = await filteredInvocation(new {{invocationConstructor}}{{invocationGenericArgs}}(httpContext{{argumentList}}));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
-                    }
-""";
+        codeWriter.WriteLine("async Task RequestHandlerFiltered(HttpContext httpContext)");
+        codeWriter.StartBlock(); // Start handler method block
+        codeWriter.WriteLine("var wasParamCheckFailure = false;");
+
+        if (endpoint.Parameters.Length > 0)
+        {
+            codeWriter.WriteLine(endpoint.EmitParameterPreparation(codeWriter.Indent));
+        }
+
+        codeWriter.WriteLine("if (wasParamCheckFailure)");
+        codeWriter.StartBlock(); // Start if-statement block
+        codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
+        codeWriter.EndBlock(); // End if-statement block
+        codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
+        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+        codeWriter.EndBlock(); // End handler method block
     }
 
     public static string EmitFilteredInvocation(this Endpoint endpoint)
@@ -185,7 +202,7 @@ return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList(
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type}>({i})");
+            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})");
 
             if (i < endpoint.Parameters.Length - 1)
             {
@@ -207,7 +224,7 @@ return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList(
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append(endpoint.Parameters[i].Type.ToDisplayString(endpoint.Parameters[i].IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull));
+            sb.Append(endpoint.Parameters[i].Type.ToDisplayString(endpoint.Parameters[i].IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat));
 
             if (i < endpoint.Parameters.Length - 1)
             {

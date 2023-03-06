@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using System.Linq;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
@@ -17,38 +20,56 @@ internal class EndpointParameter
         Type = parameter.Type;
         Name = parameter.Name;
         Source = EndpointParameterSource.Unknown;
-        HandlerArgument = $"{parameter.Name}_local";
 
         var fromQueryMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata);
         var fromServiceMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+        var fromRouteMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
+        var fromHeaderMetadataInterfaceType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata);
 
-        if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType))
+        if (parameter.HasAttributeImplementingInterface(fromRouteMetadataInterfaceType, out var fromRouteAttribute))
+        {
+            Source = EndpointParameterSource.Route;
+            Name = GetParameterName(fromRouteAttribute, parameter.Name);
+            IsOptional = parameter.IsOptional();
+            IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+            ParsingBlockEmitter = parsingBlockEmitter;
+        }
+        else if (parameter.HasAttributeImplementingInterface(fromQueryMetadataInterfaceType, out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
+            Name = GetParameterName(fromQueryAttribute, parameter.Name);
+            IsOptional = parameter.IsOptional();
             AssigningCode = $"httpContext.Request.Query[\"{parameter.Name}\"]";
-            IsOptional = parameter.Type is INamedTypeSymbol
-            {
-                NullableAnnotation: NullableAnnotation.Annotated
-            };
+            IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+            ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var jsonBodyAssigningCode, out var isOptional))
+        else if (parameter.HasAttributeImplementingInterface(fromHeaderMetadataInterfaceType, out var fromHeaderAttribute))
+        {
+            Source = EndpointParameterSource.Header;
+            Name = GetParameterName(fromHeaderAttribute, parameter.Name);
+            IsOptional = parameter.IsOptional();
+            IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+            ParsingBlockEmitter = parsingBlockEmitter;
+        }
+        else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
         {
             Source = EndpointParameterSource.JsonBody;
-            AssigningCode = jsonBodyAssigningCode;
             IsOptional = isOptional;
         }
         else if (parameter.HasAttributeImplementingInterface(fromServiceMetadataInterfaceType))
         {
             Source = EndpointParameterSource.Service;
             IsOptional = parameter.Type is INamedTypeSymbol { NullableAnnotation: NullableAnnotation.Annotated } || parameter.HasExplicitDefaultValue;
-            AssigningCode = IsOptional ?
-                $"httpContext.RequestServices.GetService<{parameter.Type}>();" :
-                $"httpContext.RequestServices.GetRequiredService<{parameter.Type}>()";
         }
         else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
         {
             Source = EndpointParameterSource.SpecialType;
             AssigningCode = specialTypeAssigningCode;
+        }
+        else if (parameter.Type.SpecialType == SpecialType.System_String)
+        {
+            Source = EndpointParameterSource.RouteOrQuery;
+            IsOptional = parameter.IsOptional();
         }
         else
         {
@@ -57,21 +78,105 @@ internal class EndpointParameter
         }
     }
 
+    private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)]out Action<CodeWriter, string, string>? parsingBlockEmitter)
+    {
+        var parameterType = parameter.Type.UnwrapTypeSymbol();
+
+        // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
+        // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
+        // support usage in the code generator an optiona out parameter has been added to hint at what variant of the various
+        // TryParse methods should be used (this implies that the preferences are baked into ParsabilityHelper). If we aren't
+        // parsable at all we bail.
+        if (ParsabilityHelper.GetParsability(parameterType, wellKnownTypes, out var parsabilityMethod) == Parsability.NotParsable)
+        {
+            parsingBlockEmitter = null;
+            return false;
+        }
+
+        // If we are parsable we need to emit code based on the enumeration ParsabilityMethod which has a bunch of members
+        // which spell out the preferred TryParse uage. This swtich statement makes slight variations to them based on
+        // which method was encountered.
+        Func<string, string, string>? preferredTryParseInvocation = parsabilityMethod switch
+        {
+            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, out var {{outputArgument}})""",
+            ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}!, out var {{outputArgument}})""",
+            ParsabilityMethod.Uri => (string inputArgument, string outputArgument) => $$"""Uri.TryCreate({{inputArgument}}!, UriKind.RelativeOrAbsolute, out var {{outputArgument}})""",
+            ParsabilityMethod.String => null, // string parameters don't require parsing
+            _ => null
+        };
+
+        // Special case handling for specific types
+        if (parameterType.SpecialType == SpecialType.System_Char)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, out var {{outputArgument}})""";
+        }
+        else if (parameterType.SpecialType == SpecialType.System_DateTime)
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateTimeOffset)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateOnly)))
+        {
+            preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
+        }
+
+        // ... so for strings (null) we bail.
+        if (preferredTryParseInvocation == null)
+        {
+            parsingBlockEmitter = null;
+            return false;
+        }
+
+        if (IsOptional)
+        {
+            parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
+            {
+                writer.WriteLine($"""{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {outputArgument} = default;""");
+                writer.WriteLine($$"""if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})""");
+                writer.StartBlock();
+                writer.WriteLine($$"""{{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};""");
+                writer.EndBlock();
+                writer.WriteLine($$"""else if (string.IsNullOrEmpty({{inputArgument}}))""");
+                writer.StartBlock();
+                writer.WriteLine($$"""{{outputArgument}} = null;""");
+                writer.EndBlock();
+                writer.WriteLine("else");
+                writer.StartBlock();
+                writer.WriteLine("wasParamCheckFailure = true;");
+                writer.EndBlock();
+            };
+        }
+        else
+        {
+            parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
+            {
+                writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
+                writer.StartBlock();
+                writer.WriteLine("wasParamCheckFailure = true;");
+                writer.EndBlock();
+            };
+        }
+
+        // Wrap the TryParse method call in an if-block and if it doesn't work set param check failure.
+        return true;
+    }
+
     public ITypeSymbol Type { get; }
     public EndpointParameterSource Source { get; }
 
-    // TODO: If the parameter has [FromRoute("AnotherName")] or similar, prefer that.
+    // Only used for SpecialType parameters that need
+    // to be resolved by a specific WellKnownType
+    internal string? AssigningCode { get; set; }
     public string Name { get; }
-    public string? AssigningCode { get; }
-    public string HandlerArgument { get; }
     public bool IsOptional { get; }
-
-    public string EmitArgument() => Source switch
-    {
-        EndpointParameterSource.SpecialType or EndpointParameterSource.Query or EndpointParameterSource.Service => HandlerArgument,
-        EndpointParameterSource.JsonBody => IsOptional ? HandlerArgument : $"{HandlerArgument}!",
-        _ => throw new Exception("Unreachable!")
-    };
+    [MemberNotNull("ParsingBlockEmitter")]
+    public bool IsParsable { get; }
+    public Action<CodeWriter, string, string> ParsingBlockEmitter { get; }
 
     // TODO: Handle special form types like IFormFileCollection that need special body-reading logic.
     private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out string? callingCode)
@@ -118,31 +223,32 @@ internal class EndpointParameter
 
     private static bool TryGetExplicitFromJsonBody(IParameterSymbol parameter,
         WellKnownTypes wellKnownTypes,
-        [NotNullWhen(true)] out string? assigningCode,
         out bool isOptional)
     {
-        assigningCode = null;
         isOptional = false;
-        if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
+        if (!parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
         {
-            foreach (var namedArgument in fromBodyAttribute.NamedArguments)
-            {
-                if (namedArgument.Key == "AllowEmpty")
-                {
-                    isOptional |= namedArgument.Value.Value is true;
-                }
-            }
-            isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
-            assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{parameter.Type}>(httpContext, {(isOptional ? "true" : "false")})";
-            return true;
+            return false;
         }
-        return false;
+        isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<int>("EmptyBodyBehavior", out var emptyBodyBehaviorValue) && emptyBodyBehaviorValue == 1;
+        isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<bool>("AllowEmpty", out var allowEmptyValue) && allowEmptyValue;
+        isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
+        return true;
     }
+
+    private static string GetParameterName(AttributeData attribute, string parameterName) =>
+        attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName)
+            ? (fromSourceName ?? parameterName)
+            : parameterName;
 
     public override bool Equals(object obj) =>
         obj is EndpointParameter other &&
         other.Source == Source &&
         other.Name == Name &&
+        SymbolEqualityComparer.Default.Equals(other.Type, Type);
+
+    public bool SignatureEquals(object obj) =>
+        obj is EndpointParameter other &&
         SymbolEqualityComparer.Default.Equals(other.Type, Type);
 
     public override int GetHashCode()

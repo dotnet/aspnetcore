@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC 控制站",
+  "description": "包含或不包含讀取/寫入動作的 MVC 控制器",
+  "symbols/namespace/description": "適用於產生之程式碼的命名空間",
+  "symbols/actions/description": "使用讀取/寫入動作建立控制器",
+  "symbols/actions/displayName": "新增讀取/寫入動作",
+  "postActions/openInEditor/description": "在編輯器中開啟建立的控制器"
+}

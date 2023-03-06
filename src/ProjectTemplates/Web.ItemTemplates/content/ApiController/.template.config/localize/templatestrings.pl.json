@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Kontroler interfejsu API",
+  "description": "Kontroler interfejsu API z akcjami odczytu/zapisu lub bez",
+  "symbols/namespace/description": "Przestrzeń nazw wygenerowanego kodu",
+  "symbols/actions/description": "Utwórz kontroler z akcjami odczytu/zapisu",
+  "symbols/actions/displayName": "Dodaj akcje odczytu/zapisu",
+  "postActions/openInEditor/description": "Otwiera utworzony kontroler w edytorze"
+}

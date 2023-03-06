@@ -3,10 +3,12 @@
 
 using System.Globalization;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -102,15 +104,18 @@ public class Startup
             o.Authority = Configuration["oidc:authority"];
             */
             // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-            o.ClientId = "hybrid";
+            o.ClientId = "interactive.confidential";
             o.ClientSecret = "secret"; // for code flow
-            o.Authority = "https://demo.identityserver.io/";
+            o.Authority = "https://demo.duendesoftware.com/";
 
-            o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+            o.ResponseType = OpenIdConnectResponseType.Code;
             o.SaveTokens = true;
             o.GetClaimsFromUserInfoEndpoint = true;
             o.AccessDeniedPath = "/access-denied-from-remote";
-            o.MapInboundClaims = false;
+            // o.MapInboundClaims = false;
+            o.ClaimsIssuer = "MyCustomIssuer";
+
+            o.ClaimActions.Add(new IssuerFixupAction());
 
             // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 
@@ -352,5 +357,20 @@ public class Startup
 
     private static string HtmlEncode(string content) =>
         string.IsNullOrEmpty(content) ? string.Empty : HtmlEncoder.Default.Encode(content);
+
+    private class IssuerFixupAction : ClaimAction
+    {
+        public IssuerFixupAction() : base(ClaimTypes.NameIdentifier, string.Empty) { }
+
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
+        {
+            var oldClaims = identity.Claims.ToList();
+            foreach (var claim in oldClaims)
+            {
+                identity.RemoveClaim(claim);
+                identity.AddClaim(new Claim(claim.Type, claim.Value, claim.ValueType, issuer, claim.OriginalIssuer, claim.Subject));
+            }
+        }
+    }
 }
 

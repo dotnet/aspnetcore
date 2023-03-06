@@ -641,13 +641,16 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.SendingCancellation(_logger, irq.InvocationId);
 
-                    // Fire and forget, if it fails that means we aren't connected anymore.
-                    _ = SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
+                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     Log.UnableToSendCancellation(_logger, irq.InvocationId);
                 }
+            }
+            catch
+            {
+                // Connection closed while trying to cancel a stream. This is fine to ignore.
             }
             finally
             {
@@ -849,6 +852,10 @@ public partial class HubConnection : IAsyncDisposable
                 Log.CompletingStreamNotSent(_logger, streamId);
             }
         }
+        catch (Exception ex)
+        {
+            Log.ErrorSendingStreamCompletion(_logger, streamId, ex);
+        }
         finally
         {
             _state.ReleaseConnectionLock();
@@ -1003,6 +1010,11 @@ public partial class HubConnection : IAsyncDisposable
                 // The server can't receive a response, so we just drop the message and log
                 // REVIEW: Is this the right approach?
                 Log.ArgumentBindingFailure(_logger, bindingFailure.InvocationId, bindingFailure.Target, bindingFailure.BindingFailure.SourceException);
+
+                if (!string.IsNullOrEmpty(bindingFailure.InvocationId))
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, "Client failed to parse argument(s)."), cancellationToken: default).ConfigureAwait(false);
+                }
                 break;
             case InvocationMessage invocation:
                 Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
@@ -1995,6 +2007,10 @@ public partial class HubConnection : IAsyncDisposable
 
                         await _hubConnection.SendHubMessage(this, PingMessage.Instance).ConfigureAwait(false);
                     }
+                }
+                catch
+                {
+                    // The exception from send should be seen elsewhere in the client. We'll ignore it here.
                 }
                 finally
                 {

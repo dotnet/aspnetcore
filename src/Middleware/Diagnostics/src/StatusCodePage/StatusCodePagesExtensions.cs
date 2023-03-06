@@ -164,10 +164,12 @@ public static class StatusCodePagesExtensions
     {
         var handler = async (StatusCodeContext context) =>
         {
+            var originalStatusCode = context.HttpContext.Response.StatusCode;
+
             var newPath = new PathString(
-                string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
+                string.Format(CultureInfo.InvariantCulture, pathFormat, originalStatusCode));
             var formatedQueryString = queryFormat == null ? null :
-                string.Format(CultureInfo.InvariantCulture, queryFormat, context.HttpContext.Response.StatusCode);
+                string.Format(CultureInfo.InvariantCulture, queryFormat, originalStatusCode);
             var newQueryString = queryFormat == null ? QueryString.Empty : new QueryString(formatedQueryString);
 
             var originalPath = context.HttpContext.Request.Path;
@@ -181,6 +183,7 @@ public static class StatusCodePagesExtensions
                 OriginalPathBase = context.HttpContext.Request.PathBase.Value!,
                 OriginalPath = originalPath.Value!,
                 OriginalQueryString = originalQueryString.HasValue ? originalQueryString.Value : null,
+                OriginalStatusCode = originalStatusCode,
                 Endpoint = context.HttpContext.GetEndpoint(),
                 RouteValues = routeValuesFeature?.RouteValues
             });

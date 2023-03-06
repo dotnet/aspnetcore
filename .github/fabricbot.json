@@ -2562,7 +2562,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview2"
+              "milestoneName": "8.0-preview3"
             }
           }
         ],
@@ -3307,7 +3307,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.15"
+              "milestoneName": "6.0.16"
             }
           }
         ]
@@ -3351,7 +3351,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.4"
+              "milestoneName": "7.0.5"
             }
           }
         ]
@@ -3375,7 +3375,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/8.0-preview1"
+                "branchName": "release/8.0-preview2"
               }
             }
           ]
@@ -3386,7 +3386,7 @@
           "issues",
           "project_card"
         ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview1 branch",
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview2 branch",
         "actions": [
           {
             "name": "removeMilestone",
@@ -3395,7 +3395,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview1"
+              "milestoneName": "8.0-preview2"
             }
           }
         ]
@@ -3532,7 +3532,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.\nTo make sure no breaking changes are introduced, please remove the `pending ci rerun` label to kick off a new CI run."
+              "comment": "Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.\nTo make sure no breaking changes are introduced, please leave an `/azp run` comment here to rerun the CI pipeline and confirm success before merging the change."
             }
           },
           {
@@ -3548,14 +3548,27 @@
     {
       "taskType": "trigger",
       "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
+      "subCapability": "PullRequestCommentResponder",
       "version": "1.0",
       "config": {
         "conditions": {
           "operator": "and",
           "operands": [
             {
-              "name": "labelRemoved",
+              "name": "activitySenderHasPermissions",
+              "parameters": {
+                "permissions": "write"
+              }
+            },
+            {
+              "name": "commentContains",
+              "parameters": {
+                "isRegex": true,
+                "commentPattern": "^(\\/azp run)$"
+              }
+            },
+            {
+              "name": "hasLabel",
               "parameters": {
                 "label": "pending-ci-rerun"
               }
@@ -3564,16 +3577,14 @@
         },
         "eventType": "pull_request",
         "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
+          "issue_comment"
         ],
-        "taskName": "Unblock PRs which are no longer awaiting for a ci run",
+        "taskName": "Remove pending-ci-rerun label when CI rerun requested",
         "actions": [
           {
-            "name": "addReply",
+            "name": "removeLabel",
             "parameters": {
-              "comment": "/azp run"
+              "label": "pending-ci-rerun"
             }
           }
         ]
