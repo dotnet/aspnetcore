@@ -74,7 +74,6 @@ internal class EndpointParameter
         }
         else
         {
-            // TODO: Inferencing rules go here - but for now:
             Source = EndpointParameterSource.Unknown;
         }
     }
