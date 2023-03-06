@@ -556,9 +556,7 @@ class MonoHeapLock implements HeapLock {
       throw new Error('Trying to release a lock which isn\'t current');
     }
 
-    if (typeof MONO_INTERNAL !== 'undefined' && typeof MONO_INTERNAL.mono_wasm_gc_unlock === 'function') {
-      MONO_INTERNAL.mono_wasm_gc_unlock();
-    }
+    MONO_INTERNAL.mono_wasm_gc_unlock();
 
     currentHeapLock = null;
 
@@ -574,9 +572,7 @@ class MonoHeapLock implements HeapLock {
   }
 
   static create(): MonoHeapLock {
-    if (typeof MONO_INTERNAL !== 'undefined' && typeof MONO_INTERNAL.mono_wasm_gc_lock === 'function') {
-      MONO_INTERNAL.mono_wasm_gc_lock();
-    }
+    MONO_INTERNAL.mono_wasm_gc_lock();
     return new MonoHeapLock();
   }
 }
