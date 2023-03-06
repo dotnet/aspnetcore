@@ -5,8 +5,8 @@ Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData
 Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult
-Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.get -> Microsoft.AspNetCore.Components.ParameterView
-Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.set -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.get -> object
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.get -> int?

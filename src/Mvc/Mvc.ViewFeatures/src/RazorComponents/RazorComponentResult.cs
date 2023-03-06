@@ -43,7 +43,7 @@ public class RazorComponentResult : ActionResult
     /// <summary>
     /// Gets or sets the parameters for the component.
     /// </summary>
-    public ParameterView Parameters { get; set; } = ParameterView.Empty;
+    public object Parameters { get; set; }
 
     /// <summary>
     /// Gets or sets the rendering mode.

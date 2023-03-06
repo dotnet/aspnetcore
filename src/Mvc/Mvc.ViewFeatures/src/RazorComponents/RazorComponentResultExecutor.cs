@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -70,25 +71,34 @@ public class RazorComponentResultExecutor
         }
 
         await using var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding);
-
-        var componentPrerenderer = actionContext.HttpContext.RequestServices.GetRequiredService<ComponentPrerenderer>();
-
         DiagnosticListener.BeforeRazorComponent(result.ComponentType, result.RenderMode, actionContext);
-        await componentPrerenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var htmlContent = await componentPrerenderer.PrerenderComponentAsync(
-                actionContext,
-                result.ComponentType,
-                result.RenderMode,
-                result.Parameters);
-            await htmlContent.WriteToAsync(writer);
-        });
-
+        await RenderComponentToResponse(actionContext, result, writer);
         DiagnosticListener.AfterRazorComponent(result.ComponentType, result.RenderMode, actionContext);
 
         // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
         await writer.FlushAsync();
+    }
+
+    private static Task RenderComponentToResponse(ActionContext actionContext, RazorComponentResult result, TextWriter writer)
+    {
+        var componentPrerenderer = actionContext.HttpContext.RequestServices.GetRequiredService<ComponentPrerenderer>();
+        return componentPrerenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // We could pool these dictionary instances if we wanted. We could even skip the dictionary
+            // phase entirely if we added some new ParameterView.FromSingleValue(name, value) API.
+            var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RazorComponentResultHost.RazorComponentResult), result },
+            });
+
+            var htmlContent = await componentPrerenderer.PrerenderComponentAsync(
+                actionContext,
+                typeof(RazorComponentResultHost),
+                result.RenderMode,
+                hostParameters);
+            await htmlContent.WriteToAsync(writer);
+        });
     }
 }
