@@ -50,7 +50,6 @@ internal class EndpointParameter
         else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
-            IsOptional = parameter.Type is INamedTypeSymbol { NullableAnnotation: NullableAnnotation.Annotated } || parameter.HasExplicitDefaultValue;
         }
         else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
         {
@@ -74,7 +73,7 @@ internal class EndpointParameter
         }
         else
         {
-            Source = EndpointParameterSource.Unknown;
+            Source = EndpointParameterSource.JsonBodyOrService;
         }
     }
 

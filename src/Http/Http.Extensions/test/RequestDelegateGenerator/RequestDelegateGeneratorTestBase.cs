@@ -101,10 +101,10 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
         }
     }
 
-    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null) =>
-        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride));
+    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null, IServiceProvider serviceProvider = null) =>
+        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride, serviceProvider));
 
-    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null)
+    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null, IServiceProvider serviceProvider = null)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -151,7 +151,7 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 
         Assert.NotNull(handler);
 
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider ?? new EmptyServiceProvider()));
         _ = handler(builder);
 
         var dataSource = Assert.Single(builder.DataSources);
@@ -176,20 +176,28 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
         return endpoints;
     }
 
-    internal HttpContext CreateHttpContext()
+    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider = null)
     {
         var httpContext = new DefaultHttpContext();
-
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(LoggerFactory);
-        var jsonOptions = new JsonOptions();
-        serviceCollection.AddSingleton(Options.Create(jsonOptions));
-        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+        httpContext.RequestServices = serviceProvider ?? CreateServiceProvider();
 
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;
 
         return httpContext;
+    }
+
+    public ServiceProvider CreateServiceProvider(Action<IServiceCollection> configureServices = null)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        var jsonOptions = new JsonOptions();
+        serviceCollection.AddSingleton(Options.Create(jsonOptions));
+        if (configureServices is not null)
+        {
+            configureServices(serviceCollection);
+        }
+        return serviceCollection.BuildServiceProvider();
     }
 
     internal HttpContext CreateHttpContextWithBody(Todo requestData)

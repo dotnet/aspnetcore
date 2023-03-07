@@ -255,6 +255,19 @@ namespace Microsoft.AspNetCore.Http.Generated
         {
             return T.BindAsync(context, parameter);
         }
+
+        private static ValueTask<(bool, T?)> TryResolveJsonBodyOrService<T>(HttpContext httpContext, bool isOptional)
+        {
+            var serviceProviderIsService = httpContext.RequestServices.GetService<IServiceProviderIsService>();
+            if (serviceProviderIsService is not null)
+            {
+                if (serviceProviderIsService.IsService(typeof(T)))
+                {
+                    return new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
+                }
+            }
+            return TryResolveBody<T>(httpContext, isOptional);
+        }
     }
 
     %GENERATEDCODEATTRIBUTE%

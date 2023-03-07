@@ -119,6 +119,25 @@ internal static class EndpointParameterEmitter
         codeWriter.EndBlock();
     }
 
+    internal static void EmitJsonBodyOrServiceParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        // Preamble for diagnostics purposes.
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Invoke TryResolveJsonBodyOrService method to resolve the
+        // type from DI if it exists. Otherwise, resolve the parameter
+        // as a body parameter.
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
+        codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
+
+        // If binding from the JSON body fails, TryResolveJsonBodyOrService
+        // will return `false` and we will need to exit early.
+        codeWriter.WriteLine("if (!isSuccessful)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("return;");
+        codeWriter.EndBlock();
+    }
+
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
         var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol();
@@ -183,7 +202,7 @@ internal static class EndpointParameterEmitter
 
     public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
     {
-        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
+        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
         EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
         _ => endpointParameter.EmitHandlerArgument()
     };

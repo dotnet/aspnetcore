@@ -36,6 +36,9 @@ internal static class EndpointEmitter
                 case EndpointParameterSource.JsonBody:
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
+                case EndpointParameterSource.JsonBodyOrService:
+                    parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);
+                    break;
                 case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
