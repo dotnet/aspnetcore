@@ -61,9 +61,15 @@ internal class RazorComponentResultHost : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        // If we wanted to support rendering pre-instantiated component objects, it would probably go here
-        // as either a whole new RenderTreeFrame type or as some mechanism to attach the instance onto a
-        // regular Component frame (perhaps using a dummy ComponentState that represents 'not yet initialized')
+        // TODO: Once we support rendering Server/WebAssembly components into the page, implementation will
+        // go here. We need to switch into the rendermode given by RazorComponentResult.RenderMode for this
+        // child component. That will cause the developer-supplied parameters to be serialized into a marker
+        // but not attempt to serialize the RenderFragment that causes this to be hosted in its layout.
+
+        // TODO: If we wanted to support rendering pre-instantiated component objects, it would probably go here
+        // as either a whole new RenderTreeFrame type or as some mechanism to attach the instance onto a regular
+        // Component frame (perhaps using a dummy ComponentState that represents 'not yet initialized')
+
         builder.OpenComponent(0, RazorComponentResult.ComponentType);
 
         if (RazorComponentResult.Parameters is not null)

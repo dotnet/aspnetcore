@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -93,10 +94,13 @@ public class RazorComponentResultExecutor
                 { nameof(RazorComponentResultHost.RazorComponentResult), result },
             });
 
+            // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
+            // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
+            // component takes care of switching into your desired render mode when it produces its own output.
             var htmlContent = await componentPrerenderer.PrerenderComponentAsync(
                 actionContext,
                 typeof(RazorComponentResultHost),
-                result.RenderMode,
+                RenderMode.Static,
                 hostParameters);
             await htmlContent.WriteToAsync(writer);
         });
