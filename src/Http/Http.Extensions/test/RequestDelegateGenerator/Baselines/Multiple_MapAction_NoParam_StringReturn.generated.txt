@@ -120,60 +120,6 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 23)] = (
-                (methodInfo, options) =>
-                {
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 23));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
-                },
-                (del, options, inferredMetadataResult) =>
-                {
-                    var handler = (Func<global::System.String>)del;
-                    EndpointFilterDelegate? filteredInvocation = null;
-
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
-                    {
-                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
-                        {
-                            if (ic.HttpContext.Response.StatusCode == 400)
-                            {
-                                return ValueTask.FromResult<object?>(Results.Empty);
-                            }
-                            return ValueTask.FromResult<object?>(handler());
-                        },
-                        options.EndpointBuilder,
-                        handler.Method);
-                    }
-
-                    Task RequestHandler(HttpContext httpContext)
-                    {
-                        var wasParamCheckFailure = false;
-                        if (wasParamCheckFailure)
-                        {
-                            httpContext.Response.StatusCode = 400;
-                            return Task.CompletedTask;
-                        }
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler();
-                        return httpContext.Response.WriteAsync(result);
-                    }
-
-                    async Task RequestHandlerFiltered(HttpContext httpContext)
-                    {
-                        var wasParamCheckFailure = false;
-                        if (wasParamCheckFailure)
-                        {
-                            httpContext.Response.StatusCode = 400;
-                        }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create(httpContext));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
-                    }
-
-                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
-                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
-                    return new RequestDelegateResult(targetDelegate, metadata);
-                }),
             [(@"TestMapActions.cs", 24)] = (
                 (methodInfo, options) =>
                 {
@@ -237,6 +183,60 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    var handler = (Func<global::System.String>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler());
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    Task RequestHandler(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return Task.CompletedTask;
+                        }
+                        httpContext.Response.ContentType ??= "text/plain";
+                        var result = handler();
+                        return httpContext.Response.WriteAsync(result);
+                    }
+
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                        }
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create(httpContext));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 26)] = (
+                (methodInfo, options) =>
+                {
+                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 26));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
                     var handler = (Func<global::System.Threading.Tasks.Task<global::System.String>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
@@ -282,11 +282,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 26)] = (
+            [(@"TestMapActions.cs", 27)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 26));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -435,5 +435,18 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             return (false, default);
         }
+
+        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
+            where T : class, IBindableFromHttpContext<T>
+        {
+            return T.BindAsync(context, parameter);
+        }
+    }
+
+    %GENERATEDCODEATTRIBUTE%
+    file static class ParsableHelper<T> where T : IParsable<T>
+    {
+        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
+        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
     }
 }

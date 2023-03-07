@@ -161,10 +161,10 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
-    internal static readonly DiagnosticDescriptor RouteParameterComplexTypeIsNotParsableOrBindable = new(
+    internal static readonly DiagnosticDescriptor RouteParameterComplexTypeIsNotParsable = new(
         "ASP0020",
         "Complex types referenced by route parameters must be parsable",
-        "Parameter '{0}' of type {1} should define a bool TryParse(string, IFormatProvider, out {1}) method, or implement IParsable<{1}>, or define a ValueTask<{1}> BindAsync(HttpContext), or implement IBindableFromHttpContext<{1}>.",
+        "Parameter '{0}' of type {1} should define a bool TryParse(string, IFormatProvider, out {1}) method, or implement IParsable<{1}>.",
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,

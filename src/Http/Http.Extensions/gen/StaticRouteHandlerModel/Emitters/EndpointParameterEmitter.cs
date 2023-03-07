@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text;
+using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+
 internal static class EndpointParameterEmitter
 {
     internal static void EmitSpecialParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
@@ -26,7 +28,7 @@ internal static class EndpointParameterEmitter
         // compiler errors around null handling.
         if (endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? {endpointParameter.EmitAssigningCodeResult()}.ToString() : null;");
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
         }
         else
         {
@@ -34,7 +36,7 @@ internal static class EndpointParameterEmitter
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
             codeWriter.EndBlock();
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.ToString();");
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         }
 
         endpointParameter.EmitParsingBlock(codeWriter);
@@ -64,7 +66,7 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($$"""throw new InvalidOperationException($"'{{endpointParameter.Name}}' is not a route parameter.");""");
         codeWriter.EndBlock();
 
-        var assigningCode = $"httpContext.Request.RouteValues[\"{endpointParameter.Name}\"]?.ToString()";
+        var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.Name}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
         if (!endpointParameter.IsOptional)
@@ -75,7 +77,7 @@ internal static class EndpointParameterEmitter
             codeWriter.EndBlock();
         }
 
-        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}?.ToString();");
+        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
@@ -94,7 +96,8 @@ internal static class EndpointParameterEmitter
             codeWriter.EndBlock();
         }
 
-        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
+        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
+        endpointParameter.EmitParsingBlock(codeWriter);
     }
 
     internal static void EmitJsonBodyParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
@@ -114,6 +117,47 @@ internal static class EndpointParameterEmitter
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
         codeWriter.EndBlock();
+    }
+
+    internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol();
+        var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        switch (endpointParameter.BindMethod)
+        {
+            case BindabilityMethod.IBindableFromHttpContext:
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                break;
+            case BindabilityMethod.BindAsyncWithParameter:
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                break;
+            case BindabilityMethod.BindAsync:
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");
+                break;
+            default:
+                throw new Exception("Unreachable!");
+        }
+
+        // TODO: Generate more compact code if the type is a reference type and/or the BindAsync return nullability matches the handler parameter type.
+        if (endpointParameter.IsOptional)
+        {
+            codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = ({unwrappedTypeString}?){endpointParameter.EmitTempArgument()};");
+        }
+        else
+        {
+            codeWriter.WriteLine($"{unwrappedTypeString} {endpointParameter.EmitHandlerArgument()};");
+
+            codeWriter.WriteLine($"if ((object?){endpointParameter.EmitTempArgument()} == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("wasParamCheckFailure = true;");
+            codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = default!;");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine("else");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = ({unwrappedTypeString}){endpointParameter.EmitTempArgument()};");
+            codeWriter.EndBlock();
+        }
     }
 
     internal static void EmitServiceParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)

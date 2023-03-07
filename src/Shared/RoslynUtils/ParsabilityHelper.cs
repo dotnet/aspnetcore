@@ -17,7 +17,7 @@ using WellKnownType = WellKnownTypeData.WellKnownType;
 
 internal static class ParsabilityHelper
 {
-    private static bool IsTypeAlwaysParsableOrBindable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out ParsabilityMethod? parsabilityMethod)
+    private static bool IsTypeAlwaysParsable(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out ParsabilityMethod? parsabilityMethod)
     {
         // Any enum is valid.
         if (typeSymbol.TypeKind == TypeKind.Enum)
@@ -49,9 +49,9 @@ internal static class ParsabilityHelper
         return GetParsability(typeSymbol, wellKnownTypes, out var _);
     }
 
-    internal static Parsability GetParsability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out ParsabilityMethod? parsabilityMethod)
+    internal static Parsability GetParsability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(false)] out ParsabilityMethod? parsabilityMethod)
     {
-        if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes, out parsabilityMethod))
+        if (IsTypeAlwaysParsable(typeSymbol, wellKnownTypes, out parsabilityMethod))
         {
             return Parsability.Parsable;
         }
@@ -64,7 +64,9 @@ internal static class ParsabilityHelper
         }
 
         // Check if the parameter type has a public static TryParse method.
-        var tryParseMethods = typeSymbol.GetMembers("TryParse").OfType<IMethodSymbol>();
+        var tryParseMethods = typeSymbol.GetThisAndBaseTypes()
+            .SelectMany(t => t.GetMembers("TryParse"))
+            .OfType<IMethodSymbol>();
 
         if (tryParseMethods.Any(m => IsTryParseWithFormat(m, wellKnownTypes)))
         {
@@ -114,13 +116,14 @@ internal static class ParsabilityHelper
     private static bool IsBindableViaIBindableFromHttpContext(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         var iBindableFromHttpContextTypeSymbol = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IBindableFromHttpContext_T);
-        var implementsIBindableFromHttpContext = typeSymbol.AllInterfaces.Any(
+        var constructedTypeSymbol = typeSymbol.AllInterfaces.FirstOrDefault(
             i => SymbolEqualityComparer.Default.Equals(i.ConstructedFrom, iBindableFromHttpContextTypeSymbol)
             );
-        return implementsIBindableFromHttpContext;
+        return constructedTypeSymbol != null &&
+            SymbolEqualityComparer.Default.Equals(constructedTypeSymbol.TypeArguments[0].UnwrapTypeSymbol(), typeSymbol);
     }
 
-    private static bool IsBindAsync(IMethodSymbol methodSymbol, INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    private static bool IsBindAsync(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         return methodSymbol.DeclaredAccessibility == Accessibility.Public &&
             methodSymbol.IsStatic &&
@@ -131,7 +134,7 @@ internal static class ParsabilityHelper
             SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0], typeSymbol);
     }
 
-    private static bool IsBindAsyncWithParameter(IMethodSymbol methodSymbol, INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    private static bool IsBindAsyncWithParameter(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         return methodSymbol.DeclaredAccessibility == Accessibility.Public &&
             methodSymbol.IsStatic &&
@@ -139,34 +142,48 @@ internal static class ParsabilityHelper
             SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpContext)) &&
             SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, wellKnownTypes.Get(WellKnownType.System_Reflection_ParameterInfo)) &&
             methodSymbol.ReturnType is INamedTypeSymbol returnType &&
-            IsReturningValueTaskOfT(returnType, typeSymbol, wellKnownTypes);
+            IsReturningValueTaskOfTOrNullableT(returnType, typeSymbol, wellKnownTypes);
     }
 
-    private static bool IsReturningValueTaskOfT(INamedTypeSymbol returnType, INamedTypeSymbol containingType, WellKnownTypes wellKnownTypes)
+    private static bool IsReturningValueTaskOfTOrNullableT(INamedTypeSymbol returnType, ITypeSymbol containingType, WellKnownTypes wellKnownTypes)
     {
         return SymbolEqualityComparer.Default.Equals(returnType.ConstructedFrom, wellKnownTypes.Get(WellKnownType.System_Threading_Tasks_ValueTask_T)) &&
-            SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0], containingType);
+            SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0].UnwrapTypeSymbol(), containingType);
     }
 
-    internal static Bindability GetBindability(INamedTypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    internal static Bindability GetBindability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out BindabilityMethod? bindabilityMethod)
     {
-        if (IsTypeAlwaysParsableOrBindable(typeSymbol, wellKnownTypes, out var _))
-        {
-            return Bindability.Bindable;
-        }
+        bindabilityMethod = null;
 
         if (IsBindableViaIBindableFromHttpContext(typeSymbol, wellKnownTypes))
         {
+            bindabilityMethod = BindabilityMethod.IBindableFromHttpContext;
             return Bindability.Bindable;
         }
 
-        var bindAsyncMethods = typeSymbol.GetMembers("BindAsync").OfType<IMethodSymbol>();
+        // TODO: Search interfaces too. See MyBindAsyncFromInterfaceRecord test as an example.
+        // It's easy to find, but we need to flow the interface back to the emitter to call it.
+        // With parent types, we can continue to pretend we're calling a method directly on the child.
+        var bindAsyncMethods = typeSymbol.GetThisAndBaseTypes()
+            .SelectMany(t => t.GetMembers("BindAsync"))
+            .OfType<IMethodSymbol>();
+
         foreach (var methodSymbol in bindAsyncMethods)
         {
-            if (IsBindAsync(methodSymbol, typeSymbol, wellKnownTypes) || IsBindAsyncWithParameter(methodSymbol, typeSymbol, wellKnownTypes))
+            if (IsBindAsyncWithParameter(methodSymbol, typeSymbol, wellKnownTypes))
             {
-                return Bindability.Bindable;
+                bindabilityMethod = BindabilityMethod.BindAsyncWithParameter;
+                break;
             }
+            if (IsBindAsync(methodSymbol, typeSymbol, wellKnownTypes))
+            {
+                bindabilityMethod = BindabilityMethod.BindAsync;
+            }
+        }
+
+        if (bindabilityMethod is not null)
+        {
+            return Bindability.Bindable;
         }
 
         // See if we can give better guidance on why the BindAsync method is no good.
@@ -174,14 +191,42 @@ internal static class ParsabilityHelper
         {
             var bindAsyncMethod = bindAsyncMethods.Single();
 
-            if (bindAsyncMethod.ReturnType is INamedTypeSymbol returnType && !IsReturningValueTaskOfT(returnType, typeSymbol, wellKnownTypes))
+            if (bindAsyncMethod.ReturnType is INamedTypeSymbol returnType && !IsReturningValueTaskOfTOrNullableT(returnType, typeSymbol, wellKnownTypes))
             {
                 return Bindability.InvalidReturnType;
             }
-
         }
 
         return Bindability.NotBindable;
     }
 }
 
+internal enum Parsability
+{
+    Parsable,
+    NotParsable,
+}
+
+internal enum ParsabilityMethod
+{
+    String,
+    IParsable,
+    Enum,
+    TryParse,
+    TryParseWithFormatProvider,
+    Uri,
+}
+
+internal enum Bindability
+{
+    Bindable,
+    NotBindable,
+    InvalidReturnType,
+}
+
+internal enum BindabilityMethod
+{
+    IBindableFromHttpContext,
+    BindAsync,
+    BindAsyncWithParameter,
+}

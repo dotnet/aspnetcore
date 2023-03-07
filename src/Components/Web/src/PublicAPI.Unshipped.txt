@@ -1,4 +1,5 @@
 #nullable enable
+*REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
 Microsoft.AspNetCore.Components.Web.HtmlComponent
 Microsoft.AspNetCore.Components.Web.HtmlComponent.ToHtmlString() -> string!
 Microsoft.AspNetCore.Components.Web.HtmlComponent.WaitForQuiescenceAsync() -> System.Threading.Tasks.Task!
