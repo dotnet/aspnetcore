@@ -12,7 +12,6 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.set -> voi
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor
-Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions
 ~const Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.EventName = "Microsoft.AspNetCore.Mvc.AfterRazorComponent" -> string
 ~const Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.EventName = "Microsoft.AspNetCore.Mvc.BeforeRazorComponent" -> string
 ~Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext
@@ -29,6 +28,5 @@ Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensi
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.RazorComponentResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, System.Diagnostics.DiagnosticListener diagnosticListener) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory
 ~override Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
-~static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
 ~static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DefaultContentType -> string
 ~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult result) -> System.Threading.Tasks.Task
