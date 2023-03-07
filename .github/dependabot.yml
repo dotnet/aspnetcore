@@ -21,7 +21,7 @@ updates:
     schedule:
       day: friday
       interval: "weekly"
-      time: 05:00
+      time: "05:00"
       timezone: "America/Los_Angeles"
     commit-message:
       prefix: "[main] "
@@ -35,7 +35,7 @@ updates:
     schedule:
       day: friday
       interval: "weekly"
-      time: 05:00
+      time: "05:00"
       timezone: "America/Los_Angeles"
     allow:
       - dependency-type: "all"

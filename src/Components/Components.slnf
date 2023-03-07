@@ -12,6 +12,8 @@
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
       "src\\Components\\Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
       "src\\Components\\CustomElements\\src\\Microsoft.AspNetCore.Components.CustomElements.csproj",
+      "src\\Components\\Endpoints\\src\\Microsoft.AspNetCore.Components.Endpoints.csproj",
+      "src\\Components\\Endpoints\\test\\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
       "src\\Components\\Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
       "src\\Components\\QuickGrid\\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\\src\\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj",

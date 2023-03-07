@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Razor View",
-  "description": "An empty Razor View",
-  "postActions/openInEditor/description": "Opens the created view in the editor"
+  "name": "Razor 檢視",
+  "description": "空白的 Razor 檢視",
+  "postActions/openInEditor/description": "在編輯器中開啟建立的檢視"
 }

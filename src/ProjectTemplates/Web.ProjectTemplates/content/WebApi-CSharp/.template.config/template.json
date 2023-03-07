@@ -68,21 +68,23 @@
         },
         {
           "condition": "(!UseProgramMain && UseMinimalAPIs && (NoAuth || WindowsAuth))",
+          "exclude": [
+            "Program.cs",
+            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
+          ],
           "rename": {
             "Program.MinimalAPIs.WindowsOrNoAuth.cs": "Program.cs"
-          },
-          "exclude": [
-            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
-          ]
+          }
         },
         {
           "condition": "(!UseProgramMain && UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
+          "exclude": [
+            "Program.cs",
+            "Program.MinimalAPIs.WindowsOrNoAuth.cs"
+          ],
           "rename": {
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs": "Program.cs"
-          },
-          "exclude": [
-            "Program.MinimalAPIs.WindowsOrNoAuth.cs"
-          ]
+          }
         },
         {
           "condition": "(UseControllers)",

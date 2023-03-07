@@ -19,6 +19,7 @@ internal class EndpointResponse
     public bool IsAwaitable { get; set; }
     public bool IsVoid { get; set; }
     public bool IsIResult { get; set; }
+    public bool IsSerializable { get; set; }
 
     private WellKnownTypes WellKnownTypes { get; init; }
 
@@ -30,6 +31,7 @@ internal class EndpointResponse
         IsAwaitable = GetIsAwaitable(method);
         IsVoid = method.ReturnsVoid;
         IsIResult = GetIsIResult();
+        IsSerializable = !IsIResult && !IsVoid && ResponseType.SpecialType != SpecialType.System_String && ResponseType.SpecialType != SpecialType.System_Object;
         ContentType = GetContentType(method);
     }
 

@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 
 namespace Microsoft.AspNetCore.Http.Generators;
 
@@ -61,47 +62,61 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Where(endpoint => endpoint.Diagnostics.Count == 0)
             .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
 
-        var thunks = endpoints.Select((endpoint, _) => $$"""
-            [{{endpoint.EmitSourceKey()}}] = (
-               (methodInfo, options) =>
-                {
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey{{endpoint.EmitSourceKey()}});
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
-                },
-                (del, options, inferredMetadataResult) =>
-                {
-                    var handler = ({{endpoint.EmitHandlerDelegateCast()}})del;
-                    EndpointFilterDelegate? filteredInvocation = null;
-
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
-                    {
-                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
-                        {
-                            if (ic.HttpContext.Response.StatusCode == 400)
-                            {
-                                return ValueTask.FromResult<object?>(Results.Empty);
-                            }
-                            {{endpoint.EmitFilteredInvocation()}}
-                        },
-                        options.EndpointBuilder,
-                        handler.Method);
-                    }
-
-                    {{endpoint.EmitRequestHandler(baseIndent: 5)}}
-                    {{endpoint.EmitFilteredRequestHandler(baseIndent: 5)}}
-                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
-                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
-                    return new RequestDelegateResult(targetDelegate, metadata);
-                }),
-""");
+        var thunks = endpoints.Select((endpoint, _) =>
+        {
+            using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+            using var codeWriter = new CodeWriter(stringWriter, baseIndent: 3);
+            codeWriter.InitializeIndent();
+            codeWriter.WriteLine($"[{endpoint.EmitSourceKey()}] = (");
+            codeWriter.Indent++;
+            codeWriter.WriteLine("(methodInfo, options) =>");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine(@"Debug.Assert(options?.EndpointBuilder != null, ""EndpointBuilder not found."");");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new SourceKey{endpoint.EmitSourceKey()});");
+            codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
+            codeWriter.EndBlockWithComma();
+            codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($"var handler = ({endpoint.EmitHandlerDelegateCast()})del;");
+            codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
+            endpoint.EmitRouteOrQueryResolver(codeWriter);
+            endpoint.EmitJsonPreparation(codeWriter);
+            if (endpoint.NeedsParameterArray)
+            {
+                codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
+            }
+            codeWriter.WriteLineNoTabs(string.Empty);
+            codeWriter.WriteLine("if (options?.EndpointBuilder?.FilterFactories.Count > 0)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine(endpoint.EmitFilteredInvocation());
+            codeWriter.EndBlockWithComma();
+            codeWriter.WriteLine("options.EndpointBuilder,");
+            codeWriter.WriteLine("handler.Method);");
+            codeWriter.EndBlock();
+            codeWriter.WriteLineNoTabs(string.Empty);
+            endpoint.EmitRequestHandler(codeWriter);
+            codeWriter.WriteLineNoTabs(string.Empty);
+            endpoint.EmitFilteredRequestHandler(codeWriter);
+            codeWriter.WriteLineNoTabs(string.Empty);
+            codeWriter.WriteLine("RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;");
+            codeWriter.WriteLine("var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;");
+            codeWriter.WriteLine("return new RequestDelegateResult(targetDelegate, metadata);");
+            codeWriter.Indent--;
+            codeWriter.Write("}),");
+            return stringWriter.ToString();
+        });
 
         var stronglyTypedEndpointDefinitions = endpoints
             .Collect()
             .Select((endpoints, _) =>
             {
                 var dedupedByDelegate = endpoints.Distinct(EndpointDelegateComparer.Instance);
-                var code = new StringBuilder();
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
                 foreach (var endpoint in dedupedByDelegate)

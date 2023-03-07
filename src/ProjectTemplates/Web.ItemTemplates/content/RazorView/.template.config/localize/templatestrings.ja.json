@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Razor View",
-  "description": "An empty Razor View",
-  "postActions/openInEditor/description": "Opens the created view in the editor"
+  "name": "Razor ビュー",
+  "description": "空の Razor ビュー",
+  "postActions/openInEditor/description": "エディターで作成されたビューを開きます"
 }
