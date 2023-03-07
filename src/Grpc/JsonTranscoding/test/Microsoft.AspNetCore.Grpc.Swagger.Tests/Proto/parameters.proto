@@ -6,6 +6,8 @@ syntax = "proto3";
 package params;
 
 import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/wrappers.proto";
 
 // Add go_package to keep protoc happy when testing generating OpenAPI from commandline.
 option go_package = "github.com/dotnet/aspnetcore/swagger";
@@ -69,6 +71,12 @@ service Parameters {
       get: "/v1/parameters8/{parameter_one.nested_parameter_one=messages1/*}/{parameter_one.nested_parameter_two=shelves/*/books/*}"
     };
   }
+
+  rpc DemoParametersNine (RequestFive) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters9"
+    };
+  }
 }
 
 message RequestOne {
@@ -101,6 +109,12 @@ message RequestFour {
     int64 nested_parameter_three = 3;
     repeated int64 nested_parameter_four = 4;
   }
+}
+
+message RequestFive {
+  google.protobuf.FieldMask field_mask_value = 1;
+  google.protobuf.StringValue string_value = 2;
+  google.protobuf.Int32Value int32_value = 3;
 }
 
 message RequestBody {

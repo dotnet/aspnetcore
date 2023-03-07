@@ -1230,6 +1230,70 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("A value!", anyMessage.GetProperty("value").GetString());
     }
 
+    [Fact]
+    public async Task HandleCallAsync_MatchingQueryStringValues_CustomDeserialization_SetOnRequestMessage()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var timestamp = Timestamp.FromDateTimeOffset(new DateTimeOffset(2023, 2, 14, 17, 32, 0, TimeSpan.FromHours(8)));
+        var duration = Duration.FromTimeSpan(TimeSpan.FromHours(1));
+        var fieldmask = FieldMask.FromString("one,two,three.sub");
+
+        var unaryServerCallHandler = CreateCallHandler(invoker);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["timestamp_value"] = Legacy.GetTimestampText(timestamp.Nanos, timestamp.Seconds),
+            ["duration_value"] = Legacy.GetDurationText(duration.Nanos, duration.Seconds),
+            ["field_mask_value"] = Legacy.GetFieldMaskText(fieldmask.Paths),
+            ["float_value"] = "1.5"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(timestamp, request!.TimestampValue);
+        Assert.Equal(duration, request!.DurationValue);
+        Assert.Equal(fieldmask, request!.FieldMaskValue);
+        Assert.Equal(1.5f, request!.FloatValue);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_MatchingQueryStringValues_KnownType_FieldSetter_SetOnRequestMessage()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var fieldmask = FieldMask.FromString("one,two,three.sub");
+
+        var unaryServerCallHandler = CreateCallHandler(invoker);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["field_mask_value.paths"] = new StringValues(fieldmask.Paths.ToArray()),
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(fieldmask, request!.FieldMaskValue);
+    }
+
     private UnaryServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply> CreateCallHandler(
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker,
         CallHandlerDescriptorInfo? descriptorInfo = null,
