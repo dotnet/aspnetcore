@@ -8,6 +8,8 @@ Microsoft.AspNetCore.Components.Sections.SectionContent
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.Dispose() -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.IsDefaultContent.get -> bool
+Microsoft.AspNetCore.Components.Sections.SectionContent.IsDefaultContent.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.SectionContent() -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.get -> object!
 Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.set -> void
