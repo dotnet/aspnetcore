@@ -5,6 +5,7 @@ Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData
 Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult() -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.get -> object
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
@@ -24,6 +25,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ContentType.get -> string
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ContentType.set -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RazorComponentResult(System.Type componentType) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DiagnosticListener.get -> System.Diagnostics.DiagnosticListener
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.RazorComponentResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, System.Diagnostics.DiagnosticListener diagnosticListener) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory
