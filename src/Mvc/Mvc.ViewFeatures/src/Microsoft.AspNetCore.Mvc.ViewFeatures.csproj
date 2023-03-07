@@ -25,7 +25,6 @@
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
