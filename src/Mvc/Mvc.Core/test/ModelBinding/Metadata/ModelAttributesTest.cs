@@ -322,7 +322,7 @@ public class ModelAttributesTest
     {
     }
 
-    [ModelMetadataType(typeof(BaseModel))]
+    [ModelMetadataType<BaseModel>]
     private class BaseViewModel
     {
         [Range(0, 10)]
@@ -335,7 +335,7 @@ public class ModelAttributesTest
         public string RouteValue { get; set; }
     }
 
-    [ModelMetadataType(typeof(DerivedModel))]
+    [ModelMetadataType<DerivedModel>]
     private class DerivedViewModel : BaseViewModel
     {
         [StringLength(2)]
@@ -358,7 +358,7 @@ public class ModelAttributesTest
         }
     }
 
-    [ModelMetadataType(typeof(MergedAttributesMetadata))]
+    [ModelMetadataType<MergedAttributesMetadata>]
     private class MergedAttributes
     {
         [Required]

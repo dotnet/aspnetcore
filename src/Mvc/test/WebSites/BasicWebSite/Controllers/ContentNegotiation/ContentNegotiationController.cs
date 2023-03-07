@@ -18,13 +18,13 @@ public class ContentNegotiationController : Controller
         return CreateUser();
     }
 
-    [Produces(typeof(User))]
+    [Produces<User>]
     public IActionResult UserInfo_ProducesWithTypeOnly()
     {
         return new ObjectResult(CreateUser());
     }
 
-    [Produces("application/xml", Type = typeof(User))]
+    [Produces<User>]
     public IActionResult UserInfo_ProducesWithTypeAndContentType()
     {
         return new ObjectResult(CreateUser());
