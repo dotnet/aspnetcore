@@ -46,6 +46,7 @@
       "src\\Components\\WebView\\WebView\\test\\Microsoft.AspNetCore.Components.WebView.Test.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "src\\Components\\Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
+      "src\\Components\\benchmarkapps\\BlazingPizza.Server\\BlazingPizza.Server.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
       "src\\Components\\test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
