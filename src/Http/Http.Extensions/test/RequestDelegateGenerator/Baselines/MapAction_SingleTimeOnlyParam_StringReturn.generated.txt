@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             wasParamCheckFailure = true;
                         }
                         var p_temp = (string?)p_raw;
-                        if (!global::System.TimeOnly.TryParse(p_temp!, CultureInfo.InvariantCulture, out var p_parsed_temp))
+                        if (!ParsableHelper<global::System.TimeOnly>.TryParse(p_temp!, CultureInfo.InvariantCulture, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             wasParamCheckFailure = true;
                         }
                         var p_temp = (string?)p_raw;
-                        if (!global::System.TimeOnly.TryParse(p_temp!, CultureInfo.InvariantCulture, out var p_parsed_temp))
+                        if (!ParsableHelper<global::System.TimeOnly>.TryParse(p_temp!, CultureInfo.InvariantCulture, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
@@ -275,5 +275,12 @@ namespace Microsoft.AspNetCore.Http.Generated
         {
             return T.BindAsync(context, parameter);
         }
+    }
+
+    %GENERATEDCODEATTRIBUTE%
+    file static class ParsableHelper<T> where T : IParsable<T>
+    {
+        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
+        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
     }
 }

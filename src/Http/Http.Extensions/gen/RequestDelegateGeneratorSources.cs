@@ -165,6 +165,13 @@ namespace Microsoft.AspNetCore.Http.Generated
             return T.BindAsync(context, parameter);
         }
     }
+
+    {{GeneratedCodeAttribute}}
+    file static class ParsableHelper<T> where T : IParsable<T>
+    {
+        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
+        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
+    }
 }
 """;
     private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""
