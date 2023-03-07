@@ -61,7 +61,7 @@ public class RazorComponentResultExecutor
             result.ContentType,
             response.ContentType,
             (DefaultContentType, Encoding.UTF8),
-        MediaType.GetEncoding,
+            MediaType.GetEncoding,
             out var resolvedContentType,
             out var resolvedContentTypeEncoding);
 

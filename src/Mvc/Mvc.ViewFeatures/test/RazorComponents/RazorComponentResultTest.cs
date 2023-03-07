@@ -29,9 +29,7 @@ public class RazorComponentResultTest
         await result.ExecuteAsync(httpContext);
 
         // Assert
-        responseBody.Position = 0;
-        var responseHtml = new StreamReader(responseBody).ReadToEnd();
-        Assert.Equal("<h1>Hello from SimpleComponent</h1>", responseHtml);
+        Assert.Equal("<h1>Hello from SimpleComponent</h1>", GetStringContent(responseBody));
         Assert.Equal("text/html; charset=utf-8", httpContext.Response.ContentType);
         Assert.Equal(200, httpContext.Response.StatusCode);
     }
@@ -53,9 +51,7 @@ public class RazorComponentResultTest
         await result.ExecuteAsync(httpContext);
 
         // Assert
-        responseBody.Position = 0;
-        var responseHtml = new StreamReader(responseBody).ReadToEnd();
-        Assert.Equal("<h1>Hello from SimpleComponent</h1>", responseHtml);
+        Assert.Equal("<h1>Hello from SimpleComponent</h1>", GetStringContent(responseBody));
         Assert.Equal("application/test-content-type", httpContext.Response.ContentType);
         Assert.Equal(123, httpContext.Response.StatusCode);
     }
@@ -81,9 +77,29 @@ public class RazorComponentResultTest
         // Act/Assert: Does complete when loading finishes
         tcs.SetResult();
         await completionTask;
-        responseBody.Position = 0;
-        var responseHtml = new StreamReader(responseBody).ReadToEnd();
-        Assert.Equal("Loading task status: RanToCompletion", responseHtml);
+        Assert.Equal("Loading task status: RanToCompletion", GetStringContent(responseBody));
+    }
+
+    [Fact]
+    public async Task SupportsLayouts()
+    {
+        // Arrange
+        var result = new RazorComponentResult<ComponentWithLayout>();
+        var httpContext = GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal("[TestParentLayout with content: [TestLayout with content: Page]]", GetStringContent(responseBody));
+    }
+
+    private static string GetStringContent(MemoryStream stream)
+    {
+        stream.Position = 0;
+        return new StreamReader(stream).ReadToEnd();
     }
 
     private static DefaultHttpContext GetTestHttpContext()
@@ -124,6 +140,34 @@ public class RazorComponentResultTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
             => builder.AddContent(0, $"Loading task status: {LoadingTask.Status}");
+    }
+
+    [Layout(typeof(TestLayout))]
+    class ComponentWithLayout : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, $"Page");
+    }
+
+    [Layout(typeof(TestParentLayout))]
+    class TestLayout : LayoutComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"[{nameof(TestLayout)} with content: ");
+            builder.AddContent(1, Body);
+            builder.AddContent(2, "]");
+        }
+    }
+
+    class TestParentLayout : LayoutComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"[{nameof(TestParentLayout)} with content: ");
+            builder.AddContent(1, Body);
+            builder.AddContent(2, "]");
+        }
     }
 
     class FakeDataProtectionProvider : IDataProtectionProvider
