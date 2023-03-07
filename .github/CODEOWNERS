@@ -26,7 +26,7 @@
 /src/Grpc/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @JamesNK @captainsafia @mgravell
 /src/Hosting/                                                                     @tratcher @halter73
 /src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher
-/src/Http/                                                                        @tratcher @BrennanConroy @halter73
+/src/Http/                                                                        @tratcher @BrennanConroy @halter73 @captainsafia
 /src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @tratcher @BrennanConroy
 /src/Http/Routing/                                                                @javiercn
 /src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
