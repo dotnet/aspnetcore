@@ -19,7 +19,7 @@ import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
-export let MONO_INTERNAL: any = undefined as any;
+let MONO_INTERNAL: any = undefined as any;
 
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
