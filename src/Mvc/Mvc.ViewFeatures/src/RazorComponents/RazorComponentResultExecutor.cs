@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -50,11 +51,11 @@ public class RazorComponentResultExecutor
     /// <summary>
     /// Executes a Razor Component asynchronously.
     /// </summary>
-    public virtual async Task ExecuteAsync(ActionContext actionContext, RazorComponentResult result)
+    public virtual async Task ExecuteAsync(HttpContext httpContext, RazorComponentResult result)
     {
-        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
-        var response = actionContext.HttpContext.Response;
+        var response = httpContext.Response;
 
         ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
             result.ContentType,
@@ -72,9 +73,9 @@ public class RazorComponentResultExecutor
         }
 
         await using var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding);
-        DiagnosticListener.BeforeRazorComponent(result.ComponentType, result.RenderMode, actionContext);
-        await RenderComponentToResponse(actionContext, result, writer);
-        DiagnosticListener.AfterRazorComponent(result.ComponentType, result.RenderMode, actionContext);
+        DiagnosticListener.BeforeRazorComponent(result.ComponentType, result.RenderMode, httpContext);
+        await RenderComponentToResponse(httpContext, result, writer);
+        DiagnosticListener.AfterRazorComponent(result.ComponentType, result.RenderMode, httpContext);
 
         // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
@@ -82,9 +83,9 @@ public class RazorComponentResultExecutor
         await writer.FlushAsync();
     }
 
-    private static Task RenderComponentToResponse(ActionContext actionContext, RazorComponentResult result, TextWriter writer)
+    private static Task RenderComponentToResponse(HttpContext httpContext, RazorComponentResult result, TextWriter writer)
     {
-        var componentPrerenderer = actionContext.HttpContext.RequestServices.GetRequiredService<ComponentPrerenderer>();
+        var componentPrerenderer = httpContext.RequestServices.GetRequiredService<ComponentPrerenderer>();
         return componentPrerenderer.Dispatcher.InvokeAsync(async () =>
         {
             // We could pool these dictionary instances if we wanted. We could even skip the dictionary
@@ -98,7 +99,7 @@ public class RazorComponentResultExecutor
             // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
             // component takes care of switching into your desired render mode when it produces its own output.
             var htmlContent = await componentPrerenderer.PrerenderComponentAsync(
-                actionContext,
+                httpContext,
                 typeof(RazorComponentResultHost),
                 RenderMode.Static,
                 hostParameters);

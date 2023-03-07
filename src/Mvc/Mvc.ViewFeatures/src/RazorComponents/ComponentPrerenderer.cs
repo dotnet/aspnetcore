@@ -39,12 +39,12 @@ internal sealed class ComponentPrerenderer
     public Dispatcher Dispatcher => _htmlRenderer.Dispatcher;
 
     public async ValueTask<IAsyncHtmlContent> PrerenderComponentAsync(
-        ActionContext actionContext,
+        HttpContext httpContext,
         Type componentType,
         RenderMode prerenderMode,
         ParameterView parameters)
     {
-        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(componentType);
 
         if (!typeof(IComponent).IsAssignableFrom(componentType))
@@ -53,19 +53,18 @@ internal sealed class ComponentPrerenderer
         }
 
         // Make sure we only initialize the services once, but on every call we wait for that process to complete
-        var httpContext = actionContext.HttpContext;
         lock (_servicesInitializedLock)
         {
             _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext);
         }
         await _servicesInitializedTask;
 
-        UpdateSaveStateRenderMode(actionContext, prerenderMode);
+        UpdateSaveStateRenderMode(httpContext, prerenderMode);
 
         return prerenderMode switch
         {
-            RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(actionContext), componentType, parameters),
-            RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(actionContext), componentType, parameters),
+            RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
+            RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
             RenderMode.Static => await StaticComponentAsync(httpContext, componentType, parameters),
             RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(componentType, parameters),
             RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(httpContext, componentType, parameters),
@@ -101,30 +100,30 @@ internal sealed class ComponentPrerenderer
         }
     }
 
-    private static ServerComponentInvocationSequence GetOrCreateInvocationId(ActionContext actionContext)
+    private static ServerComponentInvocationSequence GetOrCreateInvocationId(HttpContext httpContext)
     {
-        if (!actionContext.HttpContext.Items.TryGetValue(ComponentSequenceKey, out var result))
+        if (!httpContext.Items.TryGetValue(ComponentSequenceKey, out var result))
         {
             result = new ServerComponentInvocationSequence();
-            actionContext.HttpContext.Items[ComponentSequenceKey] = result;
+            httpContext.Items[ComponentSequenceKey] = result;
         }
 
         return (ServerComponentInvocationSequence)result;
     }
 
     // Internal for test only
-    internal static void UpdateSaveStateRenderMode(ActionContext actionContext, RenderMode mode)
+    internal static void UpdateSaveStateRenderMode(HttpContext httpContext, RenderMode mode)
     {
         // TODO: This will all have to change when we support multiple render modes in the same response
         if (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered)
         {
-            if (!actionContext.HttpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+            if (!httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
             {
                 result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
                     InvokedRenderModes.Mode.Server :
                     InvokedRenderModes.Mode.WebAssembly);
 
-                actionContext.HttpContext.Items[InvokedRenderModesKey] = result;
+                httpContext.Items[InvokedRenderModesKey] = result;
             }
             else
             {

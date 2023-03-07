@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -454,12 +455,12 @@ public sealed class BeforeRazorComponentEventData : EventData
     /// </summary>
     /// <param name="componentType">The component type.</param>
     /// <param name="renderMode">The component render mode.</param>
-    /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
-    public BeforeRazorComponentEventData(Type componentType, RenderMode renderMode, ActionContext actionContext)
+    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+    public BeforeRazorComponentEventData(Type componentType, RenderMode renderMode, HttpContext httpContext)
     {
         ComponentType = componentType;
         RenderMode = renderMode;
-        ActionContext = actionContext;
+        HttpContext = httpContext;
     }
 
     /// <summary>
@@ -473,9 +474,9 @@ public sealed class BeforeRazorComponentEventData : EventData
     public RenderMode RenderMode { get; }
 
     /// <summary>
-    /// The <see cref="ActionContext"/>.
+    /// The <see cref="HttpContext"/>.
     /// </summary>
-    public ActionContext ActionContext { get; }
+    public HttpContext HttpContext { get; }
 
     /// <inheritdoc/>
     protected override int Count => 2;
@@ -504,12 +505,12 @@ public sealed class AfterRazorComponentEventData : EventData
     /// </summary>
     /// <param name="componentType">The component type.</param>
     /// <param name="renderMode">The component render mode.</param>
-    /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
-    public AfterRazorComponentEventData(Type componentType, RenderMode renderMode, ActionContext actionContext)
+    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+    public AfterRazorComponentEventData(Type componentType, RenderMode renderMode, HttpContext httpContext)
     {
         ComponentType = componentType;
         RenderMode = renderMode;
-        ActionContext = actionContext;
+        HttpContext = httpContext;
     }
 
     /// <summary>
@@ -523,9 +524,9 @@ public sealed class AfterRazorComponentEventData : EventData
     public RenderMode RenderMode { get; }
 
     /// <summary>
-    /// The <see cref="ActionContext"/>.
+    /// The <see cref="HttpContext"/>.
     /// </summary>
-    public ActionContext ActionContext { get; }
+    public HttpContext HttpContext { get; }
 
     /// <inheritdoc/>
     protected override int Count => 2;

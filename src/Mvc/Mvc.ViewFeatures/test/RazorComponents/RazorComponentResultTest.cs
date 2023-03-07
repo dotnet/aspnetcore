@@ -24,10 +24,9 @@ public class RazorComponentResultTest
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
-        var actionContext = new ActionContext(httpContext, new AspNetCore.Routing.RouteData(), new Abstractions.ActionDescriptor());
 
         // Act
-        await result.ExecuteResultAsync(actionContext);
+        await result.ExecuteAsync(httpContext);
 
         // Assert
         responseBody.Position = 0;
@@ -49,10 +48,9 @@ public class RazorComponentResultTest
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
-        var actionContext = new ActionContext(httpContext, new AspNetCore.Routing.RouteData(), new Abstractions.ActionDescriptor());
 
         // Act
-        await result.ExecuteResultAsync(actionContext);
+        await result.ExecuteAsync(httpContext);
 
         // Assert
         responseBody.Position = 0;
@@ -74,10 +72,9 @@ public class RazorComponentResultTest
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
-        var actionContext = new ActionContext(httpContext, new AspNetCore.Routing.RouteData(), new Abstractions.ActionDescriptor());
 
         // Act/Assert: Doesn't complete until loading finishes
-        var completionTask = result.ExecuteResultAsync(actionContext);
+        var completionTask = result.ExecuteAsync(httpContext);
         await Task.Yield();
         Assert.False(completionTask.IsCompleted);
 

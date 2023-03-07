@@ -2,15 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 /// <summary>
-/// An <see cref="ActionResult"/> that renders a Razor Component.
+/// An <see cref="IResult"/> that renders a Razor Component.
 /// </summary>
-public class RazorComponentResult : ActionResult
+public class RazorComponentResult : IResult
 {
     /// <summary>
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
@@ -52,14 +53,14 @@ public class RazorComponentResult : ActionResult
 
     /// <summary>
     /// Requests the service of
-    /// <see cref="RazorComponentResultExecutor.ExecuteAsync(ActionContext, RazorComponentResult)" />
-    /// to process itself in the given <paramref name="context" />.
+    /// <see cref="RazorComponentResultExecutor.ExecuteAsync(HttpContext, RazorComponentResult)" />
+    /// to process itself in the given <paramref name="httpContext" />.
     /// </summary>
-    /// <param name="context">An <see cref="ActionContext" /> associated with the current request for a Razor Component.</param >
+    /// <param name="httpContext">An <see cref="HttpContext" /> associated with the current request.</param >
     /// <returns >A <see cref="T:System.Threading.Tasks.Task" /> which will complete when execution is completed.</returns >
-    public override Task ExecuteResultAsync(ActionContext context)
+    public Task ExecuteAsync(HttpContext httpContext)
     {
-        var executor = context.HttpContext.RequestServices.GetRequiredService<RazorComponentResultExecutor>();
-        return executor.ExecuteAsync(context, this);
+        var executor = httpContext.RequestServices.GetRequiredService<RazorComponentResultExecutor>();
+        return executor.ExecuteAsync(httpContext, this);
     }
 }
