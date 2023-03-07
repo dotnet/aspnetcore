@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -13,18 +14,47 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// </summary>
 public class RazorComponentResult : IResult
 {
+    private static readonly IReadOnlyDictionary<string, object> EmptyParameters
+        = new Dictionary<string, object>().AsReadOnly();
+
     /// <summary>
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     public RazorComponentResult(Type componentType)
+        : this(componentType, null)
+    {
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="RazorComponentResult"/>.
+    /// </summary>
+    /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
+    /// <param name="parameters">Parameters for the component.</param>
+    public RazorComponentResult(Type componentType, object parameters)
+        : this(componentType, CoerceParametersObjectToDictionary(parameters))
+    {
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="RazorComponentResult"/>.
+    /// </summary>
+    /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
+    /// <param name="parameters">Parameters for the component.</param>
+    public RazorComponentResult(Type componentType, IReadOnlyDictionary<string, object> parameters)
     {
         // Note that the Blazor renderer will validate that componentType implements IComponent and throws a suitable
         // exception if not, so we don't need to duplicate that logic here.
 
         ArgumentNullException.ThrowIfNull(componentType);
         ComponentType = componentType;
+        Parameters = parameters ?? EmptyParameters;
     }
+
+    private static IReadOnlyDictionary<string, object> CoerceParametersObjectToDictionary(object parameters)
+        => parameters is null
+        ? null
+        : (IReadOnlyDictionary<string, object>)PropertyHelper.ObjectToDictionary(parameters);
 
     /// <summary>
     /// Gets the component type.
@@ -42,9 +72,9 @@ public class RazorComponentResult : IResult
     public int? StatusCode { get; set; }
 
     /// <summary>
-    /// Gets or sets the parameters for the component.
+    /// Gets the parameters for the component.
     /// </summary>
-    public object Parameters { get; set; }
+    public IReadOnlyDictionary<string, object> Parameters { get; }
 
     /// <summary>
     /// Gets or sets the rendering mode.

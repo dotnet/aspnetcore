@@ -16,4 +16,18 @@ public class RazorComponentResult<TComponent> : RazorComponentResult where TComp
     public RazorComponentResult() : base(typeof(TComponent))
     {
     }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="RazorComponentResult"/>.
+    /// </summary>
+    public RazorComponentResult(object parameters) : base(typeof(TComponent), parameters)
+    {
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="RazorComponentResult"/>.
+    /// </summary>
+    public RazorComponentResult(IReadOnlyDictionary<string, object> parameters) : base(typeof(TComponent), parameters)
+    {
+    }
 }

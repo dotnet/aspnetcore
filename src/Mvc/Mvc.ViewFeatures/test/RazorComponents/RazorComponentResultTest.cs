@@ -17,6 +17,33 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 public class RazorComponentResultTest
 {
     [Fact]
+    public void AcceptsNullParameters()
+    {
+        var result = new RazorComponentResult(typeof(SimpleComponent), null);
+        Assert.NotNull(result.Parameters);
+        Assert.Empty(result.Parameters);
+    }
+
+    [Fact]
+    public void AcceptsDictionaryParameters()
+    {
+        var paramsDict = new Dictionary<string, object> { { "First", 123 } };
+        var result = new RazorComponentResult(typeof(SimpleComponent), paramsDict);
+        Assert.Equal(1, result.Parameters.Count);
+        Assert.Equal(123, result.Parameters["First"]);
+        Assert.Same(paramsDict, result.Parameters);
+    }
+
+    [Fact]
+    public void AcceptsObjectParameters()
+    {
+        var result = new RazorComponentResult(typeof(SimpleComponent), new { Param1 = 123, Param2 = "Another" });
+        Assert.Equal(2, result.Parameters.Count);
+        Assert.Equal(123, result.Parameters["Param1"]);
+        Assert.Equal("Another", result.Parameters["Param2"]);
+    }
+
+    [Fact]
     public async Task CanRenderComponentStatically()
     {
         // Arrange
@@ -61,10 +88,7 @@ public class RazorComponentResultTest
     {
         // Arrange
         var tcs = new TaskCompletionSource();
-        var result = new RazorComponentResult<AsyncLoadingComponent>
-        {
-            Parameters = new { LoadingTask = tcs.Task }
-        };
+        var result = new RazorComponentResult<AsyncLoadingComponent>(new { LoadingTask = tcs.Task });
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
