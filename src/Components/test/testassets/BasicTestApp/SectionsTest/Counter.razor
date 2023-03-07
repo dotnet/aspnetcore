@@ -7,9 +7,11 @@
 
     <p>Counter SectionContent was rendered = @SectionContentExists.ToString()</p>
 
+    <p>Counter IsDefaultContent = @IsDefaultContent.ToString()</p>
+
     @if (SectionContentExists)
     {
-        <SectionContent SectionId="SectionId">
+        <SectionContent SectionId="SectionId" IsDefaultContent="@IsDefaultContent">
             <p id="counter">@currentCount</p>
         </SectionContent>
     }
@@ -20,6 +22,9 @@
 @code {
     [Parameter]
     public bool SectionContentExists { get; set; }
+
+    [Parameter]
+    public bool IsDefaultContent { get; set; }
 
     [Parameter]
     public object SectionId { get; set; }

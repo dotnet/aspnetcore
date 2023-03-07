@@ -130,4 +130,78 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
         Browser.DoesNotExist(By.Id("counter"));
         Browser.DoesNotExist(By.Id("text"));
     }
+
+    [Fact]
+    public void DefaultSectionContent_DoesNotOverrideAnotherSectionContent()
+    {
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+
+        // TextComponent SectionContent IsDefaultContent=true does not override Counter SectionContent
+        Browser.DoesNotExist(By.Id("text"));
+        Browser.Exists(By.Id("counter"));
+    }
+
+    [Fact]
+    public void DefaultSectionContent_RendersWhenAnotherSectionContentGetsDisposed()
+    {
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+
+        _appElement.FindElement(By.Id("counter-dispose-section-content")).Click();
+
+        Browser.DoesNotExist(By.Id("counter"));
+        Browser.Exists(By.Id("text"));
+    }
+
+    [Fact]
+    public void IsDefaultContentChanges_DoesNotOverrideAnotherSectionContent()
+    {
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+
+        // TextComponent SectionContent IsDefaultContent=true does not override Counter SectionContent
+        Browser.DoesNotExist(By.Id("text"));
+        Browser.Exists(By.Id("counter"));
+    }
+
+    [Fact]
+    public void BothDefaultSectionContents_LastRenderedIsMoreDefault()
+    {
+        // Order of default doesn't matter before rendering
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+        _appElement.FindElement(By.Id("counter-section-content-make-default")).Click();
+
+        // Counter SectionContent rendered last so it is more "default" than TextComponent
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+
+        Browser.Exists(By.Id("text"));
+        Browser.DoesNotExist(By.Id("counter"));
+    }
+
+    [Fact]
+    public void BothDefaultSectionContents_LastRenderedChanges_FirstRenderedIsNowDefault()
+    {
+        // Order of default doesn't matter before rendering
+        _appElement.FindElement(By.Id("text-section-content-make-default")).Click();
+        _appElement.FindElement(By.Id("counter-section-content-make-default")).Click();
+
+        // Counter SectionContent rendered last so it is more "default" than TextComponent
+        _appElement.FindElement(By.Id("text-render-section-content")).Click();
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+
+        // Change Counter SectionContent to non default
+        _appElement.FindElement(By.Id("counter-section-content-make-non-default")).Click();
+
+        // TextComponent SectionContent is default
+        Browser.DoesNotExist(By.Id("text"));
+        Browser.Exists(By.Id("counter"));
+    }
 }
