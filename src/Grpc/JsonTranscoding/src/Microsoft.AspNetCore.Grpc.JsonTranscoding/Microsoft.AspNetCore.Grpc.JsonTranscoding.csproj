@@ -23,6 +23,7 @@
     <Compile Include="..\Shared\X509CertificateHelpers.cs" Link="Internal\Shared\X509CertificateHelpers.cs" />
     <Compile Include="..\Shared\HttpRoutePattern.cs" Link="Internal\Shared\HttpRoutePattern.cs" />
     <Compile Include="..\Shared\HttpRoutePatternParser.cs" Link="Internal\Shared\HttpRoutePatternParser.cs" />
+    <Compile Include="..\Shared\Legacy.cs" Link="Internal\Shared\Legacy.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Internal\Shared" />
 
     <Reference Include="Google.Api.CommonProtos" />

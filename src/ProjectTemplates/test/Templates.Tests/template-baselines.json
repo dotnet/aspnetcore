@@ -1650,7 +1650,6 @@
         "ClientApp/src/polyfills.ts",
         "ClientApp/src/styles.css",
         "ClientApp/src/test.ts",
-        "ClientApp/.browserslistrc",
         "ClientApp/.editorconfig",
         "ClientApp/.gitignore",
         "ClientApp/angular.json",
