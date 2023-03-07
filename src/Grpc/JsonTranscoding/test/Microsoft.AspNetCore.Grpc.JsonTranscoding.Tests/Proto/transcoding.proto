@@ -200,6 +200,7 @@ message HelloRequest {
   google.protobuf.FieldMask field_mask_value = 21;
   string field_name = 22 [json_name="json_customized_name"];
   google.protobuf.FloatValue float_value = 23;
+  string hiding_field_name = 24 [json_name="field_name"];
 }
 
 message HelloReply {

@@ -63,26 +63,30 @@ internal static class ServiceDescriptorHelpers
         throw new InvalidOperationException($"Get not find Descriptor property on {serviceReflectionType.Name}.");
     }
 
-    public static bool TryResolveDescriptors(MessageDescriptor messageDescriptor, IList<string> path, [NotNullWhen(true)]out List<FieldDescriptor>? fieldDescriptors)
+    public static bool TryResolveDescriptors(MessageDescriptor messageDescriptor, IList<string> path, bool allowJsonName, [NotNullWhen(true)]out List<FieldDescriptor>? fieldDescriptors)
     {
         fieldDescriptors = null;
         MessageDescriptor? currentDescriptor = messageDescriptor;
 
         foreach (var fieldName in path)
         {
-            var field = currentDescriptor?.FindFieldByName(fieldName);
+            FieldDescriptor? field = null;
+            if (currentDescriptor != null)
+            {
+                field = allowJsonName
+                    ? GetFieldByName(currentDescriptor, fieldName)
+                    : currentDescriptor.FindFieldByName(fieldName);
+            }
+
             if (field == null)
             {
                 fieldDescriptors = null;
                 return false;
             }
 
-            if (fieldDescriptors == null)
-            {
-                fieldDescriptors = new List<FieldDescriptor>();
-            }
-
+            fieldDescriptors ??= new List<FieldDescriptor>();
             fieldDescriptors.Add(field);
+
             if (field.FieldType == FieldType.Message)
             {
                 currentDescriptor = field.MessageType;
@@ -94,6 +98,34 @@ internal static class ServiceDescriptorHelpers
         }
 
         return fieldDescriptors != null;
+    }
+
+    private static FieldDescriptor? GetFieldByName(MessageDescriptor messageDescriptor, string fieldName)
+    {
+        // Search fields by field name and JSON name. Both names can be referenced.
+        // If there are conflicts, then the last field with a name wins.
+        // This logic matches how properties are used in JSON serialization's MessageTypeInfoResolver.
+        var fields = messageDescriptor.Fields.InFieldNumberOrder();
+
+        FieldDescriptor? fieldDescriptor = null;
+        for (var i = fields.Count - 1; i >= 0; i--)
+        {
+            // We're checking JSON name first, in reverse order through fields.
+            // That means the method can exit early on match because the match has the highest precedence.
+            var field = fields[i];
+            if (field.JsonName == fieldName)
+            {
+                fieldDescriptor = field;
+                break;
+            }
+            else if (field.Name == fieldName)
+            {
+                fieldDescriptor = field;
+                break;
+            }
+        }
+
+        return fieldDescriptor;
     }
 
     private static object? ConvertValue(object? value, FieldDescriptor descriptor)
@@ -323,7 +355,7 @@ internal static class ServiceDescriptorHelpers
         foreach (var variable in variables)
         {
             var path = variable.FieldPath;
-            if (!TryResolveDescriptors(messageDescriptor, path, out var fieldDescriptors))
+            if (!TryResolveDescriptors(messageDescriptor, path, allowJsonName: false, out var fieldDescriptors))
             {
                 throw new InvalidOperationException($"Couldn't find matching field for route parameter '{string.Join(".", path)}' on {messageDescriptor.Name}.");
             }

@@ -26,11 +26,23 @@ public class JsonConverterReadTests
     public void NonJsonName()
     {
         var json = @"{
+  ""hiding_field_name"": ""A field name""
+}";
+
+        var m = AssertReadJson<HelloRequest>(json);
+        Assert.Equal("A field name", m.HidingFieldName);
+    }
+
+    [Fact]
+    public void HidingJsonName()
+    {
+        var json = @"{
   ""field_name"": ""A field name""
 }";
 
         var m = AssertReadJson<HelloRequest>(json);
-        Assert.Equal("A field name", m.FieldName);
+        Assert.Equal("", m.FieldName);
+        Assert.Equal("A field name", m.HidingFieldName);
     }
 
     [Fact]
