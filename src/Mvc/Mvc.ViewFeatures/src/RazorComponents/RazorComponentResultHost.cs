@@ -4,6 +4,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -65,6 +66,11 @@ internal class RazorComponentResultHost : IComponent
         // go here. We need to switch into the rendermode given by RazorComponentResult.RenderMode for this
         // child component. That will cause the developer-supplied parameters to be serialized into a marker
         // but not attempt to serialize the RenderFragment that causes this to be hosted in its layout.
+        if (RazorComponentResult.RenderMode != Rendering.RenderMode.Static)
+        {
+            // Tracked by #46353 and #46354
+            throw new NotSupportedException($"Currently, {nameof(RazorComponentResult)} only supports the {RenderMode.Static} render mode.");
+        }
 
         // TODO: If we wanted to support rendering pre-instantiated component objects, it would probably go here
         // as either a whole new RenderTreeFrame type or as some mechanism to attach the instance onto a regular
