@@ -5,11 +5,9 @@
 
     <p>TextComponent SectionContent was rendered = @SectionContentExists.ToString()</p>
 
-    <p>TextComponent SectionContent IsDefaultContent = @IsDefaultContent.ToString()</p>
-
     @if (SectionContentExists)
     {
-        <SectionContent SectionId="SectionId" IsDefaultContent="@IsDefaultContent">
+        <SectionContent SectionId="SectionId">
             <p id="text">Hello!</p>
         </SectionContent>
     }
@@ -18,9 +16,6 @@
 @code {
     [Parameter]
     public bool SectionContentExists { get; set; }
-
-    [Parameter]
-    public bool IsDefaultContent { get; set; }
 
     [Parameter]
     public object SectionId { get; set; }
