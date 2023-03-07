@@ -11,7 +11,7 @@
 /src/Http/                      @tratcher @BrennanConroy
 /src/Http/Routing/              @javiercn
 /src/Middleware/                @tratcher @BrennanConroy
-/src/Mvc/                       @pranavkm @javiercn
+/src/Mvc/                       @javiercn
 /src/Security/                  @tratcher
 /src/Servers/                   @tratcher @halter73 @BrennanConroy
 /src/SignalR/                   @BrennanConroy @halter73
