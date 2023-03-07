@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using System.Runtime.InteropServices.JavaScript;
 using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
 
@@ -16,8 +16,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 /// code.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class WebAssemblyHotReload
+public static partial class WebAssemblyHotReload
 {
+    private const string BlazorHotReloadModuleName = "blazor-hotreload";
+
     private static HotReloadAgent? _hotReloadAgent;
     private static readonly UpdateDelta[] _updateDeltas = new[]
     {
@@ -26,16 +28,14 @@ public static class WebAssemblyHotReload
 
     internal static async Task InitializeAsync()
     {
-        if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true")
+        if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
+            OperatingSystem.IsBrowser())
         {
             // Attempt to read previously applied hot reload deltas if the ASP.NET Core browser tools are available (indicated by the presence of the Environment variable).
-            // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage .
+            // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage.
             // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-
-            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
-#pragma warning disable CS0618 // Type or member is obsolete
-            await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
-#pragma warning restore CS0618 // Type or member is obsolete
+            await JSHost.ImportAsync(BlazorHotReloadModuleName, "/_framework/blazor-hotreload.js");
+            ReceiveHotReload();
         }
     }
 
@@ -73,4 +73,7 @@ public static class WebAssemblyHotReload
         }
         return (string)method.Invoke(obj: null, parameters: null)!;
     }
+
+    [JSImport("receiveHotReload", BlazorHotReloadModuleName)]
+    private static partial void ReceiveHotReload();
 }

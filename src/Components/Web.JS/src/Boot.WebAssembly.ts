@@ -5,14 +5,14 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
-import { byteArrayBeingTransferred, Module, BINDING, monoPlatform } from './Platform/Mono/MonoPlatform';
+import { Module, BINDING, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
-import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_Object, System_String } from './Platform/Platform';
+import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
@@ -52,9 +52,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Configure JS interop
   Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
+  Blazor._internal.invokeJSJson = invokeJSJson;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveByteArray = receiveByteArray;
-  Blazor._internal.retrieveByteArray = retrieveByteArray;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
@@ -72,12 +72,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       heapLock.release();
     }
   };
-
-  // Configure navigation via JS Interop
-  const getBaseUri = Blazor._internal.navigationManager.getBaseURI;
-  const getLocationHref = Blazor._internal.navigationManager.getLocationHref;
-  Blazor._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
-  Blazor._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
 
   Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
@@ -114,13 +108,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
     getId: (index) => componentAttacher.getId(index),
-    getAssembly: (id) => BINDING.js_string_to_mono_string(componentAttacher.getAssembly(id)),
-    getTypeName: (id) => BINDING.js_string_to_mono_string(componentAttacher.getTypeName(id)),
-    getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterDefinitions(id) || ''),
-    getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
+    getAssembly: (id) => componentAttacher.getAssembly(id),
+    getTypeName: (id) => componentAttacher.getTypeName(id),
+    getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
+    getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
   };
 
-  Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
+  Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
@@ -191,26 +185,21 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
   }
 }
 
-function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String): void {
-  const callIdString = BINDING.conv_string(callId)!;
-  const successBool = (success as any as number) !== 0;
-  const resultJsonOrErrorMessageString = BINDING.conv_string(resultJsonOrErrorMessage)!;
-  DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callIdString, successBool, resultJsonOrErrorMessageString);
-}
-
-function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
-  const idLong = id as unknown as number;
-  const dataByteArray = monoPlatform.toUint8Array(data);
-  DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
-}
-
-function retrieveByteArray(): System_Object {
-  if (byteArrayBeingTransferred === null) {
-    throw new Error('Byte array not available for transfer');
+function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number): string | null {
+  if (asyncHandle !== 0) {
+    DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(asyncHandle, identifier, argsJson, resultType, targetInstanceId);
+    return null;
+  } else {
+    return DotNet.jsCallDispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId);
   }
+}
 
-  const typedArray = BINDING.js_typed_array_to_array(byteArrayBeingTransferred);
-  return typedArray;
+function endInvokeDotNetFromJS(callId: string, success: boolean, resultJsonOrErrorMessage: string): void {
+  DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage);
+}
+
+function receiveByteArray(id: number, data: Uint8Array): void {
+  DotNet.jsCallDispatcher.receiveByteArray(id, data);
 }
 
 function inAuthRedirectIframe(): boolean {

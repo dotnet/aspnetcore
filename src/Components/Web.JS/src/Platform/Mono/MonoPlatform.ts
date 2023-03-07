@@ -369,6 +369,12 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
   setModuleImports('blazor-internal', {
     Blazor: { _internal: Blazor._internal },
   });
+  const exports = await runtime.getAssemblyExports('Microsoft.AspNetCore.Components.WebAssembly');
+  Object.assign(Blazor._internal, {
+    dotNetExports: {
+      ...exports.Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime,
+    },
+  });
   attachInteropInvoker();
   if (resourceLoader.bootConfig.debugBuild && resourceLoader.bootConfig.cacheBootResources) {
     resourceLoader.logToConsole();
@@ -412,7 +418,6 @@ async function loadSatelliteAssemblies(resourceLoader: WebAssemblyResourceLoader
     }));
 }
 
-
 async function loadLazyAssembly(resourceLoader: WebAssemblyResourceLoader, assemblyNameToLoad: string): Promise<{ dll: Uint8Array, pdb: Uint8Array | null }> {
   const resources = resourceLoader.bootConfig.resources;
   const lazyAssemblies = resources.lazyAssembly;
@@ -449,19 +454,7 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
 
-function bindStaticMethod(assembly: string, typeName: string, method: string) {
-  // Fully qualified name looks like this: "[debugger-test] Math:IntAdd"
-  const fqn = `[${assembly}] ${typeName}:${method}`;
-  return BINDING.bind_static_method(fqn);
-}
-
-export let byteArrayBeingTransferred: Uint8Array | null = null;
 function attachInteropInvoker(): void {
-  const dotNetDispatcherInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'InvokeDotNet');
-  const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'BeginInvokeDotNet');
-  const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
-  const dotNetDispatcherNotifyByteArrayAvailableMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'NotifyByteArrayAvailable');
-
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
       assertHeapIsNotLocked();
@@ -474,7 +467,7 @@ function attachInteropInvoker(): void {
         ? dotNetObjectId.toString()
         : assemblyName;
 
-      dotNetDispatcherBeginInvokeMethodHandle(
+      Blazor._internal.dotNetExports!.BeginInvokeDotNet!(
         callId ? callId.toString() : null,
         assemblyNameOrDotNetObjectId,
         methodIdentifier,
@@ -482,18 +475,17 @@ function attachInteropInvoker(): void {
       );
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      dotNetDispatcherEndInvokeJSMethodHandle(serializedArgs);
+      Blazor._internal.dotNetExports!.EndInvokeJS(serializedArgs);
     },
     sendByteArray: (id: number, data: Uint8Array): void => {
-      byteArrayBeingTransferred = data;
-      dotNetDispatcherNotifyByteArrayAvailableMethodHandle(id);
+      Blazor._internal.dotNetExports!.ReceiveByteArrayFromJS(id, data);
     },
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       assertHeapIsNotLocked();
-      return dotNetDispatcherInvokeMethodHandle(
+      return Blazor._internal.dotNetExports!.InvokeDotNet(
         assemblyName ? assemblyName : null,
         methodIdentifier,
-        dotNetObjectId ? dotNetObjectId.toString() : null,
+        dotNetObjectId ?? 0,
         argsJson,
       ) as string;
     },
