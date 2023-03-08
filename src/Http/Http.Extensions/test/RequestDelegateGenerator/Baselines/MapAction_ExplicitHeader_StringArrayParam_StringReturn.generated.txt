@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, Source = Header)
+                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = Header)
                         var p_raw = httpContext.Request.Headers["p"];
                         var p_temp = p_raw.ToArray();
                         string[] p_local = p_temp!;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, Source = Header)
+                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = Header)
                         var p_raw = httpContext.Request.Headers["p"];
                         var p_temp = p_raw.ToArray();
                         string[] p_local = p_temp!;

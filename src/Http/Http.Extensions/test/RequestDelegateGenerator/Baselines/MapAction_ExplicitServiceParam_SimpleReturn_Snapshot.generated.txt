@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Http.Generators.Tests.TestService>();
 
                         if (wasParamCheckFailure)
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Http.Generators.Tests.TestService>();
 
                         if (wasParamCheckFailure)
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
 
                         if (wasParamCheckFailure)
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
 
                         if (wasParamCheckFailure)
@@ -269,9 +269,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetService<Microsoft.AspNetCore.Http.Generators.Tests.TestService?>();;
-                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svcs_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
 
                         if (wasParamCheckFailure)
@@ -287,9 +287,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetService<Microsoft.AspNetCore.Http.Generators.Tests.TestService?>();;
-                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svcs_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
 
                         if (wasParamCheckFailure)

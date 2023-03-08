@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = System.TimeOnly, IsOptional = False, IsParsable = True, Source = Query)
+                        // Endpoint Parameter: p (Type = System.TimeOnly, IsOptional = False, IsParsable = True, IsArray = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         if (StringValues.IsNullOrEmpty(p_raw))
                         {
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = System.TimeOnly, IsOptional = False, IsParsable = True, Source = Query)
+                        // Endpoint Parameter: p (Type = System.TimeOnly, IsOptional = False, IsParsable = True, IsArray = False, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         if (StringValues.IsNullOrEmpty(p_raw))
                         {

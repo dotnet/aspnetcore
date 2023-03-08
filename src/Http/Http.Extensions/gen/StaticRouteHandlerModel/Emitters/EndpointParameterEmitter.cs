@@ -223,7 +223,7 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
-    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, Source = {endpointParameter.Source})";
+    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
     private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_local";
     private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_temp";
 

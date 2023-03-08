@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p1 (Type = string, IsOptional = False, IsParsable = False, Source = Query)
+                        // Endpoint Parameter: p1 (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Query)
                         var p1_raw = httpContext.Request.Query["p1"];
                         if (StringValues.IsNullOrEmpty(p1_raw))
                         {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var p1_temp = (string?)p1_raw;
                         string p1_local = p1_temp!;
-                        // Endpoint Parameter: p2 (Type = string, IsOptional = False, IsParsable = False, Source = Query)
+                        // Endpoint Parameter: p2 (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Query)
                         var p2_raw = httpContext.Request.Query["p2"];
                         if (StringValues.IsNullOrEmpty(p2_raw))
                         {
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p1 (Type = string, IsOptional = False, IsParsable = False, Source = Query)
+                        // Endpoint Parameter: p1 (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Query)
                         var p1_raw = httpContext.Request.Query["p1"];
                         if (StringValues.IsNullOrEmpty(p1_raw))
                         {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var p1_temp = (string?)p1_raw;
                         string p1_local = p1_temp!;
-                        // Endpoint Parameter: p2 (Type = string, IsOptional = False, IsParsable = False, Source = Query)
+                        // Endpoint Parameter: p2 (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Query)
                         var p2_raw = httpContext.Request.Query["p2"];
                         if (StringValues.IsNullOrEmpty(p2_raw))
                         {

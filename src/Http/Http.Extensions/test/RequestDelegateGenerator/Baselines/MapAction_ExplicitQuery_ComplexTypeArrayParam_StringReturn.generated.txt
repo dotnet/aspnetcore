@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo[], IsOptional = False, IsParsable = True, Source = Query)
+                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo[], IsOptional = False, IsParsable = True, IsArray = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         var p_temp = p_raw.ToArray();
                         global::Microsoft.AspNetCore.Http.Generators.Tests.Todo[] p_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.Todo[p_temp.Length];
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo[], IsOptional = False, IsParsable = True, Source = Query)
+                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo[], IsOptional = False, IsParsable = True, IsArray = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         var p_temp = p_raw.ToArray();
                         global::Microsoft.AspNetCore.Http.Generators.Tests.Todo[] p_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.Todo[p_temp.Length];
