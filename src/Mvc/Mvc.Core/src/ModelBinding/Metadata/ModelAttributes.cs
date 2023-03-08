@@ -225,6 +225,14 @@ public class ModelAttributes
         // To avoid this, we call `GetCustomAttributes` directly
         // to avoid examining the inheritance hierarchy.
         // See https://source.dot.net/#System.Private.CoreLib/src/System/Attribute.CoreCLR.cs,677
-        return type.GetCustomAttributes<ModelMetadataTypeAttribute>(inherit: false).SingleOrDefault()?.MetadataType;
+        var modelMetadataTypeAttributes = type.GetCustomAttributes<ModelMetadataTypeAttribute>(inherit: false);
+        try
+        {
+            return modelMetadataTypeAttributes?.SingleOrDefault()?.MetadataType;
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new InvalidOperationException("Only one ModelMetadataType attribute is permitted per type.", e);
+        }
     }
 }
