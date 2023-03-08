@@ -18,15 +18,11 @@ public class Todo
     public int Id { get; set; }
     public string? Name { get; set; } = "Todo";
     public bool IsComplete { get; set; }
-}
-
-public class TryParseTodo : Todo
-{
-    public static bool TryParse(string input, out TryParseTodo? result)
+    public static bool TryParse(string input, out Todo? result)
     {
         if (input == "1")
         {
-            result = new TryParseTodo
+            result = new Todo
             {
                 Id = 1,
                 Name = "Knit kitten mittens.",
@@ -78,6 +74,23 @@ public class PrecedenceCheckTodo
     public static bool TryParse(string? input, out PrecedenceCheckTodo result)
     {
         result = new PrecedenceCheckTodo(24);
+        return true;
+    }
+}
+
+public enum MyEnum { ValueA, ValueB, }
+
+public record MyTryParseRecord(Uri Uri)
+{
+    public static bool TryParse(string value, out MyTryParseRecord? result)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+        {
+            result = null;
+            return false;
+        }
+
+        result = new MyTryParseRecord(uri);
         return true;
     }
 }
@@ -381,6 +394,11 @@ public class MyBindAsyncTypeThatThrows
 {
     public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter) =>
         throw new InvalidOperationException("BindAsync failed");
+}
+
+public struct BodyStruct
+{
+    public int Id { get; set; }
 }
 
 #nullable restore

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class CompileTimeIncrementalityTests : RequestDelegateGeneratorTestBase
+public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
 {
     protected override bool IsGeneratorEnabled { get; } = true;
 
