@@ -28,8 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="RequestDelegateGenerator\Baselines\*.generated.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <AssemblyAttribute
+      Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RequestDelegateGeneratorTestBaselines</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), "RequestDelegateGenerator", "Baselines"))</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>

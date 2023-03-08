@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public abstract class RequestDelegateCreationTestBase : LoggedTest
 {
     // Change this to true and run tests in development to regenerate baseline files.
-    // Then: cp artifacts/bin/Microsoft.AspNetCore.Http.Extensions.Tests/Debug/net8.0/RequestDelegateGenerator/Baselines/* src/Http/Http.Extensions/test/RequestDelegateGenerator/Baselines
     public bool RegenerateBaselines => false;
 
     protected abstract bool IsGeneratorEnabled { get; }
@@ -294,7 +293,9 @@ public static class TestMapActions
             return;
         }
 
-        var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
+        var baselineFilePathRoot = typeof(RequestDelegateCreationTestBase).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>().Single(d => d.Key == "RequestDelegateGeneratorTestBaselines").Value;
+        var baselineFilePath = Path.Combine(baselineFilePathRoot!, $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
 

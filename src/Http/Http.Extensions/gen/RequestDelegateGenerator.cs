@@ -146,11 +146,61 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions);
+        var endpointHelpers = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                var parameters = endpoints.SelectMany(endpoint => endpoint.Parameters);
+                var responses = endpoints.Select(endpoint => endpoint.Response);
+
+                var hasJsonBodyOrService = parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
+                var hasJsonBody = parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
+                var hasRouteOrQuery = parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
+                var hasBindAsync = parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
+                var hasParsable = parameters.Any(parameter => parameter.IsParsable);
+                var hasJsonResponse = responses.Any(response => !response.ResponseType.IsSealed && !response.ResponseType.IsValueType);
+
+                using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+                using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
+
+                if (hasRouteOrQuery)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ResolveFromRouteOrQueryMethod);
+                }
+
+                if (hasJsonResponse)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.WriteToResponseAsyncMethod);
+                }
+
+                if (hasJsonBody || hasJsonBodyOrService)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryResolveBodyAsyncMethod);
+                }
+
+                if (hasBindAsync)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.BindAsyncMethod);
+                }
+
+                if (hasJsonBodyOrService)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryResolveJsonBodyOrServiceAsyncMethod);
+                }
+
+                if (hasParsable)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryParseExplicitMethod);
+                }
+
+                return stringWriter.ToString();
+            });
+
+        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var (thunks, endpointsCode) = sources;
+            var ((thunks, endpointsCode), helpers) = sources;
 
             if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
@@ -166,7 +216,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(
                 genericThunks: string.Empty,
                 thunks: thunksCode.ToString(),
-                endpoints: endpointsCode);
+                endpoints: endpointsCode,
+                helperMethods: helpers ?? string.Empty);
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
