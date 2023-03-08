@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Globalization;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 internal static class EndpointEmitter
@@ -17,30 +15,62 @@ internal static class EndpointEmitter
 
         foreach (var parameter in endpoint.Parameters)
         {
-            switch (parameter)
+            switch (parameter.Source)
             {
-                case { Source: EndpointParameterSource.SpecialType }:
+                case EndpointParameterSource.SpecialType:
                     parameter.EmitSpecialParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.Query or EndpointParameterSource.Header }:
+                case EndpointParameterSource.Query:
+                case EndpointParameterSource.Header:
                     parameter.EmitQueryOrHeaderParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.Route }:
+                case EndpointParameterSource.Route:
                     parameter.EmitRouteParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.RouteOrQuery }:
+                case EndpointParameterSource.RouteOrQuery:
                     parameter.EmitRouteOrQueryParameterPreparation(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.JsonBody }:
+                case EndpointParameterSource.BindAsync:
+                    parameter.EmitBindAsyncPreparation(parameterPreparationBuilder);
+                    break;
+                case EndpointParameterSource.JsonBody:
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
-                case { Source: EndpointParameterSource.Service }:
+                case EndpointParameterSource.JsonBodyOrService:
+                    parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);
+                    break;
+                case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
             }
         }
 
         return stringWriter.ToString();
+    }
+
+    public static void EmitRouteOrQueryResolver(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Source == EndpointParameterSource.RouteOrQuery)
+            {
+                var parameterName = parameter.Name;
+                codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
+                codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
+            }
+        }
+    }
+
+    public static void EmitJsonBodyOrServicePreparation(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
+            {
+                codeWriter.WriteLine("var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();");
+                return;
+            }
+        }
     }
 
     public static string EmitArgumentList(this Endpoint endpoint) => string.Join(", ", endpoint.Parameters.Select(p => p.EmitArgument()));

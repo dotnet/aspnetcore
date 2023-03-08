@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 {
+    // Change this to true and run tests in development to regenerate baseline files.
+    // Then: cp artifacts/bin/Microsoft.AspNetCore.Http.Extensions.Tests/Debug/net8.0/RequestDelegateGenerator/Baselines/* src/Http/Http.Extensions/test/RequestDelegateGenerator/Baselines
+    public bool RegenerateBaselines => false;
+
     protected abstract bool IsGeneratorEnabled { get; }
 
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
@@ -97,10 +101,10 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
         }
     }
 
-    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null) =>
-        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride));
+    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null, IServiceProvider serviceProvider = null) =>
+        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride, serviceProvider));
 
-    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null)
+    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null, IServiceProvider serviceProvider = null)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -147,7 +151,7 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 
         Assert.NotNull(handler);
 
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider ?? new EmptyServiceProvider()));
         _ = handler(builder);
 
         var dataSource = Assert.Single(builder.DataSources);
@@ -172,20 +176,28 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
         return endpoints;
     }
 
-    internal HttpContext CreateHttpContext()
+    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider = null)
     {
         var httpContext = new DefaultHttpContext();
-
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(LoggerFactory);
-        var jsonOptions = new JsonOptions();
-        serviceCollection.AddSingleton(Options.Create(jsonOptions));
-        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+        httpContext.RequestServices = serviceProvider ?? CreateServiceProvider();
 
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;
 
         return httpContext;
+    }
+
+    public ServiceProvider CreateServiceProvider(Action<IServiceCollection> configureServices = null)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        var jsonOptions = new JsonOptions();
+        serviceCollection.AddSingleton(Options.Create(jsonOptions));
+        if (configureServices is not null)
+        {
+            configureServices(serviceCollection);
+        }
+        return serviceCollection.BuildServiceProvider();
     }
 
     internal HttpContext CreateHttpContextWithBody(Todo requestData)
@@ -215,6 +227,7 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -236,109 +249,6 @@ public static class TestMapActions
     {
         {{sources}}
         return app;
-    }
-}
-
-public enum TodoStatus
-{
-    Trap, // A trap for Enum.TryParse<T>!
-    Done,
-    InProgress,
-    NotDone
-}
-
-public interface ITodo
-{
-    public int Id { get; }
-    public string? Name { get; }
-    public bool IsComplete { get; }
-    public TodoStatus Status { get; }
-}
-
-public class PrecedenceCheckTodo
-{
-    public PrecedenceCheckTodo(int magicValue)
-    {
-        MagicValue = magicValue;
-    }
-    public int MagicValue { get; }
-    public static bool TryParse(string? input, IFormatProvider? provider, out PrecedenceCheckTodo result)
-    {
-        result = new PrecedenceCheckTodo(42);
-        return true;
-    }
-    public static bool TryParse(string? input, out PrecedenceCheckTodo result)
-    {
-        result = new PrecedenceCheckTodo(24);
-        return true;
-    }
-}
-
-public class PrecedenceCheckTodoWithoutFormat
-{
-    public PrecedenceCheckTodoWithoutFormat(int magicValue)
-    {
-        MagicValue = magicValue;
-    }
-    public int MagicValue { get; }
-    public static bool TryParse(string? input, out PrecedenceCheckTodoWithoutFormat result)
-    {
-        result = new PrecedenceCheckTodoWithoutFormat(24);
-        return true;
-    }
-}
-
-public class ParsableTodo : IParsable<ParsableTodo>
-{
-    public int Id { get; set; }
-    public string? Name { get; set; } = "Todo";
-    public bool IsComplete { get; set; }
-    public static ParsableTodo Parse(string s, IFormatProvider? provider)
-    {
-        return new ParsableTodo();
-    }
-    public static bool TryParse(string? input, IFormatProvider? provider, out ParsableTodo result)
-    {
-        if (input == "1")
-        {
-            result = new ParsableTodo
-            {
-            Id = 1,
-            Name = "Knit kitten mittens.",
-            IsComplete = false
-            };
-            return true;
-        }
-        else
-        {
-        result = null!;
-        return false;
-        }
-    }
-}
-
-public class Todo
-{
-    public int Id { get; set; }
-    public string? Name { get; set; } = "Todo";
-    public bool IsComplete { get; set; }
-    public static bool TryParse(string input, out Todo? result)
-    {
-        if (input == "1")
-        {
-            result = new Todo
-            {
-            Id = 1,
-            Name = "Knit kitten mittens.",
-            IsComplete = false
-            };
-            return true;
-        }
-        else
-        {
-        result = null;
-        return false;
-        }
     }
 }
 """;
@@ -383,9 +293,20 @@ public class Todo
         {
             return;
         }
+
         var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
+
+        if (RegenerateBaselines)
+        {
+            var newSource = generatedCode.ToString()
+                .Replace(RequestDelegateGeneratorSources.GeneratedCodeAttribute, "%GENERATEDCODEATTRIBUTE%")
+                + Environment.NewLine;
+            await File.WriteAllTextAsync(baselineFilePath, newSource);
+            Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
+        }
+
         var baseline = await File.ReadAllTextAsync(baselineFilePath);
         var expectedLines = baseline
             .TrimEnd() // Trim newlines added by autoformat
@@ -395,7 +316,7 @@ public class Todo
         Assert.True(CompareLines(expectedLines, generatedCode, out var errorMessage), errorMessage);
     }
 
-    private bool CompareLines(string[] expectedLines, SourceText sourceText, out string message)
+    private static bool CompareLines(string[] expectedLines, SourceText sourceText, out string message)
     {
         if (expectedLines.Length != sourceText.Lines.Count)
         {

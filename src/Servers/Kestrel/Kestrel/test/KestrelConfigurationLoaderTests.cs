@@ -241,7 +241,7 @@ public class KestrelConfigurationLoaderTests
                 }).Load();
 
             Assert.True(ran1);
-            Assert.NotNull(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
         }
         finally
         {
@@ -249,6 +249,133 @@ public class KestrelConfigurationLoaderTests
             {
                 File.Delete(GetCertificatePath());
             }
+        }
+    }
+
+    [Fact]
+    public void DevelopmentCertificateCanBeRemoved()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+
+            var devCert = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var devCertBytes = devCert.Export(X509ContentType.Pkcs12, "1234");
+            var devCertPath = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(devCertPath));
+            File.WriteAllBytes(devCertPath, devCertBytes);
+
+            var defaultCertPath = TestResources.TestCertificatePath;
+            var defaultCert = TestResources.GetTestCertificate();
+            Assert.NotEqual(devCert.SerialNumber, defaultCert.SerialNumber); // Need to be able to distinguish them
+
+            var endpointConfig = new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            };
+            var devCertConfig = new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            };
+            var defaultCertConfig = new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Default:path", defaultCertPath),
+                new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig)).Build();
+
+            serverOptions.Configure(config).Load();
+
+            CheckCertificates(devCert);
+
+            // Add Default certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig).Concat(defaultCertConfig)).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            // Default is preferred to Development
+            CheckCertificates(defaultCert);
+
+            // Remove Default certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig)).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            // Back to Development
+            CheckCertificates(devCert);
+
+            // Remove Development certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig).Build();
+
+            // With all of the configuration certs removed, the only place left to check is the CertificateManager.
+            // We don't want to depend on machine state, so we cheat and say we already looked.
+            serverOptions.IsDevelopmentCertificateLoaded = true;
+            Assert.Null(serverOptions.DevelopmentCertificate);
+
+            // Since there are no configuration certs and we bypassed the CertificateManager, there will be an
+            // exception about not finding any certs at all.
+            Assert.Throws<InvalidOperationException>(() => serverOptions.ConfigurationLoader.Reload());
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            void CheckCertificates(X509Certificate2 expectedCert)
+            {
+                var httpsOptions = new HttpsConnectionAdapterOptions();
+                serverOptions.ApplyDefaultCertificate(httpsOptions);
+                Assert.Equal(expectedCert.SerialNumber, httpsOptions.ServerCertificate.SerialNumber);
+                Assert.Equal(expectedCert.SerialNumber, serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber);
+            }
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void ConfigureEndpoint_RecoverFromBadPassword()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var configRoot = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", TestResources.TestCertificatePath),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", "testPassword")
+        }).Build();
+        var configProvider = configRoot.Providers.Single();
+
+        var testCertificate = TestResources.GetTestCertificate();
+
+        var otherCertificatePath = TestResources.GetCertPath("aspnetdevcert.pfx");
+        var otherCertificate = new X509Certificate2(otherCertificatePath, "testPassword");
+
+        serverOptions.Configure(configRoot).Load();
+        CheckListenOptions(testCertificate);
+
+        // Update cert but use incorrect password
+        configProvider.Set("Endpoints:End1:Certificate:Path", otherCertificatePath);
+        configProvider.Set("Endpoints:End1:Certificate:Password", "badPassword");
+
+        // Fails to load certificate because password is bad
+        Assert.ThrowsAny<CryptographicException>(() => serverOptions.ConfigurationLoader.Reload());
+
+        // ConfigurationBackedListenOptions still contains prior value
+        CheckListenOptions(testCertificate);
+
+        // Correct password
+        configProvider.Set("Endpoints:End1:Certificate:Password", "testPassword");
+        _ = serverOptions.ConfigurationLoader.Reload();
+
+        // ConfigurationBackedListenOptions contains new value
+        CheckListenOptions(otherCertificate);
+
+        void CheckListenOptions(X509Certificate2 expectedCert)
+        {
+            var listenOptions = Assert.Single(serverOptions.ConfigurationBackedListenOptions);
+            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions.ServerCertificate.SerialNumber);
         }
     }
 
@@ -390,7 +517,7 @@ public class KestrelConfigurationLoaderTests
             }).Load();
 
         Assert.True(ran1);
-        Assert.NotNull(serverOptions.DefaultCertificate);
+        Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
     }
 
     [Fact]
@@ -414,7 +541,7 @@ public class KestrelConfigurationLoaderTests
                 .Configure(config)
                 .Load();
 
-            Assert.Null(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate);
         }
         finally
         {
@@ -445,7 +572,7 @@ public class KestrelConfigurationLoaderTests
                 .Configure(config)
                 .Load();
 
-            Assert.Null(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate);
         }
         finally
         {

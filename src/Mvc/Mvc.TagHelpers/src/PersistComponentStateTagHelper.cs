@@ -4,7 +4,7 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -52,7 +52,7 @@ public class PersistComponentStateTagHelper : TagHelper
         var renderer = services.GetRequiredService<HtmlRenderer>();
         var store = PersistenceMode switch
         {
-            null => ComponentRenderer.GetPersistStateRenderMode(ViewContext) switch
+            null => ComponentPrerenderer.GetPersistStateRenderMode(ViewContext) switch
             {
                 InvokedRenderModes.Mode.None =>
                     null,
@@ -76,7 +76,7 @@ public class PersistComponentStateTagHelper : TagHelper
         output.TagName = null;
         if (store != null)
         {
-            await manager.PersistStateAsync(store, renderer);
+            await manager.PersistStateAsync(store, renderer.Dispatcher);
             output.Content.SetHtmlContent(
                 new HtmlContentBuilder()
                     .AppendHtml("<!--Blazor-Component-State:")

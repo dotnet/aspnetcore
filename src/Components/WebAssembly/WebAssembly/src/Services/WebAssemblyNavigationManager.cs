@@ -85,7 +85,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     }
 
     protected override void SetNavigationLockState(bool value)
-        => DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.SetHasLocationChangingListeners, value);
+        => InternalJSImportMethods.Instance.NavigationManager_SetHasLocationChangingListeners(value);
 
     private static partial class Log
     {

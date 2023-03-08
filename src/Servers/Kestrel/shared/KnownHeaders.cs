@@ -859,12 +859,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
             {{
-                StringValues value = default;
                 if (_contentLength.HasValue)
                 {{
-                    value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    return new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                 }}
-                return value;
+                return StringValues.Empty;
             }}
             set
             {{
@@ -872,24 +871,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}" : $@"
             get
             {{
-                StringValues value = default;
                 if ({header.TestBit()})
                 {{
-                    value = _headers._{header.Identifier};
+                    return _headers._{header.Identifier};
                 }}
-                return value;
+                return StringValues.Empty;
             }}
             set
             {{
                 if (!StringValues.IsNullOrEmpty(value))
                 {{
                     {header.SetBit()};
+                    _headers._{header.Identifier} = value; 
                 }}
                 else
                 {{
                     {header.ClearBit()};
-                }}
-                _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
+                    _headers._{header.Identifier} = default; 
+                }}{(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}
         }}")}
@@ -903,7 +902,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return value;
                 }}
-                return default;
+                return StringValues.Empty;
             }}
             set
             {{
@@ -932,7 +931,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.{header}, ref value))
                 {{
-                    value = default;
+                    value = StringValues.Empty;
                 }}
                 return value;
             }}

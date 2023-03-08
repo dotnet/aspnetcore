@@ -3,7 +3,6 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -25,25 +24,25 @@ internal sealed class WebAssemblyComponentSerializer
             WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
     }
 
-    internal static void AppendPreamble(ViewBuffer viewBuffer, WebAssemblyComponentMarker record)
+    internal static void AppendPreamble(TextWriter writer, WebAssemblyComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
-        viewBuffer.AppendHtml("<!--Blazor:");
-        viewBuffer.AppendHtml(serializedStartRecord);
-        viewBuffer.AppendHtml("-->");
+        writer.Write("<!--Blazor:");
+        writer.Write(serializedStartRecord);
+        writer.Write("-->");
     }
 
-    internal static void AppendEpilogue(ViewBuffer viewBuffer, WebAssemblyComponentMarker record)
+    internal static void AppendEpilogue(TextWriter writer, WebAssemblyComponentMarker record)
     {
         var endRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
-        viewBuffer.AppendHtml("<!--Blazor:");
-        viewBuffer.AppendHtml(endRecord);
-        viewBuffer.AppendHtml("-->");
+        writer.Write("<!--Blazor:");
+        writer.Write(endRecord);
+        writer.Write("-->");
     }
 }

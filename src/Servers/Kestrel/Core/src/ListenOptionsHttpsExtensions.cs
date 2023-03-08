@@ -166,7 +166,7 @@ public static class ListenOptionsHttpsExtensions
         var options = new HttpsConnectionAdapterOptions();
         listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
         configureOptions(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
+        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
 
         if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
         {
@@ -181,7 +181,7 @@ public static class ListenOptionsHttpsExtensions
     {
         var options = new HttpsConnectionAdapterOptions();
         listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
+        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
 
         if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
         {

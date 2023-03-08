@@ -1,0 +1,97 @@
+/*
+    TODO: Don't actually used scoped CSS for QuickGrid.razor, because it's so perf-critical we don't even want to
+    add the extra attributes on all the tr/td elements. We can hook everything onto the table.quickgrid class,
+    remembering to be specific about matching closest tr/td only, not any child tables.
+*/
+
+th {
+    position: relative; /* So that col-options appears next to it */
+}
+
+.col-header-content {
+    /* We want the th elements to be display:flex, but they also have to be display:table-cell to avoid breaking the layout.
+       So .col-header-content is an immediate child with display:flex. */
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Deep to make it easy for people adding a sort-indicator element in a custom HeaderTemplate */
+th ::deep .sort-indicator {
+    /* Preset width so the column width doen't change as the sort indicator appears/disappears */
+    width: 1rem;
+    height: 1rem;
+    align-self: center;
+    text-align: center;
+}
+
+.col-sort-desc ::deep .sort-indicator, .col-sort-asc ::deep .sort-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
+}
+
+.col-sort-asc ::deep .sort-indicator {
+    transform: scaleY(-1);
+}
+
+/* Deep to make it easy for people adding a col-options-button element in a custom HeaderTemplate */
+th ::deep .col-options-button {
+    border: none;
+    padding: 0; /* So that even if the text on the button is wide, it gets properly centered */
+    width: 1rem;
+    align-self: stretch;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 0 21 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" /></svg>') center center / 1rem no-repeat;
+}
+
+.col-options {
+    position: absolute;
+    background: white;
+    border: 1px solid silver;
+    left: 0;
+    padding: 1rem;
+    z-index: 1;
+}
+
+.col-justify-end .col-options {
+    left: unset;
+    right: 0;
+}
+
+.col-width-draghandle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0rem;
+    cursor: ew-resize;
+}
+
+    .col-width-draghandle:after {
+        content: ' ';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid black;
+    }
+
+td.col-justify-center {
+    text-align: center;
+}
+
+td.col-justify-end {
+    text-align: right;
+}
+
+/* Unfortunately we can't use the :dir pseudoselector due to lack of browser support. Instead we have to rely on
+    the developer setting <html dir="rtl"> to detect if we're in RTL mode. */
+html[dir=rtl] td.col-justify-end {
+    text-align: left;
+}
+
+html[dir=rtl] .col-options {
+    left: unset;
+    right: 0;
+}
+
+html[dir=rtl] .col-justify-end .col-options {
+    right: unset;
+    left: 0;
+}

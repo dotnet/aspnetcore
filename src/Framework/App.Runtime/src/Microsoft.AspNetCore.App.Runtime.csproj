@@ -179,7 +179,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
     <RedistArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</RedistArchiveOutputFileName>
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
-    <CompositeArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)-composite$(ArchiveExtension)</CompositeArchiveOutputFileName>
+    <CompositeArchiveOutputFileName>$(RuntimeInstallerBaseName)-composite-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</CompositeArchiveOutputFileName>
     <CompositeArchiveOutputPath>$(InstallersOutputPath)$(CompositeArchiveOutputFileName)</CompositeArchiveOutputPath>
   </PropertyGroup>
 
@@ -478,7 +478,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_GenerateComposites"
-          Condition="'$(TargetOsName)' == 'linux'"
+          Condition="'$(BuildOsName)' == 'linux'"
           DependsOnTargets="_ExpandRuntimePackageRoot">
 
     <PropertyGroup>

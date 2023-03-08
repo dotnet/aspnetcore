@@ -1,0 +1,6 @@
+﻿Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
+Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder
+Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

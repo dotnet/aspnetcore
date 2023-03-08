@@ -8,32 +8,6 @@ public class CompileTimeGeneratorTests : RequestDelegateGeneratorTests
     protected override bool IsGeneratorEnabled { get; } = true;
 
     [Fact]
-    public async Task MapAction_UnknownParameter_EmitsDiagnostic_NoSource()
-    {
-        // This will eventually be handled by the EndpointParameterSource.JsonBodyOrService.
-        // All parameters should theoretically be handleable with enough "Or"s in the future
-        // we'll remove this test and diagnostic.
-        var source = """
-app.MapGet("/", (IServiceProvider provider) => "Hello world!");
-""";
-        var expectedBody = "Hello world!";
-        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
-
-        // Emits diagnostic but generates no source
-        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor("provider").Id, diagnostic.Id);
-        Assert.Empty(result.GeneratedSources);
-
-        // Falls back to runtime-generated endpoint
-        var endpoint = GetEndpointFromCompilation(compilation, false);
-
-        var httpContext = CreateHttpContext();
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, expectedBody);
-    }
-
-    [Fact]
     public async Task MapGet_WithRequestDelegate_DoesNotGenerateSources()
     {
         var (generatorRunResult, compilation) = await RunGeneratorAsync("""
