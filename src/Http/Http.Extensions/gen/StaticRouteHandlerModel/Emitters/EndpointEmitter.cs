@@ -61,13 +61,15 @@ internal static class EndpointEmitter
         }
     }
 
-    public static void EmitJsonBodyOrServicePreparation(this Endpoint endpoint, CodeWriter codeWriter)
+    public static void EmitJsonBodyOrServiceResolver(this Endpoint endpoint, CodeWriter codeWriter)
     {
         foreach (var parameter in endpoint.Parameters)
         {
             if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
             {
                 codeWriter.WriteLine("var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();");
+                codeWriter.Write($@"var {parameter.Name}_JsonBodyOrServiceResolver = ");
+                codeWriter.WriteLine($"TryResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(serviceProviderIsService);");
                 return;
             }
         }
