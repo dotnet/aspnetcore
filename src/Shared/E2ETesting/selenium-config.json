@@ -1,7 +1,7 @@
 {
   "drivers": {
     "chrome": {
-      "version" : "106.0.5249.21"
+      "version" : "110.0.5481.77"
     }
   },
   "ignoreExtraDrivers": true
