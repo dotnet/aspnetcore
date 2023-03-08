@@ -20,12 +20,12 @@ internal sealed class OutputCacheEntry
     /// <summary>
     /// Gets the headers of the cache entry.
     /// </summary>
-    public HeaderDictionary Headers { get; set; } = default!;
+    public HeaderDictionary? Headers { get; set; }
 
     /// <summary>
     /// Gets the body of the cache entry.
     /// </summary>
-    public CachedResponseBody Body { get; set; } = default!;
+    public CachedResponseBody? Body { get; set; }
 
     /// <summary>
     /// Gets the tags of the cache entry.
