@@ -433,6 +433,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46835")]
         public void CanUseFocusExtensionToFocusElementPreventScroll()
         {
             Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);

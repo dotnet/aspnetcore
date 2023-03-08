@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                 !Debugger.IsAttached &&
                 !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
             {
-                opts.AddArgument("--headless");
+                opts.AddArgument("--headless=new");
             }
 
             opts.AddArgument("--no-sandbox");
