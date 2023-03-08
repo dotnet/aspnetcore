@@ -20,6 +20,8 @@ internal class EndpointParameter
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
         IsOptional = parameter.IsOptional();
+        IsArray = TryGetArrayElementType(parameter, out var elementType);
+        ElementType = elementType;
 
         if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
         {
@@ -93,6 +95,10 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.RouteOrQuery;
         }
+        else if (IsArray && elementType.SpecialType == SpecialType.System_String)
+        {
+            Source = EndpointParameterSource.Query;
+        }
         else if (TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter))
         {
             Source = EndpointParameterSource.RouteOrQuery;
@@ -106,9 +112,12 @@ internal class EndpointParameter
     }
 
     public ITypeSymbol Type { get; }
+    public ITypeSymbol ElementType { get; }
+
     public string Name { get; }
     public int Ordinal { get; }
     public bool IsOptional { get; }
+    public bool IsArray { get; set; }
 
     public EndpointParameterSource Source { get; }
 
@@ -124,13 +133,27 @@ internal class EndpointParameter
 
     private static bool HasBindAsync(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod)
     {
-        var parameterType = parameter.Type.UnwrapTypeSymbol();
+        var parameterType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true);
         return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod) == Bindability.Bindable;
+    }
+
+    private bool TryGetArrayElementType(IParameterSymbol parameter, [NotNullWhen(true)]out ITypeSymbol elementType)
+    {
+        if (parameter.Type.TypeKind == TypeKind.Array)
+        {
+            elementType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true);
+            return true;
+        }
+        else
+        {
+            elementType = null;
+            return false;
+        }
     }
 
     private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out Action<CodeWriter, string, string>? parsingBlockEmitter)
     {
-        var parameterType = parameter.Type.UnwrapTypeSymbol();
+        var parameterType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true);
 
         // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
         // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
