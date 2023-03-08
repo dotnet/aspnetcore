@@ -34,7 +34,7 @@ internal class HubSample
         var connectionBuilder = new HubConnectionBuilder()
             .ConfigureLogging(logging =>
             {
-                logging.AddConsole();
+                //logging.AddConsole();
             });
 
         connectionBuilder.Services.Configure<LoggerFilterOptions>(options =>
@@ -55,6 +55,7 @@ internal class HubSample
 
         using var closedTokenSource = new CancellationTokenSource();
         var connection = connectionBuilder.Build();
+        connection.ServerTimeout = TimeSpan.FromSeconds(15);
 
         try
         {
@@ -99,7 +100,7 @@ internal class HubSample
 
                 try
                 {
-                    await connection.InvokeAsync<object>("Send", line);
+                    await connection.InvokeAsync<object>("Send", "C#", line);
                 }
                 catch when (closedTokenSource.IsCancellationRequested)
                 {

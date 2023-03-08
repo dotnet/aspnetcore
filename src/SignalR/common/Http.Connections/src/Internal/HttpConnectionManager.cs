@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PipelinesOverNetwork;
+using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
@@ -67,7 +69,7 @@ internal sealed partial class HttpConnectionManager
     /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
     /// </summary>
     /// <returns></returns>
-    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0)
+    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useAck = false)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -96,6 +98,21 @@ internal sealed partial class HttpConnectionManager
         _connections.TryAdd(connectionToken, (connection, startTimestamp));
 
         return connection;
+
+        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+        {
+            var input = new Pipe(inputOptions);
+            var output = new Pipe(outputOptions);
+
+            // Use for one side only, i.e. server
+            var ackWriterApp = new AckPipeWriter(output.Writer);
+            var ackReader = new AckPipeReader(output.Reader);
+            var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReader);
+            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
+            var applicationToTransport = new DuplexPipe(transportReader, ackWriterApp);
+
+            return new DuplexPipePair(transportToApplication, applicationToTransport);
+        }
     }
 
     public void RemoveConnection(string id, HttpTransportType transportType, HttpConnectionStopStatus status)
@@ -159,7 +176,7 @@ internal sealed partial class HttpConnectionManager
 
             // Once the decision has been made to dispose we don't check the status again
             // But don't clean up connections while the debugger is attached.
-            if (!Debugger.IsAttached && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
+            if (!true && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
             {
                 Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                 HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);

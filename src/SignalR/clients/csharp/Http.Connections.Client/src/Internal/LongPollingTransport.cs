@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PipelinesOverNetwork;
+using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
@@ -21,6 +23,7 @@ internal sealed partial class LongPollingTransport : ITransport
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private IDuplexPipe? _application;
     private IDuplexPipe? _transport;
+    private bool _useAck;
     // Volatile so that the poll loop sees the updated value set from a different thread
     private volatile Exception? _error;
 
@@ -32,11 +35,12 @@ internal sealed partial class LongPollingTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public LongPollingTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
+    public LongPollingTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null, bool useAck = false)
     {
         _httpClient = httpClient;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new();
+        _useAck = useAck;
     }
 
     public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
@@ -57,12 +61,35 @@ internal sealed partial class LongPollingTransport : ITransport
         }
 
         // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-        var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        DuplexPipePair pair;
+        if (_useAck)
+        {
+            pair = CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        }
+        else
+        {
+            pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        }
 
         _transport = pair.Transport;
         _application = pair.Application;
 
         Running = ProcessAsync(url);
+
+        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+        {
+            var input = new Pipe(inputOptions);
+            var output = new Pipe(outputOptions);
+
+            // Use for one side only, i.e. server
+            var ackWriterApp = new AckPipeWriter(output.Writer);
+            var ackReader = new AckPipeReader(output.Reader);
+            var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReader);
+            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
+            var applicationToTransport = new DuplexPipe(transportReader, ackWriterApp);
+
+            return new DuplexPipePair(applicationToTransport, transportToApplication);
+        }
     }
 
     private async Task ProcessAsync(Uri url)
