@@ -3,7 +3,7 @@
 using Microsoft.CodeAnalysis;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class CompileTimeGeneratorTests : RequestDelegateGeneratorTests
+public class CompileTimeCreationTests : RequestDelegateCreationTests
 {
     protected override bool IsGeneratorEnabled { get; } = true;
 

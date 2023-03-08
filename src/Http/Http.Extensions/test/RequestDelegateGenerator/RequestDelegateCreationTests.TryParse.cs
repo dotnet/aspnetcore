@@ -9,7 +9,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public abstract partial class RequestDelegateGeneratorTests
+public abstract partial class RequestDelegateCreationTests
 {
     public static object[][] TryParsableParameters
     {

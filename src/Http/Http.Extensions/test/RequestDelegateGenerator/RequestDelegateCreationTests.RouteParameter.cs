@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public abstract partial class RequestDelegateGeneratorTests
+public abstract partial class RequestDelegateCreationTests
 {
     public static object[][] MapAction_ExplicitRouteParam_SimpleReturn_Data
     {

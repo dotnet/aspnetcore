@@ -17,7 +17,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public abstract partial class RequestDelegateGeneratorTests : RequestDelegateGeneratorTestBase
+public abstract partial class RequestDelegateCreationTests : RequestDelegateCreationTestBase
 {
     [Theory]
     [InlineData("HttpContext")]

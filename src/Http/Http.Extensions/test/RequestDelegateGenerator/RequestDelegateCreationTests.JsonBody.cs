@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public abstract partial class RequestDelegateGeneratorTests
+public abstract partial class RequestDelegateCreationTests
 {
     public static object[][] MapAction_ExplicitBodyParam_ComplexReturn_Data
     {
