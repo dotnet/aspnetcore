@@ -107,12 +107,31 @@ internal static class EndpointParameterEmitter
 
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
 
         // If binding from the JSON body fails, we exit early. Don't
         // set the status code here because assume it has been set by the
         // TryResolveBody method.
+        codeWriter.WriteLine("if (!isSuccessful)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("return;");
+        codeWriter.EndBlock();
+    }
+
+    internal static void EmitJsonBodyOrServiceParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        // Preamble for diagnostics purposes.
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Invoke TryResolveJsonBodyOrService method to resolve the
+        // type from DI if it exists. Otherwise, resolve the parameter
+        // as a body parameter.
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")}, serviceProviderIsService)";
+        codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
+
+        // If binding from the JSON body fails, TryResolveJsonBodyOrService
+        // will return `false` and we will need to exit early.
         codeWriter.WriteLine("if (!isSuccessful)");
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
@@ -183,7 +202,7 @@ internal static class EndpointParameterEmitter
 
     public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
     {
-        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
+        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
         EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
         _ => endpointParameter.EmitHandlerArgument()
     };

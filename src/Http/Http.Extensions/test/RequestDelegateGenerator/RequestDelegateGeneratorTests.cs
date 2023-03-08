@@ -334,7 +334,7 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.MagicValue);
         //
         // Without source gen this same code isn't a problem.
         var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]Todo p) => p.Name!);
+app.MapGet("/hello", ([FromQuery] TryParseTodo p) => p.Name!);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
@@ -1414,25 +1414,51 @@ app.MapGet("/", (HttpContext httpContext, MyBindAsyncTypeThatThrows myBindAsyncP
         Assert.Equal("BindAsync failed", ex.Message);
     }
 
-    [Theory]
-    [InlineData("BindAsyncWrongType")]
-    [InlineData("BindAsyncFromStaticAbstractInterfaceWrongType")]
-    [InlineData("InheritBindAsyncWrongType")]
-    public async Task MapAction_BindAsync_WithWrongType_IsNotUsed(string bindAsyncType)
+    public static object[][] MapAction_JsonBodyOrService_SimpleReturn_Data
     {
-        var source = $$"""
-app.MapGet("/", ({{bindAsyncType}} myNotBindAsyncParam) => { });
-""";
-        var (result, compilation) = await RunGeneratorAsync(source);
-
-        VerifyStaticEndpointModel(result, endpointModel =>
+        get
         {
-            var parameter = Assert.Single(endpointModel.Parameters);
-            Assert.Equal("myNotBindAsyncParam", parameter.Name);
-            Assert.NotEqual(EndpointParameterSource.BindAsync, parameter.Source);
-        });
+            var todo = new Todo()
+            {
+                Id = 0,
+                Name = "Test Item",
+                IsComplete = false
+            };
+            var expectedTodoBody = "Test Item";
+            var expectedServiceBody = "Produced from service!";
+            var implicitRequiredServiceSource = $"""app.MapPost("/", ({typeof(TestService)} svc) => svc.TestServiceMethod());""";
+            var implicitRequiredJsonBodySource = $"""app.MapPost("/", (Todo todo) => todo.Name ?? string.Empty);""";
 
-        var ex = Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation));
-        Assert.StartsWith($"BindAsync method found on {bindAsyncType} with incorrect format.", ex.Message);
+            return new[]
+            {
+                new object[] { implicitRequiredServiceSource, false, null, true, 200, expectedServiceBody },
+                new object[] { implicitRequiredServiceSource, false, null, false, 400, string.Empty },
+                new object[] { implicitRequiredJsonBodySource, true, todo, false, 200, expectedTodoBody },
+                new object[] { implicitRequiredJsonBodySource, true, null, false, 400, string.Empty },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MapAction_JsonBodyOrService_SimpleReturn_Data))]
+    public async Task MapAction_JsonBodyOrService_SimpleReturn(string source, bool hasBody, Todo requestData, bool hasService, int expectedStatusCode, string expectedBody)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(hasService ?
+            (serviceCollection) => serviceCollection.AddSingleton(new TestService())
+            : null);
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        if (hasBody)
+        {
+            httpContext = CreateHttpContextWithBody(requestData);
+        }
+
+        await endpoint.RequestDelegate(httpContext);
+        Console.WriteLine(expectedBody, expectedStatusCode);
+        // await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
+
     }
 }

@@ -18,11 +18,15 @@ public class Todo
     public int Id { get; set; }
     public string? Name { get; set; } = "Todo";
     public bool IsComplete { get; set; }
-    public static bool TryParse(string input, out Todo? result)
+}
+
+public class TryParseTodo : Todo
+{
+    public static bool TryParse(string input, out TryParseTodo? result)
     {
         if (input == "1")
         {
-            result = new Todo
+            result = new TryParseTodo
             {
                 Id = 1,
                 Name = "Knit kitten mittens.",

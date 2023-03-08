@@ -36,6 +36,9 @@ internal static class EndpointEmitter
                 case EndpointParameterSource.JsonBody:
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
+                case EndpointParameterSource.JsonBodyOrService:
+                    parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);
+                    break;
                 case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
@@ -54,6 +57,18 @@ internal static class EndpointEmitter
                 var parameterName = parameter.Name;
                 codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
                 codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
+            }
+        }
+    }
+
+    public static void EmitJsonBodyOrServicePreparation(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
+            {
+                codeWriter.WriteLine("var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();");
+                return;
             }
         }
     }
