@@ -4,24 +4,25 @@
 namespace Microsoft.AspNetCore.Components.Sections;
 
 /// <summary>
-/// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="Name"/>s.
+/// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
-internal sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
+public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
 {
-    private string? _registeredName;
+    private object? _registeredSectionId;
+    private bool? _registeredIsDefaultContent;
     private SectionRegistry _registry = default!;
 
     /// <summary>
-    /// Gets or sets the name that determines which <see cref="SectionOutlet"/> instance will render
+    /// Gets or sets the ID that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
-    [Parameter] public string Name { get; set; } = default!;
+    [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets whether this component should provide the default content for the target
     /// <see cref="SectionOutlet"/>.
     /// </summary>
-    [Parameter] public bool IsDefaultContent { get; set; }
+    internal bool IsDefaultContent { get; set; }
 
     /// <summary>
     /// Gets or sets the content to be rendered in corresponding <see cref="SectionOutlet"/> instances.
@@ -37,25 +38,42 @@ internal sealed class SectionContent : ISectionContentProvider, IComponent, IDis
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
-
-        if (string.IsNullOrEmpty(Name))
+        foreach (var param in parameters)
         {
-            throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(Name)}'.");
+            switch (param.Name)
+            {
+                case nameof(SectionContent.SectionId):
+                    SectionId = param.Value;
+                    break;
+                case nameof(SectionContent.IsDefaultContent):
+                    IsDefaultContent = (bool)param.Value;
+                    break;
+                case nameof(SectionContent.ChildContent):
+                    ChildContent = (RenderFragment)param.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter '{param.Name}'");
+            }
         }
 
-        if (Name != _registeredName)
+        if (SectionId is null)
         {
-            if (_registeredName is not null)
+            throw new InvalidOperationException($"{nameof(SectionContent)} requires a non-null value for the parameter '{nameof(SectionId)}'.");
+        }
+
+        if (!object.Equals(SectionId, _registeredSectionId) || IsDefaultContent != _registeredIsDefaultContent)
+        {
+            if (_registeredSectionId is not null)
             {
-                _registry.RemoveProvider(_registeredName, this);
+                _registry.RemoveProvider(_registeredSectionId, this);
             }
 
-            _registry.AddProvider(Name, this, IsDefaultContent);
-            _registeredName = Name;
+            _registry.AddProvider(SectionId, this, IsDefaultContent);
+            _registeredSectionId = SectionId;
+            _registeredIsDefaultContent = IsDefaultContent;
         }
 
-        _registry.NotifyContentChanged(Name, this);
+        _registry.NotifyContentChanged(SectionId, this);
 
         return Task.CompletedTask;
     }
@@ -63,9 +81,9 @@ internal sealed class SectionContent : ISectionContentProvider, IComponent, IDis
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_registeredName is not null)
+        if (_registeredSectionId is not null)
         {
-            _registry.RemoveProvider(_registeredName, this);
+            _registry.RemoveProvider(_registeredSectionId, this);
         }
     }
 }
