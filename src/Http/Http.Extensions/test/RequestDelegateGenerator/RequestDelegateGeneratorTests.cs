@@ -197,6 +197,48 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.ToString("yyyy-MM-dd"
 
     [Theory]
     [MemberData(nameof(TryParsableParameters))]
+    public async Task MapAction_TryParsableImplicitRouteParameters(string typeName, string routeValue, object expectedParameterValue)
+    {
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/{routeValue}", (HttpContext context, {{typeName}} routeValue) =>
+{
+    context.Items["tryParsable"] = routeValue;
+});
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["routeValue"] = routeValue;
+
+        await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableParameters))]
+    public async Task MapAction_TryParsableImplicitQueryParameters(string typeName, string queryStringInput, object expectedParameterValue)
+    {
+        var (results, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/", (HttpContext context, {{typeName}} p) =>
+{
+    context.Items["tryParsable"] = p;
+});
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+
+        if (queryStringInput != null)
+        {
+            httpContext.Request.QueryString = new QueryString($"?p={UrlEncoder.Default.Encode(queryStringInput)}");
+        }
+
+        await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableParameters))]
     public async Task MapAction_TryParsableExplicitRouteParameters(string typeName, string routeValue, object expectedParameterValue)
     {
         var (results, compilation) = await RunGeneratorAsync($$"""
