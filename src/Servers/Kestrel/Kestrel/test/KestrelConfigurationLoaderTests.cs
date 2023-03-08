@@ -42,7 +42,7 @@ public class KestrelConfigurationLoaderTests
             .Endpoint("NotFound", endpointOptions => throw new NotImplementedException())
             .Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
 
         Assert.True(found);
@@ -56,11 +56,11 @@ public class KestrelConfigurationLoaderTests
         serverOptions.Configure()
             .LocalhostEndpoint(5001, endpointOptions => run = true);
 
-        Assert.Empty(serverOptions.ListenOptions);
+        Assert.Empty(serverOptions.GetListenOptions());
 
         serverOptions.ConfigurationLoader.Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
 
         Assert.True(run);
@@ -73,18 +73,18 @@ public class KestrelConfigurationLoaderTests
         var builder = serverOptions.Configure()
             .LocalhostEndpoint(5001);
 
-        Assert.Empty(serverOptions.ListenOptions);
+        Assert.Empty(serverOptions.GetListenOptions());
         Assert.Equal(builder, serverOptions.ConfigurationLoader);
 
         builder.Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
         Assert.NotNull(serverOptions.ConfigurationLoader);
 
         builder.Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
         Assert.NotNull(serverOptions.ConfigurationLoader);
     }
@@ -101,7 +101,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.Configure(config1)
             .LocalhostEndpoint(5001, endpointOptions => run1 = true);
 
-        Assert.Empty(serverOptions.ListenOptions);
+        Assert.Empty(serverOptions.GetListenOptions());
         Assert.False(run1);
 
         var run2 = false;
@@ -114,7 +114,7 @@ public class KestrelConfigurationLoaderTests
 
         serverOptions.ConfigurationLoader.Load();
 
-        Assert.Equal(2, serverOptions.ListenOptions.Count());
+        Assert.Equal(2, serverOptions.GetListenOptions().Length);
         Assert.Equal(5002, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
         Assert.Equal(5003, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
 
