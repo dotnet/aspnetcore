@@ -199,9 +199,9 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return serviceCollection.BuildServiceProvider();
     }
 
-    internal HttpContext CreateHttpContextWithBody(Todo requestData)
+    internal HttpContext CreateHttpContextWithBody(Todo requestData, IServiceProvider serviceProvider = null)
     {
-        var httpContext = CreateHttpContext();
+        var httpContext = CreateHttpContext(serviceProvider);
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
         httpContext.Request.Headers["Content-Type"] = "application/json";
 
