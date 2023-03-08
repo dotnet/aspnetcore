@@ -288,7 +288,16 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
     {
         var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
-        Response.StatusCode = 403;
+
+        if (Response.HasStarted)
+        {
+            Logger.ForbiddenResponseHasStarted();
+        }
+        else
+        {
+            Response.StatusCode = 403;
+        }
+
         return Events.Forbidden(forbiddenContext);
     }
 
