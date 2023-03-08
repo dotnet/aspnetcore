@@ -137,7 +137,7 @@ internal class EndpointParameter
         return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod) == Bindability.Bindable;
     }
 
-    private bool TryGetArrayElementType(IParameterSymbol parameter, [NotNullWhen(true)]out ITypeSymbol elementType)
+    private static bool TryGetArrayElementType(IParameterSymbol parameter, [NotNullWhen(true)]out ITypeSymbol elementType)
     {
         if (parameter.Type.TypeKind == TypeKind.Array)
         {
