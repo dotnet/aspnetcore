@@ -44,4 +44,6 @@ public class NegotiationResponse
     /// An optional error during the negotiate. If this is not null the other properties on the response can be ignored.
     /// </summary>
     public string? Error { get; set; }
+
+    public bool UseAcking { get; set; }
 }

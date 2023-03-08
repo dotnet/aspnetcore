@@ -18,7 +18,12 @@ public class Startup
     {
         services.AddConnections();
 
-        services.AddSignalR()
+        services.AddSignalR(o =>
+        {
+            o.MaximumParallelInvocationsPerClient = 10;
+            o.ClientTimeoutInterval = TimeSpan.FromSeconds(100);
+            o.KeepAliveInterval = TimeSpan.FromSeconds(5);
+        })
         .AddMessagePackProtocol();
         //.AddStackExchangeRedis();
     }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
@@ -21,10 +22,16 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
+internal interface IConnectionCanRetry
+{
+    Task StartAsync(CancellationToken cancellationToken);
+    ValueTask CloseAsync();
+}
+
 /// <summary>
 /// Used to make a connection to an ASP.NET Core ConnectionHandler using an HTTP-based transport.
 /// </summary>
-public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
+public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature, IConnectionCanRetry
 {
     // Not configurable on purpose, high enough that if we reach here, it's likely
     // a buggy server
@@ -50,6 +57,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private readonly ILoggerFactory _loggerFactory;
     private readonly Uri _url;
     private Func<Task<string?>>? _accessTokenProvider;
+    private Uri? _connectUrl;
 
     /// <inheritdoc />
     public override IDuplexPipe Transport
@@ -308,12 +316,25 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         var transportExceptions = new List<Exception>();
 
-        if (_httpConnectionOptions.SkipNegotiation)
+        var skipNegotiation = _httpConnectionOptions.SkipNegotiation;
+        if (!string.IsNullOrEmpty(_connectionId))
+        {
+            skipNegotiation = true;
+        }
+
+        if (skipNegotiation)
         {
             if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
             {
                 Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken).ConfigureAwait(false);
+                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken, false).ConfigureAwait(false);
+            }
+            else if (skipNegotiation && !_httpConnectionOptions.SkipNegotiation)
+            {
+                Debug.Assert(_connectUrl is not null);
+                //Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
+                HttpTransportType transport = _transport is WebSocketsTransport ? HttpTransportType.WebSockets : HttpTransportType.LongPolling;
+                await StartTransport(_connectUrl, transport, transferFormat, cancellationToken, false).ConfigureAwait(false);
             }
             else
             {
@@ -351,7 +372,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             }
 
             // This should only need to happen once
-            var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
+            _connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
 
             // We're going to search for the transfer format as a string because we don't want to parse
             // all the transfer formats in the negotiation response, and we want to allow transfer formats
@@ -399,11 +420,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         if (negotiationResponse == null)
                         {
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
-                            connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
+                            _connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);
-                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken).ConfigureAwait(false);
+                        await StartTransport(_connectUrl, transportType, transferFormat, cancellationToken, negotiationResponse.UseAcking).ConfigureAwait(false);
                         break;
                     }
                 }
@@ -454,6 +475,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             {
                 uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
             }
+            uri = Utils.AppendQueryString(uri, "useAck=true");
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
@@ -500,10 +522,14 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return Utils.AppendQueryString(url, $"id={connectionId}");
     }
 
-    private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
+    private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken, bool useAck)
     {
-        // Construct the transport
-        var transport = _transportFactory.CreateTransport(transportType);
+        var transport = _transport;
+        if (transport is null)
+        {
+            // Construct the transport
+            transport = _transportFactory.CreateTransport(transportType, useAck);
+        }
 
         // Start the transport, giving it one end of the pipe
         try
@@ -703,5 +729,42 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
+    }
+
+    public async ValueTask CloseAsync()
+    {
+        await _connectionLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (_started)
+            {
+                Log.DisposingHttpConnection(_logger);
+
+                // Stop the transport, but we don't care if it throws.
+                // The transport should also have completed the pipe with this exception.
+                try
+                {
+                    await _transport!.StopAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.TransportThrewExceptionOnStop(_logger, ex);
+                }
+
+                Log.Disposed(_logger);
+            }
+            else
+            {
+                Log.SkippingDispose(_logger);
+            }
+        }
+        finally
+        {
+            // We want to do these things even if the WaitForWriterToComplete/WaitForReaderToComplete fails
+
+            _started = false;
+
+            _connectionLock.Release();
+        }
     }
 }

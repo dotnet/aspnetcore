@@ -2,13 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +19,8 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PipelinesOverNetwork;
+using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
@@ -29,7 +34,9 @@ internal sealed partial class WebSocketsTransport : ITransport
     private volatile bool _aborted;
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly HttpClient? _httpClient;
-    private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
+    private CancellationTokenSource _stopCts = default!;
+    private readonly bool _useAck;
+    private readonly Func<Task<string?>> _accessTokenProvider;
 
     private IDuplexPipe? _transport;
 
@@ -39,8 +46,10 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient)
+    public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
+        bool useAck = false)
     {
+        _useAck = useAck;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
 
@@ -48,7 +57,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         // We were given an updated delegate from the HttpConnection and we are updating what we have in httpOptions
         // options itself is copied object of user's options
-        _httpConnectionOptions.AccessTokenProvider = accessTokenProvider;
+        _accessTokenProvider = accessTokenProvider;
 
         _httpClient = httpClient;
     }
@@ -201,14 +210,14 @@ internal sealed partial class WebSocketsTransport : ITransport
             }
         }
 
-        if (_httpConnectionOptions.AccessTokenProvider != null
+        if (_accessTokenProvider != null
 #if NET7_0_OR_GREATER
             && webSocket.Options.HttpVersion < HttpVersion.Version20
 #endif
             )
         {
             // Apply access token logic when using HTTP/1.1 because we don't use the AccessTokenHttpMessageHandler via HttpClient unless the user specifies HTTP/2.0 or higher
-            var accessToken = await _httpConnectionOptions.AccessTokenProvider().ConfigureAwait(false);
+            var accessToken = await _accessTokenProvider().ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 // We can't use request headers in the browser, so instead append the token as a query string in that case
@@ -259,9 +268,10 @@ internal sealed partial class WebSocketsTransport : ITransport
             throw new ArgumentException($"The '{transferFormat}' transfer format is not supported by this transport.", nameof(transferFormat));
         }
 
-        _webSocketMessageType = transferFormat == TransferFormat.Binary
-            ? WebSocketMessageType.Binary
-            : WebSocketMessageType.Text;
+        //_webSocketMessageType = transferFormat == TransferFormat.Binary
+        //    ? WebSocketMessageType.Binary
+        //    : WebSocketMessageType.Text;
+        _webSocketMessageType = WebSocketMessageType.Binary;
 
         var resolvedUrl = ResolveWebSocketsUrl(url);
 
@@ -278,15 +288,70 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         Log.StartedTransport(_logger);
 
-        // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-        var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        _stopCts = new CancellationTokenSource();
 
-        _transport = pair.Transport;
-        _application = pair.Application;
+        if (_transport is null)
+        {
+            // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
+            DuplexPipePair pair;
+            if (_useAck)
+            {
+                pair = CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+            }
+            else
+            {
+                pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+            }
+
+            _transport = pair.Transport;
+            _application = pair.Application;
+        }
+        else
+        {
+            // TODO: set pipe to start resend
+            if (_application!.Input is AckPipeReader reader)
+            {
+                // write nothing so just the ackid gets sent to server
+                // server will then send everything client may have missed as well as the last ackid so the client can resend
+                var buf = new byte[16];
+                BitConverter.GetBytes(0).CopyTo(buf.AsMemory());
+                BitConverter.GetBytes(((AckPipeWriter)(_transport.Output)).lastAck).CopyTo(buf.AsSpan().Slice(8));
+                await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, 16), _webSocketMessageType, true, default).ConfigureAwait(false);
+
+                // set after first send to server
+                reader.Resend();
+                // once we've received something from the server (which will contain the ack id for the client)
+                // we can start the normal read/write loops, clients first send will resend everything the server missed
+                var memory = _application.Output.GetMemory();
+                var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
+                Debug.Assert(isArray);
+
+                // Exceptions are handled above where the send and receive tasks are being run.
+                var receiveResult = await _webSocket.ReceiveAsync(arraySegment, _stopCts.Token).ConfigureAwait(false);
+                _application.Output.Advance(receiveResult.Count);
+
+                var flushResult = await _application.Output.FlushAsync().ConfigureAwait(false);
+            }
+        }
 
         // TODO: Handle TCP connection errors
         // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
         Running = ProcessSocketAsync(_webSocket);
+
+        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+        {
+            var input = new Pipe(inputOptions);
+            var output = new Pipe(outputOptions);
+
+            // Use for one side only, i.e. server
+            var ackWriter = new AckPipeWriter(output.Writer);
+            var ackReader = new AckPipeReader(output.Reader);
+            var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
+            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
+            var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
+
+            return new DuplexPipePair(applicationToTransport, transportToApplication);
+        }
     }
 
     private async Task ProcessSocketAsync(WebSocket socket)
@@ -311,7 +376,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // 2. Waiting for a websocket send to complete
 
                 // Cancel the application so that ReadAsync yields
-                _application.Input.CancelPendingRead();
+                //_application.Input.CancelPendingRead();
 
                 var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, _stopCts.Token)).ConfigureAwait(false);
 
@@ -335,7 +400,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 socket.Abort();
 
                 // Cancel any pending flush so that we can quit
-                _application.Output.CancelPendingFlush();
+                //_application.Output.CancelPendingFlush();
             }
         }
     }
@@ -392,6 +457,18 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
+                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
+                void LogBytes(Memory<byte> memory, ILogger logger)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append("received: ");
+                    foreach (var b in memory.Span)
+                    {
+                        sb.Append($"0x{b:x} ");
+                    }
+                    logger.LogDebug(sb.ToString());
+                }
+
                 _application.Output.Advance(receiveResult.Count);
 
                 var flushResult = await _application.Output.FlushAsync().ConfigureAwait(false);
@@ -412,13 +489,13 @@ internal sealed partial class WebSocketsTransport : ITransport
         {
             if (!_aborted)
             {
-                _application.Output.Complete(ex);
+                //_application.Output.Complete(ex);
             }
         }
         finally
         {
             // We're done writing
-            _application.Output.Complete();
+            //_application.Output.Complete();
 
             Log.ReceiveStopped(_logger);
         }
@@ -436,6 +513,18 @@ internal sealed partial class WebSocketsTransport : ITransport
             {
                 var result = await _application.Input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
+
+                //LogBytes(buffer.ToArray(), _logger);
+                void LogBytes(Memory<byte> memory, ILogger logger)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append("sending: ");
+                    foreach (var b in memory.Span)
+                    {
+                        sb.Append($"0x{b:x} ");
+                    }
+                    logger.LogDebug(sb.ToString());
+                }
 
                 // Get a frame from the application
 
@@ -509,7 +598,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
             }
 
-            _application.Input.Complete();
+            //_application.Input.Complete();
 
             Log.SendStopped(_logger);
         }
@@ -547,11 +636,11 @@ internal sealed partial class WebSocketsTransport : ITransport
             return;
         }
 
-        _transport!.Output.Complete();
-        _transport!.Input.Complete();
+        //_transport!.Output.Complete();
+        //_transport!.Input.Complete();
 
         // Cancel any pending reads from the application, this should start the entire shutdown process
-        _application.Input.CancelPendingRead();
+        //_application.Input.CancelPendingRead();
 
         // Start ungraceful close timer
         _stopCts.CancelAfter(_closeTimeout);

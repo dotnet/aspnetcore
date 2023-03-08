@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PipelinesOverNetwork;
+using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
@@ -26,6 +28,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
     private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
     private readonly CancellationTokenSource _inputCts = new CancellationTokenSource();
     private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
+    private readonly bool _useAck;
     private IDuplexPipe? _transport;
     private IDuplexPipe? _application;
 
@@ -35,10 +38,11 @@ internal sealed partial class ServerSentEventsTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public ServerSentEventsTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
+    public ServerSentEventsTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null, bool useAck = false)
     {
         ArgumentNullThrowHelper.ThrowIfNull(httpClient);
 
+        _useAck = useAck;
         _httpClient = httpClient;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new();
@@ -72,8 +76,17 @@ internal sealed partial class ServerSentEventsTransport : ITransport
             throw;
         }
 
+
         // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-        var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        DuplexPipePair pair;
+        if (_useAck)
+        {
+            pair = CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        }
+        else
+        {
+            pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+        }
 
         _transport = pair.Transport;
         _application = pair.Application;
@@ -84,6 +97,21 @@ internal sealed partial class ServerSentEventsTransport : ITransport
         // _application.Input.OnWriterCompleted((exception, state) => ((CancellationTokenSource)state).Cancel(), inputCts);
 
         Running = ProcessAsync(url, response);
+
+        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+        {
+            var input = new Pipe(inputOptions);
+            var output = new Pipe(outputOptions);
+
+            // Use for one side only, i.e. server
+            var ackWriter = new AckPipeWriter(output.Writer);
+            var ackReader = new AckPipeReader(output.Reader);
+            var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
+            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
+            var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
+
+            return new DuplexPipePair(applicationToTransport, transportToApplication);
+        }
     }
 
     private async Task ProcessAsync(Uri url, HttpResponseMessage response)

@@ -384,6 +384,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     internal bool TryActivatePersistentConnection(
         ConnectionDelegate connectionDelegate,
         IHttpTransport transport,
+        Task currentRequestTask,
         HttpContext context,
         ILogger dispatcherLogger)
     {
@@ -393,8 +394,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             {
                 Status = HttpConnectionStatus.Active;
 
+                PreviousPollTask = currentRequestTask;
+
                 // Call into the end point passing the connection
-                ApplicationTask = ExecuteApplication(connectionDelegate);
+                ApplicationTask ??= ExecuteApplication(connectionDelegate);
 
                 // Start the transport
                 TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
