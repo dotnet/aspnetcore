@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -106,10 +107,12 @@ internal sealed partial class ResponseBody : Stream
         _skipWrites = true;
     }
 
+    private bool IsChunked => _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+
     // We never expect endOfRequest and data at the same time
-    private unsafe void FlushInternal(bool endOfRequest, ArraySegment<byte> data = new ArraySegment<byte>())
+    private unsafe void FlushInternal(bool endOfRequest, ReadOnlySpan<byte> data = default)
     {
-        Debug.Assert(!(endOfRequest && data.Count > 0), "Data is not supported at the end of the request.");
+        Debug.Assert(!(endOfRequest && data.Length > 0), "Data is not supported at the end of the request.");
 
         if (_skipWrites)
         {
@@ -117,14 +120,14 @@ internal sealed partial class ResponseBody : Stream
         }
 
         var started = _requestContext.Response.HasStarted;
-        if (data.Count == 0 && started && !endOfRequest)
+        if (data.Length == 0 && started && !endOfRequest)
         {
             // No data to send and we've already sent the headers
             return;
         }
 
         // Make sure all validation is performed before this computes the headers
-        var flags = ComputeLeftToWrite(data.Count, endOfRequest);
+        var flags = ComputeLeftToWrite(data.Length, endOfRequest);
         if (endOfRequest && _leftToWrite > 0)
         {
             if (!RequestContext.DisconnectToken.IsCancellationRequested)
@@ -139,36 +142,38 @@ internal sealed partial class ResponseBody : Stream
         uint statusCode = 0;
 
         UnmanagedBufferAllocator allocator = new();
-        Span<GCHandle> pinnedBuffers = default;
         try
         {
-            Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks;
-            BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks, out pinnedBuffers);
-            if (!started)
+            Span<byte> chunkHeaderBuffer = IsChunked ? stackalloc byte[Helpers.ChunkHeaderMaxLengthInt32] : default;
+
+            fixed (byte* dataPtr = data)
             {
-                statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
-            }
-            else
-            {
-                fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
+                BuildDataChunksPrePinned(ref allocator, endOfRequest, data, chunkHeaderBuffer, out var dataChunks);
+                if (!started)
                 {
-                    statusCode = HttpApi.HttpSendResponseEntityBody(
-                            RequestQueueHandle,
-                            RequestId,
-                            (uint)flags,
-                            (ushort)dataChunks.Length,
-                            pDataChunks,
-                            null,
-                            IntPtr.Zero,
-                            0,
-                            SafeNativeOverlapped.Zero,
-                            IntPtr.Zero);
+                    statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
+                }
+                else
+                {
+                    fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
+                    {
+                        statusCode = HttpApi.HttpSendResponseEntityBody(
+                                RequestQueueHandle,
+                                RequestId,
+                                (uint)flags,
+                                (ushort)dataChunks.Length,
+                                pDataChunks,
+                                null,
+                                IntPtr.Zero,
+                                0,
+                                SafeNativeOverlapped.Zero,
+                                IntPtr.Zero);
+                    }
                 }
             }
         }
         finally
         {
-            FreeDataBuffers(pinnedBuffers);
             allocator.Dispose();
         }
 
@@ -192,28 +197,26 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
+    private unsafe void BuildDataChunksPrePinned(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest,
+        ReadOnlySpan<byte> data, Span<byte> chunkHeaderBuffer, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks)
     {
-        var hasData = data.Count > 0;
-        var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+        var hasData = data.Length > 0;
+        var chunked = IsChunked;
         var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
         Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
-        int pinsIndex = 0;
         var currentChunk = 0;
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
             dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
             SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
-            pins = default;
             return;
         }
         else if (!hasData && !addTrailers)
         {
             // No data
             dataChunks = default;
-            pins = default;
             return;
         }
 
@@ -236,23 +239,17 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
-        // We know the max pin count.
-        pins = allocator.AllocAsSpan<GCHandle>(2);
-
-        // Manually initialize the allocated GCHandles
-        pins.Clear();
-
         dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
 
         if (chunked)
         {
-            var chunkHeaderBuffer = Helpers.GetChunkHeader(data.Count);
-            SetDataChunk(dataChunks, ref currentChunk, chunkHeaderBuffer, out pins[pinsIndex++]);
+            var chunkHeader = Helpers.GetChunkHeader(data.Length, chunkHeaderBuffer);
+            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, chunkHeader);
         }
 
         if (hasData)
         {
-            SetDataChunk(dataChunks, ref currentChunk, data, out pins[pinsIndex++]);
+            SetDataChunkWithPinnedData(dataChunks, ref currentChunk, data);
         }
 
         if (chunked)
@@ -277,16 +274,6 @@ internal sealed partial class ResponseBody : Stream
         Debug.Assert(currentChunk == dataChunks.Length, "All chunks should be accounted for");
     }
 
-    private static unsafe void SetDataChunk(
-        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
-        ref int chunkIndex,
-        ArraySegment<byte> buffer,
-        out GCHandle handle)
-    {
-        handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
-        SetDataChunkWithPinnedData(chunks, ref chunkIndex, new ReadOnlySpan<byte>((void*)(handle.AddrOfPinnedObject() + buffer.Offset), buffer.Count));
-    }
-
     private static unsafe void SetDataChunkWithPinnedData(
         Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
@@ -294,22 +281,8 @@ internal sealed partial class ResponseBody : Stream
     {
         ref var chunk = ref chunks[chunkIndex++];
         chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        fixed (byte* ptr = bytes)
-        {
-            chunk.fromMemory.pBuffer = (IntPtr)ptr;
-        }
+        chunk.fromMemory.pBuffer = (IntPtr)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
         chunk.fromMemory.BufferLength = (uint)bytes.Length;
-    }
-
-    private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)
-    {
-        foreach (var pin in pinnedBuffers)
-        {
-            if (pin.IsAllocated)
-            {
-                pin.Free();
-            }
-        }
     }
 
     public override Task FlushAsync(CancellationToken cancellationToken)
@@ -345,7 +318,7 @@ internal sealed partial class ResponseBody : Stream
         // Make sure all validation is performed before this computes the headers
         var flags = ComputeLeftToWrite(data.Count);
         uint statusCode;
-        var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+        var chunked = IsChunked;
         var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
         uint bytesSent = 0;
 
@@ -516,6 +489,7 @@ internal sealed partial class ResponseBody : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
+        // Validates for null and bounds. Allows count == 0.
         ValidateBufferArguments(buffer, offset, count);
 
         if (!RequestContext.AllowSynchronousIO)
@@ -523,9 +497,7 @@ internal sealed partial class ResponseBody : Stream
             throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
         }
 
-        // Validates for null and bounds. Allows count == 0.
-        // TODO: Verbose log parameters
-        var data = new ArraySegment<byte>(buffer, offset, count);
+        ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(buffer, offset, count);
 
         CheckDisposed();
 
@@ -646,7 +618,7 @@ internal sealed partial class ResponseBody : Stream
         var flags = ComputeLeftToWrite(count.Value);
         uint statusCode;
         uint bytesSent = 0;
-        var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+        var chunked = IsChunked;
         var asyncResult = new ResponseStreamAsyncResult(this, fileStream, offset, count.Value, chunked, cancellationToken);
 
         UnmanagedBufferAllocator allocator = new();
