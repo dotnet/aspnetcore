@@ -22,6 +22,8 @@ internal static class Helpers
         return new ArraySegment<byte>(Encoding.ASCII.GetBytes(size.ToString("X", CultureInfo.InvariantCulture) + "\r\n"));
     }
 
+    internal const int ChunkHeaderMaxLengthInt32 = 10;
+
     /// <summary>
     /// A private utility routine to convert an integer to a chunk header,
     /// which is an ASCII hex number followed by a CRLF.The header is returned
@@ -32,8 +34,23 @@ internal static class Helpers
     /// <returns>A byte array with the header in int.</returns>
     internal static ArraySegment<byte> GetChunkHeader(int size)
     {
-        uint mask = 0xf0000000;
-        byte[] header = new byte[10];
+        byte[] header = new byte[ChunkHeaderMaxLengthInt32];
+        var offset = WriteChunkHeader(size, header);
+        return new ArraySegment<byte>(header, offset, header.Length - offset);
+    }
+
+    // buffer must be at least ChunkHeaderMaxLengthInt32
+    internal static ReadOnlySpan<byte> GetChunkHeader(int size, Span<byte> buffer)
+    {
+        var offset = WriteChunkHeader(size, buffer);
+        return buffer.Slice(offset);
+    }
+
+    // buffer must be at least ChunkHeaderMaxLengthInt32; data is written to the
+    // right-hand side, with the return value indicating the final start position
+    private static int WriteChunkHeader(int size, Span<byte> header)
+    {
+        const uint mask = 0xf0000000;
         int i;
         int offset = -1;
 
@@ -81,6 +98,6 @@ internal static class Helpers
         header[8] = (byte)'\r';
         header[9] = (byte)'\n';
 
-        return new ArraySegment<byte>(header, offset, header.Length - offset);
+        return offset;
     }
 }

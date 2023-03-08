@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -121,7 +122,7 @@ internal partial class RequestContext :
             _user = User;
         }
 
-        _responseStream = new ResponseStream(Response.Body, OnResponseStart);
+        _responseStream = new ResponseStream(Response.Body, static s => Unsafe.As<RequestContext>(s)!.OnResponseStart(), this);
         _responseHeaders = Response.Headers;
     }
 
@@ -411,13 +412,15 @@ internal partial class RequestContext :
 
     Stream IHttpResponseBodyFeature.Stream => _responseStream;
 
+    static readonly StreamPipeWriterOptions StreamPipeWriterOptions_LeaveOption = new StreamPipeWriterOptions(leaveOpen: true);
+
     PipeWriter IHttpResponseBodyFeature.Writer
     {
         get
         {
             if (_pipeWriter == null)
             {
-                _pipeWriter = PipeWriter.Create(_responseStream, new StreamPipeWriterOptions(leaveOpen: true));
+                _pipeWriter = PipeWriter.Create(_responseStream, StreamPipeWriterOptions_LeaveOption);
             }
 
             return _pipeWriter;
@@ -598,12 +601,10 @@ internal partial class RequestContext :
 
     CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested { get; set; }
 
-    internal async Task OnResponseStart()
+    internal Task OnResponseStart() => _responseStarted ? Task.CompletedTask : OnResponseStartAsync();
+
+    private async Task OnResponseStartAsync()
     {
-        if (_responseStarted)
-        {
-            return;
-        }
         _responseStarted = true;
         await NotifiyOnStartingAsync();
         ConsiderEnablingResponseCache();
