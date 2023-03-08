@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
         }
 
-        private static async ValueTask<(bool, T?)> TryResolveBody<T>(HttpContext httpContext, bool allowEmpty)
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return T.BindAsync(context, parameter);
         }
 
-        private static ValueTask<(bool, T?)> TryResolveJsonBodyOrService<T>(HttpContext httpContext, bool isOptional, IServiceProviderIsService? serviceProviderIsService = null)
+        private static ValueTask<(bool, T?)> TryResolveJsonBodyOrServiceAsync<T>(HttpContext httpContext, bool isOptional, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            return TryResolveBody<T>(httpContext, isOptional);
+            return TryResolveBodyAsync<T>(httpContext, isOptional);
         }
     }
 

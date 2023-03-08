@@ -107,7 +107,7 @@ internal static class EndpointParameterEmitter
 
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBody<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
 
         // If binding from the JSON body fails, we exit early. Don't
@@ -127,7 +127,7 @@ internal static class EndpointParameterEmitter
         // Invoke TryResolveJsonBodyOrService method to resolve the
         // type from DI if it exists. Otherwise, resolve the parameter
         // as a body parameter.
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrService<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")}, serviceProviderIsService)";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")}, serviceProviderIsService)";
         codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
 
         // If binding from the JSON body fails, TryResolveJsonBodyOrService
