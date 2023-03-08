@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
@@ -59,8 +60,9 @@ internal partial class RequestContext :
     private X509Certificate2? _clientCert;
     private Task<X509Certificate2?>? _clientCertTask;
     private ClaimsPrincipal? _user;
-    private Stream _responseStream = default!;
+    private Stream? _responseStream;
     private PipeWriter? _pipeWriter;
+    private Task _pipeWriteCompletion = Task.CompletedTask;
     private bool _bodyCompleted;
     private IHeaderDictionary _responseHeaders = default!;
     private IHeaderDictionary? _responseTrailers;
@@ -71,6 +73,7 @@ internal partial class RequestContext :
     private List<Tuple<Func<object, Task>, object>>? _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
     private bool _responseStarted;
     private bool _completed;
+    private bool _usePipeNamingIsHard;
 
     internal IFeatureCollection Features
     {
@@ -122,7 +125,6 @@ internal partial class RequestContext :
             _user = User;
         }
 
-        _responseStream = new ResponseStream(Response.Body, static s => Unsafe.As<RequestContext>(s)!.OnResponseStart(), this);
         _responseHeaders = Response.Headers;
     }
 
@@ -406,24 +408,98 @@ internal partial class RequestContext :
 
     Stream IHttpResponseFeature.Body
     {
-        get { return _responseStream; }
+        get => GetStream();
         set { _responseStream = value; }
     }
 
-    Stream IHttpResponseBodyFeature.Stream => _responseStream;
+    private Stream GetStream()
+    {
+        if (_responseStream is null)
+        {
+            if (_pipeWriter is not null || Server.Options.UsePipeNamingIsHard)
+            {
+                _responseStream = GetPipeWriter().AsStream(leaveOpen: true);
+            }
+            else
+            {
+                _responseStream = new ResponseStream(Response.Body, static s => Unsafe.As<RequestContext>(s)!.OnResponseStart(), this);
+            }
+        }
+        return _responseStream;
+    }
+    Stream IHttpResponseBodyFeature.Stream => GetStream();
 
     static readonly StreamPipeWriterOptions StreamPipeWriterOptions_LeaveOption = new StreamPipeWriterOptions(leaveOpen: true);
 
-    PipeWriter IHttpResponseBodyFeature.Writer
-    {
-        get
-        {
-            if (_pipeWriter == null)
-            {
-                _pipeWriter = PipeWriter.Create(_responseStream, StreamPipeWriterOptions_LeaveOption);
-            }
+    PipeWriter IHttpResponseBodyFeature.Writer => GetPipeWriter();
 
-            return _pipeWriter;
+    private PipeWriter GetPipeWriter()
+    {
+        if (_pipeWriter is null)
+        {
+            if (_responseStream is null && Server.Options.UsePipeNamingIsHard)
+            {
+                var pipe = new Pipe();
+                _pipeWriter = pipe.Writer;
+                _pipeWriteCompletion = CopyToAsync(pipe.Reader);
+            }
+            else
+            {
+                _pipeWriter = PipeWriter.Create(GetStream(), StreamPipeWriterOptions_LeaveOption);
+            }
+        }
+        return _pipeWriter;
+    }
+
+    private async Task CopyToAsync(PipeReader source)
+    {
+        try
+        {
+            // similar to PipeReader.CopyToAsync, but with additional OnResponseStart() calls;
+            // this mirrors the OnResponseStart() calls (via onStart) in ResponseStream
+            while (true)
+            {
+                CancellationToken cancellationToken = CancellationToken.None;
+                ReadResult result = await source.ReadAsync(cancellationToken).ConfigureAwait(false);
+                ReadOnlySequence<byte> buffer = result.Buffer;
+                SequencePosition position = buffer.Start;
+                SequencePosition consumed = position;
+
+                try
+                {
+                    if (result.IsCanceled)
+                    {
+                        throw new OperationCanceledException();
+                    }
+
+                    while (buffer.TryGet(ref position, out ReadOnlyMemory<byte> memory))
+                    {
+                        await OnResponseStart();
+                        await Response.Body.WriteAsync(memory, cancellationToken).ConfigureAwait(false);
+                        consumed = position;
+                    }
+
+                    // The while loop completed successfully, so we've consumed the entire buffer.
+                    consumed = buffer.End;
+
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    // Advance even if WriteAsync throws so the PipeReader is not left in the
+                    // currently reading state
+                    source.AdvanceTo(consumed);
+                }
+            }
+            await OnResponseStart(); // make sure we still start for 0-len
+            await source.CompleteAsync();
+        }
+        catch (Exception ex)
+        {
+            await source.CompleteAsync(ex);
         }
     }
 
@@ -503,6 +579,7 @@ internal partial class RequestContext :
                 // Flush and complete the pipe
                 await _pipeWriter.CompleteAsync();
             }
+            await _pipeWriteCompletion;
 
             // Ends the response body.
             Response.Dispose();

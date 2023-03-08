@@ -232,6 +232,9 @@ public class HttpSysOptions
     /// </remarks>
     public bool UseLatin1RequestHeaders { get; set; }
 
+    // TODO: api review, naming
+    internal bool UsePipeNamingIsHard { get; set; } = AppContext.TryGetSwitch("Microsoft.AspNetCore.HttpSys." + nameof(UsePipeNamingIsHard), out var value) && value;
+
     // Not called when attaching to an existing queue.
     internal void Apply(UrlGroup urlGroup, RequestQueue? requestQueue)
     {
