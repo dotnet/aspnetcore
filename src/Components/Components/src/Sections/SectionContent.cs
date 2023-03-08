@@ -38,7 +38,23 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
+        foreach (var param in parameters)
+        {
+            switch (param.Name)
+            {
+                case nameof(SectionContent.SectionId):
+                    SectionId = param.Value;
+                    break;
+                case nameof(SectionContent.IsDefaultContent):
+                    IsDefaultContent = (bool)param.Value;
+                    break;
+                case nameof(SectionContent.ChildContent):
+                    ChildContent = (RenderFragment)param.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter '{param.Name}'");
+            }
+        }
 
         if (SectionId is null)
         {
