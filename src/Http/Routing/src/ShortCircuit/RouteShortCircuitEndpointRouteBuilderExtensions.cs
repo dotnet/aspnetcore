@@ -34,9 +34,13 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
             {
                 route = $"{routePrefix}/{{**catchall}}";
             }
-            group.Map(routePrefix, _shortCircuitDelegate)
+            group.Map(route, _shortCircuitDelegate)
                 .ShortCircuit(statusCode)
-                .Add(endpoint => ((RouteEndpoint)endpoint).Order = 0);
+                .Add(endpoint =>
+                {
+                    endpoint.DisplayName = $"ShortCircuit {endpoint.DisplayName}";
+                    ((RouteEndpointBuilder)endpoint).Order = int.MaxValue;
+                });
         }
 
         return new EndpointConventionBuilder(group);
