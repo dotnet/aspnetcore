@@ -29,12 +29,11 @@ public class RouteTemplate
 
         TemplateText = other.RawText;
 
-        var segments = new List<TemplateSegment>(other.PathSegments.Count);
+        Segments = new List<TemplateSegment>(other.PathSegments.Count);
         foreach (var p in other.PathSegments)
         {
-            segments.Add(new TemplateSegment(p));
+            Segments.Add(new TemplateSegment(p));
         }
-        Segments = segments;
 
         Parameters = new List<TemplatePart>();
         for (var i = 0; i < Segments.Count; i++)

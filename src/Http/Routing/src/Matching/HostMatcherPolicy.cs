@@ -291,7 +291,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.
         var ordered = new (EdgeKey host, int destination)[edges.Count];
-        for (int i = 0; i < edges.Count; i++)
+        for (var i = 0; i < edges.Count; i++)
         {
             PolicyJumpTableEdge e = edges[i];
             ordered[i] = (host: (EdgeKey)e.State, destination: e.Destination);

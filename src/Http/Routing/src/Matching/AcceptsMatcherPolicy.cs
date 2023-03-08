@@ -264,9 +264,9 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.
         var ordered = new (ReadOnlyMediaTypeHeaderValue mediaType, int destination)[edges.Count];
-        for (int i = 0; i < edges.Count; i++)
+        for (var i = 0; i < edges.Count; i++)
         {
-            PolicyJumpTableEdge e = edges[i];
+            var e = edges[i];
             ordered[i] = (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination);
         }
         Array.Sort(ordered, static (left, right) => GetScore(left.mediaType).CompareTo(GetScore(right.mediaType)));

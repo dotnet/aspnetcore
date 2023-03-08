@@ -163,7 +163,7 @@ internal static class ParameterPolicyActivator
 
         foreach (var constructor in constructors)
         {
-            int length = constructor.GetParameters().Length;
+            var length = constructor.GetParameters().Length;
             if (length > longestLength)
             {
                 multipleBestLengthFound = false;
