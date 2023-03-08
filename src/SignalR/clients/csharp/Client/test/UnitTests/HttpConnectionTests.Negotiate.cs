@@ -508,7 +508,7 @@ public partial class HttpConnectionTests
 
             var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
 
-            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
+            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling, true))
                 .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
             using (var noErrorScope = new VerifyNoErrorsScope())
@@ -557,7 +557,7 @@ public partial class HttpConnectionTests
 
             var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
 
-            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
+            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling, true))
                 .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
             await WithConnectionAsync(

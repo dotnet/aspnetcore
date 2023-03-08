@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
+using PipelinesOverNetwork;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 
@@ -54,9 +57,24 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
     public async Task ProcessSocketAsync(WebSocket socket)
     {
-        // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
-        var receiving = StartReceiving(socket);
-        var sending = StartSending(socket);
+        Task receiving;
+        Task sending;
+        if (_application.Input is AckPipeReader reader)
+        {
+            _aborted = false;
+            // TODO: check if the pipe was used previously?
+
+            reader.Resend();
+            // wait for first read?
+            _ = await socket.ReceiveAsync(Memory<byte>.Empty, _connection.Cancellation?.Token ?? default);
+        }
+        // if (_application.Input.HasBeenUsedBefore)
+        //     read first to get the ack id for resending
+        //     set resend id on output pipe
+        //     start send loop which will resend and tell the client the last ack id it got from the read side
+            // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
+        receiving = StartReceiving(socket);
+        sending = StartSending(socket);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending);
@@ -148,7 +166,19 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                     return;
                 }
 
+                void LogBytes(Memory<byte> memory, ILogger logger)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append("received: ");
+                    foreach (var b in memory.Span)
+                    {
+                        sb.Append($"0x{b:x} ");
+                    }
+                    logger.LogDebug(sb.ToString());
+                }
+
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
+                LogBytes(memory.Slice(0, receiveResult.Count), _logger);
 
                 _application.Output.Advance(receiveResult.Count);
 
@@ -181,7 +211,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         finally
         {
             // We're done writing
-            _application.Output.Complete();
+            //_application.Output.Complete();
         }
     }
 
@@ -211,9 +241,23 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                         {
                             Log.SendPayload(_logger, buffer.Length);
 
-                            var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
-                                ? WebSocketMessageType.Binary
-                                : WebSocketMessageType.Text);
+                            //var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
+                            //    ? WebSocketMessageType.Binary
+                            //    : WebSocketMessageType.Text);
+                            var webSocketMessageType = WebSocketMessageType.Binary;
+
+                            LogBytes(buffer.ToArray(), _logger);
+
+                            void LogBytes(Memory<byte> memory, ILogger logger)
+                            {
+                                var sb = new StringBuilder();
+                                sb.Append("sending: ");
+                                foreach (var b in memory.Span)
+                                {
+                                    sb.Append($"0x{b:x} ");
+                                }
+                                logger.LogDebug(sb.ToString());
+                            }
 
                             if (WebSocketCanSend(socket))
                             {
@@ -266,7 +310,12 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
             }
 
-            _application.Input.Complete();
+            if (error is not null)
+            {
+                _logger.LogError("Error in send {ex}.", error);
+            }
+
+            //_application.Input.Complete();
         }
     }
 

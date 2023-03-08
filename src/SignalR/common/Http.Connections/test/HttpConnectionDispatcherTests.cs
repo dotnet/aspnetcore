@@ -1722,7 +1722,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.Equal(string.Empty, GetContentAsString(context1.Response.Body));
             AssertResponseHasCacheHeaders(context1.Response);
             Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
-            Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body));
+            Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body).AsSpan(16).ToString());
             AssertResponseHasCacheHeaders(context2.Response);
         }
     }
