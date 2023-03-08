@@ -140,9 +140,9 @@ internal sealed class ComponentPrerenderer
         }
     }
 
-    internal static InvokedRenderModes.Mode GetPersistStateRenderMode(ViewContext viewContext)
+    internal static InvokedRenderModes.Mode GetPersistStateRenderMode(HttpContext httpContext)
     {
-        if (viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+        if (httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
         {
             return ((InvokedRenderModes)result).Value;
         }
