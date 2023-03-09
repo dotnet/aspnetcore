@@ -2,12 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// Internal component type that acts as a root component when executing a RazorComponentResult. It takes
@@ -78,13 +75,9 @@ internal class RazorComponentResultHost : IComponent
 
         builder.OpenComponent(0, RazorComponentResult.ComponentType);
 
-        if (RazorComponentResult.Parameters is not null)
+        foreach (var kvp in RazorComponentResult.Parameters)
         {
-            var dict = PropertyHelper.ObjectToDictionary(RazorComponentResult.Parameters);
-            foreach (var kvp in dict)
-            {
-                builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-            }
+            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
         }
 
         builder.CloseComponent();

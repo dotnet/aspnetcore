@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Components;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal sealed class WebAssemblyComponentSerializer

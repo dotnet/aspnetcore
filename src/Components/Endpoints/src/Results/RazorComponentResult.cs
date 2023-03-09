@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// An <see cref="IResult"/> that renders a Razor Component.
@@ -51,7 +49,7 @@ public class RazorComponentResult : IResult
         Parameters = parameters ?? EmptyParameters;
     }
 
-    private static IReadOnlyDictionary<string, object> CoerceParametersObjectToDictionary(object parameters)
+    private static IReadOnlyDictionary<string, object>? CoerceParametersObjectToDictionary(object parameters)
         => parameters is null
         ? null
         : (IReadOnlyDictionary<string, object>)PropertyHelper.ObjectToDictionary(parameters);

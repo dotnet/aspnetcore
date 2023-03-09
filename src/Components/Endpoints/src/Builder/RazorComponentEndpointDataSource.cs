@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -80,7 +81,7 @@ internal class RazorComponentEndpointDataSource : EndpointDataSource
         {
             // TODO: Proper endpoint definition https://github.com/dotnet/aspnetcore/issues/46985
             var endpoint = new RouteEndpoint(
-                CreateRouteDelegate(type),
+                RazorComponentEndpoint.CreateRouteDelegate(type),
                 RoutePatternFactory.Parse(route!.Template),
                 order: 0,
                 new EndpointMetadataCollection(type.GetCustomAttributes(inherit: true)),
@@ -89,31 +90,6 @@ internal class RazorComponentEndpointDataSource : EndpointDataSource
         }
 
         _endpoints = endpoints;
-    }
-
-    private static RequestDelegate CreateRouteDelegate(Type type)
-    {
-        // TODO: Proper endpoint implementation https://github.com/dotnet/aspnetcore/issues/46988
-        return (ctx) =>
-        {
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "text/html; charset=utf-8";
-            return ctx.Response.WriteAsync($"""
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{type.FullName}</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-	<p>{type.FullName}</p>
-  </body>
-</html>
-""");
-        };
     }
 
     public override IChangeToken GetChangeToken()

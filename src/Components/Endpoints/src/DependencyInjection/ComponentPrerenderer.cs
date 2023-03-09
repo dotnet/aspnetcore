@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
@@ -10,30 +9,32 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 // Wraps the public HtmlRenderer APIs so that the output also gets annotated with prerendering markers.
 // This allows the prerendered content to switch later into interactive mode.
 // This class also deals with initializing the standard component DI services once per request.
-internal sealed class ComponentPrerenderer
+internal sealed class ComponentPrerenderer : IComponentPrerenderer
 {
     private static readonly object ComponentSequenceKey = new object();
     private static readonly object InvokedRenderModesKey = new object();
 
     private readonly HtmlRenderer _htmlRenderer;
-    private readonly ServerComponentSerializer _serverComponentSerializer;
+    private readonly Lazy<ServerComponentSerializer> _serverComponentSerializer;
     private readonly object _servicesInitializedLock = new();
     private Task _servicesInitializedTask;
 
     public ComponentPrerenderer(
         HtmlRenderer htmlRenderer,
-        ServerComponentSerializer serverComponentSerializer)
+        IServiceProvider services)
     {
-        _serverComponentSerializer = serverComponentSerializer;
         _htmlRenderer = htmlRenderer;
+
+        // Lazy because we don't actually want to require a whole chain of services including Data Protection
+        // to be required unless you actually use Server render mode.
+        _serverComponentSerializer = new(services.GetRequiredService<ServerComponentSerializer>);
     }
 
     public Dispatcher Dispatcher => _htmlRenderer.Dispatcher;
@@ -168,7 +169,7 @@ internal sealed class ComponentPrerenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var marker = _serverComponentSerializer.SerializeInvocation(
+        var marker = _serverComponentSerializer.Value.SerializeInvocation(
             invocationId,
             type,
             parametersCollection,
@@ -204,7 +205,7 @@ internal sealed class ComponentPrerenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var marker = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
+        var marker = _serverComponentSerializer.Value.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 

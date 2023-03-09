@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Text;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// Executes a Razor Component.
@@ -23,46 +20,21 @@ public class RazorComponentResultExecutor
     public static readonly string DefaultContentType = "text/html; charset=utf-8";
 
     /// <summary>
-    /// Constructs an instance of <see cref="RazorComponentResultExecutor"/>.
-    /// </summary>
-    /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-    public RazorComponentResultExecutor(
-        IHttpResponseStreamWriterFactory writerFactory)
-    {
-        ArgumentNullException.ThrowIfNull(writerFactory);
-        WriterFactory = writerFactory;
-    }
-
-    /// <summary>
-    /// Gets the <see cref="IHttpResponseStreamWriterFactory"/>.
-    /// </summary>
-    protected IHttpResponseStreamWriterFactory WriterFactory { get; }
-
-    /// <summary>
-    /// Executes a Razor Component asynchronously.
+    /// Executes a <see cref="RazorComponentResult"/> asynchronously.
     /// </summary>
     public virtual async Task ExecuteAsync(HttpContext httpContext, RazorComponentResult result)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var response = httpContext.Response;
-
-        ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-            result.ContentType,
-            response.ContentType,
-            (DefaultContentType, Encoding.UTF8),
-            MediaType.GetEncoding,
-            out var resolvedContentType,
-            out var resolvedContentTypeEncoding);
-
-        response.ContentType = resolvedContentType;
+        response.ContentType = result.ContentType ?? DefaultContentType;
 
         if (result.StatusCode != null)
         {
             response.StatusCode = result.StatusCode.Value;
         }
 
-        await using var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding);
+        await using var writer = CreateResponseWriter(response.Body);
         await RenderComponentToResponse(httpContext, result, writer);
 
         // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
@@ -71,14 +43,21 @@ public class RazorComponentResultExecutor
         await writer.FlushAsync();
     }
 
+    private static TextWriter CreateResponseWriter(Stream bodyStream)
+    {
+        // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
+        const int DefaultBufferSize = 16 * 1024;
+        return new HttpResponseStreamWriter(bodyStream, Encoding.UTF8, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+    }
+
     private static Task RenderComponentToResponse(HttpContext httpContext, RazorComponentResult result, TextWriter writer)
     {
-        var componentPrerenderer = httpContext.RequestServices.GetRequiredService<ComponentPrerenderer>();
+        var componentPrerenderer = httpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
         return componentPrerenderer.Dispatcher.InvokeAsync(async () =>
         {
             // We could pool these dictionary instances if we wanted. We could even skip the dictionary
             // phase entirely if we added some new ParameterView.FromSingleValue(name, value) API.
-            var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
             {
                 { nameof(RazorComponentResultHost.RazorComponentResult), result },
             });

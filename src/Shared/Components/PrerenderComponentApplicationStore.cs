@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 #pragma warning disable CA1852 // Seal internal types
 internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
