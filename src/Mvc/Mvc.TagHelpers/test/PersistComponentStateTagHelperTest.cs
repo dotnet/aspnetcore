@@ -80,7 +80,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.WebAssemblyPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -128,7 +128,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.ServerPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.ServerPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -153,8 +153,8 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.ServerPrerendered);
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.WebAssemblyPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.ServerPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
