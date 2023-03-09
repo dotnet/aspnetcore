@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public abstract partial class RequestDelegateCreationTests
 {
     [Fact]
-    public async Task MapAction_ExplicitQuery_ComplexTypeArrayParam_StringReturn()
+    public async Task MapAction_ExplicitQuery_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", ([FromQuery]Todo[] p) => p.Length);
@@ -36,7 +36,7 @@ app.MapGet("/hello", ([FromQuery]Todo[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ExplicitHeader_ComplexTypeArrayParam_StringReturn()
+    public async Task MapAction_ExplicitHeader_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", ([FromHeader]Todo[] p) => p.Length);
@@ -58,7 +58,7 @@ app.MapGet("/hello", ([FromHeader]Todo[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ExplicitHeader_StringArrayParam_StringReturn()
+    public async Task MapAction_ExplicitHeader_StringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", ([FromHeader]string[] p) => p.Length);
@@ -80,7 +80,7 @@ app.MapGet("/hello", ([FromHeader]string[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ExplicitHeader_NullableStringArrayParam_StringReturn()
+    public async Task MapAction_ExplicitHeader_NullableStringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", ([FromHeader]string?[] p) => p.Length);
@@ -102,7 +102,7 @@ app.MapGet("/hello", ([FromHeader]string?[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ImplicitQuery_ComplexTypeArrayParam_StringReturn()
+    public async Task MapAction_ImplicitQuery_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", (Todo[] p) => p.Length);
@@ -124,7 +124,7 @@ app.MapGet("/hello", (Todo[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ExplicitQuery_StringArrayParam_StringReturn()
+    public async Task MapAction_ExplicitQuery_StringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", ([FromQuery]string[] p) => p.Length);
@@ -146,7 +146,7 @@ app.MapGet("/hello", ([FromQuery]string[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ImplicitQuery_StringArrayParam_StringReturn()
+    public async Task MapAction_ImplicitQuery_StringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", (string[] p) => p.Length);
@@ -168,7 +168,50 @@ app.MapGet("/hello", (string[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ExplicitQuery_NullableStringArrayParam_StringReturn()
+    public async Task MapAction_ImplicitQuery_NullableStringArrayParam_QueryNotPresent()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", (string?[] p) => p.Length);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("/hello", endpointModel.RoutePattern);
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "0");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ImplicitQuery_NullableStringArrayParam_EmptyQueryValues()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", (string?[] p) => p.Length);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("/hello", endpointModel.RoutePattern);
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=&p=");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "2");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitQuery_NullableStringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", ([FromQuery]string?[] p) => p.Length);
@@ -190,7 +233,7 @@ app.MapGet("/hello", ([FromQuery]string?[] p) => p.Length);
     }
 
     [Fact]
-    public async Task MapAction_ImplicitQuery_NullableStringArrayParam_StringReturn()
+    public async Task MapAction_ImplicitQuery_NullableStringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapGet("/hello", (string?[] p) => p.Length);
