@@ -321,5 +321,70 @@ internal class Program
         // Act & Assert
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
+
+    [Fact]
+    public async Task DuplicateRoutes_HasHttpAttributes_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public class MyController : Controller
+{
+    [HttpGet]
+    [Route(""Person"")]
+    public IActionResult Get() => Ok(""You GET me"");
+    
+    [HttpGet(""PersonGet"")]
+    [HttpPut]
+    [HttpPost]
+    [Route(""Person"")]
+    public IActionResult Put() => Ok(""You PUT me"");
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_HasDuplicateHttpAttributes_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public class MyController : Controller
+{
+    [HttpGet]
+    [Route({|#0:""Person""|})]
+    public IActionResult Get() => Ok(""You GET me"");
+    
+    [HttpGet]
+    [Route({|#1:""Person""|})]
+    public IActionResult Put() => Ok(""You PUT me"");
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("Person").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("Person").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
 }
 

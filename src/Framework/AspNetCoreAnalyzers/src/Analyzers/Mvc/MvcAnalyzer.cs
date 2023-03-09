@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Security.Policy;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -66,6 +67,10 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
             if (member is IMethodSymbol methodSymbol &&
                 MvcDetector.IsAction(methodSymbol, wellKnownTypes))
             {
+                // [Route("xxx")] attributes don't have a HTTP method and instead use the HTTP methods of other attributes.
+                // For example, [HttpGet] + [HttpPost] + [Route("xxx")] means the route "xxx" is combined with the HTTP methods.
+                var httpMethods = GetUnroutedMethodHttpMethods(wellKnownTypes, methodSymbol);
+
                 foreach (var attribute in methodSymbol.GetAttributes())
                 {
                     if (attribute.AttributeClass is null || !wellKnownTypes.IsType(attribute.AttributeClass, RouteAttributeTypes, out var match))
@@ -79,24 +84,53 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, GetHttpMethods(match.Value)));
+                    // [Route] uses other attributes for its HTTP methods.
+                    var methods = match.Value is WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute
+                        ? httpMethods
+                        : ImmutableArray.Create(GetHttpMethod(match.Value)!);
+
+                    actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, methods));
                 }
             }
         }
     }
 
-    private static ImmutableArray<string> GetHttpMethods(WellKnownType match)
+    private static ImmutableArray<string> GetUnroutedMethodHttpMethods(WellKnownTypes wellKnownTypes, IMethodSymbol methodSymbol)
+    {
+        var httpMethodsBuilder = ImmutableArray.CreateBuilder<string>();
+        foreach (var attribute in methodSymbol.GetAttributes())
+        {
+            if (attribute.AttributeClass is null || !wellKnownTypes.IsType(attribute.AttributeClass, RouteAttributeTypes, out var match))
+            {
+                continue;
+            }
+            if (!attribute.ConstructorArguments.IsEmpty)
+            {
+                continue;
+            }
+
+            if (GetHttpMethod(match.Value) is { } method)
+            {
+                httpMethodsBuilder.Add(method);
+            }
+        }
+
+        var httpMethods = httpMethodsBuilder.ToImmutable();
+        return httpMethods;
+    }
+
+    private static string? GetHttpMethod(WellKnownType match)
     {
         return match switch
         {
-            WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute => ImmutableArray<string>.Empty,// No HTTP method.
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute => ImmutableArray.Create("DELETE"),
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute => ImmutableArray.Create("GET"),
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute => ImmutableArray.Create("HEAD"),
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute => ImmutableArray.Create("OPTIONS"),
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute => ImmutableArray.Create("PATCH"),
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute => ImmutableArray.Create("POST"),
-            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute => ImmutableArray.Create("PUT"),
+            WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute => null,// No HTTP method.
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpDeleteAttribute => "DELETE",
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpGetAttribute => "GET",
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpHeadAttribute => "HEAD",
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpOptionsAttribute => "OPTIONS",
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPatchAttribute => "PATCH",
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPostAttribute => "POST",
+            WellKnownType.Microsoft_AspNetCore_Mvc_HttpPutAttribute => "PUT",
             _ => throw new InvalidOperationException("Unexpected well known type:" + match),
         };
     }
