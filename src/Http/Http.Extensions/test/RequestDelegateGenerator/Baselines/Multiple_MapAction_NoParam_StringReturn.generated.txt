@@ -242,13 +242,14 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
-                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>
                         {
                             if (ic.HttpContext.Response.StatusCode == 400)
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler());
+                            var result = await handler();
+                            return (object?)result;
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -296,13 +297,14 @@ namespace Microsoft.AspNetCore.Http.Generated
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
-                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>
                         {
                             if (ic.HttpContext.Response.StatusCode == 400)
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler());
+                            var result = await handler();
+                            return (object?)result;
                         },
                         options.EndpointBuilder,
                         handler.Method);

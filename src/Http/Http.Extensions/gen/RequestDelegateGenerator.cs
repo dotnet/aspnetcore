@@ -89,13 +89,20 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.WriteLineNoTabs(string.Empty);
             codeWriter.WriteLine("if (options?.EndpointBuilder?.FilterFactories.Count > 0)");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
+            if (endpoint.Response.IsAwaitable)
+            {
+                codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>");
+            }
+            else
+            {
+                codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
+            }
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
             codeWriter.EndBlock();
-            codeWriter.WriteLine(endpoint.EmitFilteredInvocation());
+            endpoint.EmitFilteredInvocation(codeWriter);
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("options.EndpointBuilder,");
             codeWriter.WriteLine("handler.Method);");
