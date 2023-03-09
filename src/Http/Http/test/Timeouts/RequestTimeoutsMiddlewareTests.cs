@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -20,7 +21,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -37,7 +37,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -54,7 +53,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -70,7 +68,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -86,7 +83,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -94,14 +90,16 @@ public class RequestTimeoutsMiddlewareTests
     {
         var context = new DefaultHttpContext();
 
-        var middlewre = CreateMiddleware(originalCancellationToken: context.RequestAborted, linkerCalled: false);
+        var middlewre = CreateMiddleware(
+            originalCancellationToken: context.RequestAborted,
+            linkerCalled: false,
+            timeoutFeatureExists: false);
 
         var originalToken = context.RequestAborted;
 
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: false);
     }
 
     [Fact]
@@ -118,7 +116,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -135,7 +132,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -152,7 +148,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: true);
     }
 
     [Fact]
@@ -161,7 +156,10 @@ public class RequestTimeoutsMiddlewareTests
         var context = new DefaultHttpContext();
         var originalToken = context.RequestAborted;
 
-        var middlewre = CreateMiddleware(defaultTimeout: 10, originalCancellationToken: originalToken, linkerCalled: false);
+        var middlewre = CreateMiddleware(defaultTimeout: 10,
+            originalCancellationToken: originalToken,
+            linkerCalled: false,
+            timeoutFeatureExists: false);
 
         var endpoint = CreateEndpoint(new DisableRequestTimeoutAttribute(),
             new RequestTimeoutPolicy { Timeout = TimeSpan.FromSeconds(47) },
@@ -171,7 +169,6 @@ public class RequestTimeoutsMiddlewareTests
         await middlewre.Invoke(context);
 
         Assert.Equal(originalToken, context.RequestAborted);
-        CheckTimeoutFeature(context, shouldExist: false);
     }
 
     [Fact]
@@ -257,12 +254,6 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    private static void CheckTimeoutFeature(HttpContext httpContext, bool shouldExist)
-    {
-        var timeoutFeature = httpContext.Features.Get<IHttpRequestTimeoutFeature>();
-        Assert.Equal(shouldExist, timeoutFeature is not null);
-    }
-
     private static RequestTimeoutsMiddleware CreateMiddlewareWithCancel(
         double? expectedTimeSpan = null,
         double? defaultTimeout = null,
@@ -288,7 +279,8 @@ public class RequestTimeoutsMiddlewareTests
         double? defaultTimeout = null,
         bool cancelledCts = false,
         CancellationToken originalCancellationToken = default,
-        bool linkerCalled = true)
+        bool linkerCalled = true,
+        bool timeoutFeatureExists = true)
     {
         var ctsLinker = new MockCancellationTokenSourceProvider(expectedTimeSpan.HasValue ? TimeSpan.FromSeconds(expectedTimeSpan.Value) : null, cancelledCts);
         var options = new RequestTimeoutOptions
@@ -331,6 +323,9 @@ public class RequestTimeoutsMiddlewareTests
 
         Task next(HttpContext context)
         {
+            var timeoutFeature = context.Features.Get<IHttpRequestTimeoutFeature>();
+            Assert.Equal(timeoutFeatureExists, timeoutFeature is not null);
+
             Assert.Equal(linkerCalled, ctsLinker.Called);
             if (ctsLinker.Called)
             {
