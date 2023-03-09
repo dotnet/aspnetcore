@@ -13,8 +13,8 @@ Microsoft.Extensions.DependencyInjection
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 System.Console
 System.Threading
-System.Text.Encoding.Extensions
 System.Runtime.InteropServices
+Microsoft.Win32.Primitives
 System.Collections
 Microsoft.Extensions.Configuration.Json
 Microsoft.Extensions.Configuration.FileExtensions
@@ -30,8 +30,6 @@ Microsoft.AspNetCore.Server.Kestrel
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 System.Net.Quic
 System.Diagnostics.Tracing
-Microsoft.Win32.Registry
-Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes
 Microsoft.Extensions.Logging.Abstractions
 Microsoft.Extensions.Features
 Microsoft.AspNetCore.Http.Abstractions
@@ -43,11 +41,6 @@ Microsoft.Extensions.Options
 Microsoft.AspNetCore.Connections.Abstractions
 System.Net.Primitives
 Microsoft.AspNetCore.Hosting.Server.Abstractions
-Microsoft.Extensions.ObjectPool
 System.Collections.Concurrent
 System.Threading.ThreadPool
 System.Text.Json
-System.Runtime.Intrinsics
-Microsoft.Extensions.Options.ConfigurationExtensions
-Microsoft.Extensions.Configuration.Binder
-System.Data.Common
