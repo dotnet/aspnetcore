@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 // For prerendered components, we can't use IHtmlComponent directly because it has no asynchrony and
 // hence can't dispatch to the renderer's sync context.
-internal interface IAsyncHtmlContent : IHtmlContent
+internal interface IHtmlAsyncContent : IHtmlContent
 {
     ValueTask WriteToAsync(TextWriter writer);
 }

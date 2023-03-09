@@ -38,7 +38,7 @@ internal sealed class ComponentPrerenderer
 
     public Dispatcher Dispatcher => _htmlRenderer.Dispatcher;
 
-    public async ValueTask<IAsyncHtmlContent> PrerenderComponentAsync(
+    public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         Type componentType,
         RenderMode prerenderMode,
@@ -152,7 +152,7 @@ internal sealed class ComponentPrerenderer
         }
     }
 
-    private async ValueTask<IAsyncHtmlContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<IHtmlAsyncContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var htmlComponent = await PrerenderComponentCoreAsync(
             parametersCollection,
@@ -161,7 +161,7 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(_htmlRenderer.Dispatcher, htmlComponent, null, null);
     }
 
-    private async Task<IAsyncHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private async Task<IHtmlAsyncContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
@@ -182,7 +182,7 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(_htmlRenderer.Dispatcher, htmlComponent, marker, null);
     }
 
-    private async ValueTask<IAsyncHtmlContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<IHtmlAsyncContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
@@ -197,7 +197,7 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(_htmlRenderer.Dispatcher, htmlComponent, null, marker);
     }
 
-    private IAsyncHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private IHtmlAsyncContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
@@ -208,7 +208,7 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 
-    private static IAsyncHtmlContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
+    private static IHtmlAsyncContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, null, marker);
@@ -216,7 +216,7 @@ internal sealed class ComponentPrerenderer
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.
     // We don't construct the actual HTML until we receive the call to WriteTo.
-    private class PrerenderedComponentHtmlContent : IHtmlContent, IAsyncHtmlContent
+    private class PrerenderedComponentHtmlContent : IHtmlContent, IHtmlAsyncContent
     {
         private readonly Dispatcher _dispatcher;
         private readonly HtmlComponent _htmlToEmitOrNull;

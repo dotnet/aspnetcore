@@ -1,15 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData
-Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
-Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData
-Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult() -> void
-~Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.AfterRazorComponentEventData(System.Type componentType, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode, Microsoft.AspNetCore.Http.HttpContext httpContext) -> void
-~Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
-~Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.BeforeRazorComponentEventData(System.Type componentType, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode, Microsoft.AspNetCore.Http.HttpContext httpContext) -> void
-~Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string, object>
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
@@ -17,10 +9,6 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.set -> voi
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor
-~const Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.EventName = "Microsoft.AspNetCore.Mvc.AfterRazorComponent" -> string
-~const Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.EventName = "Microsoft.AspNetCore.Mvc.BeforeRazorComponent" -> string
-~Microsoft.AspNetCore.Mvc.Diagnostics.AfterRazorComponentEventData.ComponentType.get -> System.Type
-~Microsoft.AspNetCore.Mvc.Diagnostics.BeforeRazorComponentEventData.ComponentType.get -> System.Type
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ComponentType.get -> System.Type
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ContentType.get -> string
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ContentType.set -> void
@@ -31,7 +19,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult(object parameters) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult(System.Collections.Generic.IReadOnlyDictionary<string, object> parameters) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DiagnosticListener.get -> System.Diagnostics.DiagnosticListener
-~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.RazorComponentResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, System.Diagnostics.DiagnosticListener diagnosticListener) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.RazorComponentResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory
 ~static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DefaultContentType -> string
 ~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult result) -> System.Threading.Tasks.Task

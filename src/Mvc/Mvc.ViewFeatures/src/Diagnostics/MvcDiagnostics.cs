@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -436,106 +435,6 @@ public sealed class ViewNotFoundEventData : EventData
         2 => new KeyValuePair<string, object>(nameof(Result), Result),
         3 => new KeyValuePair<string, object>(nameof(ViewName), ViewName),
         4 => new KeyValuePair<string, object>(nameof(SearchedLocations), SearchedLocations),
-        _ => throw new IndexOutOfRangeException(nameof(index))
-    };
-}
-
-/// <summary>
-/// An <see cref="EventData"/> that occurs before a Razor Component.
-/// </summary>
-public sealed class BeforeRazorComponentEventData : EventData
-{
-    /// <summary>
-    /// The name of the event.
-    /// </summary>
-    public const string EventName = EventNamespace + "BeforeRazorComponent";
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="BeforeRazorComponentEventData"/>.
-    /// </summary>
-    /// <param name="componentType">The component type.</param>
-    /// <param name="renderMode">The component render mode.</param>
-    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    public BeforeRazorComponentEventData(Type componentType, RenderMode renderMode, HttpContext httpContext)
-    {
-        ComponentType = componentType;
-        RenderMode = renderMode;
-        HttpContext = httpContext;
-    }
-
-    /// <summary>
-    /// The component type.
-    /// </summary>
-    public Type ComponentType { get; }
-
-    /// <summary>
-    /// The component render mode.
-    /// </summary>
-    public RenderMode RenderMode { get; }
-
-    /// <summary>
-    /// The <see cref="HttpContext"/>.
-    /// </summary>
-    public HttpContext HttpContext { get; }
-
-    /// <inheritdoc/>
-    protected override int Count => 2;
-
-    /// <inheritdoc/>
-    protected override KeyValuePair<string, object> this[int index] => index switch
-    {
-        0 => new KeyValuePair<string, object>(nameof(ComponentType), ComponentType),
-        1 => new KeyValuePair<string, object>(nameof(RenderMode), RenderMode),
-        _ => throw new IndexOutOfRangeException(nameof(index))
-    };
-}
-
-/// <summary>
-/// An <see cref="EventData"/> that occurs after a Razor Component.
-/// </summary>
-public sealed class AfterRazorComponentEventData : EventData
-{
-    /// <summary>
-    /// The name of the event.
-    /// </summary>
-    public const string EventName = EventNamespace + "AfterRazorComponent";
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="BeforeRazorComponentEventData"/>.
-    /// </summary>
-    /// <param name="componentType">The component type.</param>
-    /// <param name="renderMode">The component render mode.</param>
-    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    public AfterRazorComponentEventData(Type componentType, RenderMode renderMode, HttpContext httpContext)
-    {
-        ComponentType = componentType;
-        RenderMode = renderMode;
-        HttpContext = httpContext;
-    }
-
-    /// <summary>
-    /// The component type.
-    /// </summary>
-    public Type ComponentType { get; }
-
-    /// <summary>
-    /// The component render mode.
-    /// </summary>
-    public RenderMode RenderMode { get; }
-
-    /// <summary>
-    /// The <see cref="HttpContext"/>.
-    /// </summary>
-    public HttpContext HttpContext { get; }
-
-    /// <inheritdoc/>
-    protected override int Count => 2;
-
-    /// <inheritdoc/>
-    protected override KeyValuePair<string, object> this[int index] => index switch
-    {
-        0 => new KeyValuePair<string, object>(nameof(ComponentType), ComponentType),
-        1 => new KeyValuePair<string, object>(nameof(RenderMode), RenderMode),
         _ => throw new IndexOutOfRangeException(nameof(index))
     };
 }

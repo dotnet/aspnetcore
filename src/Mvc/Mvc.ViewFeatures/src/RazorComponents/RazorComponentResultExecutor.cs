@@ -27,15 +27,11 @@ public class RazorComponentResultExecutor
     /// Constructs an instance of <see cref="RazorComponentResultExecutor"/>.
     /// </summary>
     /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-    /// <param name="diagnosticListener">The <see cref="System.Diagnostics.DiagnosticListener"/>.</param>
     public RazorComponentResultExecutor(
-        IHttpResponseStreamWriterFactory writerFactory,
-        DiagnosticListener diagnosticListener)
+        IHttpResponseStreamWriterFactory writerFactory)
     {
         ArgumentNullException.ThrowIfNull(writerFactory);
-
         WriterFactory = writerFactory;
-        DiagnosticListener = diagnosticListener;
     }
 
     /// <summary>
@@ -73,9 +69,7 @@ public class RazorComponentResultExecutor
         }
 
         await using var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding);
-        DiagnosticListener.BeforeRazorComponent(result.ComponentType, result.RenderMode, httpContext);
         await RenderComponentToResponse(httpContext, result, writer);
-        DiagnosticListener.AfterRazorComponent(result.ComponentType, result.RenderMode, httpContext);
 
         // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -115,52 +114,6 @@ internal static class MvcViewFeaturesDiagnosticListenerExtensions
                     context,
                     view
                 ));
-        }
-    }
-
-    public static void BeforeRazorComponent(
-        this DiagnosticListener diagnosticListener,
-        Type componentType,
-        RenderMode renderMode,
-        HttpContext httpContext)
-    {
-        // Inlinable fast-path check if Diagnositcs is enabled
-        if (diagnosticListener.IsEnabled())
-        {
-            BeforeRazorComponentImpl(diagnosticListener, componentType, renderMode, httpContext);
-        }
-    }
-
-    private static void BeforeRazorComponentImpl(DiagnosticListener diagnosticListener, Type componentType, RenderMode renderMode, HttpContext httpContext)
-    {
-        if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewEventData.EventName))
-        {
-            diagnosticListener.Write(
-                Diagnostics.BeforeRazorComponentEventData.EventName,
-                new BeforeRazorComponentEventData(componentType, renderMode, httpContext));
-        }
-    }
-
-    public static void AfterRazorComponent(
-        this DiagnosticListener diagnosticListener,
-        Type componentType,
-        RenderMode renderMode,
-        HttpContext httpContext)
-    {
-        // Inlinable fast-path check if Diagnositcs is enabled
-        if (diagnosticListener.IsEnabled())
-        {
-            AfterRazorComponentImpl(diagnosticListener, componentType, renderMode, httpContext);
-        }
-    }
-
-    private static void AfterRazorComponentImpl(DiagnosticListener diagnosticListener, Type componentType, RenderMode renderMode, HttpContext httpContext)
-    {
-        if (diagnosticListener.IsEnabled(Diagnostics.AfterViewEventData.EventName))
-        {
-            diagnosticListener.Write(
-                Diagnostics.AfterRazorComponentEventData.EventName,
-                new AfterRazorComponentEventData(componentType, renderMode, httpContext));
         }
     }
 
