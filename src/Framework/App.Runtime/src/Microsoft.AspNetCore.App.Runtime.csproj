@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
@@ -483,21 +483,38 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <PropertyGroup>
       <CompositeTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Composite', '$(Configuration)'))</CompositeTargetDir>
+      <CompositeFileName>full-composite.r2r</CompositeFileName>
+      <CompositeResponseFile>$(CompositeTargetDir)\$(CompositeFileName).rsp</CompositeResponseFile>
+      <CompositeArgs>@$(CompositeResponseFile)</CompositeArgs>
       <ManagedAssetsFullPath>$(RuntimePackageRoot)$(ManagedAssetsPackagePath)</ManagedAssetsFullPath>
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
-
-      <BaseAssemblies>$(ManagedAssetsFullPath)\*.dll</BaseAssemblies>
-
-      <CompositeArgs>--composite</CompositeArgs>
-      <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
-      <CompositeArgs>$(CompositeArgs) --targetos:$(Crossgen2TargetOs)</CompositeArgs>
-      <CompositeArgs>$(CompositeArgs) $(BaseAssemblies)</CompositeArgs>
-      <CompositeArgs>$(CompositeArgs) $(TargetDir)*.dll</CompositeArgs>
-      <CompositeArgs>$(CompositeArgs) --out:&quot;$(CompositeTargetDir)full-composite.r2r.dll&quot;</CompositeArgs>
+      <PartialCompositeAssemblyListPath>$(MSBuildThisFileDirectory)\PartialCompositeAssemblyList.txt</PartialCompositeAssemblyListPath>
     </PropertyGroup>
 
     <RemoveDir Directories="$(CompositeTargetDir)" />
     <MakeDir Directories="$(CompositeTargetDir)" />
+
+    <!-- Read list of assemblies that should generate native code in the full composite image. -->
+    <ReadLinesFromFile File="$(PartialCompositeAssemblyListPath)">
+      <Output TaskParameter="Lines" ItemName="PartialCompositeAssemblyNames" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <BaseAssemblies Include="$(ManagedAssetsFullPath)\*.dll" />
+      <BaseAssemblies Include="$(TargetDir)\*.dll" />
+      <PartialCompositeAssemblyPaths Include="$(ManagedAssetsFullPath)\%(PartialCompositeAssemblyNames.Identity).dll" />
+      <PartialCompositeAssemblyPaths Include="$(TargetDir)\%(PartialCompositeAssemblyNames.Identity).dll" />
+      <PartialCompositeAssemblyPaths Remove="%(PartialCompositeAssemblyPaths.Identity)" Condition="!Exists('%(Identity)')" />
+      <UnrootedAssemblyPaths Include="@(BaseAssemblies)" />
+      <UnrootedAssemblyPaths Remove="@(PartialCompositeAssemblyPaths)" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--composite" Overwrite="true" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--targetarch:$(TargetArchitecture)" Overwrite="false" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--targetos:$(Crossgen2TargetOs)" Overwrite="false" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-u:&quot;%(UnrootedAssemblyPaths.Identity)&quot;" Overwrite="false" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="&quot;%(PartialCompositeAssemblyPaths.Identity)&quot;" Overwrite="false" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--out:&quot;$(CompositeTargetDir)$(CompositeFileName).dll&quot;" Overwrite="false" />
 
     <ItemGroup>
       <NativeSharedObjects Include="$(NativeAssetsFullPath)\*.so" />
