@@ -55,4 +55,73 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
         Assert.Equal("'invalidName' is not a route parameter.", exception.Message);
     }
+
+    [Theory]
+    [InlineData(@"app.MapGet(""/"", (IFormFile? form) => ""Hello world!"");")]
+    [InlineData(@"app.MapGet(""/"", (IFormCollection? form) => ""Hello world!"");")]
+    [InlineData(@"app.MapGet(""/"", (IFormFileCollection? form) => ""Hello world!"");")]
+    [InlineData(@"app.MapGet(""/"", ([FromForm] Todo? form) => ""Hello world!"");")]
+    public async Task MapAction_WarnsForUnsupportedFormTypes(string source)
+    {
+        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
+
+        // Emits diagnostic but generates no source
+        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor("provider").Id, diagnostic.Id);
+        Assert.Empty(result.GeneratedSources);
+
+        // Falls back to runtime-generated endpoint
+        var endpoint = GetEndpointFromCompilation(compilation, false);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Request.Headers["Content-Length"] = "0";
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
+    public async Task MapAction_WarnsForUnsupportedAsParametersAttribute()
+    {
+        var source = """app.MapGet("/{routeValue}", ([AsParameters] Todo todo) => todo);""";
+        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
+
+        // Emits diagnostic but generates no source
+        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor("provider").Id, diagnostic.Id);
+        Assert.Empty(result.GeneratedSources);
+
+        // Falls back to runtime-generated endpoint
+        var endpoint = GetEndpointFromCompilation(compilation, false);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString($"?Id=0&Name=Test&IsComplete=false");
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, """{"id":0,"name":"Test","isComplete":false}""");
+    }
+
+    [Fact]
+    public async Task MapAction_WarnsForUnsupportedRouteVariable()
+    {
+        var source = """
+var route = "/hello";
+app.MapGet(route, () => "Hello world!");
+""";
+        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
+
+        // Emits diagnostic but generates no source
+        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveRoutePattern.Id, diagnostic.Id);
+        Assert.Empty(result.GeneratedSources);
+
+        // Falls back to runtime-generated endpoint
+        var endpoint = GetEndpointFromCompilation(compilation, false);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
 }
