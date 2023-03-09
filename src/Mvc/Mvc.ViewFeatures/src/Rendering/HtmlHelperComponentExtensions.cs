@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering;
@@ -62,19 +60,7 @@ public static class HtmlHelperComponentExtensions
 
         var httpContext = htmlHelper.ViewContext.HttpContext;
         var componentRenderer = httpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
-        var asyncContent = await componentRenderer.PrerenderComponentAsync(httpContext, componentType, MapRenderMode(renderMode), parameterView);
-
-        // For back-compat, we have to return an IHtmlContent, which unfortunately means we have to buffer the content here.
-        // That's not a regression - we've been doing that since Html.RenderComponentAsync was created. Fortunately the same
-        // problem does not occur with the <component> tag helper or the newer .NET 8 methods for server-side rendering of
-        // components, since they can use IHtmlAsyncContent.
-        var viewBufferScope = httpContext.RequestServices.GetRequiredService<IViewBufferScope>();
-        var viewBuffer = new ViewBuffer(viewBufferScope, nameof(RenderComponentAsync), ViewBuffer.ViewPageSize);
-        var viewContextWriter = htmlHelper.ViewContext.Writer;
-        var htmlEncoder = httpContext.RequestServices.GetRequiredService<HtmlEncoder>();
-        using var writer = new ViewBufferTextWriter(viewBuffer, viewContextWriter.Encoding, htmlEncoder, viewContextWriter);
-        await asyncContent.WriteToAsync(writer);
-        return viewBuffer;
+        return await componentRenderer.PrerenderComponentAsync(httpContext, componentType, MapRenderMode(renderMode), parameterView);
     }
 
     // This is unfortunate, and we might want to find a better solution. There's an existing public
