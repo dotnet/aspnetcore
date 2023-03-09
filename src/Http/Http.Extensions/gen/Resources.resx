@@ -121,7 +121,7 @@
     <value>Unable to resolve route pattern</value>
   </data>
   <data name="UnableToResolveRoutePattern_Message" xml:space="preserve">
-    <value>Unable to statically resolve route pattern for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will generated at runtime.</value>
+    <value>Unable to statically resolve route pattern for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime.</value>
   </data>
   <data name="UnableToResolveMethod_Title" xml:space="preserve">
     <value>Unable to resolve endpoint handler</value>
