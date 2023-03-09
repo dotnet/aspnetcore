@@ -7,12 +7,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class UnsupportedJavaScriptRuntime : IJSRuntime
 {
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         throw new InvalidOperationException("JavaScript interop calls cannot be issued during server-side static rendering, because the page has not yet loaded in the browser. Statically-rendered components must wrap any JavaScript interop calls in conditional logic to ensure those interop calls are not attempted during static rendering.");
     }
 
-    ValueTask<TValue> IJSRuntime.InvokeAsync<TValue>(string identifier, object[] args)
+    ValueTask<TValue> IJSRuntime.InvokeAsync<TValue>(string identifier, object?[]? args)
     {
         throw new InvalidOperationException("JavaScript interop calls cannot be issued during server-side static rendering, because the page has not yet loaded in the browser. Statically-rendered components must wrap any JavaScript interop calls in conditional logic to ensure those interop calls are not attempted during static rendering.");
     }

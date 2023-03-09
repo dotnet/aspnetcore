@@ -24,7 +24,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
     private readonly HtmlRenderer _htmlRenderer;
     private readonly Lazy<ServerComponentSerializer> _serverComponentSerializer;
     private readonly object _servicesInitializedLock = new();
-    private Task _servicesInitializedTask;
+    private Task? _servicesInitializedTask;
 
     public ComponentPrerenderer(
         HtmlRenderer htmlRenderer,
@@ -109,7 +109,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             httpContext.Items[ComponentSequenceKey] = result;
         }
 
-        return (ServerComponentInvocationSequence)result;
+        return (ServerComponentInvocationSequence)result!;
     }
 
     // Internal for test only
@@ -132,7 +132,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
                     InvokedRenderModes.Mode.Server :
                     InvokedRenderModes.Mode.WebAssembly;
 
-                var invokedMode = (InvokedRenderModes)result;
+                var invokedMode = (InvokedRenderModes)result!;
                 if (invokedMode.Value != currentInvocation)
                 {
                     invokedMode.Value = InvokedRenderModes.Mode.ServerAndWebAssembly;
@@ -143,14 +143,9 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
 
     internal static InvokedRenderModes.Mode GetPersistStateRenderMode(HttpContext httpContext)
     {
-        if (httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
-        {
-            return ((InvokedRenderModes)result).Value;
-        }
-        else
-        {
-            return InvokedRenderModes.Mode.None;
-        }
+        return httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result)
+            ? ((InvokedRenderModes)result!).Value
+            : InvokedRenderModes.Mode.None;
     }
 
     private async ValueTask<IHtmlAsyncContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
@@ -219,14 +214,14 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
     // We don't construct the actual HTML until we receive the call to WriteTo.
     private class PrerenderedComponentHtmlContent : IHtmlContent, IHtmlAsyncContent
     {
-        private readonly Dispatcher _dispatcher;
-        private readonly HtmlComponent _htmlToEmitOrNull;
+        private readonly Dispatcher? _dispatcher;
+        private readonly HtmlComponent? _htmlToEmitOrNull;
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
         public PrerenderedComponentHtmlContent(
-            Dispatcher dispatcher,
-            HtmlComponent htmlToEmitOrNull, // If null, we're only emitting the markers
+            Dispatcher? dispatcher, // If null, we're only emitting the markers
+            HtmlComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
             ServerComponentMarker? serverMarker,
             WebAssemblyComponentMarker? webAssemblyMarker)
         {

@@ -10,8 +10,8 @@ internal sealed class WebAssemblyComponentSerializer
 {
     public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
     {
-        var assembly = type.Assembly.GetName().Name;
-        var typeFullName = type.FullName;
+        var assembly = type.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name");
+        var typeFullName = type.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name");
         var (definitions, values) = ComponentParameter.FromParameterView(parameters);
 
         // We need to serialize and Base64 encode parameters separately since they can contain arbitrary data that might

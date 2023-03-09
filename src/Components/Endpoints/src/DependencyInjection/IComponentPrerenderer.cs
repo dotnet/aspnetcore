@@ -6,13 +6,27 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
+/// <summary>
+/// A service that can prerender Razor Components as HTML.
+/// </summary>
 public interface IComponentPrerenderer
 {
+    /// <summary>
+    /// Prerenders a Razor Component as HTML.
+    /// </summary>
+    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+    /// <param name="componentType">The type of component to prerender. This must implement <see cref="IComponent"/>.</param>
+    /// <param name="renderMode">The mode in which to prerender the component.</param>
+    /// <param name="parameters">Parameters for the component.</param>
+    /// <returns>A task that completes with the prerendered content.</returns>
     ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         Type componentType,
-        RenderMode prerenderMode,
+        RenderMode renderMode,
         ParameterView parameters);
 
+    /// <summary>
+    /// Gets a <see cref="Dispatcher"/> that should be used for calls to <see cref="PrerenderComponentAsync(HttpContext, Type, RenderMode, ParameterView)"/>.
+    /// </summary>
     Dispatcher Dispatcher { get; }
 }

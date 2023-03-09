@@ -19,7 +19,7 @@ internal class RazorComponentResultHost : IComponent
 {
     private RenderHandle _renderHandle;
 
-    public RazorComponentResult RazorComponentResult { get; private set; }
+    public RazorComponentResult RazorComponentResult { get; private set; } = default!;
 
     public void Attach(RenderHandle renderHandle)
         => _renderHandle = renderHandle;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// Executes a Razor Component.
+/// Executes a <see cref="RazorComponentResult"/>.
 /// </summary>
 public class RazorComponentResultExecutor
 {

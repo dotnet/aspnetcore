@@ -14,15 +14,15 @@ using Microsoft.JSInterop;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// 
+/// Provides methods for registering services required for server-side rendering of Razor Components.
 /// </summary>
 public static class RazorComponentsServiceCollectionExtensions
 {
     /// <summary>
-    /// 
+    /// Registers services required for server-side rendering of Razor Components.
     /// </summary>
-    /// <param name="services"></param>
-    /// <returns></returns>
+    /// <param name="services">The service collection.</param>
+    /// <returns>A builder for configuring the Razor Components endpoints.</returns>
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
         services.TryAddSingleton<RazorComponentsMarkerService>();

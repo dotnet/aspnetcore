@@ -13,7 +13,7 @@ internal struct ServerComponent
         string assemblyName,
         string typeName,
         IList<ComponentParameter> parametersDefinitions,
-        IList<object> parameterValues,
+        IList<object?> parameterValues,
         Guid invocationId) =>
         (Sequence, AssemblyName, TypeName, ParameterDefinitions, ParameterValues, InvocationId) =
         (sequence, assemblyName, typeName, parametersDefinitions, parameterValues, invocationId);
@@ -31,7 +31,7 @@ internal struct ServerComponent
     public IList<ComponentParameter> ParameterDefinitions { get; set; }
 
     // The values for the parameters for the component.
-    public IList<object> ParameterValues { get; set; }
+    public IList<object?> ParameterValues { get; set; }
 
     // An id that uniquely identifies all components generated as part of a single HTTP response.
     public Guid InvocationId { get; set; }
