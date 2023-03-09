@@ -12,9 +12,6 @@ internal class LoggingCircuitHandler : CircuitHandler
     private static Action<ILogger, string, Exception> _connectionUp;
     private static Action<ILogger, string, Exception> _connectionDown;
     private static Action<ILogger, string, Exception> _circuitClosed;
-    private static Action<ILogger, string, Exception> _unhandledException;
-    private static Action<ILogger, string, Exception> _invokeDotNetFromJS;
-    private static Action<ILogger, string, Exception> _endInvokeJSFromDotNet;
 
     public LoggingCircuitHandler(ILogger<LoggingCircuitHandler> logger)
     {
@@ -37,23 +34,8 @@ internal class LoggingCircuitHandler : CircuitHandler
 
         _circuitClosed = LoggerMessage.Define<string>(
             logLevel: LogLevel.Information,
-            4,
+            3,
             formatString: "Circuit closed for {circuitId}.");
-
-        _unhandledException = LoggerMessage.Define<string>(
-            logLevel: LogLevel.Error,
-            5,
-            formatString: "Unhandled exception for {circuitId}.");
-
-        _invokeDotNetFromJS = LoggerMessage.Define<string>(
-            logLevel: LogLevel.Information,
-            6,
-            formatString: "JS to .NET invocation for {circuitId}.");
-
-        _endInvokeJSFromDotNet = LoggerMessage.Define<string>(
-            logLevel: LogLevel.Information,
-            7,
-            formatString: "End .NET to JS invocation for {circuitId}.");
     }
 
     public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cts)
@@ -78,23 +60,5 @@ internal class LoggingCircuitHandler : CircuitHandler
     {
         _circuitClosed(_logger, circuit.Id, null);
         return base.OnCircuitClosedAsync(circuit, cts);
-    }
-
-    public override Task OnUnhandledExceptionAsync(Circuit circuit, Exception exception, CancellationToken cts)
-    {
-        _unhandledException(_logger, circuit.Id, exception);
-        return base.OnUnhandledExceptionAsync(circuit, exception, cts);
-    }
-
-    public override Task OnInvokeDotNetFromJSAsync(Circuit circuit, CancellationToken cts)
-    {
-        _invokeDotNetFromJS(_logger, circuit.Id, null);
-        return base.OnInvokeDotNetFromJSAsync(circuit, cts);
-    }
-
-    public override Task OnEndInvokeJSFromDotNetAsync(Circuit circuit, CancellationToken cts)
-    {
-        _endInvokeJSFromDotNet(_logger, circuit.Id, null);
-        return base.OnEndInvokeJSFromDotNetAsync(circuit, cts);
     }
 }

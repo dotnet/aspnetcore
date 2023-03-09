@@ -198,19 +198,34 @@ internal partial class CircuitHost : IAsyncDisposable
         });
     }
 
+    // Note: we log exceptions and re-throw while running handlers, because there may be multiple
+    // exceptions.
     private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
     {
         Log.CircuitOpened(_logger, CircuitId);
 
         Renderer.Dispatcher.AssertAccess();
 
-        if (_circuitHandlers.Length != 0)
+        List<Exception> exceptions = null;
+
+        for (var i = 0; i < _circuitHandlers.Length; i++)
         {
-            await InvokeCircuitHandlersAsync(
-                nameof(CircuitHandler.OnCircuitOpenedAsync),
-                static ch => ch.OnCircuitOpenedAsync,
-                arg1: Circuit,
-                arg2: cancellationToken);
+            var circuitHandler = _circuitHandlers[i];
+            try
+            {
+                await circuitHandler.OnCircuitOpenedAsync(Circuit, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitOpenedAsync), ex);
+                exceptions ??= new List<Exception>();
+                exceptions.Add(ex);
+            }
+        }
+
+        if (exceptions != null)
+        {
+            throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
         }
     }
 
@@ -220,13 +235,26 @@ internal partial class CircuitHost : IAsyncDisposable
 
         Renderer.Dispatcher.AssertAccess();
 
-        if (_circuitHandlers.Length != 0)
+        List<Exception> exceptions = null;
+
+        for (var i = 0; i < _circuitHandlers.Length; i++)
         {
-            await InvokeCircuitHandlersAsync(
-                nameof(CircuitHandler.OnConnectionUpAsync),
-                static ch => ch.OnConnectionUpAsync,
-                arg1: Circuit,
-                arg2: cancellationToken);
+            var circuitHandler = _circuitHandlers[i];
+            try
+            {
+                await circuitHandler.OnConnectionUpAsync(Circuit, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionUpAsync), ex);
+                exceptions ??= new List<Exception>();
+                exceptions.Add(ex);
+            }
+        }
+
+        if (exceptions != null)
+        {
+            throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
         }
     }
 
@@ -236,13 +264,26 @@ internal partial class CircuitHost : IAsyncDisposable
 
         Renderer.Dispatcher.AssertAccess();
 
-        if (_circuitHandlers.Length != 0)
+        List<Exception> exceptions = null;
+
+        for (var i = 0; i < _circuitHandlers.Length; i++)
         {
-            await InvokeCircuitHandlersAsync(
-                nameof(CircuitHandler.OnConnectionDownAsync),
-                static ch => ch.OnConnectionDownAsync,
-                arg1: Circuit,
-                arg2: cancellationToken);
+            var circuitHandler = _circuitHandlers[i];
+            try
+            {
+                await circuitHandler.OnConnectionDownAsync(Circuit, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionDownAsync), ex);
+                exceptions ??= new List<Exception>();
+                exceptions.Add(ex);
+            }
+        }
+
+        if (exceptions != null)
+        {
+            throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
         }
     }
 
@@ -250,13 +291,26 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.CircuitClosed(_logger, CircuitId);
 
-        if (_circuitHandlers.Length != 0)
+        List<Exception> exceptions = null;
+
+        for (var i = 0; i < _circuitHandlers.Length; i++)
         {
-            await InvokeCircuitHandlersAsync(
-                nameof(CircuitHandler.OnCircuitClosedAsync),
-                static ch => ch.OnCircuitClosedAsync,
-                arg1: Circuit,
-                arg2: cancellationToken);
+            var circuitHandler = _circuitHandlers[i];
+            try
+            {
+                await circuitHandler.OnCircuitClosedAsync(Circuit, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitClosedAsync), ex);
+                exceptions ??= new List<Exception>();
+                exceptions.Add(ex);
+            }
+        }
+
+        if (exceptions != null)
+        {
+            throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
         }
     }
 
@@ -306,24 +360,6 @@ internal partial class CircuitHost : IAsyncDisposable
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Interop call failed."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
         }
-
-        if (_circuitHandlers.Length != 0)
-        {
-            try
-            {
-                await InvokeCircuitHandlersAsync(
-                    nameof(CircuitHandler.OnInvokeDotNetFromJSAsync),
-                    static ch => ch.OnInvokeDotNetFromJSAsync,
-                    arg1: Circuit,
-                    arg2: CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                // The handler invocation logic already logs when an unhandled exception gets thrown.
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex));
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-        }
     }
 
     // EndInvokeJSFromDotNet is used in a fire-and-forget context, so it's responsible for its own
@@ -357,24 +393,6 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.EndInvokeDispatchException(_logger, ex);
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid interop arguments."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-        }
-
-        if (_circuitHandlers.Length != 0)
-        {
-            try
-            {
-                await InvokeCircuitHandlersAsync(
-                    nameof(CircuitHandler.OnEndInvokeJSFromDotNetAsync),
-                    static ch => ch.OnEndInvokeJSFromDotNetAsync,
-                    arg1: Circuit,
-                    arg2: CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                // The handler invocation logic already logs when an unhandled exception gets thrown.
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex));
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
         }
     }
 
@@ -589,47 +607,6 @@ internal partial class CircuitHost : IAsyncDisposable
 #pragma warning restore CA1513 // Use ObjectDisposedException throw helper
     }
 
-    private ValueTask InvokeCircuitHandlersAsync<T1, T2>(string methodName, Func<CircuitHandler, Func<T1, T2, Task>> getMethod, T1 arg1, T2 arg2)
-        => InvokeCircuitHandlersCoreAsync(methodName, static (handler, args) =>
-        {
-            var invokeHandler = args.getMethod(handler);
-            return invokeHandler(args.arg1, args.arg2);
-        }, (getMethod, arg1, arg2));
-
-    private ValueTask InvokeCircuitHandlersAsync<T1, T2, T3>(string methodName, Func<CircuitHandler, Func<T1, T2, T3, Task>> getMethod, T1 arg1, T2 arg2, T3 arg3)
-        => InvokeCircuitHandlersCoreAsync(methodName, static (handler, args) =>
-        {
-            var invokeHandler = args.getMethod(handler);
-            return invokeHandler(args.arg1, args.arg2, args.arg3);
-        }, (getMethod, arg1, arg2, arg3));
-
-    // Note: we log exceptions and re-throw while running handlers, because there may be multiple
-    // exceptions.
-    private async ValueTask InvokeCircuitHandlersCoreAsync<TArgs>(string methodName, Func<CircuitHandler, TArgs, Task> invokeHandler, TArgs args)
-    {
-        List<Exception> exceptions = null;
-
-        for (var i = 0; i < _circuitHandlers.Length; i++)
-        {
-            var circuitHandler = _circuitHandlers[i];
-            try
-            {
-                await invokeHandler(circuitHandler, args);
-            }
-            catch (Exception ex)
-            {
-                Log.CircuitHandlerFailed(_logger, circuitHandler, methodName, ex);
-                exceptions ??= new List<Exception>();
-                exceptions.Add(ex);
-            }
-        }
-
-        if (exceptions != null)
-        {
-            throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
-        }
-    }
-
     // We want to notify the client if it's still connected, and then tear-down the circuit.
     private async void ReportAndInvoke_UnhandledException(object sender, Exception e)
     {
@@ -648,16 +625,6 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task ReportUnhandledException(Exception exception)
     {
         Log.CircuitUnhandledException(_logger, CircuitId, exception);
-
-        if (_circuitHandlers.Length != 0)
-        {
-            await InvokeCircuitHandlersAsync(
-                nameof(CircuitHandler.OnUnhandledExceptionAsync),
-                ch => ch.OnUnhandledExceptionAsync,
-                arg1: Circuit,
-                arg2: exception,
-                arg3: CancellationToken.None);
-        }
 
         await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
     }
