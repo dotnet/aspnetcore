@@ -68,7 +68,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
             {
                 // [Route("xxx")] attributes don't have a HTTP method and instead use the HTTP methods of other attributes.
                 // For example, [HttpGet] + [HttpPost] + [Route("xxx")] means the route "xxx" is combined with the HTTP methods.
-                var httpMethods = GetUnroutedMethodHttpMethods(wellKnownTypes, methodSymbol);
+                var unroutedHttpMethods = GetUnroutedMethodHttpMethods(wellKnownTypes, methodSymbol);
 
                 foreach (var attribute in methodSymbol.GetAttributes())
                 {
@@ -83,9 +83,9 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    // [Route] uses other attributes for its HTTP methods.
+                    // [Route] uses unrouted HTTP verb attributes for its HTTP methods.
                     var methods = match.Value is WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute
-                        ? httpMethods
+                        ? unroutedHttpMethods
                         : ImmutableArray.Create(GetHttpMethod(match.Value)!);
 
                     actionRoutes.Add(new ActionRoute(methodSymbol, routeUsage, methods));
