@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
@@ -33,11 +32,6 @@ public class RazorComponentResultExecutor
         ArgumentNullException.ThrowIfNull(writerFactory);
         WriterFactory = writerFactory;
     }
-
-    /// <summary>
-    /// Gets the <see cref="DiagnosticListener"/>.
-    /// </summary>
-    protected DiagnosticListener DiagnosticListener { get; }
 
     /// <summary>
     /// Gets the <see cref="IHttpResponseStreamWriterFactory"/>.

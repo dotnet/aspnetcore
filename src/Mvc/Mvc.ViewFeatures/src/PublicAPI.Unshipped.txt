@@ -18,7 +18,6 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult(object parameters) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult(System.Collections.Generic.IReadOnlyDictionary<string, object> parameters) -> void
-~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DiagnosticListener.get -> System.Diagnostics.DiagnosticListener
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.RazorComponentResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory
 ~static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DefaultContentType -> string
