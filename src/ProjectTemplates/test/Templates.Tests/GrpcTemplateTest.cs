@@ -75,6 +75,8 @@ public class GrpcTemplateTest : LoggedTest
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
+        await project.VerifyHasProperty("InvariantGlobalization", "true");
+
         await project.RunDotNetPublishAsync();
 
         await project.RunDotNetBuildAsync();
