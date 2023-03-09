@@ -125,13 +125,13 @@ internal static class EndpointParameterEmitter
         // Preamble for diagnostics purposes.
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
-        // Invoke TryResolveJsonBodyOrService method to resolve the
+        // Invoke ResolveJsonBodyOrService method to resolve the
         // type from DI if it exists. Otherwise, resolve the parameter
         // as a body parameter.
         var assigningCode = $"await {endpointParameter.Name}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
 
-        // If binding from the JSON body fails, TryResolveJsonBodyOrService
+        // If binding from the JSON body fails, ResolveJsonBodyOrService
         // will return `false` and we will need to exit early.
         codeWriter.WriteLine("if (!isSuccessful)");
         codeWriter.StartBlock();

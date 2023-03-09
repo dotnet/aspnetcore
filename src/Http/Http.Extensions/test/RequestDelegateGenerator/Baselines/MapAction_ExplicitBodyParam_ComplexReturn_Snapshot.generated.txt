@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return T.BindAsync(context, parameter);
         }
 
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> TryResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
