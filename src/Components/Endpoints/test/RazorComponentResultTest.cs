@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class RazorComponentResultTest
 {
@@ -130,9 +128,8 @@ public class RazorComponentResultTest
     {
         var serviceCollection = new ServiceCollection()
             .AddSingleton(new DiagnosticListener("test"))
-            .AddSingleton<IHttpResponseStreamWriterFactory, TestHttpResponseStreamWriterFactory>()
             .AddSingleton<RazorComponentResultExecutor>()
-            .AddSingleton<ComponentPrerenderer>()
+            .AddSingleton<IComponentPrerenderer, ComponentPrerenderer>()
             .AddSingleton<NavigationManager, FakeNavigationManager>()
             .AddSingleton<ServerComponentSerializer>()
             .AddSingleton<ComponentStatePersistenceManager>()

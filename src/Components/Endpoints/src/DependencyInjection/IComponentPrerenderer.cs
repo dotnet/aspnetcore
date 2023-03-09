@@ -25,6 +25,10 @@ public interface IComponentPrerenderer
         RenderMode renderMode,
         ParameterView parameters);
 
+    ValueTask<IHtmlAsyncContent> PrerenderPersistedStateAsync(
+        HttpContext httpContext,
+        PersistedStateSerializationMode serializationMode);
+
     /// <summary>
     /// Gets a <see cref="Dispatcher"/> that should be used for calls to <see cref="PrerenderComponentAsync(HttpContext, Type, RenderMode, ParameterView)"/>.
     /// </summary>

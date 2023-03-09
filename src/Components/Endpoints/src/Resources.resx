@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FailedToInferComponentPersistenceMode" xml:space="preserve">
+    <value>The persistence mode could not be determined based on the rendered components. Specify a value.</value>
+  </data>
   <data name="TypeMustDeriveFromType" xml:space="preserve">
     <value>The type '{0}' must derive from '{1}'.</value>
   </data>

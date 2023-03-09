@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -71,6 +71,44 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(httpContext, componentType, parameters),
             _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(prerenderMode), nameof(prerenderMode)),
         };
+    }
+
+    public async ValueTask<IHtmlAsyncContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
+    {
+        if (serializationMode == PersistedStateSerializationMode.Infer)
+        {
+            switch (GetPersistStateRenderMode(httpContext))
+            {
+                case InvokedRenderModes.Mode.None:
+                    return ComponentStateHtmlContent.Empty;
+                case InvokedRenderModes.Mode.ServerAndWebAssembly:
+                    throw new InvalidOperationException(
+                        Resources.FailedToInferComponentPersistenceMode);
+                case InvokedRenderModes.Mode.Server:
+                    serializationMode = PersistedStateSerializationMode.Server;
+                    break;
+                case InvokedRenderModes.Mode.WebAssembly:
+                    serializationMode = PersistedStateSerializationMode.WebAssembly;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid persistence mode");
+            }
+        }
+
+        var store = serializationMode switch
+        {
+            PersistedStateSerializationMode.Server =>
+                new ProtectedPrerenderComponentApplicationStore(httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
+            PersistedStateSerializationMode.WebAssembly =>
+                new PrerenderComponentApplicationStore(),
+            _ =>
+                throw new InvalidOperationException("Invalid persistence mode.")
+        };
+
+        var manager = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        await manager.PersistStateAsync(store, _htmlRenderer.Dispatcher);
+
+        return new ComponentStateHtmlContent(store);
     }
 
     private async ValueTask<HtmlComponent> PrerenderComponentCoreAsync(
@@ -212,7 +250,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.
     // We don't construct the actual HTML until we receive the call to WriteTo.
-    private class PrerenderedComponentHtmlContent : IHtmlContent, IHtmlAsyncContent
+    private class PrerenderedComponentHtmlContent : IHtmlAsyncContent
     {
         private readonly Dispatcher? _dispatcher;
         private readonly HtmlComponent? _htmlToEmitOrNull;
@@ -231,10 +269,19 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             _webAssemblyMarker = webAssemblyMarker;
         }
 
-        // For back-compat, we have to supply an implemention of IHtmlContent. However this will only work
-        // if you call it on the HtmlRenderer's sync context. The framework itself will not call this directly
-        // and will instead use WriteToAsync which deals with dispatching to the sync context.
-        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        public async ValueTask WriteToAsync(TextWriter writer)
+        {
+            if (_dispatcher is null)
+            {
+                WriteTo(writer);
+            }
+            else
+            {
+                await _dispatcher.InvokeAsync(() => WriteTo(writer));
+            }
+        }
+
+        private void WriteTo(TextWriter writer)
         {
             if (_serverMarker.HasValue)
             {
@@ -257,18 +304,6 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
                 {
                     WebAssemblyComponentSerializer.AppendEpilogue(writer, _webAssemblyMarker.Value);
                 }
-            }
-        }
-
-        public async ValueTask WriteToAsync(TextWriter writer)
-        {
-            if (_dispatcher is null)
-            {
-                WriteTo(writer, HtmlEncoder.Default);
-            }
-            else
-            {
-                await _dispatcher.InvokeAsync(() => WriteTo(writer, HtmlEncoder.Default));
             }
         }
     }
@@ -308,5 +343,31 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
         // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
+    }
+
+    private sealed class ComponentStateHtmlContent : IHtmlAsyncContent
+    {
+        private PrerenderComponentApplicationStore? _store;
+
+        public static ComponentStateHtmlContent Empty { get; }
+            = new ComponentStateHtmlContent(null);
+
+        public ComponentStateHtmlContent(PrerenderComponentApplicationStore? store)
+        {
+            _store = store;
+        }
+
+        public ValueTask WriteToAsync(TextWriter writer)
+        {
+            if (_store != null)
+            {
+                writer.Write("<!--Blazor-Component-State:");
+                writer.Write(_store.PersistedState);
+                writer.Write("-->");
+                _store = null;
+            }
+
+            return ValueTask.CompletedTask;
+        }
     }
 }

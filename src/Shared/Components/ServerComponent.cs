@@ -3,6 +3,8 @@
 
 namespace Microsoft.AspNetCore.Components;
 
+#nullable enable // This is shared-source with Mvc.ViewFeatures which doesn't enable nullability by default
+
 // The DTO that we data-protect and include into any
 // generated component marker and that allows the client
 // to bootstrap a blazor server-side application.

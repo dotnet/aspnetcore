@@ -3,6 +3,8 @@
 
 namespace Microsoft.AspNetCore.Components;
 
+#nullable enable // This is shared-source with Mvc.ViewFeatures which doesn't enable nullability by default
+
 // Represents the serialized invocation to a component.
 // We serialize this marker into a comment in the generated
 // HTML.

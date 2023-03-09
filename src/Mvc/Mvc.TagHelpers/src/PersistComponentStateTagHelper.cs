@@ -3,6 +3,7 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -48,30 +49,10 @@ public class PersistComponentStateTagHelper : TagHelper
         ArgumentNullException.ThrowIfNull(output);
 
         var services = ViewContext.HttpContext.RequestServices;
-        var manager = services.GetRequiredService<ComponentStatePersistenceManager>();
+        
         var renderer = services.GetRequiredService<HtmlRenderer>();
-        var store = PersistenceMode switch
-        {
-            null => ComponentPrerenderer.GetPersistStateRenderMode(ViewContext.HttpContext) switch
-            {
-                InvokedRenderModes.Mode.None =>
-                    null,
-                InvokedRenderModes.Mode.WebAssembly =>
-                    new PrerenderComponentApplicationStore(),
-                InvokedRenderModes.Mode.Server =>
-                    new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
-                InvokedRenderModes.Mode.ServerAndWebAssembly =>
-                    throw new InvalidOperationException(
-                        Resources.FormatPersistComponentStateTagHelper_FailedToInferComponentPersistenceMode(PersistenceModeName)),
-                _ => throw new InvalidOperationException("Invalid InvokedRenderMode.")
-            },
-            TagHelpers.PersistenceMode.Server =>
-                new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
-            TagHelpers.PersistenceMode.WebAssembly =>
-                new PrerenderComponentApplicationStore(),
-            _ =>
-                throw new InvalidOperationException("Invalid persistence mode.")
-        };
+        var componentPrerenderer = services.GetRequiredService<IComponentPrerenderer>();
+
 
         output.TagName = null;
         if (store != null)
@@ -82,25 +63,6 @@ public class PersistComponentStateTagHelper : TagHelper
                     .AppendHtml("<!--Blazor-Component-State:")
                     .AppendHtml(new ComponentStateHtmlContent(store))
                     .AppendHtml("-->"));
-        }
-    }
-
-    private sealed class ComponentStateHtmlContent : IHtmlContent
-    {
-        private PrerenderComponentApplicationStore _store;
-
-        public ComponentStateHtmlContent(PrerenderComponentApplicationStore store)
-        {
-            _store = store;
-        }
-
-        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-        {
-            if (_store != null)
-            {
-                writer.Write(_store.PersistedState);
-                _store = null;
-            }
         }
     }
 }
