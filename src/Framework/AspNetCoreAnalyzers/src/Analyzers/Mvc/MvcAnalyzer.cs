@@ -114,8 +114,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        var httpMethods = httpMethodsBuilder.ToImmutable();
-        return httpMethods;
+        return httpMethodsBuilder.ToImmutable();
     }
 
     private static string? GetHttpMethod(WellKnownType match)
