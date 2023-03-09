@@ -27,14 +27,11 @@ internal static class DiagnosticDescriptors
 
     // This is temporary. The plan is to be able to resolve all parameters to a known EndpointParameterSource.
     // For now, we emit a warning for the unsupported set.
-    public static DiagnosticDescriptor GetUnableToResolveParameterDescriptor(string parameterName)
-    {
-        return new(
+    public static DiagnosticDescriptor UnableToResolveParameterDescriptor { get;  } = new(
             "RDG003",
             new LocalizableResourceString(nameof(Resources.UnableToResolveParameter_Title), Resources.ResourceManager, typeof(Resources)),
-            new LocalizableResourceString(nameof(Resources.FormatUnableToResolveParameter_Message), Resources.ResourceManager, typeof(Resources), parameterName),
+            new LocalizableResourceString(nameof(Resources.UnableToResolveParameter_Message), Resources.ResourceManager, typeof(Resources)),
             "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
-    }
 }

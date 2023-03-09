@@ -68,7 +68,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         // Emits diagnostic but generates no source
         var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
         var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor("provider").Id, diagnostic.Id);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
         Assert.Empty(result.GeneratedSources);
 
         // Falls back to runtime-generated endpoint
@@ -90,7 +90,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         // Emits diagnostic but generates no source
         var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
         var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor("provider").Id, diagnostic.Id);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
         Assert.Empty(result.GeneratedSources);
 
         // Falls back to runtime-generated endpoint
