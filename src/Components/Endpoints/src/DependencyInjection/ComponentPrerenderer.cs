@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
@@ -73,7 +74,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
         };
     }
 
-    public async ValueTask<IHtmlAsyncContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
         if (serializationMode == PersistedStateSerializationMode.Infer)
         {
@@ -273,15 +274,15 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
         {
             if (_dispatcher is null)
             {
-                WriteTo(writer);
+                WriteTo(writer, HtmlEncoder.Default);
             }
             else
             {
-                await _dispatcher.InvokeAsync(() => WriteTo(writer));
+                await _dispatcher.InvokeAsync(() => WriteTo(writer, HtmlEncoder.Default));
             }
         }
 
-        private void WriteTo(TextWriter writer)
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (_serverMarker.HasValue)
             {
@@ -345,7 +346,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
         return result.EndsWith('/') ? result : result += "/";
     }
 
-    private sealed class ComponentStateHtmlContent : IHtmlAsyncContent
+    private sealed class ComponentStateHtmlContent : IHtmlContent
     {
         private PrerenderComponentApplicationStore? _store;
 
@@ -357,7 +358,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             _store = store;
         }
 
-        public ValueTask WriteToAsync(TextWriter writer)
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (_store != null)
             {
@@ -366,8 +367,6 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
                 writer.Write("-->");
                 _store = null;
             }
-
-            return ValueTask.CompletedTask;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Html;
 /// <summary>
 /// HTML content which can be written asynchronously to a TextWriter.
 /// </summary>
-public interface IHtmlAsyncContent
+public interface IHtmlAsyncContent : IHtmlContent
 {
     /// <summary>
     /// Writes the content to the specified <paramref name="writer"/>.

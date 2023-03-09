@@ -3,6 +3,8 @@
 
 namespace Microsoft.AspNetCore.Components;
 
+#nullable enable // This is shared-source with Mvc.ViewFeatures which does not enable nullability by default
+
 internal struct WebAssemblyComponentMarker
 {
     public const string ClientMarkerType = "webassembly";

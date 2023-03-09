@@ -48,21 +48,16 @@ public class PersistComponentStateTagHelper : TagHelper
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(output);
 
-        var services = ViewContext.HttpContext.RequestServices;
-        
-        var renderer = services.GetRequiredService<HtmlRenderer>();
-        var componentPrerenderer = services.GetRequiredService<IComponentPrerenderer>();
-
-
-        output.TagName = null;
-        if (store != null)
+        var componentPrerenderer = ViewContext.HttpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
+        var serializationMode = PersistenceMode switch
         {
-            await manager.PersistStateAsync(store, renderer.Dispatcher);
-            output.Content.SetHtmlContent(
-                new HtmlContentBuilder()
-                    .AppendHtml("<!--Blazor-Component-State:")
-                    .AppendHtml(new ComponentStateHtmlContent(store))
-                    .AppendHtml("-->"));
-        }
+            null => PersistedStateSerializationMode.Infer,
+            TagHelpers.PersistenceMode.Server => PersistedStateSerializationMode.Server,
+            TagHelpers.PersistenceMode.WebAssembly => PersistedStateSerializationMode.WebAssembly,
+            _ => throw new InvalidOperationException("Invalid persistence mode."),
+        };
+
+        var content = await componentPrerenderer.PrerenderPersistedStateAsync(ViewContext.HttpContext, serializationMode);
+        output.Content.SetHtmlContent(content);
     }
 }

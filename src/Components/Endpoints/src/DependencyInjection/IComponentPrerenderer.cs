@@ -25,7 +25,13 @@ public interface IComponentPrerenderer
         RenderMode renderMode,
         ParameterView parameters);
 
-    ValueTask<IHtmlAsyncContent> PrerenderPersistedStateAsync(
+    /// <summary>
+    /// Prepares a serialized representation of any component state that is persistible within the current request.
+    /// </summary>
+    /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/>.</param>
+    /// <returns>A task that completes with the prerendered state content.</returns>
+    ValueTask<IHtmlContent> PrerenderPersistedStateAsync(
         HttpContext httpContext,
         PersistedStateSerializationMode serializationMode);
 
