@@ -58,15 +58,15 @@ internal sealed class JsonTranscodingRouteAdapter
             {
                 var fullPath = string.Join(".", segmentVariable.FieldPath);
 
-                var segmentCount = segmentVariable.EndSegment - segmentVariable.StartSegment;
+                var remainingSegmentCount = segmentVariable.EndSegment - segmentVariable.StartSegment;
 
                 // Handle situation where the last segment is catch all but there is a verb.
-                if (segmentCount == 1 && segmentVariable.HasCatchAllPath && pattern.Verb != null)
+                if (remainingSegmentCount == 1 && segmentVariable.HasCatchAllPath && pattern.Verb != null)
                 {
-                    segmentCount++;
+                    remainingSegmentCount++;
                 }
 
-                if (segmentCount == 1)
+                if (remainingSegmentCount == 1)
                 {
                     // Single segment parameter. Include in route with its default name.
                     tempSegments[i] = segmentVariable.HasCatchAllPath
@@ -103,7 +103,7 @@ internal sealed class JsonTranscodingRouteAdapter
                                 {
                                     var parameterName = $"__Complex_{fullPath}_{i}";
                                     var suffix = BuildSuffix(tempSegments.Skip(i + 1), pattern.Verb);
-                                    catchAllSuffix = BuildSuffix(tempSegments.Skip(i + segmentCount - 1), pattern.Verb);
+                                    catchAllSuffix = BuildSuffix(tempSegments.Skip(i + remainingSegmentCount - 1), pattern.Verb);
 
                                     // It's possible to have multiple routes with catch-all parameters that have different suffixes.
                                     // For example:
@@ -187,6 +187,7 @@ internal sealed class JsonTranscodingRouteAdapter
         }
 
         string resolvedRoutePattern = "/" + string.Join("/", tempSegments);
+        // If the route has a catch all then the verb is included in the catch all regex constraint.
         if (pattern.Verb != null && !haveCatchAll)
         {
             resolvedRoutePattern += ":" + pattern.Verb;
