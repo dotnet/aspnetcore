@@ -35,6 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HelixContent Include="$(MSBuildProjectDirectory)\RequestDelegateGenerator\Baselines\**" LinkBase="RequestDelegateGeneratorBaselines"/>
+    <HelixContent Include="$(MSBuildProjectDirectory)\RequestDelegateGenerator\Baselines\**" />
   </ItemGroup>
 </Project>
