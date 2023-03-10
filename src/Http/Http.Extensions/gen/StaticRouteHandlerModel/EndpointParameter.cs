@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal class EndpointParameter
 {
-    public EndpointParameter(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
+    public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
     {
         Type = parameter.Type;
         Name = parameter.Name;
@@ -95,7 +96,7 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.RouteOrQuery;
         }
-        else if (IsArray && elementType.SpecialType == SpecialType.System_String)
+        else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && IsArray && elementType.SpecialType == SpecialType.System_String)
         {
             Source = EndpointParameterSource.Query;
         }
@@ -108,6 +109,19 @@ internal class EndpointParameter
         else
         {
             Source = EndpointParameterSource.JsonBodyOrService;
+        }
+    }
+
+    private static bool ShouldDisableInferredBodyParameters(string httpMethod)
+    {
+        switch (httpMethod)
+        {
+            case "MapPut":
+            case "MapPatch":
+            case "MapPost":
+                return false;
+            default:
+                return true;
         }
     }
 
