@@ -105,7 +105,7 @@ public class RouteTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task SimpleCatchAllParameter_PrefixSufficSlashes_MatchUrl_SuccessResult()
+    public async Task SimpleCatchAllParameter_PrefixSuffixSlashes_MatchUrl_SuccessResult()
     {
         // Arrange
         Task<HelloReply> UnaryMethod(HelloRequest request, ServerCallContext context)
