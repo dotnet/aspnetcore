@@ -177,9 +177,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.5-servicing.23159.6">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.5-servicing.23159.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="7.0.0-alpha.1.22505.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
@@ -264,15 +264,15 @@
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="7.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="7.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -280,15 +280,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="7.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="7.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="7.0.5-servicing.23159.6">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="7.0.5-servicing.23159.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22423.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
@@ -300,7 +300,7 @@
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <Dependency Name="Microsoft.NETCore.Platforms" Version="7.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21bd0a7141e4884cd268110fdeeec0cb6a0d8d46</Sha>
+      <Sha>15f5d02ad8d260687018fbea580cf27a58c19822</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23114.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
