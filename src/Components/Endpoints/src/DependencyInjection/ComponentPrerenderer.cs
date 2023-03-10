@@ -23,7 +23,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
     private static readonly object InvokedRenderModesKey = new object();
 
     private readonly HtmlRenderer _htmlRenderer;
-    private readonly Lazy<ServerComponentSerializer> _serverComponentSerializer;
+    private readonly IServiceProvider _services;
     private readonly object _servicesInitializedLock = new();
     private Task? _servicesInitializedTask;
 
@@ -32,10 +32,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
         IServiceProvider services)
     {
         _htmlRenderer = htmlRenderer;
-
-        // Lazy because we don't actually want to require a whole chain of services including Data Protection
-        // to be required unless you actually use Server render mode.
-        _serverComponentSerializer = new(services.GetRequiredService<ServerComponentSerializer>);
+        _services = services;
     }
 
     public Dispatcher Dispatcher => _htmlRenderer.Dispatcher;
@@ -76,6 +73,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
 
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
+        // First we resolve "infer" mode to a specific mode
         if (serializationMode == PersistedStateSerializationMode.Infer)
         {
             switch (GetPersistStateRenderMode(httpContext))
@@ -96,6 +94,7 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             }
         }
 
+        // Now given the mode, we obtain a particular store for that mode
         var store = serializationMode switch
         {
             PersistedStateSerializationMode.Server =>
@@ -106,9 +105,9 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
                 throw new InvalidOperationException("Invalid persistence mode.")
         };
 
+        // Finally, persist the state and return the HTML content
         var manager = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await manager.PersistStateAsync(store, _htmlRenderer.Dispatcher);
-
         return new ComponentStateHtmlContent(store);
     }
 
@@ -203,7 +202,11 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var marker = _serverComponentSerializer.Value.SerializeInvocation(
+        // Lazy because we don't actually want to require a whole chain of services including Data Protection
+        // to be required unless you actually use Server render mode.
+        var serverComponentSerializer = _services.GetRequiredService<ServerComponentSerializer>();
+
+        var marker = serverComponentSerializer.SerializeInvocation(
             invocationId,
             type,
             parametersCollection,
@@ -239,7 +242,11 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var marker = _serverComponentSerializer.Value.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
+        // Lazy because we don't actually want to require a whole chain of services including Data Protection
+        // to be required unless you actually use Server render mode.
+        var serverComponentSerializer = _services.GetRequiredService<ServerComponentSerializer>();
+
+        var marker = serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 
