@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -201,6 +202,12 @@ public class RouteTests : IntegrationTestBase
 
         // Assert 2
         Assert.Equal("Hello test/name two!", result2.RootElement.GetProperty("message").GetString());
+
+        // Act 3
+        var response3 = await client.GetAsync("/v1/greeter/test/name").DefaultTimeout();
+
+        // Assert 3
+        Assert.Equal(HttpStatusCode.NotFound, response3.StatusCode);
     }
 
     [Fact]
