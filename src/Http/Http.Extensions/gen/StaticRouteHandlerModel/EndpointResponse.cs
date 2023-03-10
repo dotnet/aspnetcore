@@ -20,6 +20,7 @@ internal class EndpointResponse
     public bool IsVoid { get; set; }
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
+    public bool IsAnonymousType { get; set; }
 
     private WellKnownTypes WellKnownTypes { get; init; }
 
@@ -33,6 +34,7 @@ internal class EndpointResponse
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType(method);
+        IsAnonymousType = method.ReturnType.IsAnonymousType;
     }
 
     private ITypeSymbol? UnwrapResponseType(IMethodSymbol method)

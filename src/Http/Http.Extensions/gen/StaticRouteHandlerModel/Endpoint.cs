@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal class Endpoint
 {
-    public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
+    public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes, SemanticModel semanticModel)
     {
         Operation = operation;
         Location = GetLocation(operation);
@@ -30,13 +30,19 @@ internal class Endpoint
 
         RoutePattern = routeToken.ValueText;
 
-        if (!operation.TryGetRouteHandlerMethod(out var method) || method == null)
+        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method) || method == null)
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;
         }
 
         Response = new EndpointResponse(method, wellKnownTypes);
+        if (Response.IsAnonymousType)
+        {
+            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveAnonymousReturnType, Operation.Syntax.GetLocation()));
+            return;
+        }
+
         EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
         IsAwaitable = Response?.IsAwaitable == true;
 

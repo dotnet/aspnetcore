@@ -47,7 +47,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
                 if (operation is IInvocationOperation invocationOperation)
                 {
-                    return new Endpoint(invocationOperation, wellKnownTypes);
+                    return new Endpoint(invocationOperation, wellKnownTypes, context.SemanticModel);
                 }
                 return null;
             })
