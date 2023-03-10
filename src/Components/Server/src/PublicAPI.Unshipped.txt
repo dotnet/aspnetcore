@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.HandleInboundActivityAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit! circuit, System.Func<System.Threading.Tasks.Task!>! next) -> System.Threading.Tasks.Task!
