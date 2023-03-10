@@ -122,6 +122,36 @@ public class DbContextHealthCheckTest
         }
     }
 
+    [Theory]
+    [InlineData(HealthStatus.Unhealthy)]
+    [InlineData(HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Healthy)]
+    public async Task CheckAsync_CustomTestRegardlessOfFailureStatusSpecified_IfThrowsException_Unhealthy(HealthStatus healthStatus)
+    {
+        // Arrange
+        const string exceptionMessage = "Something unexpected happened in the testQuery";
+
+        var services = CreateServices(async (c, ct) =>
+        {
+            var any = await c.Blogs.AnyAsync();
+            throw new Exception(exceptionMessage);
+        }, failureStatus: healthStatus);
+
+        using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+        {
+            // var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+            var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+            var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
+
+            // Act
+            var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
+
+            // Assert
+            Assert.Equal(HealthStatus.Unhealthy, result.Status);
+            Assert.Equal(exceptionMessage, result.Description);
+        }
+    }
+
     // used to ensure each test uses a unique in-memory database
     private static int _testDbCounter;
 
