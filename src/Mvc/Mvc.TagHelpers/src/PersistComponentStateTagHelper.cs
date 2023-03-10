@@ -53,6 +53,7 @@ public class PersistComponentStateTagHelper : TagHelper
         };
 
         var content = await componentPrerenderer.PrerenderPersistedStateAsync(ViewContext.HttpContext, serializationMode);
+        output.TagName = null;
         output.Content.SetHtmlContent(content);
     }
 }
