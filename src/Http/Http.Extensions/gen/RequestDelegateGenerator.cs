@@ -157,15 +157,12 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) =>
             {
-                var parameters = endpoints.SelectMany(endpoint => endpoint.Parameters);
-                var responses = endpoints.Select(endpoint => endpoint.Response);
-
-                var hasJsonBodyOrService = parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
-                var hasJsonBody = parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
-                var hasRouteOrQuery = parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
-                var hasBindAsync = parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
-                var hasParsable = parameters.Any(parameter => parameter.IsParsable);
-                var hasJsonResponse = responses.Any(response => !response.ResponseType.IsSealed && !response.ResponseType.IsValueType);
+                var hasJsonBodyOrService = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBodyOrService);
+                var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody);
+                var hasRouteOrQuery = endpoints.Any(endpoint => endpoint.EmitterContext.HasRouteOrQuery);
+                var hasBindAsync = endpoints.Any(endpoint => endpoint.EmitterContext.HasBindAsync);
+                var hasParsable = endpoints.Any(endpoint => endpoint.EmitterContext.HasParsable);
+                var hasJsonResponse = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonResponse);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
