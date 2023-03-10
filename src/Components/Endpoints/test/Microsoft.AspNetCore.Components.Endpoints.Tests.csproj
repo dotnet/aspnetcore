@@ -6,5 +6,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
   </ItemGroup>
 </Project>

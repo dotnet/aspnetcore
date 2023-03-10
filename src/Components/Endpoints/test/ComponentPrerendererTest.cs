@@ -4,14 +4,13 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -19,9 +18,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using Moq;
-using static Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class ComponentPrerendererTest
 {
@@ -294,7 +292,7 @@ public class ComponentPrerendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.Server, ParameterView.Empty);
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var content = HtmlContentToString(result);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -326,7 +324,7 @@ public class ComponentPrerendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -387,11 +385,11 @@ public class ComponentPrerendererTest
 
         // Act
         var firstResult = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
-        var firstComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(firstResult));
+        var firstComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(firstResult));
         var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         var secondResult = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.Server, ParameterView.Empty);
-        var secondComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(secondResult));
+        var secondComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(secondResult));
         var secondMatch = Regex.Match(secondComponent, ComponentPattern);
 
         // Assert
@@ -430,7 +428,7 @@ public class ComponentPrerendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.Static, parameters);
 
         // Assert
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         Assert.Equal("<p>Hello SomeName!</p>", content);
     }
 
@@ -445,7 +443,7 @@ public class ComponentPrerendererTest
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.Server, parameters);
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var content = HtmlContentToString(result);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -484,7 +482,7 @@ public class ComponentPrerendererTest
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.Server, parameters);
-        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        var content = HtmlContentToString(result);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -523,7 +521,7 @@ public class ComponentPrerendererTest
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, parameters);
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -574,7 +572,7 @@ public class ComponentPrerendererTest
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, parameters);
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -640,7 +638,7 @@ public class ComponentPrerendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(OnAfterRenderComponent), RenderMode.Static, parameters);
 
         // Assert
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         Assert.Equal("<p>Hello</p>", content);
         Assert.False(state.OnAfterRenderRan);
     }
@@ -671,7 +669,7 @@ public class ComponentPrerendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(AsyncDisposableComponent), RenderMode.Static, parameters);
 
         // Assert
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         Assert.Equal("<p>Hello</p>", content);
         await ((IAsyncDisposable)scope).DisposeAsync();
 
@@ -735,9 +733,9 @@ public class ComponentPrerendererTest
             })));
 
         // Assert
-        Assert.Equal("JavaScript interop calls cannot be issued during server-side prerendering, " +
-                "because the page has not yet loaded in the browser. Prerendered components must wrap any JavaScript " +
-                "interop calls in conditional logic to ensure those interop calls are not attempted during prerendering.",
+        Assert.Equal("JavaScript interop calls cannot be issued during server-side static rendering, because the page "
+            + "has not yet loaded in the browser. Statically-rendered components must wrap any JavaScript interop calls "
+            + "in conditional logic to ensure those interop calls are not attempted during static rendering.",
             exception.Message);
     }
 
@@ -849,17 +847,25 @@ public class ComponentPrerendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(AsyncComponent), RenderMode.Static, ParameterView.Empty);
-        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
 
         // Assert
         Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
     }
 
+    private static string HtmlContentToString(IHtmlAsyncContent result)
+    {
+        var writer = new StringWriter();
+        result.WriteTo(writer, HtmlEncoder.Default);
+        return writer.ToString();
+    }
+
     private ComponentPrerenderer GetComponentRenderer(IServiceProvider services = null)
     {
+        var effectiveServices = services ?? _services;
         return new ComponentPrerenderer(
-            new HtmlRenderer(services ?? _services, NullLoggerFactory.Instance),
-            new ServerComponentSerializer(_dataprotectorProvider));
+            new HtmlRenderer(effectiveServices, NullLoggerFactory.Instance),
+            effectiveServices);
     }
 
     private HttpContext GetHttpContext(HttpContext context = null)
@@ -885,6 +891,7 @@ public class ComponentPrerendererTest
         services.AddSingleton<ILogger<ComponentStatePersistenceManager>, NullLogger<ComponentStatePersistenceManager>>();
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSingleton<ServerComponentSerializer>();
         return services;
     }
 

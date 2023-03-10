@@ -1,21 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// An <see cref="IResult"/> that renders a Razor Component.
 /// </summary>
 public class RazorComponentResult : IResult
 {
-    private static readonly IReadOnlyDictionary<string, object> EmptyParameters
-        = new Dictionary<string, object>().AsReadOnly();
+    private static readonly IReadOnlyDictionary<string, object?> EmptyParameters
+        = new Dictionary<string, object?>().AsReadOnly();
 
     /// <summary>
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
@@ -31,7 +29,7 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(Type componentType, object parameters)
+    public RazorComponentResult(Type componentType, object? parameters)
         : this(componentType, CoerceParametersObjectToDictionary(parameters))
     {
     }
@@ -41,7 +39,7 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(Type componentType, IReadOnlyDictionary<string, object> parameters)
+    public RazorComponentResult(Type componentType, IReadOnlyDictionary<string, object?>? parameters)
     {
         // Note that the Blazor renderer will validate that componentType implements IComponent and throws a suitable
         // exception if not, so we don't need to duplicate that logic here.
@@ -51,10 +49,10 @@ public class RazorComponentResult : IResult
         Parameters = parameters ?? EmptyParameters;
     }
 
-    private static IReadOnlyDictionary<string, object> CoerceParametersObjectToDictionary(object parameters)
+    private static IReadOnlyDictionary<string, object?>? CoerceParametersObjectToDictionary(object? parameters)
         => parameters is null
         ? null
-        : (IReadOnlyDictionary<string, object>)PropertyHelper.ObjectToDictionary(parameters);
+        : (IReadOnlyDictionary<string, object?>)PropertyHelper.ObjectToDictionary(parameters);
 
     /// <summary>
     /// Gets the component type.
@@ -64,7 +62,7 @@ public class RazorComponentResult : IResult
     /// <summary>
     /// Gets or sets the Content-Type header for the response.
     /// </summary>
-    public string ContentType { get; set; }
+    public string? ContentType { get; set; }
 
     /// <summary>
     /// Gets or sets the HTTP status code.
@@ -74,7 +72,7 @@ public class RazorComponentResult : IResult
     /// <summary>
     /// Gets the parameters for the component.
     /// </summary>
-    public IReadOnlyDictionary<string, object> Parameters { get; }
+    public IReadOnlyDictionary<string, object?> Parameters { get; }
 
     /// <summary>
     /// Gets or sets the rendering mode.

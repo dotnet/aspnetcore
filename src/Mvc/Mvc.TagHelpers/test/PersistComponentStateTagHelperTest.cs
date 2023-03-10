@@ -3,6 +3,7 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
@@ -80,7 +81,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.WebAssemblyPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -128,7 +129,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.ServerPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -153,8 +154,8 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.ServerPrerendered);
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, RenderMode.WebAssemblyPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -190,6 +191,7 @@ public class PersistComponentStateTagHelperTest
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped<HtmlRenderer>()
+                .AddScoped<IComponentPrerenderer, ComponentPrerenderer>()
                 .BuildServiceProvider(),
         };
 
