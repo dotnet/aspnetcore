@@ -308,6 +308,40 @@ public partial class HubConnectionTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task CanCancelTokenDuringStream_SendsCancelInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            using var cts = new CancellationTokenSource();
+            var asyncEnumerable = hubConnection.StreamAsync<int>("Stream", 1, cts.Token);
+
+            await using var e = asyncEnumerable.GetAsyncEnumerator(cts.Token);
+            var task = e.MoveNextAsync();
+
+            var item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            var invocationId = item["invocationId"];
+            await connection.ReceiveJsonMessage(
+                new { type = HubProtocolConstants.StreamItemMessageType, invocationId, item = 1 }
+                ).DefaultTimeout();
+
+            await task.DefaultTimeout();
+            cts.Cancel();
+
+            item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, item["type"]);
+            Assert.Equal(invocationId, item["invocationId"]);
+
+            // Stream on client-side completes on cancellation
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await e.MoveNextAsync()).DefaultTimeout();
+        }
+    }
+
+    [Fact]
     public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
     {
         bool ExpectedErrors(WriteContext writeContext)
