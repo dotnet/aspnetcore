@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 public class RazorComponentResult : IResult
 {
-    private static readonly IReadOnlyDictionary<string, object> EmptyParameters
-        = new Dictionary<string, object>().AsReadOnly();
+    private static readonly IReadOnlyDictionary<string, object?> EmptyParameters
+        = new Dictionary<string, object?>().AsReadOnly();
 
     /// <summary>
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
@@ -39,7 +39,7 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(Type componentType, IReadOnlyDictionary<string, object>? parameters)
+    public RazorComponentResult(Type componentType, IReadOnlyDictionary<string, object?>? parameters)
     {
         // Note that the Blazor renderer will validate that componentType implements IComponent and throws a suitable
         // exception if not, so we don't need to duplicate that logic here.
@@ -49,10 +49,10 @@ public class RazorComponentResult : IResult
         Parameters = parameters ?? EmptyParameters;
     }
 
-    private static IReadOnlyDictionary<string, object>? CoerceParametersObjectToDictionary(object? parameters)
+    private static IReadOnlyDictionary<string, object?>? CoerceParametersObjectToDictionary(object? parameters)
         => parameters is null
         ? null
-        : (IReadOnlyDictionary<string, object>)PropertyHelper.ObjectToDictionary(parameters);
+        : (IReadOnlyDictionary<string, object?>)PropertyHelper.ObjectToDictionary(parameters);
 
     /// <summary>
     /// Gets the component type.
@@ -72,7 +72,7 @@ public class RazorComponentResult : IResult
     /// <summary>
     /// Gets the parameters for the component.
     /// </summary>
-    public IReadOnlyDictionary<string, object> Parameters { get; }
+    public IReadOnlyDictionary<string, object?> Parameters { get; }
 
     /// <summary>
     /// Gets or sets the rendering mode.

@@ -29,7 +29,7 @@ public class RazorComponentResult<TComponent> : RazorComponentResult where TComp
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
     /// </summary>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(IReadOnlyDictionary<string, object> parameters) : base(typeof(TComponent), parameters)
+    public RazorComponentResult(IReadOnlyDictionary<string, object?> parameters) : base(typeof(TComponent), parameters)
     {
     }
 }
