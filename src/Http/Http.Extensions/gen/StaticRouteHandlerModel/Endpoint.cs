@@ -24,7 +24,7 @@ internal class Endpoint
 
         if (!operation.TryGetRouteHandlerPattern(out var routeToken))
         {
-            Diagnostics.Add(DiagnosticDescriptors.UnableToResolveRoutePattern);
+            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveRoutePattern, Operation.Syntax.GetLocation()));
             return;
         }
 
@@ -32,7 +32,7 @@ internal class Endpoint
 
         if (!operation.TryGetRouteHandlerMethod(out var method))
         {
-            Diagnostics.Add(DiagnosticDescriptors.UnableToResolveMethod);
+            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;
         }
 
@@ -68,7 +68,10 @@ internal class Endpoint
                     IsAwaitable = true;
                     break;
                 case EndpointParameterSource.Unknown:
-                    Diagnostics.Add(DiagnosticDescriptors.GetUnableToResolveParameterDescriptor(parameter.Name));
+                    Diagnostics.Add(Diagnostic.Create(
+                        DiagnosticDescriptors.UnableToResolveParameterDescriptor,
+                        Operation.Syntax.GetLocation(),
+                        parameter.Name));
                     break;
             }
 
@@ -91,7 +94,7 @@ internal class Endpoint
     public EmitterContext EmitterContext { get;  }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
-    public List<DiagnosticDescriptor> Diagnostics { get; } = new List<DiagnosticDescriptor>();
+    public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
     public (string File, int LineNumber) Location { get; }
     public IInvocationOperation Operation { get; }

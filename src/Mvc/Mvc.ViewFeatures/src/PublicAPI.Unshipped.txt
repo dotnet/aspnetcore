@@ -1,2 +1,24 @@
 #nullable enable
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult() -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string, object>
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RenderMode.set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.get -> int?
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.StatusCode.set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ComponentType.get -> System.Type
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ContentType.get -> string
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.ContentType.set -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RazorComponentResult(System.Type componentType) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RazorComponentResult(System.Type componentType, object parameters) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult.RazorComponentResult(System.Type componentType, System.Collections.Generic.IReadOnlyDictionary<string, object> parameters) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult(object parameters) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult<TComponent>.RazorComponentResult(System.Collections.Generic.IReadOnlyDictionary<string, object> parameters) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.RazorComponentResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory
+~static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.DefaultContentType -> string
+~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponentResult result) -> System.Threading.Tasks.Task

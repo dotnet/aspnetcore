@@ -54,7 +54,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             var (filePath, _) = endpoint.Location;
             foreach (var diagnostic in endpoint.Diagnostics)
             {
-                context.ReportDiagnostic(Diagnostic.Create(diagnostic, endpoint.Operation.Syntax.GetLocation(), filePath));
+                context.ReportDiagnostic(diagnostic);
             }
         });
 

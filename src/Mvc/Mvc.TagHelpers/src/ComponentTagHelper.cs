@@ -94,7 +94,7 @@ public sealed class ComponentTagHelper : TagHelper
         var requestServices = ViewContext.HttpContext.RequestServices;
         var componentPrerenderer = requestServices.GetRequiredService<ComponentPrerenderer>();
         var parameters = _parameters is null || _parameters.Count == 0 ? ParameterView.Empty : ParameterView.FromDictionary(_parameters);
-        var result = await componentPrerenderer.PrerenderComponentAsync(ViewContext, ComponentType, RenderMode, parameters);
+        var result = await componentPrerenderer.PrerenderComponentAsync(ViewContext.HttpContext, ComponentType, RenderMode, parameters);
 
         // Reset the TagName. We don't want `component` to render.
         output.TagName = null;

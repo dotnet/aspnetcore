@@ -27,6 +27,8 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     [InlineData("System.IO.Stream")]
     [InlineData("System.Security.Claims.ClaimsPrincipal")]
     [InlineData("System.Threading.CancellationToken")]
+    [InlineData("[FromBody] System.IO.Pipelines.PipeReader")]
+    [InlineData("[FromBody] System.IO.Stream")]
     public async Task MapAction_SingleSpecialTypeParam_StringReturn(string parameterType)
     {
         var (results, compilation) = await RunGeneratorAsync($"""
