@@ -71,6 +71,7 @@ internal sealed class JsonTranscodingRouteAdapter
                 // Handle situation where the last segment is catch all but there is a verb.
                 if (remainingSegmentCount == 1 && segmentVariable.HasCatchAllPath && pattern.Verb != null)
                 {
+                    // Move past the catch all so the regex added below just includes the verb.
                     remainingSegmentCount++;
                 }
 
