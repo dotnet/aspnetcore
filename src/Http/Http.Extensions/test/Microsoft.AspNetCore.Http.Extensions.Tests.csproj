@@ -33,4 +33,8 @@
       <_Parameter2>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), "RequestDelegateGenerator", "Baselines"))</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\RequestDelegateGenerator\Baselines\**" LinkBase="RequestDelegateGeneratorBaselines"/>
+  </ItemGroup>
 </Project>
