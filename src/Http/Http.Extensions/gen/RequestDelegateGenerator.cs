@@ -30,7 +30,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var endpointsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
-            predicate: (node, _) => node is InvocationExpressionSyntax
+            predicate: static (node, _) => node is InvocationExpressionSyntax
             {
                 Expression: MemberAccessExpressionSyntax
                 {
@@ -41,17 +41,21 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 },
                 ArgumentList: { Arguments: { Count: 2 } args }
             } && _knownMethods.Contains(method),
-            transform: (context, token) =>
+            transform: static (context, token) =>
             {
-                var operation = context.SemanticModel.GetOperation(context.Node, token) as IInvocationOperation;
+                var operation = context.SemanticModel.GetOperation(context.Node, token);
                 var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-                return new Endpoint(operation, wellKnownTypes);
+                if (operation is IInvocationOperation invocationOperation)
+                {
+                    return new Endpoint(invocationOperation, wellKnownTypes);
+                }
+                return null;
             })
+            .Where(static endpoint => endpoint != null)
             .WithTrackingName(GeneratorSteps.EndpointModelStep);
 
         context.RegisterSourceOutput(endpointsWithDiagnostics, (context, endpoint) =>
         {
-            var (filePath, _) = endpoint.Location;
             foreach (var diagnostic in endpoint.Diagnostics)
             {
                 context.ReportDiagnostic(diagnostic);
@@ -81,7 +85,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
             endpoint.EmitRouteOrQueryResolver(codeWriter);
             endpoint.EmitJsonBodyOrServicePreparation(codeWriter);
-            endpoint.EmitJsonPreparation(codeWriter);
+            endpoint.Response?.EmitJsonPreparation(codeWriter);
             if (endpoint.NeedsParameterArray)
             {
                 codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
@@ -89,14 +93,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.WriteLineNoTabs(string.Empty);
             codeWriter.WriteLine("if (options?.EndpointBuilder?.FilterFactories.Count > 0)");
             codeWriter.StartBlock();
-            if (endpoint.Response.IsAwaitable)
-            {
-                codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>");
-            }
-            else
-            {
-                codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
-            }
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>"
+                : "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
             codeWriter.StartBlock();

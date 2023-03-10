@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <IsAnalyzersProject>true</IsAnalyzersProject>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

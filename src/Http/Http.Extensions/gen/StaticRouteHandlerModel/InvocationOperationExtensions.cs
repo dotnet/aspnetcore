@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -12,7 +13,7 @@ internal static class InvocationOperationExtensions
     private const int RoutePatternArgumentOrdinal = 1;
     private const int RouteHandlerArgumentOrdinal = 2;
 
-    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, out IMethodSymbol method)
+    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, out IMethodSymbol? method)
     {
         foreach (var argument in invocation.Arguments)
         {
@@ -46,7 +47,7 @@ internal static class InvocationOperationExtensions
         return true;
     }
 
-    private static IMethodSymbol ResolveMethodFromOperation(IOperation operation) => operation switch
+    private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation) => operation switch
     {
         IArgumentOperation argument => ResolveMethodFromOperation(argument.Value),
         IConversionOperation conv => ResolveMethodFromOperation(conv.Operand),
@@ -60,7 +61,7 @@ internal static class InvocationOperationExtensions
         _ => null
     };
 
-    private static IOperation ResolveDeclarationOperation(ISymbol symbol, SemanticModel semanticModel)
+    private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
     {
         foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
         {
@@ -75,7 +76,7 @@ internal static class InvocationOperationExtensions
                 })
             {
                 // Use the correct semantic model based on the syntax tree
-                var operation = semanticModel.GetOperation(expr);
+                var operation = semanticModel?.GetOperation(expr);
 
                 if (operation is not null)
                 {

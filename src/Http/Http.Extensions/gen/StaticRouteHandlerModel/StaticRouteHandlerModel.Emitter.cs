@@ -15,43 +15,32 @@ internal static class StaticRouteHandlerModelEmitter
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response.IsVoid ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || endpoint.Response.IsVoid ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
         }
-        else
-        {
-            var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
 
-            if (endpoint.Response.IsVoid)
-            {
-                return $"System.Action<{parameterTypeList}>";
-            }
-            else
-            {
-                return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
-            }
+        if (endpoint.Response == null || endpoint.Response.IsVoid)
+        {
+            return $"System.Action<{parameterTypeList}>";
         }
+        return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
     }
 
     public static string EmitHandlerDelegateCast(this Endpoint endpoint)
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response.IsVoid ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || endpoint.Response.IsVoid ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
         }
-        else
-        {
-            var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
-                p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)));
 
-            if (endpoint.Response.IsVoid)
-            {
-                return $"Action<{parameterTypeList}>";
-            }
-            else
-            {
-                return $"Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
-            }
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
+            p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)));
+
+        if (endpoint.Response == null || endpoint.Response.IsVoid)
+        {
+            return $"Action<{parameterTypeList}>";
         }
+        return $"Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
     }
 
     public static string EmitSourceKey(this Endpoint endpoint)
@@ -94,9 +83,13 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.WriteLine(endpoint.IsAwaitable ? "return;" : "return Task.CompletedTask;");
         codeWriter.EndBlock(); // End if-statement block
-        if (!endpoint.Response.IsVoid)
+        if (endpoint.Response == null)
         {
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";");
+            return;
+        }
+        if (!endpoint.Response.IsVoid && endpoint.Response is { ContentType: {} contentType})
+        {
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
         }
         if (!endpoint.Response.IsVoid)
         {
@@ -109,7 +102,7 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
         if (!endpoint.Response.IsVoid)
         {
-            codeWriter.WriteLine(endpoint.EmitResponseWritingCall());
+            codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
         }
         else if (!endpoint.IsAwaitable)
         {
@@ -118,27 +111,27 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.EndBlock(); // End handler method block
     }
 
-    private static string EmitResponseWritingCall(this Endpoint endpoint)
+    private static string? EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
     {
-        var returnOrAwait = endpoint.IsAwaitable ? "await" : "return";
+        var returnOrAwait = isAwaitable ? "await" : "return";
 
-        if (endpoint.Response.IsIResult)
+        if (endpointResponse.IsIResult)
         {
             return $"{returnOrAwait} result.ExecuteAsync(httpContext);";
         }
-        else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_String)
+        else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_String)
         {
             return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
         }
-        else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_Object)
+        else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
             return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
         }
-        else if (!endpoint.Response.IsVoid)
+        else if (!endpointResponse.IsVoid)
         {
-            return $"{returnOrAwait} {endpoint.EmitJsonResponse()}";
+            return $"{returnOrAwait} {endpointResponse.EmitJsonResponse()}";
         }
-        else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
+        else if (!endpointResponse.IsAwaitable && endpointResponse.IsVoid)
         {
             return $"{returnOrAwait} Task.CompletedTask;";
         }
