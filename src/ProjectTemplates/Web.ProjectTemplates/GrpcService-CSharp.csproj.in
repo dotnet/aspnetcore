@@ -4,6 +4,7 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <!--#if (NativeAot) -->
     <PublishAot>true</PublishAot>
     <!--#endif -->
