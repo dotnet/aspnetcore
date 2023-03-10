@@ -408,6 +408,24 @@ app.MapGet("/", HelloName)
     }
 
     [Fact]
+    public async Task CanApplyFiltersOnAsyncHandler()
+    {
+        var testString = "From a task";
+        var source = $$"""
+Task<string> GetString() => Task.FromResult("{{testString}}");
+app.MapGet("/", () => GetString())
+    .AddEndpointFilter((c, n) => n(c));
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, testString);
+    }
+
+    [Fact]
     public async Task MapAction_InferredTryParse_NonOptional_Provided()
     {
         var source = """
@@ -430,221 +448,5 @@ app.MapGet("/", (HttpContext httpContext, int id) =>
 
         Assert.Equal(42, httpContext.Items["id"]);
         Assert.Equal(200, httpContext.Response.StatusCode);
-    }
-
-    public static object[][] BindAsyncUriTypesAndOptionalitySupport = new object[][]
-    {
-        new object[] { "MyBindAsyncRecord", false },
-        new object[] { "MyBindAsyncStruct", true },
-        new object[] { "MyNullableBindAsyncStruct", false },
-        new object[] { "MyBothBindAsyncStruct", true },
-        new object[] { "MySimpleBindAsyncRecord", false, },
-        new object[] { "MySimpleBindAsyncStruct", true },
-        new object[] { "BindAsyncFromImplicitStaticAbstractInterface", false },
-        new object[] { "InheritBindAsync", false },
-        new object[] { "BindAsyncFromExplicitStaticAbstractInterface", false },
-        // TODO: Fix this
-        //new object[] { "MyBindAsyncFromInterfaceRecord", false },
-    };
-
-    public static IEnumerable<object[]> BindAsyncUriTypes =>
-        BindAsyncUriTypesAndOptionalitySupport.Select(x => new[] { x[0] });
-
-    [Theory]
-    [MemberData(nameof(BindAsyncUriTypes))]
-    public async Task MapAction_BindAsync_Optional_Provided(string bindAsyncType)
-    {
-        var source = $$"""
-app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}}? myBindAsyncParam) =>
-{
-    httpContext.Items["uri"] = myBindAsyncParam?.Uri;
-});
-""";
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Headers.Referer = "https://example.org";
-        await endpoint.RequestDelegate(httpContext);
-
-        Assert.Equal(new Uri("https://example.org"), httpContext.Items["uri"]);
-        Assert.Equal(200, httpContext.Response.StatusCode);
-    }
-
-    [Theory]
-    [MemberData(nameof(BindAsyncUriTypes))]
-    public async Task MapAction_BindAsync_NonOptional_Provided(string bindAsyncType)
-    {
-        var source = $$"""
-app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
-{
-    httpContext.Items["uri"] = myBindAsyncParam.Uri;
-});
-""";
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Headers.Referer = "https://example.org";
-        await endpoint.RequestDelegate(httpContext);
-
-        Assert.Equal(new Uri("https://example.org"), httpContext.Items["uri"]);
-        Assert.Equal(200, httpContext.Response.StatusCode);
-    }
-
-    [Theory]
-    [MemberData(nameof(BindAsyncUriTypesAndOptionalitySupport))]
-    public async Task MapAction_BindAsync_Optional_NotProvided(string bindAsyncType, bool expectException)
-    {
-        var source = $$"""
-app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}}? myBindAsyncParam) =>
-{
-    httpContext.Items["uri"] = myBindAsyncParam?.Uri;
-});
-""";
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-
-        if (expectException)
-        {
-            // These types simply don't support optional parameters since they cannot return null.
-            var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate(httpContext));
-            Assert.Equal("The request is missing the required Referer header.", ex.Message);
-        }
-        else
-        {
-            await endpoint.RequestDelegate(httpContext);
-
-            Assert.Null(httpContext.Items["uri"]);
-            Assert.Equal(200, httpContext.Response.StatusCode);
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(BindAsyncUriTypesAndOptionalitySupport))]
-    public async Task MapAction_BindAsync_NonOptional_NotProvided(string bindAsyncType, bool expectException)
-    {
-        var source = $$"""
-app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
-{
-    httpContext.Items["uri"] = myBindAsyncParam.Uri;
-});
-""";
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-
-        if (expectException)
-        {
-            var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate(httpContext));
-            Assert.Equal("The request is missing the required Referer header.", ex.Message);
-        }
-        else
-        {
-            await endpoint.RequestDelegate(httpContext);
-
-            Assert.Null(httpContext.Items["uri"]);
-            Assert.Equal(400, httpContext.Response.StatusCode);
-        }
-    }
-
-    [Fact]
-    public async Task MapAction_BindAsync_Snapshot()
-    {
-        var source = new StringBuilder();
-
-        var i = 0;
-        while (i < BindAsyncUriTypesAndOptionalitySupport.Length * 2)
-        {
-            var bindAsyncType = BindAsyncUriTypesAndOptionalitySupport[i / 2][0];
-            source.AppendLine(CultureInfo.InvariantCulture, $$"""app.MapGet("/{{i}}", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) => "Hello world! {{i}}");""");
-            i++;
-            source.AppendLine(CultureInfo.InvariantCulture, $$"""app.MapGet("/{{i}}", ({{bindAsyncType}}? myBindAsyncParam) => "Hello world! {{i}}");""");
-            i++;
-        }
-
-        var (_, compilation) = await RunGeneratorAsync(source.ToString());
-
-        await VerifyAgainstBaselineUsingFile(compilation);
-
-        var endpoints = GetEndpointsFromCompilation(compilation);
-        Assert.Equal(BindAsyncUriTypesAndOptionalitySupport.Length * 2, endpoints.Length);
-
-        for (i = 0; i < BindAsyncUriTypesAndOptionalitySupport.Length * 2; i++)
-        {
-            var httpContext = CreateHttpContext();
-            // Set a referrer header so BindAsync always succeeds and the route handler is always called optional or not.
-            httpContext.Request.Headers.Referer = "https://example.org";
-
-            await endpoints[i].RequestDelegate(httpContext);
-            await VerifyResponseBodyAsync(httpContext, $"Hello world! {i}");
-        }
-    }
-
-    [Fact]
-    public async Task MapAction_BindAsync_ExceptionsAreUncaught()
-    {
-        var source = """
-app.MapGet("/", (HttpContext httpContext, MyBindAsyncTypeThatThrows myBindAsyncParam) => { });
-""";
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
-        Assert.Equal("BindAsync failed", ex.Message);
-    }
-
-    public static object[][] MapAction_JsonBodyOrService_SimpleReturn_Data
-    {
-        get
-        {
-            var todo = new Todo()
-            {
-                Id = 0,
-                Name = "Test Item",
-                IsComplete = false
-            };
-            var expectedTodoBody = "Test Item";
-            var expectedServiceBody = "Produced from service!";
-            var implicitRequiredServiceSource = $"""app.MapPost("/", ({typeof(TestService)} svc) => svc.TestServiceMethod());""";
-            var implicitRequiredJsonBodySource = $"""app.MapPost("/", (Todo todo) => todo.Name ?? string.Empty);""";
-
-            return new[]
-            {
-                new object[] { implicitRequiredServiceSource, false, null, true, 200, expectedServiceBody },
-                new object[] { implicitRequiredServiceSource, false, null, false, 400, string.Empty },
-                new object[] { implicitRequiredJsonBodySource, true, todo, false, 200, expectedTodoBody },
-                new object[] { implicitRequiredJsonBodySource, true, null, false, 400, string.Empty },
-            };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(MapAction_JsonBodyOrService_SimpleReturn_Data))]
-    public async Task MapAction_JsonBodyOrService_SimpleReturn(string source, bool hasBody, Todo requestData, bool hasService, int expectedStatusCode, string expectedBody)
-    {
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var serviceProvider = CreateServiceProvider(hasService ?
-            (serviceCollection) => serviceCollection.AddSingleton(new TestService())
-            : null);
-        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
-
-        var httpContext = CreateHttpContext(serviceProvider);
-
-        if (hasBody)
-        {
-            httpContext = CreateHttpContextWithBody(requestData);
-        }
-
-        await endpoint.RequestDelegate(httpContext);
-        Console.WriteLine(expectedBody, expectedStatusCode);
-        // await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
-
     }
 }

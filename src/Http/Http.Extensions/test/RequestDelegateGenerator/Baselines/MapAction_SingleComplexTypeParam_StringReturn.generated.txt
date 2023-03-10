@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, global::System.String> handler,
+            global::System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo, global::System.String> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, global::System.String>)del;
+                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo>(0)));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -119,18 +119,18 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = True, Source = Query)
+                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo, IsOptional = False, IsParsable = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         if (StringValues.IsNullOrEmpty(p_raw))
                         {
                             wasParamCheckFailure = true;
                         }
                         var p_temp = (string?)p_raw;
-                        if (!global::Microsoft.AspNetCore.Http.Generators.Tests.Todo.TryParse(p_temp!, out var p_parsed_temp))
+                        if (!global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo.TryParse(p_temp!, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
-                        global::Microsoft.AspNetCore.Http.Generators.Tests.Todo p_local = p_parsed_temp!;
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo p_local = p_parsed_temp!;
 
                         if (wasParamCheckFailure)
                         {
@@ -145,24 +145,24 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = True, Source = Query)
+                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo, IsOptional = False, IsParsable = True, Source = Query)
                         var p_raw = httpContext.Request.Query["p"];
                         if (StringValues.IsNullOrEmpty(p_raw))
                         {
                             wasParamCheckFailure = true;
                         }
                         var p_temp = (string?)p_raw;
-                        if (!global::Microsoft.AspNetCore.Http.Generators.Tests.Todo.TryParse(p_temp!, out var p_parsed_temp))
+                        if (!global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo.TryParse(p_temp!, out var p_parsed_temp))
                         {
                             wasParamCheckFailure = true;
                         }
-                        global::Microsoft.AspNetCore.Http.Generators.Tests.Todo p_local = p_parsed_temp!;
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo p_local = p_parsed_temp!;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, p_local));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.TryParseTodo>(httpContext, p_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -218,86 +218,8 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
-        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
-                : (httpContext) => httpContext.Request.Query[parameterName];
-        }
+        private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
+            => T.TryParse(s, provider, out result);
 
-        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
-        {
-            var runtimeType = value?.GetType();
-            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
-            {
-                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
-            }
-
-            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
-        }
-
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty)
-        {
-            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
-
-            if (feature?.CanHaveBody == true)
-            {
-                if (!httpContext.Request.HasJsonContentType())
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (false, default);
-                }
-                try
-                {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
-                }
-                catch (IOException)
-                {
-                    return (false, default);
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (false, default);
-                }
-            }
-            else if (!allowEmpty)
-            {
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-            }
-
-            return (false, default);
-        }
-
-        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
-            where T : class, IBindableFromHttpContext<T>
-        {
-            return T.BindAsync(context, parameter);
-        }
-
-        private static ValueTask<(bool, T?)> TryResolveJsonBodyOrServiceAsync<T>(HttpContext httpContext, bool isOptional, IServiceProviderIsService? serviceProviderIsService = null)
-        {
-            if (serviceProviderIsService is not null)
-            {
-                if (serviceProviderIsService.IsService(typeof(T)))
-                {
-                    return new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
-                }
-            }
-            return TryResolveBodyAsync<T>(httpContext, isOptional);
-        }
-    }
-
-    %GENERATEDCODEATTRIBUTE%
-    file static class ParsableHelper<T> where T : IParsable<T>
-    {
-        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
-        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
     }
 }

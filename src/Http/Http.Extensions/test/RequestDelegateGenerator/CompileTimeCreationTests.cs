@@ -60,7 +60,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     [InlineData(@"app.MapGet(""/"", (IFormFile? form) => ""Hello world!"");")]
     [InlineData(@"app.MapGet(""/"", (IFormCollection? form) => ""Hello world!"");")]
     [InlineData(@"app.MapGet(""/"", (IFormFileCollection? form) => ""Hello world!"");")]
-    [InlineData(@"app.MapGet(""/"", ([FromForm] Todo? form) => ""Hello world!"");")]
+    [InlineData(@"app.MapGet(""/"", ([FromForm] TryParseTodo? form) => ""Hello world!"");")]
     public async Task MapAction_WarnsForUnsupportedFormTypes(string source)
     {
         var (generatorRunResult, compilation) = await RunGeneratorAsync(source);

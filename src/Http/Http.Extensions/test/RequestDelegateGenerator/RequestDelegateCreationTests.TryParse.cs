@@ -177,7 +177,7 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.MagicValue);
     public async Task MapAction_SingleComplexTypeParam_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]Todo p) => p.Name!);
+app.MapGet("/hello", ([FromQuery]TryParseTodo p) => p.Name!);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 

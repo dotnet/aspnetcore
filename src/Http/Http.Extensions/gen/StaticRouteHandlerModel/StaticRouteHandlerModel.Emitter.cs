@@ -183,16 +183,22 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.EndBlock(); // End handler method block
     }
 
-    public static string EmitFilteredInvocation(this Endpoint endpoint)
+    public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        // Note: This string does not need indentation since it is
-        // handled when we generate the output string in the `thunks` pipeline.
-        return endpoint.Response.IsVoid ? $"""
-handler({endpoint.EmitFilteredArgumentList()});
-return ValueTask.FromResult<object?>(Results.Empty);
-""" : $"""
-return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList()}));
-""";
+        if (endpoint.Response.IsVoid)
+        {
+            codeWriter.WriteLine($"handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+        }
+        else if (endpoint.Response.IsAwaitable)
+        {
+            codeWriter.WriteLine($"var result = await handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine("return (object?)result;");
+        }
+        else
+        {
+            codeWriter.WriteLine($"return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList()}));");
+        }
     }
 
     public static string EmitFilteredArgumentList(this Endpoint endpoint)

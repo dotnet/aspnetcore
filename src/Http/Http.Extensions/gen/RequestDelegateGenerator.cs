@@ -89,13 +89,20 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.WriteLineNoTabs(string.Empty);
             codeWriter.WriteLine("if (options?.EndpointBuilder?.FilterFactories.Count > 0)");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
+            if (endpoint.Response.IsAwaitable)
+            {
+                codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>");
+            }
+            else
+            {
+                codeWriter.WriteLine("filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
+            }
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
             codeWriter.EndBlock();
-            codeWriter.WriteLine(endpoint.EmitFilteredInvocation());
+            endpoint.EmitFilteredInvocation(codeWriter);
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("options.EndpointBuilder,");
             codeWriter.WriteLine("handler.Method);");
@@ -146,11 +153,58 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions);
+        var endpointHelpers = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                var hasJsonBodyOrService = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBodyOrService);
+                var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody);
+                var hasRouteOrQuery = endpoints.Any(endpoint => endpoint.EmitterContext.HasRouteOrQuery);
+                var hasBindAsync = endpoints.Any(endpoint => endpoint.EmitterContext.HasBindAsync);
+                var hasParsable = endpoints.Any(endpoint => endpoint.EmitterContext.HasParsable);
+                var hasJsonResponse = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonResponse);
+
+                using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+                using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
+
+                if (hasRouteOrQuery)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ResolveFromRouteOrQueryMethod);
+                }
+
+                if (hasJsonResponse)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.WriteToResponseAsyncMethod);
+                }
+
+                if (hasJsonBody || hasJsonBodyOrService)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryResolveBodyAsyncMethod);
+                }
+
+                if (hasBindAsync)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.BindAsyncMethod);
+                }
+
+                if (hasJsonBodyOrService)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryResolveJsonBodyOrServiceAsyncMethod);
+                }
+
+                if (hasParsable)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryParseExplicitMethod);
+                }
+
+                return stringWriter.ToString();
+            });
+
+        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var (thunks, endpointsCode) = sources;
+            var ((thunks, endpointsCode), helpers) = sources;
 
             if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
@@ -166,7 +220,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(
                 genericThunks: string.Empty,
                 thunks: thunksCode.ToString(),
-                endpoints: endpointsCode);
+                endpoints: endpointsCode,
+                helperMethods: helpers ?? string.Empty);
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
