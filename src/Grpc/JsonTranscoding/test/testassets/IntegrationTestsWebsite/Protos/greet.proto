@@ -53,33 +53,33 @@ service Greeter {
   }
   rpc SayHelloCustomVerbOne (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      get: "/v1/greeter/{name}:one"
+      get: "/v1/greeter_custom/{name}:one"
     };
   }
   rpc SayHelloCustomVerbTwo (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      get: "/v1/greeter/{name}:two"
+      get: "/v1/greeter_custom/{name}:two"
     };
   }
   rpc SayHelloCatchAllCustomVerbOne (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      get: "/v1/greeter/{name=**}:one"
+      get: "/v1/greeter_customcatchall/{name=**}:one"
     };
   }
   rpc SayHelloCatchAllCustomVerbTwo (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      get: "/v1/greeter/{name=**}:two"
+      get: "/v1/greeter_customcatchall/{name=**}:two"
     };
   }
   rpc SayHelloPostCustomVerbOne (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      post: "/v1/greeter:one",
+      post: "/v1/greeter_custompost:one",
       body: "*"
     };
   }
   rpc SayHelloPostCustomVerbTwo (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      post: "/v1/greeter:two",
+      post: "/v1/greeter_custompost:two",
       body: "*"
     };
   }
