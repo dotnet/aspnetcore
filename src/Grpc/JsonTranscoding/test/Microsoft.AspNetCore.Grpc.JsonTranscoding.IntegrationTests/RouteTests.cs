@@ -150,7 +150,7 @@ public class RouteTests : IntegrationTestBase
         var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
 
         // Act 1
-        var response1 = await client.GetAsync("/v1/greeter/test:one").DefaultTimeout();
+        var response1 = await client.GetAsync("/v1/greeter_custom/test:one").DefaultTimeout();
         var responseStream1 = await response1.Content.ReadAsStreamAsync();
         using var result1 = await JsonDocument.ParseAsync(responseStream1);
 
@@ -158,12 +158,18 @@ public class RouteTests : IntegrationTestBase
         Assert.Equal("Hello test one!", result1.RootElement.GetProperty("message").GetString());
 
         // Act 2
-        var response2 = await client.GetAsync("/v1/greeter/test:two").DefaultTimeout();
+        var response2 = await client.GetAsync("/v1/greeter_custom/test:two").DefaultTimeout();
         var responseStream2 = await response2.Content.ReadAsStreamAsync();
         using var result2 = await JsonDocument.ParseAsync(responseStream2);
 
         // Assert 2
         Assert.Equal("Hello test two!", result2.RootElement.GetProperty("message").GetString());
+
+        // Act 3
+        var response3 = await client.GetAsync("/v1/greeter_custom/test").DefaultTimeout();
+
+        // Assert 3
+        Assert.Equal(HttpStatusCode.NotFound, response3.StatusCode);
     }
 
     [Fact]
@@ -188,7 +194,7 @@ public class RouteTests : IntegrationTestBase
         var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
 
         // Act 1
-        var response1 = await client.GetAsync("/v1/greeter/test/name:one").DefaultTimeout();
+        var response1 = await client.GetAsync("/v1/greeter_customcatchall/test/name:one").DefaultTimeout();
         var responseStream1 = await response1.Content.ReadAsStreamAsync();
         using var result1 = await JsonDocument.ParseAsync(responseStream1);
 
@@ -196,7 +202,7 @@ public class RouteTests : IntegrationTestBase
         Assert.Equal("Hello test/name one!", result1.RootElement.GetProperty("message").GetString());
 
         // Act 2
-        var response2 = await client.GetAsync("/v1/greeter/test/name:two").DefaultTimeout();
+        var response2 = await client.GetAsync("/v1/greeter_customcatchall/test/name:two").DefaultTimeout();
         var responseStream2 = await response2.Content.ReadAsStreamAsync();
         using var result2 = await JsonDocument.ParseAsync(responseStream2);
 
@@ -204,7 +210,7 @@ public class RouteTests : IntegrationTestBase
         Assert.Equal("Hello test/name two!", result2.RootElement.GetProperty("message").GetString());
 
         // Act 3
-        var response3 = await client.GetAsync("/v1/greeter/test/name").DefaultTimeout();
+        var response3 = await client.GetAsync("/v1/greeter_customcatchall/test/name").DefaultTimeout();
 
         // Assert 3
         Assert.Equal(HttpStatusCode.NotFound, response3.StatusCode);
@@ -236,7 +242,7 @@ public class RouteTests : IntegrationTestBase
         content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
 
         // Act 1
-        var response1 = await client.PostAsync("/v1/greeter:one", content).DefaultTimeout();
+        var response1 = await client.PostAsync("/v1/greeter_custompost:one", content).DefaultTimeout();
         var responseStream1 = await response1.Content.ReadAsStreamAsync();
         using var result1 = await JsonDocument.ParseAsync(responseStream1);
 
@@ -244,11 +250,17 @@ public class RouteTests : IntegrationTestBase
         Assert.Equal("Hello test one!", result1.RootElement.GetProperty("message").GetString());
 
         // Act 2
-        var response2 = await client.PostAsync("/v1/greeter:two", content).DefaultTimeout();
+        var response2 = await client.PostAsync("/v1/greeter_custompost:two", content).DefaultTimeout();
         var responseStream2 = await response2.Content.ReadAsStreamAsync();
         using var result2 = await JsonDocument.ParseAsync(responseStream2);
 
         // Assert 2
         Assert.Equal("Hello test two!", result2.RootElement.GetProperty("message").GetString());
+
+        // Act 3
+        var response3 = await client.PostAsync("/v1/greeter_custompost", content).DefaultTimeout();
+
+        // Assert 3
+        Assert.Equal(HttpStatusCode.NotFound, response3.StatusCode);
     }
 }
