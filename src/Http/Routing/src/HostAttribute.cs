@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Attribute for providing host metdata that is used during routing.
 /// </summary>
-[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}")]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class HostAttribute : Attribute, IHostMetadata
 {
@@ -46,15 +46,6 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     /// An empty collection means any host will be accepted.
     /// </summary>
     public IReadOnlyList<string> Hosts { get; }
-
-    private string DebuggerToString()
-    {
-        var hostsDisplay = (Hosts.Count == 0)
-            ? "*:*"
-            : string.Join(",", Hosts.Select(h => h.Contains(':') ? h : h + ":*"));
-
-        return $"Hosts: {hostsDisplay}";
-    }
 
     /// <inheritdoc/>
     public override string ToString()
