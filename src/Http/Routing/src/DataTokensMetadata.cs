@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -27,4 +29,16 @@ public sealed class DataTokensMetadata : IDataTokensMetadata
     /// Get the data tokens.
     /// </summary>
     public IReadOnlyDictionary<string, object?> DataTokens { get; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        var metadataTokensBuilder = new StringBuilder();
+        foreach(var DataToken in DataTokens)
+        {
+            metadataTokensBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0} ={1}", DataToken.Key, DataToken.Value);
+            metadataTokensBuilder.AppendLine();
+        }
+            return metadataTokensBuilder.ToString();
+    }
 }
