@@ -56,4 +56,10 @@ public sealed class HttpMethodMetadata : IHttpMethodMetadata
     {
         return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
     }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
+    }
 }
