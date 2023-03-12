@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
@@ -29,4 +29,10 @@ public class EndpointNameMetadata : IEndpointNameMetadata
     /// Gets the endpoint name.
     /// </summary>
     public string EndpointName { get; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return EndpointName;
+    }
 }
