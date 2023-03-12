@@ -182,6 +182,11 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
                 sb.Append(httpRoutePattern.Segments[i]);
             }
         }
+        if (httpRoutePattern.Verb != null)
+        {
+            sb.Append(':');
+            sb.Append(httpRoutePattern.Verb);
+        }
         return sb.ToString();
     }
 
