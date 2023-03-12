@@ -30,4 +30,10 @@ public sealed class RouteNameMetadata : IRouteNameMetadata
     {
         return $"Name: {RouteName}";
     }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return $"Name: {RouteName}";
+    }
 }
