@@ -4,6 +4,7 @@ override Microsoft.AspNetCore.Routing.DataTokensMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.EndpointNameMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.HostAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Routing.HttpMethodMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.RouteNameMetadata.ToString() -> string!
 static Microsoft.AspNetCore.Routing.RouteHandlerServices.Map(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler, System.Collections.Generic.IEnumerable<string!>! httpMethods, System.Func<System.Reflection.MethodInfo!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult!>! populateMetadata, System.Func<System.Delegate!, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions!, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult!>! createRequestDelegate) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 Microsoft.AspNetCore.Builder.RouteShortCircuitEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Routing.RouteShortCircuitEndpointRouteBuilderExtensions
