@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Represents HTTP method metadata used during routing.
 /// </summary>
-[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class HttpMethodMetadata : IHttpMethodMetadata
 {
     /// <summary>
@@ -51,11 +51,6 @@ public sealed class HttpMethodMetadata : IHttpMethodMetadata
     /// An empty collection means any HTTP method will be accepted.
     /// </summary>
     public IReadOnlyList<string> HttpMethods { get; }
-
-    private string DebuggerToString()
-    {
-        return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
-    }
 
     /// <inheritdoc/>
     public override string ToString()
