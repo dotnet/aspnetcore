@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Metadata used during link generation to find the associated endpoint using route name.
 /// </summary>
-[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class RouteNameMetadata : IRouteNameMetadata
 {
     /// <summary>
@@ -24,11 +24,6 @@ public sealed class RouteNameMetadata : IRouteNameMetadata
     /// Gets the route name. Can be <see langword="null"/>.
     /// </summary>
     public string? RouteName { get; }
-
-    internal string DebuggerToString()
-    {
-        return $"Name: {RouteName}";
-    }
 
     /// <inheritdoc/>
     public override string ToString()
