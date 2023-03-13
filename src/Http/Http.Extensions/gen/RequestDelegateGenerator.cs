@@ -45,7 +45,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token);
                 var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-                if (operation is IInvocationOperation invocationOperation)
+                if (operation is IInvocationOperation { Arguments: { Length: 3 } parameters } invocationOperation &&
+                    invocationOperation.GetRouteHandlerArgument() is { Parameter.Type: {} delegateType } &&
+                    SymbolEqualityComparer.Default.Equals(delegateType, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Delegate)))
                 {
                     return new Endpoint(invocationOperation, wellKnownTypes, context.SemanticModel);
                 }

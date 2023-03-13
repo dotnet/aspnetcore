@@ -27,6 +27,18 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
+    public static IArgumentOperation? GetRouteHandlerArgument(this IInvocationOperation invocation)
+    {
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == RouteHandlerArgumentOrdinal)
+            {
+                return argument;
+            }
+        }
+        return null;
+    }
+
     public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, out SyntaxToken token)
     {
         IArgumentOperation? argumentOperation = null;
