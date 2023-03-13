@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal class Endpoint
 {
-    public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
+    public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes, SemanticModel semanticModel)
     {
         Operation = operation;
         Location = GetLocation(operation);
@@ -30,15 +30,21 @@ internal class Endpoint
 
         RoutePattern = routeToken.ValueText;
 
-        if (!operation.TryGetRouteHandlerMethod(out var method))
+        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method) || method == null)
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;
         }
 
         Response = new EndpointResponse(method, wellKnownTypes);
-        EmitterContext.HasJsonResponse = !(Response.ResponseType.IsSealed || Response.ResponseType.IsValueType);
-        IsAwaitable = Response.IsAwaitable;
+        if (Response.IsAnonymousType)
+        {
+            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveAnonymousReturnType, Operation.Syntax.GetLocation()));
+            return;
+        }
+
+        EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
+        IsAwaitable = Response?.IsAwaitable == true;
 
         if (method.Parameters.Length == 0)
         {
@@ -107,7 +113,7 @@ internal class Endpoint
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
-        if (!a.Response.WrappedResponseType.Equals(b.Response.WrappedResponseType, StringComparison.Ordinal) ||
+        if (!string.Equals(a.Response?.WrappedResponseType, b.Response?.WrappedResponseType, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
         {
@@ -128,7 +134,7 @@ internal class Endpoint
     public static int GetSignatureHashCode(Endpoint endpoint)
     {
         var hashCode = new HashCode();
-        hashCode.Add(endpoint.Response.WrappedResponseType);
+        hashCode.Add(endpoint.Response?.WrappedResponseType);
         hashCode.Add(endpoint.HttpMethod);
 
         foreach (var parameter in endpoint.Parameters)

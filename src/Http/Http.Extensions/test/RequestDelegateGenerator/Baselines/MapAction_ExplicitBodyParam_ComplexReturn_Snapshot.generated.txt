@@ -132,7 +132,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
-                        httpContext.Response.ContentType ??= "";
                         var result = handler(todo_local!);
                         await result.ExecuteAsync(httpContext);
                     }
@@ -202,7 +201,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
-                        httpContext.Response.ContentType ??= "";
                         var result = handler(todo_local);
                         await result.ExecuteAsync(httpContext);
                     }

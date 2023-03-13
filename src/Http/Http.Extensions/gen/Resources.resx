@@ -135,4 +135,10 @@
   <data name="UnableToResolveParameter_Title" xml:space="preserve">
     <value>Unable to resolve parameter</value>
   </data>
+  <data name="UnableToResolveAnonymousReturnType_Message" xml:space="preserve">
+    <value>Unable to resolve anonymous return type. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime.</value>
+  </data>
+  <data name="UnableToResolveAnonymousReturnType_Title" xml:space="preserve">
+    <value>Unable to resolve anonymous type</value>
+  </data>
 </root>
