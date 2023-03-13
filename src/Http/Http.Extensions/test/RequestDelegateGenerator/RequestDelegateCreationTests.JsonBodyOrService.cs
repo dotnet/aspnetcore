@@ -73,6 +73,8 @@ app.MapPost("/", (Todo todo, TestService svc) => $"{svc.TestServiceMethod()}, {t
 
         var httpContext = CreateHttpContextWithBody(requestData, serviceProvider);
 
+        await VerifyAgainstBaselineUsingFile(compilation);
+
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
