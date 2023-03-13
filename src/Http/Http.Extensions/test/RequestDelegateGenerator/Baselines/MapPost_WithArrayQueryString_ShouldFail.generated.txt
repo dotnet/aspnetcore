@@ -124,8 +124,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrService)
-                        var (isSuccessful, p_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<global::System.String[]>(httpContext, false, serviceProviderIsService);
-                        if (!isSuccessful)
+                        var p_resolveJsonBodyOrServiceResult = await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<global::System.String[]>(httpContext, false, serviceProviderIsService);
+                        var p_local = p_resolveJsonBodyOrServiceResult.Item2;
+                        if (!p_resolveJsonBodyOrServiceResult.Item1)
                         {
                             return;
                         }
@@ -144,8 +145,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrService)
-                        var (isSuccessful, p_local) = await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<global::System.String[]>(httpContext, false, serviceProviderIsService);
-                        if (!isSuccessful)
+                        var p_resolveJsonBodyOrServiceResult = await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<global::System.String[]>(httpContext, false, serviceProviderIsService);
+                        var p_local = p_resolveJsonBodyOrServiceResult.Item2;
+                        if (!p_resolveJsonBodyOrServiceResult.Item1)
                         {
                             return;
                         }
@@ -210,24 +212,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
-        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
-                : (httpContext) => httpContext.Request.Query[parameterName];
-        }
-
-        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
-        {
-            var runtimeType = value?.GetType();
-            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
-            {
-                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
-            }
-
-            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
-        }
-
         private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
@@ -266,13 +250,6 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return (false, default);
         }
-
-        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
-            where T : class, IBindableFromHttpContext<T>
-        {
-            return T.BindAsync(context, parameter);
-        }
-
         private static ValueTask<(bool, T?)> TryResolveJsonBodyOrServiceAsync<T>(HttpContext httpContext, bool isOptional, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
@@ -284,12 +261,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             return TryResolveBodyAsync<T>(httpContext, isOptional);
         }
-    }
 
-    %GENERATEDCODEATTRIBUTE%
-    file static class ParsableHelper<T> where T : IParsable<T>
-    {
-        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
-        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
     }
 }

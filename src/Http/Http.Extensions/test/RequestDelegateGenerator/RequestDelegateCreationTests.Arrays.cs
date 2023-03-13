@@ -22,7 +22,7 @@ public abstract partial class RequestDelegateCreationTests
     public async Task MapAction_ExplicitQuery_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromQuery]Todo[] p) => p.Length);
+app.MapGet("/hello", ([FromQuery]ParsableTodo[] p) => p.Length);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
@@ -44,7 +44,7 @@ app.MapGet("/hello", ([FromQuery]Todo[] p) => p.Length);
     public async Task MapAction_ExplicitHeader_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", ([FromHeader]Todo[] p) => p.Length);
+app.MapGet("/hello", ([FromHeader]ParsableTodo[] p) => p.Length);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
@@ -110,7 +110,7 @@ app.MapGet("/hello", ([FromHeader]string?[] p) => p.Length);
     public async Task MapAction_ImplicitQuery_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
-app.MapGet("/hello", (Todo[] p) => p.Length);
+app.MapGet("/hello", (ParsableTodo[] p) => p.Length);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
