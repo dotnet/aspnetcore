@@ -111,7 +111,7 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.EndBlock(); // End handler method block
     }
 
-    private static string? EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
+    private static string EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
     {
         var returnOrAwait = isAwaitable ? "await" : "return";
 
@@ -178,12 +178,12 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        if (endpoint.Response.IsVoid)
+        if (endpoint.Response?.IsVoid == true)
         {
             codeWriter.WriteLine($"handler({endpoint.EmitFilteredArgumentList()});");
             codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
         }
-        else if (endpoint.Response.IsAwaitable)
+        else if (endpoint.Response?.IsAwaitable == true)
         {
             codeWriter.WriteLine($"var result = await handler({endpoint.EmitFilteredArgumentList()});");
             codeWriter.WriteLine("return (object?)result;");

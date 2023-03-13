@@ -19,7 +19,8 @@ internal static class EndpointJsonResponseEmitter
 
     internal static string EmitJsonResponse(this EndpointResponse endpointResponse)
     {
-        if (endpointResponse.ResponseType.IsSealed || endpointResponse.ResponseType.IsValueType)
+        if (endpointResponse.ResponseType != null &&
+            (endpointResponse.ResponseType.IsSealed || endpointResponse.ResponseType.IsValueType))
         {
             return $"httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);";
         }

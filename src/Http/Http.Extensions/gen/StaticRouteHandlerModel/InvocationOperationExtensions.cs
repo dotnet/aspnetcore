@@ -88,7 +88,7 @@ internal static class InvocationOperationExtensions
                 })
             {
                 // Use the correct semantic model based on the syntax tree
-                var targetSemanticModel = semanticModel.Compilation.GetSemanticModel(expr.SyntaxTree);
+                var targetSemanticModel = semanticModel?.Compilation.GetSemanticModel(expr.SyntaxTree);
                 var operation = targetSemanticModel?.GetOperation(expr);
 
                 if (operation is not null)
