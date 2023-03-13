@@ -40,6 +40,8 @@ public class WorkerTemplateTest : LoggedTest
 
         await project.RunDotNetNewAsync("worker", language: language, args: args);
 
+        await project.VerifyHasProperty("InvariantGlobalization", "true");
+
         await project.RunDotNetPublishAsync();
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release

@@ -109,12 +109,14 @@ internal static class EndpointParameterEmitter
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
         var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
-        codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
+        var resolveBodyResult = $"{endpointParameter.Name}_resolveBodyResult";
+        codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2;");
 
         // If binding from the JSON body fails, we exit early. Don't
         // set the status code here because assume it has been set by the
         // TryResolveBody method.
-        codeWriter.WriteLine("if (!isSuccessful)");
+        codeWriter.WriteLine($"if (!{resolveBodyResult}.Item1)");
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
         codeWriter.EndBlock();
@@ -129,11 +131,13 @@ internal static class EndpointParameterEmitter
         // type from DI if it exists. Otherwise, resolve the parameter
         // as a body parameter.
         var assigningCode = $"await {endpointParameter.Name}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
-        codeWriter.WriteLine($"var (isSuccessful, {endpointParameter.EmitHandlerArgument()}) = {assigningCode};");
+        var resolveJsonBodyOrServiceResult = $"{endpointParameter.Name}_resolveJsonBodyOrServiceResult";
+        codeWriter.WriteLine($"var {resolveJsonBodyOrServiceResult} = {assigningCode};");
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
 
         // If binding from the JSON body fails, ResolveJsonBodyOrService
         // will return `false` and we will need to exit early.
-        codeWriter.WriteLine("if (!isSuccessful)");
+        codeWriter.WriteLine($"if (!{resolveJsonBodyOrServiceResult}.Item1)");
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
         codeWriter.EndBlock();

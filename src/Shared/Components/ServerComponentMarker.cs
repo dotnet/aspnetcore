@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components;
+
+#nullable enable // This is shared-source with Mvc.ViewFeatures which doesn't enable nullability by default
 
 // Represents the serialized invocation to a component.
 // We serialize this marker into a comment in the generated
@@ -12,7 +12,7 @@ internal struct ServerComponentMarker
 {
     public const string ServerMarkerType = "server";
 
-    private ServerComponentMarker(string type, string descriptor, int? sequence, string prerenderId) : this()
+    private ServerComponentMarker(string? type, string? descriptor, int? sequence, string? prerenderId) : this()
     {
         Type = type;
         PrerenderId = prerenderId;
@@ -27,16 +27,19 @@ internal struct ServerComponentMarker
     public int? Sequence { get; set; }
 
     // The marker type. Right now "server" is the only valid value.
-    public string Type { get; set; }
+    // The value will be null for end markers.
+    public string? Type { get; set; }
 
     // A string to allow the clients to differentiate between prerendered
     // and non prerendered components and to uniquely identify start and end
     // markers in prererendered components.
-    public string PrerenderId { get; set; }
+    // The value will be null if this marker represents a non-prerendered component.
+    public string? PrerenderId { get; set; }
 
     // A data-protected payload that allows the server to validate the legitimacy
     // of the invocation.
-    public string Descriptor { get; set; }
+    // The value will be null for end markers.
+    public string? Descriptor { get; set; }
 
     // Creates a marker for a prerendered component.
     public static ServerComponentMarker Prerendered(int sequence, string descriptor) =>

@@ -19,7 +19,97 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints) => $$"""
+    public static string TryResolveBodyAsyncMethod => """
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty)
+        {
+            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasJsonContentType())
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (false, default);
+                }
+                try
+                {
+                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
+                    if (!allowEmpty && bodyValue == null)
+                    {
+                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        return (false, bodyValue);
+                    }
+                    return (true, bodyValue);
+                }
+                catch (IOException)
+                {
+                    return (false, default);
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, default);
+                }
+            }
+            else if (!allowEmpty)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
+
+            return (false, default);
+        }
+""";
+
+    public static string TryParseExplicitMethod => """
+        private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
+            => T.TryParse(s, provider, out result);
+""";
+
+    public static string BindAsyncMethod => """
+        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
+            where T : class, IBindableFromHttpContext<T>
+        {
+            return T.BindAsync(context, parameter);
+        }
+""";
+
+    public static string ResolveFromRouteOrQueryMethod => """
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
+                : (httpContext) => httpContext.Request.Query[parameterName];
+        }
+""";
+
+    public static string WriteToResponseAsyncMethod => """
+        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
+        {
+            var runtimeType = value?.GetType();
+            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
+            {
+                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
+            }
+
+            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
+        }
+""";
+
+    public static string ResolveJsonBodyOrServiceMethod => """
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
+        {
+            if (serviceProviderIsService is not null)
+            {
+                if (serviceProviderIsService.IsService(typeof(T)))
+                {
+                    return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
+                }
+            }
+            return static (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, isOptional);
+        }
+""";
+
+    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
@@ -107,82 +197,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
-        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
-        {
-            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
-                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
-                : (httpContext) => httpContext.Request.Query[parameterName];
-        }
-
-        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
-        {
-            var runtimeType = value?.GetType();
-            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
-            {
-                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
-            }
-
-            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
-        }
-
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty)
-        {
-            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
-
-            if (feature?.CanHaveBody == true)
-            {
-                if (!httpContext.Request.HasJsonContentType())
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (false, default);
-                }
-                try
-                {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
-                }
-                catch (IOException)
-                {
-                    return (false, default);
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (false, default);
-                }
-            }
-            return (false, default);
-        }
-
-        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
-            where T : class, IBindableFromHttpContext<T>
-        {
-            return T.BindAsync(context, parameter);
-        }
-
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
-        {
-            if (serviceProviderIsService is not null)
-            {
-                if (serviceProviderIsService.IsService(typeof(T)))
-                {
-                    return (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
-                }
-            }
-            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, isOptional);
-        }
-    }
-
-    {{GeneratedCodeAttribute}}
-    file static class ParsableHelper<T> where T : IParsable<T>
-    {
-        public static T Parse(string s, IFormatProvider? provider) => T.Parse(s, provider);
-        public static bool TryParse(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) => T.TryParse(s, provider, out result);
+{{helperMethods}}
     }
 }
 """;

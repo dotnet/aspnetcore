@@ -3,6 +3,7 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
@@ -27,7 +28,7 @@ public class ComponentTagHelperTest
         var tagHelper = new ComponentTagHelper
         {
             ViewContext = viewContext,
-            RenderMode = RenderMode.Static,
+            RenderMode = Rendering.RenderMode.Static,
             ComponentType = typeof(TestComponent),
         };
         var context = GetTagHelperContext();
@@ -84,7 +85,7 @@ public class ComponentTagHelperTest
         var httpContext = new DefaultHttpContext
         {
             RequestServices = new ServiceCollection()
-                .AddScoped<ComponentPrerenderer>()
+                .AddScoped<IComponentPrerenderer, ComponentPrerenderer>()
                 .AddScoped<ServerComponentSerializer>()
                 .AddScoped(_ => Mock.Of<IDataProtectionProvider>(
                     x => x.CreateProtector(It.IsAny<string>()) == Mock.Of<IDataProtector>()))

@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.DataProtection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 // See the details of the component serialization protocol in ServerComponentDeserializer.cs on the Components solution.
 internal sealed class ServerComponentSerializer
@@ -36,8 +35,8 @@ internal sealed class ServerComponentSerializer
 
         var serverComponent = new ServerComponent(
             sequence,
-            rootComponent.Assembly.GetName().Name,
-            rootComponent.FullName,
+            rootComponent.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name"),
+            rootComponent.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name"),
             definitions,
             values,
             invocationId.Value);

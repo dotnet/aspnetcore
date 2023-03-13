@@ -1,0 +1,72 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<h1>Parent Component</h1>
+
+@if (SectionOutletExists)
+{
+    <SectionOutlet SectionId="FirstSectionId" />
+}
+
+<p>Text between two section outlets</p>
+
+<SectionOutlet SectionId="SecondSectionId" />
+
+<button id="section-outlet-dispose"
+        @onclick="@(() => SectionOutletExists = false)">
+        Dispose first SectionOutlet
+</button>
+
+<Counter
+    SectionContentExists="CounterSectionContentExists"
+    SectionId="CounterSectionContentId">
+</Counter>
+
+<br />
+
+<button id="counter-render-section-content"
+    @onclick="@(() => CounterSectionContentExists = true)">
+    Render Counter SectionContent
+</button><br />
+
+<button id="counter-dispose-section-content"
+        @onclick="@(() => CounterSectionContentExists = false)">
+    Dispose Counter SectionContent
+</button><br />
+
+<button id="counter-change-section-content-name"
+        @onclick="@(() => CounterSectionContentId = SecondSectionId)">
+        Change Counter SectionContent Name
+</button><br />
+
+<button id="counter-change-section-content-name-nonexisting"
+        @onclick="@(() => CounterSectionContentId = "test3")">
+    Change Counter SectionContent Name to non sexisting
+</button><br />
+
+<TextComponent
+    SectionContentExists="TextComponentSectionContentExists"
+    SectionId="TextComponentSectionContentId">
+</TextComponent>
+
+<button id="text-render-section-content"
+        @onclick="@(() => TextComponentSectionContentExists= true)">
+    Render TextComponent SectionContent
+</button><br />
+
+<button id="text-dispose-section-content"
+        @onclick="@(() => TextComponentSectionContentExists = false)">
+    Dispose TextComponent SectionContent
+</button><br />
+
+@code {
+    private static object FirstSectionId = new();
+    private static int SecondSectionId = 123;
+
+    private bool CounterSectionContentExists = false;
+    private bool TextComponentSectionContentExists = false;
+
+    private object CounterSectionContentId = FirstSectionId;
+    private object TextComponentSectionContentId = FirstSectionId;
+
+    private bool SectionOutletExists = true;
+}

@@ -3,10 +3,6 @@
 
 using System.Buffers;
 using System.Linq;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -21,7 +17,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -168,12 +163,6 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
 
         services.TryAddSingleton<IJsonHelper, SystemTextJsonHelper>();
 
-        // Component services for Blazor server-side interop
-        services.TryAddSingleton<ServerComponentSerializer>();
-
-        // Component services for Blazor webassembly interop
-        services.TryAddSingleton<WebAssemblyComponentSerializer>();
-
         //
         // View Components
         //
@@ -200,19 +189,6 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApplicationModelProvider, ViewDataAttributeApplicationModelProvider>());
         services.TryAddSingleton<SaveTempDataFilter>();
-
-        //
-        // Component rendering
-        //
-        services.TryAddScoped<ComponentPrerenderer>();
-        services.TryAddScoped<HtmlRenderer>();
-        services.TryAddScoped<NavigationManager, HttpNavigationManager>();
-        services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
-        services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
-        services.TryAddScoped<ComponentStatePersistenceManager>();
-        services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
-        services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
-
         services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 
         // This does caching so it should stay singleton
@@ -229,5 +205,8 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         services.TryAddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
         services.TryAddSingleton(ArrayPool<ViewBufferValue>.Shared);
         services.TryAddScoped<IViewBufferScope, MemoryPoolViewBufferScope>();
+
+        // Component rendering
+        services.AddRazorComponents();
     }
 }

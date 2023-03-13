@@ -82,6 +82,23 @@ public class PrecedenceCheckTodo
     }
 }
 
+public enum MyEnum { ValueA, ValueB, }
+
+public record MyTryParseRecord(Uri Uri)
+{
+    public static bool TryParse(string value, out MyTryParseRecord? result)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+        {
+            result = null;
+            return false;
+        }
+
+        result = new MyTryParseRecord(uri);
+        return true;
+    }
+}
+
 public class PrecedenceCheckTodoWithoutFormat
 {
     public PrecedenceCheckTodoWithoutFormat(int magicValue)
@@ -381,6 +398,11 @@ public class MyBindAsyncTypeThatThrows
 {
     public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter) =>
         throw new InvalidOperationException("BindAsync failed");
+}
+
+public struct BodyStruct
+{
+    public int Id { get; set; }
 }
 
 #nullable restore

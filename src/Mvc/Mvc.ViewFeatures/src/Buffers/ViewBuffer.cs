@@ -232,9 +232,9 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
                     continue;
                 }
 
-                if (value.Value is IAsyncHtmlContent valueAsAsyncHtmlContent)
+                if (value.Value is IHtmlAsyncContent valueAsHtmlAsyncContent)
                 {
-                    await valueAsAsyncHtmlContent.WriteToAsync(writer);
+                    await valueAsHtmlAsyncContent.WriteToAsync(writer);
                     await writer.FlushAsync();
                     continue;
                 }

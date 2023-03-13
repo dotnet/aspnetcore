@@ -2,49 +2,48 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 // Wraps the public HtmlRenderer APIs so that the output also gets annotated with prerendering markers.
 // This allows the prerendered content to switch later into interactive mode.
 // This class also deals with initializing the standard component DI services once per request.
-internal sealed class ComponentPrerenderer
+internal sealed class ComponentPrerenderer : IComponentPrerenderer
 {
     private static readonly object ComponentSequenceKey = new object();
     private static readonly object InvokedRenderModesKey = new object();
 
     private readonly HtmlRenderer _htmlRenderer;
-    private readonly ServerComponentSerializer _serverComponentSerializer;
+    private readonly IServiceProvider _services;
     private readonly object _servicesInitializedLock = new();
-    private Task _servicesInitializedTask;
+    private Task? _servicesInitializedTask;
 
     public ComponentPrerenderer(
         HtmlRenderer htmlRenderer,
-        ServerComponentSerializer serverComponentSerializer)
+        IServiceProvider services)
     {
-        _serverComponentSerializer = serverComponentSerializer;
         _htmlRenderer = htmlRenderer;
+        _services = services;
     }
 
     public Dispatcher Dispatcher => _htmlRenderer.Dispatcher;
 
-    public async ValueTask<IHtmlContent> PrerenderComponentAsync(
-        ViewContext viewContext,
+    public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
+        HttpContext httpContext,
         Type componentType,
         RenderMode prerenderMode,
         ParameterView parameters)
     {
-        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(componentType);
 
         if (!typeof(IComponent).IsAssignableFrom(componentType))
@@ -53,24 +52,63 @@ internal sealed class ComponentPrerenderer
         }
 
         // Make sure we only initialize the services once, but on every call we wait for that process to complete
-        var httpContext = viewContext.HttpContext;
         lock (_servicesInitializedLock)
         {
             _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext);
         }
         await _servicesInitializedTask;
 
-        UpdateSaveStateRenderMode(viewContext, prerenderMode);
+        UpdateSaveStateRenderMode(httpContext, prerenderMode);
 
         return prerenderMode switch
         {
-            RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(viewContext), componentType, parameters),
-            RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(viewContext), componentType, parameters),
+            RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
+            RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
             RenderMode.Static => await StaticComponentAsync(httpContext, componentType, parameters),
             RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(componentType, parameters),
             RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(httpContext, componentType, parameters),
             _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(prerenderMode), nameof(prerenderMode)),
         };
+    }
+
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
+    {
+        // First we resolve "infer" mode to a specific mode
+        if (serializationMode == PersistedStateSerializationMode.Infer)
+        {
+            switch (GetPersistStateRenderMode(httpContext))
+            {
+                case InvokedRenderModes.Mode.None:
+                    return ComponentStateHtmlContent.Empty;
+                case InvokedRenderModes.Mode.ServerAndWebAssembly:
+                    throw new InvalidOperationException(
+                        Resources.FailedToInferComponentPersistenceMode);
+                case InvokedRenderModes.Mode.Server:
+                    serializationMode = PersistedStateSerializationMode.Server;
+                    break;
+                case InvokedRenderModes.Mode.WebAssembly:
+                    serializationMode = PersistedStateSerializationMode.WebAssembly;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid persistence mode");
+            }
+        }
+
+        // Now given the mode, we obtain a particular store for that mode
+        var store = serializationMode switch
+        {
+            PersistedStateSerializationMode.Server =>
+                new ProtectedPrerenderComponentApplicationStore(httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
+            PersistedStateSerializationMode.WebAssembly =>
+                new PrerenderComponentApplicationStore(),
+            _ =>
+                throw new InvalidOperationException("Invalid persistence mode.")
+        };
+
+        // Finally, persist the state and return the HTML content
+        var manager = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        await manager.PersistStateAsync(store, _htmlRenderer.Dispatcher);
+        return new ComponentStateHtmlContent(store);
     }
 
     private async ValueTask<HtmlComponent> PrerenderComponentCoreAsync(
@@ -101,29 +139,30 @@ internal sealed class ComponentPrerenderer
         }
     }
 
-    private static ServerComponentInvocationSequence GetOrCreateInvocationId(ViewContext viewContext)
+    private static ServerComponentInvocationSequence GetOrCreateInvocationId(HttpContext httpContext)
     {
-        if (!viewContext.Items.TryGetValue(ComponentSequenceKey, out var result))
+        if (!httpContext.Items.TryGetValue(ComponentSequenceKey, out var result))
         {
             result = new ServerComponentInvocationSequence();
-            viewContext.Items[ComponentSequenceKey] = result;
+            httpContext.Items[ComponentSequenceKey] = result;
         }
 
-        return (ServerComponentInvocationSequence)result;
+        return (ServerComponentInvocationSequence)result!;
     }
 
     // Internal for test only
-    internal static void UpdateSaveStateRenderMode(ViewContext viewContext, RenderMode mode)
+    internal static void UpdateSaveStateRenderMode(HttpContext httpContext, RenderMode mode)
     {
+        // TODO: This will all have to change when we support multiple render modes in the same response
         if (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered)
         {
-            if (!viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+            if (!httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
             {
                 result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
                     InvokedRenderModes.Mode.Server :
                     InvokedRenderModes.Mode.WebAssembly);
 
-                viewContext.Items[InvokedRenderModesKey] = result;
+                httpContext.Items[InvokedRenderModesKey] = result;
             }
             else
             {
@@ -131,7 +170,7 @@ internal sealed class ComponentPrerenderer
                     InvokedRenderModes.Mode.Server :
                     InvokedRenderModes.Mode.WebAssembly;
 
-                var invokedMode = (InvokedRenderModes)result;
+                var invokedMode = (InvokedRenderModes)result!;
                 if (invokedMode.Value != currentInvocation)
                 {
                     invokedMode.Value = InvokedRenderModes.Mode.ServerAndWebAssembly;
@@ -140,19 +179,14 @@ internal sealed class ComponentPrerenderer
         }
     }
 
-    internal static InvokedRenderModes.Mode GetPersistStateRenderMode(ViewContext viewContext)
+    internal static InvokedRenderModes.Mode GetPersistStateRenderMode(HttpContext httpContext)
     {
-        if (viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
-        {
-            return ((InvokedRenderModes)result).Value;
-        }
-        else
-        {
-            return InvokedRenderModes.Mode.None;
-        }
+        return httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result)
+            ? ((InvokedRenderModes)result!).Value
+            : InvokedRenderModes.Mode.None;
     }
 
-    private async ValueTask<IHtmlContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<IHtmlAsyncContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var htmlComponent = await PrerenderComponentCoreAsync(
             parametersCollection,
@@ -161,14 +195,18 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(_htmlRenderer.Dispatcher, htmlComponent, null, null);
     }
 
-    private async Task<IHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private async Task<IHtmlAsyncContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var marker = _serverComponentSerializer.SerializeInvocation(
+        // Lazy because we don't actually want to require a whole chain of services including Data Protection
+        // to be required unless you actually use Server render mode.
+        var serverComponentSerializer = _services.GetRequiredService<ServerComponentSerializer>();
+
+        var marker = serverComponentSerializer.SerializeInvocation(
             invocationId,
             type,
             parametersCollection,
@@ -182,7 +220,7 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(_htmlRenderer.Dispatcher, htmlComponent, marker, null);
     }
 
-    private async ValueTask<IHtmlContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<IHtmlAsyncContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
@@ -197,18 +235,22 @@ internal sealed class ComponentPrerenderer
         return new PrerenderedComponentHtmlContent(_htmlRenderer.Dispatcher, htmlComponent, null, marker);
     }
 
-    private IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private IHtmlAsyncContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
             context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
-        var marker = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
+        // Lazy because we don't actually want to require a whole chain of services including Data Protection
+        // to be required unless you actually use Server render mode.
+        var serverComponentSerializer = _services.GetRequiredService<ServerComponentSerializer>();
+
+        var marker = serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 
-    private static IHtmlContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
+    private static IHtmlAsyncContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, null, marker);
@@ -216,16 +258,16 @@ internal sealed class ComponentPrerenderer
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.
     // We don't construct the actual HTML until we receive the call to WriteTo.
-    private class PrerenderedComponentHtmlContent : IHtmlContent, IAsyncHtmlContent
+    private class PrerenderedComponentHtmlContent : IHtmlAsyncContent
     {
-        private readonly Dispatcher _dispatcher;
-        private readonly HtmlComponent _htmlToEmitOrNull;
+        private readonly Dispatcher? _dispatcher;
+        private readonly HtmlComponent? _htmlToEmitOrNull;
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
         public PrerenderedComponentHtmlContent(
-            Dispatcher dispatcher,
-            HtmlComponent htmlToEmitOrNull, // If null, we're only emitting the markers
+            Dispatcher? dispatcher, // If null, we're only emitting the markers
+            HtmlComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
             ServerComponentMarker? serverMarker,
             WebAssemblyComponentMarker? webAssemblyMarker)
         {
@@ -235,9 +277,18 @@ internal sealed class ComponentPrerenderer
             _webAssemblyMarker = webAssemblyMarker;
         }
 
-        // For back-compat, we have to supply an implemention of IHtmlContent. However this will only work
-        // if you call it on the HtmlRenderer's sync context. The framework itself will not call this directly
-        // and will instead use WriteToAsync which deals with dispatching to the sync context.
+        public async ValueTask WriteToAsync(TextWriter writer)
+        {
+            if (_dispatcher is null)
+            {
+                WriteTo(writer, HtmlEncoder.Default);
+            }
+            else
+            {
+                await _dispatcher.InvokeAsync(() => WriteTo(writer, HtmlEncoder.Default));
+            }
+        }
+
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (_serverMarker.HasValue)
@@ -261,18 +312,6 @@ internal sealed class ComponentPrerenderer
                 {
                     WebAssemblyComponentSerializer.AppendEpilogue(writer, _webAssemblyMarker.Value);
                 }
-            }
-        }
-
-        public async ValueTask WriteToAsync(TextWriter writer)
-        {
-            if (_dispatcher is null)
-            {
-                WriteTo(writer, HtmlEncoder.Default);
-            }
-            else
-            {
-                await _dispatcher.InvokeAsync(() => WriteTo(writer, HtmlEncoder.Default));
             }
         }
     }
@@ -312,5 +351,29 @@ internal sealed class ComponentPrerenderer
         // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
+    }
+
+    private sealed class ComponentStateHtmlContent : IHtmlContent
+    {
+        private PrerenderComponentApplicationStore? _store;
+
+        public static ComponentStateHtmlContent Empty { get; }
+            = new ComponentStateHtmlContent(null);
+
+        public ComponentStateHtmlContent(PrerenderComponentApplicationStore? store)
+        {
+            _store = store;
+        }
+
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        {
+            if (_store != null)
+            {
+                writer.Write("<!--Blazor-Component-State:");
+                writer.Write(_store.PersistedState);
+                writer.Write("-->");
+                _store = null;
+            }
+        }
     }
 }

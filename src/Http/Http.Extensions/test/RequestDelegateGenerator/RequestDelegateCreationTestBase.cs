@@ -23,10 +23,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public abstract class RequestDelegateGeneratorTestBase : LoggedTest
+public abstract class RequestDelegateCreationTestBase : LoggedTest
 {
     // Change this to true and run tests in development to regenerate baseline files.
-    // Then: cp artifacts/bin/Microsoft.AspNetCore.Http.Extensions.Tests/Debug/net8.0/RequestDelegateGenerator/Baselines/* src/Http/Http.Extensions/test/RequestDelegateGenerator/Baselines
     public bool RegenerateBaselines => false;
 
     protected abstract bool IsGeneratorEnabled { get; }
@@ -200,9 +199,9 @@ public abstract class RequestDelegateGeneratorTestBase : LoggedTest
         return serviceCollection.BuildServiceProvider();
     }
 
-    internal HttpContext CreateHttpContextWithBody(Todo requestData)
+    internal HttpContext CreateHttpContextWithBody(Todo requestData, IServiceProvider serviceProvider = null)
     {
-        var httpContext = CreateHttpContext();
+        var httpContext = CreateHttpContext(serviceProvider);
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
         httpContext.Request.Headers["Content-Type"] = "application/json";
 
@@ -266,7 +265,7 @@ public static class TestMapActions
 
         // Add in required metadata references
         var resolver = new AppLocalResolver();
-        var dependencyContext = DependencyContext.Load(typeof(RequestDelegateGeneratorTestBase).Assembly);
+        var dependencyContext = DependencyContext.Load(typeof(RequestDelegateCreationTestBase).Assembly);
 
         Assert.NotNull(dependencyContext);
 
@@ -294,7 +293,12 @@ public static class TestMapActions
             return;
         }
 
-        var baselineFilePath = Path.Combine("RequestDelegateGenerator", "Baselines", $"{callerName}.generated.txt");
+        var baselineFilePathMetadataValue = typeof(RequestDelegateCreationTestBase).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>().Single(d => d.Key == "RequestDelegateGeneratorTestBaselines").Value;
+        var baselineFilePathRoot = SkipOnHelixAttribute.OnHelix()
+            ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "RequestDelegateGenerator", "Baselines")
+            : baselineFilePathMetadataValue;
+        var baselineFilePath = Path.Combine(baselineFilePathRoot!, $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();
         var generatedCode = await generatedSyntaxTree.GetTextAsync();
 

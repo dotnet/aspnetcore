@@ -3,6 +3,7 @@
   <PropertyGroup>
     <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+    <SourceBuildTrimNetFrameworkTargets>true</SourceBuildTrimNetFrameworkTargets>
   </PropertyGroup>
 
   <Target Name="PrepareGlobalJsonForSourceBuild"

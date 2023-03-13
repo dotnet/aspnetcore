@@ -352,6 +352,16 @@ public class Project : IDisposable
         }
     }
 
+    public async Task VerifyHasProperty(string propertyName, string expectedValue)
+    {
+        var projectFile = Directory.EnumerateFiles(TemplateOutputDir, "*proj").FirstOrDefault();
+
+        Assert.NotNull(projectFile);
+
+        var projectFileContents = await File.ReadAllTextAsync(projectFile);
+        Assert.Contains($"<{propertyName}>{expectedValue}</{propertyName}>", projectFileContents);
+    }
+
     public string ReadFile(string path)
     {
         AssertFileExists(path, shouldExist: true);

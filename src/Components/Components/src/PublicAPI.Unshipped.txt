@@ -4,6 +4,18 @@ Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.Sections.SectionContent
+Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.Dispose() -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionContent() -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.get -> object!
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.Dispose() -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.get -> object!
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionOutlet() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool

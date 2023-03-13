@@ -42,19 +42,47 @@ internal class EndpointParameter
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
+        else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out _))
+        {
+            Source = EndpointParameterSource.Unknown;
+        }
         else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
         {
-            Source = EndpointParameterSource.JsonBody;
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.System_IO_Stream)))
+            {
+                Source = EndpointParameterSource.SpecialType;
+                AssigningCode = "httpContext.Request.Body";
+
+            }
+            else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.System_IO_Pipelines_PipeReader)))
+            {
+                Source = EndpointParameterSource.SpecialType;
+                AssigningCode = "httpContext.Request.BodyReader";
+            }
+            else
+            {
+                Source = EndpointParameterSource.JsonBody;
+            }
             IsOptional = isOptional;
         }
         else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
         }
+        else if (parameter.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
+        {
+            Source = EndpointParameterSource.Unknown;
+        }
         else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
         {
             Source = EndpointParameterSource.SpecialType;
             AssigningCode = specialTypeAssigningCode;
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)) ||
+            SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)) ||
+            SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+        {
+            Source = EndpointParameterSource.Unknown;
         }
         else if (HasBindAsync(parameter, wellKnownTypes, out var bindMethod))
         {
@@ -120,7 +148,7 @@ internal class EndpointParameter
         // which method was encountered.
         Func<string, string, string>? preferredTryParseInvocation = parsabilityMethod switch
         {
-            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""ParsableHelper<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
+            ParsabilityMethod.IParsable => (string inputArgument, string outputArgument) => $$"""GeneratedRouteBuilderExtensionsCore.TryParseExplicit<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}!, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
             ParsabilityMethod.TryParseWithFormatProvider => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, out var {{outputArgument}})""",
             ParsabilityMethod.TryParse => (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, out var {{outputArgument}})""",
             ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}!, out var {{outputArgument}})""",
