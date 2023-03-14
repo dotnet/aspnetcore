@@ -1504,7 +1504,6 @@
               "src/Azure/AzureAppServices.HostingStartup/",
               "src/Middleware/",
               "src/HttpClientFactory/",
-              "src/Hosting/",
               "src/SiteExtensions/",
               "src/DefaultBuilder/"
             ]
@@ -1538,6 +1537,12 @@
               "src/Mvc/Mvc/",
               "src/OpenApi/",
               "src/Mvc/perf/"
+            ]
+          },
+          {
+            "label": "area-hosting",
+            "pathFilter": [
+              "src/Hosting/"
             ]
           }
         ]
