@@ -1504,8 +1504,7 @@
               "src/Azure/AzureAppServices.HostingStartup/",
               "src/Middleware/",
               "src/HttpClientFactory/",
-              "src/SiteExtensions/",
-              "src/DefaultBuilder/"
+              "src/SiteExtensions/"
             ]
           },
           {
@@ -1542,6 +1541,7 @@
           {
             "label": "area-hosting",
             "pathFilter": [
+              "src/DefaultBuilder/",
               "src/Hosting/"
             ]
           }
