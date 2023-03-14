@@ -1396,3 +1396,15 @@ public class TooManyParamsHub : Hub
         int a64, [FromService] Service1 service)
     { }
 }
+
+public class OnConnectedSendToClientHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        string id = Context.GetHttpContext()?.Request.Query["client"] ?? string.Empty;
+        if (!string.IsNullOrEmpty(id))
+        {
+            await Clients.Client(id).SendAsync("Test", 1);
+        }
+    }
+}
