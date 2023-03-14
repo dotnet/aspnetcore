@@ -121,22 +121,22 @@
     <value>Unable to resolve route pattern</value>
   </data>
   <data name="UnableToResolveRoutePattern_Message" xml:space="preserve">
-    <value>Unable to statically resolve route pattern for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime.</value>
+    <value>Unable to statically resolve route pattern for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aot-known-issues</value>
   </data>
   <data name="UnableToResolveMethod_Title" xml:space="preserve">
     <value>Unable to resolve endpoint handler</value>
   </data>
   <data name="UnableToResolveMethod_Message" xml:space="preserve">
-    <value>Unable to statically resolve endpoint handler method. Only method groups, lambda expressions or readonly fields/variables are allowed. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime.</value>
+    <value>Unable to statically resolve endpoint handler method. Only method groups, lambda expressions or readonly fields/variables are allowed. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see aka.ms/aot-known-issues</value>
   </data>
   <data name="UnableToResolveParameter_Message" xml:space="preserve">
-    <value>Unable to statically resolve parameter named '{0}' for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime.</value>
+    <value>Unable to statically resolve parameter named '{0}' for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aot-known-issues</value>
   </data>
   <data name="UnableToResolveParameter_Title" xml:space="preserve">
     <value>Unable to resolve parameter</value>
   </data>
   <data name="UnableToResolveAnonymousReturnType_Message" xml:space="preserve">
-    <value>Unable to resolve anonymous return type. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime.</value>
+    <value>Unable to resolve anonymous return type. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aot-known-issues</value>
   </data>
   <data name="UnableToResolveAnonymousReturnType_Title" xml:space="preserve">
     <value>Unable to resolve anonymous type</value>
