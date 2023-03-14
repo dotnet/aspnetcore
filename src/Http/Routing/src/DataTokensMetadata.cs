@@ -3,12 +3,9 @@
 
 #nullable enable
 
-<<<<<<< HEAD
-using System.Linq;
-=======
 using System.Globalization;
 using System.Text;
->>>>>>> d18fa33d1c (Override the ToString method in the DataTokensMetadata class.)
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -37,16 +34,6 @@ public sealed class DataTokensMetadata : IDataTokensMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-<<<<<<< HEAD
         return string.Join(",", DataTokens.Select(t => $"{t.Key}={t.Value}"));
-=======
-        var metadataTokensBuilder = new StringBuilder();
-        foreach(var DataToken in DataTokens)
-        {
-            metadataTokensBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0} ={1}", DataToken.Key, DataToken.Value);
-            metadataTokensBuilder.AppendLine();
-        }
-            return metadataTokensBuilder.ToString();
->>>>>>> d18fa33d1c (Override the ToString method in the DataTokensMetadata class.)
     }
 }
