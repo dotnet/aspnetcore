@@ -4918,7 +4918,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             _ = await client2.ConnectAsync(connectionHandler).DefaultTimeout();
 
             var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
-            Assert.Equal(1, message.Arguments.Length);
+            Assert.Single(message.Arguments);
             Assert.Equal(1L, message.Arguments[0]);
             Assert.Equal("Test", message.Target);
         }
