@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
-using Microsoft.AspNetCore.Http;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
@@ -82,8 +81,8 @@ internal class EndpointParameter
             AssigningCode = specialTypeAssigningCode;
         }
         else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)) ||
-            SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)) ||
-            SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+                 SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)) ||
+                 SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
         {
             Source = EndpointParameterSource.Unknown;
         }
@@ -99,6 +98,11 @@ internal class EndpointParameter
         else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && IsArray && elementType.SpecialType == SpecialType.System_String)
         {
             Source = EndpointParameterSource.Query;
+        }
+        else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues)))
+        {
+            Source = EndpointParameterSource.Query;
+            IsStringValues = true;
         }
         else if (TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter))
         {
@@ -142,12 +146,13 @@ internal class EndpointParameter
     [MemberNotNullWhen(true, nameof(ParsingBlockEmitter))]
     public bool IsParsable { get; }
     public Action<CodeWriter, string, string>? ParsingBlockEmitter { get; }
+    public bool IsStringValues { get; }
 
     public BindabilityMethod? BindMethod { get; }
 
     private static bool HasBindAsync(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod)
     {
-        var parameterType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true);
+        var parameterType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
         return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod) == Bindability.Bindable;
     }
 
@@ -155,7 +160,7 @@ internal class EndpointParameter
     {
         if (parameter.Type.TypeKind == TypeKind.Array)
         {
-            elementType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true);
+            elementType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: false);
             return true;
         }
         else
@@ -167,7 +172,7 @@ internal class EndpointParameter
 
     private bool TryGetParsability(IParameterSymbol parameter, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out Action<CodeWriter, string, string>? parsingBlockEmitter)
     {
-        var parameterType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true);
+        var parameterType = parameter.Type.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
 
         // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
         // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
@@ -242,10 +247,23 @@ internal class EndpointParameter
         {
             parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
             {
-                writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
-                writer.StartBlock();
-                writer.WriteLine("wasParamCheckFailure = true;");
-                writer.EndBlock();
+                if (IsArray && ElementType.NullableAnnotation == NullableAnnotation.Annotated)
+                {
+                    writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
+                    writer.StartBlock();
+                    writer.WriteLine($$"""if (!string.IsNullOrEmpty({{inputArgument}}))""");
+                    writer.StartBlock();
+                    writer.WriteLine("wasParamCheckFailure = true;");
+                    writer.EndBlock();
+                    writer.EndBlock();
+                }
+                else
+                {
+                    writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
+                    writer.StartBlock();
+                    writer.WriteLine("wasParamCheckFailure = true;");
+                    writer.EndBlock();
+                }
             };
         }
 

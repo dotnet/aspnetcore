@@ -120,7 +120,7 @@ internal static class ParsabilityHelper
             i => SymbolEqualityComparer.Default.Equals(i.ConstructedFrom, iBindableFromHttpContextTypeSymbol)
             );
         return constructedTypeSymbol != null &&
-            SymbolEqualityComparer.Default.Equals(constructedTypeSymbol.TypeArguments[0].UnwrapTypeSymbol(), typeSymbol);
+            SymbolEqualityComparer.Default.Equals(constructedTypeSymbol.TypeArguments[0].UnwrapTypeSymbol(unwrapNullable: true), typeSymbol);
     }
 
     private static bool IsBindAsync(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
@@ -148,7 +148,7 @@ internal static class ParsabilityHelper
     private static bool IsReturningValueTaskOfTOrNullableT(INamedTypeSymbol returnType, ITypeSymbol containingType, WellKnownTypes wellKnownTypes)
     {
         return SymbolEqualityComparer.Default.Equals(returnType.ConstructedFrom, wellKnownTypes.Get(WellKnownType.System_Threading_Tasks_ValueTask_T)) &&
-            SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0].UnwrapTypeSymbol(), containingType);
+            SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0].UnwrapTypeSymbol(unwrapNullable: true), containingType);
     }
 
     internal static Bindability GetBindability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out BindabilityMethod? bindabilityMethod)

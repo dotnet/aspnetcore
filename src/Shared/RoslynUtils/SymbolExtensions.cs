@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class SymbolExtensions
 {
-    public static ITypeSymbol UnwrapTypeSymbol(this ITypeSymbol typeSymbol, bool unwrapArray = false)
+    public static ITypeSymbol UnwrapTypeSymbol(this ITypeSymbol typeSymbol, bool unwrapArray = false, bool unwrapNullable = false)
     {
         INamedTypeSymbol? unwrappedTypeSymbol = null;
 
@@ -27,7 +27,7 @@ internal static class SymbolExtensions
         }
 
         // If it is nullable, unwrap it.
-        if (unwrappedTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+        if (unwrapNullable && unwrappedTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
         {
             unwrappedTypeSymbol = unwrappedTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
         }

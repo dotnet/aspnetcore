@@ -34,6 +34,10 @@ internal static class EndpointParameterEmitter
         {
             codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
         }
+        else if (endpointParameter.IsStringValues)
+        {
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
+        }
         else
         {
             codeWriter.WriteLine($"if (StringValues.IsNullOrEmpty({endpointParameter.EmitAssigningCodeResult()}))");
@@ -55,7 +59,17 @@ internal static class EndpointParameterEmitter
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
             endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
-            codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()}[i] = parsed_element!;");
+
+            // In cases where we are dealing with an array of parsable nullables we need to substitute
+            // empty strings for null values.
+            if (endpointParameter.ElementType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()}[i] = string.IsNullOrEmpty(element) ? null! : parsed_element!;");
+            }
+            else
+            {
+                codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()}[i] = parsed_element!;");
+            }
             codeWriter.EndBlock();
         }
         else if (endpointParameter.IsArray && !endpointParameter.IsParsable)
@@ -170,7 +184,7 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
-        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol();
+        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
         var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         switch (endpointParameter.BindMethod)
