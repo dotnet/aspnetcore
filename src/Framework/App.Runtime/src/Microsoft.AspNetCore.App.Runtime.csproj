@@ -489,7 +489,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <ManagedAssetsFullPath>$(RuntimePackageRoot)$(ManagedAssetsPackagePath)</ManagedAssetsFullPath>
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
       <PartialCompositeAssemblyListPath>$(MSBuildThisFileDirectory)\PartialCompositeAssemblyList.txt</PartialCompositeAssemblyListPath>
-      <InstructionSetSupport Condition="'$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86'">+avx2,+bmi,+bmi2,+lzcnt,+movbe,+fma</InstructionSetSupport>
+      <InstructionSetSupport Condition="'$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86'">+x86-x64-v3</InstructionSetSupport>
     </PropertyGroup>
 
     <RemoveDir Directories="$(CompositeTargetDir)" />
