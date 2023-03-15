@@ -7,6 +7,14 @@
       Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefaultNetCoreTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('${DefaultNetCoreTargetFramework}'))</DefaultNetCoreTargetFrameworkIdentifier>
+    <DefaultNetCoreTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('${DefaultNetCoreTargetFramework}', 2))</DefaultNetCoreTargetFrameworkVersion>
+
+    <ProjectTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)'))</ProjectTargetFrameworkIdentifier>
+    <ProjectTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)', 2))</ProjectTargetFrameworkVersion>
+  </PropertyGroup>
+
   <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 6.0. -->
   <ItemGroup>
     <KnownAppHostPack

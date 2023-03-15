@@ -1,13 +1,5 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
-  <PropertyGroup>
-    <DefaultNetCoreTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(DefaultNetCoreTargetFramework)'))</DefaultNetCoreTargetFrameworkIdentifier>
-    <DefaultNetCoreTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))</DefaultNetCoreTargetFrameworkVersion>
-
-    <ProjectTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)'))</ProjectTargetFrameworkIdentifier>
-    <ProjectTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)', 2))</ProjectTargetFrameworkVersion>
-  </PropertyGroup>
-
   <!--
     Workaround https://github.com/dotnet/aspnetcore/issues/4257.
     The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.
