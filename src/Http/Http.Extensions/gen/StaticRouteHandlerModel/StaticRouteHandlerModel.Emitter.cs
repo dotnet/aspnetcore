@@ -15,11 +15,11 @@ internal static class StaticRouteHandlerModelEmitter
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response == null || endpoint.Response.IsVoid ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || (endpoint.Response.IsVoid && !endpoint.Response.IsAwaitable) ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
         }
         var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
 
-        if (endpoint.Response == null || endpoint.Response.IsVoid)
+        if (endpoint.Response == null || (endpoint.Response.IsVoid && !endpoint.Response.IsAwaitable))
         {
             return $"System.Action<{parameterTypeList}>";
         }
@@ -30,13 +30,13 @@ internal static class StaticRouteHandlerModelEmitter
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response == null || endpoint.Response.IsVoid ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || (endpoint.Response.IsVoid && !endpoint.Response.IsAwaitable) ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
         }
 
         var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
             p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)));
 
-        if (endpoint.Response == null || endpoint.Response.IsVoid)
+        if (endpoint.Response == null || (endpoint.Response.IsVoid && !endpoint.Response.IsAwaitable))
         {
             return $"Action<{parameterTypeList}>";
         }
@@ -180,7 +180,9 @@ internal static class StaticRouteHandlerModelEmitter
     {
         if (endpoint.Response?.IsVoid == true)
         {
-            codeWriter.WriteLine($"handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? $"await handler({endpoint.EmitFilteredArgumentList()});"
+                : $"handler({endpoint.EmitFilteredArgumentList()});");
             codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
         }
         else if (endpoint.Response?.IsAwaitable == true)

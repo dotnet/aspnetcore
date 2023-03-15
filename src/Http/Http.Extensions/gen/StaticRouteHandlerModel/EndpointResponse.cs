@@ -29,8 +29,8 @@ internal class EndpointResponse
         WellKnownTypes = wellKnownTypes;
         ResponseType = UnwrapResponseType(method);
         WrappedResponseType = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
-        IsAwaitable = GetIsAwaitable(method);
-        IsVoid = method.ReturnsVoid;
+        IsAwaitable = GetIsAwaitable(method, out var awaitableIsVoid);
+        IsVoid = method.ReturnsVoid || awaitableIsVoid;
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType(method);
@@ -73,11 +73,17 @@ internal class EndpointResponse
             SymbolEqualityComparer.Default.Equals(ResponseType, resultType);
     }
 
-    private static bool GetIsAwaitable(IMethodSymbol method)
+    private static bool GetIsAwaitable(IMethodSymbol method, out bool isVoid)
     {
+        isVoid = false;
         var potentialGetAwaiters = method.ReturnType.OriginalDefinition.GetMembers(WellKnownMemberNames.GetAwaiter);
         var getAwaiters = potentialGetAwaiters.OfType<IMethodSymbol>().Where(x => !x.Parameters.Any());
-        return getAwaiters.Any(symbol => symbol.Name == WellKnownMemberNames.GetAwaiter && VerifyGetAwaiter(symbol));
+        var isAwaitable = getAwaiters.Any(symbol => symbol.Name == WellKnownMemberNames.GetAwaiter && VerifyGetAwaiter(symbol));
+        if (isAwaitable && method.ReturnType is INamedTypeSymbol namedTypeSymbol)
+        {
+            isVoid = !namedTypeSymbol.IsGenericType;
+        }
+        return isAwaitable;
 
         static bool VerifyGetAwaiter(IMethodSymbol getAwaiter)
         {

@@ -183,4 +183,39 @@ app.MapGet("/", GetTodo);
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
+
+    [Fact]
+    public async Task MapAction_HandlesCompletedTaskReturn()
+    {
+        var source = """
+app.MapGet("/task", () => Task.CompletedTask);
+app.MapGet("/value-task", () => ValueTask.CompletedTask);
+""";
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        VerifyStaticEndpointModels(result, endpointModels => Assert.Collection(endpointModels,
+            endpointModel =>
+            {
+                Assert.Equal("/task", endpointModel.RoutePattern);
+                Assert.Equal("MapGet", endpointModel.HttpMethod);
+                Assert.True(endpointModel.Response.IsAwaitable);
+                Assert.True(endpointModel.Response.IsVoid);
+            },
+            endpointModel =>
+            {
+                Assert.Equal("/value-task", endpointModel.RoutePattern);
+                Assert.Equal("MapGet", endpointModel.HttpMethod);
+                Assert.True(endpointModel.Response.IsAwaitable);
+                Assert.True(endpointModel.Response.IsVoid);
+            }));
+
+        var httpContext = CreateHttpContext();
+        await endpoints[0].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, string.Empty);
+
+        httpContext = CreateHttpContext();
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, string.Empty);
+    }
 }
