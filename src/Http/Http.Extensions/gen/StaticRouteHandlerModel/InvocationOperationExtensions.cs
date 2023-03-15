@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -12,18 +13,30 @@ internal static class InvocationOperationExtensions
     private const int RoutePatternArgumentOrdinal = 1;
     private const int RouteHandlerArgumentOrdinal = 2;
 
-    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, out IMethodSymbol method)
+    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, out IMethodSymbol? method)
     {
         foreach (var argument in invocation.Arguments)
         {
             if (argument.Parameter?.Ordinal == RouteHandlerArgumentOrdinal)
             {
-                method = ResolveMethodFromOperation(argument);
+                method = ResolveMethodFromOperation(argument, semanticModel);
                 return true;
             }
         }
         method = null;
         return false;
+    }
+
+    public static IArgumentOperation? GetRouteHandlerArgument(this IInvocationOperation invocation)
+    {
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == RouteHandlerArgumentOrdinal)
+            {
+                return argument;
+            }
+        }
+        return null;
     }
 
     public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, out SyntaxToken token)
@@ -46,21 +59,21 @@ internal static class InvocationOperationExtensions
         return true;
     }
 
-    private static IMethodSymbol ResolveMethodFromOperation(IOperation operation) => operation switch
+    private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
     {
-        IArgumentOperation argument => ResolveMethodFromOperation(argument.Value),
-        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand),
-        IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target),
-        IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, operation.SemanticModel) is IOperation op =>
-            ResolveMethodFromOperation(op),
+        IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel),
+        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel),
+        IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel),
+        IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
+            ResolveMethodFromOperation(op, semanticModel),
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
-        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand),
+        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel),
         _ => null
     };
 
-    private static IOperation ResolveDeclarationOperation(ISymbol symbol, SemanticModel semanticModel)
+    private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
     {
         foreach (var syntaxReference in symbol.DeclaringSyntaxReferences)
         {
@@ -75,7 +88,8 @@ internal static class InvocationOperationExtensions
                 })
             {
                 // Use the correct semantic model based on the syntax tree
-                var operation = semanticModel.GetOperation(expr);
+                var targetSemanticModel = semanticModel?.Compilation.GetSemanticModel(expr.SyntaxTree);
+                var operation = targetSemanticModel?.GetOperation(expr);
 
                 if (operation is not null)
                 {
