@@ -76,8 +76,8 @@ public abstract class CircuitHandler
     /// <summary>
     /// Invoked when inbound activity on the circuit causes an asynchronous task to be dispatched on the server.
     /// </summary>
-    /// <param name="circuit">The <see cref="Circuit"/>.</param>
+    /// <param name="context">The <see cref="CircuitInboundEventContext"/>.</param>
     /// <param name="next">The next handler to invoke.</param>
     /// <returns></returns>
-    public virtual Task HandleInboundActivityAsync(Circuit circuit, Func<Task> next) => next();
+    public virtual Task HandleInboundEventAsync(in CircuitInboundEventContext context, CircuitInboundEventDelegate next) => next(context);
 }

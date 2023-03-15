@@ -21,6 +21,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitHandler[] _circuitHandlers;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
+    private readonly CircuitInboundEventDelegate _dispatchInboundEvent;
     private bool _initialized;
     private bool _disposed;
 
@@ -60,6 +61,8 @@ internal partial class CircuitHost : IAsyncDisposable
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        _dispatchInboundEvent = BuildInboundEventDispatcher(_circuitHandlers);
 
         Services = scope.ServiceProvider;
 
@@ -324,7 +327,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            _ = DispatchInboundActionAsync(() => Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull));
+            _ = DispatchInboundEventAsync(() => Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull));
         }
         catch (Exception e)
         {
@@ -345,7 +348,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await DispatchInboundActionAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
+            await DispatchInboundEventAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
                 var invocationInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
@@ -371,7 +374,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await DispatchInboundActionAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
+            await DispatchInboundEventAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 if (!succeeded)
                 {
@@ -405,7 +408,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await DispatchInboundActionAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
+            await DispatchInboundEventAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.ReceiveByteArraySuccess(_logger, id);
                 DotNetDispatcher.ReceiveByteArray(JSRuntime, id, data);
@@ -430,7 +433,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            return await DispatchInboundActionAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
+            return await DispatchInboundEventAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 return RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
             }));
@@ -505,7 +508,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await DispatchInboundActionAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
+            await DispatchInboundEventAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.LocationChange(_logger, uri, CircuitId);
                 _navigationManager.NotifyLocationChanged(uri, state, intercepted);
@@ -547,7 +550,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            var shouldContinueNavigation = await DispatchInboundActionAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
+            var shouldContinueNavigation = await DispatchInboundEventAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
                 return await _navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
@@ -589,28 +592,27 @@ internal partial class CircuitHost : IAsyncDisposable
         _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
     }
 
-    private Task DispatchInboundActionAsync(Func<Task> func)
-    {
-        return DispatchInboundActionAsyncCore(0, func);
-    }
+    private Task DispatchInboundEventAsync(Func<Task> func)
+        => _dispatchInboundEvent(new(func, Circuit));
 
-    private async Task<TResult> DispatchInboundActionAsync<TResult>(Func<Task<TResult>> func)
+    private async Task<TResult> DispatchInboundEventAsync<TResult>(Func<Task<TResult>> func)
     {
         TResult result = default;
-        await DispatchInboundActionAsyncCore(0, async () => result = await func());
+        await _dispatchInboundEvent(new(async () => result = await func(), Circuit));
         return result;
     }
 
-    private async Task DispatchInboundActionAsyncCore(int circuitHandlerIndex, Func<Task> func)
+    private static CircuitInboundEventDelegate BuildInboundEventDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers)
     {
-        if (circuitHandlerIndex >= _circuitHandlers.Length)
+        CircuitInboundEventDelegate result = (in CircuitInboundEventContext context) => context.Handler();
+
+        for (var i = circuitHandlers.Count - 1; i >= 0; i--)
         {
-            await func();
-            return;
+            var circuitHandler = circuitHandlers[i];
+            result = (in CircuitInboundEventContext context) => circuitHandler.HandleInboundEventAsync(context, result);
         }
 
-        var circuitHandler = _circuitHandlers[circuitHandlerIndex];
-        await circuitHandler.HandleInboundActivityAsync(Circuit, () => DispatchInboundActionAsyncCore(circuitHandlerIndex + 1, func));
+        return result;
     }
 
     private void AssertInitialized()
