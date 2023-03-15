@@ -516,7 +516,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-u:&quot;%(UnrootedAssemblyPaths.Identity)&quot;" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="&quot;%(PartialCompositeAssemblyPaths.Identity)&quot;" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--out:&quot;$(CompositeTargetDir)$(CompositeFileName).dll&quot;" Overwrite="false" />
-    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--instruction-set:$(InstructionSetSupport)" Overwrite="false" Condition="$'(InstructionSetSupport)' != ''" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--instruction-set:$(InstructionSetSupport)" Overwrite="false" Condition="'$(InstructionSetSupport)' != ''" />
 
     <ItemGroup>
       <NativeSharedObjects Include="$(NativeAssetsFullPath)\*.so" />
