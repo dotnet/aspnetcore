@@ -165,7 +165,7 @@ internal class EndpointParameter
         }
         else
         {
-            elementType = null;
+            elementType = null!;
             return false;
         }
     }
