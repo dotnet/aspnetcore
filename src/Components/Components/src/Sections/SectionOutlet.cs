@@ -10,16 +10,23 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };
 
-    private object? _subscribedSectionId;
+    private object? _identifier;
+    private object? _subscribedIdentifier;
     private RenderHandle _renderHandle;
     private SectionRegistry _registry = default!;
     private RenderFragment? _content;
 
     /// <summary>
-    /// Gets or sets the ID that determines which <see cref="SectionContent"/> instances will provide
+    /// Gets or sets the ID of type <see cref="string"/> that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
-    [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
+    [Parameter] public string SectionName { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the ID of type <see cref="object"/> that determines which <see cref="SectionContent"/> instances will provide
+    /// content to this instance.
+    /// </summary>
+    [Parameter] public object SectionId { get; set; } = default!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -31,20 +38,32 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
     {
         parameters.SetParameterProperties(this);
 
-        if (SectionId is null)
+        if (SectionName is not null && SectionId is not null)
         {
-            throw new InvalidOperationException($"{nameof(SectionOutlet)} requires a non-null value for the parameter '{nameof(SectionId)}'.");
+            throw new InvalidOperationException($"Both '{nameof(SectionName)}' and '{nameof(SectionId)}' cannot have values.");
+        }
+        else if (SectionName is not null)
+        {
+            _identifier = SectionName;
+        }
+        else if (SectionId is not null)
+        {
+            _identifier = SectionId;
+        }
+        else
+        {
+            throw new InvalidOperationException($"{nameof(SectionOutlet)} requires a non-null value either for '{nameof(SectionName)}' or '{nameof(SectionId)}'.");
         }
 
-        if (!object.Equals(SectionId, _subscribedSectionId))
+        if (!object.Equals(_identifier, _subscribedIdentifier))
         {
-            if (_subscribedSectionId is not null)
+            if (_subscribedIdentifier is not null)
             {
-                _registry.Unsubscribe(_subscribedSectionId);
+                _registry.Unsubscribe(_subscribedIdentifier);
             }
 
-            _registry.Subscribe(SectionId, this);
-            _subscribedSectionId = SectionId;
+            _registry.Subscribe(_identifier, this);
+            _subscribedIdentifier = SectionId;
         }
 
         RenderContent();
@@ -74,9 +93,9 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_subscribedSectionId is not null)
+        if (_subscribedIdentifier is not null)
         {
-            _registry.Unsubscribe(_subscribedSectionId);
+            _registry.Unsubscribe(_subscribedIdentifier);
         }
     }
 }

@@ -8,15 +8,22 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// </summary>
 public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
 {
-    private object? _registeredSectionId;
+    private object? _identifier;
+    private object? _registeredIdentifier;
     private bool? _registeredIsDefaultContent;
     private SectionRegistry _registry = default!;
 
     /// <summary>
-    /// Gets or sets the ID that determines which <see cref="SectionOutlet"/> instance will render
+    /// Gets or sets the ID of type <see cref="string"/> that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
-    [Parameter, EditorRequired] public object SectionId { get; set; } = default!;
+    [Parameter] public string SectionName { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the ID of type <see cref="object"/> that determines which <see cref="SectionOutlet"/> instance will render
+    /// the content of this instance.
+    /// </summary>
+    [Parameter] public object SectionId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets whether this component should provide the default content for the target
@@ -38,10 +45,53 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
+        // We are not using parameters.SetParameterProperties(this)
+        // because IsDefaultContent is internal property and not a parameter
+        SetCustomParameters(parameters);
+
+        if (SectionName is not null && SectionId is not null)
+        {
+            throw new InvalidOperationException($"Both '{nameof(SectionName)}' and '{nameof(SectionId)}' cannot have values.");
+        }
+        else if (SectionName is not null)
+        {
+            _identifier = SectionName;
+        }
+        else if (SectionId is not null)
+        {
+            _identifier = SectionId;
+        }
+        else
+        {
+            throw new InvalidOperationException($"{nameof(SectionContent)} requires a non-null value either for '{nameof(SectionName)}' or '{nameof(SectionId)}'.");
+        }
+
+        if (!object.Equals(_identifier, _registeredIdentifier) || IsDefaultContent != _registeredIsDefaultContent)
+        {
+            if (_registeredIdentifier is not null)
+            {
+                _registry.RemoveProvider(_registeredIdentifier, this);
+            }
+
+            _registry.AddProvider(_identifier, this, IsDefaultContent);
+            _registeredIdentifier = SectionId;
+            _registeredIsDefaultContent = IsDefaultContent;
+        }
+
+        _registry.NotifyContentChanged(_identifier, this);
+
+        return Task.CompletedTask;
+    }
+
+    private void SetCustomParameters(ParameterView parameters)
+    {
         foreach (var param in parameters)
         {
             switch (param.Name)
             {
+                case nameof(SectionContent.SectionName):
+                    SectionName = (string)param.Value;
+                    break;
                 case nameof(SectionContent.SectionId):
                     SectionId = param.Value;
                     break;
@@ -55,35 +105,14 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
                     throw new ArgumentException($"Unknown parameter '{param.Name}'");
             }
         }
-
-        if (SectionId is null)
-        {
-            throw new InvalidOperationException($"{nameof(SectionContent)} requires a non-null value for the parameter '{nameof(SectionId)}'.");
-        }
-
-        if (!object.Equals(SectionId, _registeredSectionId) || IsDefaultContent != _registeredIsDefaultContent)
-        {
-            if (_registeredSectionId is not null)
-            {
-                _registry.RemoveProvider(_registeredSectionId, this);
-            }
-
-            _registry.AddProvider(SectionId, this, IsDefaultContent);
-            _registeredSectionId = SectionId;
-            _registeredIsDefaultContent = IsDefaultContent;
-        }
-
-        _registry.NotifyContentChanged(SectionId, this);
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_registeredSectionId is not null)
+        if (_registeredIdentifier is not null)
         {
-            _registry.RemoveProvider(_registeredSectionId, this);
+            _registry.RemoveProvider(_registeredIdentifier, this);
         }
     }
 }
