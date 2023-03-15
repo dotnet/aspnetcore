@@ -120,7 +120,7 @@ internal class EndpointParameter
     {
         switch (httpMethod)
         {
-            case "MapPut":
+            case "MapPut" or "MapPatch" or "MapPost":
             case "MapPatch":
             case "MapPost":
                 return false;
