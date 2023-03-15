@@ -15,11 +15,12 @@ internal class EndpointResponse
 {
     public ITypeSymbol? ResponseType { get; set; }
     public string WrappedResponseType { get; set; }
-    public string ContentType { get; set; }
+    public string? ContentType { get; set; }
     public bool IsAwaitable { get; set; }
     public bool IsVoid { get; set; }
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
+    public bool IsAnonymousType { get; set; }
 
     private WellKnownTypes WellKnownTypes { get; init; }
 
@@ -31,11 +32,12 @@ internal class EndpointResponse
         IsAwaitable = GetIsAwaitable(method);
         IsVoid = method.ReturnsVoid;
         IsIResult = GetIsIResult();
-        IsSerializable = !IsIResult && !IsVoid && ResponseType.SpecialType != SpecialType.System_String && ResponseType.SpecialType != SpecialType.System_Object;
+        IsSerializable = GetIsSerializable();
         ContentType = GetContentType(method);
+        IsAnonymousType = method.ReturnType.IsAnonymousType;
     }
 
-    private ITypeSymbol UnwrapResponseType(IMethodSymbol method)
+    private ITypeSymbol? UnwrapResponseType(IMethodSymbol method)
     {
         var returnType = method.ReturnType;
         var task = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task);
@@ -56,6 +58,13 @@ internal class EndpointResponse
 
         return returnType;
     }
+
+    private bool GetIsSerializable() =>
+        !IsIResult &&
+        !IsVoid &&
+        ResponseType != null &&
+        ResponseType.SpecialType != SpecialType.System_String &&
+        ResponseType.SpecialType != SpecialType.System_Object;
 
     private bool GetIsIResult()
     {
@@ -120,7 +129,7 @@ internal class EndpointResponse
             otherEndpointResponse.IsAwaitable == IsAwaitable &&
             otherEndpointResponse.IsVoid == IsVoid &&
             otherEndpointResponse.IsIResult == IsIResult &&
-            otherEndpointResponse.ContentType.Equals(ContentType, StringComparison.OrdinalIgnoreCase);
+            string.Equals(otherEndpointResponse.ContentType, ContentType, StringComparison.OrdinalIgnoreCase);
     }
 
     public override int GetHashCode() =>

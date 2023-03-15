@@ -5,11 +5,11 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
 
 internal static class EndpointJsonResponseEmitter
 {
-    internal static void EmitJsonPreparation(this Endpoint endpoint, CodeWriter codeWriter)
+    internal static void EmitJsonPreparation(this EndpointResponse endpointResponse, CodeWriter codeWriter)
     {
-        if (endpoint.Response.IsSerializable)
+        if (endpointResponse is { IsSerializable: true, ResponseType: {} responseType })
         {
-            var typeName = endpoint.Response.ResponseType.ToDisplayString(EmitterConstants.DisplayFormat);
+            var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormat);
 
             codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
             codeWriter.WriteLine("var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;");
@@ -17,15 +17,13 @@ internal static class EndpointJsonResponseEmitter
         }
     }
 
-    internal static string EmitJsonResponse(this Endpoint endpoint)
+    internal static string EmitJsonResponse(this EndpointResponse endpointResponse)
     {
-        if (endpoint.Response.ResponseType.IsSealed || endpoint.Response.ResponseType.IsValueType)
+        if (endpointResponse.ResponseType != null &&
+            (endpointResponse.ResponseType.IsSealed || endpointResponse.ResponseType.IsValueType))
         {
             return $"httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);";
         }
-        else
-        {
-            return $"GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo, serializerOptions);";
-        }
+        return $"GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo, serializerOptions);";
     }
 }
