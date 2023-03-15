@@ -466,7 +466,7 @@ public class XmlSerializerInputFormatterTest
         var formatter = new XmlSerializerInputFormatter(new MvcOptions());
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => formatter.MaxDepth = 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => formatter.MaxDepth = 0);
     }
 
     [Fact]
