@@ -40,7 +40,8 @@ public class HttpProtocolFeatureCollection
             "IHttpUpgradeFeature",
             "IHttpWebSocketFeature",
             "IHttpWebTransportFeature",
-            "IBadRequestExceptionFeature"
+            "IBadRequestExceptionFeature",
+            "IHttpRequestTimeoutFeature"
         };
         var maybeFeatures = new[]
         {

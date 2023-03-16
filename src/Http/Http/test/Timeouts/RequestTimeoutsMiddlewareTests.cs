@@ -86,7 +86,7 @@ public class RequestTimeoutsMiddlewareTests
     }
 
     [Fact]
-    public async Task SkipWhenNoDefaultDefaultTimeout()
+    public async Task SkipWhenNoDefaultTimeout()
     {
         var context = new DefaultHttpContext();
 
