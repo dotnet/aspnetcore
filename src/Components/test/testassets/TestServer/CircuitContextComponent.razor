@@ -3,13 +3,13 @@
 @implements IDisposable
 
 @inject IJSRuntime JS
-@inject TestCircuitInboundEventHandler CircuitHandler
+@inject TestCircuitContextAccessor CircuitContextAccessor
 
 <h1>Circuit Context</h1>
 
 <button id="trigger-click-event-button" type="button" @onclick="OnClickEvent">Trigger event</button>
 
-@foreach (var entry in _isCircuitAsyncContextByEventName)
+@foreach (var entry in _hasCircuitContextByEventName)
 {
     <p>
         @entry.Key: <span id="circuit-context-result-@entry.Key">@entry.Value</span>
@@ -18,7 +18,7 @@
 
 @code {
     private readonly DotNetObjectReference<CircuitContextComponent> _selfRef;
-    private readonly Dictionary<string, bool> _isCircuitAsyncContextByEventName = new();
+    private readonly Dictionary<string, bool> _hasCircuitContextByEventName = new();
 
     public CircuitContextComponent()
     {
@@ -27,13 +27,13 @@
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
-        RecordCircuitAsyncContext(nameof(SetParametersAsync));
+        RecordHasCircuitContext(nameof(SetParametersAsync));
         await base.SetParametersAsync(parameters);
     }
 
     protected override Task OnInitializedAsync()
     {
-        RecordCircuitAsyncContext(nameof(OnInitializedAsync));
+        RecordHasCircuitContext(nameof(OnInitializedAsync));
         return Task.CompletedTask;
     }
 
@@ -41,7 +41,7 @@
     {
         if (firstRender)
         {
-            RecordCircuitAsyncContext(nameof(OnAfterRenderAsync));
+            RecordHasCircuitContext(nameof(OnAfterRenderAsync));
 
             await JS.InvokeVoidAsync("circuitContextTest.invokeDotNetMethod", _selfRef);
 
@@ -51,25 +51,25 @@
 
     protected override Task OnParametersSetAsync()
     {
-        RecordCircuitAsyncContext(nameof(OnParametersSetAsync));
+        RecordHasCircuitContext(nameof(OnParametersSetAsync));
         return Task.CompletedTask;
     }
 
     private Task OnClickEvent()
     {
-        RecordCircuitAsyncContext(nameof(OnClickEvent));
+        RecordHasCircuitContext(nameof(OnClickEvent));
         return Task.CompletedTask;
     }
 
     [JSInvokable]
     public void InvokeDotNet()
     {
-        RecordCircuitAsyncContext(nameof(InvokeDotNet));
+        RecordHasCircuitContext(nameof(InvokeDotNet));
     }
 
-    private void RecordCircuitAsyncContext(string eventName)
+    private void RecordHasCircuitContext(string eventName)
     {
-        _isCircuitAsyncContextByEventName[eventName] = CircuitHandler.IsCircuitAsyncContext;
+        _hasCircuitContextByEventName[eventName] = CircuitContextAccessor.HasCircuitContext;
     }
 
     public void Dispose()

@@ -30,7 +30,7 @@ public class CircuitContextTest : ServerTestBase<BasicTestAppServerSiteFixture<S
     }
 
     [Fact]
-    public void ComponentMethods_HaveAsyncCircuitContext()
+    public void ComponentMethods_HaveCircuitContext()
     {
         Browser.Click(By.Id("trigger-click-event-button"));
 

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 
 namespace ComponentsApp.Server;
 
-internal class LoggingCircuitHandler : CircuitHandler, ICircuitInboundEventHandler
+internal class LoggingCircuitHandler : CircuitHandler
 {
     private readonly ILogger<LoggingCircuitHandler> _logger;
     private static Action<ILogger, string, Exception> _circuitOpened;
@@ -60,10 +60,5 @@ internal class LoggingCircuitHandler : CircuitHandler, ICircuitInboundEventHandl
     {
         _circuitClosed(_logger, circuit.Id, null);
         return base.OnCircuitClosedAsync(circuit, cts);
-    }
-
-    public Task HandleInboundEventAsync(CircuitInboundEventContext context, CircuitInboundEventDelegate next)
-    {
-        throw new NotImplementedException();
     }
 }

@@ -5,16 +5,16 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 
 namespace TestServer;
 
-public class TestCircuitInboundEventHandler : CircuitHandler, ICircuitInboundEventHandler
+public class TestCircuitContextAccessor : CircuitHandler, ICircuitInboundEventHandler
 {
-    private readonly AsyncLocal<bool> _isCircuitAsyncContext = new();
+    private readonly AsyncLocal<bool> _hasCircuitContext = new();
 
-    public bool IsCircuitAsyncContext => _isCircuitAsyncContext.Value;
+    public bool HasCircuitContext => _hasCircuitContext.Value;
 
     public async Task HandleInboundEventAsync(CircuitInboundEventContext context, CircuitInboundEventDelegate next)
     {
-        _isCircuitAsyncContext.Value = true;
+        _hasCircuitContext.Value = true;
         await next(context);
-        _isCircuitAsyncContext.Value = false;
+        _hasCircuitContext.Value = false;
     }
 }

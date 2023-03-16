@@ -32,9 +32,9 @@ public class ServerStartup
         services.AddSingleton<ResourceRequestLog>();
         services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();
 
-        var circuitInboundEventHandler = new TestCircuitInboundEventHandler();
-        services.AddSingleton<CircuitHandler>(circuitInboundEventHandler);
-        services.AddSingleton(circuitInboundEventHandler);
+        var circuitContextAccessor = new TestCircuitContextAccessor();
+        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
+        services.AddSingleton(circuitContextAccessor);
 
         // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
         // contention issues.
