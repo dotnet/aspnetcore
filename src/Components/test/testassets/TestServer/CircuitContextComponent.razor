@@ -5,12 +5,14 @@
 @inject IJSRuntime JS
 @inject TestCircuitInboundEventHandler CircuitHandler
 
-<button type="button" @onclick="OnClickEvent">Trigger event</button>
+<h1>Circuit Context</h1>
+
+<button id="trigger-click-event-button" type="button" @onclick="OnClickEvent">Trigger event</button>
 
 @foreach (var entry in _isCircuitAsyncContextByEventName)
 {
     <p>
-        <span class="method-name">@entry.Key</span>: <span class="is-circuit-async-context">@entry.Value</span>
+        @entry.Key: <span id="circuit-context-result-@entry.Key">@entry.Value</span>
     </p>
 }
 
@@ -43,7 +45,7 @@
 
             await JS.InvokeVoidAsync("circuitContextTest.invokeDotNetMethod", _selfRef);
 
-            RecordCircuitAsyncContext($"{nameof(OnAfterRenderAsync)}2");
+            StateHasChanged();
         }
     }
 
