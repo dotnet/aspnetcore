@@ -166,7 +166,7 @@ public class EndpointRoutingMiddlewareTest
             matcherFactory: new ShortCircuitMatcherFactory(null, false, false),
             next: context =>
             {
-                // should not be reched here.
+                // should not be reached
                 throw new Exception();
             });
 
@@ -188,7 +188,7 @@ public class EndpointRoutingMiddlewareTest
             matcherFactory: new ShortCircuitMatcherFactory(404, false, false),
             next: context =>
             {
-                // should not be reched here.
+                // should not be reached
                 throw new Exception();
             });
 
@@ -213,7 +213,7 @@ public class EndpointRoutingMiddlewareTest
             matcherFactory: new ShortCircuitMatcherFactory(404, hasAuthMetadata, hasCorsMetadata),
             next: context =>
             {
-                // should not be reched here.
+                // should not be reached
                 throw new Exception();
             });
 
