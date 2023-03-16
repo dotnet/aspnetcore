@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 #pragma warning disable CA2252 // WebTransport is a preview feature
@@ -67,6 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpResponseTrailersFeature? _currentIHttpResponseTrailersFeature;
         internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
         internal protected IHttpWebSocketFeature? _currentIHttpWebSocketFeature;
+        internal protected IHttpRequestTimeoutFeature? _currentIHttpRequestTimeoutFeature;
         internal protected IHttp2StreamIdFeature? _currentIHttp2StreamIdFeature;
         internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
         internal protected IHttpMinResponseDataRateFeature? _currentIHttpMinResponseDataRateFeature;
@@ -108,6 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpResponseTrailersFeature = null;
             _currentITlsConnectionFeature = null;
             _currentIHttpWebSocketFeature = null;
+            _currentIHttpRequestTimeoutFeature = null;
             _currentIHttp2StreamIdFeature = null;
             _currentIHttpMinRequestBodyDataRateFeature = null;
             _currentIHttpMinResponseDataRateFeature = null;
@@ -280,6 +283,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIBadRequestExceptionFeature;
                 }
+                else if (key == typeof(IHttpRequestTimeoutFeature))
+                {
+                    feature = _currentIHttpRequestTimeoutFeature;
+                }
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
                     feature = _currentIHttp2StreamIdFeature;
@@ -423,6 +430,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
                     _currentIBadRequestExceptionFeature = (IBadRequestExceptionFeature?)value;
+                }
+                else if (key == typeof(IHttpRequestTimeoutFeature))
+                {
+                    _currentIHttpRequestTimeoutFeature = (IHttpRequestTimeoutFeature?)value;
                 }
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
@@ -569,6 +580,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
                 feature = Unsafe.As<IBadRequestExceptionFeature?, TFeature?>(ref _currentIBadRequestExceptionFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpRequestTimeoutFeature))
+            {
+                feature = Unsafe.As<IHttpRequestTimeoutFeature?, TFeature?>(ref _currentIHttpRequestTimeoutFeature);
             }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
@@ -722,6 +737,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIBadRequestExceptionFeature = Unsafe.As<TFeature?, IBadRequestExceptionFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpRequestTimeoutFeature))
+            {
+                _currentIHttpRequestTimeoutFeature = Unsafe.As<TFeature?, IHttpRequestTimeoutFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 _currentIHttp2StreamIdFeature = Unsafe.As<TFeature?, IHttp2StreamIdFeature?>(ref feature);
@@ -861,6 +880,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIBadRequestExceptionFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IBadRequestExceptionFeature), _currentIBadRequestExceptionFeature);
+            }
+            if (_currentIHttpRequestTimeoutFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpRequestTimeoutFeature), _currentIHttpRequestTimeoutFeature);
             }
             if (_currentIHttp2StreamIdFeature != null)
             {
