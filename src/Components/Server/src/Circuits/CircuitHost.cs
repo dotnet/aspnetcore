@@ -592,10 +592,12 @@ internal partial class CircuitHost : IAsyncDisposable
         _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
     }
 
-    private Task DispatchInboundEventAsync(Func<Task> func)
+    // Internal for testing.
+    internal Task DispatchInboundEventAsync(Func<Task> func)
         => _dispatchInboundEvent(new(func, Circuit));
 
-    private async Task<TResult> DispatchInboundEventAsync<TResult>(Func<Task<TResult>> func)
+    // Internal for testing.
+    internal async Task<TResult> DispatchInboundEventAsync<TResult>(Func<Task<TResult>> func)
     {
         TResult result = default;
         await _dispatchInboundEvent(new(async () => result = await func(), Circuit));
@@ -608,8 +610,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         for (var i = circuitHandlers.Count - 1; i >= 0; i--)
         {
-            var circuitHandler = circuitHandlers[i];
-            result = (in CircuitInboundEventContext context) => circuitHandler.HandleInboundEventAsync(context, result);
+            if (circuitHandlers[i] is ICircuitInboundEventHandler inboundEventHandler)
+            {
+                var next = result;
+                result = (in CircuitInboundEventContext context) => inboundEventHandler.HandleInboundEventAsync(context, next);
+            }
         }
 
         return result;

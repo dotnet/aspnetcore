@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Extensions.DependencyInjection 
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+
 @inject IServiceProvider ServiceProvider
 
 <button id="inject-local" @onclick="Inject<ProtectedLocalStorage>">Inject @(nameof(ProtectedLocalStorage))</button>

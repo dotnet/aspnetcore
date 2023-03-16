@@ -3,4 +3,5 @@ Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventContext
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventContext.Circuit.get -> Microsoft.AspNetCore.Components.Server.Circuits.Circuit!
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventContext.CircuitInboundEventContext() -> void
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventDelegate
-virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.HandleInboundEventAsync(in Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventContext context, Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventDelegate! next) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Server.Circuits.ICircuitInboundEventHandler
+Microsoft.AspNetCore.Components.Server.Circuits.ICircuitInboundEventHandler.HandleInboundEventAsync(Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventContext context, Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundEventDelegate! next) -> System.Threading.Tasks.Task!

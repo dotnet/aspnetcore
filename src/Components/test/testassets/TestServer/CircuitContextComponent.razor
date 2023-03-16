@@ -1,0 +1,77 @@
+﻿@using Microsoft.JSInterop;
+
+@implements IDisposable
+
+@inject IJSRuntime JS
+@inject TestCircuitInboundEventHandler CircuitHandler
+
+<button type="button" @onclick="OnClickEvent">Trigger event</button>
+
+@foreach (var entry in _isCircuitAsyncContextByEventName)
+{
+    <p>
+        <span class="method-name">@entry.Key</span>: <span class="is-circuit-async-context">@entry.Value</span>
+    </p>
+}
+
+@code {
+    private readonly DotNetObjectReference<CircuitContextComponent> _selfRef;
+    private readonly Dictionary<string, bool> _isCircuitAsyncContextByEventName = new();
+
+    public CircuitContextComponent()
+    {
+        _selfRef = DotNetObjectReference.Create(this);
+    }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        RecordCircuitAsyncContext(nameof(SetParametersAsync));
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        RecordCircuitAsyncContext(nameof(OnInitializedAsync));
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            RecordCircuitAsyncContext(nameof(OnAfterRenderAsync));
+
+            await JS.InvokeVoidAsync("circuitContextTest.invokeDotNetMethod", _selfRef);
+
+            RecordCircuitAsyncContext($"{nameof(OnAfterRenderAsync)}2");
+        }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        RecordCircuitAsyncContext(nameof(OnParametersSetAsync));
+        return Task.CompletedTask;
+    }
+
+    private Task OnClickEvent()
+    {
+        RecordCircuitAsyncContext(nameof(OnClickEvent));
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public void InvokeDotNet()
+    {
+        RecordCircuitAsyncContext(nameof(InvokeDotNet));
+    }
+
+    private void RecordCircuitAsyncContext(string eventName)
+    {
+        _isCircuitAsyncContextByEventName[eventName] = CircuitHandler.IsCircuitAsyncContext;
+    }
+
+    public void Dispose()
+    {
+        _selfRef.Dispose();
+    }
+}
