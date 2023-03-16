@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Http.Timeouts;
 
 /// <summary>
-/// Metadata that disables request timeouts limiting on an endpoint.
+/// Metadata that disables request timeouts on an endpoint.
 /// </summary>
 /// <remarks>
 /// Completely disables the request timeouts middleware from applying to this endpoint.

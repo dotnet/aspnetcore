@@ -30,7 +30,7 @@ public static class RequestTimeoutsIEndpointConventionBuilderExtensions
     /// Specifies a timeout policy for to the endpoint(s).
     /// </summary>
     /// <param name="builder">The endpoint convention builder.</param>
-    /// <param name="policyName">The case-insensitve name of the policy to apply for the endpoint(s).</param>
+    /// <param name="policyName">The name (case-insensitive) of the policy to apply for the endpoint(s).</param>
     /// <returns>The original convention builder parameter.</returns>
     public static IEndpointConventionBuilder WithRequestTimeout(this IEndpointConventionBuilder builder, string policyName)
     {

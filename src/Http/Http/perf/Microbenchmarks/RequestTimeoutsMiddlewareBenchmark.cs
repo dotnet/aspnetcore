@@ -72,7 +72,7 @@ public class RequestTimeoutsMiddlewareBenchmark
     }
 
     [Benchmark]
-    public async Task DefaultTimeoutOverridenByDisable()
+    public async Task DefaultTimeoutOverriddenByDisable()
     {
         var context = CreateHttpContext(new Endpoint(
             null,

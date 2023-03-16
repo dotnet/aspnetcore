@@ -12,13 +12,12 @@ public static class RequestTimeoutsIApplicationBuilderExtensions
 {
     /// <summary>
     /// Enables request timeouts for the application.
-    /// No timeouts are configured by default, 
-    /// they must be configured in <see cref="RequestTimeoutOptions"/>,
-    /// the <see cref="RequestTimeoutAttribute"/> on endpoints, or
-    /// using the WithRequestTimeout routing extensions.
+    /// <para>
+    /// No timeouts are configured by default. They must be configured in <see cref="RequestTimeoutOptions"/>,
+    /// the <see cref="RequestTimeoutAttribute"/> on endpoints, or using the WithRequestTimeout routing extensions.
+    /// </para>
     /// </summary>
-    /// <param name="builder"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
     public static IApplicationBuilder UseRequestTimeouts(this IApplicationBuilder builder)
     {
         return builder.UseMiddleware<RequestTimeoutsMiddleware>();

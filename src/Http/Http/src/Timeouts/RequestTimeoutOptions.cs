@@ -15,14 +15,14 @@ public sealed class RequestTimeoutOptions
 
     /// <summary>
     /// Dictionary of policies that would be applied per endpoint.
-    /// Policy names are case insensitive.
+    /// Policy names are case-insensitive.
     /// </summary>
     public IDictionary<string, RequestTimeoutPolicy> Policies { get; } = new Dictionary<string, RequestTimeoutPolicy>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Adds a new policy.
     /// </summary>
-    /// <param name="policyName">The case-insensitive name of the policy.</param>
+    /// <param name="policyName">The name of the policy (case-insensitive).</param>
     /// <param name="timeout">The timeout to apply for this policy.</param>
     public RequestTimeoutOptions AddPolicy(string policyName, TimeSpan timeout)
     {
@@ -35,7 +35,7 @@ public sealed class RequestTimeoutOptions
     /// <summary>
     /// Adds a new policy.
     /// </summary>
-    /// <param name="policyName">The case-insensitive name of the policy.</param>
+    /// <param name="policyName">The name of the policy (case-insensitive).</param>
     /// <param name="policy">The <see cref="RequestTimeoutPolicy"/> policy to be added.</param>
     public RequestTimeoutOptions AddPolicy(string policyName, RequestTimeoutPolicy policy)
     {
