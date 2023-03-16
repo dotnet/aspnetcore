@@ -89,6 +89,7 @@ public class HttpProtocolFeatureCollection
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 #pragma warning disable CA2252 // WebTransport is a preview feature";

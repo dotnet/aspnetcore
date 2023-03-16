@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http.Timeouts;
 
 namespace Microsoft.AspNetCore.Http.Tests.Timeouts;
+
 public class RequestTimeoutOptionsTests
 {
     [Fact]
