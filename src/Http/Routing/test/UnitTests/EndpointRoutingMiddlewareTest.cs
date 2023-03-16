@@ -157,7 +157,7 @@ public class EndpointRoutingMiddlewareTest
     }
 
     [Fact]
-    public async Task ShortCurcuitWithoutStatusCode()
+    public async Task ShortCircuitWithoutStatusCode()
     {
         // Arrange
         var httpContext = CreateHttpContext();
@@ -179,7 +179,7 @@ public class EndpointRoutingMiddlewareTest
     }
 
     [Fact]
-    public async Task ShortCurcuitWitStatusCode()
+    public async Task ShortCircuitWithStatusCode()
     {
         // Arrange
         var httpContext = CreateHttpContext();
