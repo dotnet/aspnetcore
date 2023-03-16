@@ -35,7 +35,7 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null);
     }
 
-    [ConditionalFact(Skip = "Unskip when Helix supports native AOT. https://github.com/dotnet/aspnetcore/pull/47247/")]
+    [ConditionalFact]
     public async Task ApiTemplateNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
@@ -47,7 +47,7 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
-    [ConditionalFact(Skip = "Unskip when Helix supports native AOT. https://github.com/dotnet/aspnetcore/pull/47247/")]
+    [ConditionalFact]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
