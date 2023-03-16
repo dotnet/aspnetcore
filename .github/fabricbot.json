@@ -3594,6 +3594,40 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "wtgodbe"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add area-infrastructure to wtgodbe's PRs",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "area-infrastructure"
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": []
