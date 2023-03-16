@@ -116,7 +116,9 @@ app.MapGet("/hello", ([FromHeader]string?[] p) => p.Length);
             {
                     // string is not technically "TryParsable", but it's the special case.
                     new object[] { "string[]", new[] { "plain string" }, new[] { "plain string" } },
+                    new object[] { "string[]", new[] { "plain string", "" }, new[] { "plain string", "" } },
                     new object[] { "StringValues", new[] { "1", "2", "3" }, new StringValues(new[] { "1", "2", "3" }) },
+                    new object[] { "StringValues", new[] { "1", "", "3" }, new StringValues(new[] { "1", "", "3" }) },
                     new object[] { "int[]", new[] { "-1", "2", "3" }, new[] { -1,2,3 } },
                     new object[] { "uint[]", new[] { "1","42","32"}, new[] { 1U, 42U, 32U } },
                     new object[] { "bool[]", new[] { "true", "false" }, new[] { true, false } },

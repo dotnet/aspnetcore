@@ -54,7 +54,7 @@ internal static class EndpointParameterEmitter
     {
         if (endpointParameter.IsArray && endpointParameter.IsParsable)
         {
-            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = new {endpointParameter.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}[{endpointParameter.EmitTempArgument()}.Length];");
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length];");
             codeWriter.WriteLine($"for (var i = 0; i < {endpointParameter.EmitTempArgument()}.Length; i++)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
