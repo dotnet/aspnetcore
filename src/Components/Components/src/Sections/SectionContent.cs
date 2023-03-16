@@ -16,13 +16,13 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     /// Gets or sets the <see cref="string"/> ID that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
-    [Parameter] public string SectionName { get; set; } = default!;
+    [Parameter] public string? SectionName { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="object"/> ID that determines which <see cref="SectionOutlet"/> instance will render
     /// the content of this instance.
     /// </summary>
-    [Parameter] public object SectionId { get; set; } = default!;
+    [Parameter] public object? SectionId { get; set; }
 
     /// <summary>
     /// Gets or sets whether this component should provide the default content for the target

@@ -19,13 +19,13 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
     /// Gets or sets the <see cref="string"/> ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
-    [Parameter] public string SectionName { get; set; } = default!;
+    [Parameter] public string? SectionName { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="object"/> ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
-    [Parameter] public object SectionId { get; set; } = default!;
+    [Parameter] public object? SectionId { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
