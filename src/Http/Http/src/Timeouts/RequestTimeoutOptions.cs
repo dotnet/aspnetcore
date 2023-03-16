@@ -39,12 +39,8 @@ public sealed class RequestTimeoutOptions
     /// <param name="policy">The <see cref="RequestTimeoutPolicy"/> policy to be added.</param>
     public RequestTimeoutOptions AddPolicy(string policyName, RequestTimeoutPolicy policy)
     {
-        _ = policy ?? throw new ArgumentNullException(nameof(policy));
-
-        if (string.IsNullOrEmpty(policyName))
-        {
-            throw new ArgumentNullException(nameof(policyName));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
+        ArgumentException.ThrowIfNullOrEmpty(policyName);
 
         Policies[policyName] = policy;
         return this;
