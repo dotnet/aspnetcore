@@ -46,10 +46,10 @@ public class RequestTimeoutOptionsTests
     public void AddNullPolicyThrows()
     {
         var options = new RequestTimeoutOptions();
-        Assert.Throws<ArgumentNullException>(() => options.AddPolicy("", TimeSpan.FromSeconds(47)));
+        Assert.Throws<ArgumentException>(() => options.AddPolicy("", TimeSpan.FromSeconds(47)));
         Assert.Throws<ArgumentNullException>(() => options.AddPolicy(null, TimeSpan.FromSeconds(47)));
 
-        Assert.Throws<ArgumentNullException>(() => options.AddPolicy("", new RequestTimeoutPolicy()));
+        Assert.Throws<ArgumentException>(() => options.AddPolicy("", new RequestTimeoutPolicy()));
         Assert.Throws<ArgumentNullException>(() => options.AddPolicy(null, new RequestTimeoutPolicy()));
 
         Assert.Throws<ArgumentNullException>(() => options.AddPolicy("policy1", null));
