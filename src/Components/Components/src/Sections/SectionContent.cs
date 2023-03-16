@@ -84,7 +84,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
         return Task.CompletedTask;
     }
 
-    private void SetParameterValues(ParameterView parameters)
+    private void SetParameterValues(in ParameterView parameters)
     {
         foreach (var param in parameters)
         {
