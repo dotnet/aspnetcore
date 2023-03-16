@@ -10,20 +10,19 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };
 
-    private object? _identifier;
     private object? _subscribedIdentifier;
     private RenderHandle _renderHandle;
     private SectionRegistry _registry = default!;
     private RenderFragment? _content;
 
     /// <summary>
-    /// Gets or sets the ID of type <see cref="string"/> that determines which <see cref="SectionContent"/> instances will provide
+    /// Gets or sets the <see cref="string"/> ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
     [Parameter] public string SectionName { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the ID of type <see cref="object"/> that determines which <see cref="SectionContent"/> instances will provide
+    /// Gets or sets the <see cref="object"/> ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
     [Parameter] public object SectionId { get; set; } = default!;
@@ -38,31 +37,33 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
     {
         parameters.SetParameterProperties(this);
 
+        object? identifier;
+
         if (SectionName is not null && SectionId is not null)
         {
-            throw new InvalidOperationException($"Both '{nameof(SectionName)}' and '{nameof(SectionId)}' cannot have values.");
+            throw new InvalidOperationException($"{nameof(SectionOutlet)} requires that '{nameof(SectionName)}' and '{nameof(SectionId)}' cannot both have non-null values.");
         }
         else if (SectionName is not null)
         {
-            _identifier = SectionName;
+            identifier = SectionName;
         }
         else if (SectionId is not null)
         {
-            _identifier = SectionId;
+            identifier = SectionId;
         }
         else
         {
             throw new InvalidOperationException($"{nameof(SectionOutlet)} requires a non-null value either for '{nameof(SectionName)}' or '{nameof(SectionId)}'.");
         }
 
-        if (!object.Equals(_identifier, _subscribedIdentifier))
+        if (!object.Equals(identifier, _subscribedIdentifier))
         {
             if (_subscribedIdentifier is not null)
             {
                 _registry.Unsubscribe(_subscribedIdentifier);
             }
 
-            _registry.Subscribe(_identifier, this);
+            _registry.Subscribe(identifier, this);
             _subscribedIdentifier = SectionId;
         }
 

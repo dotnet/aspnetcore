@@ -75,7 +75,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
 
         Assert.True(logs.Count > 0);
 
-        Assert.Contains($"Both '{nameof(SectionOutlet.SectionName)}' and '{nameof(SectionOutlet.SectionId)}' cannot have values.", logs[0].Message);
+        Assert.Contains($"{nameof(SectionOutlet)} requires that '{nameof(SectionOutlet.SectionName)}' and '{nameof(SectionOutlet.SectionId)}' cannot both have non-null values.", logs[0].Message);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
 
         Assert.True(logs.Count > 0);
 
-        Assert.Contains($"Both '{nameof(SectionContent.SectionName)}' and '{nameof(SectionContent.SectionId)}' cannot have values.", logs[0].Message);
+        Assert.Contains($"{nameof(SectionContent)} requires that '{nameof(SectionContent.SectionName)}' and '{nameof(SectionContent.SectionId)}' cannot both have non-null values.", logs[0].Message);
     }
 
     [Fact]
