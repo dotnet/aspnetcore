@@ -289,7 +289,11 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
         var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
 
-        if (Response.HasStarted)
+        if (Response.StatusCode == 403)
+        {
+            // No-op
+        }
+        else if (Response.HasStarted)
         {
             Logger.ForbiddenResponseHasStarted();
         }

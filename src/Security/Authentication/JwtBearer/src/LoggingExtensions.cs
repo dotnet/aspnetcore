@@ -14,6 +14,6 @@ internal static partial class LoggingExtensions
     [LoggerMessage(3, LogLevel.Error, "Exception occurred while processing message.", EventName = "ProcessingMessageFailed")]
     public static partial void ErrorProcessingMessage(this ILogger logger, Exception ex);
 
-    [LoggerMessage(4, LogLevel.Information, "Forbidden response has started.", EventName = "ForbiddenResponseHasStarted")]
+    [LoggerMessage(4, LogLevel.Debug, "Unable to reject the response as forbidden, it has already started.", EventName = "ForbiddenResponseHasStarted")]
     public static partial void ForbiddenResponseHasStarted(this ILogger logger);
 }

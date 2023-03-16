@@ -805,40 +805,50 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     public async Task EventOnForbidden_ResponseForMultipleAuthenticationSchemas()
     {
         var onForbiddenCallCount = 0;
-        var tokenData = CreateStandardTokenAndKey();
-        using var host = await CreateHost(o =>
+        var jwtBearerEvents = new JwtBearerEvents()
         {
-            o.TokenValidationParameters = new TokenValidationParameters()
+            OnForbidden = context =>
             {
-                ValidIssuer = "issuer.contoso.com",
-                ValidAudience = "audience.contoso.com",
-                IssuerSigningKey = tokenData.key,
-            };
-            o.Events = new JwtBearerEvents()
-            {
-                OnForbidden = context =>
+                onForbiddenCallCount++;
+
+                if (!context.Response.HasStarted)
                 {
-                    onForbiddenCallCount++;
-
-                    if (!context.Response.HasStarted)
-                    {
-                        context.Response.StatusCode = 418;
-                        return context.Response.WriteAsync("You Shall Not Pass");
-                    }
-                    return Task.CompletedTask;
+                    context.Response.StatusCode = 418;
+                    return context.Response.WriteAsync("You Shall Not Pass");
                 }
-            };
-        });
+                return Task.CompletedTask;
+            }
+        };
 
-        var newBearerToken = "Bearer " + tokenData.tokenText;
+        using var host = new HostBuilder()
+            .ConfigureWebHost(builder =>
+                builder.UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseAuthentication();
+                        app.Run(async (context) =>
+                        {
+                            // Simulate Forbidden By Multiple Authentication Schemas
+                            await context.ForbidAsync("JwtAuthSchemaOne");
+                            await context.ForbidAsync("JwtAuthSchemaTwo");
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddAuthentication()
+                                .AddJwtBearer("JwtAuthSchemaOne", o => { o.Events = jwtBearerEvents; })
+                                .AddJwtBearer("JwtAuthSchemaTwo", o => { o.Events = jwtBearerEvents; });
+                    }))
+            .Build();
+
+        await host.StartAsync();
+
         using var server = host.GetTestServer();
+        var response = await server.CreateClient().SendAsync(new HttpRequestMessage(HttpMethod.Get, string.Empty));
 
-        var simulatedAuthSchemaCount = 2;
-        var response = await SendAsync(server, $"http://example.com/forbiddenByMultipleAuthSchemas/{simulatedAuthSchemaCount}", newBearerToken);
-        Assert.Equal(418, (int)response.Response.StatusCode);
-        Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
-        Assert.Equal(onForbiddenCallCount, simulatedAuthSchemaCount);
-        Assert.True(simulatedAuthSchemaCount > 1);
+        Assert.Equal(418, (int)response.StatusCode);
+        Assert.Equal("You Shall Not Pass", await response.Content.ReadAsStringAsync());
+        Assert.Equal(2, onForbiddenCallCount);
     }
 
     [Fact]
@@ -1201,17 +1211,6 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                             {
                                 // Simulate Forbidden
                                 await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
-                            }
-                            else if (context.Request.Path.StartsWithSegments("/forbiddenByMultipleAuthSchemas"))
-                            {
-                                // Simulate Forbidden By Multiple Authentication Schemas
-                                var schemaCountFromPath = context.Request.Path.ToString().Split('/').Last();
-                                Int32.TryParse(schemaCountFromPath, out int schemaCount);
-
-                                for( int i = 0; i <= schemaCountFromPath.Length; i++)
-                                {
-                                    await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
-                                }
                             }
                             else if (context.Request.Path == new PathString("/signIn"))
                             {
