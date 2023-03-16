@@ -125,7 +125,8 @@ internal sealed class KestrelServerImpl : IServer
 
                 if (hasHttp3 && !haveMultiplexedFactories)
                 {
-                    if (Options.ApplicationServices.GetService(typeof(MultiplexedConnectionMarkerService)) is null)
+                    // There will be a IMultiplexedConnectionListenerFactory iff UseQuic was called
+                    if (options.ProtocolsSetExplicitly && Options.ApplicationServices.GetService(typeof(IMultiplexedConnectionListenerFactory)) is null)
                     {
                         throw new InvalidOperationException("You need to call UseQuic"); // TODO (acasey): message
                     }

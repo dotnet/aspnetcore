@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Quic;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,22 +19,11 @@ public static class WebHostBuilderQuicExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
-        // In order to be able to provide useful error messages in slim scenarios, we have to be able
-        // to distinguish between QUIC-was-not-requested and QUIC-is-not-available.
-        hostBuilder.ConfigureServices(services =>
+        return hostBuilder.ConfigureServices(services =>
         {
-            services.AddSingleton<MultiplexedConnectionMarkerService>();
+            // CanBind will return false if QuicListener.IsSupported is false
+            services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
         });
-
-        if (QuicListener.IsSupported)
-        {
-            return hostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
-            });
-        }
-
-        return hostBuilder;
     }
 
     /// <summary>

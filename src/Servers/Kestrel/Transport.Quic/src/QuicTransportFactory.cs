@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Net;
+using System.Net.Quic;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
@@ -38,6 +40,7 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
     public async ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
+        Debug.Assert(CanBind(endpoint));
 
         var tlsConnectionOptions = features?.Get<TlsConnectionCallbackOptions>();
 
@@ -58,6 +61,6 @@ internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFacto
 
     public bool CanBind(EndPoint endpoint)
     {
-        return endpoint is IPEndPoint;
+        return endpoint is IPEndPoint && QuicListener.IsSupported;
     }
 }

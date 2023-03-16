@@ -4,8 +4,6 @@ Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.NegotiatedCipherSuite.get -> System.Net.Security.TlsCipherSuite?
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool
-Microsoft.AspNetCore.Connections.MultiplexedConnectionMarkerService
-Microsoft.AspNetCore.Connections.MultiplexedConnectionMarkerService.MultiplexedConnectionMarkerService() -> void
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName) -> void
 Microsoft.AspNetCore.Connections.NamedPipeEndPoint.NamedPipeEndPoint(string! pipeName, string! serverName) -> void

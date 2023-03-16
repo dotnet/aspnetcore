@@ -88,9 +88,6 @@ internal class TestServer : IAsyncDisposable, IStartup
                 services.AddSingleton<IStartup>(this);
                 services.AddSingleton(context.LoggerFactory);
 
-                // TODO (acasey): this feels like a hack and will likely make it hard to test the real feature
-                services.AddSingleton<MultiplexedConnectionMarkerService>();
-
                 services.AddSingleton<IServer>(sp =>
                 {
                     context.ServerOptions.ApplicationServices = sp;

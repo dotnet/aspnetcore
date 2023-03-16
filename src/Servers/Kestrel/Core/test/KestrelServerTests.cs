@@ -31,7 +31,6 @@ public class KestrelServerTests
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
-            .AddSingleton<MultiplexedConnectionMarkerService>()
             .BuildServiceProvider();
         return serverOptions;
     }
