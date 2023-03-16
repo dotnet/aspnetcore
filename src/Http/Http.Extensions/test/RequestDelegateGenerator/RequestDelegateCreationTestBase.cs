@@ -241,6 +241,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Generators.Tests;
+using Microsoft.Extensions.Primitives;
 
 public static class TestMapActions
 {

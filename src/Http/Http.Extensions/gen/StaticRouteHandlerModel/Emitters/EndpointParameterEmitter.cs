@@ -26,9 +26,17 @@ internal static class EndpointParameterEmitter
         // otherwise we need to detect whether no value is provided and set the handler argument to null to
         // preserve consistency with RDF behavior. We don't want to emit the conditional block to avoid
         // compiler errors around null handling.
-        if (endpointParameter.IsOptional)
+        if (endpointParameter.IsArray)
+        {
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.ToArray();");
+        }
+        else if (endpointParameter.IsOptional)
         {
             codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
+        }
+        else if (endpointParameter.IsStringValues)
+        {
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
         }
         else
         {
@@ -44,12 +52,36 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitParsingBlock(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
-        if (endpointParameter.IsParsable)
+        if (endpointParameter.IsArray && endpointParameter.IsParsable)
+        {
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = new {endpointParameter.ElementType.ToDisplayString(EmitterConstants.DisplayFormat)}[{endpointParameter.EmitTempArgument()}.Length];");
+            codeWriter.WriteLine($"for (var i = 0; i < {endpointParameter.EmitTempArgument()}.Length; i++)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($"var element = {endpointParameter.EmitTempArgument()}[i];");
+            endpointParameter.ParsingBlockEmitter(codeWriter, "element", "parsed_element");
+
+            // In cases where we are dealing with an array of parsable nullables we need to substitute
+            // empty strings for null values.
+            if (endpointParameter.ElementType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()}[i] = string.IsNullOrEmpty(element) ? null! : parsed_element!;");
+            }
+            else
+            {
+                codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()}[i] = parsed_element!;");
+            }
+            codeWriter.EndBlock();
+        }
+        else if (endpointParameter.IsArray && !endpointParameter.IsParsable)
+        {
+            codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
+        }
+        else if (!endpointParameter.IsArray && endpointParameter.IsParsable)
         {
             endpointParameter.ParsingBlockEmitter(codeWriter, endpointParameter.EmitTempArgument(), endpointParameter.EmitParsedTempArgument());
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitParsedTempArgument()}!;");
         }
-        else
+        else // Not parsable, not an array.
         {
             codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitTempArgument()}!;");
         }
@@ -88,15 +120,23 @@ internal static class EndpointParameterEmitter
         var parameterName = endpointParameter.Name;
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {parameterName}_RouteOrQueryResolver(httpContext);");
 
-        if (!endpointParameter.IsOptional)
+        if (endpointParameter.IsArray)
+        {
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.ToArray();");
+        }
+        else if (endpointParameter.IsOptional)
+        {
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
+        }
+        else
         {
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} is StringValues {{ Count: 0 }})");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
             codeWriter.EndBlock();
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         }
 
-        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
@@ -144,7 +184,7 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
-        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol();
+        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
         var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         switch (endpointParameter.BindMethod)
@@ -197,7 +237,7 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
-    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, Source = {endpointParameter.Source})";
+    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
     private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_local";
     private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_temp";
 

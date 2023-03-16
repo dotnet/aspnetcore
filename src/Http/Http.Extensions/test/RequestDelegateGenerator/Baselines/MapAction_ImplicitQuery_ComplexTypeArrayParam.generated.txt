@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse, global::System.String> handler,
+            global::System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], global::System.Int32> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -99,8 +99,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse, global::System.String>)del;
+                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], global::System.Int32>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var p_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("p", options?.RouteParameterNames);
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
+                    var jsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)serializerOptions.GetTypeInfo(typeof(global::System.Int32));
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -110,7 +114,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpRequest>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpResponse>(1)!));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[]>(0)!));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -119,30 +123,52 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        var req_local = httpContext.Request;
-                        var res_local = httpContext.Response;
+                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], IsOptional = False, IsParsable = True, IsArray = True, Source = RouteOrQuery)
+                        var p_raw = p_RouteOrQueryResolver(httpContext);
+                        var p_temp = p_raw.ToArray();
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[] p_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[p_temp.Length];
+                        for (var i = 0; i < p_temp.Length; i++)
+                        {
+                            var element = p_temp[i];
+                            if (!GeneratedRouteBuilderExtensionsCore.TryParseExplicit<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo>(element!, CultureInfo.InvariantCulture, out var parsed_element))
+                            {
+                                wasParamCheckFailure = true;
+                            }
+                            p_local[i] = parsed_element!;
+                        }
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                             return Task.CompletedTask;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(req_local, res_local);
-                        return httpContext.Response.WriteAsync(result);
+                        httpContext.Response.ContentType ??= "application/json";
+                        var result = handler(p_local!);
+                        return httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        var req_local = httpContext.Request;
-                        var res_local = httpContext.Response;
+                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], IsOptional = False, IsParsable = True, IsArray = True, Source = RouteOrQuery)
+                        var p_raw = p_RouteOrQueryResolver(httpContext);
+                        var p_temp = p_raw.ToArray();
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[] p_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[p_temp.Length];
+                        for (var i = 0; i < p_temp.Length; i++)
+                        {
+                            var element = p_temp[i];
+                            if (!GeneratedRouteBuilderExtensionsCore.TryParseExplicit<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo>(element!, CultureInfo.InvariantCulture, out var parsed_element))
+                            {
+                                wasParamCheckFailure = true;
+                            }
+                            p_local[i] = parsed_element!;
+                        }
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[]>(httpContext, p_local!));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -198,6 +224,14 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
+                : (httpContext) => httpContext.Request.Query[parameterName];
+        }
+        private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
+            => T.TryParse(s, provider, out result);
 
     }
 }

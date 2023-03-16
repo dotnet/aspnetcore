@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse, global::System.String> handler,
+            global::System.Func<global::System.String[], global::System.Int32> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -99,8 +99,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse, global::System.String>)del;
+                    var handler = (Func<global::System.String[], global::System.Int32>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
+                    var jsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)serializerOptions.GetTypeInfo(typeof(global::System.Int32));
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -110,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpRequest>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpResponse>(1)!));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String[]>(0)!));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -119,30 +122,34 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        var req_local = httpContext.Request;
-                        var res_local = httpContext.Response;
+                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = Query)
+                        var p_raw = httpContext.Request.Query["p"];
+                        var p_temp = p_raw.ToArray();
+                        string[] p_local = p_temp!;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                             return Task.CompletedTask;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(req_local, res_local);
-                        return httpContext.Response.WriteAsync(result);
+                        httpContext.Response.ContentType ??= "application/json";
+                        var result = handler(p_local);
+                        return httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        var req_local = httpContext.Request;
-                        var res_local = httpContext.Response;
+                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = Query)
+                        var p_raw = httpContext.Request.Query["p"];
+                        var p_temp = p_raw.ToArray();
+                        string[] p_local = p_temp!;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String[]>(httpContext, p_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
