@@ -620,10 +620,10 @@ internal partial class CircuitHost : IAsyncDisposable
         if (result is null)
         {
             // If there are no registered handlers, there is no need to allocate a context on each call.
-            return static (task) => task();
+            return static (func) => func();
         }
 
-        return (task) => result(new(task, circuit));
+        return (func) => result(new(func, circuit));
     }
 
     private void AssertInitialized()
