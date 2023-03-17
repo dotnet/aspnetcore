@@ -4,18 +4,18 @@
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 /// <summary>
-/// Contains information about an inbound <see cref="Circuits.Circuit"/> event.
+/// Contains information about inbound <see cref="Circuits.Circuit"/> activity.
 /// </summary>
-public sealed class CircuitInboundEventContext
+public sealed class CircuitInboundActivityContext
 {
     internal Func<Task> Handler { get; }
 
     /// <summary>
-    /// Gets the <see cref="Circuits.Circuit"/> associated with the event.
+    /// Gets the <see cref="Circuits.Circuit"/> associated with the activity.
     /// </summary>
     public Circuit Circuit { get; }
 
-    internal CircuitInboundEventContext(Func<Task> handler, Circuit circuit)
+    internal CircuitInboundActivityContext(Func<Task> handler, Circuit circuit)
     {
         Handler = handler;
         Circuit = circuit;
