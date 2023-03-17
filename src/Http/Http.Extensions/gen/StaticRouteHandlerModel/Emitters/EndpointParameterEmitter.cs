@@ -19,8 +19,8 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
         var assigningCode = endpointParameter.Source is EndpointParameterSource.Header
-            ? $"httpContext.Request.Headers[\"{endpointParameter.Name}\"]"
-            : $"httpContext.Request.Query[\"{endpointParameter.Name}\"]";
+            ? $"httpContext.Request.Headers[\"{endpointParameter.LookupName}\"]"
+            : $"httpContext.Request.Query[\"{endpointParameter.LookupName}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
         // If we are not optional, then at this point we can just assign the string value to the handler argument,
@@ -94,12 +94,12 @@ internal static class EndpointParameterEmitter
 
         // Throw an exception of if the route parameter name that was specific in the `FromRoute`
         // attribute or in the parameter name does not appear in the actual route.
-        codeWriter.WriteLine($"""if (options?.RouteParameterNames?.Contains("{endpointParameter.Name}", StringComparer.OrdinalIgnoreCase) != true)""");
+        codeWriter.WriteLine($"""if (options?.RouteParameterNames?.Contains("{endpointParameter.LookupName}", StringComparer.OrdinalIgnoreCase) != true)""");
         codeWriter.StartBlock();
-        codeWriter.WriteLine($$"""throw new InvalidOperationException($"'{{endpointParameter.Name}}' is not a route parameter.");""");
+        codeWriter.WriteLine($$"""throw new InvalidOperationException($"'{{endpointParameter.LookupName}}' is not a route parameter.");""");
         codeWriter.EndBlock();
 
-        var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.Name}\"]";
+        var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.LookupName}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
         if (!endpointParameter.IsOptional)

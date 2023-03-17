@@ -17,6 +17,7 @@ internal class EndpointParameter
     {
         Type = parameter.Type;
         Name = parameter.Name;
+        LookupName = parameter.Name; // Default lookup name is same as parameter name (which is a valid C# identifier).
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
         IsOptional = parameter.IsOptional();
@@ -26,21 +27,24 @@ internal class EndpointParameter
         if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
         {
             Source = EndpointParameterSource.Route;
-            Name = GetParameterName(fromRouteAttribute, parameter.Name);
+            Name = parameter.Name;
+            LookupName = GetEscapedParameterName(fromRouteAttribute, parameter.Name);
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
         else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata), out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
-            Name = GetParameterName(fromQueryAttribute, parameter.Name);
+            Name = parameter.Name;
+            LookupName = GetEscapedParameterName(fromQueryAttribute, parameter.Name);
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
         else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata), out var fromHeaderAttribute))
         {
             Source = EndpointParameterSource.Header;
-            Name = GetParameterName(fromHeaderAttribute, parameter.Name);
+            Name = parameter.Name;
+            LookupName = GetEscapedParameterName(fromHeaderAttribute, parameter.Name);
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
@@ -131,6 +135,7 @@ internal class EndpointParameter
     public ITypeSymbol ElementType { get; }
 
     public string Name { get; }
+    public string LookupName { get; }
     public int Ordinal { get; }
     public bool IsOptional { get; }
     public bool IsArray { get; set; }
@@ -327,10 +332,23 @@ internal class EndpointParameter
         return true;
     }
 
-    private static string GetParameterName(AttributeData attribute, string parameterName) =>
-        attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName)
-            ? (fromSourceName ?? parameterName)
-            : parameterName;
+    private static string GetEscapedParameterName(AttributeData attribute, string parameterName)
+    {
+        if (attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName))
+        {
+            // TODO: This is a quick hack to stop someone trying to inject code into
+            //       a lookup key as part of a dictionary. We should decide whether
+            //       we want to:
+            //
+            //       a) Accept any input but escape it.
+            //       b) Narrowly scope what we accept so it is constrained to what are acceptable in HTTP paths, querystrings, and headers.
+            return fromSourceName.Replace("\\", "").Replace("\"", "");
+        }
+        else
+        {
+            return parameterName;
+        }
+    }
 
     public override bool Equals(object obj) =>
         obj is EndpointParameter other &&

@@ -50,7 +50,7 @@ app.MapGet("/", getQueryWithDefault);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
-            Assert.Equal("queryValue", p.Name);
+            Assert.Equal("queryValue", p.LookupName);
         });
 
         var httpContext = CreateHttpContext();
