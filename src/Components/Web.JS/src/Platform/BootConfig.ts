@@ -53,6 +53,8 @@ export interface BootJsonData {
   readonly cacheBootResources: boolean;
   readonly config: string[];
   readonly icuDataMode: ICUDataMode;
+  readonly startupMemoryCache: boolean | null;
+  readonly runtimeOptions: string[] | null;
 
   // These properties are tacked on, and not found in the boot.json file
   modifiableAssemblies: string | null;
