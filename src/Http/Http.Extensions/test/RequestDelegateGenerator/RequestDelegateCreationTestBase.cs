@@ -250,6 +250,8 @@ public static class TestMapActions
         {{sources}}
         return app;
     }
+
+    public static IResult TestResult(this IResultExtensions _) => TypedResults.Text("Hello World!");
 }
 """;
     private static Task<Compilation> CreateCompilationAsync(string sources)

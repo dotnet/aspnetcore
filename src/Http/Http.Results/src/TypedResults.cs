@@ -1028,4 +1028,10 @@ public static class TypedResults
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
     public static EmptyHttpResult Empty { get; } = EmptyHttpResult.Instance;
+
+    /// <summary>
+    /// Provides a container for external libraries to extend
+    /// the default `TypedResults` set with their own samples.
+    /// </summary>
+    public static IResultExtensions Extensions { get; } = new ResultExtensions();
 }
