@@ -9,12 +9,16 @@ Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Micr
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.Dispose() -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent.SectionContent() -> void
-Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.get -> object!
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.get -> object?
 Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionName.get -> string?
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionName.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.Dispose() -> void
-Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.get -> object!
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.get -> object?
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionName.get -> string?
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionName.set -> void
 Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionOutlet() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
