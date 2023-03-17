@@ -1,6 +1,7 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <EnableAOTAnalyzer Condition=" '$(EnableAOTAnalyzer)' == '' ">$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</EnableAOTAnalyzer>
+    <EnableSingleFileAnalyzer Condition=" '$(EnableSingleFileAnalyzer)' == '' ">$(EnableAOTAnalyzer)</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup>
