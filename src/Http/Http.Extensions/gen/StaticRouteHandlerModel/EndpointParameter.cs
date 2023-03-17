@@ -335,7 +335,7 @@ internal class EndpointParameter
 
     private static string GetEscapedParameterName(AttributeData attribute, string parameterName)
     {
-        if (attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName))
+        if (attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName) && fromSourceName is not null)
         {
             // TODO: This is a quick hack to stop someone trying to inject code into
             //       a lookup key as part of a dictionary. We should decide whether
