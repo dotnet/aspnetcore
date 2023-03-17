@@ -182,7 +182,7 @@ public sealed class WebApplicationBuilder
     {
         if (options.ContentRootPath is null && configuration[HostDefaults.ContentRootKey] is null)
         {
-            // Logic taken from https://github.com/dotnet/runtime/blob/78ed4438a42acab80541e9bde1910abaa8841db2/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L209-L227
+            // Logic taken from https://github.com/dotnet/runtime/blob/dc5a6c8be1644915c14c4a464447b0d54e223a46/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L209-L227
 
             // If we're running anywhere other than C:\Windows\system32, we default to using the CWD for the ContentRoot.
             // However, since many things like Windows services and MSIX installers have C:\Windows\system32 as there CWD which is not likely
