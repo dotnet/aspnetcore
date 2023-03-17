@@ -109,4 +109,47 @@ app.MapGet("/hello", ([FromQuery]string p1, [FromQuery]string p2) => $"{p1} {p2}
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
         await VerifyAgainstBaselineUsingFile(compilation);
     }
+
+    public static object[][] MapAction_ExplicitQueryParam_NameTest_Data
+    {
+        get
+        {
+
+            return new[]
+            {
+                new object[] { "name", "name" },
+                new object[] { "_", "_" },
+                new object[] { "123", "123" },
+                new object[] { "💩", "💩" },
+                new object[] { "\r", "\\r" },
+                new object[] { "\x00E7" , "\x00E7" },
+                new object[] { "!!" , "!!" },
+                new object[] { "\\" , "\\\\" },
+                new object[] { "\'" , "\'" },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MapAction_ExplicitQueryParam_NameTest_Data))]
+    public async Task MapAction_ExplicitQueryParam_NameTest(string name, string lookupName)
+    {
+        var (results, compilation) = await RunGeneratorAsync($"""app.MapGet("/", ([FromQuery(Name = @"{name}")] string queryValue) => queryValue);""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, (endpointModel) =>
+        {
+            Assert.Equal("/", endpointModel.RoutePattern);
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            var p = Assert.Single(endpointModel.Parameters);
+            Assert.Equal(EndpointParameterSource.Query, p.Source);
+            Assert.Equal(lookupName, p.LookupName);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString($"?{name}=test");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "test", 200);
+    }
 }

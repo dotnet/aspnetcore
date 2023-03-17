@@ -342,7 +342,7 @@ internal class EndpointParameter
             //
             //       a) Accept any input but escape it.
             //       b) Narrowly scope what we accept so it is constrained to what are acceptable in HTTP paths, querystrings, and headers.
-            return fromSourceName.Replace("\\", "").Replace("\"", "");
+            return fromSourceName.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r");
         }
         else
         {
