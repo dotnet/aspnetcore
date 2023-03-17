@@ -319,7 +319,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task DispatchInboundEventAsync_InvokesCircuitEventHandlers()
+    public async Task HandleInboundActivityAsync_InvokesCircuitActivityHandlers()
     {
         // Arrange
         var handler1 = new Mock<CircuitHandler>(MockBehavior.Strict);
@@ -328,13 +328,13 @@ public class CircuitHostTest
         var sequence = new MockSequence();
 
         // We deliberately avoid making handler2 an inbound activity handler
-        var inboundEventHandler1 = handler1.As<IHandleCircuitActivity>();
-        var inboundEventHandler3 = handler3.As<IHandleCircuitActivity>();
+        var activityHandler1 = handler1.As<IHandleCircuitActivity>();
+        var activityHandler3 = handler3.As<IHandleCircuitActivity>();
 
         var asyncLocal1 = new AsyncLocal<bool>();
         var asyncLocal3 = new AsyncLocal<bool>();
 
-        inboundEventHandler1
+        activityHandler1
             .InSequence(sequence)
             .Setup(h => h.HandleInboundActivityAsync(It.IsAny<CircuitInboundActivityContext>(), It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
             .Returns(async (CircuitInboundActivityContext context, Func<CircuitInboundActivityContext, Task> next) =>
@@ -344,7 +344,7 @@ public class CircuitHostTest
             })
             .Verifiable();
 
-        inboundEventHandler3
+        activityHandler3
             .InSequence(sequence)
             .Setup(h => h.HandleInboundActivityAsync(It.IsAny<CircuitInboundActivityContext>(), It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
             .Returns(async (CircuitInboundActivityContext context, Func<CircuitInboundActivityContext, Task> next) =>
@@ -367,8 +367,8 @@ public class CircuitHostTest
         });
 
         // Assert
-        inboundEventHandler1.VerifyAll();
-        inboundEventHandler3.VerifyAll();
+        activityHandler1.VerifyAll();
+        activityHandler3.VerifyAll();
 
         Assert.False(asyncLocal1.Value);
         Assert.False(asyncLocal3.Value);
@@ -378,21 +378,21 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task DispatchInboundEventAsync_InvokesEventFunc_WhenNoCircuitEventHandlersAreRegistered()
+    public async Task HandleInboundActivityAsync_InvokesHandlerFunc_WhenNoCircuitActivityHandlersAreRegistered()
     {
         // Arrange
         var circuitHost = TestCircuitHost.Create();
-        var wasEventFuncInvoked = false;
+        var wasHandlerFuncInvoked = false;
 
         // Act
         await circuitHost.HandleInboundActivityAsync(() =>
         {
-            wasEventFuncInvoked = true;
+            wasHandlerFuncInvoked = true;
             return Task.CompletedTask;
         });
 
         // Assert
-        Assert.True(wasEventFuncInvoked);
+        Assert.True(wasHandlerFuncInvoked);
     }
 
     private static TestRemoteRenderer GetRemoteRenderer()
