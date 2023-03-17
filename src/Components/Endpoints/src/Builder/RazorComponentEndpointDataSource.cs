@@ -2,34 +2,42 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Builder;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class RazorComponentEndpointDataSource : EndpointDataSource
+internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSource
 {
-    private readonly object _lock = new object();
+    private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
+    private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
 
     private List<Endpoint>? _endpoints;
     // TODO: Implement endpoint data source updates https://github.com/dotnet/aspnetcore/issues/47026
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly IChangeToken _changeToken;
 
-    public RazorComponentEndpointDataSource()
+    public RazorComponentEndpointDataSource(
+        ComponentApplicationBuilder builder,
+        RazorComponentEndpointFactory factory)
     {
-        DefaultBuilder = new RazorComponentEndpointConventionBuilder(_lock, _conventions);
+        _builder = builder;
+        _factory = factory;
+        DefaultBuilder = new RazorComponentEndpointConventionBuilder(
+            _lock,
+            builder,
+            _conventions,
+            _finallyConventions);
 
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
     }
+
+    private readonly ComponentApplicationBuilder _builder;
+    private readonly RazorComponentEndpointFactory _factory;
 
     internal RazorComponentEndpointConventionBuilder DefaultBuilder { get; }
 
@@ -67,26 +75,11 @@ internal class RazorComponentEndpointDataSource : EndpointDataSource
 
     private void UpdateEndpoints()
     {
-        // TODO: https://github.com/dotnet/aspnetcore/issues/46980
-
-        var entryPoint = Assembly.GetEntryAssembly() ??
-            throw new InvalidOperationException("Can't find entry assembly.");
-
-        var pages = entryPoint.GetExportedTypes()
-            .Select(t => (type: t, route: t.GetCustomAttribute<RouteAttribute>()))
-            .Where(p => p.route != null);
-
         var endpoints = new List<Endpoint>();
-        foreach (var (type, route) in pages)
+        var context = _builder.Build();
+        foreach (var definitions in context.Pages)
         {
-            // TODO: Proper endpoint definition https://github.com/dotnet/aspnetcore/issues/46985
-            var endpoint = new RouteEndpoint(
-                RazorComponentEndpoint.CreateRouteDelegate(type),
-                RoutePatternFactory.Parse(route!.Template),
-                order: 0,
-                new EndpointMetadataCollection(type.GetCustomAttributes(inherit: true)),
-                route.Template);
-            endpoints.Add(endpoint);
+            _factory.AddEndpoints(endpoints, definitions, _conventions, _finallyConventions);
         }
 
         _endpoints = endpoints;

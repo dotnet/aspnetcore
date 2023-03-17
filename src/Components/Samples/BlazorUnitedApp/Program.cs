@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BlazorUnitedApp.Data;
+using BlazorUnitedApp.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.MapRazorComponents();
+app.MapRazorComponents<MainLayout>();
 
 app.Run();
