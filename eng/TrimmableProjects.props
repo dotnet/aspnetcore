@@ -33,6 +33,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
     <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Identity" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Identity.Endpoints" />
     <TrimmableProject Include="Microsoft.Extensions.Identity.Core" />
     <TrimmableProject Include="Microsoft.Extensions.Identity.Stores" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />

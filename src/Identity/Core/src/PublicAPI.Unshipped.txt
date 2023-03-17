@@ -1,2 +1,3 @@
 #nullable enable
+static readonly Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme -> string!
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.IsTwoFactorEnabledAsync(TUser! user) -> System.Threading.Tasks.Task<bool>!
