@@ -355,7 +355,7 @@ internal class EndpointParameter
     // https://github.com/dotnet/runtime/blob/dc5a6c8be1644915c14c4a464447b0d54e223a46/src/libraries/Microsoft.Extensions.Logging.Abstractions/gen/LoggerMessageGenerator.Emitter.cs#L562
     private static string ConvertEndOfLineAndQuotationCharactersToEscapeForm(string s)
     {
-        int index = 0;
+        var index = 0;
         while (index < s.Length)
         {
             if (s[index] is '\n' or '\r' or '"' or '\\')
