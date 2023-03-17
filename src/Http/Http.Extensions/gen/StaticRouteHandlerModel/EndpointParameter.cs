@@ -334,12 +334,6 @@ internal class EndpointParameter
     {
         if (attribute.TryGetNamedArgumentValue<string>("Name", out var fromSourceName) && fromSourceName is not null)
         {
-            // TODO: This is a quick hack to stop someone trying to inject code into
-            //       a lookup key as part of a dictionary. We should decide whether
-            //       we want to:
-            //
-            //       a) Accept any input but escape it.
-            //       b) Narrowly scope what we accept so it is constrained to what are acceptable in HTTP paths, querystrings, and headers.
             return ConvertEndOfLineAndQuotationCharactersToEscapeForm(fromSourceName);
         }
         else
