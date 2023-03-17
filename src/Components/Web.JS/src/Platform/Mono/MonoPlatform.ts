@@ -355,7 +355,17 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
 async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader): Promise<void> {
   const { dotnet } = await importDotnetJs(resourceLoader);
   const moduleConfig = prepareRuntimeConfig(resourceLoader);
-  (dotnet as any).withModuleConfig(moduleConfig);
+  const anyDotnet = (dotnet as any);
+
+  anyDotnet.withModuleConfig(moduleConfig);
+
+  if (resourceLoader.bootConfig.startupMemoryCache !== undefined) {
+    anyDotnet.withStartupMemoryCache(resourceLoader.bootConfig.startupMemoryCache);
+  }
+
+  if (resourceLoader.bootConfig.runtimeOptions) {
+    anyDotnet.withRuntimeOptions(resourceLoader.bootConfig.runtimeOptions);
+  }
 
   const runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports } = runtime;
