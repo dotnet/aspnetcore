@@ -75,6 +75,7 @@
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\Middleware\\WebSockets\\src\\Microsoft.AspNetCore.WebSockets.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Security\\Authentication\\BearerToken\\src\\Microsoft.AspNetCore.Authentication.BearerToken.csproj",
       "src\\Security\\Authentication\\Certificate\\src\\Microsoft.AspNetCore.Authentication.Certificate.csproj",
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
       "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",

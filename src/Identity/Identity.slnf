@@ -2,6 +2,8 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects" : [
+      "src\\Http\\Http.Extensions\\gen\\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj",
+      "src\\Http\\Http.Results\\src\\Microsoft.AspNetCore.Http.Results.csproj",
       "src\\Identity\\ApiAuthorization.IdentityServer\\samples\\ApiAuthSample\\ApiAuthSample.csproj",
       "src\\Identity\\ApiAuthorization.IdentityServer\\src\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj",
       "src\\Identity\\ApiAuthorization.IdentityServer\\test\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj",
@@ -11,6 +13,7 @@
       "src\\Identity\\EntityFrameworkCore\\test\\EF.Test\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj",
       "src\\Identity\\Extensions.Core\\src\\Microsoft.Extensions.Identity.Core.csproj",
       "src\\Identity\\Extensions.Stores\\src\\Microsoft.Extensions.Identity.Stores.csproj",
+      "src\\Identity\\samples\\IdentitySample.ApiEndpoints\\IdentitySample.ApiEndpoints.csproj",
       "src\\Identity\\samples\\IdentitySample.DefaultUI\\IdentitySample.DefaultUI.csproj",
       "src\\Identity\\samples\\IdentitySample.Mvc\\IdentitySample.Mvc.csproj",
       "src\\Identity\\Specification.Tests\\src\\Microsoft.AspNetCore.Identity.Specification.Tests.csproj",
@@ -68,6 +71,7 @@
       "src\\Mvc\\Mvc.ViewFeatures\\src\\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj",
       "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
+      "src\\Security\\Authentication\\BearerToken\\src\\Microsoft.AspNetCore.Authentication.BearerToken.csproj",
       "src\\Middleware\\ResponseCaching.Abstractions\\src\\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
@@ -90,7 +94,8 @@
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }
 }
