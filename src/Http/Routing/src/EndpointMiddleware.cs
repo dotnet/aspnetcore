@@ -33,6 +33,7 @@ internal sealed partial class EndpointMiddleware
         var endpoint = httpContext.GetEndpoint();
         if (endpoint is not null)
         {
+            // This check should be kept in sync with the one in EndpointRoutingMiddleware
             if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
             {
                 if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null &&
