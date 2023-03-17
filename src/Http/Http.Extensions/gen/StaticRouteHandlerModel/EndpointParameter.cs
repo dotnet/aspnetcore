@@ -384,8 +384,8 @@ internal class EndpointParameter
                     break;
 
                 case '\\':
-                    sb.Append("\\");
-                    sb.Append("\\");
+                    sb.Append('\\');
+                    sb.Append('\\');
                     break;
 
                 default:

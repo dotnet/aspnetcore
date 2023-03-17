@@ -73,7 +73,7 @@ internal static class EndpointEmitter
                     codeWriter.WriteLine("var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();");
                     serviceProviderEmitted = true;
                 }
-                codeWriter.Write($@"var {parameter.Name}_JsonBodyOrServiceResolver = ");
+                codeWriter.Write($@"var {parameter.SymbolName}_JsonBodyOrServiceResolver = ");
                 codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(serviceProviderIsService);");
             }
         }
