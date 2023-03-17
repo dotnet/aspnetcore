@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -342,12 +343,69 @@ internal class EndpointParameter
             //
             //       a) Accept any input but escape it.
             //       b) Narrowly scope what we accept so it is constrained to what are acceptable in HTTP paths, querystrings, and headers.
-            return fromSourceName.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r");
+            return ConvertEndOfLineAndQuotationCharactersToEscapeForm(fromSourceName);
         }
         else
         {
             return parameterName;
         }
+    }
+
+    // Lifted from:
+    // https://github.com/dotnet/runtime/blob/dc5a6c8be1644915c14c4a464447b0d54e223a46/src/libraries/Microsoft.Extensions.Logging.Abstractions/gen/LoggerMessageGenerator.Emitter.cs#L562
+    private static string ConvertEndOfLineAndQuotationCharactersToEscapeForm(string s)
+    {
+        int index = 0;
+        while (index < s.Length)
+        {
+            if (s[index] is '\n' or '\r' or '"' or '\\')
+            {
+                break;
+            }
+            index++;
+        }
+
+        if (index >= s.Length)
+        {
+            return s;
+        }
+
+        StringBuilder sb = new StringBuilder(s.Length);
+        sb.Append(s, 0, index);
+
+        while (index < s.Length)
+        {
+            switch (s[index])
+            {
+                case '\n':
+                    sb.Append('\\');
+                    sb.Append('n');
+                    break;
+
+                case '\r':
+                    sb.Append('\\');
+                    sb.Append('r');
+                    break;
+
+                case '"':
+                    sb.Append('\\');
+                    sb.Append('"');
+                    break;
+
+                case '\\':
+                    sb.Append("\\");
+                    sb.Append("\\");
+                    break;
+
+                default:
+                    sb.Append(s[index]);
+                    break;
+            }
+
+            index++;
+        }
+
+        return sb.ToString();
     }
 
     public override bool Equals(object obj) =>
