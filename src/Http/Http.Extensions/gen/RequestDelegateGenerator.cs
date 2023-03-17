@@ -86,7 +86,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateCast()})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
             endpoint!.EmitRouteOrQueryResolver(codeWriter);
-            endpoint!.EmitJsonBodyOrServicePreparation(codeWriter);
+            endpoint!.EmitJsonBodyOrServiceResolver(codeWriter);
             endpoint!.Response?.EmitJsonPreparation(codeWriter);
             if (endpoint.NeedsParameterArray)
             {
@@ -190,7 +190,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
                 if (hasJsonBodyOrService)
                 {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.TryResolveJsonBodyOrServiceAsyncMethod);
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ResolveJsonBodyOrServiceMethod);
                 }
 
                 if (hasParsable)

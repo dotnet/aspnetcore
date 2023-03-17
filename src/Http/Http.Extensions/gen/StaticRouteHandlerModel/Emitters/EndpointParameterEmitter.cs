@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -166,15 +167,15 @@ internal static class EndpointParameterEmitter
         // Preamble for diagnostics purposes.
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
-        // Invoke TryResolveJsonBodyOrService method to resolve the
+        // Invoke ResolveJsonBodyOrService method to resolve the
         // type from DI if it exists. Otherwise, resolve the parameter
         // as a body parameter.
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")}, serviceProviderIsService)";
+        var assigningCode = $"await {endpointParameter.Name}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         var resolveJsonBodyOrServiceResult = $"{endpointParameter.Name}_resolveJsonBodyOrServiceResult";
         codeWriter.WriteLine($"var {resolveJsonBodyOrServiceResult} = {assigningCode};");
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
 
-        // If binding from the JSON body fails, TryResolveJsonBodyOrService
+        // If binding from the JSON body fails, ResolveJsonBodyOrService
         // will return `false` and we will need to exit early.
         codeWriter.WriteLine($"if (!{resolveJsonBodyOrServiceResult}.Item1)");
         codeWriter.StartBlock();
