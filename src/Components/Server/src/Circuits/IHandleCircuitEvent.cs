@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// <summary>
 /// A handler to process inbound circuit events.
 /// </summary>
-public interface ICircuitInboundEventHandler
+public interface IHandleCircuitEvent
 {
     /// <summary>
     /// Invoked when inbound event on the circuit causes an asynchronous task to be dispatched on the server.
@@ -14,5 +14,5 @@ public interface ICircuitInboundEventHandler
     /// <param name="context">The <see cref="CircuitInboundEventContext"/>.</param>
     /// <param name="next">The next handler to invoke.</param>
     /// <returns>A <see cref="Task"/> that completes when the event has finished.</returns>
-    Task HandleInboundEventAsync(CircuitInboundEventContext context, CircuitInboundEventDelegate next);
+    Task HandleInboundEventAsync(CircuitInboundEventContext context, Func<CircuitInboundEventContext, Task> next);
 }

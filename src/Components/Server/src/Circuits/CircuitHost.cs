@@ -21,7 +21,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitHandler[] _circuitHandlers;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly CircuitInboundEventDelegate _dispatchInboundEvent;
+    private readonly Func<Func<Task>, Task> _dispatchInboundEvent;
     private bool _initialized;
     private bool _disposed;
 
@@ -62,12 +62,12 @@ internal partial class CircuitHost : IAsyncDisposable
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _dispatchInboundEvent = BuildInboundEventDispatcher(_circuitHandlers);
-
         Services = scope.ServiceProvider;
 
         Circuit = new Circuit(this);
         Handle = new CircuitHandle() { CircuitHost = this, };
+
+        _dispatchInboundEvent = BuildInboundEventDispatcher(_circuitHandlers, Circuit);
 
         // An unhandled exception from the renderer is always fatal because it came from user code.
         Renderer.UnhandledException += ReportAndInvoke_UnhandledException;
@@ -594,30 +594,36 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // Internal for testing.
     internal Task DispatchInboundEventAsync(Func<Task> func)
-        => _dispatchInboundEvent(new(func, Circuit));
+        => _dispatchInboundEvent(func);
 
     // Internal for testing.
     internal async Task<TResult> DispatchInboundEventAsync<TResult>(Func<Task<TResult>> func)
     {
         TResult result = default;
-        await _dispatchInboundEvent(new(async () => result = await func(), Circuit));
+        await _dispatchInboundEvent(async () => result = await func());
         return result;
     }
 
-    private static CircuitInboundEventDelegate BuildInboundEventDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers)
+    private static Func<Func<Task>, Task> BuildInboundEventDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers, Circuit circuit)
     {
-        CircuitInboundEventDelegate result = (in CircuitInboundEventContext context) => context.Handler();
+        Func<CircuitInboundEventContext, Task>? result = null;
 
         for (var i = circuitHandlers.Count - 1; i >= 0; i--)
         {
-            if (circuitHandlers[i] is ICircuitInboundEventHandler inboundEventHandler)
+            if (circuitHandlers[i] is IHandleCircuitEvent inboundEventHandler)
             {
-                var next = result;
-                result = (in CircuitInboundEventContext context) => inboundEventHandler.HandleInboundEventAsync(context, next);
+                var next = result ?? (static (context) => context.Handler());
+                result = (context) => inboundEventHandler.HandleInboundEventAsync(context, next);
             }
         }
 
-        return result;
+        if (result is null)
+        {
+            // If there are no registered handlers, there is no need to allocate a context on each call.
+            return static (task) => task();
+        }
+
+        return (task) => result(new(task, circuit));
     }
 
     private void AssertInitialized()

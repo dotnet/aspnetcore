@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// <summary>
 /// Contains information about an inbound <see cref="Circuits.Circuit"/> event.
 /// </summary>
-public readonly struct CircuitInboundEventContext
+public sealed class CircuitInboundEventContext
 {
     internal Func<Task> Handler { get; }
 

@@ -319,7 +319,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task DispatchInboundEventAsync_InvokesCircuitInboundEventHandlers()
+    public async Task DispatchInboundEventAsync_InvokesCircuitEventHandlers()
     {
         // Arrange
         var handler1 = new Mock<CircuitHandler>(MockBehavior.Strict);
@@ -328,16 +328,16 @@ public class CircuitHostTest
         var sequence = new MockSequence();
 
         // We deliberately avoid making handler2 an inbound event handler
-        var inboundEventHandler1 = handler1.As<ICircuitInboundEventHandler>();
-        var inboundEventHandler3 = handler3.As<ICircuitInboundEventHandler>();
+        var inboundEventHandler1 = handler1.As<IHandleCircuitEvent>();
+        var inboundEventHandler3 = handler3.As<IHandleCircuitEvent>();
 
         var asyncLocal1 = new AsyncLocal<bool>();
         var asyncLocal3 = new AsyncLocal<bool>();
 
         inboundEventHandler1
             .InSequence(sequence)
-            .Setup(h => h.HandleInboundEventAsync(It.IsAny<CircuitInboundEventContext>(), It.IsAny<CircuitInboundEventDelegate>()))
-            .Returns(async (CircuitInboundEventContext context, CircuitInboundEventDelegate next) =>
+            .Setup(h => h.HandleInboundEventAsync(It.IsAny<CircuitInboundEventContext>(), It.IsAny<Func<CircuitInboundEventContext, Task>>()))
+            .Returns(async (CircuitInboundEventContext context, Func<CircuitInboundEventContext, Task> next) =>
             {
                 asyncLocal1.Value = true;
                 await next(context);
@@ -346,8 +346,8 @@ public class CircuitHostTest
 
         inboundEventHandler3
             .InSequence(sequence)
-            .Setup(h => h.HandleInboundEventAsync(It.IsAny<CircuitInboundEventContext>(), It.IsAny<CircuitInboundEventDelegate>()))
-            .Returns(async (CircuitInboundEventContext context, CircuitInboundEventDelegate next) =>
+            .Setup(h => h.HandleInboundEventAsync(It.IsAny<CircuitInboundEventContext>(), It.IsAny<Func<CircuitInboundEventContext, Task>>()))
+            .Returns(async (CircuitInboundEventContext context, Func<CircuitInboundEventContext, Task> next) =>
             {
                 asyncLocal3.Value = true;
                 await next(context);
@@ -375,6 +375,24 @@ public class CircuitHostTest
 
         Assert.True(asyncLocal1ValueInHandler);
         Assert.True(asyncLocal3ValueInHandler);
+    }
+
+    [Fact]
+    public async Task DispatchInboundEventAsync_InvokesEventFunc_WhenNoCircuitEventHandlersAreRegistered()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create();
+        var wasEventFuncInvoked = false;
+
+        // Act
+        await circuitHost.DispatchInboundEventAsync(() =>
+        {
+            wasEventFuncInvoked = true;
+            return Task.CompletedTask;
+        });
+
+        // Assert
+        Assert.True(wasEventFuncInvoked);
     }
 
     private static TestRemoteRenderer GetRemoteRenderer()
