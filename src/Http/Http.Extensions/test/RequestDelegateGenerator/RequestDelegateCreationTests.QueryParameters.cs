@@ -77,7 +77,7 @@ app.MapGet("/hello", ([FromQuery]string? p) => p == string.Empty ? "No value, bu
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
-            Assert.Equal("p", p.Name);
+            Assert.Equal("p", p.ParameterName);
         });
 
         var httpContext = CreateHttpContext();

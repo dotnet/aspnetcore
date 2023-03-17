@@ -17,7 +17,7 @@ internal class EndpointParameter
     public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
     {
         Type = parameter.Type;
-        Name = parameter.Name;
+        ParameterName = parameter.Name;
         LookupName = parameter.Name; // Default lookup name is same as parameter name (which is a valid C# identifier).
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
@@ -28,7 +28,6 @@ internal class EndpointParameter
         if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
         {
             Source = EndpointParameterSource.Route;
-            Name = parameter.Name;
             LookupName = GetEscapedParameterName(fromRouteAttribute, parameter.Name);
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
@@ -36,7 +35,6 @@ internal class EndpointParameter
         else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata), out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
-            Name = parameter.Name;
             LookupName = GetEscapedParameterName(fromQueryAttribute, parameter.Name);
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
@@ -44,7 +42,6 @@ internal class EndpointParameter
         else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata), out var fromHeaderAttribute))
         {
             Source = EndpointParameterSource.Header;
-            Name = parameter.Name;
             LookupName = GetEscapedParameterName(fromHeaderAttribute, parameter.Name);
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
@@ -135,7 +132,7 @@ internal class EndpointParameter
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
 
-    public string Name { get; }
+    public string ParameterName { get; }
     public string LookupName { get; }
     public int Ordinal { get; }
     public bool IsOptional { get; }
@@ -411,7 +408,7 @@ internal class EndpointParameter
     public override bool Equals(object obj) =>
         obj is EndpointParameter other &&
         other.Source == Source &&
-        other.Name == Name &&
+        other.ParameterName == ParameterName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
         SymbolEqualityComparer.Default.Equals(other.Type, Type);
@@ -423,7 +420,7 @@ internal class EndpointParameter
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
-        hashCode.Add(Name);
+        hashCode.Add(ParameterName);
         hashCode.Add(Type, SymbolEqualityComparer.Default);
         return hashCode.ToHashCode();
     }

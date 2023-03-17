@@ -54,7 +54,7 @@ internal static class EndpointEmitter
         {
             if (parameter.Source == EndpointParameterSource.RouteOrQuery)
             {
-                var parameterName = parameter.Name;
+                var parameterName = parameter.ParameterName;
                 codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
                 codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
             }
