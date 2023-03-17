@@ -17,7 +17,7 @@ internal class EndpointParameter
     public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
     {
         Type = parameter.Type;
-        ParameterName = parameter.Name;
+        SymbolName = parameter.Name;
         LookupName = parameter.Name; // Default lookup name is same as parameter name (which is a valid C# identifier).
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
@@ -132,7 +132,7 @@ internal class EndpointParameter
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
 
-    public string ParameterName { get; }
+    public string SymbolName { get; }
     public string LookupName { get; }
     public int Ordinal { get; }
     public bool IsOptional { get; }
@@ -408,7 +408,7 @@ internal class EndpointParameter
     public override bool Equals(object obj) =>
         obj is EndpointParameter other &&
         other.Source == Source &&
-        other.ParameterName == ParameterName &&
+        other.SymbolName == SymbolName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
         SymbolEqualityComparer.Default.Equals(other.Type, Type);
@@ -420,7 +420,7 @@ internal class EndpointParameter
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
-        hashCode.Add(ParameterName);
+        hashCode.Add(SymbolName);
         hashCode.Add(Type, SymbolEqualityComparer.Default);
         return hashCode.ToHashCode();
     }

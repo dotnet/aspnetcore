@@ -42,7 +42,7 @@ app.MapGet("/hello", ({parameterType} p) => p == null ? "null!" : "Hello world!"
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.SpecialType, p.Source);
-            Assert.Equal("p", p.ParameterName);
+            Assert.Equal("p", p.SymbolName);
         });
 
         var httpContext = CreateHttpContext();
@@ -67,12 +67,12 @@ app.MapGet("/hello", (HttpRequest req, HttpResponse res) => req is null || res i
                 reqParam =>
                 {
                     Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
-                    Assert.Equal("req", reqParam.ParameterName);
+                    Assert.Equal("req", reqParam.SymbolName);
                 },
                 reqParam =>
                 {
                     Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
-                    Assert.Equal("res", reqParam.ParameterName);
+                    Assert.Equal("res", reqParam.SymbolName);
                 });
         });
 
@@ -137,7 +137,7 @@ app.MapGet("/zh", (HttpRequest req, HttpResponse res) => "你好世界！");
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 var reqParam = Assert.Single(endpointModel.Parameters);
                 Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
-                Assert.Equal("req", reqParam.ParameterName);
+                Assert.Equal("req", reqParam.SymbolName);
             },
             endpointModel =>
             {
@@ -145,7 +145,7 @@ app.MapGet("/zh", (HttpRequest req, HttpResponse res) => "你好世界！");
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 var reqParam = Assert.Single(endpointModel.Parameters);
                 Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
-                Assert.Equal("res", reqParam.ParameterName);
+                Assert.Equal("res", reqParam.SymbolName);
             },
             endpointModel =>
             {
@@ -155,12 +155,12 @@ app.MapGet("/zh", (HttpRequest req, HttpResponse res) => "你好世界！");
                     reqParam =>
                     {
                         Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
-                        Assert.Equal("req", reqParam.ParameterName);
+                        Assert.Equal("req", reqParam.SymbolName);
                     },
                     reqParam =>
                     {
                         Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
-                        Assert.Equal("res", reqParam.ParameterName);
+                        Assert.Equal("res", reqParam.SymbolName);
                     });
             }));
 
