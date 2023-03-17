@@ -158,22 +158,22 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
         {
             return new[]
             {
-                new object[] { "name", "name" },
-                new object[] { "_", "_" },
-                new object[] { "123", "123" },
-                new object[] { "💩", "💩" },
-                new object[] { "\r", "\\r" },
-                new object[] { "\x00E7" , "\x00E7" },
-                new object[] { "!!" , "!!" },
-                new object[] { "\\" , "\\\\" },
-                new object[] { "\'" , "\'" },
+                new object[] { "name" },
+                new object[] { "_" },
+                new object[] { "123" },
+                new object[] { "💩" },
+                new object[] { "\r" },
+                new object[] { "\x00E7"  },
+                new object[] { "!!" },
+                new object[] { "\\" },
+                new object[] { "\'" },
             };
         }
     }
 
     [Theory]
     [MemberData(nameof(MapAction_ExplicitRouteParam_RouteNames_Data))]
-    public async Task MapAction_ExplicitRouteParam_RouteNames(string routeParameterName, string lookupValue)
+    public async Task MapAction_ExplicitRouteParam_RouteNames(string routeParameterName)
     {
         var (_, compilation) = await RunGeneratorAsync($$"""app.MapGet(@"/{{{routeParameterName}}}", ([FromRoute(Name=@"{{routeParameterName}}")] string routeValue) => routeValue);""");
         var endpoint = GetEndpointFromCompilation(compilation);
