@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing.ShortCircuit;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-/// Short Circuit extension methods for <see cref="IEndpointConventionBuilder"/>.
+/// Short circuit extension methods for <see cref="IEndpointConventionBuilder"/>.
 /// </summary>
 public static class RouteShortCircuitEndpointConventionBuilderExtensions
 {
@@ -16,7 +16,7 @@ public static class RouteShortCircuitEndpointConventionBuilderExtensions
     private static readonly ShortCircuitMetadata _nullShortCircuitMetadata = new ShortCircuitMetadata(null);
 
     /// <summary>
-    /// Short Circuit the the endpoint(s).
+    /// Short circuit the endpoint(s).
     /// The execution of the endpoint will happen in UseRouting middleware instead of UseEndpoint.
     /// </summary>
     /// <param name="builder">The endpoint convention builder.</param>

@@ -200,17 +200,20 @@ public class EndpointRoutingMiddlewareTest
         Assert.Equal(404, httpContext.Response.StatusCode);
     }
 
-    [InlineData(true, true)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
+    [InlineData(404, true, true)]
+    [InlineData(404, false, true)]
+    [InlineData(404, true, false)]
+    [InlineData(null, true, true)]
+    [InlineData(null, false, true)]
+    [InlineData(null, true, false)]
     [Theory]
-    public async Task ThrowIfSecurityMetadataPresent(bool hasAuthMetadata, bool hasCorsMetadata)
+    public async Task ThrowIfSecurityMetadataPresent(int? statusCode, bool hasAuthMetadata, bool hasCorsMetadata)
     {
         // Arrange
         var httpContext = CreateHttpContext();
 
         var middleware = CreateMiddleware(
-            matcherFactory: new ShortCircuitMatcherFactory(404, hasAuthMetadata, hasCorsMetadata),
+            matcherFactory: new ShortCircuitMatcherFactory(statusCode, hasAuthMetadata, hasCorsMetadata),
             next: context =>
             {
                 // should not be reached

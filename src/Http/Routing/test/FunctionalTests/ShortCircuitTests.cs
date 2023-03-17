@@ -2,14 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
@@ -75,7 +72,7 @@ public class ShortCircuitTests
                         });
                         app.UseEndpoints(b =>
                         {
-                            b.MapShortCircuit(404, "/shortcircuit");
+                            b.MapShortCircuit((int)HttpStatusCode.NotFound, "/shortcircuit");
                         });
                     })
                     .UseTestServer();
