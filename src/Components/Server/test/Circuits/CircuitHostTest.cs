@@ -318,6 +318,83 @@ public class CircuitHostTest
         handler2.VerifyAll();
     }
 
+    [Fact]
+    public async Task HandleInboundActivityAsync_InvokesCircuitActivityHandlers()
+    {
+        // Arrange
+        var handler1 = new Mock<CircuitHandler>(MockBehavior.Strict);
+        var handler2 = new Mock<CircuitHandler>(MockBehavior.Strict);
+        var handler3 = new Mock<CircuitHandler>(MockBehavior.Strict);
+        var sequence = new MockSequence();
+
+        // We deliberately avoid making handler2 an inbound activity handler
+        var activityHandler1 = handler1.As<IHandleCircuitActivity>();
+        var activityHandler3 = handler3.As<IHandleCircuitActivity>();
+
+        var asyncLocal1 = new AsyncLocal<bool>();
+        var asyncLocal3 = new AsyncLocal<bool>();
+
+        activityHandler1
+            .InSequence(sequence)
+            .Setup(h => h.HandleInboundActivityAsync(It.IsAny<CircuitInboundActivityContext>(), It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
+            .Returns(async (CircuitInboundActivityContext context, Func<CircuitInboundActivityContext, Task> next) =>
+            {
+                asyncLocal1.Value = true;
+                await next(context);
+            })
+            .Verifiable();
+
+        activityHandler3
+            .InSequence(sequence)
+            .Setup(h => h.HandleInboundActivityAsync(It.IsAny<CircuitInboundActivityContext>(), It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
+            .Returns(async (CircuitInboundActivityContext context, Func<CircuitInboundActivityContext, Task> next) =>
+            {
+                asyncLocal3.Value = true;
+                await next(context);
+            })
+            .Verifiable();
+
+        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object, handler3.Object });
+        var asyncLocal1ValueInHandler = false;
+        var asyncLocal3ValueInHandler = false;
+
+        // Act
+        await circuitHost.HandleInboundActivityAsync(() =>
+        {
+            asyncLocal1ValueInHandler = asyncLocal1.Value;
+            asyncLocal3ValueInHandler = asyncLocal3.Value;
+            return Task.CompletedTask;
+        });
+
+        // Assert
+        activityHandler1.VerifyAll();
+        activityHandler3.VerifyAll();
+
+        Assert.False(asyncLocal1.Value);
+        Assert.False(asyncLocal3.Value);
+
+        Assert.True(asyncLocal1ValueInHandler);
+        Assert.True(asyncLocal3ValueInHandler);
+    }
+
+    [Fact]
+    public async Task HandleInboundActivityAsync_InvokesHandlerFunc_WhenNoCircuitActivityHandlersAreRegistered()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create();
+        var wasHandlerFuncInvoked = false;
+
+        // Act
+        await circuitHost.HandleInboundActivityAsync(() =>
+        {
+            wasHandlerFuncInvoked = true;
+            return Task.CompletedTask;
+        });
+
+        // Assert
+        Assert.True(wasHandlerFuncInvoked);
+    }
+
     private static TestRemoteRenderer GetRemoteRenderer()
     {
         var serviceCollection = new ServiceCollection();

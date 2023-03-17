@@ -21,6 +21,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitHandler[] _circuitHandlers;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
+    private readonly Func<Func<Task>, Task> _dispatchInboundActivity;
     private bool _initialized;
     private bool _disposed;
 
@@ -65,6 +66,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
         Circuit = new Circuit(this);
         Handle = new CircuitHandle() { CircuitHost = this, };
+
+        _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
 
         // An unhandled exception from the renderer is always fatal because it came from user code.
         Renderer.UnhandledException += ReportAndInvoke_UnhandledException;
@@ -324,7 +327,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            _ = Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull);
+            _ = HandleInboundActivityAsync(() => Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull));
         }
         catch (Exception e)
         {
@@ -345,12 +348,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
                 var invocationInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
                 DotNetDispatcher.BeginInvokeDotNet(JSRuntime, invocationInfo, argsJson);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -371,7 +374,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 if (!succeeded)
                 {
@@ -384,7 +387,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
 
                 DotNetDispatcher.EndInvokeJS(JSRuntime, arguments);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -405,11 +408,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.ReceiveByteArraySuccess(_logger, id);
                 DotNetDispatcher.ReceiveByteArray(JSRuntime, id, data);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -430,10 +433,10 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            return await Renderer.Dispatcher.InvokeAsync(() =>
+            return await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 return RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -453,7 +456,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            return await Renderer.Dispatcher.InvokeAsync<int>(async () => await dotNetStreamReference.Stream.ReadAsync(buffer));
+            return await Renderer.Dispatcher.InvokeAsync(async () => await dotNetStreamReference.Stream.ReadAsync(buffer));
         }
         catch (Exception ex)
         {
@@ -505,12 +508,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.LocationChange(_logger, uri, CircuitId);
                 _navigationManager.NotifyLocationChanged(uri, state, intercepted);
                 Log.LocationChangeSucceeded(_logger, uri, CircuitId);
-            });
+            }));
         }
 
         // It's up to the NavigationManager implementation to validate the URI.
@@ -547,11 +550,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            var shouldContinueNavigation = await Renderer.Dispatcher.InvokeAsync(async () =>
+            var shouldContinueNavigation = await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
                 return await _navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
-            });
+            }));
 
             await Client.SendAsync("JS.EndLocationChanging", callId, shouldContinueNavigation);
         }
@@ -587,6 +590,40 @@ internal partial class CircuitHost : IAsyncDisposable
         // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
         // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
         _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
+    }
+
+    // Internal for testing.
+    internal Task HandleInboundActivityAsync(Func<Task> handler)
+        => _dispatchInboundActivity(handler);
+
+    // Internal for testing.
+    internal async Task<TResult> HandleInboundActivityAsync<TResult>(Func<Task<TResult>> handler)
+    {
+        TResult result = default;
+        await _dispatchInboundActivity(async () => result = await handler());
+        return result;
+    }
+
+    private static Func<Func<Task>, Task> BuildInboundActivityDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers, Circuit circuit)
+    {
+        Func<CircuitInboundActivityContext, Task>? result = null;
+
+        for (var i = circuitHandlers.Count - 1; i >= 0; i--)
+        {
+            if (circuitHandlers[i] is IHandleCircuitActivity inboundActivityHandler)
+            {
+                var next = result ?? (static (context) => context.Handler());
+                result = (context) => inboundActivityHandler.HandleInboundActivityAsync(context, next);
+            }
+        }
+
+        if (result is null)
+        {
+            // If there are no registered handlers, there is no need to allocate a context on each call.
+            return static (handler) => handler();
+        }
+
+        return (handler) => result(new(handler, circuit));
     }
 
     private void AssertInitialized()
