@@ -370,7 +370,7 @@ internal class EndpointParameter
             return s;
         }
 
-        StringBuilder sb = new StringBuilder(s.Length);
+        var sb = new StringBuilder(s.Length);
         sb.Append(s, 0, index);
 
         while (index < s.Length)
