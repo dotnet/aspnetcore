@@ -11,13 +11,14 @@ namespace PipelinesOverNetwork
     internal sealed class AckPipeReader : PipeReader
     {
         private readonly PipeReader _inner;
+        private readonly object _lock = new object();
+
         private SequencePosition _consumed;
         private SequencePosition _ackPosition;
         private long _ackDiff;
         private long _ackId;
         private long _totalWritten;
         private bool _resend;
-        private object _lock = new object();
 
         public AckPipeReader(PipeReader inner)
         {

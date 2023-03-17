@@ -36,9 +36,9 @@ internal sealed partial class WebSocketsTransport : ITransport
     private readonly HttpClient? _httpClient;
     private CancellationTokenSource _stopCts = default!;
     private readonly bool _useAck;
-    private readonly Func<Task<string?>> _accessTokenProvider;
 
     private IDuplexPipe? _transport;
+    private bool _closed;
 
     internal Task Running { get; private set; } = Task.CompletedTask;
 
@@ -57,7 +57,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         // We were given an updated delegate from the HttpConnection and we are updating what we have in httpOptions
         // options itself is copied object of user's options
-        _accessTokenProvider = accessTokenProvider;
+        _httpConnectionOptions.AccessTokenProvider = accessTokenProvider;
 
         _httpClient = httpClient;
     }
@@ -210,14 +210,14 @@ internal sealed partial class WebSocketsTransport : ITransport
             }
         }
 
-        if (_accessTokenProvider != null
+        if (_httpConnectionOptions.AccessTokenProvider != null
 #if NET7_0_OR_GREATER
             && webSocket.Options.HttpVersion < HttpVersion.Version20
 #endif
             )
         {
             // Apply access token logic when using HTTP/1.1 because we don't use the AccessTokenHttpMessageHandler via HttpClient unless the user specifies HTTP/2.0 or higher
-            var accessToken = await _accessTokenProvider().ConfigureAwait(false);
+            var accessToken = await _httpConnectionOptions.AccessTokenProvider().ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 // We can't use request headers in the browser, so instead append the token as a query string in that case
@@ -336,7 +336,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         // TODO: Handle TCP connection errors
         // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
-        Running = ProcessSocketAsync(_webSocket);
+        Running = ProcessSocketAsync(_webSocket, url);
 
         static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
         {
@@ -354,7 +354,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         }
     }
 
-    private async Task ProcessSocketAsync(WebSocket socket)
+    private async Task ProcessSocketAsync(WebSocket socket, Uri url)
     {
         Debug.Assert(_application != null);
 
@@ -375,8 +375,11 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // 1. Waiting for application data
                 // 2. Waiting for a websocket send to complete
 
-                // Cancel the application so that ReadAsync yields
-                //_application.Input.CancelPendingRead();
+                if (_closed)
+                {
+                    // Cancel the application so that ReadAsync yields
+                    _application.Input.CancelPendingRead();
+                }
 
                 var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, _stopCts.Token)).ConfigureAwait(false);
 
@@ -400,8 +403,18 @@ internal sealed partial class WebSocketsTransport : ITransport
                 socket.Abort();
 
                 // Cancel any pending flush so that we can quit
-                //_application.Output.CancelPendingFlush();
+                if (_closed)
+                {
+                    _application.Output.CancelPendingFlush();
+                }
             }
+        }
+
+        Console.WriteLine("closed socket");
+
+        if (_useAck && !_closed)
+        {
+            await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text, default).ConfigureAwait(false);
         }
     }
 
@@ -419,6 +432,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    _closed = true;
                     Log.WebSocketClosed(_logger, socket.CloseStatus);
 
                     if (socket.CloseStatus != WebSocketCloseStatus.NormalClosure)
@@ -445,6 +459,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // Need to check again for netstandard2.1 because a close can happen between a 0-byte read and the actual read
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
+                    _closed = true;
                     Log.WebSocketClosed(_logger, socket.CloseStatus);
 
                     if (socket.CloseStatus != WebSocketCloseStatus.NormalClosure)
@@ -489,13 +504,17 @@ internal sealed partial class WebSocketsTransport : ITransport
         {
             if (!_aborted)
             {
-                //_application.Output.Complete(ex);
+                _application.Output.Complete(ex);
+                _closed = true;
             }
         }
         finally
         {
             // We're done writing
-            //_application.Output.Complete();
+            if (_closed)
+            {
+                _application.Output.Complete();
+            }
 
             Log.ReceiveStopped(_logger);
         }
@@ -547,6 +566,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                             }
                             else
                             {
+                                socket.Dispose();
                                 break;
                             }
                         }
@@ -598,7 +618,10 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
             }
 
-            //_application.Input.Complete();
+            if (_closed)
+            {
+                _application.Input.Complete();
+            }
 
             Log.SendStopped(_logger);
         }
@@ -628,6 +651,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public async Task StopAsync()
     {
+        _closed = true;
         Log.TransportStopping(_logger);
 
         if (_application == null)
@@ -636,11 +660,11 @@ internal sealed partial class WebSocketsTransport : ITransport
             return;
         }
 
-        //_transport!.Output.Complete();
-        //_transport!.Input.Complete();
+        _transport!.Output.Complete();
+        _transport!.Input.Complete();
 
         // Cancel any pending reads from the application, this should start the entire shutdown process
-        //_application.Input.CancelPendingRead();
+        _application.Input.CancelPendingRead();
 
         // Start ungraceful close timer
         _stopCts.CancelAfter(_closeTimeout);

@@ -176,7 +176,7 @@ internal sealed partial class HttpConnectionManager
 
             // Once the decision has been made to dispose we don't check the status again
             // But don't clean up connections while the debugger is attached.
-            if (!true && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
+            if (!Debugger.IsAttached && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
             {
                 Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                 HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
