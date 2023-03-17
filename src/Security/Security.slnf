@@ -28,6 +28,7 @@
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Security\\Authentication\\BearerToken\\src\\Microsoft.AspNetCore.Authentication.BearerToken.csproj",
       "src\\Security\\Authentication\\Certificate\\samples\\Certificate.Optional.Sample\\Certificate.Optional.Sample.csproj",
       "src\\Security\\Authentication\\Certificate\\samples\\Certificate.Sample\\Certificate.Sample.csproj",
       "src\\Security\\Authentication\\Certificate\\src\\Microsoft.AspNetCore.Authentication.Certificate.csproj",
