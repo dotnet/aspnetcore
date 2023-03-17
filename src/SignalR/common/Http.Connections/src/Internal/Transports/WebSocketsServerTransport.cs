@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Text;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using PipelinesOverNetwork;
 
@@ -19,6 +18,8 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
     private readonly IDuplexPipe _application;
     private readonly HttpConnectionContext _connection;
     private volatile bool _aborted;
+
+    private bool _closed;
 
     public WebSocketsServerTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
     {
@@ -34,7 +35,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.WebSocketsTransport");
     }
 
-    public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
+    public async Task<bool> ProcessRequestAsync(HttpContext context, CancellationToken token)
     {
         Debug.Assert(context.WebSockets.IsWebSocketRequest, "Not a websocket request");
 
@@ -53,6 +54,8 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 Log.SocketClosed(_logger);
             }
         }
+
+        return _closed;
     }
 
     public async Task ProcessSocketAsync(WebSocket socket)
@@ -153,6 +156,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    _closed = true;
                     return;
                 }
 
@@ -163,6 +167,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 // Need to check again for netcoreapp3.0 and later because a close can happen between a 0-byte read and the actual read
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
+                    _closed = true;
                     return;
                 }
 
@@ -205,13 +210,17 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         {
             if (!_aborted && !token.IsCancellationRequested)
             {
+                _closed = true;
                 _application.Output.Complete(ex);
             }
         }
         finally
         {
-            // We're done writing
-            //_application.Output.Complete();
+            if (_closed)
+            {
+                // We're done writing
+                _application.Output.Complete();
+            }
         }
     }
 
@@ -269,6 +278,12 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                                 break;
                             }
                         }
+                        catch (OperationCanceledException ex) when (ex.CancellationToken == _connection.SendingToken)
+                        {
+                            _closed = true;
+                            // Log
+                            break;
+                        }
                         catch (Exception ex)
                         {
                             if (!_aborted)
@@ -310,12 +325,15 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
             }
 
-            if (error is not null)
-            {
-                _logger.LogError("Error in send {ex}.", error);
-            }
+            //if (error is not null)
+            //{
+            //    _logger.LogError("Error in send {ex}.", error);
+            //}
 
-            //_application.Input.Complete();
+            if (_closed)
+            {
+                _application.Input.Complete();
+            }
         }
     }
 

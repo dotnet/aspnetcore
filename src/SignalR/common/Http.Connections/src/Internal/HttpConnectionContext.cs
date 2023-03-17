@@ -112,7 +112,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
-    public Task? TransportTask { get; set; }
+    public Task<bool>? TransportTask { get; set; }
 
     public Task PreviousPollTask { get; set; } = Task.CompletedTask;
 
@@ -440,7 +440,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
                     // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
                     // requests can be made safely
-                    TransportTask = nonClonedContext.Response.Body.FlushAsync();
+                    TransportTask = Func();
+                    async Task<bool> Func()
+                    {
+                        await nonClonedContext.Response.Body.FlushAsync();
+                        return false;
+                    };
                 }
                 else
                 {

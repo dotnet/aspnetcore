@@ -153,7 +153,10 @@ internal sealed partial class HttpConnectionDispatcher
             // We only need to provide the Input channel since writing to the application is handled through /send.
             var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, connection, _loggerFactory);
 
-            await DoPersistentConnection(connectionDelegate, sse, context, connection);
+            if (connection.TryActivatePersistentConnection(connectionDelegate, sse, Task.CompletedTask, context, _logger))
+            {
+                await DoPersistentConnection(connectionDelegate, sse, context, connection);
+            }
         }
         //else if (context.WebSockets.IsWebSocketRequest)
         //{
@@ -195,8 +198,17 @@ internal sealed partial class HttpConnectionDispatcher
                 AddNoCacheHeaders(context.Response);
             }
 
-            // Connection must already exist
-            var connection = await GetConnectionAsync(context);
+            HttpConnectionContext? connection;
+            if (transport == HttpTransportType.WebSockets)
+            {
+                connection = await GetOrCreateConnectionAsync(context, options);
+            }
+            else
+            {
+                // Connection must already exist
+                connection = await GetConnectionAsync(context);
+            }
+
             if (connection == null)
             {
                 // No such connection, GetConnection already set the response status code
@@ -266,8 +278,15 @@ internal sealed partial class HttpConnectionDispatcher
                     }
                     else
                     {
-                        // Only allow repoll if we aren't removing the connection.
-                        connection.MarkInactive();
+                        if (transport != HttpTransportType.LongPolling)
+                        {
+                            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                        }
+                        else
+                        {
+                            // Only allow repoll if we aren't removing the connection.
+                            connection.MarkInactive();
+                        }
                     }
                 }
                 else if (resultTask.IsFaulted || resultTask.IsCanceled)
@@ -280,8 +299,17 @@ internal sealed partial class HttpConnectionDispatcher
                 }
                 else
                 {
-                    // Only allow repoll if we aren't removing the connection.
-                    connection.MarkInactive();
+                    Console.WriteLine("waiting transporttask");
+                    if (await connection.TransportTask!)
+                    {
+                        Console.WriteLine("disposing");
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+                    }
+                    else
+                    {
+                        // Only allow repoll if we aren't removing the connection.
+                        connection.MarkInactive();
+                    }
                 }
             }
             finally

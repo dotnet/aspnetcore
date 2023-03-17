@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -463,10 +461,10 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
-    private async Task StartAsyncCore(CancellationToken cancellationToken, bool sendHandshake = true)
+    private async Task StartAsyncCore(CancellationToken cancellationToken)
     {
         _state.AssertInConnectionLock();
-        //SafeAssert(_state.CurrentConnectionStateUnsynchronized == null, "We already have a connection!");
+        SafeAssert(_state.CurrentConnectionStateUnsynchronized == null, "We already have a connection!");
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -474,37 +472,24 @@ public partial class HubConnection : IAsyncDisposable
 
         Log.Starting(_logger);
 
-        if (_state.CurrentConnectionStateUnsynchronized is not null)
-        {
-            // public Task StartAsync(CancellationToken cancellationToken = default)
-
-            var method = _state.CurrentConnectionStateUnsynchronized.Connection.GetType().GetMethod("StartAsync", new Type[] { typeof(CancellationToken) });
-            await ((Task)method.Invoke(_state.CurrentConnectionStateUnsynchronized.Connection, new object[] { cancellationToken })).ConfigureAwait(false);
-            _state.CurrentConnectionStateUnsynchronized.ReceiveTask = ReceiveLoop(_state.CurrentConnectionStateUnsynchronized);
-            return;
-        }
-
         // Start the connection
         var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken).ConfigureAwait(false);
         var startingConnectionState = new ConnectionState(connection, this);
 
-        if (sendHandshake)
+        // From here on, if an error occurs we need to shut down the connection because
+        // we still own it.
+        try
         {
-            // From here on, if an error occurs we need to shut down the connection because
-            // we still own it.
-            try
-            {
-                Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-                await HandshakeAsync(startingConnectionState, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorStartingConnection(_logger, ex);
+            Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
+            await HandshakeAsync(startingConnectionState, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorStartingConnection(_logger, ex);
 
-                // Can't have any invocations to cancel, we're in the lock.
-                await CloseAsync(startingConnectionState.Connection).ConfigureAwait(false);
-                throw;
-            }
+            // Can't have any invocations to cancel, we're in the lock.
+            await CloseAsync(startingConnectionState.Connection).ConfigureAwait(false);
+            throw;
         }
 
         // Set this at the end to avoid setting internal state until the connection is real
@@ -1345,17 +1330,6 @@ public partial class HubConnection : IAsyncDisposable
                 var result = await input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
 
-                LogBytes(buffer.ToArray(), _logger);
-                void LogBytes(Memory<byte> memory, ILogger logger)
-                {
-                    var sb = new StringBuilder();
-                    foreach (var b in memory.Span)
-                    {
-                        sb.Append($"0x{b:x} ");
-                    }
-                    logger.LogDebug(sb.ToString());
-                }
-
                 try
                 {
                     if (result.IsCanceled)
@@ -1452,16 +1426,15 @@ public partial class HubConnection : IAsyncDisposable
         await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try
         {
-            //SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, connectionState),
-            //    "Someone other than ReceiveLoop cleared the connection state!");
-            //_state.CurrentConnectionStateUnsynchronized = null;
+            SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, connectionState),
+                "Someone other than ReceiveLoop cleared the connection state!");
+            _state.CurrentConnectionStateUnsynchronized = null;
 
-            await ((ValueTask)connectionState.Connection.GetType().GetMethod("CloseAsync").Invoke(connectionState.Connection, Array.Empty<object>())).ConfigureAwait(false);
             // Dispose the connection
-            //await CloseAsync(connectionState.Connection).ConfigureAwait(false);
+            await CloseAsync(connectionState.Connection).ConfigureAwait(false);
 
             // Cancel any outstanding invocations within the connection lock
-            //connectionState.CancelOutstandingInvocations(connectionState.CloseException);
+            connectionState.CancelOutstandingInvocations(connectionState.CloseException);
 
             if (connectionState.Stopping || _reconnectPolicy == null)
             {
@@ -1586,11 +1559,10 @@ public partial class HubConnection : IAsyncDisposable
             await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
             try
             {
-                //SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, null),
-                //    "Someone other than Reconnect set the connection state!");
+                SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, null),
+                    "Someone other than Reconnect set the connection state!");
 
-                // TODO: sendHandshake needs to be determined by something
-                await StartAsyncCore(_state.StopCts.Token, sendHandshake: false).ConfigureAwait(false);
+                await StartAsyncCore(_state.StopCts.Token).ConfigureAwait(false);
 
                 Log.Reconnected(_logger, previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime);
 
