@@ -193,7 +193,7 @@ public sealed class WebApplicationBuilder
             // any trailing directory separator characters. I'm not even sure the casing can ever be different from these APIs, but I think it makes sense to
             // ignore case for Windows path comparisons given the file system is usually (always?) going to be case insensitive for the system path.
             string cwd = System.Environment.CurrentDirectory;
-            if (!OperatingSystem.IsWindows() || !string.Equals(cwd, System.Environment.Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase))
+            if (!OperatingSystem.IsWindows() || !string.Equals(cwd, System.Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase))
             {
                 configuration.AddInMemoryCollection(new[]
                 {
