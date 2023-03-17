@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var handler = (Func<global::System.String[], global::System.Int32>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();
+                    var p_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::System.String[]>(serviceProviderIsService);
                     var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
                     var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
                     var jsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)serializerOptions.GetTypeInfo(typeof(global::System.Int32));
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrService)
-                        var p_resolveJsonBodyOrServiceResult = await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<global::System.String[]>(httpContext, false, serviceProviderIsService);
+                        var p_resolveJsonBodyOrServiceResult = await p_JsonBodyOrServiceResolver(httpContext, false);
                         var p_local = p_resolveJsonBodyOrServiceResult.Item2;
                         if (!p_resolveJsonBodyOrServiceResult.Item1)
                         {
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         var wasParamCheckFailure = false;
                         // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrService)
-                        var p_resolveJsonBodyOrServiceResult = await GeneratedRouteBuilderExtensionsCore.TryResolveJsonBodyOrServiceAsync<global::System.String[]>(httpContext, false, serviceProviderIsService);
+                        var p_resolveJsonBodyOrServiceResult = await p_JsonBodyOrServiceResolver(httpContext, false);
                         var p_local = p_resolveJsonBodyOrServiceResult.Item2;
                         if (!p_resolveJsonBodyOrServiceResult.Item1)
                         {
@@ -250,16 +251,16 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return (false, default);
         }
-        private static ValueTask<(bool, T?)> TryResolveJsonBodyOrServiceAsync<T>(HttpContext httpContext, bool isOptional, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
                 if (serviceProviderIsService.IsService(typeof(T)))
                 {
-                    return new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
+                    return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            return TryResolveBodyAsync<T>(httpContext, isOptional);
+            return static (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, isOptional);
         }
 
     }

@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 24)] = (
+            [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 24));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0), ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(1)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(1)!));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -122,14 +122,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, Source = JsonBodyOrService)
+                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                         var todo_resolveJsonBodyOrServiceResult = await todo_JsonBodyOrServiceResolver(httpContext, false);
                         var todo_local = todo_resolveJsonBodyOrServiceResult.Item2;
                         if (!todo_resolveJsonBodyOrServiceResult.Item1)
                         {
                             return;
                         }
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, Source = JsonBodyOrService)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                         var svc_resolveJsonBodyOrServiceResult = await svc_JsonBodyOrServiceResolver(httpContext, false);
                         var svc_local = svc_resolveJsonBodyOrServiceResult.Item2;
                         if (!svc_resolveJsonBodyOrServiceResult.Item1)
@@ -150,14 +150,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, Source = JsonBodyOrService)
+                        // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                         var todo_resolveJsonBodyOrServiceResult = await todo_JsonBodyOrServiceResolver(httpContext, false);
                         var todo_local = todo_resolveJsonBodyOrServiceResult.Item2;
                         if (!todo_resolveJsonBodyOrServiceResult.Item1)
                         {
                             return;
                         }
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, Source = JsonBodyOrService)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                         var svc_resolveJsonBodyOrServiceResult = await svc_JsonBodyOrServiceResolver(httpContext, false);
                         var svc_local = svc_resolveJsonBodyOrServiceResult.Item2;
                         if (!svc_resolveJsonBodyOrServiceResult.Item1)

@@ -54,7 +54,7 @@ internal static class EndpointEmitter
         {
             if (parameter.Source == EndpointParameterSource.RouteOrQuery)
             {
-                var parameterName = parameter.Name;
+                var parameterName = parameter.SymbolName;
                 codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
                 codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
             }
@@ -73,7 +73,7 @@ internal static class EndpointEmitter
                     codeWriter.WriteLine("var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();");
                     serviceProviderEmitted = true;
                 }
-                codeWriter.Write($@"var {parameter.Name}_JsonBodyOrServiceResolver = ");
+                codeWriter.Write($@"var {parameter.SymbolName}_JsonBodyOrServiceResolver = ");
                 codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(serviceProviderIsService);");
             }
         }

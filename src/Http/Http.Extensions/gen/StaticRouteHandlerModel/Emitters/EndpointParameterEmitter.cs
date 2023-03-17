@@ -19,8 +19,8 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
         var assigningCode = endpointParameter.Source is EndpointParameterSource.Header
-            ? $"httpContext.Request.Headers[\"{endpointParameter.Name}\"]"
-            : $"httpContext.Request.Query[\"{endpointParameter.Name}\"]";
+            ? $"httpContext.Request.Headers[\"{endpointParameter.LookupName}\"]"
+            : $"httpContext.Request.Query[\"{endpointParameter.LookupName}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
         // If we are not optional, then at this point we can just assign the string value to the handler argument,
@@ -94,12 +94,12 @@ internal static class EndpointParameterEmitter
 
         // Throw an exception of if the route parameter name that was specific in the `FromRoute`
         // attribute or in the parameter name does not appear in the actual route.
-        codeWriter.WriteLine($"""if (options?.RouteParameterNames?.Contains("{endpointParameter.Name}", StringComparer.OrdinalIgnoreCase) != true)""");
+        codeWriter.WriteLine($"""if (options?.RouteParameterNames?.Contains("{endpointParameter.LookupName}", StringComparer.OrdinalIgnoreCase) != true)""");
         codeWriter.StartBlock();
-        codeWriter.WriteLine($$"""throw new InvalidOperationException($"'{{endpointParameter.Name}}' is not a route parameter.");""");
+        codeWriter.WriteLine($$"""throw new InvalidOperationException($"'{{endpointParameter.LookupName}}' is not a route parameter.");""");
         codeWriter.EndBlock();
 
-        var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.Name}\"]";
+        var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.LookupName}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
         if (!endpointParameter.IsOptional)
@@ -118,7 +118,7 @@ internal static class EndpointParameterEmitter
     {
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
-        var parameterName = endpointParameter.Name;
+        var parameterName = endpointParameter.SymbolName;
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {parameterName}_RouteOrQueryResolver(httpContext);");
 
         if (endpointParameter.IsArray)
@@ -149,7 +149,7 @@ internal static class EndpointParameterEmitter
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
         var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
-        var resolveBodyResult = $"{endpointParameter.Name}_resolveBodyResult";
+        var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2;");
 
@@ -170,8 +170,8 @@ internal static class EndpointParameterEmitter
         // Invoke ResolveJsonBodyOrService method to resolve the
         // type from DI if it exists. Otherwise, resolve the parameter
         // as a body parameter.
-        var assigningCode = $"await {endpointParameter.Name}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
-        var resolveJsonBodyOrServiceResult = $"{endpointParameter.Name}_resolveJsonBodyOrServiceResult";
+        var assigningCode = $"await {endpointParameter.SymbolName}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
+        var resolveJsonBodyOrServiceResult = $"{endpointParameter.SymbolName}_resolveJsonBodyOrServiceResult";
         codeWriter.WriteLine($"var {resolveJsonBodyOrServiceResult} = {assigningCode};");
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
 
@@ -238,12 +238,12 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
-    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.Name} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
-    private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_local";
-    private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_temp";
+    private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.SymbolName} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
+    private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_local";
+    private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_temp";
 
-    private static string EmitParsedTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_parsed_temp";
-    private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.Name}_raw";
+    private static string EmitParsedTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_parsed_temp";
+    private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_raw";
 
     public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
     {

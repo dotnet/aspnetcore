@@ -77,7 +77,7 @@ internal class Endpoint
                     Diagnostics.Add(Diagnostic.Create(
                         DiagnosticDescriptors.UnableToResolveParameterDescriptor,
                         Operation.Syntax.GetLocation(),
-                        parameter.Name));
+                        parameter.SymbolName));
                     break;
             }
 
