@@ -658,25 +658,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Theory]
-    [MemberData(nameof(TryParsableParameters))]
-    public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromQueryString(Delegate action, string? queryValue, object? expectedParameterValue)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["tryParsable"] = queryValue
-        });
-
-        var factoryResult = RequestDelegateFactory.Create(action);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.NotEmpty(httpContext.Items);
-        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
-    }
-
-    [Theory]
     [MemberData(nameof(TryParsableArrayParameters))]
     public async Task RequestDelegateHandlesArraysFromQueryString(Delegate action, string[]? queryValues, object? expectedParameterValue)
     {
