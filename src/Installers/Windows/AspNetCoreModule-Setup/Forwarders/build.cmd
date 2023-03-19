@@ -1,6 +1,9 @@
 SET objDir=%1
 SET binDir=%2
 
+mkdir %objDir%
+mkdir %binDir%
+
 cl /c /Fo%objDir%\aspnetcorev2_arm64.obj empty.cpp
 cl /c /arm64EC /Fo%objDir%\aspnetcorev2_x64.obj empty.cpp
 
