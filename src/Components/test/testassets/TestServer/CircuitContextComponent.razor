@@ -1,0 +1,79 @@
+﻿@using Microsoft.JSInterop;
+
+@implements IDisposable
+
+@inject IJSRuntime JS
+@inject TestCircuitContextAccessor CircuitContextAccessor
+
+<h1>Circuit Context</h1>
+
+<button id="trigger-click-event-button" type="button" @onclick="OnClickEvent">Trigger event</button>
+
+@foreach (var entry in _hasCircuitContextByEventName)
+{
+    <p>
+        @entry.Key: <span id="circuit-context-result-@entry.Key">@entry.Value</span>
+    </p>
+}
+
+@code {
+    private readonly DotNetObjectReference<CircuitContextComponent> _selfRef;
+    private readonly Dictionary<string, bool> _hasCircuitContextByEventName = new();
+
+    public CircuitContextComponent()
+    {
+        _selfRef = DotNetObjectReference.Create(this);
+    }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        RecordHasCircuitContext(nameof(SetParametersAsync));
+        await base.SetParametersAsync(parameters);
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        RecordHasCircuitContext(nameof(OnInitializedAsync));
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            RecordHasCircuitContext(nameof(OnAfterRenderAsync));
+
+            await JS.InvokeVoidAsync("circuitContextTest.invokeDotNetMethod", _selfRef);
+
+            StateHasChanged();
+        }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        RecordHasCircuitContext(nameof(OnParametersSetAsync));
+        return Task.CompletedTask;
+    }
+
+    private Task OnClickEvent()
+    {
+        RecordHasCircuitContext(nameof(OnClickEvent));
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public void InvokeDotNet()
+    {
+        RecordHasCircuitContext(nameof(InvokeDotNet));
+    }
+
+    private void RecordHasCircuitContext(string eventName)
+    {
+        _hasCircuitContextByEventName[eventName] = CircuitContextAccessor.HasCircuitContext;
+    }
+
+    public void Dispose()
+    {
+        _selfRef.Dispose();
+    }
+}

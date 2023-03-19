@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -77,7 +81,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.WebAssemblyPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -125,7 +129,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.ServerPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -150,8 +154,8 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.ServerPrerendered);
-        ComponentRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext, RenderMode.WebAssemblyPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
+        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -179,26 +183,18 @@ public class PersistComponentStateTagHelperTest
 
     private ViewContext GetViewContext()
     {
-        var htmlContent = new HtmlContentBuilder().AppendHtml("Hello world");
-        var renderer = Mock.Of<IComponentRenderer>(c =>
-            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>()) == new ValueTask<IHtmlContent>(htmlContent));
-
         var httpContext = new DefaultHttpContext
         {
             RequestServices = new ServiceCollection()
-                .AddSingleton(renderer)
-                .AddSingleton(new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance))
-                .AddSingleton<HtmlRenderer>()
-                .AddSingleton(_ephemeralProvider)
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .AddSingleton(HtmlEncoder.Default)
-                .AddScoped<IViewBufferScope, TestViewBufferScope>()
+                .AddScoped(_ => Mock.Of<IDataProtectionProvider>(
+                    x => x.CreateProtector(It.IsAny<string>()) == _protector))
+                .AddLogging()
+                .AddScoped<ComponentStatePersistenceManager>()
+                .AddScoped<HtmlRenderer>()
+                .AddScoped<IComponentPrerenderer, ComponentPrerenderer>()
                 .BuildServiceProvider(),
         };
 
-        return new ViewContext
-        {
-            HttpContext = httpContext,
-        };
+        return new ViewContext { HttpContext = httpContext };
     }
 }

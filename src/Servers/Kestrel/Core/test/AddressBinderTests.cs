@@ -172,7 +172,7 @@ public class AddressBinderTests
             endpoint => throw new AddressInUseException("already in use"));
 
         await Assert.ThrowsAsync<IOException>(() =>
-            AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None));
+            AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, CancellationToken.None));
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public class AddressBinderTests
             logger,
             endpoint => Task.CompletedTask);
 
-        var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        var bindTask = AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, CancellationToken.None);
         Assert.True(bindTask.IsCompletedSuccessfully);
 
         var log = Assert.Single(logger.Messages);
@@ -221,7 +221,7 @@ public class AddressBinderTests
 
         addressBindContext.ServerAddressesFeature.PreferHostingUrls = true;
 
-        var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        var bindTask = AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, CancellationToken.None);
         Assert.True(bindTask.IsCompletedSuccessfully);
 
         var log = Assert.Single(logger.Messages);
@@ -247,7 +247,7 @@ public class AddressBinderTests
             });
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            AddressBinder.BindAsync(options.ListenOptions, addressBindContext, new CancellationToken(true)));
+            AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, new CancellationToken(true)));
     }
 
     [Theory]
@@ -284,7 +284,7 @@ public class AddressBinderTests
                 return Task.CompletedTask;
             });
 
-        await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        await AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, CancellationToken.None);
 
         Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
         Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
@@ -315,7 +315,7 @@ public class AddressBinderTests
                 return Task.CompletedTask;
             });
 
-        await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        await AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, CancellationToken.None);
 
         Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
     }

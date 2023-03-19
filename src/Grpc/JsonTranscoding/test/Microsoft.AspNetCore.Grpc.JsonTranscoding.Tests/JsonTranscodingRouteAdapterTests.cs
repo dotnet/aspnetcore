@@ -73,7 +73,7 @@ public class JsonTranscodingRouteAdapterTests
         var pattern = HttpRoutePattern.Parse("/a:foo");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
-        Assert.Equal("/a", adapter.ResolvedRouteTemplate);
+        Assert.Equal("/a:foo", adapter.ResolvedRouteTemplate);
         Assert.Empty(adapter.RewriteVariableActions);
     }
 
@@ -133,12 +133,31 @@ public class JsonTranscodingRouteAdapterTests
         var pattern = HttpRoutePattern.Parse("/{x.y.z=a/**/b}/c/d");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
-        Assert.Equal("/a/{**__Complex_x.y.z_1:regex(b/c/d$)}", adapter.ResolvedRouteTemplate);
+        Assert.Equal("/a/{**__Complex_x.y.z_1:regex(/b/c/d$)}", adapter.ResolvedRouteTemplate);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.RouteValues = new RouteValueDictionary
         {
             { "__Complex_x.y.z_1", "my/value/b/c/d" }
+        };
+
+        adapter.RewriteVariableActions[0](httpContext);
+
+        Assert.Equal("a/my/value/b", httpContext.Request.RouteValues["x.y.z"]);
+    }
+
+    [Fact]
+    public void ParseComplexPrefixSuffixCatchAllVerb()
+    {
+        var pattern = HttpRoutePattern.Parse("/{x.y.z=a/**/b}/c/d:verb");
+        var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
+
+        Assert.Equal("/a/{**__Complex_x.y.z_1:regex(/b/c/d:verb$)}", adapter.ResolvedRouteTemplate);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues = new RouteValueDictionary
+        {
+            { "__Complex_x.y.z_1", "my/value/b/c/d:verb" }
         };
 
         adapter.RewriteVariableActions[0](httpContext);
@@ -213,11 +232,58 @@ public class JsonTranscodingRouteAdapterTests
     }
 
     [Fact]
-    public void ParseCatchAllVerb()
+    public void ParseCatchAllDiscardVerb()
     {
         var pattern = HttpRoutePattern.Parse("/a/{b=*}/**:verb");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
-        Assert.Equal("/a/{b}/{**__Discard_2}", adapter.ResolvedRouteTemplate);
+        Assert.Equal("/a/{b}/{**__Discard_2:regex(:verb$)}", adapter.ResolvedRouteTemplate);
+    }
+
+    [Fact]
+    public void ParseCatchAllParameterVerb()
+    {
+        var pattern = HttpRoutePattern.Parse("/v1/greeter/{name=**}:verb");
+        var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
+
+        Assert.Equal("/v1/greeter/{**__Complex_name_2:regex(:verb$)}", adapter.ResolvedRouteTemplate);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues = new RouteValueDictionary
+        {
+            { "__Complex_name_2", "test/name:verb" }
+        };
+
+        adapter.RewriteVariableActions[0](httpContext);
+
+        Assert.Equal("test/name", httpContext.Request.RouteValues["name"]);
+    }
+
+    [Fact]
+    public void ParseCatchAllParameterVerb_TrailingSlash()
+    {
+        var pattern = HttpRoutePattern.Parse("/v1/greeter/{name=**}:verb");
+        var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
+
+        Assert.Equal("/v1/greeter/{**__Complex_name_2:regex(:verb$)}", adapter.ResolvedRouteTemplate);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues = new RouteValueDictionary
+        {
+            { "__Complex_name_2", "test/name/:verb" }
+        };
+
+        adapter.RewriteVariableActions[0](httpContext);
+
+        Assert.Equal("test/name/", httpContext.Request.RouteValues["name"]);
+    }
+
+    [Fact]
+    public void ParseParameterVerb()
+    {
+        var pattern = HttpRoutePattern.Parse("/v1/greeter/{name}:verb");
+        var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
+
+        Assert.Equal("/v1/greeter/{name}:verb", adapter.ResolvedRouteTemplate);
     }
 }

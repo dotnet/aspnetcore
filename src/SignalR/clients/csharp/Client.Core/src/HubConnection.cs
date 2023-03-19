@@ -641,7 +641,8 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.SendingCancellation(_logger, irq.InvocationId);
 
-                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken).ConfigureAwait(false);
+                    // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
+                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1010,6 +1011,11 @@ public partial class HubConnection : IAsyncDisposable
                 // The server can't receive a response, so we just drop the message and log
                 // REVIEW: Is this the right approach?
                 Log.ArgumentBindingFailure(_logger, bindingFailure.InvocationId, bindingFailure.Target, bindingFailure.BindingFailure.SourceException);
+
+                if (!string.IsNullOrEmpty(bindingFailure.InvocationId))
+                {
+                    await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, "Client failed to parse argument(s)."), cancellationToken: default).ConfigureAwait(false);
+                }
                 break;
             case InvocationMessage invocation:
                 Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);

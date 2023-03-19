@@ -48,6 +48,15 @@ public class ComponentStatePersistenceManager
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
+        => PersistStateAsync(store, renderer.Dispatcher);
+
+    /// <summary>
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
     {
         if (_stateIsPersisted)
         {
@@ -56,7 +65,7 @@ public class ComponentStatePersistenceManager
 
         _stateIsPersisted = true;
 
-        return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
+        return dispatcher.InvokeAsync(PauseAndPersistState);
 
         async Task PauseAndPersistState()
         {

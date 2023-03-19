@@ -44,14 +44,14 @@ public class HttpsTests : LoggedTest
     public void UseHttpsDefaultsToDefaultCert()
     {
         var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         serverOptions.ListenLocalhost(5000, options =>
         {
             options.UseHttps();
         });
 
-        Assert.False(serverOptions.IsDevCertLoaded);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
 
         serverOptions.ListenLocalhost(5001, options =>
         {
@@ -61,7 +61,7 @@ public class HttpsTests : LoggedTest
                 Assert.Null(opt.ServerCertificate);
             });
         });
-        Assert.False(serverOptions.IsDevCertLoaded);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
     }
 
     [Fact]
@@ -115,8 +115,8 @@ public class HttpsTests : LoggedTest
             });
         });
         // Never lazy loaded
-        Assert.False(serverOptions.IsDevCertLoaded);
-        Assert.Null(serverOptions.DefaultCertificate);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
+        Assert.Null(serverOptions.DevelopmentCertificate);
     }
 
     [Fact]
@@ -143,8 +143,8 @@ public class HttpsTests : LoggedTest
             });
         });
         // Never lazy loaded
-        Assert.False(serverOptions.IsDevCertLoaded);
-        Assert.Null(serverOptions.DefaultCertificate);
+        Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
+        Assert.Null(serverOptions.DevelopmentCertificate);
     }
 
     [ConditionalFact]
@@ -409,7 +409,7 @@ public class HttpsTests : LoggedTest
     public async Task Http3_UseHttpsNoArgsWithDefaultCertificate_UseDefaultCertificate()
     {
         var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         IFeatureCollection bindFeatures = null;
         var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
@@ -494,7 +494,7 @@ public class HttpsTests : LoggedTest
     public async Task Http1And2And3_NoUseHttps_MultiplexBindNotCalled()
     {
         var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         var bindCalled = false;
         var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
@@ -528,7 +528,7 @@ public class HttpsTests : LoggedTest
     public async Task Http3_NoUseHttps_Throws()
     {
         var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         var bindCalled = false;
         var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
@@ -564,7 +564,7 @@ public class HttpsTests : LoggedTest
     public async Task Http3_ServerOptionsSelectionCallback_Works()
     {
         var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         IFeatureCollection bindFeatures = null;
         var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
@@ -610,7 +610,7 @@ public class HttpsTests : LoggedTest
     public async Task Http3_TlsHandshakeCallbackOptions_Works()
     {
         var serverOptions = CreateServerOptions();
-        serverOptions.DefaultCertificate = _x509Certificate2;
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         IFeatureCollection bindFeatures = null;
         var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();

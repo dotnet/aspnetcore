@@ -595,7 +595,7 @@ public class WebApplicationTests
     public void ContentRootIsBaseDirectoryWhenCurrentIsSpecialFolderSystem()
     {
         var options = new RemoteInvokeOptions();
-        options.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System);
+        options.StartInfo.WorkingDirectory = Environment.SystemDirectory;
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {

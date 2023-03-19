@@ -6,7 +6,7 @@
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
 /// <summary>
-/// A context for action filters, specifically <see cref="IActionFilter.OnActionExecuted"/> and
+/// A context for action filters, specifically <see cref="IActionFilter.OnActionExecuting"/> and
 /// <see cref="IAsyncActionFilter.OnActionExecutionAsync"/> calls.
 /// </summary>
 public class ActionExecutingContext : FilterContext

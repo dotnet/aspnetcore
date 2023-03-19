@@ -1,1 +1,20 @@
 #nullable enable
+*REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
+Microsoft.AspNetCore.Components.Web.HtmlComponent
+Microsoft.AspNetCore.Components.Web.HtmlComponent.ToHtmlString() -> string!
+Microsoft.AspNetCore.Components.Web.HtmlComponent.WaitForQuiescenceAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Web.HtmlComponent.WriteHtmlTo(System.IO.TextWriter! output) -> void
+Microsoft.AspNetCore.Components.Web.HtmlRenderer
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>() -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispose() -> void
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
+Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlComponent!>!
+static Microsoft.AspNetCore.Components.Web.HtmlComponent.Empty.get -> Microsoft.AspNetCore.Components.Web.HtmlComponent!

@@ -36,7 +36,6 @@
     <Compile Include="Bundle.wxs" />
     <Compile Include="DotNetCore.wxs" />
     <Compile Include="SharedFramework.wxs" />
-    <EmbeddedResource Include="thm.wxl" />
   </ItemGroup>
 
   <ItemGroup>

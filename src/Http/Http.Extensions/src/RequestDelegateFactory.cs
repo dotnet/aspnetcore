@@ -826,10 +826,10 @@ public static partial class RequestDelegateFactory
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
         }
         else if (factoryContext.DisableInferredFromBody && (
-                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
-                 parameter.ParameterType == typeof(string[]) ||
+            parameter.ParameterType == typeof(string[]) ||
                  parameter.ParameterType == typeof(StringValues) ||
-                 parameter.ParameterType == typeof(StringValues?)))
+                 parameter.ParameterType == typeof(StringValues?) ||
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues/StringValues?, and DisableInferredFromBody is true
 

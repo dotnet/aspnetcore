@@ -50,7 +50,7 @@ internal sealed class HubCallerClients : IHubCallerClients
     {
         if (!InvokeAllowed)
         {
-            return new NoInvokeSingleClientProxy(_hubClients.Client(_connectionId));
+            return new NoInvokeSingleClientProxy(_hubClients.Client(connectionId));
         }
         return new SingleClientProxy(_hubClients.Client(connectionId), this);
     }

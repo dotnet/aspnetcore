@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
 using System.Net.Security;
 using Microsoft.AspNetCore.Connections;
@@ -179,7 +178,14 @@ internal sealed class TransportManager
 
     public Task StopEndpointsAsync(List<EndpointConfig> endpointsToStop, CancellationToken cancellationToken)
     {
-        var transportsToStop = _transports.Where(t => t.EndpointConfig != null && endpointsToStop.Contains(t.EndpointConfig)).ToList();
+        var transportsToStop = new List<ActiveTransport>();
+        foreach (var t in _transports)
+        {
+            if (t.EndpointConfig is not null && endpointsToStop.Contains(t.EndpointConfig))
+            {
+                transportsToStop.Add(t);
+            }
+        }
         return StopTransportsAsync(transportsToStop, cancellationToken);
     }
 

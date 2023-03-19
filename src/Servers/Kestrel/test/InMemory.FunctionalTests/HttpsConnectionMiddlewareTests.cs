@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
@@ -70,6 +71,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
         var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
         var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
+        options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -91,6 +93,28 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task SslStreamIsAvailable()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ISslStreamFeature>();
+            Assert.NotNull(feature);
+            Assert.NotNull(feature.SslStream);
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
+    [Fact]
     public async Task HandshakeDetailsAreAvailable()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -103,6 +127,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
+            Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
             Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.

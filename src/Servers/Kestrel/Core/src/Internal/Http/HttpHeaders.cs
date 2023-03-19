@@ -44,8 +44,11 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     {
         get
         {
-            TryGetValueFast(key, out var value);
-            return value;
+            if (TryGetValueFast(key, out var value))
+            {
+                return value;
+            }
+            return StringValues.Empty;
         }
         set
         {
@@ -95,7 +98,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         throw new ArgumentException();
     }
 
-    protected static void ThrowKeyNotFoundException()
+    private static void ThrowKeyNotFoundException()
     {
         throw new KeyNotFoundException();
     }

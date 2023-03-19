@@ -78,7 +78,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                     .UseKestrel(options =>
                     {
                         configureKestrel(options);
-                        _listenOptions = options.ListenOptions.First();
+                        _listenOptions = options.GetListenOptions().First();
                     })
                     .ConfigureServices(services =>
                     {
