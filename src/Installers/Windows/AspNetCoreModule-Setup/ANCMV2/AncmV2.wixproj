@@ -81,4 +81,8 @@
                       '$(PackageIconFullPath)' ^
                       '$(PackageLicenseExpression)' " />
   </Target>
+  
+  <Target Name="BeforeBuild">
+    <MSBuild Projects="..\Forwarders\build.proj" />
+  </Target>
 </Project>
