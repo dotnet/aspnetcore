@@ -98,9 +98,9 @@ internal sealed class OpenApiGenerator
     {
         var responses = new OpenApiResponses();
         var responseType = method.ReturnType;
-        if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(responseType, out var coercedAwaitableInfo))
         {
-            responseType = awaitableInfo.ResultType;
+            responseType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         if (typeof(IResult).IsAssignableFrom(responseType))
