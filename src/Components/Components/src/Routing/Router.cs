@@ -280,13 +280,18 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     Task IHandleAfterRender.OnAfterRenderAsync()
     {
+        return EnableNavigationInterceptionThenScrollToLocationHash();
+    }
+
+    private async Task EnableNavigationInterceptionThenScrollToLocationHash()
+    {
         if (!_navigationInterceptionEnabled)
         {
             _navigationInterceptionEnabled = true;
-            return NavigationInterception.EnableNavigationInterceptionAsync();
+            await NavigationInterception.EnableNavigationInterceptionAsync();
         }
 
-        return ScrollToLocationHash();
+        await ScrollToLocationHash();
     }
 
     private Task ScrollToLocationHash()
