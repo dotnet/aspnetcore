@@ -52,6 +52,27 @@ public class CorsEndpointConventionBuilderExtensionsTests
     }
 
     [Fact]
+    public void RequireCors_NoParameter_MetadataAdded()
+    {
+        // Arrange
+        var testConventionBuilder = new TestEndpointConventionBuilder();
+
+        // Act
+        testConventionBuilder.RequireCors();
+
+        // Assert
+        var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
+
+        var endpointModel = new TestEndpointBuilder();
+        addCorsPolicy(endpointModel);
+        var endpoint = endpointModel.Build();
+
+        var metadata = endpoint.Metadata.GetMetadata<IEnableCorsAttribute>();
+        Assert.NotNull(metadata);
+        Assert.Null(metadata.PolicyName);
+    }
+
+    [Fact]
     public void RequireCors_ChainedCall_ReturnedBuilderIsDerivedType()
     {
         // Arrange
