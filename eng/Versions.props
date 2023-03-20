@@ -127,14 +127,14 @@
     <MicrosoftNETCorePlatformsVersion>8.0.0-preview.3.23168.2</MicrosoftNETCorePlatformsVersion>
     <MicrosoftBclAsyncInterfacesVersion>8.0.0-preview.3.23168.2</MicrosoftBclAsyncInterfacesVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>8.0.0-preview.3.23166.2</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-preview.3.23166.2</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>8.0.0-preview.3.23170.4</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-preview.3.23170.4</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.23153.1</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.23153.1</MicrosoftDotNetBuildTasksTemplatingVersion>
