@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,8 @@ public class EmbeddedFileProvider : IFileProvider
     /// </summary>
     /// <param name="assembly">The assembly that contains the embedded resources.</param>
     /// <param name="baseNamespace">The base namespace that contains the embedded resources.</param>
+    [UnconditionalSuppressMessage("SingleFile", "IL3000:Assembly.Location",
+        Justification = "The code handles if the Assembly.Location is empty. Workaround https://github.com/dotnet/runtime/issues/83607")]
     public EmbeddedFileProvider(Assembly assembly, string? baseNamespace)
     {
         ArgumentNullThrowHelper.ThrowIfNull(assembly);
@@ -52,11 +55,12 @@ public class EmbeddedFileProvider : IFileProvider
 
         _lastModified = DateTimeOffset.UtcNow;
 
-        if (!string.IsNullOrEmpty(_assembly.Location))
+        var assemblyLocation = assembly.Location;
+        if (!string.IsNullOrEmpty(assemblyLocation))
         {
             try
             {
-                _lastModified = File.GetLastWriteTimeUtc(_assembly.Location);
+                _lastModified = File.GetLastWriteTimeUtc(assemblyLocation);
             }
             catch (PathTooLongException)
             {

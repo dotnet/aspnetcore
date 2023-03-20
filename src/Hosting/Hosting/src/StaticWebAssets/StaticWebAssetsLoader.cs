@@ -73,7 +73,8 @@ public class StaticWebAssetsLoader
             return null;
         }
         var assembly = Assembly.Load(environment.ApplicationName);
-        var basePath = string.IsNullOrEmpty(assembly.Location) ? AppContext.BaseDirectory : Path.GetDirectoryName(assembly.Location);
+        var assemblyLocation = assembly.Location;
+        var basePath = string.IsNullOrEmpty(assemblyLocation) ? AppContext.BaseDirectory : Path.GetDirectoryName(assemblyLocation);
         return Path.Combine(basePath!, $"{environment.ApplicationName}.staticwebassets.runtime.json");
     }
 }
