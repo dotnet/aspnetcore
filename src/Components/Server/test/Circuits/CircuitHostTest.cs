@@ -157,6 +157,8 @@ public class CircuitHostTest
         var handler2 = new Mock<CircuitHandler>(MockBehavior.Strict);
         var sequence = new MockSequence();
 
+        SetupMockInboundActivityHandlers(sequence, handler1, handler2);
+
         handler1
             .InSequence(sequence)
             .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), cancellationToken))
@@ -242,6 +244,8 @@ public class CircuitHostTest
         var tcs = new TaskCompletionSource();
         var reportedErrors = new List<UnhandledExceptionEventArgs>();
 
+        SetupMockInboundActivityHandler(handler);
+
         handler
             .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
             .Returns(tcs.Task)
@@ -283,6 +287,8 @@ public class CircuitHostTest
         var handler1 = new Mock<CircuitHandler>(MockBehavior.Strict);
         var handler2 = new Mock<CircuitHandler>(MockBehavior.Strict);
         var sequence = new MockSequence();
+
+        SetupMockInboundActivityHandlers(sequence, handler1, handler2);
 
         handler1
             .InSequence(sequence)
@@ -405,6 +411,26 @@ public class CircuitHostTest
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
             Mock.Of<IClientProxy>());
+    }
+
+    private static void SetupMockInboundActivityHandlers(MockSequence sequence, params Mock<CircuitHandler>[] circuitHandlers)
+    {
+        for (var i = circuitHandlers.Length - 1; i >= 0; i--)
+        {
+            circuitHandlers[i]
+                .InSequence(sequence)
+                .Setup(h => h.CreateInboundActivityHandler(It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
+                .Returns((Func<CircuitInboundActivityContext, Task> next) => next)
+                .Verifiable();
+        }
+    }
+
+    private static void SetupMockInboundActivityHandler(Mock<CircuitHandler> circuitHandler)
+    {
+        circuitHandler
+            .Setup(h => h.CreateInboundActivityHandler(It.IsAny<Func<CircuitInboundActivityContext, Task>>()))
+            .Returns((Func<CircuitInboundActivityContext, Task> next) => next)
+            .Verifiable();
     }
 
     private class TestRemoteRenderer : RemoteRenderer
