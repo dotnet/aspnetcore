@@ -156,13 +156,13 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
     if (!shouldContinueNavigation) {
       return;
     }
-  } 
+  }
 
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
   // To avoid ugly flickering effects, we don't want to change the scroll position until
-  // we render the new page. As a best approximation, wait until the next batch. 
+  // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
   if (!replace) {
