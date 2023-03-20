@@ -1504,8 +1504,7 @@
               "src/Azure/AzureAppServices.HostingStartup/",
               "src/Middleware/",
               "src/HttpClientFactory/",
-              "src/SiteExtensions/",
-              "src/DefaultBuilder/"
+              "src/SiteExtensions/"
             ]
           },
           {
@@ -1542,6 +1541,7 @@
           {
             "label": "area-hosting",
             "pathFilter": [
+              "src/DefaultBuilder/",
               "src/Hosting/"
             ]
           }
@@ -3590,6 +3590,40 @@
             "name": "removeLabel",
             "parameters": {
               "label": "pending-ci-rerun"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "wtgodbe"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add area-infrastructure to wtgodbe's PRs",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "area-infrastructure"
             }
           }
         ]

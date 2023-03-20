@@ -192,7 +192,11 @@ internal static class StaticRouteHandlerModelEmitter
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})");
+            // The null suppression operator on the GetArgument(...) call here is required because we'll occassionally be
+            // dealing with nullable types here. We could try to do fancy things to branch the logic here depending on
+            // the nullability, but at the end of the day we are going to call GetArguments(...) - at runtime the nullability
+            // suppression operator doesn't come into play - so its not worth worrying about.
+            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})!");
 
             if (i < endpoint.Parameters.Length - 1)
             {

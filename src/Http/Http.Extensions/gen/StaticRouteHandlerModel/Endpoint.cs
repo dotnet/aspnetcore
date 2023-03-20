@@ -55,7 +55,7 @@ internal class Endpoint
 
         for (var i = 0; i < method.Parameters.Length; i++)
         {
-            var parameter = new EndpointParameter(method.Parameters[i], wellKnownTypes);
+            var parameter = new EndpointParameter(this, method.Parameters[i], wellKnownTypes);
 
             switch (parameter.Source)
             {
@@ -77,7 +77,7 @@ internal class Endpoint
                     Diagnostics.Add(Diagnostic.Create(
                         DiagnosticDescriptors.UnableToResolveParameterDescriptor,
                         Operation.Syntax.GetLocation(),
-                        parameter.Name));
+                        parameter.SymbolName));
                     break;
             }
 

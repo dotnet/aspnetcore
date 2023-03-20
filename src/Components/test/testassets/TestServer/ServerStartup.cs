@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -30,6 +31,10 @@ public class ServerStartup
         });
         services.AddSingleton<ResourceRequestLog>();
         services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();
+
+        var circuitContextAccessor = new TestCircuitContextAccessor();
+        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
+        services.AddSingleton(circuitContextAccessor);
 
         // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
         // contention issues.

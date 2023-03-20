@@ -120,11 +120,11 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 24)] = (
+            [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 24));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(0)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(0)!));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Http.Generators.Tests.TestService>();
 
                         if (wasParamCheckFailure)
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Http.Generators.Tests.TestService>();
 
                         if (wasParamCheckFailure)
@@ -173,66 +173,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(httpContext, svc_local));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
-                    }
-
-                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
-                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
-                    return new RequestDelegateResult(targetDelegate, metadata);
-                }),
-            [(@"TestMapActions.cs", 25)] = (
-                (methodInfo, options) =>
-                {
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
-                },
-                (del, options, inferredMetadataResult) =>
-                {
-                    var handler = (System.Func<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>, global::System.String>)del;
-                    EndpointFilterDelegate? filteredInvocation = null;
-
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
-                    {
-                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
-                        {
-                            if (ic.HttpContext.Response.StatusCode == 400)
-                            {
-                                return ValueTask.FromResult<object?>(Results.Empty);
-                            }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(0)));
-                        },
-                        options.EndpointBuilder,
-                        handler.Method);
-                    }
-
-                    Task RequestHandler(HttpContext httpContext)
-                    {
-                        var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
-                        var svc_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
-
-                        if (wasParamCheckFailure)
-                        {
-                            httpContext.Response.StatusCode = 400;
-                            return Task.CompletedTask;
-                        }
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(svc_local);
-                        return httpContext.Response.WriteAsync(result);
-                    }
-
-                    async Task RequestHandlerFiltered(HttpContext httpContext)
-                    {
-                        var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
-                        var svc_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
-
-                        if (wasParamCheckFailure)
-                        {
-                            httpContext.Response.StatusCode = 400;
-                        }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(httpContext, svc_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -249,6 +189,66 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    var handler = (System.Func<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>, global::System.String>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(0)!));
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    Task RequestHandler(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
+                        var svc_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return Task.CompletedTask;
+                        }
+                        httpContext.Response.ContentType ??= "text/plain";
+                        var result = handler(svc_local);
+                        return httpContext.Response.WriteAsync(result);
+                    }
+
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        // Endpoint Parameter: svc (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
+                        var svc_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                        }
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(httpContext, svc_local));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 27)] = (
+                (methodInfo, options) =>
+                {
+                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService?, global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService?>(0), ic.GetArgument<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(1)));
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService?>(0)!, ic.GetArgument<global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>>(1)!));
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -269,9 +269,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetService<Microsoft.AspNetCore.Http.Generators.Tests.TestService?>();;
-                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svcs_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
 
                         if (wasParamCheckFailure)
@@ -287,9 +287,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService?, IsOptional = True, IsParsable = False, IsArray = False, Source = Service)
                         var svc_local = httpContext.RequestServices.GetService<Microsoft.AspNetCore.Http.Generators.Tests.TestService?>();;
-                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, Source = Service)
+                        // Endpoint Parameter: svcs (Type = System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>, IsOptional = False, IsParsable = False, IsArray = False, Source = Service)
                         var svcs_local = httpContext.RequestServices.GetRequiredService<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Generators.Tests.TestService>>();
 
                         if (wasParamCheckFailure)

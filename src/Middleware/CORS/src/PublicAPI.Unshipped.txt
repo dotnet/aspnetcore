@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions.RequireCors<TBuilder>(this TBuilder builder) -> TBuilder

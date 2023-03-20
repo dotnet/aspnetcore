@@ -65,20 +65,6 @@ internal static class RequestDelegateGeneratorSources
             => T.TryParse(s, provider, out result);
 """;
 
-    public static string TryResolveJsonBodyOrServiceAsyncMethod => """
-        private static ValueTask<(bool, T?)> TryResolveJsonBodyOrServiceAsync<T>(HttpContext httpContext, bool isOptional, IServiceProviderIsService? serviceProviderIsService = null)
-        {
-            if (serviceProviderIsService is not null)
-            {
-                if (serviceProviderIsService.IsService(typeof(T)))
-                {
-                    return new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
-                }
-            }
-            return TryResolveBodyAsync<T>(httpContext, isOptional);
-        }
-""";
-
     public static string BindAsyncMethod => """
         private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
             where T : class, IBindableFromHttpContext<T>
@@ -106,6 +92,20 @@ internal static class RequestDelegateGeneratorSources
             }
 
             return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
+        }
+""";
+
+    public static string ResolveJsonBodyOrServiceMethod => """
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
+        {
+            if (serviceProviderIsService is not null)
+            {
+                if (serviceProviderIsService.IsService(typeof(T)))
+                {
+                    return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
+                }
+            }
+            return static (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, isOptional);
         }
 """;
 

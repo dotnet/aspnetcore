@@ -136,11 +136,11 @@
     <MicrosoftEntityFrameworkCoreVersion>8.0.0-preview.3.23152.4</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-preview.3.23152.4</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.23159.1</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.23159.1</MicrosoftDotNetBuildTasksTemplatingVersion>
-    <MicrosoftDotNetRemoteExecutorVersion>8.0.0-beta.23159.1</MicrosoftDotNetRemoteExecutorVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.23168.1</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.23168.1</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetRemoteExecutorVersion>8.0.0-beta.23168.1</MicrosoftDotNetRemoteExecutorVersion>
     <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>8.0.0-alpha.1.23160.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>8.0.0-alpha.1.23167.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
     <!-- Packages from dotnet/xdt -->
     <MicrosoftWebXdtVersion>7.0.0-preview.22423.2</MicrosoftWebXdtVersion>
   </PropertyGroup>
@@ -257,12 +257,12 @@
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.5.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.21.6</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.51.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.51.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.51.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.51.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.51.0</GrpcToolsVersion>
+    <GoogleProtobufVersion>3.22.0</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.52.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.52.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.52.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.52.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.52.0</GrpcToolsVersion>
     <DuendeIdentityServerAspNetIdentityVersion>6.0.4</DuendeIdentityServerAspNetIdentityVersion>
     <DuendeIdentityServerEntityFrameworkVersion>6.0.4</DuendeIdentityServerEntityFrameworkVersion>
     <DuendeIdentityServerVersion>6.0.4</DuendeIdentityServerVersion>

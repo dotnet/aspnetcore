@@ -151,4 +151,37 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "fromRoute");
     }
+
+    public static object[][] MapAction_ExplicitRouteParam_RouteNames_Data
+    {
+        get
+        {
+            return new[]
+            {
+                new object[] { "name" },
+                new object[] { "_" },
+                new object[] { "123" },
+                new object[] { "💩" },
+                new object[] { "\r" },
+                new object[] { "\x00E7"  },
+                new object[] { "!!" },
+                new object[] { "\\" },
+                new object[] { "\'" },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(MapAction_ExplicitRouteParam_RouteNames_Data))]
+    public async Task MapAction_ExplicitRouteParam_RouteNames(string routeParameterName)
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""app.MapGet(@"/{{{routeParameterName}}}", ([FromRoute(Name=@"{{routeParameterName}}")] string routeValue) => routeValue);""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[routeParameterName] = "test";
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "test", 200);
+    }
 }
