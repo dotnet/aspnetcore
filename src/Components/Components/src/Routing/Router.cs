@@ -298,7 +298,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         var hashIndex = _locationAbsolute.IndexOf("#", StringComparison.CurrentCultureIgnoreCase);
 
-        if (_locationAbsolute.Length > hashIndex + 1)
+        if (hashIndex > -1 && _locationAbsolute.Length > hashIndex + 1)
         {
             var elementId = _locationAbsolute[(hashIndex + 1)..];
 
