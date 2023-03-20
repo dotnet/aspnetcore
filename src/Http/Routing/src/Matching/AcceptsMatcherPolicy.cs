@@ -236,9 +236,14 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             edges.Add(string.Empty, anyEndpoints.ToList());
         }
 
-        return edges
-            .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
-            .ToArray();
+        var result = new PolicyNodeEdge[edges.Count];
+        var index = 0;
+        foreach (var kvp in edges)
+        {
+            result[index] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            index++;
+        }
+        return result;
     }
 
     private static Endpoint CreateRejectionEndpoint()
@@ -258,10 +263,13 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.
-        var ordered = edges
-            .Select(e => (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination))
-            .OrderBy(e => GetScore(e.mediaType))
-            .ToArray();
+        var ordered = new (ReadOnlyMediaTypeHeaderValue mediaType, int destination)[edges.Count];
+        for (var i = 0; i < edges.Count; i++)
+        {
+            var e = edges[i];
+            ordered[i] = (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination);
+        }
+        Array.Sort(ordered, static (left, right) => GetScore(left.mediaType).CompareTo(GetScore(right.mediaType)));
 
         // If any edge matches all content types, then treat that as the 'exit'. This will
         // always happen because we insert a 415 endpoint.

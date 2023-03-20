@@ -134,10 +134,10 @@ public class StringWithQualityHeaderValue
     /// <param name="input">The value to parse.</param>
     /// <param name="parsedValue">The parsed value.</param>
     /// <returns><see langword="true"/> if input is a valid <see cref="StringWithQualityHeaderValue"/>, otherwise <see langword="false"/>.</returns>
-    public static bool TryParse(StringSegment input, [NotNullWhen(true)] out StringWithQualityHeaderValue parsedValue)
+    public static bool TryParse(StringSegment input, [NotNullWhen(true)] out StringWithQualityHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
+        return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
     }
 
     /// <summary>

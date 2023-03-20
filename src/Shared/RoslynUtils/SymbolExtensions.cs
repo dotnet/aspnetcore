@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,6 +12,39 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
 internal static class SymbolExtensions
 {
+    public static ITypeSymbol UnwrapTypeSymbol(this ITypeSymbol typeSymbol, bool unwrapArray = false, bool unwrapNullable = false)
+    {
+        INamedTypeSymbol? unwrappedTypeSymbol = null;
+
+        // If it is an array, and unwrapArray = true, unwrap it before unwrapping nullable.
+        if (unwrapArray && typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            unwrappedTypeSymbol = arrayTypeSymbol.ElementType as INamedTypeSymbol;
+        }
+        else if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+        {
+            unwrappedTypeSymbol = namedTypeSymbol;
+        }
+
+        // If it is nullable, unwrap it.
+        if (unwrapNullable && unwrappedTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+        {
+            unwrappedTypeSymbol = unwrappedTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
+        }
+
+        return unwrappedTypeSymbol ?? typeSymbol;
+    }
+
+    public static IEnumerable<ITypeSymbol> GetThisAndBaseTypes(this ITypeSymbol? type)
+    {
+        var current = type;
+        while (current != null)
+        {
+            yield return current;
+            current = current.BaseType;
+        }
+    }
+
     public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attributeType)
     {
         foreach (var attributeData in symbol.GetAttributes())
@@ -82,4 +116,25 @@ internal static class SymbolExtensions
 
     public static ISymbol? GetAnySymbol(this SymbolInfo info)
         => info.Symbol ?? info.CandidateSymbols.FirstOrDefault();
+
+    public static bool IsOptional(this IParameterSymbol parameterSymbol) =>
+        parameterSymbol.Type is INamedTypeSymbol
+        {
+            NullableAnnotation: NullableAnnotation.Annotated
+        } || parameterSymbol.HasExplicitDefaultValue;
+
+    public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? argumentValue)
+    {
+        argumentValue = default;
+        foreach (var namedArgument in attribute.NamedArguments)
+        {
+            if (string.Equals(namedArgument.Key, argumentName, StringComparison.Ordinal))
+            {
+                var routeParameterNameConstant = namedArgument.Value;
+                argumentValue = (T?)routeParameterNameConstant.Value;
+                return true;
+            }
+        }
+        return false;
+    }
 }

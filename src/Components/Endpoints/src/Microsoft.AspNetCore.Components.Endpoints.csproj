@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Server side rendering for ASP.NET Core Components.</Description>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
+
+</Project>

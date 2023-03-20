@@ -112,4 +112,24 @@ public class HeaderDictionaryTests
 
         Assert.Equal(new[] { "value " }, result);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ReturnsCorrectStringValuesEmptyForMissingHeaders(bool withStore)
+    {
+        // Test both with and without HeaderDictionary.Store set.
+        var emptyHeaders = withStore ? new HeaderDictionary(1) : new HeaderDictionary();
+
+        // StringValues.Empty.Equals(default(StringValues)), so we check if the implicit conversion
+        // to string[] returns null or Array.Empty<string>() to tell the difference.
+        Assert.Same(Array.Empty<string>(), (string[])emptyHeaders["Header1"]);
+
+        IHeaderDictionary asIHeaderDictionary = emptyHeaders;
+        Assert.Same(Array.Empty<string>(), (string[])asIHeaderDictionary["Header1"]);
+        Assert.Same(Array.Empty<string>(), (string[])asIHeaderDictionary.Host);
+
+        IDictionary<string, StringValues> asIDictionary = emptyHeaders;
+        Assert.Throws<KeyNotFoundException>(() => asIDictionary["Header1"]);
+    }
 }

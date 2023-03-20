@@ -169,14 +169,12 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
         // UseStartup can be called multiple times. Only run the last one.
         _startupObject = startupType;
 
-        var state = new UseStartupState(startupType);
-
         _builder.ConfigureServices((context, services) =>
         {
             // Run this delegate if the startup type matches
-            if (object.ReferenceEquals(_startupObject, state.StartupType))
+            if (object.ReferenceEquals(_startupObject, startupType))
             {
-                UseStartup(state.StartupType, context, services);
+                UseStartup(startupType, context, services);
             }
         });
 

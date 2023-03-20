@@ -45,7 +45,7 @@ if (-not $wxlFiles) {
     }
 }
 
-$macosHtmlEnFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "en\.lproj\\.+\.html" } # add installer HTML files
+$macosHtmlEnFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "en\.lproj\\.+\.html$" } # add installer HTML files
 $macosHtmlFiles = @()
 if ($macosHtmlEnFiles) {
     $macosHtmlEnFiles | ForEach-Object {
@@ -148,12 +148,17 @@ $locJson = @{
                         }
                     }
                     $sourceFile = ($_.FullName | Resolve-Path -Relative)
+                    $lciFile = $sourceFile + ".lci"
                     if ($continue) {
-                        return @{
+                        $result = @{
                             SourceFile = $sourceFile
                             CopyOption = "LangIDOnPath"
                             OutputPath = $outputPath
                         }
+                        if (Test-Path $lciFile -PathType Leaf) {
+                            $result["LciFile"] = $lciFile
+                        }
+                        return $result
                     }
                 }
             )

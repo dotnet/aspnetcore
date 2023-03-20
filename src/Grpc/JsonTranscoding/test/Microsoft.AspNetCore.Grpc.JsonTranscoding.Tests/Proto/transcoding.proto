@@ -130,6 +130,21 @@ service JsonTranscodingStreaming {
   }
 }
 
+service JsonTranscodingColonRoute {
+  rpc StartFrameImport(HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/frames:startFrameImport",
+      body: "*",
+    };
+  }
+  rpc GetFrameImport(HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/frames:getFrameImport",
+      body: "*",
+    };
+  }
+}
+
 message HelloRequest {
   message SubMessage {
     string subfield = 1;

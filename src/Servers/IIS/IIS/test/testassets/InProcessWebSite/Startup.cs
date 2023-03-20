@@ -425,6 +425,63 @@ public partial class Startup
         await ctx.Response.WriteAsync("EmptyHeaderShouldBeSkipped");
     }
 
+    private Task TestRequestHeaders(HttpContext ctx)
+    {
+        // Test optimized and non-optimized headers behave equivalently
+        foreach (var headerName in new[] { "custom", "Content-Type" })
+        {
+            // StringValues.Empty.Equals(default(StringValues)), so we check if the implicit conversion
+            // to string[] returns null or Array.Empty<string>() to tell the difference.
+            if ((string[])ctx.Request.Headers[headerName] != Array.Empty<string>())
+            {
+                return ctx.Response.WriteAsync($"Failure: '{headerName}' indexer");
+            }
+            if (ctx.Request.Headers.TryGetValue(headerName, out var headerValue) || (string[])headerValue is not null)
+            {
+                return ctx.Response.WriteAsync($"Failure: '{headerName}' TryGetValue");
+            }
+
+            // Both default and StringValues.Empty should unset the header, allowing it to be added again.
+            ArgumentException duplicateKeyException = null;
+            ctx.Request.Headers.Add(headerName, "test");
+            ctx.Request.Headers[headerName] = default;
+            ctx.Request.Headers.Add(headerName, "test");
+            ctx.Request.Headers[headerName] = StringValues.Empty;
+            ctx.Request.Headers.Add(headerName, "test");
+
+            try
+            {
+                // Repeated adds should throw.
+                ctx.Request.Headers.Add(headerName, "test");
+            }
+            catch (ArgumentException ex)
+            {
+                duplicateKeyException = ex;
+                ctx.Request.Headers[headerName] = default;
+            }
+
+            if (duplicateKeyException is null)
+            {
+                return ctx.Response.WriteAsync($"Failure: Repeated '{headerName}' Add did not throw");
+            }
+        }
+
+#if !FORWARDCOMPAT
+        if ((string[])ctx.Request.Headers.ContentType != Array.Empty<string>())
+        {
+            return ctx.Response.WriteAsync("Failure: ContentType property");
+        }
+
+        ctx.Request.Headers.ContentType = default;
+        if ((string[])ctx.Request.Headers.ContentType != Array.Empty<string>())
+        {
+            return ctx.Response.WriteAsync("Failure: ContentType property after setting default");
+        }
+#endif
+
+        return ctx.Response.WriteAsync("Success");
+    }
+
     private async Task ResponseInvalidOrdering(HttpContext ctx)
     {
         if (ctx.Request.Path.Equals("/SetStatusCodeAfterWrite"))

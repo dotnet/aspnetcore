@@ -322,5 +322,8 @@ public partial class HubConnection
 
         [LoggerMessage(88, LogLevel.Warning, "Error returning result for invocation '{InvocationId}' for method '{Target}' because the underlying connection is closed.", EventName = "ErrorSendingInvocationResult")]
         public static partial void ErrorSendingInvocationResult(ILogger logger, string invocationId, string target, Exception exception);
+
+        [LoggerMessage(89, LogLevel.Trace, "Error sending Completion message for stream '{StreamId}'.", EventName = "ErrorSendingStreamCompletion")]
+        public static partial void ErrorSendingStreamCompletion(ILogger logger, string streamId, Exception exception);
     }
 }

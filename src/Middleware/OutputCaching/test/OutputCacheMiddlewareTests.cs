@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using System.Text;
+using System.Text.Unicode;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
@@ -150,7 +153,7 @@ public class OutputCacheMiddlewareTests
     }
 
     [Fact]
-    public void ContentIsNotModified_IfModifiedSince_FallsbackToDateHeader()
+    public void ContentIsNotModified_IfModifiedSince_FallsBackToDateHeader()
     {
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
@@ -329,7 +332,7 @@ public class OutputCacheMiddlewareTests
     }
 
     [Fact]
-    public void StartResponsegAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
+    public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
         var clock = new TestClock
         {
@@ -798,10 +801,8 @@ public class OutputCacheMiddlewareTests
             // Wait for the second request to start before processing the first one
             task2Executing.Wait();
 
-            // Simluate some delay to allow for the second request to run while this one is pending
+            // Simulate some delay to allow for the second request to run while this one is pending
             await Task.Delay(500);
-
-            c.Response.Write("Hello" + responseCounter);
         });
 
         var context1 = TestUtils.CreateTestContext();
@@ -827,34 +828,95 @@ public class OutputCacheMiddlewareTests
     }
 
     [Fact]
+    public async Task Locking_IgnoresNonCacheableResponses()
+    {
+        var responseCounter = 0;
+
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var memoryStream1 = new MemoryStream();
+        var memoryStream2 = new MemoryStream();
+
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(build => build.Cache());
+
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: async c =>
+        {
+            responseCounter++;
+
+            if (responseCounter == 1)
+            {
+                blocker1.SetResult(true);
+            }
+
+            c.Response.Cookies.Append("a", "b");
+            c.Response.Write("Hello" + responseCounter);
+
+            await blocker2.Task;
+        });
+
+        var context1 = TestUtils.CreateTestContext();
+        context1.HttpContext.Request.Method = "GET";
+        context1.HttpContext.Request.Path = "/";
+        context1.HttpContext.Response.Body = memoryStream1;
+
+        var context2 = TestUtils.CreateTestContext();
+        context2.HttpContext.Request.Method = "GET";
+        context2.HttpContext.Request.Path = "/";
+        context2.HttpContext.Response.Body = memoryStream2;
+
+        var task1 = Task.Run(() => middleware.Invoke(context1.HttpContext));
+
+        // Wait for context1 to be processed
+        await blocker1.Task;
+
+        // Start context2
+        var task2 = Task.Run(() => middleware.Invoke(context2.HttpContext));
+
+        // Wait for it to be blocked by the locking feature
+        await Task.Delay(500);
+
+        // Unblock context1
+        blocker2.SetResult(true);
+
+        await Task.WhenAll(task1, task2);
+
+        Assert.Equal(2, responseCounter);
+
+        // Ensure that even though two requests were processed, no result was returned from cache
+        Assert.Equal("Hello1", Encoding.UTF8.GetString(memoryStream1.ToArray()));
+        Assert.Equal("Hello2", Encoding.UTF8.GetString(memoryStream2.ToArray()));
+    }
+
+    [Fact]
     public async Task Locking_ExecuteAllRequestsWhenDisabled()
     {
         var responseCounter = 0;
 
-        var task1Executing = new ManualResetEventSlim(false);
-        var task2Executing = new ManualResetEventSlim(false);
+        var blocker1 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocker2 = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var options = new OutputCacheOptions();
         options.AddBasePolicy(build => build.Cache().SetLocking(false));
 
-        var middleware = TestUtils.CreateTestMiddleware(options: options, next: c =>
+        var middleware = TestUtils.CreateTestMiddleware(options: options, next: async c =>
         {
             responseCounter++;
 
             switch (responseCounter)
             {
                 case 1:
-                    task1Executing.Set();
-                    task2Executing.Wait();
+                    blocker1.SetResult(true);
+                    await blocker2.Task;
                     break;
                 case 2:
-                    task1Executing.Wait();
-                    task2Executing.Set();
+                    await blocker1.Task;
+                    blocker2.SetResult(true);
                     break;
             }
 
             c.Response.Write("Hello" + responseCounter);
-            return Task.CompletedTask;
         });
 
         var context1 = TestUtils.CreateTestContext();

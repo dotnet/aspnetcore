@@ -94,12 +94,8 @@ public static class UseMiddlewareExtensions
             throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoParameters(InvokeMethodName, InvokeAsyncMethodName, nameof(HttpContext)));
         }
 
-        var state = new InvokeMiddlewareState(middleware);
-
         return app.Use(next =>
         {
-            var middleware = state.Middleware;
-
             var ctorArgs = new object[args.Length + 1];
             ctorArgs[0] = next;
             Array.Copy(args, 0, ctorArgs, 1, args.Length);
@@ -267,17 +263,5 @@ public static class UseMiddlewareExtensions
         }
 
         return service;
-    }
-
-    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
-    private readonly struct InvokeMiddlewareState
-    {
-        public InvokeMiddlewareState([DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware)
-        {
-            Middleware = middleware;
-        }
-
-        [DynamicallyAccessedMembers(MiddlewareAccessibility)]
-        public Type Middleware { get; }
     }
 }

@@ -4,22 +4,28 @@
 namespace Microsoft.AspNetCore.Components.Sections;
 
 /// <summary>
-/// Renders content provided by <see cref="SectionContent"/> components with matching <see cref="Name"/>s.
+/// Renders content provided by <see cref="SectionContent"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
-internal sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisposable
+public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisposable
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };
 
-    private string? _subscribedName;
+    private object? _subscribedIdentifier;
     private RenderHandle _renderHandle;
     private SectionRegistry _registry = default!;
     private RenderFragment? _content;
 
     /// <summary>
-    /// Gets or sets the name that determines which <see cref="SectionContent"/> instances will provide
+    /// Gets or sets the <see cref="string"/> ID that determines which <see cref="SectionContent"/> instances will provide
     /// content to this instance.
     /// </summary>
-    [Parameter] public string Name { get; set; } = default!;
+    [Parameter] public string? SectionName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="object"/> ID that determines which <see cref="SectionContent"/> instances will provide
+    /// content to this instance.
+    /// </summary>
+    [Parameter] public object? SectionId { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -31,20 +37,34 @@ internal sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDi
     {
         parameters.SetParameterProperties(this);
 
-        if (string.IsNullOrEmpty(Name))
+        object? identifier;
+
+        if (SectionName is not null && SectionId is not null)
         {
-            throw new InvalidOperationException($"{GetType()} requires a non-empty string parameter '{nameof(Name)}'.");
+            throw new InvalidOperationException($"{nameof(SectionOutlet)} requires that '{nameof(SectionName)}' and '{nameof(SectionId)}' cannot both have non-null values.");
+        }
+        else if (SectionName is not null)
+        {
+            identifier = SectionName;
+        }
+        else if (SectionId is not null)
+        {
+            identifier = SectionId;
+        }
+        else
+        {
+            throw new InvalidOperationException($"{nameof(SectionOutlet)} requires a non-null value either for '{nameof(SectionName)}' or '{nameof(SectionId)}'.");
         }
 
-        if (Name != _subscribedName)
+        if (!object.Equals(identifier, _subscribedIdentifier))
         {
-            if (_subscribedName is not null)
+            if (_subscribedIdentifier is not null)
             {
-                _registry.Unsubscribe(_subscribedName);
+                _registry.Unsubscribe(_subscribedIdentifier);
             }
 
-            _registry.Subscribe(Name, this);
-            _subscribedName = Name;
+            _registry.Subscribe(identifier, this);
+            _subscribedIdentifier = SectionId;
         }
 
         RenderContent();
@@ -74,9 +94,9 @@ internal sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDi
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_subscribedName is not null)
+        if (_subscribedIdentifier is not null)
         {
-            _registry.Unsubscribe(_subscribedName);
+            _registry.Unsubscribe(_subscribedIdentifier);
         }
     }
 }

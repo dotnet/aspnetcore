@@ -101,7 +101,7 @@ jobs:
     # handle key-value variable syntax.
     # example:
     # - [key]: [value]
-    - ${{ if and(eq(variable.name, ''), eq(variable.group, '')) }}:
+    - ${{ if and(eq(variable.name, ''), eq(variable.group, ''), eq(variable.template, '')) }}:
       - ${{ each pair in variable }}:
         - name: ${{ pair.key }}
           value: ${{ pair.value }}
