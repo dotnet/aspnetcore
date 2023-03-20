@@ -17,7 +17,7 @@ internal class EndpointResponse
     public string WrappedResponseType { get; set; }
     public string? ContentType { get; set; }
     public bool IsAwaitable { get; set; }
-    public bool IsVoid { get; set; }
+    public bool HasNoResponse { get; set; }
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
     public bool IsAnonymousType { get; set; }
@@ -30,7 +30,7 @@ internal class EndpointResponse
         ResponseType = UnwrapResponseType(method, out bool isAwaitable, out bool awaitableIsVoid);
         WrappedResponseType = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
         IsAwaitable = isAwaitable;
-        IsVoid = method.ReturnsVoid || awaitableIsVoid;
+        HasNoResponse = method.ReturnsVoid || awaitableIsVoid;
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType(method);
@@ -67,7 +67,7 @@ internal class EndpointResponse
 
     private bool GetIsSerializable() =>
         !IsIResult &&
-        !IsVoid &&
+        !HasNoResponse &&
         ResponseType != null &&
         ResponseType.SpecialType != SpecialType.System_String &&
         ResponseType.SpecialType != SpecialType.System_Object;
@@ -99,11 +99,11 @@ internal class EndpointResponse
             SymbolEqualityComparer.Default.Equals(otherEndpointResponse.ResponseType, ResponseType) &&
             otherEndpointResponse.WrappedResponseType.Equals(WrappedResponseType, StringComparison.Ordinal) &&
             otherEndpointResponse.IsAwaitable == IsAwaitable &&
-            otherEndpointResponse.IsVoid == IsVoid &&
+            otherEndpointResponse.HasNoResponse == HasNoResponse &&
             otherEndpointResponse.IsIResult == IsIResult &&
             string.Equals(otherEndpointResponse.ContentType, ContentType, StringComparison.OrdinalIgnoreCase);
     }
 
     public override int GetHashCode() =>
-        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), WrappedResponseType, IsAwaitable, IsVoid, IsIResult, ContentType);
+        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), WrappedResponseType, IsAwaitable, HasNoResponse, IsIResult, ContentType);
 }

@@ -200,14 +200,14 @@ app.MapGet("/value-task", () => ValueTask.CompletedTask);
                 Assert.Equal("/task", endpointModel.RoutePattern);
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 Assert.True(endpointModel.Response.IsAwaitable);
-                Assert.True(endpointModel.Response.IsVoid);
+                Assert.True(endpointModel.Response.HasNoResponse);
             },
             endpointModel =>
             {
                 Assert.Equal("/value-task", endpointModel.RoutePattern);
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 Assert.True(endpointModel.Response.IsAwaitable);
-                Assert.True(endpointModel.Response.IsVoid);
+                Assert.True(endpointModel.Response.HasNoResponse);
             }));
 
         var httpContext = CreateHttpContext();
