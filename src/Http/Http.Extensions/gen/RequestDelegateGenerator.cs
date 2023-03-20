@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
-namespace Microsoft.AspNetCore.Http.Generators;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 [Generator]
 public sealed class RequestDelegateGenerator : IIncrementalGenerator
