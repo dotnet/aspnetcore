@@ -6,6 +6,8 @@ import '@microsoft/dotnet-js-interop';
 export const domFunctions = {
   focus,
   focusBySelector,
+  focusOnNavigate,
+  scrollToElement
 };
 
 function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
@@ -22,6 +24,15 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
   }
 }
 
+function focusOnNavigate(selector: string): void {
+  let hash = location.hash;
+  let element : HTMLElement | null;
+  element = hash.length > 1 ? document.getElementById(hash.slice(1)) : null;
+  if (!element) {
+    focusBySelector(selector);
+  }
+}
+
 function focusBySelector(selector: string): void {
   const element = document.querySelector(selector) as HTMLElement;
   if (element) {
@@ -33,5 +44,13 @@ function focusBySelector(selector: string): void {
     }
 
     element.focus();
+  }
+}
+
+function scrollToElement(id : string) : void {
+  var element = document.getElementById(id);
+  if (element)
+  {
+    element.scrollIntoView();
   }
 }

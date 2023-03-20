@@ -8,6 +8,7 @@ using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -39,6 +40,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     [Inject] private INavigationInterception NavigationInterception { get; set; }
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -282,6 +284,20 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             _navigationInterceptionEnabled = true;
             return NavigationInterception.EnableNavigationInterceptionAsync();
+        }
+
+        return ScrollToLocationHash();
+    }
+
+    private Task ScrollToLocationHash()
+    {
+        var hashIndex = _locationAbsolute.IndexOf("#", StringComparison.CurrentCultureIgnoreCase);
+
+        if (_locationAbsolute.Length > hashIndex + 1)
+        {
+            var elementId = _locationAbsolute[(hashIndex + 1)..];
+
+            return JSRuntime.InvokeVoidAsync(DomWrapperInterop.ScrollToElement, elementId).AsTask();
         }
 
         return Task.CompletedTask;

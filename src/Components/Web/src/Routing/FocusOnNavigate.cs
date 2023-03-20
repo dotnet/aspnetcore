@@ -56,7 +56,7 @@ public class FocusOnNavigate : ComponentBase
         if (_focusAfterRender)
         {
             _focusAfterRender = false;
-            await JSRuntime.InvokeVoidAsync(DomWrapperInterop.FocusBySelector, Selector);
+            await JSRuntime.InvokeVoidAsync(DomWrapperInterop.FocusOnNavigate, Selector);
         }
     }
 

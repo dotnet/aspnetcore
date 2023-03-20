@@ -76,8 +76,21 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     const anchorTarget = findAnchorTarget(event);
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      const href = anchorTarget.getAttribute('href')!;
-      const absoluteHref = toAbsoluteUri(href);
+      const anchorHref = anchorTarget.getAttribute('href')!;
+
+      if (anchorHref.startsWith('#') && anchorHref.length > 1) {
+        event.preventDefault(); 
+        const hash = location.hash;
+        const urlInBrowser = hash.length > 1 ? location.href.replace(hash, anchorHref) : location.href + anchorHref;
+        window.history.pushState({}, "", urlInBrowser);
+        const element = document.getElementById(anchorHref.slice(1));
+        if (element) {
+          element.scrollIntoView();
+        }
+        return;
+      }
+
+      const absoluteHref = toAbsoluteUri(anchorHref);     
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
@@ -143,13 +156,13 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
     if (!shouldContinueNavigation) {
       return;
     }
-  }
+  } 
 
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
   // To avoid ugly flickering effects, we don't want to change the scroll position until
-  // we render the new page. As a best approximation, wait until the next batch.
+  // we render the new page. As a best approximation, wait until the next batch. 
   resetScrollAfterNextBatch();
 
   if (!replace) {
