@@ -1,7 +1,181 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, world!</h1>
 
-Welcome to your new app.
+<a href="#test1">Anchor to test1</a>
+
+<br /><br />
+
+<a href="#test1" target="_top">Anchor to test1 target=top</a>
+
+<br /><br />
+
+<NavLink href="#test1">NavLink to test1</NavLink>
+
+<br /><br />
+
+<button class="btn btn-primary" @onclick="GoToTest1">NavigationManager go to #test1</button>
+
+<br /><br />
+
+<a href="#">Anchor to #</a>
+
+<br />
+<br />
+
+<a href="/counter#test2">Anchor to Counter test2</a>
+
+<br /><br />
+
+<a href="/counter#test2" target="_top">Anchor to Counter test2 target=top</a>
+
+<br /><br />
+
+<NavLink href="/counter#test2">NavLink to Counter test2</NavLink>
+
+<br /><br />
+
+<button class="btn btn-primary" @onclick="GoToCounterTest2">NavigationManager go to Counter #test2</button>
+
+<br /><br />
+
+<a href="/counter#">Anchor to Counter #</a>
+
+@code {
+    void GoToTest1()
+    {
+        NavigationManager.NavigateTo("/#test1");
+    }
+
+    void GoToCounterTest2()
+    {
+        NavigationManager.NavigateTo("/counter#test2");
+    }
+}
+
+<p>
+    From Wikipedia, the free encyclopedia
+    For other uses, see Computer science (disambiguation).
+    Fundamental areas of computer science
+    Expression for Church numerals in lambda calculus
+    Programming language theory
+    Plot of a quicksort algorithm
+    Computational complexity theory
+    Example of computer animation produced using motion capture
+    Artificial intelligence
+    Half-adder circuit
+    Computer architecture
+    Computer science
+    Flowchart structured programming.svg
+    History
+    Outline
+    Glossary
+    Category
+    vte
+    Computer science is the study of computation, automation, and information.[1][2][3] Computer science spans theoretical disciplines (such as algorithms, theory of computation, information theory, and automation) to practical disciplines (including the design and implementation of hardware and software).[4][5][6] Computer science is generally considered an academic discipline and distinct from computer programming.[7]
+
+    Algorithms and data structures are central to computer science.[8] The theory of computation concerns abstract models of computation and general classes of problems that can be solved using them. The fields of cryptography and computer security involve studying the means for secure communication and for preventing security vulnerabilities. Computer graphics and computational geometry address the generation of images. Programming language theory considers different ways to describe computational processes, and database theory concerns the management of repositories of data. Human–computer interaction investigates the interfaces through which humans and computers interact, and software engineering focuses on the design and principles behind developing software. Areas such as operating systems, networks and embedded systems investigate the principles and design behind complex systems. Computer architecture describes the construction of computer components and computer-operated equipment. Artificial intelligence and machine learning aim to synthesize goal-orientated processes such as problem-solving, decision-making, environmental adaptation, planning and learning found in humans and animals. Within artificial intelligence, computer vision aims to understand and process image and video data, while natural language processing aims to understand and process textual and linguistic data.
+
+    The fundamental concern of computer science is determining what can and cannot be automated.[2][9][3][10][11] The Turing Award is generally recognized as the highest distinction in computer science.[12][13]
+
+    History
+    Main article: History of computer science
+    History of computing
+    Eniac.jpg
+    Hardware
+    Hardware before 1960Hardware 1960s to present
+    Software
+    SoftwareUnixFree software and open-source software
+    Computer science
+    Artificial intelligenceCompiler constructionEarly computer scienceOperating systemsProgramming languagesProminent pioneersSoftware engineering
+    Modern concepts
+    General-purpose CPUsGraphical user interfaceInternetLaptopsPersonal computersVideo gamesWorld Wide Web
+    By country
+    BulgariaEastern BlocPolandRomaniaSoviet UnionYugoslavia
+    Timeline of computing
+    before 19501950–19791980–19891990–19992000–20092010–20192020–presentmore timelines ...
+    Glossary of computer science
+    Category
+    vte
+
+    Gottfried Wilhelm Leibniz (1646–1716) developed logic in a binary number system and has been called the "founder of computer science".[14]
+
+    Charles Babbage is sometimes referred to as the "father of computing".[15]
+
+    Ada Lovelace published the first algorithm intended for processing on a computer.[16]
+    The earliest foundations of what would become computer science predate the invention of the modern digital computer. Machines for calculating fixed numerical tasks such as the abacus have existed since antiquity, aiding in computations such as multiplication and division. Algorithms for performing computations have existed since antiquity, even before the development of sophisticated computing equipment.[17]
+
+    Wilhelm Schickard designed and constructed the first working mechanical calculator in 1623.[18] In 1673, Gottfried Leibniz demonstrated a digital mechanical calculator, called the Stepped Reckoner.[19] Leibniz may be considered the first computer scientist and information theorist, because of various reasons, including the fact that he documented the binary number system. In 1820, Thomas de Colmar launched the mechanical calculator industry[note 1] when he invented his simplified arithmometer, the first calculating machine strong enough and reliable enough to be used daily in an office environment. Charles Babbage started the design of the first automatic mechanical calculator, his Difference Engine, in 1822, which eventually gave him the idea of the first programmable mechanical calculator, his Analytical Engine.[20] He started developing this machine in 1834, and "in less than two years, he had sketched out many of the salient features of the modern computer".[21] "A crucial step was the adoption of a punched card system derived from the Jacquard loom"[21] making it infinitely programmable.[note 2] In 1843, during the translation of a French article on the Analytical Engine, Ada Lovelace wrote, in one of the many notes she included, an algorithm to compute the Bernoulli numbers, which is considered to be the first published algorithm ever specifically tailored for implementation on a computer.[22] Around 1885, Herman Hollerith invented the tabulator, which used punched cards to process statistical information; eventually his company became part of IBM. Following Babbage, although unaware of his earlier work, Percy Ludgate in 1909 published[23] the 2nd of the only two designs for mechanical analytical engines in history. In 1937, one hundred years after Babbage's impossible dream, Howard Aiken convinced IBM, which was making all kinds of punched card equipment and was also in the calculator business[24] to develop his giant programmable calculator, the ASCC/Harvard Mark I, based on Babbage's Analytical Engine, which itself used cards and a central computing unit. When the machine was finished, some hailed it as "Babbage's dream come true".[25]
+
+    During the 1940s, with the development of new and more powerful computing machines such as the Atanasoff–Berry computer and ENIAC, the term computer came to refer to the machines rather than their human predecessors.[26] As it became clear that computers could be used for more than just mathematical calculations, the field of computer science broadened to study computation in general. In 1945, IBM founded the Watson Scientific Computing Laboratory at Columbia University in New York City. The renovated fraternity house on Manhattan's West Side was IBM's first laboratory devoted to pure science. The lab is the forerunner of IBM's Research Division, which today operates research facilities around the world.[27] Ultimately, the close relationship between IBM and Columbia University was instrumental in the emergence of a new scientific discipline, with Columbia offering one of the first academic-credit courses in computer science in 1946.[28] Computer science began to be established as a distinct academic discipline in the 1950s and early 1960s.[29][30] The world's first computer science degree program, the Cambridge Diploma in Computer Science, began at the University of Cambridge Computer Laboratory in 1953. The first computer science department in the United States was formed at Purdue University in 1962.[31] Since practical computers became available, many applications of computing have become distinct areas of study in their own rights.
+    See also: History of computing and History of informatics
+    Etymology
+    See also: Informatics § Etymology
+    Although first proposed in 1956,[32] the term "computer science" appears in a 1959 article in Communications of the ACM,[33] in which Louis Fein ar
+</p>
+
+<p id="test1" style="scroll-margin-top:100px">Test 1</p>
+
+<p>
+    From Wikipedia, the free encyclopedia
+    For other uses, see Computer science (disambiguation).
+    Fundamental areas of computer science
+    Expression for Church numerals in lambda calculus
+    Programming language theory
+    Plot of a quicksort algorithm
+    Computational complexity theory
+    Example of computer animation produced using motion capture
+    Artificial intelligence
+    Half-adder circuit
+    Computer architecture
+    Computer science
+    Flowchart structured programming.svg
+    History
+    Outline
+    Glossary
+    Category
+    vte
+    Computer science is the study of computation, automation, and information.[1][2][3] Computer science spans theoretical disciplines (such as algorithms, theory of computation, information theory, and automation) to practical disciplines (including the design and implementation of hardware and software).[4][5][6] Computer science is generally considered an academic discipline and distinct from computer programming.[7]
+
+    Algorithms and data structures are central to computer science.[8] The theory of computation concerns abstract models of computation and general classes of problems that can be solved using them. The fields of cryptography and computer security involve studying the means for secure communication and for preventing security vulnerabilities. Computer graphics and computational geometry address the generation of images. Programming language theory considers different ways to describe computational processes, and database theory concerns the management of repositories of data. Human–computer interaction investigates the interfaces through which humans and computers interact, and software engineering focuses on the design and principles behind developing software. Areas such as operating systems, networks and embedded systems investigate the principles and design behind complex systems. Computer architecture describes the construction of computer components and computer-operated equipment. Artificial intelligence and machine learning aim to synthesize goal-orientated processes such as problem-solving, decision-making, environmental adaptation, planning and learning found in humans and animals. Within artificial intelligence, computer vision aims to understand and process image and video data, while natural language processing aims to understand and process textual and linguistic data.
+
+    The fundamental concern of computer science is determining what can and cannot be automated.[2][9][3][10][11] The Turing Award is generally recognized as the highest distinction in computer science.[12][13]
+
+    History
+    Main article: History of computer science
+    History of computing
+    Eniac.jpg
+    Hardware
+    Hardware before 1960Hardware 1960s to present
+    Software
+    SoftwareUnixFree software and open-source software
+    Computer science
+    Artificial intelligenceCompiler constructionEarly computer scienceOperating systemsProgramming languagesProminent pioneersSoftware engineering
+    Modern concepts
+    General-purpose CPUsGraphical user interfaceInternetLaptopsPersonal computersVideo gamesWorld Wide Web
+    By country
+    BulgariaEastern BlocPolandRomaniaSoviet UnionYugoslavia
+    Timeline of computing
+    before 19501950–19791980–19891990–19992000–20092010–20192020–presentmore timelines ...
+    Glossary of computer science
+    Category
+    vte
+
+    Gottfried Wilhelm Leibniz (1646–1716) developed logic in a binary number system and has been called the "founder of computer science".[14]
+
+    Charles Babbage is sometimes referred to as the "father of computing".[15]
+
+    Ada Lovelace published the first algorithm intended for processing on a computer.[16]
+    The earliest foundations of what would become computer science predate the invention of the modern digital computer. Machines for calculating fixed numerical tasks such as the abacus have existed since antiquity, aiding in computations such as multiplication and division. Algorithms for performing computations have existed since antiquity, even before the development of sophisticated computing equipment.[17]
+
+    Wilhelm Schickard designed and constructed the first working mechanical calculator in 1623.[18] In 1673, Gottfried Leibniz demonstrated a digital mechanical calculator, called the Stepped Reckoner.[19] Leibniz may be considered the first computer scientist and information theorist, because of various reasons, including the fact that he documented the binary number system. In 1820, Thomas de Colmar launched the mechanical calculator industry[note 1] when he invented his simplified arithmometer, the first calculating machine strong enough and reliable enough to be used daily in an office environment. Charles Babbage started the design of the first automatic mechanical calculator, his Difference Engine, in 1822, which eventually gave him the idea of the first programmable mechanical calculator, his Analytical Engine.[20] He started developing this machine in 1834, and "in less than two years, he had sketched out many of the salient features of the modern computer".[21] "A crucial step was the adoption of a punched card system derived from the Jacquard loom"[21] making it infinitely programmable.[note 2] In 1843, during the translation of a French article on the Analytical Engine, Ada Lovelace wrote, in one of the many notes she included, an algorithm to compute the Bernoulli numbers, which is considered to be the first published algorithm ever specifically tailored for implementation on a computer.[22] Around 1885, Herman Hollerith invented the tabulator, which used punched cards to process statistical information; eventually his company became part of IBM. Following Babbage, although unaware of his earlier work, Percy Ludgate in 1909 published[23] the 2nd of the only two designs for mechanical analytical engines in history. In 1937, one hundred years after Babbage's impossible dream, Howard Aiken convinced IBM, which was making all kinds of punched card equipment and was also in the calculator business[24] to develop his giant programmable calculator, the ASCC/Harvard Mark I, based on Babbage's Analytical Engine, which itself used cards and a central computing unit. When the machine was finished, some hailed it as "Babbage's dream come true".[25]
+
+    During the 1940s, with the development of new and more powerful computing machines such as the Atanasoff–Berry computer and ENIAC, the term computer came to refer to the machines rather than their human predecessors.[26] As it became clear that computers could be used for more than just mathematical calculations, the field of computer science broadened to study computation in general. In 1945, IBM founded the Watson Scientific Computing Laboratory at Columbia University in New York City. The renovated fraternity house on Manhattan's West Side was IBM's first laboratory devoted to pure science. The lab is the forerunner of IBM's Research Division, which today operates research facilities around the world.[27] Ultimately, the close relationship between IBM and Columbia University was instrumental in the emergence of a new scientific discipline, with Columbia offering one of the first academic-credit courses in computer science in 1946.[28] Computer science began to be established as a distinct academic discipline in the 1950s and early 1960s.[29][30] The world's first computer science degree program, the Cambridge Diploma in Computer Science, began at the University of Cambridge Computer Laboratory in 1953. The first computer science department in the United States was formed at Purdue University in 1962.[31] Since practical computers became available, many applications of computing have become distinct areas of study in their own rights.
+    See also: History of computing and History of informatics
+    Etymology
+    See also: Informatics § Etymology
+    Although first proposed in 1956,[32] the term "computer science" appears in a 1959 article in Communications of the ACM,[33] in which Louis Fein ar
+</p>
