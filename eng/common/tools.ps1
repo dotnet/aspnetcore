@@ -913,11 +913,13 @@ if (!$disableConfigureToolsetImport) {
 function Enable-Nuget-EnhancedRetry() {
     if ($ci) {
       Write-Host "Setting NUGET enhanced retry environment variables"
-      $env:NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY = 'true'
-      $env:NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT = 6
-      $env:NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS = 1000
-      Write-PipelineSetVariable -Name 'NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY' -Value 'true'
-      Write-PipelineSetVariable -Name 'NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT' -Value '6'
-      Write-PipelineSetVariable -Name 'NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS' -Value '1000'
+      $env:NUGET_ENABLE_ENHANCED_HTTP_RETRY = 'true'
+      $env:NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT = 6
+      $env:NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS = 1000
+      $env:NUGET_RETRY_HTTP_429 = 'true'
+      Write-PipelineSetVariable -Name 'NUGET_ENABLE_ENHANCED_HTTP_RETRY' -Value 'true'
+      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT' -Value '6'
+      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS' -Value '1000'
+      Write-PipelineSetVariable -Name 'NUGET_RETRY_HTTP_429' -Value 'true'
     }
 }
