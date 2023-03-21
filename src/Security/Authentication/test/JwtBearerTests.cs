@@ -802,6 +802,56 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     }
 
     [Fact]
+    public async Task EventOnForbidden_ResponseForMultipleAuthenticationSchemas()
+    {
+        var onForbiddenCallCount = 0;
+        var jwtBearerEvents = new JwtBearerEvents()
+        {
+            OnForbidden = context =>
+            {
+                onForbiddenCallCount++;
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = 418;
+                    return context.Response.WriteAsync("You Shall Not Pass");
+                }
+                return Task.CompletedTask;
+            }
+        };
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(builder =>
+                builder.UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseAuthentication();
+                        app.Run(async (context) =>
+                        {
+                            // Simulate Forbidden By Multiple Authentication Schemas
+                            await context.ForbidAsync("JwtAuthSchemaOne");
+                            await context.ForbidAsync("JwtAuthSchemaTwo");
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddAuthentication()
+                                .AddJwtBearer("JwtAuthSchemaOne", o => { o.Events = jwtBearerEvents; })
+                                .AddJwtBearer("JwtAuthSchemaTwo", o => { o.Events = jwtBearerEvents; });
+                    }))
+            .Build();
+
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var response = await server.CreateClient().SendAsync(new HttpRequestMessage(HttpMethod.Get, string.Empty));
+
+        Assert.Equal(418, (int)response.StatusCode);
+        Assert.Equal("You Shall Not Pass", await response.Content.ReadAsStringAsync());
+        Assert.Equal(2, onForbiddenCallCount);
+    }
+
+    [Fact]
     public async Task ExpirationAndIssuedSetOnAuthenticateResult()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
