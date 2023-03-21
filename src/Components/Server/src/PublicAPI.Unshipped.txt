@@ -1,5 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext.Circuit.get -> Microsoft.AspNetCore.Components.Server.Circuits.Circuit!
-Microsoft.AspNetCore.Components.Server.Circuits.IHandleCircuitActivity
-Microsoft.AspNetCore.Components.Server.Circuits.IHandleCircuitActivity.HandleInboundActivityAsync(Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext! context, System.Func<Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext!, System.Threading.Tasks.Task!>! next) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.CreateInboundActivityHandler(System.Func<Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext!, System.Threading.Tasks.Task!>! next) -> System.Func<Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext!, System.Threading.Tasks.Task!>!
