@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.ResponseCaching;
+namespace Microsoft.AspNetCore.WriteStream;
 
 internal sealed class SegmentWriteStream : Stream
 {
-    private readonly List<byte[]> _segments = new List<byte[]>();
-    private readonly MemoryStream _bufferStream = new MemoryStream();
+    private readonly List<byte[]> _segments = new();
+    private readonly MemoryStream _bufferStream = new();
     private readonly int _segmentSize;
     private long _length;
     private bool _closed;
@@ -143,8 +143,8 @@ internal sealed class SegmentWriteStream : Stream
 
             var bytesWritten = Math.Min(buffer.Length, _segmentSize - (int)_bufferStream.Length);
 
-            _bufferStream.Write(buffer.Slice(0, bytesWritten));
-            buffer = buffer.Slice(bytesWritten);
+            _bufferStream.Write(buffer[..bytesWritten]);
+            buffer = buffer[bytesWritten..];
             _length += bytesWritten;
         }
     }
