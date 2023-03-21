@@ -1,5 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using System.Globalization;
+
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
@@ -183,5 +187,29 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "test", 200);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
+    {
+        const string paramName = "value";
+        const int originalRouteParam = 42;
+
+        var (_, compilation) = await RunGeneratorAsync(
+            $$"""
+            app.MapGet(@"/{{{paramName}}}", (HttpContext httpContext, [FromRoute] int value) => {
+                httpContext.Items.Add("input", value);
+            });
+            """);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+        var requestDelegate = endpoint.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(originalRouteParam, httpContext.Items["input"]);
     }
 }
