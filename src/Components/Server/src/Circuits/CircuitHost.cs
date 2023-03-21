@@ -606,18 +606,19 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private static Func<Func<Task>, Task> BuildInboundActivityDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers, Circuit circuit)
     {
-        if (circuitHandlers.Count == 0)
-        {
-            // If there are no registered handlers, there is no need to allocate a context on each call.
-            return static handler => handler();
-        }
-
-        var result = static (CircuitInboundActivityContext context) => context.Handler();
+        var inner = static (CircuitInboundActivityContext context) => context.Handler();
+        var result = inner;
 
         for (var i = circuitHandlers.Count - 1; i >= 0; i--)
         {
             var next = result;
             result = circuitHandlers[i].CreateInboundActivityHandler(next);
+        }
+
+        if (result == inner)
+        {
+            // If there are no registered handlers, there is no need to allocate a context on each call.
+            return static handler => handler();
         }
 
         return handler => result(new(handler, circuit));
