@@ -14,9 +14,11 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
-    <Prompt>&quot;$(DevEnvDir)\..\Tools\VsDevCmd&quot;</Prompt>
+    <Prompt>&quot;$(VSInstallDir)Common7\Tools\VsDevCmd&quot;</Prompt>
   </PropertyGroup>
-  <Target Name="Build">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="Build" DependsOnTargets="SetBuildDefaultEnvironmentVariables">
+    <MakeDir Directories="$(ObjDir);$(BinDir)" />
     <Exec Command="all.cmd $(Prompt) $(ObjDir) $(BinDir)" />
   </Target>
 </Project>
