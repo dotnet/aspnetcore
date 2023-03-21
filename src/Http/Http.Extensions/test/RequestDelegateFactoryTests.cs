@@ -212,28 +212,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("methodInfo", exNullMethodInfo1.ParamName);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
-    {
-        const string paramName = "value";
-        const int originalRouteParam = 42;
-
-        static void TestAction(HttpContext httpContext, [FromRoute] int value)
-        {
-            httpContext.Items.Add("input", value);
-        }
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(originalRouteParam, httpContext.Items["input"]);
-    }
-
     private record ParameterListFromRoute(HttpContext HttpContext, int Value);
 
     [Fact]
@@ -640,21 +618,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private record MyBindAsyncFromInterfaceRecord(Uri uri) : IBindAsync<MyBindAsyncFromInterfaceRecord>
     {
-    }
-
-    [Theory]
-    [MemberData(nameof(TryParsableParameters))]
-    public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues["tryParsable"] = routeValue;
-
-        var factoryResult = RequestDelegateFactory.Create(action);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
     [Theory]

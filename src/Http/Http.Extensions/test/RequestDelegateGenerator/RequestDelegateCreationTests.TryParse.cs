@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.Extensions.Primitives;
+
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
@@ -221,5 +223,26 @@ app.MapGet("/hello", ([FromQuery]TodoStatus p) => p.ToString());
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "Done");
         await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableParameters))]
+    public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(string typeName, string routeValue, object expectedParameterValue)
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""
+app.MapGet("/hello/{tryParsable}", (HttpContext context, {{typeName}} tryParsable) =>
+{
+    context.Items["tryParsable"] = tryParsable;
+});
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["tryParsable"] = routeValue;
+        var requestDelegate = endpoint.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 }
