@@ -914,6 +914,18 @@ public class OpenApiOperationGeneratorTests
     }
 
     [Fact]
+    public void HandlesEndpointWithNoMethodInfo()
+    {
+        var operationWithNoMethodInfo = GetOpenApiOperation((HttpContext context) => Task.CompletedTask, "/", httpMethods: new[] { "PUT" }, hasMethodInfo: false);
+
+        Assert.Empty(operationWithNoMethodInfo.Parameters);
+        Assert.Empty(operationWithNoMethodInfo.Responses);
+        Assert.Null(operationWithNoMethodInfo.RequestBody);
+        var tag = Assert.Single(operationWithNoMethodInfo.Tags);
+        Assert.Equal(nameof(OpenApiOperationGeneratorTests), tag.Name);
+    }
+
+    [Fact]
     public void HandlesParameterWithNameInAttribute()
     {
         static void ValidateParameter(OpenApiOperation operation, string expectedName)
@@ -973,7 +985,8 @@ public class OpenApiOperationGeneratorTests
         string pattern = null,
         IEnumerable<string> httpMethods = null,
         string displayName = null,
-        object[] additionalMetadata = null)
+        object[] additionalMetadata = null,
+        bool hasMethodInfo = true)
     {
         var methodInfo = action.Method;
         var attributes = methodInfo.GetCustomAttributes();
@@ -989,7 +1002,7 @@ public class OpenApiOperationGeneratorTests
             hostEnvironment,
             new ServiceProviderIsService());
 
-        return generator.GetOpenApiOperation(methodInfo, endpointMetadata, routePattern);
+        return generator.GetOpenApiOperation(hasMethodInfo ? methodInfo : null, endpointMetadata, routePattern);
     }
 
     private static void TestAction()

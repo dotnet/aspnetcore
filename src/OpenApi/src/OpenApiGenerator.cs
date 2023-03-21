@@ -54,7 +54,7 @@ internal sealed class OpenApiGenerator
     /// <param name="pattern">The route pattern.</param>
     /// <returns>An <see cref="OpenApiPathItem"/> annotation derived from the given inputs.</returns>
     internal OpenApiOperation? GetOpenApiOperation(
-        MethodInfo methodInfo,
+        MethodInfo? methodInfo,
         EndpointMetadataCollection metadata,
         RoutePattern pattern)
     {
@@ -68,7 +68,7 @@ internal sealed class OpenApiGenerator
         return null;
     }
 
-    private OpenApiOperation GetOperation(string httpMethod, MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
+    private OpenApiOperation GetOperation(string httpMethod, MethodInfo? methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
     {
         var disableInferredBody = ShouldDisableInferredBody(httpMethod);
         return new OpenApiOperation
@@ -77,9 +77,15 @@ internal sealed class OpenApiGenerator
             Summary = metadata.GetMetadata<IEndpointSummaryMetadata>()?.Summary,
             Description = metadata.GetMetadata<IEndpointDescriptionMetadata>()?.Description,
             Tags = GetOperationTags(methodInfo, metadata),
-            Parameters = GetOpenApiParameters(methodInfo, pattern, disableInferredBody),
-            RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
-            Responses = GetOpenApiResponses(methodInfo, metadata)
+            Parameters = methodInfo is not null
+                ? GetOpenApiParameters(methodInfo, pattern, disableInferredBody)
+                : new List<OpenApiParameter>(),
+            RequestBody = methodInfo is not null
+                ? GetOpenApiRequestBody(methodInfo, metadata, pattern)
+                : null,
+            Responses = methodInfo is not null
+                ? GetOpenApiResponses(methodInfo, metadata)
+                : new OpenApiResponses()
         };
 
         static bool ShouldDisableInferredBody(string method)
@@ -321,7 +327,7 @@ internal sealed class OpenApiGenerator
         return null;
     }
 
-    private List<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
+    private List<OpenApiTag> GetOperationTags(MethodInfo? methodInfo, EndpointMetadataCollection metadata)
     {
         var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
 
@@ -333,7 +339,7 @@ internal sealed class OpenApiGenerator
             {
                 foreach (var tag in metadataItem.Tags)
                 {
-                    tags.Add(new OpenApiTag() { Name = tag });
+                    tags.Add(new OpenApiTag { Name = tag });
                 }
             }
 
@@ -342,7 +348,7 @@ internal sealed class OpenApiGenerator
 
         string controllerName;
 
-        if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
+        if (methodInfo?.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
         {
             controllerName = methodInfo.DeclaringType.Name;
         }
@@ -353,7 +359,7 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
+        return new List<OpenApiTag> { new() { Name = controllerName } };
     }
 
     private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)

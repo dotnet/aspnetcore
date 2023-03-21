@@ -80,11 +80,6 @@ public static class OpenApiEndpointConventionBuilderExtensions
         var metadata = new EndpointMetadataCollection(routeEndpointBuilder.Metadata);
         var methodInfo = metadata.OfType<MethodInfo>().SingleOrDefault();
 
-        if (methodInfo is null)
-        {
-            return;
-        }
-
         var applicationServices = routeEndpointBuilder.ApplicationServices;
         var hostEnvironment = applicationServices.GetService<IHostEnvironment>();
         var serviceProviderIsService = applicationServices.GetService<IServiceProviderIsService>();
