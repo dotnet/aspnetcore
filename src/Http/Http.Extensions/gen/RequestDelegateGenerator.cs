@@ -83,7 +83,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
             codeWriter.StartBlock();
-            codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateCast()})del;");
+            codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
             endpoint!.EmitRouteOrQueryResolver(codeWriter);
             endpoint!.EmitJsonBodyOrServiceResolver(codeWriter);

@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, global::Microsoft.AspNetCore.Http.Generators.Tests.TestService, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, global::Microsoft.AspNetCore.Http.Generators.Tests.TestService, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();
                     var todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(serviceProviderIsService);

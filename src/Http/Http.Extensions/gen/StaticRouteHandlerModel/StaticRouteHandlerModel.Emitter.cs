@@ -11,36 +11,21 @@ namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelEmitter
 {
-    public static string EmitHandlerDelegateType(this Endpoint endpoint)
+    public static string EmitHandlerDelegateType(this Endpoint endpoint, bool considerOptionality = false)
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response == null || endpoint.Response.IsVoid ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
         }
-        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => considerOptionality
+            ? p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)
+            : p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
 
-        if (endpoint.Response == null || endpoint.Response.IsVoid)
+        if (endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable))
         {
             return $"System.Action<{parameterTypeList}>";
         }
         return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
-    }
-
-    public static string EmitHandlerDelegateCast(this Endpoint endpoint)
-    {
-        if (endpoint.Parameters.Length == 0)
-        {
-            return endpoint.Response == null || endpoint.Response.IsVoid ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
-        }
-
-        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
-            p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)));
-
-        if (endpoint.Response == null || endpoint.Response.IsVoid)
-        {
-            return $"Action<{parameterTypeList}>";
-        }
-        return $"Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
     }
 
     public static string EmitSourceKey(this Endpoint endpoint)
@@ -87,11 +72,11 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
-        if (!endpoint.Response.IsVoid && endpoint.Response is { ContentType: {} contentType})
+        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: {} contentType})
         {
             codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
         }
-        if (!endpoint.Response.IsVoid)
+        if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
         }
@@ -100,7 +85,7 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
-        if (!endpoint.Response.IsVoid)
+        if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
         }
@@ -127,11 +112,11 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
         }
-        else if (!endpointResponse.IsVoid)
+        else if (!endpointResponse.HasNoResponse)
         {
             return $"{returnOrAwait} {endpointResponse.EmitJsonResponse()}";
         }
-        else if (!endpointResponse.IsAwaitable && endpointResponse.IsVoid)
+        else if (!endpointResponse.IsAwaitable && endpointResponse.HasNoResponse)
         {
             return $"{returnOrAwait} Task.CompletedTask;";
         }
@@ -178,9 +163,11 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        if (endpoint.Response?.IsVoid == true)
+        if (endpoint.Response?.HasNoResponse == true)
         {
-            codeWriter.WriteLine($"handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? $"await handler({endpoint.EmitFilteredArgumentList()});"
+                : $"handler({endpoint.EmitFilteredArgumentList()});");
             codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
         }
         else if (endpoint.Response?.IsAwaitable == true)

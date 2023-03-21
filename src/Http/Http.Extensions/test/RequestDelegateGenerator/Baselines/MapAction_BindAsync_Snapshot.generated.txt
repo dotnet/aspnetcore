@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -780,7 +780,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -861,7 +861,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -922,7 +922,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1002,7 +1002,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1062,7 +1062,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1142,7 +1142,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1202,7 +1202,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -1283,7 +1283,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -1344,7 +1344,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1424,7 +1424,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1484,7 +1484,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
@@ -1565,7 +1565,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface?, global::System.String>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var parameters = del.Method.GetParameters();
 
