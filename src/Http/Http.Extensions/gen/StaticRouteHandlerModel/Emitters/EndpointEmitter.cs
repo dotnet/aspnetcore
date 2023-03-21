@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 internal static class EndpointEmitter
 {
     internal static string EmitParameterPreparation(this Endpoint endpoint, int baseIndent = 0)

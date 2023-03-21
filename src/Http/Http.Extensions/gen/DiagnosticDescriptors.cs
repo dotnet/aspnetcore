@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Http.Generators;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 internal static class DiagnosticDescriptors
 {

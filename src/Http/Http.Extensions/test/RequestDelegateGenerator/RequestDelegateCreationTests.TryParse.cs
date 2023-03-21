@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests

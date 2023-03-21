@@ -1,6 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
