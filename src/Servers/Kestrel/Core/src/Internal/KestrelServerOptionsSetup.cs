@@ -8,14 +8,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
 {
     private readonly IServiceProvider _services;
+    private readonly bool _isHttpsConfigurationEnabled;
 
     public KestrelServerOptionsSetup(IServiceProvider services)
     {
         _services = services;
     }
 
+    public KestrelServerOptionsSetup(IServiceProvider services, ITlsConfigurationLoader _)
+    {
+        _services = services;
+        _isHttpsConfigurationEnabled = true;
+    }
+
     public void Configure(KestrelServerOptions options)
     {
         options.ApplicationServices = _services;
+        options.IsHttpsConfigurationEnabled = _isHttpsConfigurationEnabled;
     }
 }
