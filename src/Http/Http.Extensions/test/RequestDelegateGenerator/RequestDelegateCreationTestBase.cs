@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
@@ -432,5 +433,14 @@ Actual Line:
         }
 
         public bool CanHaveBody { get; }
+    }
+
+    internal sealed class PipeRequestBodyFeature : IRequestBodyPipeFeature
+    {
+        public PipeRequestBodyFeature(PipeReader pipeReader)
+        {
+            Reader = pipeReader;
+        }
+        public PipeReader Reader { get; set; }
     }
 }

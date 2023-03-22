@@ -56,7 +56,7 @@ internal static class RequestDelegateGeneratorSources
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
 
-            return (false, default);
+            return (allowEmpty ? true : false, default);
         }
 """;
 
