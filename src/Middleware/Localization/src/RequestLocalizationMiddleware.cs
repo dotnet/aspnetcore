@@ -169,22 +169,29 @@ public class RequestLocalizationMiddleware
 
     private static CultureInfo? GetCultureInfo(
         StringSegment cultureName,
-        IList<CultureInfo> supportedCultures,
+        IList<CultureInfo>? supportedCultures,
         bool fallbackToParentCultures,
         int currentDepth)
     {
+        // If the cultureName is an empty string there
+        // is not chance we can resolve the culture info.
+        if (cultureName == "")
+        {
+            return null;
+        }
+
         var culture = GetCultureInfo(cultureName, supportedCultures);
 
         if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
         {
-            var lastIndexOfHyphen = cultureName.LastIndexOf('-');
-
-            if (lastIndexOfHyphen > 0)
+            try
             {
-                // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
-                var parentCultureName = cultureName.Subsegment(0, lastIndexOfHyphen);
+                culture = CultureInfo.GetCultureInfo(cultureName.ToString());
 
-                culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
+                culture = GetCultureInfo(culture.Parent.Name, supportedCultures, fallbackToParentCultures, currentDepth + 1);
+            }
+            catch (CultureNotFoundException)
+            {
             }
         }
 
