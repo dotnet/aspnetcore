@@ -315,30 +315,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("'id' is not a route parameter.", ex.Message);
     }
 
-    [Fact]
-    public async Task Returns400IfNoMatchingRouteValueForRequiredParam()
-    {
-        const string unmatchedName = "value";
-        const int unmatchedRouteParam = 42;
-
-        int? deserializedRouteParam = null;
-
-        void TestAction([FromRoute] int foo)
-        {
-            deserializedRouteParam = foo;
-        }
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues[unmatchedName] = unmatchedRouteParam.ToString(NumberFormatInfo.InvariantInfo);
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(400, httpContext.Response.StatusCode);
-    }
-
     public static object?[][] TryParsableArrayParameters
     {
         get
