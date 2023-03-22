@@ -1,0 +1,10 @@
+﻿@{
+    List<int> numbers = new List<int>() { 1, 2, 3 };
+}
+
+@for (int counter = 0; counter < numbers.Count; counter++)
+{
+    <div class="@if(numbers[counter] > 2){<text>hidden</text>}">
+        <h1>Some HTML</h1>
+    </div>
+}

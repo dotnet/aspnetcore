@@ -466,4 +466,30 @@ Partial";
         // Assert
         Assert.Equal(expected, responseContent.Trim());
     }
+
+    [Fact]
+    public async Task RazorView_RunsAttributeCodeInline()
+    {
+        // Arrange
+        var expected = """
+<div class="">
+        <h1>Some HTML</h1>
+    </div>
+    <div class="">
+        <h1>Some HTML</h1>
+    </div>
+    <div class="hidden">
+        <h1>Some HTML</h1>
+    </div>
+""";
+
+        // Act
+        var response = await Client.GetAsync("http://localhost/ViewEngine/ViewWithForLoopCapture");
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
+    }
 }

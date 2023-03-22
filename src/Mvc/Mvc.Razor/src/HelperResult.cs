@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// </summary>
 public class HelperResult : IHtmlContent
 {
-    private readonly Func<TextWriter, Task> _asyncAction;
+    private readonly string _content;
 
     /// <summary>
     /// Creates a new instance of <see cref="HelperResult"/>.
@@ -24,13 +24,21 @@ public class HelperResult : IHtmlContent
     {
         ArgumentNullException.ThrowIfNull(asyncAction);
 
-        _asyncAction = asyncAction;
+        // Hopefully people don't really do async work in the callback, but previously we were just blocking in WriteTo instead.
+        using var stringWriter = new StringWriter();
+        asyncAction(stringWriter).GetAwaiter().GetResult();
+        _content = stringWriter.ToString();
     }
 
     /// <summary>
     /// Gets the asynchronous delegate to invoke when <see cref="WriteTo(TextWriter, HtmlEncoder)"/> is called.
     /// </summary>
-    public Func<TextWriter, Task> WriteAction => _asyncAction;
+    public Func<TextWriter, Task> WriteAction =>
+        writer =>
+        {
+            writer.Write(_content);
+            return Task.CompletedTask;
+        };
 
     /// <summary>
     /// Method invoked to produce content from the <see cref="HelperResult"/>.
@@ -42,6 +50,6 @@ public class HelperResult : IHtmlContent
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(encoder);
 
-        _asyncAction(writer).GetAwaiter().GetResult();
+        writer.Write(_content);
     }
 }

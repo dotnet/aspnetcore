@@ -78,4 +78,6 @@ public class ViewEngineController : Controller
     }
 
     public IActionResult SearchInPages() => View();
+
+    public IActionResult ViewWithForLoopCapture() => View();
 }
