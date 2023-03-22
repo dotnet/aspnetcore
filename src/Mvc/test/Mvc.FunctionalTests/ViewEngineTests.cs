@@ -472,7 +472,7 @@ Partial";
     {
         // Arrange
         var expected = """
-<div class="">
+    <div class="">
         <h1>Some HTML</h1>
     </div>
     <div class="">
@@ -490,6 +490,6 @@ Partial";
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();
 
-        Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
+        Assert.Equal(expected, body.Trim('\r', '\n'), ignoreLineEndingDifferences: true);
     }
 }
