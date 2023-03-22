@@ -7,7 +7,10 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
@@ -16,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel;
 /// </summary>
 public class KestrelConfigurationLoader
 {
-    private readonly ITlsConfigurationLoader? _tlsLoader;
+    private ITlsConfigurationLoader? _tlsLoader;
     private bool _loaded;
 
     internal KestrelConfigurationLoader(
@@ -31,6 +34,24 @@ public class KestrelConfigurationLoader
         ReloadOnChange = reloadOnChange;
 
         _tlsLoader = tlsLoader;
+    }
+
+    internal bool IsTlsConfigurationLoadingEnabled => _tlsLoader is not null;
+
+    internal void EnableTlsConfigurationLoading(
+        IHostEnvironment hostEnvironment,
+        ILogger<KestrelServer> serverLogger,
+        ILogger<HttpsConnectionMiddleware> httpsLogger)
+    {
+        if (_tlsLoader is null)
+        {
+            _tlsLoader = new TlsConfigurationLoader(hostEnvironment, serverLogger, httpsLogger);
+
+            if (_loaded)
+            {
+                Reload();
+            }
+        }
     }
 
     /// <summary>

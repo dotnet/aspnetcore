@@ -262,7 +262,7 @@ public class KestrelServerOptions
 
     internal void ApplyDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions)
     {
-        if (DisableDefaultCertificate)
+        if (ConfigurationLoader is not null && !ConfigurationLoader.IsTlsConfigurationLoadingEnabled)
         {
             throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
         }
@@ -412,6 +412,24 @@ public class KestrelServerOptions
         var loader = new KestrelConfigurationLoader(this, config, reloadOnChange, tlsLoader);
         ConfigurationLoader = loader;
         return loader;
+    }
+
+    internal void EnableTlsConfigurationLoading()
+    {
+        // TODO (acasey): keep it around in case someone calls Configure later?
+        if (ConfigurationLoader is not null)
+        {
+            if (ApplicationServices is null)
+            {
+                throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
+            }
+
+            var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var serverLogger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+
+            ConfigurationLoader.EnableTlsConfigurationLoading(hostEnvironment, serverLogger, httpsLogger);
+        }
     }
 
     /// <summary>

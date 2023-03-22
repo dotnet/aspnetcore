@@ -8,15 +8,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
 {
     private readonly IServiceProvider _services;
-    private readonly bool _disableDefaultCertificate;
 
     public KestrelServerOptionsSetup(IServiceProvider services)
-    {
-        _services = services;
-        _disableDefaultCertificate = true;
-    }
-
-    public KestrelServerOptionsSetup(IServiceProvider services, ITlsConfigurationLoader _)
     {
         _services = services;
     }
@@ -24,6 +17,5 @@ internal sealed class KestrelServerOptionsSetup : IConfigureOptions<KestrelServe
     public void Configure(KestrelServerOptions options)
     {
         options.ApplicationServices = _services;
-        options.DisableDefaultCertificate = _disableDefaultCertificate;
     }
 }

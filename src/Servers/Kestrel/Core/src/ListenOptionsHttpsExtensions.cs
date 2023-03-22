@@ -163,6 +163,9 @@ public static class ListenOptionsHttpsExtensions
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
 
+        // TODO (acasey): apply to other overloads?
+        listenOptions.KestrelServerOptions.EnableTlsConfigurationLoading();
+
         var options = new HttpsConnectionAdapterOptions();
 
         // This will throw if there are configured defaults and defaults are not supported (i.e. in slim scenarios)
