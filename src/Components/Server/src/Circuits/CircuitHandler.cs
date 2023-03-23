@@ -72,4 +72,11 @@ public abstract class CircuitHandler
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
     public virtual Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Creates a handler that gets invoked when inbound activity on the circuit causes an asynchronous task to be dispatched on the server.
+    /// </summary>
+    /// <param name="next">The next handler to invoke.</param>
+    /// <returns>A handler function that returns a <see cref="Task"/> that completes when the activity has finished.</returns>
+    public virtual Func<CircuitInboundActivityContext, Task> CreateInboundActivityHandler(Func<CircuitInboundActivityContext, Task> next) => next;
 }
