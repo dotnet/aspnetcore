@@ -97,8 +97,7 @@ public class RequestLocalizationMiddlewareTest
         using (var server = host.GetTestServer())
         {
             var client = server.CreateClient();
-            var response = await client.GetAsync("/page");
+            var response = await client.GetAsync("/page?culture=");
         }
     }
-
 }
