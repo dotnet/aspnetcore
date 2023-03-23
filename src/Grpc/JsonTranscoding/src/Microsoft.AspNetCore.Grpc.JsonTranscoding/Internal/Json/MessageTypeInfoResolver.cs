@@ -167,9 +167,15 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
     private static Dictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
     {
         var map = new Dictionary<string, FieldDescriptor>();
+        // The ordering is important here: JsonName takes priority over Name,
+        // which means we need to put JsonName values in the map after *all*
+        // Name keys have been added. See https://github.com/protocolbuffers/protobuf/issues/11987
         foreach (var field in fields)
         {
             map[field.Name] = field;
+        }
+        foreach (var field in fields)
+        {
             map[field.JsonName] = field;
         }
         return map;

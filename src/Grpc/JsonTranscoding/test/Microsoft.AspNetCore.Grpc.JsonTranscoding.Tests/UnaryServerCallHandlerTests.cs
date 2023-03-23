@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -361,6 +362,42 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.NotNull(request);
         Assert.Equal("TestName!", request!.FieldName);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_MatchingQueryStringValues_JsonNamePriority_SetOnRequestMessage()
+    {
+        // Arrange
+        Issue047349Message? requestMessage = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, Issue047349Message, HelloReply> invoker = (s, r, c) =>
+        {
+            requestMessage = r;
+
+            return Task.FromResult(new HelloReply());
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(
+            invoker,
+            CreateServiceMethod("JsonNamePriority", Issue047349Message.Parser, HelloReply.Parser),
+            descriptorInfo: TestHelpers.CreateDescriptorInfo());
+
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["b"] = "10",
+            ["a"] = "20",
+            ["d"] = "30"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Debug.Assert(requestMessage != null);
+
+        Assert.Equal(10, requestMessage.A);
+        Assert.Equal(20, requestMessage.B);
+        Assert.Equal(30, requestMessage.C);
     }
 
     [Fact]
