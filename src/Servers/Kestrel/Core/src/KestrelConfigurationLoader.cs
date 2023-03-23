@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
@@ -19,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel;
 /// </summary>
 public class KestrelConfigurationLoader
 {
-    private ITlsConfigurationLoader? _tlsLoader;
+    private ITlsConfigurationLoader? _tlsConfigurationLoader;
     private bool _loaded;
 
     internal KestrelConfigurationLoader(
@@ -33,24 +31,20 @@ public class KestrelConfigurationLoader
         ConfigurationReader = new ConfigurationReader(configuration);
         ReloadOnChange = reloadOnChange;
 
-        _tlsLoader = tlsLoader;
+        _tlsConfigurationLoader = tlsLoader;
     }
 
-    internal bool IsTlsConfigurationLoadingEnabled => _tlsLoader is not null;
-
-    internal void EnableTlsConfigurationLoading(
-        IHostEnvironment hostEnvironment,
-        ILogger<KestrelServer> serverLogger,
-        ILogger<HttpsConnectionMiddleware> httpsLogger)
+    /// <summary>
+    /// A helper for loading TLS-related configuration.
+    /// </summary>
+    internal ITlsConfigurationLoader? TlsConfigurationLoader
     {
-        if (_tlsLoader is null)
+        get => _tlsConfigurationLoader;
+        set
         {
-            _tlsLoader = new TlsConfigurationLoader(hostEnvironment, serverLogger, httpsLogger);
-
-            if (_loaded)
-            {
-                Reload();
-            }
+            Debug.Assert(!_loaded);
+            Debug.Assert(_tlsConfigurationLoader is null);
+            _tlsConfigurationLoader = value;
         }
     }
 
@@ -238,7 +232,7 @@ public class KestrelConfigurationLoader
 
         if (defaults.SslProtocols.HasValue)
         {
-            if (_tlsLoader is null)
+            if (_tlsConfigurationLoader is null)
             {
                 // There's no trimming benefit to disabling this, but it would be a confusing
                 // user experience to allow this but not certificates.
@@ -250,7 +244,7 @@ public class KestrelConfigurationLoader
 
         if (defaults.ClientCertificateMode.HasValue)
         {
-            if (_tlsLoader is null)
+            if (_tlsConfigurationLoader is null)
             {
                 // There's no trimming benefit to disabling this, but it would be a confusing
                 // user experience to allow this but not certificates.
@@ -294,7 +288,7 @@ public class KestrelConfigurationLoader
 
         ConfigurationReader = new ConfigurationReader(Configuration);
 
-        if (_tlsLoader?.LoadDefaultCertificate(ConfigurationReader) is CertificateAndConfig certPair)
+        if (_tlsConfigurationLoader?.LoadDefaultCertificate(ConfigurationReader) is CertificateAndConfig certPair)
         {
             DefaultCertificate = certPair.Certificate;
             DefaultCertificateConfig = certPair.CertificateConfig;
@@ -306,7 +300,7 @@ public class KestrelConfigurationLoader
 
             if (https)
             {
-                if (_tlsLoader is null)
+                if (_tlsConfigurationLoader is null)
                 {
                     throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
                 }
@@ -334,7 +328,7 @@ public class KestrelConfigurationLoader
 
             if (https)
             {
-                _tlsLoader!.ApplyHttpsDefaults(Options, endpoint, httpsOptions, DefaultCertificateConfig, ConfigurationReader);
+                _tlsConfigurationLoader!.ApplyHttpsDefaults(Options, endpoint, httpsOptions, DefaultCertificateConfig, ConfigurationReader);
             }
 
             // Now that defaults have been loaded, we can compare to the currently bound endpoints to see if the config changed.
@@ -364,7 +358,7 @@ public class KestrelConfigurationLoader
             // EndpointDefaults or configureEndpoint may have added an https adapter.
             if (https)
             {
-                _tlsLoader!.UseHttps(listenOptions, endpoint, httpsOptions);
+                _tlsConfigurationLoader!.UseHttps(listenOptions, endpoint, httpsOptions);
             }
 
             listenOptions.EndpointConfig = endpoint;

@@ -262,7 +262,7 @@ public class KestrelServerOptions
 
     internal void ApplyDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions)
     {
-        if (IsHttpsConfigurationEnabled || (ConfigurationLoader is not null && !ConfigurationLoader.IsTlsConfigurationLoadingEnabled))
+        if (!IsHttpsConfigurationEnabled && ConfigurationLoader?.TlsConfigurationLoader is null)
         {
             throw new InvalidOperationException("You need to call UseHttpsConfiguration"); // TODO (acasey): message
         }
@@ -404,26 +404,19 @@ public class KestrelServerOptions
             throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
         }
 
-        var tlsLoader = ApplicationServices.GetService<ITlsConfigurationLoader>();
+        _tlsConfigurationLoader ??= ApplicationServices.GetService<ITlsConfigurationLoader>();
 
-        // It may seem strange to sometimes pass ITlsConfigurationLoader in via the constructor
-        // and to sometimes call EnableTlsConfigurationLoading, but Configure may be called in
-        // cases where ITlsConfigurationLoader is not wanted and EnableTlsConfigurationLoading
-        // will prevent trimming, so we can't call it here, even conditionally.
-        var loader = new KestrelConfigurationLoader(this, config, reloadOnChange, tlsLoader);
-        if (tlsLoader is null && _enableTlsConfigurationLoading is not null)
-        {
-            _enableTlsConfigurationLoading(loader);
-        }
-
+        // Why not reuse EnableTlsConfigurationLoading here?  Because it constructs a TlsConfigurationLoader,
+        // which prevents trimming of TLS support code, so we can't call it here, even conditionally.
+        var loader = new KestrelConfigurationLoader(this, config, reloadOnChange, _tlsConfigurationLoader);
         ConfigurationLoader = loader;
         return loader;
     }
 
-    private Action<KestrelConfigurationLoader>? _enableTlsConfigurationLoading;
+    private ITlsConfigurationLoader? _tlsConfigurationLoader;
     internal void EnableTlsConfigurationLoading()
     {
-        if (_enableTlsConfigurationLoading is not null)
+        if (_tlsConfigurationLoader is not null)
         {
             return;
         }
@@ -437,13 +430,11 @@ public class KestrelServerOptions
         var serverLogger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
         var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
 
-        // We stash the call in a lambda in case the loader is replaced - the new one should also have TLS configuration enabled
-        _enableTlsConfigurationLoading = configLoader => configLoader.EnableTlsConfigurationLoading(hostEnvironment, serverLogger, httpsLogger);
+        _tlsConfigurationLoader = new TlsConfigurationLoader(hostEnvironment, serverLogger, httpsLogger);
 
-        // If there's already a configuration loader, apply the setting now
         if (ConfigurationLoader is not null)
         {
-            _enableTlsConfigurationLoading(ConfigurationLoader);
+            ConfigurationLoader.TlsConfigurationLoader = _tlsConfigurationLoader;
         }
     }
 
