@@ -15,13 +15,17 @@ namespace Microsoft.Extensions.Localization;
 public class RequestLocalizationMiddlewareTest
 {
     [Theory]
-    [InlineData("zh-Hans-CN")]
-    [InlineData("zh-Hans")]
-    [InlineData("zh-CN")]
-    [InlineData("zh-Hant-TW")]
-    [InlineData("zh-Hant")]
-    [InlineData("zh-TW")]
-    public async Task RequestLocalizationMiddleware_ShouldFallBackToParentCultures_RegradlessOfHyphenSeparatorCheck(string requestedCulture)
+    [InlineData("zh-Hans-CN", "zh")]
+    [InlineData("zh-Hans", "zh")]
+    [InlineData("zh-CN", "zh")]
+    [InlineData("zh-Hant-TW", "zh")]
+    [InlineData("zh-Hant", "zh")]
+    [InlineData("zh-TW", "zh")]
+    [InlineData("zh-CN", "zh-Hans")]
+    [InlineData("zh-Hans-CN", "zh-Hans")]
+    [InlineData("zh-Hant-TW", "zh-Hant")]
+    [InlineData("zh-TW", "zh-Hant")]
+    public async Task RequestLocalizationMiddleware_ShouldFallBackToParentCultures_RegradlessOfHyphenSeparatorCheck(string requestedCulture, string parentCulture)
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -30,7 +34,7 @@ public class RequestLocalizationMiddlewareTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    var supportedCultures = new[] { "ar", "en", "zh" };
+                    var supportedCultures = new[] { "ar", "en", parentCulture };
 
                     app.UseRequestLocalization(options =>
                     {
@@ -46,8 +50,8 @@ public class RequestLocalizationMiddlewareTest
                     {
                         var requestCulture = context.Features.Get<IRequestCultureFeature>();
 
-                        Assert.Equal("zh", requestCulture.RequestCulture.Culture.Name);
-                        Assert.Equal("zh", requestCulture.RequestCulture.UICulture.Name);
+                        Assert.Equal(parentCulture, requestCulture.RequestCulture.Culture.Name);
+                        Assert.Equal(parentCulture, requestCulture.RequestCulture.UICulture.Name);
 
                         await Task.CompletedTask;
                     });
