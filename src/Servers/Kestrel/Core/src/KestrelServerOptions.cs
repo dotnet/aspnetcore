@@ -404,31 +404,46 @@ public class KestrelServerOptions
             throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
         }
 
-        var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
-        var serverLogger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
-        var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
         var tlsLoader = ApplicationServices.GetService<ITlsConfigurationLoader>();
 
+        // It may seem strange to sometimes pass ITlsConfigurationLoader in via the constructor
+        // and to sometimes call EnableTlsConfigurationLoading, but Configure may be called in
+        // cases where ITlsConfigurationLoader is not wanted and EnableTlsConfigurationLoading
+        // will prevent trimming, so we can't call it here, even conditionally.
         var loader = new KestrelConfigurationLoader(this, config, reloadOnChange, tlsLoader);
+        if (tlsLoader is null && _enableTlsConfigurationLoading is not null)
+        {
+            _enableTlsConfigurationLoading(loader);
+        }
+
         ConfigurationLoader = loader;
         return loader;
     }
 
+    private Action<KestrelConfigurationLoader>? _enableTlsConfigurationLoading;
     internal void EnableTlsConfigurationLoading()
     {
-        // TODO (acasey): keep it around in case someone calls Configure later?
+        if (_enableTlsConfigurationLoading is not null)
+        {
+            return;
+        }
+
+        if (ApplicationServices is null)
+        {
+            throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
+        }
+
+        var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
+        var serverLogger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+        var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+
+        // We stash the call in a lambda in case the loader is replaced - the new one should also have TLS configuration enabled
+        _enableTlsConfigurationLoading = configLoader => configLoader.EnableTlsConfigurationLoading(hostEnvironment, serverLogger, httpsLogger);
+
+        // If there's already a configuration loader, apply the setting now
         if (ConfigurationLoader is not null)
         {
-            if (ApplicationServices is null)
-            {
-                throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
-            }
-
-            var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
-            var serverLogger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
-            var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-
-            ConfigurationLoader.EnableTlsConfigurationLoading(hostEnvironment, serverLogger, httpsLogger);
+            _enableTlsConfigurationLoading(ConfigurationLoader);
         }
     }
 
