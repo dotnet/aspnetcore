@@ -119,7 +119,7 @@ internal static class ServiceDescriptorHelpers
             }
 
             // If there is a match on field name then store the first match.
-            if (field.Name == fieldName && fieldNameDescriptorMatch == null)
+            if (fieldNameDescriptorMatch is null && field.Name == fieldName)
             {
                 fieldNameDescriptorMatch = field;
             }

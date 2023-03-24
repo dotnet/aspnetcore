@@ -475,11 +475,24 @@ public class JsonConverterReadTests
 
     // See See https://github.com/protocolbuffers/protobuf/issues/11987
     [Fact]
-    public void JsonNamePriority()
+    public void JsonNamePriority_JsonName()
     {
         var json = @"{""b"":10,""a"":20,""d"":30}";
 
-        // Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
+        // TODO: Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false);
+
+        Assert.Equal(10, m.A);
+        Assert.Equal(20, m.B);
+        Assert.Equal(30, m.C);
+    }
+
+    [Fact]
+    public void JsonNamePriority_FieldNameFallback()
+    {
+        var json = @"{""b"":10,""a"":20,""c"":30}";
+
+        // TODO: Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
         var m = AssertReadJson<Issue047349Message>(json, serializeOld: false);
 
         Assert.Equal(10, m.A);

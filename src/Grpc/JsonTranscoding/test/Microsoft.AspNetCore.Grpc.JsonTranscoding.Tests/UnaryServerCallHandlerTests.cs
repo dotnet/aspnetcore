@@ -365,7 +365,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
     }
 
     [Fact]
-    public async Task HandleCallAsync_MatchingQueryStringValues_JsonNamePriority_SetOnRequestMessage()
+    public async Task HandleCallAsync_MatchingQueryStringValues_JsonNamePriority_JsonName_SetOnRequestMessage()
     {
         // Arrange
         Issue047349Message? requestMessage = null;
@@ -387,6 +387,42 @@ public class UnaryServerCallHandlerTests : LoggedTest
             ["b"] = "10",
             ["a"] = "20",
             ["d"] = "30"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Debug.Assert(requestMessage != null);
+
+        Assert.Equal(10, requestMessage.A);
+        Assert.Equal(20, requestMessage.B);
+        Assert.Equal(30, requestMessage.C);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_MatchingQueryStringValues_JsonNamePriority_FieldNameFallback_SetOnRequestMessage()
+    {
+        // Arrange
+        Issue047349Message? requestMessage = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, Issue047349Message, HelloReply> invoker = (s, r, c) =>
+        {
+            requestMessage = r;
+
+            return Task.FromResult(new HelloReply());
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(
+            invoker,
+            CreateServiceMethod("JsonNamePriority", Issue047349Message.Parser, HelloReply.Parser),
+            descriptorInfo: TestHelpers.CreateDescriptorInfo());
+
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["b"] = "10",
+            ["a"] = "20",
+            ["c"] = "30"
         });
 
         // Act
