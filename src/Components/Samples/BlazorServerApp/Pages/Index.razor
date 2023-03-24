@@ -5,3 +5,31 @@
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<EditForm Model="@MyValue">
+    <InputText @bind-Value="@MyValue.SomeValue" />
+    <InputText @bind-Value="@MyValue.ChildProperty.SomeNumber" />
+    @for(var i = 0; i < MyValue.ChildList.Count; i++)
+    {
+        var index = i;
+        <InputText @bind-Value="@MyValue.ChildList[index].SomeNumber" />
+    }
+    <InputText ValueExpression="() => MyValue.OtherValue" />
+</EditForm>
+
+@code{
+    public class Model
+    {
+        public string SomeValue { get; set; } = "";
+        public ChildProperty ChildProperty { get; set; } = new();
+        public List<ChildProperty> ChildList { get; set; } = new() { new ChildProperty() };
+        public string OtherValue { get; set; }
+    }
+
+    public class ChildProperty
+    {
+        public string SomeNumber { get; set; } = "";
+    }
+
+    public Model MyValue { get; set; } = new();
+}
