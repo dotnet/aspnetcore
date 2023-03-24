@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.Json;
 using Example.Hello;
 using Google.Protobuf;
@@ -472,17 +473,49 @@ public class JsonConverterReadTests
         AssertReadJson<SayRequest>(json);
     }
 
-    private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null) where TValue : IMessage, new()
+    // See See https://github.com/protocolbuffers/protobuf/issues/11987
+    [Fact]
+    public void JsonNamePriority_JsonName()
+    {
+        var json = @"{""b"":10,""a"":20,""d"":30}";
+
+        // TODO: Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false);
+
+        Assert.Equal(10, m.A);
+        Assert.Equal(20, m.B);
+        Assert.Equal(30, m.C);
+    }
+
+    [Fact]
+    public void JsonNamePriority_FieldNameFallback()
+    {
+        var json = @"{""b"":10,""a"":20,""c"":30}";
+
+        // TODO: Current Google.Protobuf version doesn't have fix. Update when available. 3.23.0 or later?
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false);
+
+        Assert.Equal(10, m.A);
+        Assert.Equal(20, m.B);
+        Assert.Equal(30, m.C);
+    }
+
+    private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool serializeOld = true) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
             Timestamp.Descriptor.File);
 
-        var formatter = new JsonParser(new JsonParser.Settings(
-            recursionLimit: int.MaxValue,
-            typeRegistery));
+        TValue? objectOld = default;
 
-        var objectOld = formatter.Parse<TValue>(value);
+        if (serializeOld)
+        {
+            var formatter = new JsonParser(new JsonParser.Settings(
+                recursionLimit: int.MaxValue,
+                typeRegistery));
+
+            objectOld = formatter.Parse<TValue>(value);
+        }
 
         descriptorRegistry ??= new DescriptorRegistry();
         descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TValue)).File);
@@ -493,10 +526,15 @@ public class JsonConverterReadTests
         _output.WriteLine("New:");
         _output.WriteLine(objectNew.ToString());
 
-        _output.WriteLine("Old:");
-        _output.WriteLine(objectOld.ToString());
+        if (serializeOld)
+        {
+            Debug.Assert(objectOld != null);
 
-        Assert.True(objectNew.Equals(objectOld));
+            _output.WriteLine("Old:");
+            _output.WriteLine(objectOld.ToString());
+
+            Assert.True(objectNew.Equals(objectOld));
+        }
 
         return objectNew;
     }

@@ -103,11 +103,11 @@ internal static class ServiceDescriptorHelpers
     private static FieldDescriptor? GetFieldByName(MessageDescriptor messageDescriptor, string fieldName)
     {
         // Search fields by field name and JSON name. Both names can be referenced.
-        // If there are conflicts, then the last field with a name wins.
+        // JSON name takes precendence. If there are conflicts, then the last field with a name wins.
         // This logic matches how properties are used in JSON serialization's MessageTypeInfoResolver.
         var fields = messageDescriptor.Fields.InFieldNumberOrder();
 
-        FieldDescriptor? fieldDescriptor = null;
+        FieldDescriptor? fieldNameDescriptorMatch = null;
         for (var i = fields.Count - 1; i >= 0; i--)
         {
             // We're checking JSON name first, in reverse order through fields.
@@ -115,17 +115,18 @@ internal static class ServiceDescriptorHelpers
             var field = fields[i];
             if (field.JsonName == fieldName)
             {
-                fieldDescriptor = field;
-                break;
+                return field;
             }
-            else if (field.Name == fieldName)
+
+            // If there is a match on field name then store the first match.
+            if (fieldNameDescriptorMatch is null && field.Name == fieldName)
             {
-                fieldDescriptor = field;
-                break;
+                fieldNameDescriptorMatch = field;
             }
         }
 
-        return fieldDescriptor;
+        // No match with JSON name. If there is a field name match then return it.
+        return fieldNameDescriptorMatch;
     }
 
     private static object? ConvertValue(object? value, FieldDescriptor descriptor)
