@@ -174,7 +174,7 @@ public class RequestLocalizationMiddleware
         int currentDepth)
     {
         // If the cultureName is an empty string there
-        // is not chance we can resolve the culture info.
+        // is no chance we can resolve the culture info.
         if (cultureName.Equals(string.Empty))
         {
             return null;
