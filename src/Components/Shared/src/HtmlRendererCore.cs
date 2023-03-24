@@ -9,18 +9,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering;
 
-internal sealed class HtmlRendererCore : Renderer
+internal class HtmlRendererCore : Renderer, IHtmlRendererContentProvider
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
-    public HtmlRendererCore(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
-        : base(serviceProvider, loggerFactory, componentActivator)
+    public HtmlRendererCore(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        : base(serviceProvider, loggerFactory)
     {
     }
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public HtmlComponent BeginRenderingComponentAsync(
+    public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
@@ -57,6 +57,6 @@ internal sealed class HtmlRendererCore : Renderer
         return CanceledRenderTask;
     }
 
-    internal new ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId)
+    public new ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId)
         => base.GetCurrentRenderTreeFrames(componentId);
 }

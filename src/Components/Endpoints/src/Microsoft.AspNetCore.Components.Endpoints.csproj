@@ -10,14 +10,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" Link="DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HtmlRendererCore.cs" LinkBase="DependencyInjection" />
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
   </ItemGroup>

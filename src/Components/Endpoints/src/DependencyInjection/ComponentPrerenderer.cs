@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-// Wraps the public HtmlRenderer APIs so that the output also gets annotated with prerendering markers.
+// Wraps the public EndpointHtmlRenderer APIs so that the output also gets annotated with prerendering markers.
 // This allows the prerendered content to switch later into interactive mode.
 // This class also deals with initializing the standard component DI services once per request.
 internal sealed class ComponentPrerenderer : IComponentPrerenderer
@@ -22,13 +22,13 @@ internal sealed class ComponentPrerenderer : IComponentPrerenderer
     private static readonly object ComponentSequenceKey = new object();
     private static readonly object InvokedRenderModesKey = new object();
 
-    private readonly HtmlRenderer _htmlRenderer;
+    private readonly EndpointHtmlRenderer _htmlRenderer;
     private readonly IServiceProvider _services;
     private readonly object _servicesInitializedLock = new();
     private Task? _servicesInitializedTask;
 
     public ComponentPrerenderer(
-        HtmlRenderer htmlRenderer,
+        EndpointHtmlRenderer htmlRenderer,
         IServiceProvider services)
     {
         _htmlRenderer = htmlRenderer;
