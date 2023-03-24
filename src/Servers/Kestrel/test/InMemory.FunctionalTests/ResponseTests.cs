@@ -4397,7 +4397,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
-    public async Task AltSvc_Http1And2And3EndpointConfigured_NoMultiplexedFactory_NoAltSvcInResponseHeaders()
+    public async Task AltSvc_Http1And2And3EndpointConfigured_NonBindableMultiplexedFactory_NoAltSvcInResponseHeaders()
     {
         await using (var server = new TestServer(
             httpContext => Task.CompletedTask,
@@ -4410,7 +4410,9 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     IsTls = true
                 });
             },
-            services => { }))
+            services => {
+                services.AddSingleton<IMultiplexedConnectionListenerFactory>(new NonBindableMultiplexedTransportFactory());
+            }))
         {
             using (var connection = server.CreateConnection())
             {
@@ -4427,6 +4429,14 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "");
             }
         }
+    }
+
+    private class NonBindableMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory, IConnectionListenerFactorySelector
+    {
+        ValueTask<IMultiplexedConnectionListener> IMultiplexedConnectionListenerFactory.BindAsync(EndPoint endpoint, IFeatureCollection features, CancellationToken cancellationToken) =>
+            throw new InvalidOperationException();
+
+        bool IConnectionListenerFactorySelector.CanBind(EndPoint endpoint) => false;
     }
 
     [Fact]
