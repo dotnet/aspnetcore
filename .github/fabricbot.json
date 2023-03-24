@@ -3628,6 +3628,46 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "breaking-change"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Breaking change actions reminder",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "needs-breaking-change-announcement"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Thanks for identifying a breaking change.\n\n${assignees}, when you commit this breaking change please take the following actions, as part of the breaking changes announcement process:\n\\n- [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.\n\\n- [ ] Link the breaking change announcement issue from this PR.\n\\n- [ ] Remove the `needs-breaking-change-announcement` label."
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": []
