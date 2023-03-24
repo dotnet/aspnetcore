@@ -87,6 +87,8 @@ internal class TestServer : IAsyncDisposable, IStartup
                 services.AddSingleton<IStartup>(this);
                 services.AddSingleton(context.LoggerFactory);
                 services.AddSingleton(context.Metrics);
+                services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
+                services.AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>();
 
                 services.AddSingleton<IServer>(sp =>
                 {
@@ -95,6 +97,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                     return new KestrelServerImpl(
                         new IConnectionListenerFactory[] { _transportFactory },
                         sp.GetServices<IMultiplexedConnectionListenerFactory>(),
+                        sp.GetRequiredService<IHttpsConfigurationService>(),
                         context);
                 });
             });

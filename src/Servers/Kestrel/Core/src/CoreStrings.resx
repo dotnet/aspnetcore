@@ -722,4 +722,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="FailedToBindToIPv6Any" xml:space="preserve">
     <value>Failed to bind to http://[::]:{port} (IPv6Any).</value>
   </data>
+  <data name="NeedHttpsConfiguration" xml:space="preserve">
+    <value>Call UseHttpsConfiguration() on IWebHostBuilder to enable this functionality.</value>
+  </data>
 </root>

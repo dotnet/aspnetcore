@@ -82,7 +82,8 @@ public class ApiTemplateTest : LoggedTest
 
         await project.RunDotNetBuildAsync();
 
-        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        // The minimal/slim/core scenario doesn't include TLS support, so tell `project` not to register an https address
+        using (var aspNetProcess = project.StartBuiltProjectAsync(noHttps: true))
         {
             Assert.False(
                aspNetProcess.Process.HasExited,
@@ -91,7 +92,7 @@ public class ApiTemplateTest : LoggedTest
             await AssertEndpoints(aspNetProcess);
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync())
+        using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true))
         {
             Assert.False(
                 aspNetProcess.Process.HasExited,

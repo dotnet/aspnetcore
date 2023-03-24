@@ -5,7 +5,11 @@ using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
@@ -31,6 +35,7 @@ public class KestrelServer : IServer
             options,
             new[] { transportFactory ?? throw new ArgumentNullException(nameof(transportFactory)) },
             Array.Empty<IMultiplexedConnectionListenerFactory>(),
+            new SimpleHttpsConfigurationService(),
             loggerFactory,
             new KestrelMetrics(new DummyMeterFactory()));
     }
@@ -69,5 +74,45 @@ public class KestrelServer : IServer
         public Meter CreateMeter(string name) => new Meter(name);
 
         public Meter CreateMeter(MeterOptions options) => new Meter(options.Name, options.Version);
+    }
+
+    private sealed class SimpleHttpsConfigurationService : IHttpsConfigurationService
+    {
+        public bool IsInitialized => true;
+
+        public void Initialize(IHostEnvironment hostEnvironment, ILogger<KestrelServer> serverLogger, ILogger<HttpsConnectionMiddleware> httpsLogger)
+        {
+            // Already initialized
+        }
+
+        public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
+        {
+            HttpsConfigurationService.PopulateMultiplexedTransportFeaturesWorker(features, listenOptions);
+        }
+
+        public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions)
+        {
+            return HttpsConfigurationService.UseHttpsWithDefaultsWorker(listenOptions);
+        }
+
+        public void ApplyHttpsConfiguration(
+            HttpsConnectionAdapterOptions httpsOptions,
+            EndpointConfig endpoint,
+            KestrelServerOptions serverOptions,
+            CertificateConfig? defaultCertificateConfig,
+            ConfigurationReader configurationReader)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl
+        }
+
+        public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl
+        }
+
+        public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl
+        }
     }
 }
