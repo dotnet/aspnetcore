@@ -41,7 +41,7 @@ setTimeout(() => {
     process.exit(1);
 }, 1000 * 60 * 20);
 
-function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<RegExpMatchArray> {
+function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
         const commandDebug = _debug(`${command}`);
         try {
