@@ -107,7 +107,9 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
         Microsoft_AspNetCore_Mvc_ModelBinding_EmptyBodyBehavior,
         Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
-        Microsoft_AspNetCore_Authorization_AuthorizeAttribute
+        Microsoft_AspNetCore_Authorization_AuthorizeAttribute,
+        Microsoft_Extensions_DependencyInjection_PolicyServiceCollectionExtensions,
+        Microsoft_AspNetCore_Authorization_AuthorizationOptions
     }
 
     public static string[] WellKnownTypeNames = new[]
@@ -212,6 +214,8 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
         "Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior",
         "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
-        "Microsoft.AspNetCore.Authorization.AuthorizeAttribute"
+        "Microsoft.AspNetCore.Authorization.AuthorizeAttribute",
+        "Microsoft.Extensions.DependencyInjection.PolicyServiceCollectionExtensions",
+        "Microsoft.AspNetCore.Authorization.AuthorizationOptions"
     };
 }
