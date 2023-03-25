@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Analyzers.Authorization;
 public sealed class AddAuthorizationBuilderTests
 {
     // TODO: Additional Test Cases
-    // - Refactor assignment to AuthorizationOptions.FallbackPolicy to use AuthorizationBuilder.SetFallbackPolicy
     // - Refactoring to call InvokeHandlersAfterFailure instead of using setter
     // - Other IServiceCollection extension is changed to AddAuthorization call.
     //   to keep things simple, just check if the parent of the InvocationExpression is a GlobalStatementExpression
@@ -177,6 +176,92 @@ builder.Services.AddAuthorizationBuilder()
     {
         policy.Requirements.Add(new MinimumAgeRequirement(21));
     });
+";
+
+        await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);
+    }
+
+    [Fact]
+    public async Task AddAuthorization_WithAuthorizationOptionsDefaultPolicyAssignment_FixedWithAddAuthorizationBuilder()
+    {
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
+            .WithLocation(0)
+            .WithMessage(Resources.Analyzer_UseAddAuthorizationBuilder_Message);
+
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+{|#0:builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .RequireClaim(""Claim"")
+        .Build();
+
+    options.AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21)));
+})|};
+";
+
+        var fixedSource = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorizationBuilder()
+    .SetDefaultPolicy(new AuthorizationPolicyBuilder()
+        .RequireClaim(""Claim"")
+        .Build())
+    .AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21)));
+";
+
+        await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);
+    }
+
+    [Fact]
+    public async Task AddAuthorization_WithAuthorizationOptionsFallbackPolicyAssignment_FixedWithAddAuthorizationBuilder()
+    {
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
+            .WithLocation(0)
+            .WithMessage(Resources.Analyzer_UseAddAuthorizationBuilder_Message);
+
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+{|#0:builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireClaim(""Claim"")
+        .Build();
+
+    options.AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21)));
+})|};
+";
+
+        var fixedSource = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireClaim(""Claim"")
+        .Build())
+    .AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21)));
 ";
 
         await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);

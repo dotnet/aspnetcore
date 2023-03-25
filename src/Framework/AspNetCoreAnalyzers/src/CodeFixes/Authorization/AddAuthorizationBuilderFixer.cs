@@ -5,7 +5,6 @@ using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -73,7 +72,7 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
 
                 var lambdaNodes = lambdaBody.DescendantNodes();
 
-                foreach (var configureAction in lambdaNodes.OfType<InvocationExpressionSyntax>())
+                foreach (var configureAction in lambdaNodes)
                 {
                     if (configureAction is InvocationExpressionSyntax { ArgumentList.Arguments: { } configureArguments, Expression: MemberAccessExpressionSyntax { Name.Identifier.Text: "AddPolicy" } })
                     {
@@ -91,6 +90,44 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
                                     SyntaxFactory.IdentifierName("AddPolicy")),
                                 SyntaxFactory.ArgumentList(
                                     SyntaxFactory.SeparatedList(configureArguments)));
+                        }
+                    }
+                    else if (configureAction is AssignmentExpressionSyntax assignmentSyntax)
+                    {
+                        if (assignmentSyntax.Left is MemberAccessExpressionSyntax { Name.Identifier.Text: { } assignmentTargetName })
+                        {
+                            if (assignmentTargetName == "DefaultPolicy")
+                            {
+                                invocation = SyntaxFactory.InvocationExpression(
+                                   SyntaxFactory.MemberAccessExpression(
+                                       SyntaxKind.SimpleMemberAccessExpression,
+                                       invocation.WithTrailingTrivia(
+                                           SyntaxFactory.EndOfLine(Environment.NewLine),
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space),
+                                       SyntaxFactory.IdentifierName("SetDefaultPolicy")),
+                                   SyntaxFactory.ArgumentList(
+                                       SyntaxFactory.SingletonSeparatedList(
+                                           SyntaxFactory.Argument(assignmentSyntax.Right))));
+                            }
+                            else if (assignmentTargetName == "FallbackPolicy")
+                            {
+                                invocation = SyntaxFactory.InvocationExpression(
+                                   SyntaxFactory.MemberAccessExpression(
+                                       SyntaxKind.SimpleMemberAccessExpression,
+                                       invocation.WithTrailingTrivia(
+                                           SyntaxFactory.EndOfLine(Environment.NewLine),
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space),
+                                       SyntaxFactory.IdentifierName("SetFallbackPolicy")),
+                                   SyntaxFactory.ArgumentList(
+                                       SyntaxFactory.SingletonSeparatedList(
+                                           SyntaxFactory.Argument(assignmentSyntax.Right))));
+                            }
                         }
                     }
                 }

@@ -73,6 +73,12 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
                     || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.FallbackPolicy)
                     || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.InvokeHandlersAfterFailure))
                 {
+                    if (propertyReferenceOperation.Parent is IAssignmentOperation { Target: IPropertyReferenceOperation targetProperty } assignmentOperation
+                        && SymbolEqualityComparer.Default.Equals(property, targetProperty.Property))
+                    {
+                        return false;
+                    }
+
                     return true;
                 }
 
