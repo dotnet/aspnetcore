@@ -28,6 +28,12 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
     {
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.Compilation);
 
+        var authorizationOptionsTypes = new AuthorizationOptionsTypes(wellKnownTypes);
+        if (!authorizationOptionsTypes.HasRequiredTypes)
+        {
+            return;
+        }
+
         var policyServiceCollectionExtensions = wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_PolicyServiceCollectionExtensions);
         var addAuthorizationMethod = policyServiceCollectionExtensions.GetMembers()
             .OfType<IMethodSymbol>()
@@ -40,7 +46,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
             if (invocation.TargetMethod.Parameters.Length == 2
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, policyServiceCollectionExtensions)
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, addAuthorizationMethod)
-                && IsConfigureActionCompatibleWithAuthorizationBuilder(invocation, wellKnownTypes))
+                && IsConfigureActionCompatibleWithAuthorizationBuilder(invocation, authorizationOptionsTypes))
             {
                 AddDiagnosticInformation(context, invocation.Syntax.GetLocation());
             }
@@ -48,7 +54,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         }, OperationKind.Invocation);
     }
 
-    private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IInvocationOperation invocation, WellKnownTypes wellKnownTypes)
+    private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IInvocationOperation invocation, AuthorizationOptionsTypes authorizationOptionsTypes)
     {
         if (invocation.Arguments is not { Length: 2 })
         {
@@ -57,30 +63,15 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
         var configureAction = invocation.Arguments[1];
 
-        var authorizationOptions = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Authorization_AuthorizationOptions);
-        var authorizationOptionsMembers = authorizationOptions.GetMembers();
-
-        var defaultPolicyProperty = authorizationOptionsMembers.First(member =>
-            member.Kind == SymbolKind.Property && member.Name == "DefaultPolicy");
-
-        var fallbackPolicyProperty = authorizationOptionsMembers.First(member =>
-            member.Kind == SymbolKind.Property && member.Name == "FallbackPolicy");
-
-        var invokeHandlersAfterFailureProperty = authorizationOptionsMembers.First(member =>
-            member.Kind == SymbolKind.Property && member.Name == "InvokeHandlersAfterFailure");
-
-        var getPolicyMethod = authorizationOptionsMembers.First(member =>
-            member.Kind == SymbolKind.Method && member.Name == "GetPolicy");
-
         return !configureAction.Descendants().Any(operation =>
         {
             if (operation is IPropertyReferenceOperation propertyReferenceOperation)
             {
                 var property = propertyReferenceOperation.Property;
 
-                if (SymbolEqualityComparer.Default.Equals(property, defaultPolicyProperty)
-                    || SymbolEqualityComparer.Default.Equals(property, fallbackPolicyProperty)
-                    || SymbolEqualityComparer.Default.Equals(property, invokeHandlersAfterFailureProperty))
+                if (SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.DefaultPolicy)
+                    || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.FallbackPolicy)
+                    || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.InvokeHandlersAfterFailure))
                 {
                     return true;
                 }
@@ -90,8 +81,8 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
             if (operation is IMethodReferenceOperation methodReferenceOperation)
             {
-                if (SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, getPolicyMethod)
-                    && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptions))
+                if (SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, authorizationOptionsTypes.GetPolicy)
+                    && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
                 {
                     return true;
                 }
@@ -101,8 +92,8 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
             if (operation is IInvocationOperation invocationOperation)
             {
-                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, authorizationOptions)
-                    && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, getPolicyMethod))
+                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, authorizationOptionsTypes.AuthorizationOptions)
+                    && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy))
                 {
                     return true;
                 }
@@ -119,5 +110,41 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticDescriptors.UseAddAuthorizationBuilder,
             location));
+    }
+    private sealed class AuthorizationOptionsTypes
+    {
+        public AuthorizationOptionsTypes(WellKnownTypes wellKnownTypes)
+        {
+            AuthorizationOptions = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Authorization_AuthorizationOptions);
+
+            if (AuthorizationOptions is not null)
+            {
+                var authorizationOptionsMembers = AuthorizationOptions.GetMembers();
+
+                var authorizationOptionsProperties = authorizationOptionsMembers.OfType<IPropertySymbol>();
+
+                DefaultPolicy = authorizationOptionsProperties
+                    .FirstOrDefault(member => member.Name == "DefaultPolicy");
+                FallbackPolicy = authorizationOptionsProperties
+                    .FirstOrDefault(member => member.Name == "FallbackPolicy");
+                InvokeHandlersAfterFailure = authorizationOptionsProperties
+                    .FirstOrDefault(member => member.Name == "InvokeHandlersAfterFailure");
+
+                GetPolicy = authorizationOptionsMembers.OfType<IMethodSymbol>()
+                    .FirstOrDefault(member => member.Name == "GetPolicy");
+            }
+        }
+
+        public INamedTypeSymbol? AuthorizationOptions { get; }
+        public IPropertySymbol? DefaultPolicy { get; }
+        public IPropertySymbol? FallbackPolicy { get; }
+        public IPropertySymbol? InvokeHandlersAfterFailure { get; }
+        public IMethodSymbol? GetPolicy { get; }
+
+        public bool HasRequiredTypes => AuthorizationOptions is not null
+            && DefaultPolicy is not null
+            && FallbackPolicy is not null
+            && InvokeHandlersAfterFailure is not null
+            && GetPolicy is not null;
     }
 }
