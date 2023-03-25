@@ -154,8 +154,7 @@ public class EnumTypeModelBinderTest
     [InlineData("Value2, Value8")]
     [InlineData("value8,value4,value2,value1")]
     public async Task BindModel_BindsTo_NonNullableFlagsEnumType_List(
-        string flagsEnumValue,
-        params string[] flagsEnumValueList
+        string flagsEnumValue
     )
     {
         // Arrange
@@ -180,8 +179,7 @@ public class EnumTypeModelBinderTest
     [InlineData("Value2, Value8")]
     [InlineData("value8,value4,value2,value1")]
     public async Task BindModel_BindsTo_NullableFlagsEnumType_List(
-        string flagsEnumValue,
-        params string[] flagsEnumValueList
+        string flagsEnumValue
     )
     {
         // Arrange
