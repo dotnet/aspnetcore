@@ -128,6 +128,22 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
                                        SyntaxFactory.SingletonSeparatedList(
                                            SyntaxFactory.Argument(assignmentSyntax.Right))));
                             }
+                            else if (assignmentTargetName == "InvokeHandlersAfterFailure")
+                            {
+                                invocation = SyntaxFactory.InvocationExpression(
+                                   SyntaxFactory.MemberAccessExpression(
+                                       SyntaxKind.SimpleMemberAccessExpression,
+                                       invocation.WithTrailingTrivia(
+                                           SyntaxFactory.EndOfLine(Environment.NewLine),
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space,
+                                           SyntaxFactory.Space),
+                                       SyntaxFactory.IdentifierName("SetInvokeHandlersAfterFailure")),
+                                   SyntaxFactory.ArgumentList(
+                                       SyntaxFactory.SingletonSeparatedList(
+                                           SyntaxFactory.Argument(assignmentSyntax.Right))));
+                            }
                         }
                     }
                 }
