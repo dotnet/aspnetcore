@@ -78,72 +78,23 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
                     {
                         if (configureArguments.Count == 2)
                         {
-                            invocation = SyntaxFactory.InvocationExpression(
-                                SyntaxFactory.MemberAccessExpression(
-                                    SyntaxKind.SimpleMemberAccessExpression,
-                                    invocation.WithTrailingTrivia(
-                                        SyntaxFactory.EndOfLine(Environment.NewLine),
-                                        SyntaxFactory.Space,
-                                        SyntaxFactory.Space,
-                                        SyntaxFactory.Space,
-                                        SyntaxFactory.Space),
-                                    SyntaxFactory.IdentifierName("AddPolicy")),
+                            invocation = ChainInvocation(
+                                invocation,
+                                "AddPolicy",
                                 SyntaxFactory.ArgumentList(
                                     SyntaxFactory.SeparatedList(configureArguments)));
                         }
                     }
                     else if (configureAction is AssignmentExpressionSyntax assignmentSyntax)
                     {
-                        if (assignmentSyntax.Left is MemberAccessExpressionSyntax { Name.Identifier.Text: { } assignmentTargetName })
+                        if (assignmentSyntax.Left is MemberAccessExpressionSyntax { Name.Identifier.Text: { } assignmentTargetName }
+                            && assignmentTargetName is "DefaultPolicy" or "FallbackPolicy" or "InvokeHandlersAfterFailure")
                         {
-                            if (assignmentTargetName == "DefaultPolicy")
-                            {
-                                invocation = SyntaxFactory.InvocationExpression(
-                                   SyntaxFactory.MemberAccessExpression(
-                                       SyntaxKind.SimpleMemberAccessExpression,
-                                       invocation.WithTrailingTrivia(
-                                           SyntaxFactory.EndOfLine(Environment.NewLine),
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space),
-                                       SyntaxFactory.IdentifierName("SetDefaultPolicy")),
-                                   SyntaxFactory.ArgumentList(
-                                       SyntaxFactory.SingletonSeparatedList(
-                                           SyntaxFactory.Argument(assignmentSyntax.Right))));
-                            }
-                            else if (assignmentTargetName == "FallbackPolicy")
-                            {
-                                invocation = SyntaxFactory.InvocationExpression(
-                                   SyntaxFactory.MemberAccessExpression(
-                                       SyntaxKind.SimpleMemberAccessExpression,
-                                       invocation.WithTrailingTrivia(
-                                           SyntaxFactory.EndOfLine(Environment.NewLine),
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space),
-                                       SyntaxFactory.IdentifierName("SetFallbackPolicy")),
-                                   SyntaxFactory.ArgumentList(
-                                       SyntaxFactory.SingletonSeparatedList(
-                                           SyntaxFactory.Argument(assignmentSyntax.Right))));
-                            }
-                            else if (assignmentTargetName == "InvokeHandlersAfterFailure")
-                            {
-                                invocation = SyntaxFactory.InvocationExpression(
-                                   SyntaxFactory.MemberAccessExpression(
-                                       SyntaxKind.SimpleMemberAccessExpression,
-                                       invocation.WithTrailingTrivia(
-                                           SyntaxFactory.EndOfLine(Environment.NewLine),
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space,
-                                           SyntaxFactory.Space),
-                                       SyntaxFactory.IdentifierName("SetInvokeHandlersAfterFailure")),
-                                   SyntaxFactory.ArgumentList(
-                                       SyntaxFactory.SingletonSeparatedList(
-                                           SyntaxFactory.Argument(assignmentSyntax.Right))));
-                            }
+                            invocation = ChainInvocation(
+                                invocation, $"Set{assignmentTargetName}",
+                                SyntaxFactory.ArgumentList(
+                                    SyntaxFactory.SingletonSeparatedList(
+                                        SyntaxFactory.Argument(assignmentSyntax.Right))));
                         }
                     }
                 }
@@ -153,6 +104,24 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
         }
 
         return false;
+    }
+
+    private static InvocationExpressionSyntax ChainInvocation(
+        InvocationExpressionSyntax invocation,
+        string invokedMemberName,
+        ArgumentListSyntax argumentList)
+    {
+        return SyntaxFactory.InvocationExpression(
+            SyntaxFactory.MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                invocation.WithTrailingTrivia(
+                    SyntaxFactory.EndOfLine(Environment.NewLine),
+                    SyntaxFactory.Space,
+                    SyntaxFactory.Space,
+                    SyntaxFactory.Space,
+                    SyntaxFactory.Space),
+                SyntaxFactory.IdentifierName(invokedMemberName)),
+           argumentList);
     }
 
     private static Task<Document> ReplaceWithAddAuthorizationBuilder(Diagnostic diagnostic, SyntaxNode root, Document document, InvocationExpressionSyntax invocation)

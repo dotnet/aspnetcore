@@ -86,26 +86,18 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
                 return false;
             }
 
-            if (operation is IMethodReferenceOperation methodReferenceOperation)
+            if (operation is IMethodReferenceOperation methodReferenceOperation
+                && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, authorizationOptionsTypes.GetPolicy)
+                && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
             {
-                if (SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, authorizationOptionsTypes.GetPolicy)
-                    && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
             }
 
-            if (operation is IInvocationOperation invocationOperation)
+            if (operation is IInvocationOperation invocationOperation
+                && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy)
+                && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
             {
-                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy)
-                    && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
             }
 
             return false;
@@ -114,12 +106,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
     private static bool IsLastCallInChain(IInvocationOperation invocation)
     {
-        if (invocation.Parent is IExpressionStatementOperation)
-        {
-            return true;
-        }
-
-        return false;
+        return invocation.Parent is IExpressionStatementOperation;
     }
 
     private static void AddDiagnosticInformation(OperationAnalysisContext context, Location location)
