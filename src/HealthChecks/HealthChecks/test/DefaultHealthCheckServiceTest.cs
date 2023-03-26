@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 public class DefaultHealthCheckServiceTest
 {
-        [Fact]
+    [Fact]
     public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
     {
         // Arrange

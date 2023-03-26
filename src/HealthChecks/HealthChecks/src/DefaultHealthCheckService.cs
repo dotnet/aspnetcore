@@ -35,30 +35,6 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         // actually tries to **run** health checks would be real baaaaad.
         ValidateRegistrations(_options.Value.Registrations);
     }
-
-    private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
-    {
-        // Scan the list for duplicate names to provide a better error if there are duplicates.
-
-        StringBuilder? builder = null;
-        var distinctRegistrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var registration in registrations)
-        {
-            if (!distinctRegistrations.Add(registration.Name))
-            {
-                builder ??= new StringBuilder("Duplicate health checks were registered with the name(s): ");
-
-                builder.Append(registration.Name).Append(", ");
-            }
-        }
-
-        if (builder is not null)
-        {
-            throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
-        }
-    }
-
     public override async Task<HealthReport> CheckHealthAsync(
         Func<HealthCheckRegistration, bool>? predicate,
         CancellationToken cancellationToken = default)
@@ -181,6 +157,29 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         }
     }
 
+    private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
+    {
+        // Scan the list for duplicate names to provide a better error if there are duplicates.
+
+        StringBuilder? builder = null;
+        var distinctRegistrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var registration in registrations)
+        {
+            if (!distinctRegistrations.Add(registration.Name))
+            {
+                builder ??= new StringBuilder("Duplicate health checks were registered with the name(s): ");
+
+                builder.Append(registration.Name).Append(", ");
+            }
+        }
+
+        if (builder is not null)
+        {
+            throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
+        }
+    }
+
     internal static class EventIds
     {
         public const int HealthCheckProcessingBeginId = 100;
@@ -219,6 +218,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         private const string HealthCheckEndText = "Health check {HealthCheckName} with status {HealthStatus} completed after {ElapsedMilliseconds}ms with message '{HealthCheckDescription}'";
 
 #pragma warning disable SYSLIB1006
+#pragma warning disable SYSLIB1025
         [LoggerMessage(EventIds.HealthCheckEndId, LogLevel.Debug, HealthCheckEndText, EventName = EventIds.HealthCheckEndName)]
         private static partial void HealthCheckEndHealthy(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription);
 
@@ -227,6 +227,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
         [LoggerMessage(EventIds.HealthCheckEndId, LogLevel.Error, HealthCheckEndText, EventName = EventIds.HealthCheckEndName)]
         private static partial void HealthCheckEndUnhealthy(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription, Exception? exception);
+#pragma warning restore SYSLIB1025
 #pragma warning restore SYSLIB1006
 
         public static void HealthCheckEnd(ILogger logger, HealthCheckRegistration registration, HealthReportEntry entry, TimeSpan duration)
