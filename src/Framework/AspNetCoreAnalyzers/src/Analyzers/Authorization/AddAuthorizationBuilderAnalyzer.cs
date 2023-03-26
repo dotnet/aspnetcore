@@ -46,6 +46,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
             if (invocation.TargetMethod.Parameters.Length == 2
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, policyServiceCollectionExtensions)
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, addAuthorizationMethod)
+                && IsLastCallInChain(invocation)
                 && IsConfigureActionCompatibleWithAuthorizationBuilder(invocation, authorizationOptionsTypes))
             {
                 AddDiagnosticInformation(context, invocation.Syntax.GetLocation());
@@ -98,8 +99,8 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
             if (operation is IInvocationOperation invocationOperation)
             {
-                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, authorizationOptionsTypes.AuthorizationOptions)
-                    && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy))
+                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy)
+                    && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
                 {
                     return true;
                 }
@@ -109,6 +110,16 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
             return false;
         });
+    }
+
+    private static bool IsLastCallInChain(IInvocationOperation invocation)
+    {
+        if (invocation.Parent is IExpressionStatementOperation)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private static void AddDiagnosticInformation(OperationAnalysisContext context, Location location)
