@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics.CodeAnalysis;
@@ -60,7 +61,17 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
             if (arguments.Count == 1
                 && arguments[0].Expression is SimpleLambdaExpressionSyntax lambda)
             {
-                if (lambda.Body is not BlockSyntax lambdaBody)
+                IEnumerable<SyntaxNode> nodes;
+
+                if (lambda.Body is BlockSyntax lambdaBlockBody)
+                {
+                    nodes = lambdaBlockBody.DescendantNodes();
+                }
+                else if (lambda.Body is InvocationExpressionSyntax lambdaExpressionBody)
+                {
+                    nodes = new[] { lambdaExpressionBody };
+                }
+                else
                 {
                     return false;
                 }
@@ -70,9 +81,7 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
 
                 invocation = SyntaxFactory.InvocationExpression(addAuthorizationBuilderMethod);
 
-                var lambdaNodes = lambdaBody.DescendantNodes();
-
-                foreach (var configureAction in lambdaNodes)
+                foreach (var configureAction in nodes)
                 {
                     if (configureAction is InvocationExpressionSyntax { ArgumentList.Arguments: { } configureArguments, Expression: MemberAccessExpressionSyntax { Name.Identifier.Text: "AddPolicy" } })
                     {

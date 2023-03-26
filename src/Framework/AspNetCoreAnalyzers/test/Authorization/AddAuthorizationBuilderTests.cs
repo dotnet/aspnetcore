@@ -11,6 +11,40 @@ namespace Microsoft.AspNetCore.Analyzers.Authorization;
 public sealed class AddAuthorizationBuilderTests
 {
     [Fact]
+    public async Task AddAuthorization_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
+    {
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
+            .WithLocation(0)
+            .WithMessage(Resources.Analyzer_UseAddAuthorizationBuilder_Message);
+
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+{|#0:builder.Services.AddAuthorization(options =>
+    options.AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21))))|};
+";
+
+        var fixedSource = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21)));
+";
+
+        await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);
+    }
+
+    [Fact]
     public async Task AddAuthorization_WithSingleAddPolicyCall_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
