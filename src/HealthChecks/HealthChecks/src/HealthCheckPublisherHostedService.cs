@@ -23,7 +23,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
     private readonly ILogger _logger;
     private readonly IHealthCheckPublisher[] _publishers;
-    private List<Timer> _timers;
+    private List<Timer>? _timers;
 
     private readonly CancellationTokenSource _stopping;
     private CancellationTokenSource? _runTokenSource;
@@ -107,12 +107,12 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         var hcRegistrationsGrouped = new Dictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>>();
         foreach (var hc in _healthCheckServiceOptions.Value.Registrations)
         {
-            var key = GetTimerOptions(hc);
-            if (!hcRegistrationsGrouped.ContainsKey(key))
+            var timerOptions = GetTimerOptions(hc);
+            if (!hcRegistrationsGrouped.ContainsKey(timerOptions))
             {
-                hcRegistrationsGrouped[key] = new List<HealthCheckRegistration>();
+                hcRegistrationsGrouped[timerOptions] = new List<HealthCheckRegistration>();
             }
-            hcRegistrationsGrouped[key].Add(hc);
+            hcRegistrationsGrouped[timerOptions].Add(hc);
         }
 
         var timers = new List<Timer>(hcRegistrationsGrouped.Count);
@@ -145,7 +145,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     }
 
     // Internal for testing
-    internal async Task RunAsync((TimeSpan Delay, TimeSpan Period)? timerOptions = null)
+    internal async Task RunAsync((TimeSpan Delay, TimeSpan Period) timerOptions = default)
     {
         var duration = ValueStopwatch.StartNew();
         Logger.HealthCheckPublisherProcessingBegin(_logger);
@@ -159,7 +159,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             _runTokenSource = cancellation;
             cancellation.CancelAfter(timeout);
 
-            await RunAsyncCore(timerOptions.Value, cancellation.Token).ConfigureAwait(false);
+            await RunAsyncCore(timerOptions, cancellation.Token).ConfigureAwait(false);
 
             Logger.HealthCheckPublisherProcessingEnd(_logger, duration.GetElapsedTime());
         }

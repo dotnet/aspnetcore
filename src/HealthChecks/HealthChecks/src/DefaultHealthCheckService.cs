@@ -59,7 +59,6 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         }
     }
 
-
     public override async Task<HealthReport> CheckHealthAsync(
         Func<HealthCheckRegistration, bool>? predicate,
         CancellationToken cancellationToken = default)
