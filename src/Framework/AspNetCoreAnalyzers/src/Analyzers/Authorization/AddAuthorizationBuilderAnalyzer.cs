@@ -43,11 +43,11 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         {
             var invocation = (IInvocationOperation)context.Operation;
 
-            if (invocation.TargetMethod.Parameters.Length == 2
+            if (invocation.Arguments.Length == 2
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, policyServiceCollectionExtensions)
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, addAuthorizationMethod)
                 && IsLastCallInChain(invocation)
-                && IsConfigureActionCompatibleWithAuthorizationBuilder(invocation, authorizationOptionsTypes))
+                && IsConfigureActionCompatibleWithAuthorizationBuilder(invocation.Arguments[1], authorizationOptionsTypes))
             {
                 AddDiagnosticInformation(context, invocation.Syntax.GetLocation());
             }
@@ -55,53 +55,56 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         }, OperationKind.Invocation);
     }
 
-    private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IInvocationOperation invocation, AuthorizationOptionsTypes authorizationOptionsTypes)
+    private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IArgumentOperation configureAction, AuthorizationOptionsTypes authorizationOptionsTypes)
     {
-        if (invocation.Arguments is not { Length: 2 })
-        {
-            return false;
-        }
+        var usesAuthorizationOptionsSpecificAPIs = configureAction.Descendants()
+            .Any(operation =>
+                UsesAuthorizationOptionsSpecificGetters(operation, authorizationOptionsTypes)
+                || UsesAuthorizationOptionsGetPolicy(operation, authorizationOptionsTypes));
 
-        var configureAction = invocation.Arguments[1];
+        return !usesAuthorizationOptionsSpecificAPIs;
+    }
 
-        return !configureAction.Descendants().Any(operation =>
+    private static bool UsesAuthorizationOptionsSpecificGetters(IOperation operation, AuthorizationOptionsTypes authorizationOptionsTypes)
+    {
+        if (operation is IPropertyReferenceOperation propertyReferenceOperation)
         {
-            if (operation is IPropertyReferenceOperation propertyReferenceOperation)
+            var property = propertyReferenceOperation.Property;
+
+            if (propertyReferenceOperation.Parent is IAssignmentOperation { Target: IPropertyReferenceOperation targetProperty } assignmentOperation
+                && SymbolEqualityComparer.Default.Equals(property, targetProperty.Property))
             {
-                var property = propertyReferenceOperation.Property;
-
-                if (SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.DefaultPolicy)
-                    || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.FallbackPolicy)
-                    || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.InvokeHandlersAfterFailure))
-                {
-                    if (propertyReferenceOperation.Parent is IAssignmentOperation { Target: IPropertyReferenceOperation targetProperty } assignmentOperation
-                        && SymbolEqualityComparer.Default.Equals(property, targetProperty.Property))
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }
-
                 return false;
             }
 
-            if (operation is IMethodReferenceOperation methodReferenceOperation
-                && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, authorizationOptionsTypes.GetPolicy)
-                && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
+            if (SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.DefaultPolicy)
+                || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.FallbackPolicy)
+                || SymbolEqualityComparer.Default.Equals(property, authorizationOptionsTypes.InvokeHandlersAfterFailure))
             {
                 return true;
             }
+        }
 
-            if (operation is IInvocationOperation invocationOperation
-                && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy)
-                && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
-            {
-                return true;
-            }
+        return false;
+    }
 
-            return false;
-        });
+    private static bool UsesAuthorizationOptionsGetPolicy(IOperation operation, AuthorizationOptionsTypes authorizationOptionsTypes)
+    {
+        if (operation is IMethodReferenceOperation methodReferenceOperation
+            && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, authorizationOptionsTypes.GetPolicy)
+            && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
+        {
+            return true;
+        }
+
+        if (operation is IInvocationOperation invocationOperation
+            && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy)
+            && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private static bool IsLastCallInChain(IInvocationOperation invocation)

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Analyzers.Authorization;
 public sealed class AddAuthorizationBuilderTests
 {
     [Fact]
-    public async Task AddAuthorization_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
+    public async Task ConfigureAction_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -45,7 +45,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithSingleAddPolicyCall_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
+    public async Task SingleAddPolicyCall_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -81,7 +81,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithMultipleAddPolicyCalls_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
+    public async Task MultipleAddPolicyCalls_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -122,7 +122,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithSingleAddPolicyCall_UsingBlockBody_FixedWithAddAuthorizationBuilder()
+    public async Task SingleAddPolicyCall_UsingBlockBody_FixedWithAddAuthorizationBuilder()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -162,7 +162,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithMultipleAddPolicyCalls_UsingBlockBody_FixedWithAddAuthorizationBuilder()
+    public async Task MultipleAddPolicyCalls_UsingBlockBody_FixedWithAddAuthorizationBuilder()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -211,7 +211,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithAuthorizationOptionsDefaultPolicyAssignment_FixedWithAddAuthorizationBuilder()
+    public async Task AuthorizationOptions_DefaultPolicyAssignment_ReplacedWithSetDefaultPolicyInvocation()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -254,7 +254,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithAuthorizationOptionsFallbackPolicyAssignment_FixedWithAddAuthorizationBuilder()
+    public async Task AuthorizationOptions_FallbackPolicyAssignment_ReplacedWithSetFallbackPolicyInvocation()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -297,7 +297,7 @@ builder.Services.AddAuthorizationBuilder()
     }
 
     [Fact]
-    public async Task AddAuthorization_WithAuthorizationOptionsInvokeHandlersAfterFailureAssignment_FixedWithAddAuthorizationBuilder()
+    public async Task AuthorizationOptions_InvokeHandlersAfterFailureAssignment_ReplacedWithSetInvokeHandlersAfterFailureInvocation()
     {
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
             .WithLocation(0)
@@ -395,7 +395,7 @@ builder.Services.AddAuthorization(options =>
     }
 
     [Fact]
-    public async Task AddAuthorization_AccessesAuthorizationOptionsDefaultPolicy_NoDiagnostic()
+    public async Task AuthorizationOptions_DefaultPolicyAccess_NoDiagnostic()
     {
         var source = @"
 using Microsoft.AspNetCore.Authorization;
@@ -418,7 +418,7 @@ builder.Services.AddAuthorization(options =>
     }
 
     [Fact]
-    public async Task AddAuthorization_AccessesAuthorizationOptionsFallbackPolicy_NoDiagnostic()
+    public async Task AuthorizationOptions_FallbackPolicyAccess_NoDiagnostic()
     {
         var source = @"
 using Microsoft.AspNetCore.Authorization;
@@ -441,7 +441,7 @@ builder.Services.AddAuthorization(options =>
     }
 
     [Fact]
-    public async Task AddAuthorization_AccessesAuthorizationOptionsInvokeHandlesAfterFailure_NoDiagnostic()
+    public async Task AuthorizationOptions_InvokeHandlesAfterFailureAccess_NoDiagnostic()
     {
         var source = @"
 using Microsoft.AspNetCore.Authorization;
@@ -464,7 +464,7 @@ builder.Services.AddAuthorization(options =>
     }
 
     [Fact]
-    public async Task AddAuthorization_ReferencesAuthorizationOptionsGetPolicy_NoDiagnostic()
+    public async Task AuthorizationOptions_GetPolicyReference_NoDiagnostic()
     {
         var source = @"
 using System;
@@ -488,7 +488,7 @@ builder.Services.AddAuthorization(options =>
     }
 
     [Fact]
-    public async Task AddAuthorization_InvokesAuthorizationOptionsGetPolicy_NoDiagnostic()
+    public async Task AuthorizationOptions_GetPolicyInvocation_NoDiagnostic()
     {
         var source = @"
 using Microsoft.AspNetCore.Authorization;

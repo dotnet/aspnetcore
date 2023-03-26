@@ -56,60 +56,52 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
 
         var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
-        if (diagnosticTarget is InvocationExpressionSyntax { ArgumentList.Arguments: { } arguments, Expression: MemberAccessExpressionSyntax { Name.Identifier: { } identifierToken } memberAccessExpression } invocationExpression)
+        if (diagnosticTarget is InvocationExpressionSyntax { ArgumentList.Arguments: { Count: 1 } arguments, Expression: MemberAccessExpressionSyntax { Name.Identifier: { } identifierToken } memberAccessExpression }
+            && arguments[0].Expression is SimpleLambdaExpressionSyntax lambda)
         {
-            if (arguments.Count == 1
-                && arguments[0].Expression is SimpleLambdaExpressionSyntax lambda)
+            IEnumerable<SyntaxNode> nodes;
+
+            if (lambda.Body is BlockSyntax lambdaBlockBody)
             {
-                IEnumerable<SyntaxNode> nodes;
-
-                if (lambda.Body is BlockSyntax lambdaBlockBody)
-                {
-                    nodes = lambdaBlockBody.DescendantNodes();
-                }
-                else if (lambda.Body is InvocationExpressionSyntax lambdaExpressionBody)
-                {
-                    nodes = new[] { lambdaExpressionBody };
-                }
-                else
-                {
-                    return false;
-                }
-
-                var addAuthorizationBuilderMethod =
-                    memberAccessExpression.ReplaceToken(identifierToken, SyntaxFactory.Identifier("AddAuthorizationBuilder"));
-
-                invocation = SyntaxFactory.InvocationExpression(addAuthorizationBuilderMethod);
-
-                foreach (var configureAction in nodes)
-                {
-                    if (configureAction is InvocationExpressionSyntax { ArgumentList.Arguments: { } configureArguments, Expression: MemberAccessExpressionSyntax { Name.Identifier.Text: "AddPolicy" } })
-                    {
-                        if (configureArguments.Count == 2)
-                        {
-                            invocation = ChainInvocation(
-                                invocation,
-                                "AddPolicy",
-                                SyntaxFactory.ArgumentList(
-                                    SyntaxFactory.SeparatedList(configureArguments)));
-                        }
-                    }
-                    else if (configureAction is AssignmentExpressionSyntax assignmentSyntax)
-                    {
-                        if (assignmentSyntax.Left is MemberAccessExpressionSyntax { Name.Identifier.Text: { } assignmentTargetName }
-                            && assignmentTargetName is "DefaultPolicy" or "FallbackPolicy" or "InvokeHandlersAfterFailure")
-                        {
-                            invocation = ChainInvocation(
-                                invocation, $"Set{assignmentTargetName}",
-                                SyntaxFactory.ArgumentList(
-                                    SyntaxFactory.SingletonSeparatedList(
-                                        SyntaxFactory.Argument(assignmentSyntax.Right))));
-                        }
-                    }
-                }
-
-                return true;
+                nodes = lambdaBlockBody.DescendantNodes();
             }
+            else if (lambda.Body is InvocationExpressionSyntax lambdaExpressionBody)
+            {
+                nodes = new[] { lambdaExpressionBody };
+            }
+            else
+            {
+                return false;
+            }
+
+            var addAuthorizationBuilderMethod =
+                memberAccessExpression.ReplaceToken(identifierToken, SyntaxFactory.Identifier("AddAuthorizationBuilder"));
+
+            invocation = SyntaxFactory.InvocationExpression(addAuthorizationBuilderMethod);
+
+            foreach (var configureAction in nodes)
+            {
+                if (configureAction is InvocationExpressionSyntax { ArgumentList.Arguments: { Count: 2 } configureArguments, Expression: MemberAccessExpressionSyntax { Name.Identifier.Text: "AddPolicy" } })
+                {
+                    invocation = ChainInvocation(
+                        invocation,
+                        "AddPolicy",
+                        SyntaxFactory.ArgumentList(
+                            SyntaxFactory.SeparatedList(configureArguments)));
+                }
+                else if (configureAction is AssignmentExpressionSyntax { Left: MemberAccessExpressionSyntax { Name.Identifier.Text: { } assignmentTargetName }, Right: { } assignmentExpression }
+                    && assignmentTargetName is "DefaultPolicy" or "FallbackPolicy" or "InvokeHandlersAfterFailure")
+                {
+                    invocation = ChainInvocation(
+                        invocation,
+                        $"Set{assignmentTargetName}",
+                        SyntaxFactory.ArgumentList(
+                            SyntaxFactory.SingletonSeparatedList(
+                                SyntaxFactory.Argument(assignmentExpression))));
+                }
+            }
+
+            return true;
         }
 
         return false;
