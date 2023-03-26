@@ -20,6 +20,36 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 public class DefaultHealthCheckServiceTest
 {
+        [Fact]
+    public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
+    {
+        // Arrange
+        //
+        // Doing this the old fashioned way so we can verify that the exception comes
+        // from the constructor.
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        serviceCollection.AddOptions();
+        serviceCollection.AddHealthChecks()
+            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
+
+        var services = serviceCollection.BuildServiceProvider();
+
+        var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
+        var options = services.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+        var logger = services.GetRequiredService<ILogger<DefaultHealthCheckService>>();
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => new DefaultHealthCheckService(scopeFactory, options, logger));
+
+        // Assert
+        Assert.StartsWith($"Duplicate health checks were registered with the name(s): Foo, Baz", exception.Message);
+    }
+
     [Fact]
     public async Task CheckAsync_RunsAllChecksAndAggregatesResultsAsync()
     {

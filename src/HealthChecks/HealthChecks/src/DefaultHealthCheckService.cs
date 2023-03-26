@@ -29,7 +29,36 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // We're specifically going out of our way to do this at startup time. We want to make sure you
+        // get any kind of health-check related error as early as possible. Waiting until someone
+        // actually tries to **run** health checks would be real baaaaad.
+        ValidateRegistrations(_options.Value.Registrations);
     }
+
+    private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
+    {
+        // Scan the list for duplicate names to provide a better error if there are duplicates.
+
+        StringBuilder? builder = null;
+        var distinctRegistrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var registration in registrations)
+        {
+            if (!distinctRegistrations.Add(registration.Name))
+            {
+                builder ??= new StringBuilder("Duplicate health checks were registered with the name(s): ");
+
+                builder.Append(registration.Name).Append(", ");
+            }
+        }
+
+        if (builder is not null)
+        {
+            throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
+        }
+    }
+
 
     public override async Task<HealthReport> CheckHealthAsync(
         Func<HealthCheckRegistration, bool>? predicate,
