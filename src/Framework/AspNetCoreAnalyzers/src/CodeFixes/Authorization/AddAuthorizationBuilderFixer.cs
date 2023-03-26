@@ -74,8 +74,8 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
                 return false;
             }
 
-            var addAuthorizationBuilderMethod =
-                memberAccessExpression.ReplaceToken(identifierToken, SyntaxFactory.Identifier("AddAuthorizationBuilder"));
+            var addAuthorizationBuilderMethod = memberAccessExpression.ReplaceToken(identifierToken,
+                SyntaxFactory.Identifier("AddAuthorizationBuilder"));
 
             invocation = SyntaxFactory.InvocationExpression(addAuthorizationBuilderMethod);
 

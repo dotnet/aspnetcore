@@ -35,17 +35,26 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         }
 
         var policyServiceCollectionExtensions = wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_PolicyServiceCollectionExtensions);
+        if (policyServiceCollectionExtensions is null)
+        {
+            return;
+        }
+
         var addAuthorizationMethod = policyServiceCollectionExtensions.GetMembers()
             .OfType<IMethodSymbol>()
-            .Single(member => member.Parameters.Length == 2 && member.Name == "AddAuthorization");
+            .FirstOrDefault(member => member is { Name: "AddAuthorization", Parameters.Length: 2 });
+
+        if (addAuthorizationMethod is null)
+        {
+            return;
+        }
 
         context.RegisterOperationAction(context =>
         {
             var invocation = (IInvocationOperation)context.Operation;
 
-            if (invocation.Arguments.Length == 2
+            if (SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, addAuthorizationMethod)
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, policyServiceCollectionExtensions)
-                && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, addAuthorizationMethod)
                 && IsLastCallInChain(invocation)
                 && IsCompatibleWithAuthorizationBuilder(invocation, authorizationOptionsTypes))
             {
@@ -57,40 +66,46 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
 
     private static bool IsCompatibleWithAuthorizationBuilder(IInvocationOperation invocation, AuthorizationOptionsTypes authorizationOptionsTypes)
     {
-        if (invocation.Arguments[1] is IArgumentOperation { ChildOperations: { Count: 1 } argumentOperations }
+        if (invocation is { Arguments: { Length: 2 } invocationArguments }
+            && invocationArguments[1] is IArgumentOperation { ChildOperations: { Count: 1 } argumentOperations }
             && argumentOperations.First() is IDelegateCreationOperation { ChildOperations: { Count: 1 } delegateCreationOperations }
             && delegateCreationOperations.First() is IAnonymousFunctionOperation { ChildOperations: { Count: 1 } anonymousFunctionOperations }
             && anonymousFunctionOperations.First() is IBlockOperation blockOperation)
         {
-            // Ensure that the child operations of the configuration action passed to AddAuthorization are all related to AuthorizationOptions
-            foreach (var operation in blockOperation.ChildOperations.Where(op => op is not IReturnOperation { IsImplicit: true }))
+            // Ensure that the child operations of the configuration action passed to AddAuthorization are all related to AuthorizationOptions.
+            var allOperationsInvolveAuthorizationOptions = blockOperation.ChildOperations
+                .Where(operation => operation is not IReturnOperation { IsImplicit: true })
+                .All(operation => DoesOperationInvolveAuthorizationOptions(operation, authorizationOptionsTypes));
+
+            return allOperationsInvolveAuthorizationOptions
+                // Ensure that the configuration action passed to AddAuthorization does not use any AuthorizationOptions-specific APIs.
+                && IsConfigureActionCompatibleWithAuthorizationBuilder(blockOperation, authorizationOptionsTypes);
+        }
+
+        return false;
+    }
+
+    private static bool DoesOperationInvolveAuthorizationOptions(IOperation operation, AuthorizationOptionsTypes authorizationOptionsTypes)
+    {
+        if (operation is IExpressionStatementOperation { Operation: { } expressionStatementOperation })
+        {
+            if (expressionStatementOperation is ISimpleAssignmentOperation { Target: IPropertyReferenceOperation { Property.ContainingType: { } propertyReferenceContainingType } }
+                && SymbolEqualityComparer.Default.Equals(propertyReferenceContainingType, authorizationOptionsTypes.AuthorizationOptions))
             {
-                if (operation is IExpressionStatementOperation { Operation: { } expressionStatementOperation })
-                {
-                    if (expressionStatementOperation is ISimpleAssignmentOperation { Target: IPropertyReferenceOperation { Property.ContainingType: { } propertyReferenceContainingType } }
-                        && SymbolEqualityComparer.Default.Equals(propertyReferenceContainingType, authorizationOptionsTypes.AuthorizationOptions))
-                    {
-                        continue;
-                    }
-
-                    if (expressionStatementOperation is IMethodReferenceOperation { Method.ContainingType: { } methodReferenceContainingType }
-                        && SymbolEqualityComparer.Default.Equals(methodReferenceContainingType, authorizationOptionsTypes.AuthorizationOptions))
-                    {
-                        continue;
-                    }
-
-                    if (expressionStatementOperation is IInvocationOperation { TargetMethod.ContainingType: { } invokedMethodContainingType } invocationOperation
-                        && SymbolEqualityComparer.Default.Equals(invokedMethodContainingType, authorizationOptionsTypes.AuthorizationOptions))
-                    {
-                        continue;
-                    }
-                }
-                
-                return false;
+                return true;
             }
 
-            // Ensure that the configuration action passed to AddAuthorization does not use any AuthorizationOptions-specific APIs.
-            return IsConfigureActionCompatibleWithAuthorizationBuilder(blockOperation, authorizationOptionsTypes);
+            if (expressionStatementOperation is IMethodReferenceOperation { Method.ContainingType: { } methodReferenceContainingType }
+                && SymbolEqualityComparer.Default.Equals(methodReferenceContainingType, authorizationOptionsTypes.AuthorizationOptions))
+            {
+                return true;
+            }
+
+            if (expressionStatementOperation is IInvocationOperation { TargetMethod.ContainingType: { } invokedMethodContainingType } invocationOperation
+                && SymbolEqualityComparer.Default.Equals(invokedMethodContainingType, authorizationOptionsTypes.AuthorizationOptions))
+            {
+                return true;
+            }
         }
 
         return false;
@@ -99,8 +114,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
     private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IBlockOperation configureAction, AuthorizationOptionsTypes authorizationOptionsTypes)
     {
         var usesAuthorizationOptionsSpecificAPIs = configureAction.Descendants()
-            .Any(operation =>
-                UsesAuthorizationOptionsSpecificGetters(operation, authorizationOptionsTypes)
+            .Any(operation => UsesAuthorizationOptionsSpecificGetters(operation, authorizationOptionsTypes)
                 || UsesAuthorizationOptionsGetPolicy(operation, authorizationOptionsTypes));
 
         return !usesAuthorizationOptionsSpecificAPIs;
@@ -112,7 +126,8 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         {
             var property = propertyReferenceOperation.Property;
 
-            if (propertyReferenceOperation.Parent is IAssignmentOperation { Target: IPropertyReferenceOperation targetProperty } assignmentOperation
+            // Check that the referenced property is not being set.
+            if (propertyReferenceOperation.Parent is IAssignmentOperation { Target: IPropertyReferenceOperation targetProperty }
                 && SymbolEqualityComparer.Default.Equals(property, targetProperty.Property))
             {
                 return false;
