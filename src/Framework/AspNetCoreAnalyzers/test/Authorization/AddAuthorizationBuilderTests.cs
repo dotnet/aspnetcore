@@ -510,6 +510,56 @@ builder.Services.AddAuthorization(options =>
         await VerifyNoCodeFix(source);
     }
 
+    [Fact]
+    public async Task ConfigureAction_IsNotAnonymousFunction_NoDiagnostic()
+    {
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorization(Helper.ConfigureAuthorization);
+
+public static class Helper
+{
+    public static void ConfigureAuthorization(AuthorizationOptions options)
+    {
+        options.AddPolicy(""AtLeast21"", policy =>
+        {
+            policy.Requirements.Add(new MinimumAgeRequirement(21));
+        });
+    }
+}
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
+    [Fact]
+    public async Task ConfigureAction_ContainsOperationsNotRelatedToAuthorizationOptions_NoDiagnostic()
+    {
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorization(options =>
+{
+    var value = 1 + 1;
+    options.AddPolicy(""AtLeast21"", policy =>
+    {
+        policy.Requirements.Add(new MinimumAgeRequirement(21));
+    });
+});
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
     private static async Task VerifyCodeFix(string source, DiagnosticResult[] diagnostics, string fixedSource)
     {
         var fullSource = string.Join(Environment.NewLine, source, _testAuthorizationPolicyClassDeclaration);

@@ -47,7 +47,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, policyServiceCollectionExtensions)
                 && SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, addAuthorizationMethod)
                 && IsLastCallInChain(invocation)
-                && IsConfigureActionCompatibleWithAuthorizationBuilder(invocation.Arguments[1], authorizationOptionsTypes))
+                && IsCompatibleWithAuthorizationBuilder(invocation, authorizationOptionsTypes))
             {
                 AddDiagnosticInformation(context, invocation.Syntax.GetLocation());
             }
@@ -55,7 +55,48 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
         }, OperationKind.Invocation);
     }
 
-    private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IArgumentOperation configureAction, AuthorizationOptionsTypes authorizationOptionsTypes)
+    private static bool IsCompatibleWithAuthorizationBuilder(IInvocationOperation invocation, AuthorizationOptionsTypes authorizationOptionsTypes)
+    {
+        if (invocation.Arguments[1] is IArgumentOperation { ChildOperations: { Count: 1 } argumentOperations }
+            && argumentOperations.First() is IDelegateCreationOperation { ChildOperations: { Count: 1 } delegateCreationOperations }
+            && delegateCreationOperations.First() is IAnonymousFunctionOperation { ChildOperations: { Count: 1 } anonymousFunctionOperations }
+            && anonymousFunctionOperations.First() is IBlockOperation blockOperation)
+        {
+            // Ensure that the child operations of the configuration action passed to AddAuthorization are all related to AuthorizationOptions
+            foreach (var operation in blockOperation.ChildOperations.Where(op => op is not IReturnOperation { IsImplicit: true }))
+            {
+                if (operation is IExpressionStatementOperation { Operation: { } expressionStatementOperation })
+                {
+                    if (expressionStatementOperation is ISimpleAssignmentOperation { Target: IPropertyReferenceOperation { Property.ContainingType: { } propertyReferenceContainingType } }
+                        && SymbolEqualityComparer.Default.Equals(propertyReferenceContainingType, authorizationOptionsTypes.AuthorizationOptions))
+                    {
+                        continue;
+                    }
+
+                    if (expressionStatementOperation is IMethodReferenceOperation { Method.ContainingType: { } methodReferenceContainingType }
+                        && SymbolEqualityComparer.Default.Equals(methodReferenceContainingType, authorizationOptionsTypes.AuthorizationOptions))
+                    {
+                        continue;
+                    }
+
+                    if (expressionStatementOperation is IInvocationOperation { TargetMethod.ContainingType: { } invokedMethodContainingType } invocationOperation
+                        && SymbolEqualityComparer.Default.Equals(invokedMethodContainingType, authorizationOptionsTypes.AuthorizationOptions))
+                    {
+                        continue;
+                    }
+                }
+                
+                return false;
+            }
+
+            // Ensure that the configuration action passed to AddAuthorization does not use any AuthorizationOptions-specific APIs.
+            return IsConfigureActionCompatibleWithAuthorizationBuilder(blockOperation, authorizationOptionsTypes);
+        }
+
+        return false;
+    }
+
+    private static bool IsConfigureActionCompatibleWithAuthorizationBuilder(IBlockOperation configureAction, AuthorizationOptionsTypes authorizationOptionsTypes)
     {
         var usesAuthorizationOptionsSpecificAPIs = configureAction.Descendants()
             .Any(operation =>
