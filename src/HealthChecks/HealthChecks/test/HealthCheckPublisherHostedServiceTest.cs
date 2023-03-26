@@ -38,56 +38,6 @@ public class HealthCheckPublisherHostedServiceTest
     }
 
     [Fact]
-    public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
-    {
-        // Arrange
-        //
-        // Doing this the old fashioned way so we can verify that the exception comes
-        // from the constructor.
-
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddOptions();
-        serviceCollection.AddLogging();
-        serviceCollection.AddHealthChecks()
-            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
-
-        // Choosing big values for tests to make sure that we're not dependent on the defaults.
-        // All of the tests that rely on the timer will set their own values for speed.
-        serviceCollection.Configure<HealthCheckPublisherOptions>(options =>
-        {
-            options.Delay = TimeSpan.FromMinutes(5);
-            options.Period = TimeSpan.FromMinutes(5);
-            options.Timeout = TimeSpan.FromMinutes(5);
-        });
-
-        var services = serviceCollection.BuildServiceProvider();
-
-        var healthCheckService = services.GetRequiredService<HealthCheckService>();
-        var healthCheckServiceOptions = services.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
-        var healthCheckPublisherOptions = services.GetRequiredService<IOptions<HealthCheckPublisherOptions>>();
-        var logger = services.GetRequiredService<ILogger<HealthCheckPublisherHostedService>>();
-
-        var publishers = new IHealthCheckPublisher[]
-        {
-        };
-
-        // Act
-        var exception = Assert.Throws<ArgumentException>(() => new HealthCheckPublisherHostedService(
-            healthCheckService,
-            healthCheckServiceOptions,
-            healthCheckPublisherOptions,
-            logger,
-            publishers));
-
-        // Assert
-        Assert.StartsWith($"Duplicate health checks were registered with the name(s): Foo, Baz", exception.Message);
-    }
-
-    [Fact]
     public async Task StartAsync_WithoutPublishers_DoesNotStartTimer()
     {
         // Arrange
@@ -205,7 +155,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Start execution
-            var running = service.RunAsync();
+            var running = RunServiceAsync(service);
 
             // Wait for the publisher to see the cancellation token
             await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -251,7 +201,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            var running = service.RunAsync();
+            var running = RunServiceAsync(service);
 
             await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
@@ -359,7 +309,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            var running = service.RunAsync();
+            var running = RunServiceAsync(service);
 
             await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
@@ -413,7 +363,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            var running = service.RunAsync();
+            var running = RunServiceAsync(service);
 
             await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
             await publishers[1].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -462,7 +412,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            var running = service.RunAsync();
+            var running = RunServiceAsync(service);
 
             await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
@@ -519,7 +469,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            await service.RunAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+            await RunServiceAsync(service).TimeoutAfter(TimeSpan.FromSeconds(10));
 
             // Assert
             for (var i = 0; i < publishers.Length; i++)
@@ -610,7 +560,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            await service.RunAsync().TimeoutAfter(TimeSpan.FromSeconds(20));
+            await RunServiceAsync(service).TimeoutAfter(TimeSpan.FromSeconds(20));
 
             await unblockDelayedCheck.Task;
 
@@ -650,7 +600,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            await service.RunAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+            await RunServiceAsync(service).TimeoutAfter(TimeSpan.FromSeconds(10));
 
         }
         finally
@@ -694,7 +644,7 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            await service.RunAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+            await RunServiceAsync(service).TimeoutAfter(TimeSpan.FromSeconds(10));
 
         }
         finally
@@ -733,7 +683,7 @@ public class HealthCheckPublisherHostedServiceTest
             options.Delay = TimeSpan.FromMinutes(5);
             options.Period = TimeSpan.FromMinutes(5);
             options.Timeout = TimeSpan.FromMinutes(5);
-        });
+       });
 
         if (publishers != null)
         {
@@ -756,6 +706,8 @@ public class HealthCheckPublisherHostedServiceTest
         var services = serviceCollection.BuildServiceProvider();
         return services.GetServices<IHostedService>().OfType<HealthCheckPublisherHostedService>().Single();
     }
+
+    private Task RunServiceAsync(HealthCheckPublisherHostedService service) => service.RunAsync((TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5)));
 
     private static async Task AssertCanceledAsync(CancellationToken cancellationToken)
     {

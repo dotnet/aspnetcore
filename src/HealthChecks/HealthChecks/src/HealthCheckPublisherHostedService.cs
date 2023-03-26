@@ -23,9 +23,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
     private readonly ILogger _logger;
     private readonly IHealthCheckPublisher[] _publishers;
-    private readonly (TimeSpan Delay, TimeSpan Period) _defaultTimerOptions;
-    private readonly Dictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> _healthChecksByOptions;
-    private Dictionary<(TimeSpan Delay, TimeSpan Period), Timer>? _timersByOptions;
+    private List<Timer> _timers;
 
     private readonly CancellationTokenSource _stopping;
     private CancellationTokenSource? _runTokenSource;
@@ -50,27 +48,16 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         _publishers = publishers.ToArray();
 
         _stopping = new CancellationTokenSource();
-
-        // We're specifically going out of our way to do this at startup time. We want to make sure you
-        // get any kind of health-check related error as early as possible. Waiting until someone
-        // actually tries to **run** health checks would be real baaaaad.
-        ValidateRegistrations(_healthCheckServiceOptions.Value.Registrations);
-
-        _defaultTimerOptions = (_healthCheckPublisherOptions.Value.Delay, _healthCheckPublisherOptions.Value.Period);
-
-        // Group healthcheck registrations by Delay, Period and Timeout, to build a Dictionary<(TimeSpan, TimeSpan, TimeSpan), List<HealthCheckRegistration>>
-        // For HCs with no Delay, Period or Timeout, we default to the publisher values
-        _healthChecksByOptions = _healthCheckServiceOptions.Value.Registrations.GroupBy(GetTimerOptionsOrDefault).ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private (TimeSpan Delay, TimeSpan Period) GetTimerOptionsOrDefault(HealthCheckRegistration registration)
+    private (TimeSpan Delay, TimeSpan Period) GetTimerOptions(HealthCheckRegistration registration)
     {
         return (registration?.Delay ?? _healthCheckPublisherOptions.Value.Delay, registration?.Period ?? _healthCheckPublisherOptions.Value.Period);
     }
 
     internal bool IsStopping => _stopping.IsCancellationRequested;
 
-    internal bool IsTimerRunning => _timersByOptions != null;
+    internal bool IsTimerRunning => _timers != null;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -81,7 +68,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 
         // IMPORTANT - make sure this is the last thing that happens in this method. The timers can
         // fire before other code runs.
-        _timersByOptions = CreateTimers(_healthChecksByOptions);
+        _timers = CreateTimers();
 
         return Task.CompletedTask;
     }
@@ -102,28 +89,45 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             return Task.CompletedTask;
         }
 
-        if (_timersByOptions != null)
+        if (_timers != null)
         {
-            foreach (var timer in _timersByOptions.Values)
+            foreach (var timer in _timers)
             {
                 timer.Dispose();
             }
 
-            _timersByOptions = null;
+            _timers = null;
         }
 
         return Task.CompletedTask;
     }
 
-    private Dictionary<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimers(IReadOnlyDictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>> healthChecksByOptions)
+    private List<Timer> CreateTimers()
     {
-        return healthChecksByOptions.Select(m => CreateTimer(m.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        var hcRegistrationsGrouped = new Dictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>>();
+        foreach (var hc in _healthCheckServiceOptions.Value.Registrations)
+        {
+            var key = GetTimerOptions(hc);
+            if (!hcRegistrationsGrouped.ContainsKey(key))
+            {
+                hcRegistrationsGrouped[key] = new List<HealthCheckRegistration>();
+            }
+            hcRegistrationsGrouped[key].Add(hc);
+        }
+
+        var timers = new List<Timer>(hcRegistrationsGrouped.Count);
+        foreach (var m in hcRegistrationsGrouped)
+        {
+            var timer = CreateTimer(m.Key);
+            timers.Add(timer);
+        }
+
+        return timers;
     }
 
-    private KeyValuePair<(TimeSpan Delay, TimeSpan Period), Timer> CreateTimer((TimeSpan Delay, TimeSpan Period) timerOptions)
+    private Timer CreateTimer((TimeSpan Delay, TimeSpan Period) timerOptions)
     {
-        return new KeyValuePair<(TimeSpan Delay, TimeSpan Period), Timer>(
-            timerOptions,
+        return
             NonCapturingTimer.Create(
             async (state) =>
             {
@@ -131,8 +135,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             },
             null,
             dueTime: timerOptions.Delay,
-            period: timerOptions.Period)
-        );
+            period: timerOptions.Period);
     }
 
     // Internal for testing
@@ -144,8 +147,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     // Internal for testing
     internal async Task RunAsync((TimeSpan Delay, TimeSpan Period)? timerOptions = null)
     {
-        timerOptions ??= _defaultTimerOptions;
-
         var duration = ValueStopwatch.StartNew();
         Logger.HealthCheckPublisherProcessingBegin(_logger);
 
@@ -186,21 +187,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         // Concatenate predicates - we only run HCs at the set delay, period and timeout, and that are enabled
         var withOptionsPredicate = (HealthCheckRegistration r) =>
         {
-            // Check whether the current timer options correspond to the ones of the HC registration
-            var rOptions = GetTimerOptionsOrDefault(r);
-            var hasOptions = rOptions == timerOptions;
-            if (!hasOptions)
-            {
-                return false;
-            }
-
-            if (_healthCheckPublisherOptions?.Value.Predicate == null)
-            {
-                return true;
-            }
-
-            // Else check the user-applied predicates
-            return _healthCheckPublisherOptions.Value.Predicate(r);
+            // First check whether the current timer options correspond to the current registration,
+            // and then check the user-defined predicate if any.
+            return (GetTimerOptions(r) == timerOptions) && (_healthCheckPublisherOptions?.Value.Predicate ?? (_ => true))(r);
         };
 
         // The health checks service does it's own logging, and doesn't throw exceptions.
@@ -241,29 +230,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         {
             Logger.HealthCheckPublisherError(_logger, publisher, duration.GetElapsedTime(), ex);
             throw;
-        }
-    }
-
-    private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
-    {
-        // Scan the list for duplicate names to provide a better error if there are duplicates.
-
-        StringBuilder? builder = null;
-        var distinctRegistrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var registration in registrations)
-        {
-            if (!distinctRegistrations.Add(registration.Name))
-            {
-                builder ??= new StringBuilder("Duplicate health checks were registered with the name(s): ");
-
-                builder.Append(registration.Name).Append(", ");
-            }
-        }
-
-        if (builder is not null)
-        {
-            throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
         }
     }
 
