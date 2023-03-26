@@ -5988,9 +5988,24 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                 return ValueTask.CompletedTask;
             }
 
+            ValueTask<FSharp.Core.Unit> ValueTaskOfUnitMethod()
+            {
+                return ValueTask.FromResult(default(FSharp.Core.Unit)!);
+            }
+
             Task TaskMethod()
             {
                 return Task.CompletedTask;
+            }
+
+            Task<FSharp.Core.Unit> TaskOfUnitMethod()
+            {
+                return Task.FromResult(default(FSharp.Core.Unit)!);
+            }
+
+            FSharp.Control.FSharpAsync<FSharp.Core.Unit> FSharpAsyncOfUnitMethod()
+            {
+                return FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(FSharp.Core.Unit)!);
             }
 
             async ValueTask ValueTaskWithYieldMethod()
@@ -6003,13 +6018,28 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                 await Task.Yield();
             }
 
+            FSharp.Control.FSharpAsync<FSharp.Core.Unit> FSharpAsyncOfUnitWithYieldMethod()
+            {
+                return FSharp.Control.FSharpAsync.AwaitTask(Yield());
+
+                async Task<FSharp.Core.Unit> Yield()
+                {
+                    await Task.Yield();
+                    return default!;
+                }
+            }
+
             return new object[][]
             {
                 new object[] { (Action)VoidMethod },
                 new object[] { (Func<ValueTask>)ValueTaskMethod },
+                new object[] { (Func<ValueTask<FSharp.Core.Unit>>)ValueTaskOfUnitMethod },
                 new object[] { (Func<Task>)TaskMethod },
+                new object[] { (Func<Task<FSharp.Core.Unit>>)TaskOfUnitMethod },
+                new object[] { (Func<FSharp.Control.FSharpAsync<FSharp.Core.Unit>>)FSharpAsyncOfUnitMethod },
                 new object[] { (Func<ValueTask>)ValueTaskWithYieldMethod },
-                new object[] { (Func<Task>)TaskWithYieldMethod}
+                new object[] { (Func<Task>)TaskWithYieldMethod},
+                new object[] { (Func<FSharp.Control.FSharpAsync<FSharp.Core.Unit>>)FSharpAsyncOfUnitWithYieldMethod }
             };
         }
     }

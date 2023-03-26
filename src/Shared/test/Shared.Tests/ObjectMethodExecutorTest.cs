@@ -125,10 +125,15 @@ public class ObjectMethodExecutorTest
                         new object[] { parameter }));
     }
 
-    [Fact]
-    public async Task ExecuteValueMethodWithReturnVoidThrowsExceptionAsync()
+    [Theory]
+    [InlineData(nameof(TestObject.ValueMethodWithReturnVoidThrowsExceptionAsync))]
+    [InlineData(nameof(TestObject.ValueMethodWithReturnVoidValueTaskThrowsExceptionAsync))]
+    [InlineData(nameof(TestObject.ValueMethodWithReturnUnitThrowsExceptionAsync))]
+    [InlineData(nameof(TestObject.ValueMethodWithReturnValueTaskOfUnitThrowsExceptionAsync))]
+    [InlineData(nameof(TestObject.ValueMethodWithReturnFSharpAsyncOfUnitThrowsExceptionAsync))]
+    public async Task ExecuteValueMethodWithReturnVoidThrowsExceptionAsync(string method)
     {
-        var executor = GetExecutorForMethod("ValueMethodWithReturnVoidThrowsExceptionAsync");
+        var executor = GetExecutorForMethod(method);
         var parameter = new TestObject();
         Assert.True(executor.IsMethodAsync);
         await Assert.ThrowsAsync<NotImplementedException>(
@@ -219,11 +224,16 @@ public class ObjectMethodExecutorTest
         Assert.Equal(579, (int)result);
     }
 
-    [Fact]
-    public async Task TargetMethodReturningAwaitableOfVoidType_CanInvokeViaExecuteAsync()
+    [Theory]
+    [InlineData(nameof(TestObject.VoidValueMethodAsync))]
+    [InlineData(nameof(TestObject.VoidValueTaskMethodAsync))]
+    [InlineData(nameof(TestObject.TaskOfUnitMethodAsync))]
+    [InlineData(nameof(TestObject.ValueTaskOfUnitMethodAsync))]
+    [InlineData(nameof(TestObject.FSharpAsyncOfUnitMethod))]
+    public async Task TargetMethodReturningAwaitableOfVoidType_CanInvokeViaExecuteAsync(string method)
     {
         // Arrange
-        var executor = GetExecutorForMethod("VoidValueMethodAsync");
+        var executor = GetExecutorForMethod(method);
 
         // Act
         var result = await executor.ExecuteAsync(_targetObject, new object[] { 123 });
@@ -447,6 +457,27 @@ public class ObjectMethodExecutorTest
         {
             await ValueMethodAsync(3, 4);
         }
+
+        public Task<Unit> TaskOfUnitMethodAsync(int i)
+        {
+            return Task.FromResult(default(Unit));
+        }
+
+        public async ValueTask VoidValueTaskMethodAsync(int i)
+        {
+            await ValueMethodAsync(3, 4);
+        }
+
+        public ValueTask<Unit> ValueTaskOfUnitMethodAsync(int i)
+        {
+            return ValueTask.FromResult(default(Unit));
+        }
+
+        public FSharpAsync<Unit> FSharpAsyncOfUnitMethod()
+        {
+            return ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(Unit));
+        }
+
         public Task<TestObject> ValueMethodWithReturnTypeAsync(int i)
         {
             return Task.FromResult<TestObject>(new TestObject() { value = "Hello" });
@@ -456,6 +487,35 @@ public class ObjectMethodExecutorTest
         {
             await Task.CompletedTask;
             throw new NotImplementedException("Not Implemented Exception");
+        }
+
+        public async Task<Unit> ValueMethodWithReturnUnitThrowsExceptionAsync(TestObject i)
+        {
+            await Task.FromResult(default(Unit));
+            throw new NotImplementedException("Not Implemented Exception");
+        }
+
+        public async ValueTask ValueMethodWithReturnVoidValueTaskThrowsExceptionAsync(TestObject i)
+        {
+            await ValueTask.CompletedTask;
+            throw new NotImplementedException("Not Implemented Exception");
+        }
+
+        public async ValueTask<Unit> ValueMethodWithReturnValueTaskOfUnitThrowsExceptionAsync(TestObject i)
+        {
+            await ValueTask.FromResult(default(Unit));
+            throw new NotImplementedException("Not Implemented Exception");
+        }
+
+        public FSharpAsync<Unit> ValueMethodWithReturnFSharpAsyncOfUnitThrowsExceptionAsync(TestObject i)
+        {
+            return FSharpAsync.AwaitTask(Run());
+
+            static Task Run()
+            {
+                Task.FromResult(default(Unit));
+                throw new NotImplementedException("Not Implemented Exception");
+            }
         }
 
         public async Task<TestObject> ValueMethodWithReturnTypeThrowsExceptionAsync(TestObject i)

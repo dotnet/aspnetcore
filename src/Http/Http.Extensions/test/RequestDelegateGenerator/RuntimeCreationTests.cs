@@ -26,8 +26,7 @@ app.MapGet("/", ({{bindAsyncType}} myNotBindAsyncParam) => { });
     [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return("Hello"));""", "Hello")]
     [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new Todo { Name = "Hello" }));""", """{"id":0,"name":"Hello","isComplete":false}""")]
     [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(TypedResults.Ok(new Todo { Name = "Hello" })));""", """{"id":0,"name":"Hello","isComplete":false}""")]
-    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(Microsoft.FSharp.Core.Unit)));""", "null")]
-    public async Task MapAction_RuntimeCreation_FSharpAsync_IsAwaitable(string source, string expectedBody)
+    public async Task MapAction_FSharpAsyncReturn_IsAwaitable(string source, string expectedBody)
     {
         var (result, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -42,5 +41,26 @@ app.MapGet("/", ({{bindAsyncType}} myNotBindAsyncParam) => { });
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    [Theory]
+    [InlineData("""app.MapGet("/", () => Task.FromResult(default(Microsoft.FSharp.Core.Unit)!));""")]
+    [InlineData("""app.MapGet("/", () => ValueTask.FromResult(default(Microsoft.FSharp.Core.Unit)!));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(Microsoft.FSharp.Core.Unit)!));""")]
+    public async Task MapAction_AwaitableOfUnitReturn_ConvertedToVoidReturning(string source)
+    {
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("/", endpointModel.RoutePattern);
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            Assert.True(endpointModel.Response.IsAwaitable);
+        });
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody: "");
     }
 }
