@@ -36,24 +36,38 @@ internal readonly struct CoercedAwaitableInfo
     {
         if (AwaitableInfo.IsTypeAwaitable(type, out var directlyAwaitableInfo))
         {
-            info = new CoercedAwaitableInfo(directlyAwaitableInfo);
+            // Convert {Value}Task<unit> to non-generic {Value}Task.
+            if (ObjectMethodExecutorFSharpSupport.TryBuildCoercerFromUnitAwaitableToVoidAwaitable(type,
+                out var coercerExpression,
+                out var nonGenericAwaitableType))
+            {
+                _ = AwaitableInfo.IsTypeAwaitable(nonGenericAwaitableType, out directlyAwaitableInfo);
+                info = new CoercedAwaitableInfo(coercerExpression, nonGenericAwaitableType, directlyAwaitableInfo);
+            }
+            else
+            {
+                info = new CoercedAwaitableInfo(directlyAwaitableInfo);
+            }
+
             return true;
         }
-
-        // It's not directly awaitable, but maybe we can coerce it.
-        // Currently we support coercing FSharpAsync<T>.
-        if (ObjectMethodExecutorFSharpSupport.TryBuildCoercerFromFSharpAsyncToAwaitable(type,
-            out var coercerExpression,
-            out var coercerResultType))
+        else
         {
-            if (AwaitableInfo.IsTypeAwaitable(coercerResultType, out var coercedAwaitableInfo))
+            // It's not directly awaitable, but maybe we can coerce it.
+            // Currently we support coercing FSharpAsync<T>.
+            if (ObjectMethodExecutorFSharpSupport.TryBuildCoercerFromFSharpAsyncToAwaitable(type,
+                out var coercerExpression,
+                out var coercerResultType))
             {
-                info = new CoercedAwaitableInfo(coercerExpression, coercerResultType, coercedAwaitableInfo);
-                return true;
+                if (AwaitableInfo.IsTypeAwaitable(coercerResultType, out var coercedAwaitableInfo))
+                {
+                    info = new CoercedAwaitableInfo(coercerExpression, coercerResultType, coercedAwaitableInfo);
+                    return true;
+                }
             }
-        }
 
-        info = default(CoercedAwaitableInfo);
-        return false;
+            info = default(CoercedAwaitableInfo);
+            return false;
+        }
     }
 }

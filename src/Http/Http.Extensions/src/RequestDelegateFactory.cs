@@ -489,9 +489,13 @@ public static partial class RequestDelegateFactory
         }
         else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            if (coercedAwaitableInfo.CoercerExpression is LambdaExpression coercerExpression)
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
             {
-                returnType = coercerExpression.ReturnType;
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
                 methodCall = Expression.Invoke(coercerExpression, methodCall);
             }
 
