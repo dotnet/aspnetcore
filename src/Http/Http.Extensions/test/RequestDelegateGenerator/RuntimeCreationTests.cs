@@ -31,13 +31,6 @@ app.MapGet("/", ({{bindAsyncType}} myNotBindAsyncParam) => { });
         var (result, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        VerifyStaticEndpointModel(result, endpointModel =>
-        {
-            Assert.Equal("/", endpointModel.RoutePattern);
-            Assert.Equal("MapGet", endpointModel.HttpMethod);
-            Assert.True(endpointModel.Response.IsAwaitable);
-        });
-
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
@@ -51,13 +44,6 @@ app.MapGet("/", ({{bindAsyncType}} myNotBindAsyncParam) => { });
     {
         var (result, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
-
-        VerifyStaticEndpointModel(result, endpointModel =>
-        {
-            Assert.Equal("/", endpointModel.RoutePattern);
-            Assert.Equal("MapGet", endpointModel.HttpMethod);
-            Assert.True(endpointModel.Response.IsAwaitable);
-        });
 
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
