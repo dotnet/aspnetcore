@@ -10,18 +10,20 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
 /// <summary>
-/// A <see cref="Renderer"/> subclass that is intended for static HTML rendering.
+/// A <see cref="Renderer"/> subclass that is intended for static HTML rendering. Application
+/// developers should not normally use this class directly. Instead, use
+/// <see cref="HtmlRenderer"/> for a more convenient API.
 /// </summary>
-public class HtmlRendererCore : Renderer
+public class StaticHtmlRenderer : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
     /// <summary>
-    /// Constructs an instance of <see cref="HtmlRendererCore"/>.
+    /// Constructs an instance of <see cref="StaticHtmlRenderer"/>.
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-    public HtmlRendererCore(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+    public StaticHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
     }

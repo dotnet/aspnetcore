@@ -13,12 +13,12 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// An <see cref="HtmlRendererCore"/> subclass that is used when prerendering on an endpoint
+/// A <see cref="StaticHtmlRenderer"/> subclass that is used when prerendering on an endpoint
 /// or for the component tag helper. It knows how to annotate the output with prerendering
 /// markers so the content can later switch into interactive mode. It also deals with initializing
 /// the standard component DI services once per request.
 /// </summary>
-internal sealed partial class EndpointHtmlRenderer : HtmlRendererCore, IComponentPrerenderer
+internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;

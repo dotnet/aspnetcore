@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public sealed class HtmlComponent
 {
-    private readonly HtmlRendererCore? _renderer;
+    private readonly StaticHtmlRenderer? _renderer;
     private readonly int _componentId;
     private readonly Task _quiescenceTask;
 
-    internal HtmlComponent(HtmlRendererCore? renderer, int componentId, Task quiescenceTask)
+    internal HtmlComponent(StaticHtmlRenderer? renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
         _componentId = componentId;

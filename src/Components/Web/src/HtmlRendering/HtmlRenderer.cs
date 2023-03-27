@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
 {
-    private readonly HtmlRendererCore _passiveHtmlRenderer;
+    private readonly StaticHtmlRenderer _passiveHtmlRenderer;
 
     /// <summary>
     /// Constructs an instance of <see cref="HtmlRenderer"/>.
@@ -21,7 +21,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <param name="loggerFactory">The logger factory to use.</param>
     public HtmlRenderer(IServiceProvider services, ILoggerFactory loggerFactory)
     {
-        _passiveHtmlRenderer = new HtmlRendererCore(services, loggerFactory);
+        _passiveHtmlRenderer = new StaticHtmlRenderer(services, loggerFactory);
     }
 
     /// <inheritdoc />
