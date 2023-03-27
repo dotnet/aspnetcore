@@ -68,10 +68,15 @@ internal static class RazorComponentEndpoint
                         writer.Write("</template>");
                     }
                 });
+
+                await writer.FlushAsync(); // Make sure the initial HTML was sent
+                await htmlContent.QuiescenceTask; // TODO: Catch NavigationException
             }
 
-            await writer.FlushAsync(); // Make sure the initial HTML was sent
-            await htmlContent.QuiescenceTask; // TODO: Catch NavigationException
+            // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
+            // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
+            // response as part of the Dispose which has a perf impact.
+            await writer.FlushAsync();
         });
     }
 
