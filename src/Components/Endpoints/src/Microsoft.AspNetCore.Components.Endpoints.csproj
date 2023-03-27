@@ -18,7 +18,6 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\HtmlRendererCore.cs" LinkBase="DependencyInjection" />
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
   </ItemGroup>

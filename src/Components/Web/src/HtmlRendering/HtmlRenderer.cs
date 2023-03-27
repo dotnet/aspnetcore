@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.HtmlRendering;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Web;

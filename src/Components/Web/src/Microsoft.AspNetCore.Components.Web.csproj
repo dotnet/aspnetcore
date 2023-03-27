@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\HtmlRendererCore.cs" LinkBase="HtmlRendering" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
   </ItemGroup>

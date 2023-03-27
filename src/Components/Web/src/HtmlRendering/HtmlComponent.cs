@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
+
 namespace Microsoft.AspNetCore.Components.Web;
 
 /// <summary>
@@ -8,17 +10,11 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public sealed class HtmlComponent
 {
-    private readonly IHtmlRendererContentProvider? _renderer;
+    private readonly HtmlRendererCore? _renderer;
     private readonly int _componentId;
     private readonly Task _quiescenceTask;
 
-    /// <summary>
-    /// Constructs an instance of <see cref="HtmlComponent"/>.
-    /// </summary>
-    /// <param name="renderer">An <see cref="IHtmlRendererContentProvider"/> that can supply content representing the component.</param>
-    /// <param name="componentId">The component ID.</param>
-    /// <param name="quiescenceTask">A <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.</param>
-    public HtmlComponent(IHtmlRendererContentProvider? renderer, int componentId, Task quiescenceTask)
+    internal HtmlComponent(HtmlRendererCore? renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
         _componentId = componentId;

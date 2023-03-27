@@ -7,19 +7,29 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.HtmlRendering;
+namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
-internal class HtmlRendererCore : Renderer, IHtmlRendererContentProvider
+/// <summary>
+/// A <see cref="Renderer"/> subclass that is intended for static HTML renderering.
+/// </summary>
+public class HtmlRendererCore : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
+    /// <summary>
+    /// Constructs an instance of <see cref="HtmlRendererCore"/>.
+    /// </summary>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public HtmlRendererCore(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
     }
 
+    /// <inheritdoc/>
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
+    /// <inheritdoc/>
     public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
@@ -36,9 +46,11 @@ internal class HtmlRendererCore : Renderer, IHtmlRendererContentProvider
         return new HtmlComponent(this, componentId, quiescenceTask);
     }
 
+    /// <inheritdoc/>
     protected override void HandleException(Exception exception)
         => ExceptionDispatchInfo.Capture(exception).Throw();
 
+    /// <inheritdoc/>
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         // By default we return a canceled task. This has the effect of making it so that the
@@ -57,6 +69,6 @@ internal class HtmlRendererCore : Renderer, IHtmlRendererContentProvider
         return CanceledRenderTask;
     }
 
-    public new ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId)
+    internal new ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId)
         => base.GetCurrentRenderTreeFrames(componentId);
 }
