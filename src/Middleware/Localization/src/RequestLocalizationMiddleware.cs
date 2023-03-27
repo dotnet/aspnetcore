@@ -148,6 +148,37 @@ public class RequestLocalizationMiddleware
         return null;
     }
 
+    private static CultureInfo? GetCultureInfo(
+        StringSegment cultureName,
+        IList<CultureInfo>? supportedCultures,
+        bool fallbackToParentCultures,
+        int currentDepth)
+    {
+        // If the cultureName is an empty string there
+        // is no chance we can resolve the culture info.
+        if (cultureName.Equals(string.Empty))
+        {
+            return null;
+        }
+
+        var culture = GetCultureInfo(cultureName, supportedCultures);
+
+        if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
+        {
+            try
+            {
+                culture = CultureInfo.GetCultureInfo(cultureName.ToString());
+
+                culture = GetCultureInfo(culture.Parent.Name, supportedCultures, fallbackToParentCultures, currentDepth + 1);
+            }
+            catch (CultureNotFoundException)
+            {
+            }
+        }
+
+        return culture;
+    }
+
     private static CultureInfo? GetCultureInfo(StringSegment name, IList<CultureInfo>? supportedCultures)
     {
         // Allow only known culture names as this API is called with input from users (HTTP requests) and
@@ -156,6 +187,7 @@ public class RequestLocalizationMiddleware
         {
             return null;
         }
+
         var culture = supportedCultures.FirstOrDefault(
             supportedCulture => StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
 
@@ -165,29 +197,5 @@ public class RequestLocalizationMiddleware
         }
 
         return CultureInfo.ReadOnly(culture);
-    }
-
-    private static CultureInfo? GetCultureInfo(
-        StringSegment cultureName,
-        IList<CultureInfo> supportedCultures,
-        bool fallbackToParentCultures,
-        int currentDepth)
-    {
-        var culture = GetCultureInfo(cultureName, supportedCultures);
-
-        if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
-        {
-            var lastIndexOfHyphen = cultureName.LastIndexOf('-');
-
-            if (lastIndexOfHyphen > 0)
-            {
-                // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
-                var parentCultureName = cultureName.Subsegment(0, lastIndexOfHyphen);
-
-                culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
-            }
-        }
-
-        return culture;
     }
 }
