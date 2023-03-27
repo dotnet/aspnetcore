@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
 /// <summary>
-/// A <see cref="Renderer"/> subclass that is intended for static HTML renderering.
+/// A <see cref="Renderer"/> subclass that is intended for static HTML rendering.
 /// </summary>
 public class HtmlRendererCore : Renderer
 {
