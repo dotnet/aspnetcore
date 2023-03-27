@@ -14,11 +14,19 @@ internal sealed partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
+    public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         Type componentType,
         RenderMode prerenderMode,
         ParameterView parameters)
+        => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
+
+    public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
+        HttpContext httpContext,
+        Type componentType,
+        RenderMode prerenderMode,
+        ParameterView parameters,
+        bool waitForQuiescence)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(componentType);
@@ -35,7 +43,7 @@ internal sealed partial class EndpointHtmlRenderer
 
         UpdateSaveStateRenderMode(httpContext, prerenderMode);
 
-        return prerenderMode switch
+        var result = prerenderMode switch
         {
             RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
             RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
@@ -44,6 +52,13 @@ internal sealed partial class EndpointHtmlRenderer
             RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(httpContext, componentType, parameters),
             _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(prerenderMode), nameof(prerenderMode)),
         };
+
+        if (waitForQuiescence)
+        {
+            await result.QuiescenceTask;
+        }
+
+        return result;
     }
 
     private async ValueTask<HtmlRootComponent> PrerenderComponentCoreAsync(
@@ -84,7 +99,7 @@ internal sealed partial class EndpointHtmlRenderer
         return (ServerComponentInvocationSequence)result!;
     }
 
-    private async ValueTask<IHtmlAsyncContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<PrerenderedComponentHtmlContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var htmlComponent = await PrerenderComponentCoreAsync(
             parametersCollection,
@@ -93,7 +108,7 @@ internal sealed partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, null, null);
     }
 
-    private async Task<IHtmlAsyncContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private async Task<PrerenderedComponentHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
@@ -118,7 +133,7 @@ internal sealed partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, marker, null);
     }
 
-    private async ValueTask<IHtmlAsyncContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<PrerenderedComponentHtmlContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
@@ -133,7 +148,7 @@ internal sealed partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, null, marker);
     }
 
-    private IHtmlAsyncContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private PrerenderedComponentHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
@@ -148,7 +163,7 @@ internal sealed partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 
-    private static IHtmlAsyncContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
+    private static PrerenderedComponentHtmlContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, null, marker);

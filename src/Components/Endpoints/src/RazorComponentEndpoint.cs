@@ -43,7 +43,8 @@ internal static class RazorComponentEndpoint
                 httpContext,
                 typeof(RazorComponentEndpointHost),
                 RenderMode.Static,
-                hostParameters));
+                hostParameters,
+                waitForQuiescence: false));
 
             await using var writer = CreateResponseWriter(httpContext.Response.Body);
 
