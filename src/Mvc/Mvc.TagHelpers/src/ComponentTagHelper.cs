@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -97,10 +99,30 @@ public sealed class ComponentTagHelper : TagHelper
         var componentPrerenderer = requestServices.GetRequiredService<IComponentPrerenderer>();
         var parameters = _parameters is null || _parameters.Count == 0 ? ParameterView.Empty : ParameterView.FromDictionary(_parameters);
         var renderMode = HtmlHelperComponentExtensions.MapRenderMode(RenderMode);
-        var result = await componentPrerenderer.PrerenderComponentAsync(ViewContext.HttpContext, ComponentType, renderMode, parameters);
 
-        // Reset the TagName. We don't want `component` to render.
-        output.TagName = null;
-        output.Content.SetHtmlContent(result);
+        try
+        {
+            var result = await componentPrerenderer.PrerenderComponentAsync(ViewContext.HttpContext, ComponentType, renderMode, parameters);
+
+            // Reset the TagName. We don't want `component` to render.
+            output.TagName = null;
+            output.Content.SetHtmlContent(result);
+        }
+        catch (NavigationException navigationException)
+        {
+            // Navigation was attempted during prerendering.
+            var response = ViewContext.HttpContext.Response;
+            if (response.HasStarted)
+            {
+                // We can't perform a redirect as the server already started sending the response.
+                // This is considered an application error as the developer should buffer the response until
+                // all components have rendered.
+                throw new InvalidOperationException("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                    "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                    "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
+            }
+
+            response.Redirect(navigationException.Location);
+        }
     }
 }
