@@ -121,7 +121,7 @@ public abstract class HttpRequest
     /// <remarks>
     ///     <para>
     ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
-    ///     To prevent this the method <see cref="ReadFormAsync" /> can be used.
+    ///     To prevent this the method <see cref="ReadFormAsync(CancellationToken)"/> can be used.
     ///     For more information, see <see href="https://aka.ms/aspnet/forms-async" />.
     ///     </para>
     /// </remarks>
