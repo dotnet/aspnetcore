@@ -24,8 +24,8 @@ internal static class RazorComponentEndpoint
         Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters)
     {
-        var componentPrerenderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
-        return componentPrerenderer.Dispatcher.InvokeAsync(async () =>
+        var endpointHtmlRenderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        return endpointHtmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
             // backing buffers could come from a pool like they do during rendering.
@@ -39,7 +39,7 @@ internal static class RazorComponentEndpoint
             // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
             // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
             // component takes care of switching into your desired render mode when it produces its own output.
-            var htmlContent = (EndpointHtmlRenderer.PrerenderedComponentHtmlContent)(await componentPrerenderer.PrerenderComponentAsync(
+            var htmlContent = (EndpointHtmlRenderer.PrerenderedComponentHtmlContent)(await endpointHtmlRenderer.PrerenderComponentAsync(
                 httpContext,
                 typeof(RazorComponentEndpointHost),
                 RenderMode.Static,
@@ -56,7 +56,7 @@ internal static class RazorComponentEndpoint
 
             if (!htmlContent.QuiescenceTask.IsCompleted)
             {
-                componentPrerenderer.OnContentUpdated(htmlComponents =>
+                endpointHtmlRenderer.OnContentUpdated(htmlComponents =>
                 {
                     foreach (var entry in htmlComponents)
                     {
