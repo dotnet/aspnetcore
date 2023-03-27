@@ -1000,7 +1000,7 @@ public class OutputCacheMiddlewareTests
             await c.Response.WriteAsync(Guid.NewGuid().ToString());
         });
 
-        // Act - what I'm doing here is making four requests. The third request
+        // Act - Four requests are executed. The third request
         //       should trigger a cache refresh so that the first two requests
         //       have matching output, and the last two have matching output.
         var initialResponse = await SendRequestAsync(includeRefreshHeader: false);
