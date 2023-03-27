@@ -112,9 +112,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         }
 
         var timers = new List<Timer>(delayPeriodGroups.Count);
-        foreach (var m in delayPeriodGroups)
+        foreach (var group in delayPeriodGroups)
         {
-            var timer = CreateTimer(m);
+            var timer = CreateTimer(group);
             timers.Add(timer);
         }
 
