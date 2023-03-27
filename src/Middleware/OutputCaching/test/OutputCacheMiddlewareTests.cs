@@ -962,4 +962,74 @@ public class OutputCacheMiddlewareTests
             sink.Writes,
             LoggedMessage.ResponseCached);
     }
+
+    public class RefreshableCachePolicy : IOutputCachePolicy
+    {
+        public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
+        {
+            context.AllowCacheLookup = !context.HttpContext.Request.Headers.ContainsKey("X-Refresh");
+            context.AllowCacheStorage = true;
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation)
+        {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+
+
+    [Fact]
+    public async Task Can_Implement_Policy_That_Enables_Storage_Without_Serving()
+    {
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(builder =>
+        {
+            builder.AddPolicy(new RefreshableCachePolicy());
+            builder.Cache();
+        }, true);
+
+        var cache = new TestOutputCache();
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(options: options, testSink: sink, cache: cache, next: async c =>
+        {
+            await c.Response.WriteAsync(Guid.NewGuid().ToString());
+        });
+
+        // Act - what I'm doing here is making four requests. The third request
+        //       should trigger a cache refresh so that the first two requests
+        //       have matching output, and the last two have matching output.
+        var initialResponse = await SendRequestAsync(includeRefreshHeader: false);
+        var cachedResponse = await SendRequestAsync(includeRefreshHeader: false);
+        var refreshedResponse = await SendRequestAsync(includeRefreshHeader: true);
+        var cachedResponseAfterRefresh = await SendRequestAsync(includeRefreshHeader: false);
+
+        Assert.Equal(initialResponse, cachedResponse);
+        Assert.NotEqual(cachedResponse, refreshedResponse);
+        Assert.Equal(refreshedResponse, cachedResponseAfterRefresh);
+
+        async Task<string> SendRequestAsync(bool includeRefreshHeader)
+        {
+            var requestContext = TestUtils.CreateTestContext(cache: cache);
+            requestContext.HttpContext.Request.Method = "GET";
+            requestContext.HttpContext.Request.Path = "/";
+            var responseStream = new MemoryStream();
+            requestContext.HttpContext.Response.Body = responseStream;
+
+            if (includeRefreshHeader)
+            {
+                requestContext.HttpContext.Request.Headers.Add("X-Refresh", "randomvalue");
+            }
+
+            await middleware.Invoke(requestContext.HttpContext);
+            var response = Encoding.UTF8.GetString(responseStream.GetBuffer());
+            return response;
+        }
+    }
 }
