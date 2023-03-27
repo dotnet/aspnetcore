@@ -190,7 +190,6 @@ public class PersistComponentStateTagHelperTest
                     x => x.CreateProtector(It.IsAny<string>()) == _protector))
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
-                .AddScoped<HtmlRenderer>()
                 .AddScoped<IComponentPrerenderer, EndpointHtmlRenderer>()
                 .BuildServiceProvider(),
         };

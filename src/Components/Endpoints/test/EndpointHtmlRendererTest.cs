@@ -649,7 +649,6 @@ public class EndpointHtmlRendererTest
         // Arrange
         var collection = CreateDefaultServiceCollection();
         collection.TryAddScoped<EndpointHtmlRenderer>();
-        collection.TryAddScoped<HtmlRenderer>();
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();

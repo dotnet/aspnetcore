@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -38,8 +36,8 @@ public class ComponentTagHelperTest
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
-        var htmlRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<HtmlRenderer>();
-        var content = await htmlRenderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(output.Content));
+        var prerenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
+        var content = await prerenderer.Dispatcher.InvokeAsync(() => HtmlContentUtilities.HtmlContentToString(output.Content));
         Assert.Equal("Hello from the component", content);
         Assert.Null(output.TagName);
     }
@@ -89,7 +87,6 @@ public class ComponentTagHelperTest
                 .AddScoped<ServerComponentSerializer>()
                 .AddScoped(_ => Mock.Of<IDataProtectionProvider>(
                     x => x.CreateProtector(It.IsAny<string>()) == Mock.Of<IDataProtector>()))
-                .AddSingleton<HtmlRenderer>()
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped(_ => navManager.Object)

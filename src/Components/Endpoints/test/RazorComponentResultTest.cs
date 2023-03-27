@@ -133,7 +133,6 @@ public class RazorComponentResultTest
             .AddSingleton<NavigationManager, FakeNavigationManager>()
             .AddSingleton<ServerComponentSerializer>()
             .AddSingleton<ComponentStatePersistenceManager>()
-            .AddSingleton<HtmlRenderer>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
             .AddLogging();
         return new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
