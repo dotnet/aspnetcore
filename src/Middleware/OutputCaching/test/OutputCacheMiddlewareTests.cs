@@ -983,8 +983,6 @@ public class OutputCacheMiddlewareTests
         }
     }
 
-
-
     [Fact]
     public async Task Can_Implement_Policy_That_Enables_Storage_Without_Serving()
     {
