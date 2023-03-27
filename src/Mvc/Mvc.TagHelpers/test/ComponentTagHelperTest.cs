@@ -85,7 +85,7 @@ public class ComponentTagHelperTest
         var httpContext = new DefaultHttpContext
         {
             RequestServices = new ServiceCollection()
-                .AddScoped<IComponentPrerenderer, ComponentPrerenderer>()
+                .AddScoped<IComponentPrerenderer, EndpointHtmlRenderer>()
                 .AddScoped<ServerComponentSerializer>()
                 .AddScoped(_ => Mock.Of<IDataProtectionProvider>(
                     x => x.CreateProtector(It.IsAny<string>()) == Mock.Of<IDataProtector>()))
