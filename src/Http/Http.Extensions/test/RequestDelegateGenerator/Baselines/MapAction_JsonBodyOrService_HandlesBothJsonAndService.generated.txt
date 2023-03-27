@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
 
-            return (allowEmpty ? true : false, default);
+            return (allowEmpty, default);
         }
         private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
         {
