@@ -104,21 +104,17 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 
     private List<Timer> CreateTimers()
     {
-        var hcRegistrationsGrouped = new Dictionary<(TimeSpan Delay, TimeSpan Period), List<HealthCheckRegistration>>();
+        var delayPeriodGroups = new HashSet<(TimeSpan Delay, TimeSpan Period)>();
         foreach (var hc in _healthCheckServiceOptions.Value.Registrations)
         {
             var timerOptions = GetTimerOptions(hc);
-            if (!hcRegistrationsGrouped.ContainsKey(timerOptions))
-            {
-                hcRegistrationsGrouped[timerOptions] = new List<HealthCheckRegistration>();
-            }
-            hcRegistrationsGrouped[timerOptions].Add(hc);
+            delayPeriodGroups.Add(timerOptions);
         }
 
-        var timers = new List<Timer>(hcRegistrationsGrouped.Count);
-        foreach (var m in hcRegistrationsGrouped)
+        var timers = new List<Timer>(delayPeriodGroups.Count);
+        foreach (var m in delayPeriodGroups)
         {
-            var timer = CreateTimer(m.Key);
+            var timer = CreateTimer(m);
             timers.Add(timer);
         }
 
@@ -184,7 +180,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         // Forcibly yield - we want to unblock the timer thread.
         await Task.Yield();
 
-        // Concatenate predicates - we only run HCs at the set delay, period and timeout, and that are enabled
+        // Concatenate predicates - we only run HCs at the set delay and period
         var withOptionsPredicate = (HealthCheckRegistration r) =>
         {
             // First check whether the current timer options correspond to the current registration,
