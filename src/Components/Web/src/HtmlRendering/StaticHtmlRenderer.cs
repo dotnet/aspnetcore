@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
@@ -32,7 +33,7 @@ public class StaticHtmlRenderer : Renderer
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
     /// <inheritdoc/>
-    public HtmlComponent BeginRenderingComponent(
+    public HtmlRootComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
@@ -45,7 +46,7 @@ public class StaticHtmlRenderer : Renderer
             ExceptionDispatchInfo.Capture(quiescenceTask.Exception.InnerException ?? quiescenceTask.Exception).Throw();
         }
 
-        return new HtmlComponent(this, componentId, quiescenceTask);
+        return new HtmlRootComponent(this, componentId, quiescenceTask);
     }
 
     /// <inheritdoc/>

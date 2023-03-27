@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,19 +46,14 @@ internal sealed partial class EndpointHtmlRenderer
         };
     }
 
-    private async ValueTask<HtmlComponent> PrerenderComponentCoreAsync(
+    private async ValueTask<HtmlRootComponent> PrerenderComponentCoreAsync(
         ParameterView parameters,
         HttpContext httpContext,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType)
     {
         try
         {
-            return await Dispatcher.InvokeAsync(async () =>
-            {
-                var content = BeginRenderingComponent(componentType, parameters);
-                await content.WaitForQuiescenceAsync();
-                return content;
-            });
+            return await Dispatcher.InvokeAsync(() => BeginRenderingComponent(componentType, parameters));
         }
         catch (NavigationException navigationException)
         {
@@ -74,7 +69,7 @@ internal sealed partial class EndpointHtmlRenderer
             }
 
             httpContext.Response.Redirect(navigationException.Location);
-            return HtmlComponent.Empty;
+            return HtmlRootComponent.Empty;
         }
     }
 
@@ -161,16 +156,16 @@ internal sealed partial class EndpointHtmlRenderer
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.
     // We don't construct the actual HTML until we receive the call to WriteTo.
-    private class PrerenderedComponentHtmlContent : IHtmlAsyncContent
+    public class PrerenderedComponentHtmlContent : IHtmlAsyncContent
     {
         private readonly Dispatcher? _dispatcher;
-        private readonly HtmlComponent? _htmlToEmitOrNull;
+        private readonly HtmlRootComponent? _htmlToEmitOrNull;
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
         public PrerenderedComponentHtmlContent(
             Dispatcher? dispatcher, // If null, we're only emitting the markers
-            HtmlComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
+            HtmlRootComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
             ServerComponentMarker? serverMarker,
             WebAssemblyComponentMarker? webAssemblyMarker)
         {
@@ -217,5 +212,8 @@ internal sealed partial class EndpointHtmlRenderer
                 }
             }
         }
+
+        public Task QuiescenceTask =>
+            _htmlToEmitOrNull is null ? Task.CompletedTask : _htmlToEmitOrNull.QuiescenceTask;
     }
 }

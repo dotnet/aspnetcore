@@ -4,7 +4,9 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 {
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
+    private Action<IEnumerable<HtmlComponent>>? _onContentUpdatedCallback;
 
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
@@ -45,6 +48,37 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+    }
+
+    public void OnContentUpdated(Action<IEnumerable<HtmlComponent>> callback)
+    {
+        if (_onContentUpdatedCallback is not null)
+        {
+            // The framework is the only user of this internal API, so it's OK to have an arbitrary limit like this
+            throw new InvalidOperationException($"{nameof(OnContentUpdated)} can only be called once.");
+        }
+
+        _onContentUpdatedCallback = callback;
+    }
+
+    protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+    {
+        var count = renderBatch.UpdatedComponents.Count;
+        if (count > 0 && _onContentUpdatedCallback is not null)
+        {
+            // TODO: Deduplicate these. There's no reason ever to include the same component more than once in a single batch,
+            // as we're rendering its whole final state, not the intermediate diffs.
+            var htmlComponents = new List<HtmlComponent>(count);
+            for (var i = 0; i < count; i++)
+            {
+                ref var diff = ref renderBatch.UpdatedComponents.Array[i];
+                htmlComponents.Add(new HtmlComponent(this, diff.ComponentId));
+            }
+
+            _onContentUpdatedCallback(htmlComponents);
+        }
+
+        return base.UpdateDisplayAsync(renderBatch);
     }
 
     private static string GetFullUri(HttpRequest request)

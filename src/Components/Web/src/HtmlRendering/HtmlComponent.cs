@@ -3,35 +3,35 @@
 
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
-namespace Microsoft.AspNetCore.Components.Web;
+namespace Microsoft.AspNetCore.Components.Web.HtmlRendering;
 
 /// <summary>
 /// Represents the output of rendering a component as HTML. The content can change if the component instance re-renders.
 /// </summary>
-public sealed class HtmlComponent
+public class HtmlComponent
 {
     private readonly StaticHtmlRenderer? _renderer;
     private readonly int _componentId;
-    private readonly Task _quiescenceTask;
 
-    internal HtmlComponent(StaticHtmlRenderer? renderer, int componentId, Task quiescenceTask)
+    /// <summary>
+    /// Constructs an instance of <see cref="HtmlComponent"/>.
+    /// </summary>
+    /// <param name="renderer">The renderer of the component.</param>
+    /// <param name="componentId">The ID of the component.</param>
+    public HtmlComponent(StaticHtmlRenderer renderer, int componentId)
     {
         _renderer = renderer;
         _componentId = componentId;
-        _quiescenceTask = quiescenceTask;
+    }
+
+    internal HtmlComponent()
+    {
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="HtmlComponent"/> that produces no content.
+    /// Gets the component ID.
     /// </summary>
-    public static HtmlComponent Empty { get; } = new HtmlComponent(null, 0, Task.CompletedTask);
-
-    /// <summary>
-    /// Obtains a <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.</returns>
-    public Task WaitForQuiescenceAsync()
-        => _quiescenceTask;
+    public int ComponentId => _componentId;
 
     /// <summary>
     /// Returns an HTML string representation of the component's latest output.
