@@ -154,6 +154,11 @@ public class RequestLocalizationMiddleware
         bool fallbackToParentCultures,
         int currentDepth)
     {
+        if (cultureName == "")
+        {
+            return null;
+        }
+
         var culture = GetCultureInfo(cultureName, supportedCultures);
 
         if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
