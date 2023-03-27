@@ -6,8 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Internal;
 
-#nullable enable
-
 namespace Microsoft.AspNetCore.Http.Json;
 
 /// <summary>
@@ -18,15 +16,15 @@ public class JsonOptions
 {
     internal static readonly JsonSerializerOptions DefaultSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
     {
-        // Web defaults don't use the relex JSON escaping encoder.
+        // Web defaults don't use the relaxed JSON escaping encoder.
         //
         // Because these options are for producing content that is written directly to the request
         // (and not embedded in an HTML page for example), we can use UnsafeRelaxedJsonEscaping.
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
 
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
-        // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
-        // .AddContext<TContext>()
+        // setting the default resolver (reflection-based) but the user can overwrite it directly or by modifying
+        // the TypeInfoResolverChain
         TypeInfoResolver = TrimmingAppContextSwitches.EnsureJsonTrimmability ? null : CreateDefaultTypeResolver()
     };
 

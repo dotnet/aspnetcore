@@ -1,7 +1,6 @@
-using System.Text.Json.Serialization;
 #if NativeAot
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.Options;
+using System.Text.Json.Serialization;
+
 #endif
 namespace Company.ApiApplication1;
 
@@ -15,7 +14,7 @@ public class Program
         #if (NativeAot)
         builder.Services.ConfigureHttpJsonOptions(options =>
         {
-            options.SerializerOptions.AddContext<AppJsonSerializerContext>();
+            options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
 
         #endif

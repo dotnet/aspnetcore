@@ -11,23 +11,27 @@ internal sealed class ProblemDetailsJsonOptionsSetup : IPostConfigureOptions<Jso
 {
     public void PostConfigure(string? name, JsonOptions options)
     {
-        switch (options.SerializerOptions.TypeInfoResolver)
+        var typeInfoResolverChain = options.SerializerOptions.TypeInfoResolverChain;
+        if (typeInfoResolverChain.Count == 0)
         {
-            case DefaultJsonTypeInfoResolver:
-                // In this case, the current configuration is using a reflection-based resolver
-                // and we are prepending our internal problem details context to be evaluated
-                // first.
-                options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(ProblemDetailsJsonContext.Default, options.SerializerOptions.TypeInfoResolver);
-                break;
-            case not null:
-                // Combine the current resolver with our internal problem details context (adding last)
-                options.SerializerOptions.AddContext<ProblemDetailsJsonContext>();
-                break;
-            default:
-                // Not adding our source gen context when TypeInfoResolver == null
-                // since adding it will skip the reflection-based resolver and potentially
-                // cause unexpected serialization problems
-                break;
+            // Not adding our source gen context when the TypeInfoResolverChain is empty,
+            // since adding it will skip the reflection-based resolver and potentially
+            // cause unexpected serialization problems
+            return;
+        }
+
+        var lastResolver = typeInfoResolverChain[typeInfoResolverChain.Count - 1];
+        if (lastResolver is DefaultJsonTypeInfoResolver)
+        {
+            // In this case, the current configuration has a reflection-based resolver at the end
+            // and we are inserting our internal ProblemDetails context to be evaluated
+            // just before the reflection-based resolver.
+            typeInfoResolverChain.Insert(typeInfoResolverChain.Count - 1, ProblemDetailsJsonContext.Default);
+        }
+        else
+        {
+            // Combine the current resolver with our internal problem details context (adding last)
+            typeInfoResolverChain.Add(ProblemDetailsJsonContext.Default);
         }
     }
 }
