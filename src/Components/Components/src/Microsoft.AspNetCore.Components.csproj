@@ -22,7 +22,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
   <!--

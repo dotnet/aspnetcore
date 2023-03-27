@@ -10,6 +10,4 @@ internal static class DomWrapperInterop
     public const string Focus = Prefix + "focus";
 
     public const string FocusOnNavigate = Prefix + "focusOnNavigate";
-
-    public const string ScrollToElement = Prefix + "scrollToElement";
 }

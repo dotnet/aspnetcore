@@ -41,6 +41,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<NavigationManager, HttpNavigationManager>();
         services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
+        services.TryAddScoped<IScrollToLocationHash, UnsupportedScrollToLocationHash>();
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();

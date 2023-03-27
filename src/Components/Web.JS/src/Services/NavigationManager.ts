@@ -27,6 +27,7 @@ export const internalFunctions = {
   navigateTo: navigateToFromDotNet,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
+  scrollToElement
 };
 
 function listenForNavigationEvents(
@@ -51,6 +52,14 @@ function enableNavigationInterception(): void {
 
 function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
+}
+
+function scrollToElement(id : string) : void {
+  var element = document.getElementById(id);
+  if (element)
+  {
+    element.scrollIntoView();
+  }
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
@@ -83,10 +92,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
         const hash = location.hash;
         const urlInBrowser = hash.length > 1 ? location.href.replace(hash, anchorHref) : location.href + anchorHref;
         window.history.pushState({}, "", urlInBrowser);
-        const element = document.getElementById(anchorHref.slice(1));
-        if (element) {
-          element.scrollIntoView();
-        }
+        scrollToElement(anchorHref.slice(1));
         return;
       }
 

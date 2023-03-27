@@ -6,8 +6,7 @@ import '@microsoft/dotnet-js-interop';
 export const domFunctions = {
   focus,
   focusBySelector,
-  focusOnNavigate,
-  scrollToElement
+  focusOnNavigate
 };
 
 function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
@@ -44,13 +43,5 @@ function focusBySelector(selector: string): void {
     }
 
     element.focus();
-  }
-}
-
-function scrollToElement(id : string) : void {
-  var element = document.getElementById(id);
-  if (element)
-  {
-    element.scrollIntoView();
   }
 }
