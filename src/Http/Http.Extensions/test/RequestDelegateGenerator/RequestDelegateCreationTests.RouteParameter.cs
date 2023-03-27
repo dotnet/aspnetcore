@@ -190,6 +190,25 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
     }
 
     [Fact]
+    public async Task Returns400IfNoMatchingRouteValueForRequiredParam()
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""app.MapGet(@"/{foo}", (int foo) => foo);""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        const string unmatchedName = "value";
+        const int unmatchedRouteParam = 42;
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[unmatchedName] = unmatchedRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+        var requestDelegate = endpoint.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
     {
         const string paramName = "value";
