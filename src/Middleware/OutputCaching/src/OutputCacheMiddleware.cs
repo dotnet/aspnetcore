@@ -119,6 +119,8 @@ internal sealed class OutputCacheMiddleware
                 // Should we store the response to this request?
                 if (context.AllowCacheStorage)
                 {
+                    CreateCacheKey(context);
+
                     // It is also a pre-condition to response locking
 
                     var executed = false;
