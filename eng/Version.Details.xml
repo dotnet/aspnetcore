@@ -181,9 +181,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>8ae68dbed5b6032de1a22e7dbda1565b5a3dddb8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23167.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23171.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>dcd0eca339b5c64b5816c111f583c82062ce4c74</Sha>
+      <Sha>4b8fe3ff0cfb2b38901803c798c647ca8123c222</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Configuration.ConfigurationManager" Version="8.0.0-preview.4.23175.6">
