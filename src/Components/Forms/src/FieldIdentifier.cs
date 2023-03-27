@@ -448,7 +448,13 @@ internal static class CachedExpressionCompiler
         {
             Debug.Assert(expression != null);
 
-            switch (expression.Body)
+            var root = expression.Body switch
+            {
+                UnaryExpression unary when unary.NodeType == ExpressionType.Convert => unary.Operand,
+                _ => expression.Body
+            };
+
+            switch (root)
             {
                 // model => model
                 case var body when body == expression.Parameters[0]:
@@ -581,7 +587,7 @@ internal static class CachedExpressionCompiler
                     Expression.Convert(parameterExpression, memberExpression.Member.DeclaringType);
                 var replacementMemberExpression = memberExpression.Update(castExpression);
                 var replacementExpression = Expression.Lambda<Func<object, TResult>>(
-                    replacementMemberExpression,
+                    UnaryExpression.Convert(replacementMemberExpression,typeof(object)),
                     parameterExpression);
 
                 result = replacementExpression.Compile();

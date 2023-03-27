@@ -4,7 +4,7 @@
 
 <h1>Hello, world!</h1>
 
-Welcome to your new app.
+Welcome to your new app @Name.
 
 <EditForm Model="@MyValue">
     <InputText @bind-Value="@MyValue.SomeValue" />
@@ -18,6 +18,9 @@ Welcome to your new app.
 </EditForm>
 
 @code{
+
+    [SupplyParameterFromQuery] public string Name { get; set; }
+
     public class Model
     {
         public string SomeValue { get; set; } = "";

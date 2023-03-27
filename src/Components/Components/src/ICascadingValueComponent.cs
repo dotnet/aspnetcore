@@ -10,7 +10,12 @@ internal interface ICascadingValueComponent
     // This interface exists only so that CascadingParameterState has a way
     // to work with all CascadingValue<T> types regardless of T.
 
-    bool CanSupplyValue(Type valueType, string? valueName);
+    bool CanSupplyValue(Type valueType, string? valueName, string? source);
+
+    public ICascadingValueComponent GetSupplier(Type valueType, string? valueName, string? source)
+    {
+        return this;
+    }
 
     object? CurrentValue { get; }
 

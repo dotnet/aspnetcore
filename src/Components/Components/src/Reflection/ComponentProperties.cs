@@ -168,7 +168,9 @@ internal static class ComponentProperties
         var propertyInfo = targetType.GetProperty(parameterName, BindablePropertyFlags);
         if (propertyInfo != null)
         {
-            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) && !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)))
+            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
+                !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)) &&
+                !propertyInfo.IsDefined(typeof(SupplyParameterFromQueryAttribute)))
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
@@ -259,7 +261,8 @@ internal static class ComponentProperties
             {
                 var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
                 var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
-                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null;
+                var supplyFromQueryParameterAttribute = propertyInfo.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
+                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || supplyFromQueryParameterAttribute != null;
                 if (!isParameter)
                 {
                     continue;
@@ -274,7 +277,7 @@ internal static class ComponentProperties
 
                 var propertySetter = new PropertySetter(targetType, propertyInfo)
                 {
-                    Cascading = cascadingParameterAttribute != null,
+                    Cascading = cascadingParameterAttribute != null || supplyFromQueryParameterAttribute != null,
                 };
 
                 if (_underlyingWriters.ContainsKey(propertyName))

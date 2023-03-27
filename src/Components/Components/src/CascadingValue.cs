@@ -130,7 +130,7 @@ public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
         return Task.CompletedTask;
     }
 
-    bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string? requestedName)
+    bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string? requestedName, string? source)
     {
         if (!requestedType.IsAssignableFrom(typeof(TValue)))
         {

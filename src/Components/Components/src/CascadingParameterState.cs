@@ -63,9 +63,9 @@ internal readonly struct CascadingParameterState
         do
         {
             if (componentState.Component is ICascadingValueComponent candidateSupplier
-                && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName))
+                && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName, info.Source))
             {
-                return candidateSupplier;
+                return candidateSupplier.GetSupplier(info.ValueType, info.SupplierValueName, info.Source);
             }
 
             componentState = componentState.ParentComponentState;
@@ -97,15 +97,27 @@ internal readonly struct CascadingParameterState
             var attribute = prop.GetCustomAttribute<CascadingParameterAttribute>();
             if (attribute != null)
             {
-                if (result == null)
-                {
-                    result = new List<ReflectedCascadingParameterInfo>();
-                }
+                result ??= new List<ReflectedCascadingParameterInfo>();
 
                 result.Add(new ReflectedCascadingParameterInfo(
                     prop.Name,
                     prop.PropertyType,
                     attribute.Name));
+            }
+
+            var supplyFromQueryAttributes = prop.GetCustomAttributes<SupplyParameterFromQueryAttribute>();
+            foreach (var supplyFromQuery in supplyFromQueryAttributes)
+            {
+                if (supplyFromQuery != null)
+                {
+                    result ??= new List<ReflectedCascadingParameterInfo>();
+
+                    result.Add(new ReflectedCascadingParameterInfo(
+                        prop.Name,
+                        prop.PropertyType,
+                        supplyFromQuery.Name ?? prop.Name,
+                        source: "Query"));
+                }
             }
         }
 
@@ -116,13 +128,16 @@ internal readonly struct CascadingParameterState
     {
         public string ConsumerValueName { get; }
         public string? SupplierValueName { get; }
+        public string? Source { get; }
+
         public Type ValueType { get; }
 
         public ReflectedCascadingParameterInfo(
-            string consumerValueName, Type valueType, string? supplierValueName)
+            string consumerValueName, Type valueType, string? supplierValueName, string? source = null)
         {
             ConsumerValueName = consumerValueName;
             SupplierValueName = supplierValueName;
+            Source = source;
             ValueType = valueType;
         }
     }

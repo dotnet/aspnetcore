@@ -695,7 +695,7 @@ public partial class ParameterViewTest
 
         public bool CurrentValueIsFixed => throw new NotImplementedException();
 
-        public bool CanSupplyValue(Type valueType, string valueName)
+        public bool CanSupplyValue(Type valueType, string valueName, string source)
         {
             throw new NotImplementedException();
         }
