@@ -844,7 +844,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
 
 #pragma warning disable SYSLIB1025
-        [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
+        [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailedInCircuit")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
 #pragma warning restore SYSLIB1025
     }
