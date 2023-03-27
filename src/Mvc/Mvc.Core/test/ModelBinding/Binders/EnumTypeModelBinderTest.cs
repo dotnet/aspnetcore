@@ -149,6 +149,89 @@ public class EnumTypeModelBinderTest
         Assert.Equal(message, error.ErrorMessage);
     }
 
+    [Theory]
+    [InlineData("8, 1")]
+    [InlineData("Value2, Value8")]
+    [InlineData("value8,value4,value2,value1")]
+    public async Task BindModel_BindsTo_NonNullableFlagsEnumType_List(
+        string flagsEnumValue
+    )
+    {
+        // Arrange
+        var modelType = typeof(FlagsEnum);
+        var enumConverter = TypeDescriptor.GetConverter(modelType);
+        var expected = enumConverter.ConvertFrom(flagsEnumValue).ToString();
+        var (bindingContext, binder) = GetBinderAndContext(
+            modelType,
+            valueProviderValue: flagsEnumValue.Split(","));
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+        var boundModel = Assert.IsType<FlagsEnum>(bindingContext.Result.Model);
+        Assert.Equal(expected, boundModel.ToString());
+    }
+
+    [Theory]
+    [InlineData("8, 1")]
+    [InlineData("Value2, Value8")]
+    [InlineData("value8,value4,value2,value1")]
+    public async Task BindModel_BindsTo_NullableFlagsEnumType_List(
+        string flagsEnumValue
+    )
+    {
+        // Arrange
+        var modelType = typeof(FlagsEnum?);
+        var enumConverter = TypeDescriptor.GetConverter(GetUnderlyingType(modelType));
+        var expected = enumConverter.ConvertFrom(flagsEnumValue).ToString();
+        var (bindingContext, binder) = GetBinderAndContext(
+            modelType,
+            valueProviderValue: flagsEnumValue.Split(","));
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+        var boundModel = Assert.IsType<FlagsEnum>(bindingContext.Result.Model);
+        Assert.Equal(expected, boundModel.ToString());
+    }
+
+    [Theory]
+    [InlineData(typeof(FlagsEnum), "1,16")]
+    // These two values look like big integers but are treated as two separate enum values that are
+    // or'd together.
+    [InlineData(typeof(FlagsEnum), "32,015")]
+    [InlineData(typeof(FlagsEnum), "32,128")]
+    [InlineData(typeof(FlagsEnum?), "1,16")]
+    // These two values look like big integers but are treated as two separate enum values that are
+    // or'd together.
+    [InlineData(typeof(FlagsEnum?), "32,015")]
+    [InlineData(typeof(FlagsEnum?), "32,128")]
+    public async Task BindModel_AddsErrorToModelState_ForInvalidEnumValues_List(
+        Type modelType,
+        string suppliedValue
+    )
+    {
+        // Arrange
+        var message = $"The value '{suppliedValue}' is invalid.";
+        var (bindingContext, binder) = GetBinderAndContext(
+            modelType,
+            valueProviderValue: suppliedValue.Split(","));
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.False(bindingContext.Result.IsModelSet);
+        Assert.Null(bindingContext.Result.Model);
+        Assert.False(bindingContext.ModelState.IsValid);
+        var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
+        Assert.Equal(message, error.ErrorMessage);
+    }
+
     private static (DefaultModelBindingContext, IModelBinder) GetBinderAndContext(
         Type modelType,
         object valueProviderValue)
