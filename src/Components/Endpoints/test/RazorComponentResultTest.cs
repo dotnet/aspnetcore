@@ -129,11 +129,10 @@ public class RazorComponentResultTest
         var serviceCollection = new ServiceCollection()
             .AddSingleton(new DiagnosticListener("test"))
             .AddSingleton<RazorComponentResultExecutor>()
-            .AddSingleton<IComponentPrerenderer, ComponentPrerenderer>()
+            .AddSingleton<IComponentPrerenderer, EndpointHtmlRenderer>()
             .AddSingleton<NavigationManager, FakeNavigationManager>()
             .AddSingleton<ServerComponentSerializer>()
             .AddSingleton<ComponentStatePersistenceManager>()
-            .AddSingleton<HtmlRenderer>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
             .AddLogging();
         return new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };

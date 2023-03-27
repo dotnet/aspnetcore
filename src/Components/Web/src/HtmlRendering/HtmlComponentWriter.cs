@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.HtmlRendering;
+using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Web;
@@ -18,11 +18,11 @@ internal ref struct HtmlComponentWriter
     };
 
     private static readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
-    private readonly HtmlRendererCore _renderer;
+    private readonly StaticHtmlRenderer _renderer;
     private readonly TextWriter _output;
     private string? _closestSelectValueAsString;
 
-    public static void Write(HtmlRendererCore renderer, int componentId, TextWriter output)
+    public static void Write(StaticHtmlRenderer renderer, int componentId, TextWriter output)
     {
         // We're about to walk over some buffers inside the renderer that can be mutated during rendering.
         // So, we require exclusive access to the renderer during this synchronous process.
@@ -32,7 +32,7 @@ internal ref struct HtmlComponentWriter
         context.RenderComponent(componentId);
     }
 
-    private HtmlComponentWriter(HtmlRendererCore renderer, TextWriter output)
+    private HtmlComponentWriter(StaticHtmlRenderer renderer, TextWriter output)
     {
         _renderer = renderer;
         _output = output;

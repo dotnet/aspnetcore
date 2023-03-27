@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.HtmlRendering;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Web;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
 {
-    private readonly HtmlRendererCore _passiveHtmlRenderer;
+    private readonly StaticHtmlRenderer _passiveHtmlRenderer;
 
     /// <summary>
     /// Constructs an instance of <see cref="HtmlRenderer"/>.
@@ -22,8 +21,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <param name="loggerFactory">The logger factory to use.</param>
     public HtmlRenderer(IServiceProvider services, ILoggerFactory loggerFactory)
     {
-        var componentActivator = services.GetService<IComponentActivator>() ?? DefaultComponentActivator.Instance;
-        _passiveHtmlRenderer = new HtmlRendererCore(services, loggerFactory, componentActivator);
+        _passiveHtmlRenderer = new StaticHtmlRenderer(services, loggerFactory);
     }
 
     /// <inheritdoc />
@@ -50,7 +48,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
-        => _passiveHtmlRenderer.BeginRenderingComponentAsync(typeof(TComponent), ParameterView.Empty);
+        => _passiveHtmlRenderer.BeginRenderingComponent(typeof(TComponent), ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
@@ -63,7 +61,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         ParameterView parameters) where TComponent : IComponent
-        => _passiveHtmlRenderer.BeginRenderingComponentAsync(typeof(TComponent), parameters);
+        => _passiveHtmlRenderer.BeginRenderingComponent(typeof(TComponent), parameters);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
@@ -75,7 +73,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <returns>An <see cref="HtmlComponent"/> instance representing the render output.</returns>
     public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType)
-        => _passiveHtmlRenderer.BeginRenderingComponentAsync(componentType, ParameterView.Empty);
+        => _passiveHtmlRenderer.BeginRenderingComponent(componentType, ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
@@ -89,7 +87,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView parameters)
-        => _passiveHtmlRenderer.BeginRenderingComponentAsync(componentType, parameters);
+        => _passiveHtmlRenderer.BeginRenderingComponent(componentType, parameters);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render, waiting

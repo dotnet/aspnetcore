@@ -21,7 +21,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class ComponentPrerendererTest
+public class EndpointHtmlRendererTest
 {
     private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
@@ -29,11 +29,11 @@ public class ComponentPrerendererTest
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
     private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
-    private readonly ComponentPrerenderer renderer;
+    private readonly EndpointHtmlRenderer renderer;
 
-    public ComponentPrerendererTest()
+    public EndpointHtmlRendererTest()
     {
-        renderer = GetComponentRenderer();
+        renderer = GetEndpointHtmlRenderer();
     }
 
     [Fact]
@@ -648,8 +648,7 @@ public class ComponentPrerendererTest
     {
         // Arrange
         var collection = CreateDefaultServiceCollection();
-        collection.TryAddScoped<ComponentPrerenderer>();
-        collection.TryAddScoped<HtmlRenderer>();
+        collection.TryAddScoped<EndpointHtmlRenderer>();
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();
@@ -661,7 +660,7 @@ public class ComponentPrerendererTest
         var scopedProvider = scope.ServiceProvider;
         var context = new DefaultHttpContext() { RequestServices = scopedProvider };
         var httpContext = GetHttpContext(context);
-        var renderer = scopedProvider.GetRequiredService<ComponentPrerenderer>();
+        var renderer = scopedProvider.GetRequiredService<EndpointHtmlRenderer>();
 
         // Act
         var state = new AsyncDisposableState();
@@ -860,12 +859,10 @@ public class ComponentPrerendererTest
         return writer.ToString();
     }
 
-    private ComponentPrerenderer GetComponentRenderer(IServiceProvider services = null)
+    private EndpointHtmlRenderer GetEndpointHtmlRenderer(IServiceProvider services = null)
     {
         var effectiveServices = services ?? _services;
-        return new ComponentPrerenderer(
-            new HtmlRenderer(effectiveServices, NullLoggerFactory.Instance),
-            effectiveServices);
+        return new EndpointHtmlRenderer(effectiveServices, NullLoggerFactory.Instance);
     }
 
     private HttpContext GetHttpContext(HttpContext context = null)

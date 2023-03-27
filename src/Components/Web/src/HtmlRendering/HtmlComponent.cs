@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.HtmlRendering;
+using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web;
 
@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </summary>
 public sealed class HtmlComponent
 {
-    private readonly HtmlRendererCore? _renderer;
+    private readonly StaticHtmlRenderer? _renderer;
     private readonly int _componentId;
     private readonly Task _quiescenceTask;
 
-    internal HtmlComponent(HtmlRendererCore? renderer, int componentId, Task quiescenceTask)
+    internal HtmlComponent(StaticHtmlRenderer? renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
         _componentId = componentId;

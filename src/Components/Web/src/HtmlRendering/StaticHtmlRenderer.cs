@@ -7,20 +7,32 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.HtmlRendering;
+namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
-internal sealed class HtmlRendererCore : Renderer
+/// <summary>
+/// A <see cref="Renderer"/> subclass that is intended for static HTML rendering. Application
+/// developers should not normally use this class directly. Instead, use
+/// <see cref="HtmlRenderer"/> for a more convenient API.
+/// </summary>
+public class StaticHtmlRenderer : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
-    public HtmlRendererCore(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
-        : base(serviceProvider, loggerFactory, componentActivator)
+    /// <summary>
+    /// Constructs an instance of <see cref="StaticHtmlRenderer"/>.
+    /// </summary>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    public StaticHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        : base(serviceProvider, loggerFactory)
     {
     }
 
+    /// <inheritdoc/>
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    public HtmlComponent BeginRenderingComponentAsync(
+    /// <inheritdoc/>
+    public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
@@ -36,9 +48,11 @@ internal sealed class HtmlRendererCore : Renderer
         return new HtmlComponent(this, componentId, quiescenceTask);
     }
 
+    /// <inheritdoc/>
     protected override void HandleException(Exception exception)
         => ExceptionDispatchInfo.Capture(exception).Throw();
 
+    /// <inheritdoc/>
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         // By default we return a canceled task. This has the effect of making it so that the
