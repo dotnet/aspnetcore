@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
 
-            return (false, default);
+            return (allowEmpty, default);
         }
 
     }
