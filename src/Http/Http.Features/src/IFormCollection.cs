@@ -92,7 +92,7 @@ public interface IFormCollection : IEnumerable<KeyValuePair<string, StringValues
     ///     </para>
     ///     <para>
     ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
-    ///     To prevent this the method <see cref="HttpContext.Request.ReadFormAsync(CancellationToken)" /> can be used.
+    ///     To prevent this the method <see cref="Microsoft.AspNetCore.Http.HttpRequest.ReadFormAsync(CancellationToken)" /> can be used.
     ///     For more information, see <see href="https://aka.ms/aspnet/forms-async" />.
     ///     </para>
     /// </remarks>
