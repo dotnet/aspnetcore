@@ -141,7 +141,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     }
 
     // Internal for testing
-    internal async Task RunAsync((TimeSpan Delay, TimeSpan Period) timerOptions = default)
+    internal async Task RunAsync((TimeSpan Delay, TimeSpan Period) timerOptions)
     {
         var duration = ValueStopwatch.StartNew();
         Logger.HealthCheckPublisherProcessingBegin(_logger);
