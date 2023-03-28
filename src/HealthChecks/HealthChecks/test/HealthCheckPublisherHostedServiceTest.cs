@@ -271,8 +271,8 @@ public class HealthCheckPublisherHostedServiceTest
                     tags: null,
                     timeout: default)
                 {
-                    Delay = TimeSpan.FromSeconds(2),
-                    Period = TimeSpan.FromSeconds(18)
+                    Delay = TimeSpan.FromSeconds(.2),
+                    Period = TimeSpan.FromSeconds(1.8)
                 });
 
              b.Add(
@@ -283,8 +283,8 @@ public class HealthCheckPublisherHostedServiceTest
                     tags: null,
                     timeout: default)
                 {
-                    Delay = TimeSpan.FromSeconds(7),
-                    Period = TimeSpan.FromSeconds(11)
+                    Delay = TimeSpan.FromSeconds(.7),
+                    Period = TimeSpan.FromSeconds(1.1)
                 });
 
             b.Add(
@@ -299,8 +299,8 @@ public class HealthCheckPublisherHostedServiceTest
                    tags: null,
                    timeout: default)
                {
-                   Delay = TimeSpan.FromSeconds(9),
-                   Period = TimeSpan.FromSeconds(5)
+                   Delay = TimeSpan.FromSeconds(.9),
+                   Period = TimeSpan.FromSeconds(.5)
                });
         });
 
@@ -522,8 +522,8 @@ public class HealthCheckPublisherHostedServiceTest
                         failureStatus: null,
                         tags: null)
                     {
-                        Delay = TimeSpan.FromSeconds(2),
-                        Period = TimeSpan.FromSeconds(18)
+                        Delay = TimeSpan.FromSeconds(.2),
+                        Period = TimeSpan.FromSeconds(1.8)
                     });
 
                 b.Add(
@@ -534,8 +534,8 @@ public class HealthCheckPublisherHostedServiceTest
                         tags: null,
                         timeout: default)
                     {
-                        Delay = TimeSpan.FromSeconds(7),
-                        Period = TimeSpan.FromSeconds(11)
+                        Delay = TimeSpan.FromSeconds(.7),
+                        Period = TimeSpan.FromSeconds(1.1)
                     });
 
                 b.Add(
@@ -550,8 +550,8 @@ public class HealthCheckPublisherHostedServiceTest
                        tags: null,
                        timeout: default)
                    {
-                       Delay = TimeSpan.FromSeconds(9),
-                       Period = TimeSpan.FromSeconds(5)
+                       Delay = TimeSpan.FromSeconds(.9),
+                       Period = TimeSpan.FromSeconds(.5)
                    });
             });
 
