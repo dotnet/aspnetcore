@@ -239,7 +239,7 @@ public class ForwardedHeadersMiddleware
 
             if (checkProto)
             {
-                if (!string.IsNullOrEmpty(set.Scheme) && set.Scheme.AsSpan().IndexOfAnyExcept(SchemeChars) == -1)
+                if (!string.IsNullOrEmpty(set.Scheme) && set.Scheme.AsSpan().IndexOfAnyExcept(SchemeChars) < 0)
                 {
                     applyChanges = true;
                     currentValues.Scheme = set.Scheme;
@@ -389,23 +389,21 @@ public class ForwardedHeadersMiddleware
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool TryValidateIPv6Host(string hostText)
     {
-        var hostEndIdx = hostText.IndexOf(']');
-        if (hostEndIdx == -1 || hostEndIdx < 4)
-        {
-            // Bail if there is no ']' or if the host is too short.
-            // [::1] is the shortest valid IPv6 host.
-            return false;
-        }
+        var host = hostText.AsSpan(1);
 
-        // Trim the '[' and ']'
-        var hostTextTrimmed = hostText.AsSpan()[1..hostEndIdx];
-        if (hostTextTrimmed.IndexOfAnyExcept(Ipv6HostChars) != -1)
+        var hostEndIdx = host.IndexOfAnyExcept(Ipv6HostChars);
+        if ((uint)hostEndIdx >= (uint)host.Length || // No ']'. The uint cast is there to eliminate the
+                                                     // bounds check on the 'host[hostEndIdx]' access below.
+            host[hostEndIdx] != ']' || // We found an invalid host character
+            hostEndIdx < 3) // [::1] is the shortest valid IPv6 host
         {
             return false;
         }
 
         // If there's nothing left, we're good. If there's more, validate it as a port.
-        return (hostText.Length > hostEndIdx + 1) ? TryValidateHostPort(hostText, hostEndIdx + 1) : true;
+        // +2 to skip the '[' and ']' (the '[' wasn't included in hostEndIdx because we
+        // cut it off in the AsSpan above).
+        return (hostEndIdx + 2 == hostText.Length) || TryValidateHostPort(hostText, hostEndIdx + 2);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -417,6 +415,6 @@ public class ForwardedHeadersMiddleware
             return false;
         }
 
-        return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') == -1;
+        return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') < 0;
     }
 }
