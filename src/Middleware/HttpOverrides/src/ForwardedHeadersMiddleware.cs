@@ -37,7 +37,6 @@ public class ForwardedHeadersMiddleware
     private static readonly IndexOfAnyValues<char> Ipv6HostChars =
         IndexOfAnyValues.Create(".0123456789:ABCDEFabcdef");
 
-
     /// <summary>
     /// Create a new <see cref="ForwardedHeadersMiddleware"/>.
     /// </summary>
