@@ -143,12 +143,9 @@ public class HealthCheckPublisherHostedServiceTest
         // Arrange
         var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var publishers = new TestPublisher[]
-        {
-                new TestPublisher() { Wait = unblock.Task, }
-        };
+        var publisher = new TestPublisher() { Wait = unblock.Task, };
 
-        var service = CreateService(publishers);
+        var service = CreateService(new[] { publisher });
 
         try
         {
@@ -158,14 +155,14 @@ public class HealthCheckPublisherHostedServiceTest
             var running = RunServiceAsync(service);
 
             // Wait for the publisher to see the cancellation token
-            await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
-            Assert.Single(publishers[0].Entries);
+            await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+            Assert.Single(publisher.Entries);
 
             // Act
             await service.StopAsync(); // Trigger cancellation
 
             // Assert
-            await AssertCanceledAsync(publishers[0].Entries[0].cancellationToken);
+            await AssertCanceledAsync(publisher.Entries[0].cancellationToken);
             Assert.False(service.IsTimerRunning);
             Assert.True(service.IsStopping);
 
@@ -189,12 +186,9 @@ public class HealthCheckPublisherHostedServiceTest
 
         var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var publishers = new TestPublisher[]
-        {
-                new TestPublisher() { Wait = unblock.Task, },
-        };
+        var publisher = new TestPublisher() { Wait = unblock.Task, };
 
-        var service = CreateService(publishers, sink: sink);
+        var service = CreateService(new[] { publisher }, sink: sink);
 
         try
         {
@@ -203,7 +197,7 @@ public class HealthCheckPublisherHostedServiceTest
             // Act
             var running = RunServiceAsync(service);
 
-            await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+            await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
             unblock.SetResult(null);
 
@@ -213,11 +207,8 @@ public class HealthCheckPublisherHostedServiceTest
             Assert.True(service.IsTimerRunning);
             Assert.False(service.IsStopping);
 
-            for (var i = 0; i < publishers.Length; i++)
-            {
-                var report = Assert.Single(publishers[i].Entries).report;
-                Assert.Equal(new[] { "one", "two", }, report.Entries.Keys.OrderBy(k => k));
-            }
+            var report = Assert.Single(publisher.Entries).report;
+            Assert.Equal(new[] { "one", "two", }, report.Entries.Keys.OrderBy(k => k));
         }
         finally
         {
@@ -249,12 +240,9 @@ public class HealthCheckPublisherHostedServiceTest
         var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var unblockDelayedCheck = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var publishers = new TestPublisher[]
-        {
-                new TestPublisher() { Wait = unblock.Task, },
-        };
+        var publisher = new TestPublisher() { Wait = unblock.Task, };
 
-        var service = CreateService(publishers, configureBuilder: b =>
+        var service = CreateService(new[] { publisher }, configureBuilder: b =>
         {
             b.Add(
                 new HealthCheckRegistration(
@@ -311,7 +299,7 @@ public class HealthCheckPublisherHostedServiceTest
             // Act
             var running = RunServiceAsync(service);
 
-            await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+            await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
             unblock.SetResult(null);
 
@@ -323,14 +311,11 @@ public class HealthCheckPublisherHostedServiceTest
             Assert.True(service.IsTimerRunning);
             Assert.False(service.IsStopping);
 
-            for (var i = 0; i < publishers.Length; i++)
-            {
-                Assert.True(publishers[i].Entries.Count == 4);
-                var entries = publishers[i].Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
-                Assert.Equal(
-                    new[] { "CheckDefault", "CheckDelay2Period18", "CheckDelay7Period11", "CheckDelay9Period5" },
-                    entries);
-            }
+            Assert.True(publisher.Entries.Count == 4);
+            var entries = publisher.Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
+            Assert.Equal(
+                new[] { "CheckDefault", "CheckDelay2Period18", "CheckDelay7Period11", "CheckDelay9Period5" },
+                entries);
         }
         finally
         {
@@ -400,12 +385,9 @@ public class HealthCheckPublisherHostedServiceTest
         var sink = new TestSink();
         var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var publishers = new TestPublisher[]
-        {
-                new TestPublisher() { Wait = unblock.Task, },
-        };
+        var publisher = new TestPublisher() { Wait = unblock.Task, };
 
-        var service = CreateService(publishers, sink: sink);
+        var service = CreateService(new[] { publisher }, sink: sink);
 
         try
         {
@@ -414,11 +396,11 @@ public class HealthCheckPublisherHostedServiceTest
             // Act
             var running = RunServiceAsync(service);
 
-            await publishers[0].Started.TimeoutAfter(TimeSpan.FromSeconds(10));
+            await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
             service.CancelToken();
 
-            await AssertCanceledAsync(publishers[0].Entries[0].cancellationToken);
+            await AssertCanceledAsync(publisher.Entries[0].cancellationToken);
 
             unblock.SetResult(null);
 
