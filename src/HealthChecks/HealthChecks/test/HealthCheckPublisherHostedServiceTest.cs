@@ -295,7 +295,7 @@ public class HealthCheckPublisherHostedServiceTest
                        unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
                        return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
                    }),
-                    failureStatus: null,
+                   failureStatus: null,
                    tags: null,
                    timeout: default)
                {
