@@ -275,7 +275,7 @@ public class HealthCheckPublisherHostedServiceTest
                     Period = TimeSpan.FromSeconds(18)
                 });
 
-        b.Add(
+             b.Add(
                 new HealthCheckRegistration(
                     name: "CheckDelay7Period11",
                     instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
