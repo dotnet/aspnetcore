@@ -27,7 +27,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
-        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IPostConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
-        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IPostConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
     }
 
     [Fact]
@@ -125,22 +125,34 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         Assert.Throws<InvalidOperationException>(() => jsonOptions.Value);
     }
 
+    public enum CustomContextBehavior
+    {
+        Prepend,
+        Append,
+        Replace,
+    }
+
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void AddProblemDetails_CombinesProblemDetailsContext_WhenAddingCustomContext(bool prepend)
+    [InlineData(CustomContextBehavior.Prepend)]
+    [InlineData(CustomContextBehavior.Append)]
+    [InlineData(CustomContextBehavior.Replace)]
+    public void AddProblemDetails_CombinesProblemDetailsContext_WhenAddingCustomContext(CustomContextBehavior behavior)
     {
         // Arrange
         var collection = new ServiceCollection();
         collection.AddOptions<JsonOptions>();
 
-        if (prepend)
+        if (behavior == CustomContextBehavior.Prepend)
         {
             collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, TestExtensionsJsonContext.Default));
         }
-        else
+        else if (behavior == CustomContextBehavior.Append)
         {
             collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Add(TestExtensionsJsonContext.Default));
+        }
+        else
+        {
+            collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolver = TestExtensionsJsonContext.Default);
         }
 
         // Act
@@ -157,7 +169,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
     }
 
     [Fact]
-    public void AddProblemDetails_DoesNotCombineProblemDetailsContext_WhenNullTypeInfoResolver()
+    public void AddProblemDetails_CombinesProblemDetailsContext_EvenWhenNullTypeInfoResolver()
     {
         // Arrange
         var collection = new ServiceCollection();
@@ -172,7 +184,8 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         var jsonOptions = services.GetService<IOptions<JsonOptions>>();
 
         Assert.NotNull(jsonOptions.Value);
-        Assert.Null(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(ProblemDetails), jsonOptions.Value.SerializerOptions));
     }
 
     [Fact]
@@ -203,11 +216,13 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Arrange
         var collection = new ServiceCollection();
         collection.AddOptions<JsonOptions>();
-        var customProblemDetailsResolver = new CustomProblemDetailsTypeInfoResolver();
-        collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, customProblemDetailsResolver));
-        
+
         // Act
         collection.AddProblemDetails();
+
+        // add any custom ProblemDetails TypeInfoResolvers after calling AddProblemDetails()
+        var customProblemDetailsResolver = new CustomProblemDetailsTypeInfoResolver();
+        collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, customProblemDetailsResolver));
 
         // Assert
         var services = collection.BuildServiceProvider();
