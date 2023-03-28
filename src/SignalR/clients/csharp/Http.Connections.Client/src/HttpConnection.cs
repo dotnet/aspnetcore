@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // We want to do these things even if the WaitForWriterToComplete/WaitForReaderToComplete fails
                 if (!_disposed)
                 {
-                    _scopeDisposable.Dispose();
+                    _scopeDisposable?.Dispose();
                     _disposed = true;
                 }
 

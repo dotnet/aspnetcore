@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             var removeLocation = storeName == StoreName.My ? RemoveLocations.Local : RemoveLocations.Trusted;
 
-            foreach (var certificate in certificates)
+            foreach (var certificate in certificatesWithName)
             {
                 RemoveCertificate(certificate, removeLocation);
             }
