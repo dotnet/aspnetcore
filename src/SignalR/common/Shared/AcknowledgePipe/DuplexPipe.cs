@@ -1,4 +1,4 @@
-﻿using System.IO.Pipelines;
+using System.IO.Pipelines;
 
 namespace PipelinesOverNetwork
 {
@@ -64,8 +64,8 @@ namespace PipelinesOverNetwork
             var ackReaderClient = new AckPipeReader(input.Reader);
             var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReaderApp);
             var applicationReader = new ParseAckPipeReader(ackReaderApp, ackWriterClient, ackReaderClient);
-            var transportToApplication = new DuplexPipe(applicationReader, ackWriterClient);
-            var applicationToTransport = new DuplexPipe(transportReader, ackWriterApp);
+            var transportToApplication = new AckDuplexPipe(applicationReader, ackWriterClient);
+            var applicationToTransport = new AckDuplexPipe(transportReader, ackWriterApp);
 
             // Use for one side only, i.e. server
             //var ackWriter = new AckPipeWriter(output.Writer);
