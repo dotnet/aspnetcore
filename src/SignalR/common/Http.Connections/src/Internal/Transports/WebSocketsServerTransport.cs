@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Text;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using PipelinesOverNetwork;
 
@@ -250,10 +251,9 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                         {
                             Log.SendPayload(_logger, buffer.Length);
 
-                            //var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
-                            //    ? WebSocketMessageType.Binary
-                            //    : WebSocketMessageType.Text);
-                            var webSocketMessageType = WebSocketMessageType.Binary;
+                            var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
+                                ? WebSocketMessageType.Binary
+                                : WebSocketMessageType.Text);
 
                             LogBytes(buffer.ToArray(), _logger);
 

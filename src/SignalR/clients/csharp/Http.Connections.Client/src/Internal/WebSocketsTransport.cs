@@ -268,10 +268,9 @@ internal sealed partial class WebSocketsTransport : ITransport
             throw new ArgumentException($"The '{transferFormat}' transfer format is not supported by this transport.", nameof(transferFormat));
         }
 
-        //_webSocketMessageType = transferFormat == TransferFormat.Binary
-        //    ? WebSocketMessageType.Binary
-        //    : WebSocketMessageType.Text;
-        _webSocketMessageType = WebSocketMessageType.Binary;
+        _webSocketMessageType = transferFormat == TransferFormat.Binary
+            ? WebSocketMessageType.Binary
+            : WebSocketMessageType.Text;
 
         var resolvedUrl = ResolveWebSocketsUrl(url);
 
@@ -472,7 +471,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
-                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
+                LogBytes(memory.Slice(0, receiveResult.Count), _logger);
                 void LogBytes(Memory<byte> memory, ILogger logger)
                 {
                     var sb = new StringBuilder();
@@ -533,7 +532,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 var result = await _application.Input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
 
-                //LogBytes(buffer.ToArray(), _logger);
+                LogBytes(buffer.ToArray(), _logger);
                 void LogBytes(Memory<byte> memory, ILogger logger)
                 {
                     var sb = new StringBuilder();
