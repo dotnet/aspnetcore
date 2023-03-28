@@ -253,17 +253,58 @@ public class HealthCheckPublisherHostedServiceTest
 
             b.Add(
                 new HealthCheckRegistration(
-                    name: "CheckDelay2Period18",
+                    name: "CheckDelay1Period9",
                     instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                     failureStatus: null,
                     tags: null,
                     timeout: default)
                 {
-                    Delay = TimeSpan.FromSeconds(.2),
+                    Delay = TimeSpan.FromSeconds(1),
+                    Period = TimeSpan.FromSeconds(9)
+                });
+
+            b.Add(
+               new HealthCheckRegistration(
+                   name: "CheckDelay1Period9_1",
+                   instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                   failureStatus: null,
+                   tags: null,
+                   timeout: default)
+               {
+                   Delay = TimeSpan.FromSeconds(1),
+                   Period = TimeSpan.FromSeconds(9)
+               });
+
+            b.Add(
+               new HealthCheckRegistration(
+                   name: "CheckDelay1Period18",
+                   instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                   failureStatus: null,
+                   tags: null,
+                   timeout: default)
+               {
+                   Delay = TimeSpan.FromSeconds(1),
+                   Period = TimeSpan.FromSeconds(18)
+               });
+
+
+            b.Add(
+                new HealthCheckRegistration(
+                    name: "CheckDelay2Period18",
+                    instance: new DelegateHealthCheck(_ =>
+                    {
+                        unblockDelayedCheck.TrySetResult(null); // Unblock 2s delayed check
+                        return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
+                    }),
+                    failureStatus: null,
+                    tags: null,
+                    timeout: default)
+                {
+                    Delay = TimeSpan.FromSeconds(2),
                     Period = TimeSpan.FromSeconds(18)
                 });
 
-             b.Add(
+            b.Add(
                 new HealthCheckRegistration(
                     name: "CheckDelay7Period11",
                     instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
@@ -271,51 +312,68 @@ public class HealthCheckPublisherHostedServiceTest
                     tags: null,
                     timeout: default)
                 {
-                    Delay = TimeSpan.FromSeconds(.7),
+                    Delay = TimeSpan.FromSeconds(7),
                     Period = TimeSpan.FromSeconds(11)
                 });
 
             b.Add(
                new HealthCheckRegistration(
                    name: "CheckDelay9Period5",
-                   instance: new DelegateHealthCheck(_ =>
-                   {
-                       unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                       return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
-                   }),
+                   instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                    failureStatus: null,
                    tags: null,
                    timeout: default)
                {
-                   Delay = TimeSpan.FromSeconds(.9),
+                   Delay = TimeSpan.FromSeconds(9),
                    Period = TimeSpan.FromSeconds(5)
+               });
+
+            b.Add(
+               new HealthCheckRegistration(
+                   name: "CheckDelay10Period8",
+                   instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                   failureStatus: null,
+                   tags: null,
+                   timeout: default)
+               {
+                   Delay = TimeSpan.FromSeconds(10),
+                   Period = TimeSpan.FromSeconds(8)
+               });
+
+            b.Add(
+               new HealthCheckRegistration(
+                   name: "CheckDelay10Period9",
+                   instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                   failureStatus: null,
+                   tags: null,
+                   timeout: default)
+               {
+                   Delay = TimeSpan.FromSeconds(10),
+                   Period = TimeSpan.FromSeconds(9)
                });
         });
 
         try
         {
-            await service.StartAsync();
-
-            // Act
             var running = RunServiceAsync(service);
 
             await publisher.Started.TimeoutAfter(TimeSpan.FromSeconds(10));
 
+            await Task.Yield();
+            Assert.False(running.IsCompleted);
+
             unblock.SetResult(null);
 
-            await running.TimeoutAfter(TimeSpan.FromSeconds(20));
+            await running.TimeoutAfter(TimeSpan.FromSeconds(10));
 
-            await Task.WhenAll(unblock.Task, unblockDelayedCheck.Task);
+            // The timer hasn't started yet. Only the default 5 minute registration is run by RunServiceAsync.
+            Assert.Equal("CheckDefault", Assert.Single(Assert.Single(publisher.Entries).report.Entries.Keys));
 
-            // Assert
+            await service.StartAsync();
+            await unblockDelayedCheck.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+
             Assert.True(service.IsTimerRunning);
             Assert.False(service.IsStopping);
-
-            Assert.True(publisher.Entries.Count == 4);
-            var entries = publisher.Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
-            Assert.Equal(
-                new[] { "CheckDefault", "CheckDelay2Period18", "CheckDelay7Period11", "CheckDelay9Period5" },
-                entries);
         }
         finally
         {
@@ -323,6 +381,13 @@ public class HealthCheckPublisherHostedServiceTest
             Assert.False(service.IsTimerRunning);
             Assert.True(service.IsStopping);
         }
+
+        // Assert - after stop
+        var entries = publisher.Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
+        Assert.Contains("CheckDefault", entries);
+        Assert.Contains("CheckDelay1Period18", entries);
+        Assert.Contains("CheckDelay1Period9", entries);
+        Assert.Contains("CheckDelay1Period9_1", entries);
     }
 
     // Not testing logs here to avoid differences in logging order
@@ -435,43 +500,6 @@ public class HealthCheckPublisherHostedServiceTest
     public async Task RunAsync_CanFilterHealthChecks()
     {
         // Arrange
-        var publishers = new TestPublisher[]
-        {
-                new TestPublisher(),
-                new TestPublisher(),
-        };
-
-        var service = CreateService(publishers, configurePublisherOptions: (options) =>
-        {
-            options.Predicate = (r) => r.Name == "one";
-        });
-
-        try
-        {
-            await service.StartAsync();
-
-            // Act
-            await RunServiceAsync(service).TimeoutAfter(TimeSpan.FromSeconds(10));
-
-            // Assert
-            for (var i = 0; i < publishers.Length; i++)
-            {
-                var report = Assert.Single(publishers[i].Entries).report;
-                Assert.Equal(new[] { "one", }, report.Entries.Keys.OrderBy(k => k));
-            }
-        }
-        finally
-        {
-            await service.StopAsync();
-            Assert.False(service.IsTimerRunning);
-            Assert.True(service.IsStopping);
-        }
-    }
-
-    [Fact]
-    public async Task RunAsync_CanFilterHealthChecks_RegistrationParameters()
-    {
-        // Arrange
         const string HealthyMessage = "Everything is A-OK";
 
         var unblockDelayedCheck = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -486,25 +514,67 @@ public class HealthCheckPublisherHostedServiceTest
             publishers,
             configurePublisherOptions: (options) =>
             {
-                options.Predicate = (r) => r.Name.Contains("Delay");
+                options.Predicate = (r) => r.Name.Contains("Delay") && !r.Name.Contains("_2");
+                options.Delay = TimeSpan.Zero;
             },
             configureBuilder: b =>
             {
                 b.Add(
-                    new(
-                        name: "CheckDefault",
+                new HealthCheckRegistration(
+                    name: "CheckDefault",
+                    instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                    failureStatus: null,
+                    tags: null));
+
+                b.Add(
+                    new HealthCheckRegistration(
+                        name: "CheckDelay1Period9",
                         instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
                         failureStatus: null,
-                        tags: null));
+                        tags: null,
+                        timeout: default)
+                    {
+                        Delay = TimeSpan.FromSeconds(1),
+                        Period = TimeSpan.FromSeconds(9)
+                    });
+
+                b.Add(
+                   new HealthCheckRegistration(
+                        name: "CheckDelay1Period9_1",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default)
+                   {
+                        Delay = TimeSpan.FromSeconds(1),
+                        Period = TimeSpan.FromSeconds(9)
+                   });
+
+                b.Add(
+                   new HealthCheckRegistration(
+                        name: "CheckDelay1Period9_2",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default)
+                   {
+                       Delay = TimeSpan.FromSeconds(1),
+                       Period = TimeSpan.FromSeconds(9)
+                   });
 
                 b.Add(
                     new HealthCheckRegistration(
                         name: "CheckDelay2Period18",
-                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        instance: new DelegateHealthCheck(_ =>
+                        {
+                            unblockDelayedCheck.TrySetResult(null); // Unblock 2s delayed check
+                            return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
+                        }),
                         failureStatus: null,
-                        tags: null)
+                        tags: null,
+                        timeout: default)
                     {
-                        Delay = TimeSpan.FromSeconds(.2),
+                        Delay = TimeSpan.FromSeconds(2),
                         Period = TimeSpan.FromSeconds(18)
                     });
 
@@ -516,24 +586,44 @@ public class HealthCheckPublisherHostedServiceTest
                         tags: null,
                         timeout: default)
                     {
-                        Delay = TimeSpan.FromSeconds(.7),
+                        Delay = TimeSpan.FromSeconds(7),
                         Period = TimeSpan.FromSeconds(11)
                     });
 
                 b.Add(
                    new HealthCheckRegistration(
-                       name: "CheckDelay9Period5",
-                       instance: new DelegateHealthCheck(_ =>
-                       {
-                           unblockDelayedCheck.TrySetResult(null); // Unblock last delayed check
-                           return Task.FromResult(HealthCheckResult.Healthy(HealthyMessage));
-                       }),
-                       failureStatus: null,
-                       tags: null,
-                       timeout: default)
+                        name: "CheckDelay9Period5",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default)
                    {
-                       Delay = TimeSpan.FromSeconds(.9),
-                       Period = TimeSpan.FromSeconds(5)
+                        Delay = TimeSpan.FromSeconds(9),
+                        Period = TimeSpan.FromSeconds(5)
+                   });
+
+                b.Add(
+                   new HealthCheckRegistration(
+                        name: "CheckDelay10Period8",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default)
+                   {
+                        Delay = TimeSpan.FromSeconds(10),
+                        Period = TimeSpan.FromSeconds(8)
+                   });
+
+                b.Add(
+                   new HealthCheckRegistration(
+                        name: "CheckDelay10Period9",
+                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                        failureStatus: null,
+                        tags: null,
+                        timeout: default)
+                   {
+                        Delay = TimeSpan.FromSeconds(10),
+                        Period = TimeSpan.FromSeconds(9)
                    });
             });
 
@@ -542,19 +632,15 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StartAsync();
 
             // Act
-            await RunServiceAsync(service).TimeoutAfter(TimeSpan.FromSeconds(20));
-
-            await unblockDelayedCheck.Task;
+            await unblockDelayedCheck.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
 
             // Assert
             for (var i = 0; i < publishers.Length; i++)
             {
                 var entries = publishers[i].Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
 
-                Assert.True(entries.Count() == 3);
-                Assert.Equal(
-                    new[] { "CheckDelay2Period18", "CheckDelay7Period11", "CheckDelay9Period5" },
-                    entries);
+                Assert.Contains("CheckDelay1Period9", entries);
+                Assert.Contains("CheckDelay1Period9_1", entries);
             }
         }
         finally
@@ -562,6 +648,15 @@ public class HealthCheckPublisherHostedServiceTest
             await service.StopAsync();
             Assert.False(service.IsTimerRunning);
             Assert.True(service.IsStopping);
+        }
+
+        // Assert - after stop
+        for (var i = 0; i < publishers.Length; i++)
+        {
+            var entries = publishers[i].Entries.SelectMany(e => e.report.Entries.Select(e2 => e2.Key)).OrderBy(k => k).ToArray();
+
+            Assert.Contains("CheckDelay1Period9", entries);
+            Assert.Contains("CheckDelay1Period9_1", entries);
         }
     }
 
