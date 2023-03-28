@@ -257,11 +257,11 @@ public class HealthCheckPublisherHostedServiceTest
         var service = CreateService(publishers, configureBuilder: b =>
         {
             b.Add(
-                    new HealthCheckRegistration(
-                        name: "CheckDefault",
-                        instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
-                        failureStatus: null,
-                        tags: null));
+                new HealthCheckRegistration(
+                    name: "CheckDefault",
+                    instance: new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage))),
+                    failureStatus: null,
+                    tags: null));
 
             b.Add(
                 new HealthCheckRegistration(
