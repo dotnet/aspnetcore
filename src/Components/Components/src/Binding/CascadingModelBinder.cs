@@ -95,7 +95,7 @@ public class CascadingModelBinder : IComponent, ICascadingValueComponent
                 }
             }
 
-            return _bindingContext.BindingErrors.Count > 0 ? null : instance;
+            return instance;
         }
 
         private object CreateInstance()

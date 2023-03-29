@@ -9,15 +9,30 @@ Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
 
-<EditForm Model="Customer" OnValidSubmit="AddCustomer">
-    <ValidationSummary />
+<EditForm Model="Customer" OnValidSubmit="AddCustomer" novalidate>
     <DataAnnotationsValidator />
-    <InputText @bind-Value="Customer.Name" />
-    <ValidationMessage For="() => Customer.Name" />
-    <input type="submit" value="Add" />
+
+    <div>
+        <ValidationSummary />
+    </div>
+
+    <div>
+        <label for="Name">Name</label>
+        <InputText @bind-Value="Customer.Name" />
+        <ValidationMessage For="() => Customer.Name" />
+    </div>
+
+    <div>
+        <label for="Age">Age</label>
+        <input type="text" name="Age" value="@Customer.Age" />
+        <ValidationMessage For="() => Customer.Age" />
+    </div>
+    <div>
+        <input type="submit" value="Add Customer" />
+    </div>
 </EditForm>
 
-@if(_customerAdded)
+@if (_customerAdded)
 {
     <p>Customer @Customer.Name added.</p>
 }
@@ -29,7 +44,7 @@ Welcome to your new app.
 
     protected override void OnInitialized()
     {
-        Customer ??= new CustomerDto(0);
+        Customer ??= new CustomerDto();
     }
 
     public void AddCustomer()
@@ -39,14 +54,11 @@ Welcome to your new app.
 
     public class CustomerDto
     {
-        public CustomerDto(int id)
-        {
-            Id = id;
-        }
-
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; } = "";
+        public string? Name { get; set; }
+
+        public int Age { get; set; }
     }
 }

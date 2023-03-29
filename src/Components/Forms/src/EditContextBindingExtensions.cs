@@ -44,10 +44,9 @@ public static class EditContextBindingExtensions
 
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
-            _messages.Clear();
             foreach (var (key, errors) in _bindingContext.BindingErrors)
             {
-                var fieldIdentifier = !(key == "") ?
+                var fieldIdentifier = key == "" ?
                     new FieldIdentifier(_editContext.Model, fieldName: string.Empty)
                     : _editContext.Field(key);
 
