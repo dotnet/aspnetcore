@@ -30,7 +30,7 @@ public partial class HttpResultsHelperTests
 
         if (useJsonContext)
         {
-            serializerOptions.AddContext<TestJsonContext>();
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
         }
 
         // Act
@@ -61,7 +61,7 @@ public partial class HttpResultsHelperTests
 
         if (useJsonContext)
         {
-            serializerOptions.AddContext<TestJsonContext>();
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
         }
 
         // Act
@@ -94,7 +94,7 @@ public partial class HttpResultsHelperTests
 
         if (useJsonContext)
         {
-            serializerOptions.AddContext<TestJsonContext>();
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
         }
 
         // Act
@@ -128,7 +128,7 @@ public partial class HttpResultsHelperTests
 
         if (useJsonContext)
         {
-            serializerOptions.AddContext<TestJsonContext>();
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
         }
 
         // Act
@@ -162,7 +162,7 @@ public partial class HttpResultsHelperTests
 
         if (useJsonContext)
         {
-            serializerOptions.AddContext<TestJsonContext>();
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
         }
 
         // Act

@@ -1,33 +1,26 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class ProblemDetailsJsonOptionsSetup : IPostConfigureOptions<JsonOptions>
+/// <summary>
+/// Adds the ProblemDetailsJsonContext to the current JsonSerializerOptions.
+///
+/// This allows for consistent serialization behavior for ProblemDetails regardless if
+/// the default reflection-based serializer is used or not. And makes it trim/NativeAOT compatible.
+/// </summary>
+internal sealed class ProblemDetailsJsonOptionsSetup : IConfigureOptions<JsonOptions>
 {
-    public void PostConfigure(string? name, JsonOptions options)
+    public void Configure(JsonOptions options)
     {
-        switch (options.SerializerOptions.TypeInfoResolver)
-        {
-            case DefaultJsonTypeInfoResolver:
-                // In this case, the current configuration is using a reflection-based resolver
-                // and we are prepending our internal problem details context to be evaluated
-                // first.
-                options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(ProblemDetailsJsonContext.Default, options.SerializerOptions.TypeInfoResolver);
-                break;
-            case not null:
-                // Combine the current resolver with our internal problem details context (adding last)
-                options.SerializerOptions.AddContext<ProblemDetailsJsonContext>();
-                break;
-            default:
-                // Not adding our source gen context when TypeInfoResolver == null
-                // since adding it will skip the reflection-based resolver and potentially
-                // cause unexpected serialization problems
-                break;
-        }
+        // Always insert the ProblemDetailsJsonContext to the beginning of the chain at the time
+        // this Configure is invoked. This JsonTypeInfoResolver will be before the default reflection-based resolver,
+        // and before any other resolvers currently added.
+        // If apps need to customize ProblemDetails serialization, they can prepend a custom ProblemDetails resolver
+        // to the chain in an IConfigureOptions<JsonOptions> registered after the call to AddProblemDetails().
+        options.SerializerOptions.TypeInfoResolverChain.Insert(0, new ProblemDetailsJsonContext());
     }
 }

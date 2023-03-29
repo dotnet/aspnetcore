@@ -40,7 +40,8 @@ public static class ProblemDetailsServiceCollectionExtensions
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JsonOptions>, ProblemDetailsJsonOptionsSetup>());
+        // Use IConfigureOptions (instead of post-configure) so the registration gets added/invoked relative to when AddProblemDetails() is called.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, ProblemDetailsJsonOptionsSetup>());
 
         if (configure != null)
         {
