@@ -158,16 +158,16 @@ internal sealed partial class EndpointHtmlRenderer
     public class PrerenderedComponentHtmlContent : IHtmlAsyncContent
     {
         private readonly Dispatcher? _dispatcher;
-        private readonly HtmlRootComponent? _htmlToEmitOrNull;
+        private readonly HtmlComponent? _htmlToEmitOrNull;
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
         public static PrerenderedComponentHtmlContent Empty { get; }
-            = new PrerenderedComponentHtmlContent(null, HtmlRootComponent.Empty, null, null);
+            = new PrerenderedComponentHtmlContent(null, HtmlComponent.Empty, null, null);
 
         public PrerenderedComponentHtmlContent(
             Dispatcher? dispatcher, // If null, we're only emitting the markers
-            HtmlRootComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
+            HtmlComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
             ServerComponentMarker? serverMarker,
             WebAssemblyComponentMarker? webAssemblyMarker)
         {

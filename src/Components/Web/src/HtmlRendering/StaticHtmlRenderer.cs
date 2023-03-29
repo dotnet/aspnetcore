@@ -33,7 +33,7 @@ public class StaticHtmlRenderer : Renderer
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
     /// <inheritdoc/>
-    public HtmlRootComponent BeginRenderingComponent(
+    public HtmlComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
@@ -46,7 +46,7 @@ public class StaticHtmlRenderer : Renderer
             ExceptionDispatchInfo.Capture(quiescenceTask.Exception.InnerException ?? quiescenceTask.Exception).Throw();
         }
 
-        return new HtmlRootComponent(this, componentId, quiescenceTask);
+        return new HtmlComponent(this, componentId, quiescenceTask);
     }
 
     /// <inheritdoc/>

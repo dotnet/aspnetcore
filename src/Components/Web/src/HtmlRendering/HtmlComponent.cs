@@ -6,58 +6,28 @@ using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 namespace Microsoft.AspNetCore.Components.Web.HtmlRendering;
 
 /// <summary>
-/// Represents the output of rendering a component as HTML. The content can change if the component instance re-renders.
+/// Represents the output of rendering a root component as HTML. The content can change if the component instance re-renders.
 /// </summary>
-public class HtmlComponent
+public sealed class HtmlComponent : HtmlComponentBase
 {
-    private readonly StaticHtmlRenderer? _renderer;
-    private readonly int _componentId;
-
     /// <summary>
-    /// Constructs an instance of <see cref="HtmlComponent"/>.
+    /// Gets an instance of <see cref="HtmlComponent"/> that produces no content.
     /// </summary>
-    /// <param name="renderer">The renderer of the component.</param>
-    /// <param name="componentId">The ID of the component.</param>
-    public HtmlComponent(StaticHtmlRenderer renderer, int componentId)
+    public static HtmlComponent Empty { get; } = new HtmlComponent();
+
+    internal HtmlComponent(StaticHtmlRenderer renderer, int componentId, Task quiescenceTask)
+        : base(renderer, componentId)
     {
-        _renderer = renderer;
-        _componentId = componentId;
+        QuiescenceTask = quiescenceTask;
     }
 
-    internal HtmlComponent()
+    internal HtmlComponent() : base()
     {
-    }
-
-    /// <summary>
-    /// Gets the component ID.
-    /// </summary>
-    public int ComponentId => _componentId;
-
-    /// <summary>
-    /// Returns an HTML string representation of the component's latest output.
-    /// </summary>
-    /// <returns>An HTML string representation of the component's latest output.</returns>
-    public string ToHtmlString()
-    {
-        if (_renderer is null)
-        {
-            return string.Empty;
-        }
-
-        using var writer = new StringWriter();
-        WriteHtmlTo(writer);
-        return writer.ToString();
+        QuiescenceTask = Task.CompletedTask;
     }
 
     /// <summary>
-    /// Writes the component's latest output as HTML to the specified writer.
+    /// Gets a <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.
     /// </summary>
-    /// <param name="output">The output destination.</param>
-    public void WriteHtmlTo(TextWriter output)
-    {
-        if (_renderer is not null)
-        {
-            HtmlComponentWriter.Write(_renderer, _componentId, output);
-        }
-    }
+    public Task QuiescenceTask { get; }
 }

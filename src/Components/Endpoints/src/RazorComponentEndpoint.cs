@@ -90,7 +90,7 @@ internal static class RazorComponentEndpoint
         });
     }
 
-    private static void EmitStreamingRenderingUpdate(IEnumerable<HtmlComponent> htmlComponents, TextWriter writer)
+    private static void EmitStreamingRenderingUpdate(IEnumerable<HtmlComponentBase> htmlComponents, TextWriter writer)
     {
         writer.Write("<blazor-ssr>");
         foreach (var entry in htmlComponents)

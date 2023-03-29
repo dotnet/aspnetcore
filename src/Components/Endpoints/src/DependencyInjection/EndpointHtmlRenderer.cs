@@ -34,7 +34,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 {
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
-    private Action<IEnumerable<HtmlComponent>>? _onContentUpdatedCallback;
+    private Action<IEnumerable<HtmlComponentBase>>? _onContentUpdatedCallback;
 
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
@@ -60,7 +60,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
     }
 
-    public void OnContentUpdated(Action<IEnumerable<HtmlComponent>> callback)
+    public void OnContentUpdated(Action<IEnumerable<HtmlComponentBase>> callback)
     {
         if (_onContentUpdatedCallback is not null)
         {
@@ -78,11 +78,11 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         {
             // TODO: Deduplicate these. There's no reason ever to include the same component more than once in a single batch,
             // as we're rendering its whole final state, not the intermediate diffs.
-            var htmlComponents = new List<HtmlComponent>(count);
+            var htmlComponents = new List<HtmlComponentBase>(count);
             for (var i = 0; i < count; i++)
             {
                 ref var diff = ref renderBatch.UpdatedComponents.Array[i];
-                htmlComponents.Add(new HtmlComponent(this, diff.ComponentId));
+                htmlComponents.Add(new HtmlComponentBase(this, diff.ComponentId));
             }
 
             _onContentUpdatedCallback(htmlComponents);
