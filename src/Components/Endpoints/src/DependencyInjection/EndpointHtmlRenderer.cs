@@ -15,10 +15,20 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// A <see cref="StaticHtmlRenderer"/> subclass that is used when prerendering on an endpoint
-/// or for the component tag helper. It knows how to annotate the output with prerendering
-/// markers so the content can later switch into interactive mode. It also deals with initializing
-/// the standard component DI services once per request.
+/// A <see cref="StaticHtmlRenderer"/> subclass which is also the implementation of the
+/// <see cref="IComponentPrerenderer"/> DI service. This is the underlying mechanism shared by:
+///
+/// * Html.RenderComponentAsync (the earliest prerendering mechanism - a Razor HTML helper)
+/// * ComponentTagHelper (the primary prerendering mechanism before .NET 8)
+/// * RazorComponentResult and RazorComponentEndpoint (the primary prerendering mechanisms since .NET 8)
+///
+/// EndpointHtmlRenderer wraps the underlying <see cref="Web.HtmlRenderer"/> mechanism, annotating the
+/// output with prerendering markers so the content can later switch into interactive mode when used with
+/// blazor.*.js. It also deals with initializing the standard component DI services once per request.
+///
+/// Note that EndpointHtmlRenderer doesn't deal with streaming SSR since that's not applicable to Html.RenderComponentAsync
+/// or ComponentTagHelper, because they don't control the entire response. Streaming SSR is a layer around this implemented
+/// only inside RazorComponentResult/RazorComponentEndpoint.
 /// </summary>
 internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
