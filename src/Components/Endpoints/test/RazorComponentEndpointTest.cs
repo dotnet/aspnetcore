@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -17,32 +18,38 @@ public class RazorComponentEndpointTest
     public async Task CanRenderComponentStatically()
     {
         // Arrange
-        var result = new RazorComponentResult<SimpleComponent>();
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
 
         // Act
-        await result.ExecuteAsync(httpContext);
+        await RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(SimpleComponent),
+            componentParameters: null,
+            preventStreamingRendering: false);
 
         // Assert
         Assert.Equal("<h1>Hello from SimpleComponent</h1>", GetStringContent(responseBody));
-        Assert.Equal("text/html; charset=utf-8", httpContext.Response.ContentType);
-        Assert.Equal(200, httpContext.Response.StatusCode);
     }
 
     [Fact]
-    public async Task PerformsStreamingRenderingByDefault()
+    public async Task PerformsStreamingRendering()
     {
         // Arrange
         var tcs = new TaskCompletionSource();
-        var result = new RazorComponentResult<AsyncLoadingComponent>(new { LoadingTask = tcs.Task });
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
 
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
-        var completionTask = result.ExecuteAsync(httpContext);
+        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(AsyncLoadingComponent),
+            PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
+            preventStreamingRendering: false);
         Assert.Equal("Loading task status: WaitingForActivation", GetStringContent(responseBody));
 
         // Assert 2: Result task remains incomplete for as long as the component's loading operation remains in flight
@@ -61,14 +68,17 @@ public class RazorComponentEndpointTest
     {
         // Arrange
         var tcs = new TaskCompletionSource();
-        var result = new RazorComponentResult<AsyncLoadingComponent>(new { LoadingTask = tcs.Task });
-        result.PreventStreamingRendering = true;
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
 
         // Act/Assert: Doesn't complete until loading finishes
-        var completionTask = result.ExecuteAsync(httpContext);
+        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(AsyncLoadingComponent),
+            PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
+            preventStreamingRendering: true);
         await Task.Yield();
         Assert.False(completionTask.IsCompleted);
 
@@ -82,13 +92,14 @@ public class RazorComponentEndpointTest
     public async Task SupportsLayouts()
     {
         // Arrange
-        var result = new RazorComponentResult<ComponentWithLayout>();
         var httpContext = GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
 
         // Act
-        await result.ExecuteAsync(httpContext);
+        await RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentWithLayout),
+            null, false);
 
         // Assert
         Assert.Equal("[TestParentLayout with content: [TestLayout with content: Page]]", GetStringContent(responseBody));

@@ -35,6 +35,24 @@ public class RazorComponentResultTest
     }
 
     [Fact]
+    public async Task CanRenderComponentStatically()
+    {
+        // Arrange
+        var result = new RazorComponentResult<SimpleComponent>();
+        var httpContext = RazorComponentEndpointTest.GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal("<h1>Hello from SimpleComponent</h1>", GetStringContent(responseBody));
+        Assert.Equal("text/html; charset=utf-8", httpContext.Response.ContentType);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task ResponseIncludesStatusCodeAndContentTypeAndHtml()
     {
         // Arrange
