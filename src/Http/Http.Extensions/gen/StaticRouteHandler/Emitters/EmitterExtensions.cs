@@ -3,9 +3,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Emitters;
 
 internal static class EmitterExtensions
 {

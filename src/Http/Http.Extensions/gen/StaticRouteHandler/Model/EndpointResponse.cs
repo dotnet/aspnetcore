@@ -4,10 +4,10 @@
 using System;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Emitters;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 
 using WellKnownType = WellKnownTypeData.WellKnownType;
 

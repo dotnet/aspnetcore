@@ -13,6 +13,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Default</AnalysisMode>
+    <RestoreAdditionalProjectSources>/Users/captainsafia/repos/roslyn/artifacts/packages/Release/Shipping</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <!-- Defines project type conventions. -->

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 

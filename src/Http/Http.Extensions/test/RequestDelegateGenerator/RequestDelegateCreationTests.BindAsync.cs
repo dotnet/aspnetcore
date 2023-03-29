@@ -12,7 +12,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -2,6 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 
 internal record ConstructorParameter(IPropertySymbol Property, IParameterSymbol? Parameter);

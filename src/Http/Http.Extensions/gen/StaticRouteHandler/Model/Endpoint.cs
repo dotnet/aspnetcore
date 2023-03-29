@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 
 internal class Endpoint
 {
@@ -96,7 +96,7 @@ internal class Endpoint
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
-    public (string File, int LineNumber) Location { get; }
+    public (string File, int LineNumber, int CharaceterNumber) Location { get; }
     public IInvocationOperation Operation { get; }
 
     public override bool Equals(object o) =>
@@ -139,13 +139,16 @@ internal class Endpoint
         return hashCode.ToHashCode();
     }
 
-    private static (string, int) GetLocation(IInvocationOperation operation)
+    private static (string, int, int) GetLocation(IInvocationOperation operation)
     {
         var operationSpan = operation.Syntax.Span;
         var filePath = operation.Syntax.SyntaxTree.GetDisplayPath(operationSpan, operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
         var span = operation.Syntax.SyntaxTree.GetLineSpan(operationSpan);
         var lineNumber = span.StartLinePosition.Line + 1;
-        return (filePath, lineNumber);
+        // Calculate the character offset to the end of the Map invocation detected
+        var invocationLength = ((MemberAccessExpressionSyntax)((InvocationExpressionSyntax)operation.Syntax).Expression).Expression.Span.Length;
+        var characterNumber = span.StartLinePosition.Character + invocationLength + 1;
+        return (filePath, lineNumber, characterNumber);
     }
 
     private static string GetHttpMethod(IInvocationOperation operation)

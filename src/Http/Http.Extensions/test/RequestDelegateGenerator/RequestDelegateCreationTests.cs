@@ -1,17 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using System.Net;
-using System.Net.Sockets;
-using System.Numerics;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 

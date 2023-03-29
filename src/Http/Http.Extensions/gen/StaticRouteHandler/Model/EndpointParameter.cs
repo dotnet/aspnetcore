@@ -10,12 +10,12 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
-namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandler.Model;
 
 internal class EndpointParameter
 {
@@ -23,6 +23,7 @@ internal class EndpointParameter
     {
         Ordinal = parameter.Ordinal;
         IsOptional = parameter.IsOptional();
+        HasDefaultValue = parameter.HasExplicitDefaultValue;
         DefaultValue = parameter.GetDefaultValueString();
         ProcessEndpointParameterSource(endpoint, parameter, parameter.GetAttributes(), wellKnownTypes);
     }
@@ -32,6 +33,7 @@ internal class EndpointParameter
         Ordinal = parameter?.Ordinal ?? 0;
         IsProperty = true;
         IsOptional = property.IsOptional() || parameter?.IsOptional() == true;
+        HasDefaultValue = parameter?.HasExplicitDefaultValue ?? false;
         DefaultValue = parameter?.GetDefaultValueString() ?? "null";
         // Coalesce attributes on the property and attributes on the matching parameter
         var attributeBuilder = ImmutableArray.CreateBuilder<AttributeData>();
@@ -251,6 +253,7 @@ internal class EndpointParameter
     public bool IsOptional { get; set; }
     public bool IsArray { get; set; }
     public string DefaultValue { get; set; } = "null";
+    public bool HasDefaultValue { get; set; }
     [MemberNotNullWhen(true, nameof(PropertyAsParameterInfoConstruction))]
     public bool IsProperty { get; set; }
     public EndpointParameterSource Source { get; set; }

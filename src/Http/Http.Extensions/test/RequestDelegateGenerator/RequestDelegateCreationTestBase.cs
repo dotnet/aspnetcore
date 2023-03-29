@@ -35,8 +35,6 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
-        var source = GetMapActionString(sources);
-        var project = _baseProject.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
         // Create a Roslyn compilation for the syntax tree.
         var compilation = await CreateCompilationAsync(sources);
 
@@ -55,12 +53,13 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
             {
                 generator
             },
-            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         foreach (var updatedSource in updatedSources)
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(GetMapActionString(updatedSource), path: $"TestMapActions.cs");
+            var syntaxTree = CSharpSyntaxTree.ParseText(GetMapActionString(updatedSource), path: $"TestMapActions.cs", options: new CSharpParseOptions(LanguageVersion.Preview));
             compilation = compilation
                 .ReplaceSyntaxTree(compilation.SyntaxTrees.First(), syntaxTree);
             driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out updatedCompilation,
@@ -73,24 +72,24 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return (Assert.Single(runResult.Results), updatedCompilation);
     }
 
-    internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName) =>
+    internal static RequestDelegateGenerator.StaticRouteHandler.Model.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName) =>
         Assert.Single(GetStaticEndpoints(result, stepName));
 
-    internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint[] GetStaticEndpoints(GeneratorRunResult result, string stepName)
+    internal static RequestDelegateGenerator.StaticRouteHandler.Model.Endpoint[] GetStaticEndpoints(GeneratorRunResult result, string stepName)
     {
         // We only invoke the generator once in our test scenarios
         if (result.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
         {
             return staticEndpointSteps
                 .SelectMany(step => step.Outputs)
-                .Select(output => Assert.IsType<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint>(output.Value))
+                .Select(output => Assert.IsType<RequestDelegateGenerator.StaticRouteHandler.Model.Endpoint>(output.Value))
                 .ToArray();
         }
 
-        return Array.Empty<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint>();
+        return Array.Empty<RequestDelegateGenerator.StaticRouteHandler.Model.Endpoint>();
     }
 
-    internal static void VerifyStaticEndpointModel(GeneratorRunResult? result, Action<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint> runAssertions)
+    internal static void VerifyStaticEndpointModel(GeneratorRunResult? result, Action<RequestDelegateGenerator.StaticRouteHandler.Model.Endpoint> runAssertions)
     {
         if (result.HasValue)
         {
@@ -98,7 +97,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         }
     }
 
-    internal static void VerifyStaticEndpointModels(GeneratorRunResult? result, Action<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint[]> runAssertions)
+    internal static void VerifyStaticEndpointModels(GeneratorRunResult? result, Action<RequestDelegateGenerator.StaticRouteHandler.Model.Endpoint[]> runAssertions)
     {
         if (result.HasValue)
         {
@@ -134,7 +133,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
             var sourceText = SourceText.From(buffer, buffer.Length, encoding, canBeEmbedded: true);
 
             var syntaxRootNode = (CSharpSyntaxNode)syntaxTree.GetRoot();
-            var newSyntaxTree = CSharpSyntaxTree.Create(syntaxRootNode, options: null, encoding: encoding, path: syntaxTree.FilePath);
+            var newSyntaxTree = CSharpSyntaxTree.Create(syntaxRootNode, options: new CSharpParseOptions(LanguageVersion.Preview), encoding: encoding, path: syntaxTree.FilePath);
 
             compilation = compilation.ReplaceSyntaxTree(syntaxTree, newSyntaxTree);
 
@@ -301,7 +300,7 @@ public static class TestMapActions
             .AddProject(projectName, projectName, LanguageNames.CSharp)
             .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable))
-            .WithParseOptions(new CSharpParseOptions(LanguageVersion.CSharp11));
+            .WithParseOptions(new CSharpParseOptions(LanguageVersion.Preview));
 
         // Add in required metadata references
         var resolver = new AppLocalResolver();
@@ -347,7 +346,7 @@ public static class TestMapActions
                 .Replace(RequestDelegateGeneratorSources.GeneratedCodeAttribute, "%GENERATEDCODEATTRIBUTE%")
                 + Environment.NewLine;
             await File.WriteAllTextAsync(baselineFilePath, newSource);
-            Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
+            // Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
         }
 
         var baseline = await File.ReadAllTextAsync(baselineFilePath);

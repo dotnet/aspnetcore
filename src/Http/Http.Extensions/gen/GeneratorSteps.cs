@@ -5,5 +5,8 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 internal class GeneratorSteps
 {
     internal const string EndpointModelStep = nameof(EndpointModelStep);
-    internal const string EndpointsWithoutDiagnosicsStep = nameof(EndpointsWithoutDiagnosicsStep);
+    internal const string EndpointsWithoutDiagnosticsStep = nameof(EndpointsWithoutDiagnosticsStep);
+    internal const string EndpointsInterceptorsStep = nameof(EndpointsInterceptorsStep);
+    internal const string EndpointsHelperMethodsStep = nameof(EndpointsHelperMethodsStep);
+    internal const string EndpointsHelperTypesStep = nameof(EndpointsHelperTypesStep);
 }
