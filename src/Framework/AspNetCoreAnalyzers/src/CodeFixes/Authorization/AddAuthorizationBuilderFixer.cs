@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -71,6 +72,7 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
             }
             else
             {
+                Debug.Assert(false, "AddAuthorizationBuilderAnalyzer should not have emitted a diagnostic.");
                 return false;
             }
 
@@ -104,6 +106,7 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
             return true;
         }
 
+        Debug.Assert(false, "AddAuthorizationBuilderAnalyzer should not have emitted a diagnostic.");
         return false;
     }
 
