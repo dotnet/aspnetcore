@@ -40,6 +40,7 @@ public class ApiTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
     public async Task ApiTemplateNativeAotCSharp()
     {
+        Assert.True(false);
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
     }
 
