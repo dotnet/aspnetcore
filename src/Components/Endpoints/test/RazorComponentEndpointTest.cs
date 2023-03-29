@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Moq;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -105,6 +109,115 @@ public class RazorComponentEndpointTest
         Assert.Equal("[TestParentLayout with content: [TestLayout with content: Page]]", GetStringContent(responseBody));
     }
 
+    [Fact]
+    public async Task OnNavigationBeforeResponseStarted_Redirects()
+    {
+        // Arrange
+        var httpContext = GetTestHttpContext();
+
+        // Act
+        await RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsSynchronously),
+            null, false);
+
+        // Assert
+        Assert.Equal("https://test/somewhere/else", httpContext.Response.Headers.Location);
+    }
+
+    [Fact]
+    public async Task OnNavigationAfterResponseStarted_WithStreamingOff_Throws()
+    {
+        // Arrange
+        var httpContext = GetTestHttpContext();
+        var responseMock = new Mock<IHttpResponseFeature>();
+        responseMock.Setup(r => r.HasStarted).Returns(true);
+        httpContext.Features.Set(responseMock.Object);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsAsynchronously),
+            null, preventStreamingRendering: true));
+
+        // Assert
+        Assert.Contains("A navigation command was attempted during prerendering after the server already started sending the response", ex.Message);
+    }
+
+    [Fact]
+    public async Task OnNavigationAfterResponseStarted_WithStreamingOn_EmitsCommand()
+    {
+        // Arrange
+        var httpContext = GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act
+        await RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsAsynchronously),
+            null, preventStreamingRendering: false);
+
+        // Assert
+        Assert.Equal(
+            "Some output<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
+            GetStringContent(responseBody));
+    }
+
+    [Fact]
+    public async Task OnUnhandledExceptionBeforeResponseStarted_Throws()
+    {
+        // Arrange
+        var httpContext = GetTestHttpContext();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentThatThrowsSynchronously),
+            null, false));
+
+        // Assert
+        Assert.Contains("Test message", ex.Message);
+    }
+
+    [Fact]
+    public async Task OnUnhandledExceptionAfterResponseStarted_WithStreamingOff_Throws()
+    {
+        // Arrange
+        var httpContext = GetTestHttpContext();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentThatThrowsAsynchronously),
+            null, preventStreamingRendering: true));
+
+        // Assert
+        Assert.Contains("Test message", ex.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OnUnhandledExceptionAfterResponseStarted_WithStreamingOn_EmitsCommand(bool isDevelopmentEnvironment)
+    {
+        // Arrange
+        var httpContext = GetTestHttpContext(isDevelopmentEnvironment ? Environments.Development : Environments.Production);
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        var expectedResponseExceptionInfo = isDevelopmentEnvironment
+            ? "System.InvalidTimeZoneException: Test message"
+            : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";
+
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(ComponentThatThrowsAsynchronously),
+            null, preventStreamingRendering: false));
+
+        // Assert
+        Assert.Contains("Test message", ex.Message);
+        Assert.Contains(
+            $"Some output<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
+            GetStringContent(responseBody));
+    }
+
     private static string GetStringContent(MemoryStream stream)
     {
         stream.Position = 0;
@@ -153,10 +266,53 @@ public class RazorComponentEndpointTest
         }
     }
 
-    public static DefaultHttpContext GetTestHttpContext()
+    class ComponentThatRedirectsSynchronously : ComponentBase
     {
+        [Inject] private NavigationManager Nav { get; set; }
+
+        protected override void OnInitialized()
+            => Nav.NavigateTo("/somewhere/else");
+    }
+
+    class ComponentThatRedirectsAsynchronously : ComponentBase
+    {
+        [Inject] private NavigationManager Nav { get; set; }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await Task.Yield();
+            Nav.NavigateTo("/somewhere/else");
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Some output");
+    }
+
+    class ComponentThatThrowsSynchronously : ComponentBase
+    {
+        protected override void OnInitialized()
+            => throw new InvalidTimeZoneException("Test message");
+    }
+
+    class ComponentThatThrowsAsynchronously : ComponentBase
+    {
+        protected override async Task OnInitializedAsync()
+        {
+            await Task.Yield();
+            throw new InvalidTimeZoneException("Test message");
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => builder.AddContent(0, "Some output");
+    }
+
+    public static DefaultHttpContext GetTestHttpContext(string environmentName = null)
+    {
+        var mockWebHostEnvironment = Mock.Of<IWebHostEnvironment>(
+            x => x.EnvironmentName == (environmentName ?? Environments.Production));
         var serviceCollection = new ServiceCollection()
             .AddSingleton(new DiagnosticListener("test"))
+            .AddSingleton<IWebHostEnvironment>(mockWebHostEnvironment)
             .AddSingleton<RazorComponentResultExecutor>()
             .AddSingleton<EndpointHtmlRenderer>()
             .AddSingleton<IComponentPrerenderer>(services => services.GetRequiredService<EndpointHtmlRenderer>())
@@ -165,7 +321,10 @@ public class RazorComponentEndpointTest
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
             .AddLogging();
-        return new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
+        var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
+        result.Request.Scheme = "https";
+        result.Request.Host = new HostString("test");
+        return result;
     }
 
     class SimpleComponent : ComponentBase
@@ -193,6 +352,14 @@ public class RazorComponentEndpointTest
 
     class FakeNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
-        public new void Initialize(string baseUri, string uri) { }
+        public new void Initialize(string baseUri, string uri)
+            => base.Initialize(baseUri, uri);
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            // Equivalent to what RemoteNavigationManager would do
+            var absoluteUriString = ToAbsoluteUri(uri).ToString();
+            throw new NavigationException(absoluteUriString);
+        }
     }
 }
