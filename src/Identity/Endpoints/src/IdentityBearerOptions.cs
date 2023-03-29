@@ -3,14 +3,16 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.Endpoints;
 
 /// <summary>
 /// Contains the options used to authenticate using bearer tokens issued by <see cref="IdentityEndpointRouteBuilderExtensions.MapIdentity{TUser}(IEndpointRouteBuilder)"/>.
 /// </summary>
-public sealed class IdentityBearerAuthenticationOptions : AuthenticationSchemeOptions
+public sealed class IdentityBearerOptions : AuthenticationSchemeOptions
 {
     /// <summary>
     /// Controls how much time the bearer token will remain valid from the point it is created.
@@ -31,8 +33,15 @@ public sealed class IdentityBearerAuthenticationOptions : AuthenticationSchemeOp
     public IDataProtectionProvider? DataProtectionProvider { get; set; }
 
     /// <summary>
-    /// If set, authentication and challenges will be forwarded to this scheme only if the request does not contain a bearer token.
-    /// This is typically set to Usually Identity.Application cookies <see cref="IdentityConstants.ApplicationScheme"/>
+    /// If set, authentication will be forwarded to this scheme only if the request does not contain a bearer token.
+    /// This is typically set to <see cref="IdentityConstants.ApplicationScheme"/> ("Identity.Application") the for identity cookies by
+    /// <see cref="IdentityEndpointsServiceCollectionExtensions.AddIdentityEndpoints{TUser}(IServiceCollection)"/>.
     /// </summary>
-    public string? BearerTokenMissingFallbackScheme { get; set; }
+    public string? MissingBearerTokenFallbackScheme { get; set; }
+
+    /// <summary>
+    /// If set, this provides the bearer token. If unset, the bearer token is read from the Authorization  request header with a "Bearer " prefix.
+    /// </summary>
+    public Func<HttpContext, ValueTask<string?>>? ExtractBearerToken { get; set; }
 }
+

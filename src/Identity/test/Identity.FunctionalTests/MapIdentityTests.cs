@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests;
@@ -75,8 +76,8 @@ public class MapIdentityTests : LoggedTest
 
         await using var app = await CreateAppAsync(services =>
         {
-            AddIdentityEndpoints(services);
-            services.Configure<IdentityBearerAuthenticationOptions>(IdentityConstants.BearerScheme, options =>
+            services.AddIdentityEndpointsCore<ApplicationUser>(_ => { }).AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearer(options =>
             {
                 options.BearerTokenExpiration = expireTimeSpan;
             });
@@ -140,14 +141,67 @@ public class MapIdentityTests : LoggedTest
     [Fact]
     public async Task CannotLoginWithCookiesWithOnlyCoreServices()
     {
-        await using var app = await CreateAppAsync(AddIdentityEndpointsCore);
+        await using var app = await CreateAppAsync(AddIdentityEndpointsBearerOnly);
         using var client = app.GetTestClient();
 
         await client.PostAsJsonAsync("/identity/v1/register", new { Username, Password });
 
-        // TODO: Produce a helpful response rather than throw.
         await Assert.ThrowsAsync<InvalidOperationException>(()
             => client.PostAsJsonAsync("/identity/v1/login", new { Username, Password, CookieMode = true }));
+    }
+
+    [Fact]
+    public async Task CanReadBearerTokenFromQueryString()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddIdentityEndpointsCore<ApplicationUser>(_ => { }).AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearer(options =>
+            {
+                options.ExtractBearerToken = context =>
+                {
+                    var bearerToken = context.Request.Query["access_token"];
+                    return StringValues.IsNullOrEmpty(bearerToken)
+                        ? default
+                        : new(bearerToken.ToString());
+                };
+            });
+        });
+
+        using var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync("/identity/v1/register", new { Username, Password });
+        var loginResponse = await client.PostAsJsonAsync("/identity/v1/login", new { Username, Password });
+
+        var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var accessToken = loginContent.GetProperty("access_token").GetString();
+
+        Assert.Equal($"Hello, {Username}!", await client.GetStringAsync($"/auth/hello?access_token={accessToken}"));
+
+        // The normal header still works
+        client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
+        Assert.Equal($"Hello, {Username}!", await client.GetStringAsync($"/auth/hello"));
+    }
+
+    [Fact]
+    public async Task RedirectsToLoginPageByDefaultGivenNoBearerToken()
+    {
+        await using var app = await CreateAppAsync();
+        using var client = app.GetTestClient();
+
+        var redirectResponse = await client.GetAsync($"/auth/hello");
+        Assert.Equal(HttpStatusCode.Found, redirectResponse.StatusCode);
+        Assert.Equal(new Uri("http://localhost/Account/Login?ReturnUrl=%2Fauth%2Fhello"), redirectResponse.Headers.Location);
+    }
+
+    [Fact]
+    public async Task Returns401UnauthorizedStatusWithOnlyCoreServicesGivenNoBearerToken()
+    {
+        await using var app = await CreateAppAsync(AddIdentityEndpointsBearerOnly);
+        using var client = app.GetTestClient();
+
+        var unauthorizedResponse = await client.GetAsync($"/auth/hello");
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthorizedResponse.StatusCode);
     }
 
     private async Task<WebApplication> CreateAppAsync<TUser, TContext>(Action<IServiceCollection>? configureServices)
@@ -188,8 +242,11 @@ public class MapIdentityTests : LoggedTest
     private static void AddIdentityEndpoints(IServiceCollection services)
         => services.AddIdentityEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 
-    private static void AddIdentityEndpointsCore(IServiceCollection services)
-        => services.AddIdentityEndpointsCore<ApplicationUser>(_ => { }, _ => { }).AddEntityFrameworkStores<ApplicationDbContext>();
+    private static void AddIdentityEndpointsBearerOnly(IServiceCollection services)
+    {
+        services.AddIdentityEndpointsCore<ApplicationUser>(_ => { }).AddEntityFrameworkStores<ApplicationDbContext>();
+        services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearer(configure: null);
+    }
 
     private Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
         => CreateAppAsync<ApplicationUser, ApplicationDbContext>(configureServices);
@@ -197,7 +254,7 @@ public class MapIdentityTests : LoggedTest
     private static Dictionary<string, Action<IServiceCollection>> AddIdentityActions { get; } = new()
     {
         [nameof(AddIdentityEndpoints)] = AddIdentityEndpoints,
-        [nameof(AddIdentityEndpointsCore)] = AddIdentityEndpointsCore,
+        [nameof(AddIdentityEndpointsBearerOnly)] = AddIdentityEndpointsBearerOnly,
     };
 
     public static object[][] AddIdentityModes => AddIdentityActions.Keys.Select(key => new object[] { key }).ToArray();

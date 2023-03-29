@@ -13,18 +13,18 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Identity.Endpoints;
 
-internal sealed class IdentityBearerAuthenticationHandler : SignInAuthenticationHandler<IdentityBearerAuthenticationOptions>
+internal sealed class IdentityBearerAuthenticationHandler : SignInAuthenticationHandler<IdentityBearerOptions>
 {
     private const string BearerTokenPurpose = $"Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationHandler:v1:BearerToken";
 
-    private static readonly Task<AuthenticateResult> TokenMissingTask = Task.FromResult(AuthenticateResult.Fail("Token missing"));
-    private static readonly Task<AuthenticateResult> FailedUnprotectingTokenTask = Task.FromResult(AuthenticateResult.Fail("Unprotect token failed"));
-    private static readonly Task<AuthenticateResult> TokenExpiredTask = Task.FromResult(AuthenticateResult.Fail("Token expired"));
+    private static readonly AuthenticateResult TokenMissing = AuthenticateResult.Fail("Token missing");
+    private static readonly AuthenticateResult FailedUnprotectingToken = AuthenticateResult.Fail("Unprotected token failed");
+    private static readonly AuthenticateResult TokenExpired = AuthenticateResult.Fail("Token expired");
 
     private readonly IDataProtectionProvider _fallbackDataProtectionProvider;
 
     public IdentityBearerAuthenticationHandler(
-        IOptionsMonitor<IdentityBearerAuthenticationOptions> optionsMonitor,
+        IOptionsMonitor<IdentityBearerOptions> optionsMonitor,
         ILoggerFactory loggerFactory,
         UrlEncoder urlEncoder,
         ISystemClock clock,
@@ -40,43 +40,60 @@ internal sealed class IdentityBearerAuthenticationHandler : SignInAuthentication
     private ISecureDataFormat<AuthenticationTicket> BearerTokenProtector
         => Options.BearerTokenProtector ?? new TicketDataFormat(DataProtectionProvider.CreateProtector(BearerTokenPurpose));
 
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         // If there's no bearer token, forward to cookie auth.
-        if (GetBearerTokenOrNull() is not string token)
+        if (await GetBearerTokenOrNullAsync() is not string token)
         {
-            return Options.BearerTokenMissingFallbackScheme is string fallbackScheme
-                ? Context.AuthenticateAsync(fallbackScheme)
-                : TokenMissingTask;
+            return Options.MissingBearerTokenFallbackScheme is string fallbackScheme
+                ? await Context.AuthenticateAsync(fallbackScheme)
+                : TokenMissing;
         }
 
         var ticket = BearerTokenProtector.Unprotect(token);
 
         if (ticket?.Properties?.ExpiresUtc is null)
         {
-            return FailedUnprotectingTokenTask;
+            return FailedUnprotectingToken;
         }
 
         if (Clock.UtcNow >= ticket.Properties.ExpiresUtc)
         {
-            return TokenExpiredTask;
+            return TokenExpired;
         }
 
-        return Task.FromResult(AuthenticateResult.Success(ticket));
+        return AuthenticateResult.Success(ticket);
     }
 
-    protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+    protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
     {
         // If there's no bearer token, forward to cookie auth.
-        if (GetBearerTokenOrNull() is null)
+        if (await GetBearerTokenOrNullAsync() is null)
         {
-            return Options.BearerTokenMissingFallbackScheme is string fallbackScheme
-                ? Context.AuthenticateAsync(fallbackScheme)
-                : TokenMissingTask;
+            if (Options.MissingBearerTokenFallbackScheme is string fallbackScheme)
+            {
+                await Context.ForbidAsync(fallbackScheme);
+                return;
+            }
+        }
+
+        await base.HandleForbiddenAsync(properties);
+    }
+
+    protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        // If there's no bearer token, forward to cookie auth.
+        if (await GetBearerTokenOrNullAsync() is null)
+        {
+            if (Options.MissingBearerTokenFallbackScheme is string fallbackScheme)
+            {
+                await Context.ChallengeAsync(fallbackScheme);
+                return;
+            }
         }
 
         Response.Headers.Append(HeaderNames.WWWAuthenticate, "Bearer");
-        return base.HandleChallengeAsync(properties);
+        await base.HandleChallengeAsync(properties);
     }
 
     protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
@@ -97,11 +114,17 @@ internal sealed class IdentityBearerAuthenticationHandler : SignInAuthentication
     protected override Task HandleSignOutAsync(AuthenticationProperties? properties)
         => throw new NotSupportedException($"""
 Sign out is not currently supported by identity bearer tokens.
-If you want to delete cookies or clear a session, specify "{Options.BearerTokenMissingFallbackScheme}" as the authentication scheme.
+If you want to delete cookies or clear a session, specify "{IdentityConstants.ApplicationScheme}" as the authentication scheme.
 """);
 
-    private string? GetBearerTokenOrNull()
+    private async ValueTask<string?> GetBearerTokenOrNullAsync()
     {
+        if (Options.ExtractBearerToken is not null &&
+            await Options.ExtractBearerToken(Context) is string token)
+        {
+            return token;
+        }
+
         var authorization = Request.Headers.Authorization.ToString();
 
         return authorization.StartsWith("Bearer ", StringComparison.Ordinal)

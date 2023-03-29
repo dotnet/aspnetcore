@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Identity.Endpoints.DTO;
 [JsonSerializable(typeof(RegisterRequest))]
 [JsonSerializable(typeof(LoginRequest))]
 [JsonSerializable(typeof(AccessTokenResponse))]
-internal sealed partial class IdentityEndpointJsonSerializerContext : JsonSerializerContext
+internal sealed partial class IdentityEndpointsJsonSerializerContext : JsonSerializerContext
 {
 }

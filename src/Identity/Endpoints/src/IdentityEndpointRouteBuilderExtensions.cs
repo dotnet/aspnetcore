@@ -72,11 +72,11 @@ public static class IdentityEndpointRouteBuilderExtensions
             return TypedResults.SignIn(claimsPrincipal, authenticationScheme: scheme);
         });
 
-        return new IdentityEndpointConventionBuilder(v1);
+        return new IdentityEndpointsConventionBuilder(v1);
     }
 
     // Wrap RouteGroupBuilder with a non-public type to avoid a potential future behavioral breaking change.
-    private sealed class IdentityEndpointConventionBuilder(RouteGroupBuilder inner) : IEndpointConventionBuilder
+    private sealed class IdentityEndpointsConventionBuilder(RouteGroupBuilder inner) : IEndpointConventionBuilder
     {
         private readonly IEndpointConventionBuilder _inner = inner;
 

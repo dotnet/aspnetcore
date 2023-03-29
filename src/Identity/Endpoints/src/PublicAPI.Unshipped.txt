@@ -1,18 +1,21 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.BearerTokenExpiration.get -> System.TimeSpan
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.BearerTokenExpiration.set -> void
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.BearerTokenMissingFallbackScheme.get -> string?
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.BearerTokenMissingFallbackScheme.set -> void
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.BearerTokenProtector.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>?
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.BearerTokenProtector.set -> void
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.DataProtectionProvider.get -> Microsoft.AspNetCore.DataProtection.IDataProtectionProvider?
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.DataProtectionProvider.set -> void
-Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions.IdentityBearerAuthenticationOptions() -> void
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.BearerTokenExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.BearerTokenExpiration.set -> void
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.BearerTokenProtector.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>?
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.BearerTokenProtector.set -> void
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.DataProtectionProvider.get -> Microsoft.AspNetCore.DataProtection.IDataProtectionProvider?
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.DataProtectionProvider.set -> void
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.ExtractBearerToken.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.Tasks.ValueTask<string?>>?
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.ExtractBearerToken.set -> void
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.IdentityBearerOptions() -> void
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.MissingBearerTokenFallbackScheme.get -> string?
+Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions.MissingBearerTokenFallbackScheme.set -> void
 Microsoft.AspNetCore.Routing.IdentityEndpointRouteBuilderExtensions
-Microsoft.Extensions.DependencyInjection.IdentityEndpointServiceCollectionExtensions
+Microsoft.Extensions.DependencyInjection.IdentityBearerAuthenticationBuilderExtensions
+Microsoft.Extensions.DependencyInjection.IdentityEndpointsServiceCollectionExtensions
 static Microsoft.AspNetCore.Routing.IdentityEndpointRouteBuilderExtensions.MapIdentity<TUser>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
-static Microsoft.Extensions.DependencyInjection.IdentityEndpointServiceCollectionExtensions.AddIdentityEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
-static Microsoft.Extensions.DependencyInjection.IdentityEndpointServiceCollectionExtensions.AddIdentityEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configureIdentityOptions) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
-static Microsoft.Extensions.DependencyInjection.IdentityEndpointServiceCollectionExtensions.AddIdentityEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configureIdentityOptions, System.Action<Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions!>! configureIdentityBearerOptions) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
-static Microsoft.Extensions.DependencyInjection.IdentityEndpointServiceCollectionExtensions.AddIdentityEndpointsCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configureIdentityOptions, System.Action<Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerAuthenticationOptions!>! configureIdentityBearerOptions) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityBearerAuthenticationBuilderExtensions.AddIdentityBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Identity.Endpoints.IdentityBearerOptions!>? configure) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityEndpointsServiceCollectionExtensions.AddIdentityEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityEndpointsServiceCollectionExtensions.AddIdentityEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configure) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityEndpointsServiceCollectionExtensions.AddIdentityEndpointsCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configure) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
