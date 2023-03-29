@@ -60,7 +60,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         if (_navigationLockStateBeforeJsRuntimeAttached.HasValue)
         {
-            SetHasLocationChangingListeners(_navigationLockStateBeforeJsRuntimeAttached.Value);
+            _ = SetHasLocationChangingListenersAsync(_navigationLockStateBeforeJsRuntimeAttached.Value);
             _navigationLockStateBeforeJsRuntimeAttached = null;
         }
     }
@@ -131,11 +131,20 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             return;
         }
 
-        SetHasLocationChangingListeners(value);
+        _ = SetHasLocationChangingListenersAsync(value);
     }
 
-    private void SetHasLocationChangingListeners(bool value)
-        => _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value).Preserve();
+    private async Task SetHasLocationChangingListenersAsync(bool value)
+    {
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value);
+        }
+        catch (JSDisconnectedException)
+        {
+            // If the browser is gone, we don't need it to clean up any browser-side state
+        }
+    }
 
     private static partial class Log
     {
