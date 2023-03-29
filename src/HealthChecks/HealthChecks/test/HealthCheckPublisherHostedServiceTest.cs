@@ -287,7 +287,6 @@ public class HealthCheckPublisherHostedServiceTest
                    Period = TimeSpan.FromSeconds(18)
                });
 
-
             b.Add(
                 new HealthCheckRegistration(
                     name: "CheckDelay2Period18",
