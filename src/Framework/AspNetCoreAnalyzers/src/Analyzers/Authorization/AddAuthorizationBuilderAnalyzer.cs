@@ -148,14 +148,14 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
     {
         if (operation is IMethodReferenceOperation methodReferenceOperation
             && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member, authorizationOptionsTypes.GetPolicy)
-            && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
+            && SymbolEqualityComparer.Default.Equals(methodReferenceOperation.Member.ContainingType, authorizationOptionsTypes.AuthorizationOptions))
         {
             return true;
         }
 
         if (operation is IInvocationOperation invocationOperation
             && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod, authorizationOptionsTypes.GetPolicy)
-            && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingSymbol, authorizationOptionsTypes.AuthorizationOptions))
+            && SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, authorizationOptionsTypes.AuthorizationOptions))
         {
             return true;
         }
