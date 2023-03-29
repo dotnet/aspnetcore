@@ -30,24 +30,28 @@ public class ApiTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
     public async Task ApiTemplateCSharp()
     {
         await ApiTemplateCore(languageOverride: null);
     }
 
     [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
     public async Task ApiTemplateNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
     }
 
     [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
     public async Task ApiTemplateProgramMainCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
     [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
