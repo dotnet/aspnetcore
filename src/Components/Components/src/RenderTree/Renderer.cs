@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Quic;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -341,17 +342,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <returns>A <see cref="Task"/> to represent the UI update process.</returns>
     protected abstract Task UpdateDisplayAsync(in RenderBatch renderBatch);
 
+
     /// <summary>
     /// Notifies the renderer that an event has occurred.
     /// </summary>
     /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
     /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
+    /// <param name="quiesce">Wait for quiesce after dispatching the event.</param>
     /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
     /// <returns>
     /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
     /// has completed.
     /// </returns>
-    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
+    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool quiesce)
     {
         Dispatcher.AssertAccess();
 
@@ -382,6 +385,17 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _isBatchInProgress = true;
 
             task = callback.InvokeAsync(eventArgs);
+            if (quiesce)
+            {
+                if (_ongoingQuiescenceTask == null)
+                {
+                    _ongoingQuiescenceTask = task;
+                }
+                else
+                {
+                    AddToPendingTasks(task, receiverComponentState);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -397,10 +411,31 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             ProcessPendingRender();
         }
 
+        var result = GetErrorHandledTask(task, receiverComponentState);
+        if (quiesce)
+        {
+            // Caller asked for quiesce (typically when delivering a form post) so we return the quiesce task.
+            return WaitForQuiescence();
+        }
+
         // Task completed synchronously or is still running. We already processed all of the rendering
         // work that was queued so let our error handler deal with it.
-        var result = GetErrorHandledTask(task, receiverComponentState);
         return result;
+    }
+
+    /// <summary>
+    /// Notifies the renderer that an event has occurred.
+    /// </summary>
+    /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
+    /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
+    /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
+    /// <returns>
+    /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
+    /// has completed.
+    /// </returns>
+    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
+    {
+        return DispatchEventAsync(eventHandlerId, fieldInfo, eventArgs, quiesce: false);
     }
 
     /// <summary>
@@ -498,6 +533,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // a callback to a component, and never when used to attaching a DOM event handler.
 
         frame.AttributeEventHandlerIdField = id;
+
+        if (frame.AttributeEventName != null)
+        {
+            TrackEventName(frame.AttributeEventName, id);
+        }
+    }
+
+    protected virtual void TrackEventName(string eventName, ulong id)
+    {
+
     }
 
     /// <summary>

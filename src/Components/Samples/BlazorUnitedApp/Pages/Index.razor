@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.ComponentModel.DataAnnotations;
 
 <PageTitle>Index</PageTitle>
 
@@ -7,3 +8,45 @@
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+<EditForm Model="Customer" OnValidSubmit="AddCustomer">
+    <ValidationSummary />
+    <DataAnnotationsValidator />
+    <InputText @bind-Value="Customer.Name" />
+    <ValidationMessage For="() => Customer.Name" />
+    <input type="submit" value="Add" />
+</EditForm>
+
+@if(_customerAdded)
+{
+    <p>Customer @Customer.Name added.</p>
+}
+
+@code {
+
+    private bool _customerAdded;
+    [SupplyParameterFromForm] public CustomerDto Customer { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Customer ??= new CustomerDto(0);
+    }
+
+    public void AddCustomer()
+    {
+        _customerAdded = true;
+    }
+
+    public class CustomerDto
+    {
+        public CustomerDto(int id)
+        {
+            Id = id;
+        }
+
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; } = "";
+    }
+}

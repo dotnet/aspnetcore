@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Components.Authorization;
 
+/// <summary>
+/// Cascading authentication state
+/// </summary>
 public partial class CascadingAuthenticationState : ComponentBase, IDisposable
 {
     private Task<AuthenticationState>? _currentAuthenticationStateTask;

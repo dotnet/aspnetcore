@@ -77,6 +77,11 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
+    /// <summary>
+    /// Gets the context associated with data bound to the EditContext in this form.
+    /// </summary>
+    [CascadingParameter] public BindingContext Bindingcontext { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -120,16 +125,28 @@ public class EditForm : ComponentBase
         builder.OpenRegion(_editContext.GetHashCode());
 
         builder.OpenElement(0, "form");
-        builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
-        builder.OpenComponent<CascadingValue<EditContext>>(3);
-        builder.AddComponentParameter(4, "IsFixed", true);
-        builder.AddComponentParameter(5, "Value", _editContext);
-        builder.AddComponentParameter(6, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.AddAttribute(1, "method", "post");
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddAttribute(3, "onsubmit", _handleSubmitDelegate);
+        builder.SetUpdatesAttributeName(Bindingcontext.Name);
+        builder.OpenComponent<CascadingValue<EditContext>>(4);
+        builder.AddComponentParameter(5, "IsFixed", true);
+        builder.AddComponentParameter(6, "Value", _editContext);
+        builder.AddComponentParameter(7, "ChildContent", RenderFormContents());
         builder.CloseComponent();
         builder.CloseElement();
 
         builder.CloseRegion();
+    }
+
+    private RenderFragment? RenderFormContents()
+    {
+        return builder =>
+        {
+            builder.OpenComponent<BindingContextValidator>(0);
+            builder.CloseComponent();
+            builder.AddContent(1, ChildContent!, EditContext);
+        };
     }
 
     private async Task HandleSubmitAsync()

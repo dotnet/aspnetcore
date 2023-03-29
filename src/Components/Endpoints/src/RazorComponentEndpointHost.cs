@@ -55,16 +55,22 @@ internal class RazorComponentEndpointHost : IComponent
             throw new NotSupportedException($"Currently, Razor Component endpoints only support the {RenderMode.Static} render mode.");
         }
 
-        builder.OpenComponent(0, ComponentType);
-
-        if (ComponentParameters is not null)
+        builder.OpenComponent<CascadingModelBinder>(0);
+        builder.AddAttribute(1, "ChildContent", new RenderFragment((RenderTreeBuilder builder) =>
         {
-            foreach (var kvp in ComponentParameters)
-            {
-                builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-            }
-        }
 
+            builder.OpenComponent(0, ComponentType);
+
+            if (ComponentParameters is not null)
+            {
+                foreach (var kvp in ComponentParameters)
+                {
+                    builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+                }
+            }
+
+            builder.CloseComponent();
+        }));
         builder.CloseComponent();
     }
 }

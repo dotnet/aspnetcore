@@ -482,6 +482,22 @@ public sealed class RenderTreeBuilder : IDisposable
         prevFrame.AttributeEventUpdatesAttributeNameField = updatesAttributeName;
     }
 
+    public void SetEventName(string eventName)
+    {
+        if (_entries.Count == 0)
+        {
+            throw new InvalidOperationException("No preceding attribute frame exists.");
+        }
+
+        ref var prevFrame = ref _entries.Buffer[_entries.Count - 1];
+        if (prevFrame.FrameTypeField != RenderTreeFrameType.Attribute)
+        {
+            throw new InvalidOperationException($"Incorrect frame type: '{prevFrame.FrameTypeField}'");
+        }
+
+        prevFrame.AttributeEventNameField = eventName;
+    }
+
     /// <summary>
     /// Appends a frame representing a child component.
     /// </summary>

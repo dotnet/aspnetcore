@@ -106,6 +106,10 @@ public struct RenderTreeFrame
     [FieldOffset(24)] internal object AttributeValueField;
     [FieldOffset(32)] internal string AttributeEventUpdatesAttributeNameField;
 
+    // It is ok to do this because `AttributeEventNameField` and `AttributeEventUpdatesAttributeNameField`
+    // are never going to be set simultaneously and are of the same reference type.
+    [FieldOffset(32)] internal string AttributeEventNameField;
+
     /// <summary>
     /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>
     /// gets the ID of the corresponding event handler, if any.
@@ -131,6 +135,13 @@ public struct RenderTreeFrame
     /// primarily used in two-way bindings.
     /// </summary>
     public string AttributeEventUpdatesAttributeName => AttributeEventUpdatesAttributeNameField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
+    /// and the attribute represents an event handler, gets a unique user-defined identifier
+    /// associated with the event.
+    /// </summary>
+    public string AttributeEventName => AttributeEventNameField;
 
     // --------------------------------------------------------------------------------
     // RenderTreeFrameType.Component

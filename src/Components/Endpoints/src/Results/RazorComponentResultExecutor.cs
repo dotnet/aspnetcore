@@ -32,7 +32,6 @@ public class RazorComponentResultExecutor
         
         return RazorComponentEndpoint.RenderComponentToResponse(
             httpContext,
-            result.RenderMode,
             result.ComponentType,
             result.Parameters);
     }

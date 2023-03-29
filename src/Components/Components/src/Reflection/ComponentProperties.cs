@@ -170,6 +170,7 @@ internal static class ComponentProperties
         {
             if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
                 !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)) &&
+                !propertyInfo.IsDefined(typeof(SupplyParameterFromFormAttribute)) &&
                 !propertyInfo.IsDefined(typeof(SupplyParameterFromQueryAttribute)))
             {
                 throw new InvalidOperationException(
@@ -262,7 +263,8 @@ internal static class ComponentProperties
                 var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
                 var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
                 var supplyFromQueryParameterAttribute = propertyInfo.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
-                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || supplyFromQueryParameterAttribute != null;
+                var supplyFromFormParameterAttribute = propertyInfo.GetCustomAttribute<SupplyParameterFromFormAttribute>();
+                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || supplyFromQueryParameterAttribute != null || supplyFromFormParameterAttribute != null;
                 if (!isParameter)
                 {
                     continue;
@@ -277,7 +279,7 @@ internal static class ComponentProperties
 
                 var propertySetter = new PropertySetter(targetType, propertyInfo)
                 {
-                    Cascading = cascadingParameterAttribute != null || supplyFromQueryParameterAttribute != null,
+                    Cascading = cascadingParameterAttribute != null || supplyFromQueryParameterAttribute != null || supplyFromFormParameterAttribute != null,
                 };
 
                 if (_underlyingWriters.ContainsKey(propertyName))

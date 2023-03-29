@@ -105,19 +105,28 @@ internal readonly struct CascadingParameterState
                     attribute.Name));
             }
 
-            var supplyFromQueryAttributes = prop.GetCustomAttributes<SupplyParameterFromQueryAttribute>();
-            foreach (var supplyFromQuery in supplyFromQueryAttributes)
+            var supplyFromQuery = prop.GetCustomAttribute<SupplyParameterFromQueryAttribute>();
+            if (supplyFromQuery != null)
             {
-                if (supplyFromQuery != null)
-                {
-                    result ??= new List<ReflectedCascadingParameterInfo>();
+                result ??= new List<ReflectedCascadingParameterInfo>();
 
-                    result.Add(new ReflectedCascadingParameterInfo(
-                        prop.Name,
-                        prop.PropertyType,
-                        supplyFromQuery.Name ?? prop.Name,
-                        source: "Query"));
-                }
+                result.Add(new ReflectedCascadingParameterInfo(
+                    prop.Name,
+                    prop.PropertyType,
+                    supplyFromQuery.Name ?? prop.Name,
+                    source: "Query"));
+            }
+
+            var supplyFromForm = prop.GetCustomAttribute<SupplyParameterFromFormAttribute>();
+            if (supplyFromForm != null)
+            {
+                result ??= new List<ReflectedCascadingParameterInfo>();
+
+                result.Add(new ReflectedCascadingParameterInfo(
+                    prop.Name,
+                    prop.PropertyType,
+                    supplyFromForm.Name ?? prop.Name,
+                    source: "Form"));
             }
         }
 

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -100,149 +99,8 @@ public class RouteView : IComponent
                 builder.AddComponentParameter(1, kvp.Key, kvp.Value);
             }
 
-            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
-            if (queryParameterSupplier is not null)
-            {
-                // Since this component does accept some parameters from query, we must supply values for all of them,
-                // even if the querystring in the URI is empty. So don't skip the following logic.
-                var url = NavigationManager.Uri;
-                ReadOnlyMemory<char> query = default;
-                var queryStartPos = url.IndexOf('?');
-                if (queryStartPos >= 0)
-                {
-                    var queryEndPos = url.IndexOf('#', queryStartPos);
-                    query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-                }
-                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
-            }
-
             builder.CloseComponent();
         }));
         builder.CloseComponent();
-    }
-}
-
-internal class CascadingModelBinder : IComponent, ICascadingValueComponent
-{
-    private RenderHandle _handler;
-    private bool _hasRendered;
-
-    public object? CurrentValue => "Sample";
-
-    public bool CurrentValueIsFixed => true;
-
-    [Parameter] public RenderFragment ChildContent { get; set; }
-
-    [Inject] public NavigationManager Navigation { get; set; } = null;
-
-    public void Attach(RenderHandle renderHandle)
-    {
-        _handler = renderHandle;
-    }
-
-    public ICascadingValueComponent GetSupplier(Type valueType, string? valueName, string? source)
-    {
-        return new QueryParameterSupplier(Navigation, valueName);
-    }
-
-    private class QueryParameterSupplier : ICascadingValueComponent
-    {
-        private HashSet<ComponentState>? _subscribers; // Lazily instantiated
-        private NavigationManager _navigation;
-        private string _valueName;
-        private string _currentValue;
-
-        public QueryParameterSupplier(NavigationManager navigation, string valueName)
-        {
-            _navigation = navigation;
-            _valueName = valueName;
-            _navigation.LocationChanged += LocationChanged;
-            RefreshParameter(_navigation.Uri);
-        }
-
-        private void LocationChanged(object? sender, LocationChangedEventArgs e)
-        {
-            var url = _navigation.Uri;
-            RefreshParameter(url);
-        }
-
-        private void RefreshParameter(string url)
-        {
-            ReadOnlyMemory<char> query = default;
-            var queryStartPos = url.IndexOf('?');
-            if (queryStartPos >= 0)
-            {
-                var queryEndPos = url.IndexOf('#', queryStartPos);
-                query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-            }
-            var enumerable = new QueryStringEnumerable(query);
-            var previousValue = _currentValue;
-            foreach (var item in enumerable)
-            {
-                if (item.DecodeName().Span.Equals(_valueName.AsSpan(), StringComparison.OrdinalIgnoreCase))
-                {
-                    _currentValue = item.DecodeValue().ToString();
-                }
-            }
-            if (_subscribers != null && ChangeDetection.MayHaveChanged(previousValue, _currentValue))
-            {
-                NotifySubscribers(ParameterViewLifetime.Unbound);
-            }
-        }
-
-        public object? CurrentValue => _currentValue;
-
-        public bool CurrentValueIsFixed => false;
-
-        public bool CanSupplyValue(Type valueType, string? valueName, string? source)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void NotifySubscribers(in ParameterViewLifetime lifetime)
-        {
-            foreach (var subscriber in _subscribers!)
-            {
-                subscriber.NotifyCascadingValueChanged(lifetime);
-            }
-        }
-
-        public void Subscribe(ComponentState subscriber)
-        {
-            _subscribers ??= new();
-            _subscribers.Add(subscriber);
-        }
-
-        public void Unsubscribe(ComponentState subscriber)
-        {
-            _subscribers?.Remove(subscriber);
-        }
-    }
-
-    public bool CanSupplyValue(Type valueType, string? valueName, string? source)
-    {
-        return Type.GetTypeCode(valueType) == TypeCode.String && source == "Query";
-    }
-
-    public Task SetParametersAsync(ParameterView parameters)
-    {
-        if (!_hasRendered)
-        {
-            _hasRendered = true;
-            parameters.SetParameterProperties(this);
-            _handler.Render(ChildContent);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public void Subscribe(ComponentState subscriber)
-    {
-        // throw new NotImplementedException();
-    }
-
-    public void Unsubscribe(ComponentState subscriber)
-    {
-        // throw new NotImplementedException();
     }
 }

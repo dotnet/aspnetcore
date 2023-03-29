@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class RazorComponentEndpointFactory
 {
-    private static readonly HttpMethodMetadata HttpGet = new(new[] { HttpMethods.Get });
+    private static readonly HttpMethodMetadata HttpGet = new(new[] { HttpMethods.Get, HttpMethods.Post });
 
 #pragma warning disable CA1822 // It's a singleton
     internal void AddEndpoints(

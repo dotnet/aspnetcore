@@ -14,35 +14,70 @@ internal static class RazorComponentEndpoint
     public static RequestDelegate CreateRouteDelegate(Type componentType)
     {
         return httpContext =>
-            RenderComponentToResponse(httpContext, RenderMode.Static, componentType, componentParameters: null);
+            RenderComponentToResponse(httpContext, componentType, componentParameters: null);
     }
 
     internal static Task RenderComponentToResponse(
         HttpContext httpContext,
-        RenderMode renderMode,
         Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters)
     {
-        var componentPrerenderer = httpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
-        return componentPrerenderer.Dispatcher.InvokeAsync(async () =>
+        var renderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        if (HttpMethods.IsPost(httpContext.Request.Method))
+        {
+            // We are receiving a form post.
+            // 1. Check for a handler or use a default handler. By convention, the default handler is
+            // identified by the request path.
+            var handler = httpContext.Request.Path.Value;
+            if (httpContext.Request.Query.TryGetValue("handler", out var value))
+            {
+                if (value.Count != 1)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return Task.CompletedTask;
+                }
+                else
+                {
+                    handler = value[0];
+                }
+            }
+
+            renderer.NamedFormHandler = handler;
+
+            var formState = (StaticFormStateProvider)httpContext.RequestServices.GetRequiredService<IFormStateProvider>();
+            formState.SetFormState(httpContext.Request, handler);
+        }
+
+        return renderer.Dispatcher.InvokeAsync(async () =>
         {
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
             // backing buffers could come from a pool like they do during rendering.
             var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
             {
-                { nameof(RazorComponentEndpointHost.RenderMode), renderMode },
+                { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
                 { nameof(RazorComponentEndpointHost.ComponentType), componentType },
                 { nameof(RazorComponentEndpointHost.ComponentParameters), componentParameters },
             });
 
-            // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
-            // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
-            // component takes care of switching into your desired render mode when it produces its own output.
-            var htmlContent = await componentPrerenderer.PrerenderComponentAsync(
+            await renderer.InitializeStandardComponentServicesAsync(httpContext);
+
+            var htmlContent = await renderer.StaticComponentAsync(
                 httpContext,
                 typeof(RazorComponentEndpointHost),
-                RenderMode.Static,
                 hostParameters);
+
+            if (renderer.NamedFormHandler != null)
+            {
+                if (!renderer.HasSubmitEvent())
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+                else
+                {
+                    await renderer.DispatchSubmitEventAsync();
+                }
+            }
 
             await using var writer = CreateResponseWriter(httpContext.Response.Body);
             await htmlContent.WriteToAsync(writer);
