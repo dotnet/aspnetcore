@@ -75,7 +75,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findAnchorTarget(event);
 
-
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
       let anchorHref = anchorTarget.getAttribute('href')!; 
       if (anchorHref.startsWith('#')) {
@@ -172,7 +171,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
     if (!shouldContinueNavigation) {
       return;
     }
-  }    
+  }
 
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
@@ -203,8 +202,6 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
 
   await notifyLocationChanged(interceptedLink);
 }
-
-
 
 function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
   return new Promise(resolve => {
