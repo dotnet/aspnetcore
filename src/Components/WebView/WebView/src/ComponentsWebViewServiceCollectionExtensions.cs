@@ -25,7 +25,6 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.AddLogging();
         services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
         services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
-        services.TryAddScoped<IScrollToLocationHash, WebViewScrollToLocationHash>();
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
         return services;

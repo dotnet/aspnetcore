@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
+
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+        <FocusOnNavigate RouteData="@routeData" Selector="#test-info" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+
+<a id="anchor-test1" href="#test1">Go to test1 on this page</a>
+<br />
+<a id="anchor-test2" href="/subdir/LongPageWithHash2#test2">Go to test2 on LongPageWithHash2 page</a>
+<br />
+<a id="anchor-test3" href="/subdir/LongPageWithHash3#test3">Go to test3 on LongPageWithHash3 page (contains focus on navigate selector)</a>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>
+
+<p id="test1">Test1</p>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>

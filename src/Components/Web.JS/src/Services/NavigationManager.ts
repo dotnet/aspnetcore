@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import '@microsoft/dotnet-js-interop';
-import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { resetScrollAfterNextBatch, scrollToElement, setTimeoutToScrollToElement } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
 
 let hasEnabledNavigationInterception = false;
@@ -27,7 +27,6 @@ export const internalFunctions = {
   navigateTo: navigateToFromDotNet,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
-  scrollToElement
 };
 
 function listenForNavigationEvents(
@@ -54,14 +53,6 @@ function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
 }
 
-function scrollToElement(id : string) : void {
-  var element = document.getElementById(id);
-  if (element)
-  {
-    element.scrollIntoView();
-  }
-}
-
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
   // running its simulated bubbling process so that we can respect any preventDefault requests.
@@ -84,19 +75,20 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findAnchorTarget(event);
 
-    if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      const anchorHref = anchorTarget.getAttribute('href')!;
 
-      if (anchorHref.startsWith('#') && anchorHref.length > 1) {
-        event.preventDefault(); 
-        const hash = location.hash;
-        const urlInBrowser = hash.length > 1 ? location.href.replace(hash, anchorHref) : location.href + anchorHref;
-        window.history.pushState({}, "", urlInBrowser);
-        scrollToElement(anchorHref.slice(1));
+    if (anchorTarget && canProcessAnchor(anchorTarget)) {
+      let anchorHref = anchorTarget.getAttribute('href')!; 
+      if (anchorHref.startsWith('#')) {
+        anchorHref = location.hash.length > 1 ? location.href.replace(location.hash, anchorHref) : location.href + anchorHref;
+      }   
+
+      const absoluteHref = toAbsoluteUri(anchorHref);
+
+      if (isSamePageWithHash(absoluteHref)) {
+        event.preventDefault();
+        performScrollToElementOnTheSamePage(absoluteHref);
         return;
       }
-
-      const absoluteHref = toAbsoluteUri(anchorHref);     
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
@@ -104,6 +96,24 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
       }
     }
   });
+}
+
+function isSamePageWithHash(absoluteHref : string) : boolean {
+  const hashIndex = absoluteHref.indexOf('#');
+  // Excluding case hash="#"
+  return hashIndex > -1 && absoluteHref.length > hashIndex + 1 &&
+  location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
+}
+
+function performScrollToElementOnTheSamePage(absoluteHref : string) {
+  const hashIndex = absoluteHref.indexOf('#');
+  var hash = absoluteHref.substring(hashIndex); 
+
+  const urlInBrowser = location.hash.length > 1 ? location.href.replace(location.hash, hash) : location.href + hash;
+  history.pushState({}, "", urlInBrowser);
+
+  var identifier = hash.slice(1);
+  scrollToElement(identifier);
 }
 
 // For back-compat, we need to accept multiple overloads
@@ -162,7 +172,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
     if (!shouldContinueNavigation) {
       return;
     }
-  }
+  }    
 
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
@@ -170,6 +180,13 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
+
+  const hashIndex = absoluteInternalHref.indexOf('#');
+  // Excluding cases when hash="#"
+  if ( hashIndex > -1 && absoluteInternalHref.length > hashIndex + 1) {
+    var identifier = absoluteInternalHref.substring(hashIndex+1);
+    setTimeoutToScrollToElement(identifier);
+  }
 
   if (!replace) {
     currentHistoryIndex++;
@@ -186,6 +203,8 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
 
   await notifyLocationChanged(interceptedLink);
 }
+
+
 
 function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
   return new Promise(resolve => {

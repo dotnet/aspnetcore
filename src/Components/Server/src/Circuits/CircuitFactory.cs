@@ -47,14 +47,12 @@ internal sealed partial class CircuitFactory : ICircuitFactory
 
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
-        var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
             navigationManager.Initialize(baseUri, uri);
 
             navigationInterception.AttachJSRuntime(jsRuntime);
-            scrollToLocationHash.AttachJSRuntime(jsRuntime);
         }
         else
         {
