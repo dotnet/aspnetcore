@@ -25,8 +25,6 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 
     public void NavigationManager_EnableNavigationInterception() { }
 
-    public void NavigationManager_ScrollToElement(string id) { }
-
     public string NavigationManager_GetBaseUri()
         => "https://www.example.com/awesome-part-that-will-be-truncated-in-tests";
 
