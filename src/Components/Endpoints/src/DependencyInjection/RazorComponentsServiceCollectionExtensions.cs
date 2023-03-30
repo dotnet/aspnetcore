@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,6 +25,9 @@ public static class RazorComponentsServiceCollectionExtensions
     /// <returns>A builder for configuring the Razor Components endpoints.</returns>
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
+        // Dependencies
+        services.AddAntiforgery();
+
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
         // Results
@@ -45,7 +49,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
 
+        // Forms
         services.TryAddScoped<IFormStateProvider, StaticFormStateProvider>();
+        services.TryAddScoped<AntiforgeryStateProvider, StaticAntiforgeryStateProvider>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

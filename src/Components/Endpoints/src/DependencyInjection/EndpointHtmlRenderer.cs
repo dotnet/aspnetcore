@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
@@ -64,9 +66,9 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 
     internal Task InitializeStandardComponentServicesAsync(HttpContext httpContext)
     {
-        return _servicesInitializedTask ??= InitializeCore(httpContext);
+        return _servicesInitializedTask ??= InitializeCore(httpContext, this);
 
-        static async Task InitializeCore(HttpContext httpContext)
+        static async Task InitializeCore(HttpContext httpContext, EndpointHtmlRenderer self)
         {
             var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
             navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -76,6 +78,19 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
                 var authenticationState = new AuthenticationState(httpContext.User);
                 authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
             }
+
+            // Forms
+            if (self.NamedFormHandler != null)
+            {
+                var formState = (StaticFormStateProvider)httpContext.RequestServices.GetRequiredService<IFormStateProvider>();
+                formState.SetFormState(httpContext.Request, self.NamedFormHandler);
+            }
+
+            // Setup antiforgery state
+            var antiforgery = httpContext.RequestServices.GetRequiredService<IAntiforgery>();
+            var tokens = antiforgery.GetTokens(httpContext);
+            var antiforgeryStateProvider = (StaticAntiforgeryStateProvider)httpContext.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
+            antiforgeryStateProvider.SetRequestToken(new AntiforgeryRequestToken(tokens.RequestToken!, tokens.FormFieldName));
 
             // It's important that this is initialized since a component might try to restore state during prerendering
             // (which will obviously not work, but should not fail)

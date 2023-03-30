@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Antiforgery;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -143,9 +144,11 @@ public class EditForm : ComponentBase
     {
         return builder =>
         {
-            builder.OpenComponent<BindingContextValidator>(0);
+            builder.OpenComponent<AntiforgeryToken>(0);
             builder.CloseComponent();
-            builder.AddContent(1, ChildContent!, EditContext);
+            builder.OpenComponent<BindingContextValidator>(1);
+            builder.CloseComponent();
+            builder.AddContent(2, ChildContent!, EditContext);
         };
     }
 

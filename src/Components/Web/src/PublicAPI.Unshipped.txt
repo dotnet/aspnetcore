@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
+Microsoft.AspNetCore.Components.AntiforgeryRequestToken.AntiforgeryRequestToken(string! value, string! formFieldName) -> void
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

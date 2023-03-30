@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,38 +20,37 @@ internal static class RazorComponentEndpoint
             RenderComponentToResponse(httpContext, componentType, componentParameters: null);
     }
 
-    internal static Task RenderComponentToResponse(
+    internal static async Task RenderComponentToResponse(
         HttpContext httpContext,
         Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters)
     {
         var renderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        var antiforgery = httpContext.RequestServices.GetRequiredService<IAntiforgery>();
+
         if (HttpMethods.IsPost(httpContext.Request.Method))
         {
-            // We are receiving a form post.
-            // 1. Check for a handler or use a default handler. By convention, the default handler is
-            // identified by the request path.
-            var handler = httpContext.Request.Path.Value;
-            if (httpContext.Request.Query.TryGetValue("handler", out var value))
+            try
             {
-                if (value.Count != 1)
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return Task.CompletedTask;
-                }
-                else
-                {
-                    handler = value[0];
-                }
+                await antiforgery.ValidateRequestAsync(httpContext);
+            }
+            catch (Exception ex)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
             }
 
-            renderer.NamedFormHandler = handler;
-
-            var formState = (StaticFormStateProvider)httpContext.RequestServices.GetRequiredService<IFormStateProvider>();
-            formState.SetFormState(httpContext.Request, handler);
+            ResolveFormHandler(httpContext, renderer);
+        }
+        else
+        {
+            // Set the antiforgery token on the request cookie.
+            // We'll have to figure out what we can/want to do for streaming rendering
+            // since the cookie needs to be set before the response starts.
+            antiforgery.GetAndStoreTokens(httpContext);
         }
 
-        return renderer.Dispatcher.InvokeAsync(async () =>
+        await renderer.Dispatcher.InvokeAsync(async () =>
         {
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
             // backing buffers could come from a pool like they do during rendering.
@@ -87,6 +89,25 @@ internal static class RazorComponentEndpoint
             // response as part of the Dispose which has a perf impact.
             await writer.FlushAsync();
         });
+    }
+
+    private static void ResolveFormHandler(HttpContext httpContext, EndpointHtmlRenderer renderer)
+    {
+        var handler = httpContext.Request.Path.Value;
+        if (httpContext.Request.Query.TryGetValue("handler", out var value))
+        {
+            if (value.Count != 1)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+            else
+            {
+                handler = value[0];
+            }
+        }
+
+        renderer.NamedFormHandler = handler;
     }
 
     private static TextWriter CreateResponseWriter(Stream bodyStream)
