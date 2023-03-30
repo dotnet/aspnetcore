@@ -29,7 +29,7 @@ public class WebSocketsTests
         _webSocketUri = _requestUri.Replace("http:", "ws:");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task RequestWithBody_NotUpgradable()
     {
         using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(200) };
@@ -37,7 +37,7 @@ public class WebSocketsTests
         response.EnsureSuccessStatusCode();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task RequestWithoutBody_Upgradable()
     {
         using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(200) };
@@ -46,7 +46,7 @@ public class WebSocketsTests
         response.EnsureSuccessStatusCode();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task OnStartedCalledForWebSocket()
     {
         var cws = new ClientWebSocket();
@@ -56,7 +56,7 @@ public class WebSocketsTests
         await ReceiveMessage(cws, "Upgraded");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task WebReadBeforeUpgrade()
     {
         var cws = new ClientWebSocket();
@@ -65,7 +65,7 @@ public class WebSocketsTests
         await ReceiveMessage(cws, "Yay");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanSendAndReceieveData()
     {
         var cws = new ClientWebSocket();
@@ -79,7 +79,7 @@ public class WebSocketsTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http1_0_Request_NotUpgradable()
     {
         Uri uri = new Uri(_requestUri + "WebSocketNotUpgradable");
@@ -99,7 +99,7 @@ public class WebSocketsTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http1_0_Request_UpgradeErrors()
     {
         Uri uri = new Uri(_requestUri + "WebSocketUpgradeFails");

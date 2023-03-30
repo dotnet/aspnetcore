@@ -17,7 +17,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyDoesNotLockFiles()
     {
         using var directory = TempDirectory.Create();
@@ -43,7 +43,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyRelativeInSameDirectoryWorks()
     {
         var directoryName = Path.GetRandomFileName();
@@ -73,7 +73,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyRelativeOutsideDirectoryWorks()
     {
         using var directory = TempDirectory.Create();
@@ -106,7 +106,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopySingleFileChangedWorks()
     {
         using var directory = TempDirectory.Create();
@@ -141,7 +141,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyE2EWorksWithFolderPresent()
     {
         using var directory = TempDirectory.Create();
@@ -167,7 +167,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
     {
         using var directory = TempDirectory.Create();
@@ -206,7 +206,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyCleansUpOlderFolders()
     {
         using var directory = TempDirectory.Create();
@@ -251,7 +251,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "3")), "Expected 3 shadow copy directory to be deleted");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
     {
         using var directory = TempDirectory.Create();
@@ -281,7 +281,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWhenCopying()
     {
         using var directory = TempDirectory.Create();

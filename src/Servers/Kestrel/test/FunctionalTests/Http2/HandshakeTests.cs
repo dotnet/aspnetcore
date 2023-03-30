@@ -39,7 +39,7 @@ public class HandshakeTests : LoggedTest
         };
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
     // Win7 SslStream is missing ALPN support.
@@ -61,7 +61,7 @@ public class HandshakeTests : LoggedTest
         Assert.Equal("HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.", ex.Message);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
@@ -89,7 +89,7 @@ public class HandshakeTests : LoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task TlsAlpnHandshakeSelectsHttp2()

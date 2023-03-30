@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class DockerTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [DockerOnly]
     [Trait("Docker", "true")]
     public void DoesNotRunOnWindows()

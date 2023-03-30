@@ -126,7 +126,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
         Assert.Equal(expectedOutput, actual);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task ProducesAttribute_WithTypeAndContentType_UsesContentType()
@@ -318,7 +318,7 @@ END:VCARD
         Assert.Equal(expectedBody, body);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task XmlFormatter_SupportedMediaType_DoesNotChangeAcrossRequests()

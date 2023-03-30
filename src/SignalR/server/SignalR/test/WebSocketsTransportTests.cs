@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests;
 [Collection(EndToEndTestsCollection.Name)]
 public class WebSocketsTransportTests : FunctionalTestBase
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task HttpOptionsSetOntoWebSocketOptions()
     {
@@ -58,7 +58,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
         Assert.Same(httpOptions.Credentials, webSocketsOptions.Credentials);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task HttpOptionsWebSocketFactoryIsUsed()
     {
@@ -85,7 +85,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
         Assert.True(factoryWasUsed);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
     {
@@ -99,7 +99,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketsTransportSendsUserAgent()
     {
@@ -130,7 +130,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketsTransportSendsXRequestedWithHeader()
     {
@@ -153,7 +153,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
     {

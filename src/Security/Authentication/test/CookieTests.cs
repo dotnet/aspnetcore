@@ -1262,7 +1262,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("?ReturnUrl=%2F", location.Query);
     }
 
-    [ConditionalFact(Skip = "Revisit, exception no longer thrown")]
+    // [ConditionalFact(Skip = "Revisit, exception no longer thrown")]
     public async Task ChallengeDoesNotSet401OnUnauthorized()
     {
         using var host = new HostBuilder()

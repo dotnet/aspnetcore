@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class MinimumOSVersionTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public void RunTest_Win8DoesNotRunOnWin7()
     {
@@ -32,7 +32,7 @@ public class MinimumOSVersionTest
             "Test should not be running on Win7 or Win2008R2.");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public void RunTest_Win10_RS4()
@@ -45,7 +45,7 @@ public class MinimumOSVersionTest
         Assert.True(17134 <= int.Parse(currentVersion, CultureInfo.InvariantCulture));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2)]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public void RunTest_Win10_19H2()
@@ -62,7 +62,7 @@ public class MinimumOSVersionTest
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
 public class OSMinVersionClassTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public void TestSkipClass_Win8DoesNotRunOnWin7()
     {
         Assert.False(

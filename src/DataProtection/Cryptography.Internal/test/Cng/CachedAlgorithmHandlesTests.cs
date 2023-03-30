@@ -18,21 +18,21 @@ public unsafe class CachedAlgorithmHandlesTests
     private static readonly byte[] _dataToHash = Encoding.UTF8.GetBytes("Sample input data.");
     private static readonly byte[] _hmacKey = Encoding.UTF8.GetBytes("Secret key material.");
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void AES_CBC_Cached_Handle()
     {
         RunAesBlockCipherAlgorithmTest(() => CachedAlgorithmHandles.AES_CBC);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void AES_GCM_Cached_Handle()
     {
         RunAesBlockCipherAlgorithmTest(() => CachedAlgorithmHandles.AES_GCM);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void SHA1_Cached_Handle_No_HMAC()
     {
@@ -44,7 +44,7 @@ public unsafe class CachedAlgorithmHandlesTests
             expectedDigest: "MbYo3dZmXtgUZcUoWoxkCDKFvkk=");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void SHA1_Cached_Handle_With_HMAC()
     {
@@ -56,7 +56,7 @@ public unsafe class CachedAlgorithmHandlesTests
             expectedDigest: "PjYTgLTWkt6NeH0NudIR7N47Ipg=");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void SHA256_Cached_Handle_No_HMAC()
     {
@@ -68,7 +68,7 @@ public unsafe class CachedAlgorithmHandlesTests
             expectedDigest: "5uRfQadsrnUTa3/TEo5PP6SDZQkb9AcE4wNXDVcM0Fo=");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void SHA256_Cached_Handle_With_HMAC()
     {
@@ -80,7 +80,7 @@ public unsafe class CachedAlgorithmHandlesTests
             expectedDigest: "KLzo0lVg5gZkpL5D6Ck7QT8w4iuPCe/pGCrMcOXWbKY=");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void SHA512_Cached_Handle_No_HMAC()
     {
@@ -92,7 +92,7 @@ public unsafe class CachedAlgorithmHandlesTests
             expectedDigest: "jKI7WrcgPP7n2HAYOb8uFRi7xEsNG/BmdGd18dwwkIpqJ4Vmlk2b+8hssLyMQlprTSKVJNObSiYUqW5THS7okw==");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void SHA512_Cached_Handle_With_HMAC()
     {

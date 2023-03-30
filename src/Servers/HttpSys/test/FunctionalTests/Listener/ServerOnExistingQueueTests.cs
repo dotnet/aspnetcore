@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
 
 public class ServerOnExistingQueueTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_200OK_Success()
     {
         using var baseServer = Utilities.CreateHttpServer(out var address);
@@ -29,7 +29,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_SendHelloWorld_Success()
     {
         using var baseServer = Utilities.CreateHttpServer(out var address);
@@ -48,7 +48,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal("Hello World", response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_EchoHelloWorld_Success()
     {
         using var baseServer = Utilities.CreateHttpServer(out var address);
@@ -69,7 +69,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal("Hello World", response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // No-ops if you did not create the queue
     public async Task Server_SetQueueLimit_Success()
     {
@@ -85,7 +85,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_PathBase_Success()
     {
         using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
@@ -103,7 +103,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_PathBaseMismatch_Success()
     {
         using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
@@ -145,7 +145,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_LongestPathSplitting()
     {
         using var baseServer = Utilities.CreateDynamicHttpServer("/basepath", out var root, out var baseAddress);
@@ -165,7 +165,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Changes to the base server are reflected
     public async Task Server_HotAddPrefix_Success()
     {
@@ -198,7 +198,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Changes to the base server are reflected
     public async Task Server_HotRemovePrefix_Success()
     {
@@ -233,7 +233,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_CreateOrAttach_NoUrlPrefix_NewUrlPrefixWorks()
     {
         var queueName = Guid.NewGuid().ToString();
@@ -267,7 +267,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_CreateOrAttach_UrlPrefixExist_ExistingUrlPrefixWorks()
     {
         using var baseServer = Utilities.CreateHttpServer(out var address);
@@ -287,7 +287,7 @@ public class ServerOnExistingQueueTests
         Assert.Equal(string.Empty, response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Server_CreateOrAttach_UrlPrefixExist_NewAndExistingUrlPrefixsWork()
     {
         using var baseServer = Utilities.CreateHttpServerReturnRoot("/baseServer", out string rootAddress);

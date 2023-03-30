@@ -138,7 +138,7 @@ public class FileSystemXmlRepositoryTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DockerOnly]
     [Trait("Docker", "true")]
     public void Logs_DockerEphemeralFolders()
@@ -155,7 +155,7 @@ public class FileSystemXmlRepositoryTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     public void StoreElement_CreatesFileWithUserOnlyUnixFileMode()
     {

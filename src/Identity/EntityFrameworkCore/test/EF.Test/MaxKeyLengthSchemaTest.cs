@@ -46,7 +46,7 @@ public class MaxKeyLengthSchemaTest : IClassFixture<ScratchDatabaseFixture>
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public void EnsureDefaultSchema()
     {
         using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())

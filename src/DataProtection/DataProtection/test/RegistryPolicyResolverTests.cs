@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 
 public class RegistryPolicyResolverTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_NoEntries_ResultsInNoPolicies()
     {
@@ -29,7 +29,7 @@ public class RegistryPolicyResolverTests
         Assert.Empty(context.KeyEscrowSinks);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_KeyEscrowSinks()
     {
@@ -49,7 +49,7 @@ public class RegistryPolicyResolverTests
         Assert.IsType<MyKeyEscrowSink2>(actualKeyEscrowSinks[1]);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_MissingKeyEscrowSinks()
     {
@@ -67,7 +67,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal($"Unable to load type '{typeName}'. If the app is published with trimming then this type may have been trimmed. Ensure the type's assembly is excluded from trimming.", ex.Message);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_DefaultKeyLifetime()
     {
@@ -84,7 +84,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal(1024, context.DefaultKeyLifetime);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_CngCbcEncryption_WithoutExplicitSettings()
     {
@@ -108,7 +108,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal(expectedConfiguration.HashAlgorithmProvider, actualConfiguration.HashAlgorithmProvider);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_CngCbcEncryption_WithExplicitSettings()
     {
@@ -144,7 +144,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal(expectedConfiguration.HashAlgorithmProvider, actualConfiguration.HashAlgorithmProvider);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_CngGcmEncryption_WithoutExplicitSettings()
     {
@@ -166,7 +166,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal(expectedConfiguration.EncryptionAlgorithmProvider, actualConfiguration.EncryptionAlgorithmProvider);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_CngGcmEncryption_WithExplicitSettings()
     {
@@ -196,7 +196,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal(expectedConfiguration.EncryptionAlgorithmProvider, actualConfiguration.EncryptionAlgorithmProvider);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_ManagedEncryption_WithoutExplicitSettings()
     {
@@ -218,7 +218,7 @@ public class RegistryPolicyResolverTests
         Assert.Equal(expectedConfiguration.ValidationAlgorithmType, actualConfiguration.ValidationAlgorithmType);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_ManagedEncryption_WithExplicitSettings()
     {

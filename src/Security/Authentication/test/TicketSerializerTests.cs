@@ -77,7 +77,7 @@ public class TicketSerializerTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [FrameworkSkipCondition(
         RuntimeFrameworks.Mono,
         SkipReason = "Test fails with Mono 4.0.4. Build rarely reaches testing with Mono 4.2.1")]

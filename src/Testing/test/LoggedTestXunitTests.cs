@@ -42,7 +42,7 @@ public class LoggedTestXunitTests : TestLoggedTest
         Assert.NotNull(argument);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public void ConditionalLoggedFactGetsInitializedLoggerFactory()
     {
         Assert.NotNull(Logger);

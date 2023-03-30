@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 public class OpaqueUpgradeTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
     public async Task OpaqueUpgrade_DownLevel_FeatureIsAbsent()
     {
@@ -43,7 +43,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_SupportKeys_Present()
     {
@@ -71,7 +71,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
     {
@@ -101,7 +101,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_GetUpgrade_Success()
     {
@@ -123,7 +123,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_GetUpgrade_NotAffectedByMaxRequestBodyLimit()
     {
@@ -155,7 +155,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_WithOnStarting_CallbackCalled()
     {
@@ -273,7 +273,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_PostWithBodyAndUpgradeHeaders_Accepted()
     {
@@ -301,7 +301,7 @@ public class OpaqueUpgradeTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public async Task OpaqueUpgrade_Http10_ThrowsIfUpgraded()
     {

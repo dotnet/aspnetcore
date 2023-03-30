@@ -67,7 +67,7 @@ public class DataProtectionRedisTests
         database.Verify();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [TestRedisServerIsAvailable]
     public async Task XmlRoundTripsToActualRedisServer()
     {

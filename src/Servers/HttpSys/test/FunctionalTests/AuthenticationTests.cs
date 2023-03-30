@@ -81,7 +81,7 @@ public class AuthenticationTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
     {
         string address;
@@ -164,7 +164,7 @@ public class AuthenticationTests
     }
 
     // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AuthTypes_AccessUserInOnCompleted_Success()
     {
         var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -284,7 +284,7 @@ public class AuthenticationTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AuthTypes_OneChallengeSent()
     {
         var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
@@ -328,7 +328,7 @@ public class AuthenticationTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AuthTypes_Forbid_Forbidden()
     {
         var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;

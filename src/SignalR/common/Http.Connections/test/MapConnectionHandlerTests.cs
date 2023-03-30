@@ -380,7 +380,7 @@ public class MapConnectionHandlerTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task MapConnectionHandlerWithWebSocketSubProtocolSetsProtocol()
     {

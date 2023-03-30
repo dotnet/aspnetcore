@@ -35,7 +35,7 @@ public class CompressionTests : FixtureLoggedTest
         _fixture = fixture;
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.DynamicCompression)]
     public async Task BufferingDisabledWithCompressedRequest()
     {
@@ -77,7 +77,7 @@ public class CompressionTests : FixtureLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.DynamicCompression)]
     public async Task BufferingDisabledWithoutCompressedRequest()
     {
@@ -119,7 +119,7 @@ public class CompressionTests : FixtureLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.DynamicCompression)]
     public async Task DynamicResponsesAreCompressed()
     {

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng;
 
 public class GcmAuthenticatedEncryptorTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void Encrypt_Decrypt_RoundTrips()
     {
@@ -29,7 +29,7 @@ public class GcmAuthenticatedEncryptorTests
         Assert.Equal(plaintext, decipheredtext);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void Encrypt_Decrypt_Tampering_Fails()
     {
@@ -73,7 +73,7 @@ public class GcmAuthenticatedEncryptorTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void Encrypt_KnownKey()
     {

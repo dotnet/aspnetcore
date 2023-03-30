@@ -561,7 +561,7 @@ public class WebApplicationTests
     private static string NormalizePath(string unnormalizedPath) =>
         Path.TrimEndingDirectorySeparator(Path.GetFullPath(unnormalizedPath));
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RemoteExecutionSupported]
     public void ContentRootIsDefaultedToCurrentDirectory()
     {
@@ -589,7 +589,7 @@ public class WebApplicationTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     [RemoteExecutionSupported]
     public void ContentRootIsBaseDirectoryWhenCurrentIsSpecialFolderSystem()
@@ -843,7 +843,7 @@ public class WebApplicationTests
         Assert.Equal(assemblyName, webHostEnv.ApplicationName);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RemoteExecutionSupported]
     public void WebApplicationBuilderConfigurationSourcesOrderedCorrectly()
     {

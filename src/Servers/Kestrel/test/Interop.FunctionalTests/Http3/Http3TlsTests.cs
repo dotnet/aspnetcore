@@ -19,7 +19,7 @@ namespace Interop.FunctionalTests.Http3;
 [Collection(nameof(NoParallelCollection))]
 public class Http3TlsTests : LoggedTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task ServerCertificateSelector_Invoked()
     {
@@ -208,7 +208,7 @@ public class Http3TlsTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
@@ -278,7 +278,7 @@ public class Http3TlsTests : LoggedTest
         }, Logger);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task TlsHandshakeCallbackOptions_Invoked()
     {

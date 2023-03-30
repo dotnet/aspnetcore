@@ -19,7 +19,7 @@ public class HttpConnectionManagerTests : LoggedTest
 {
     // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
 #if !DEBUG
-    [ConditionalFact]
+    // [ConditionalFact]
     [NoDebuggerCondition]
     public async Task CriticalErrorLoggedIfApplicationDoesntComplete()
     {

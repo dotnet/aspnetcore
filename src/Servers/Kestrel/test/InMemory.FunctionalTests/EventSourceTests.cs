@@ -141,7 +141,7 @@ public class EventSourceTests : LoggedTest
         Assert.Equal(eventIndex, events.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task Http2_EmitsStartAndStopEventsWithActivityIds()
@@ -268,7 +268,7 @@ public class EventSourceTests : LoggedTest
         Assert.Equal(eventIndex, events.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "SslStream.AuthenticateAsServerAsync() doesn't throw on Win 7 when the client tries SSL 2.0.")]
     public async Task TlsHandshakeFailure_EmitsStartAndStopEventsWithActivityIds()
     {

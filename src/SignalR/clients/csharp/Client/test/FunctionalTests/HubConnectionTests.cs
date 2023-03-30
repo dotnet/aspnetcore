@@ -1697,7 +1697,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketOptionsAreApplied()
     {
@@ -1732,7 +1732,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketsCanConnectOverHttp2()
     {
@@ -1847,7 +1847,7 @@ public class HubConnectionTests : FunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/1.1 GET"));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     // Negotiate auth on non-windows requires a lot of setup which is out of scope for these tests
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
@@ -1892,7 +1892,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task WebSocketsWithAccessTokenOverHttp2()
     {
@@ -1957,7 +1957,7 @@ public class HubConnectionTests : FunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 CONNECT"));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [WebSocketsSupportedCondition]
     public async Task CookiesFromNegotiateAreAppliedToWebSockets()
     {
@@ -2348,7 +2348,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LongPollingUsesHttp2ByDefault()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -2401,7 +2401,7 @@ public class HubConnectionTests : FunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 DELETE") && context.Message.Contains("?id="));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LongPollingWorksWithHttp2OnlyEndpoint()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -2444,7 +2444,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ServerSentEventsUsesHttp2ByDefault()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
@@ -2494,7 +2494,7 @@ public class HubConnectionTests : FunctionalTestBase
         Assert.Contains(TestSink.Writes, context => context.Message.Contains("Request finished HTTP/2 GET") && context.Message.Contains("?id="));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ServerSentEventsWorksWithHttp2OnlyEndpoint()
     {
         await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>

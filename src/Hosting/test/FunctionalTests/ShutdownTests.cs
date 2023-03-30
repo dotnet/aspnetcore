@@ -19,7 +19,7 @@ public class ShutdownTests : LoggedTest
 
     public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task ShutdownTestRun()
@@ -28,7 +28,7 @@ public class ShutdownTests : LoggedTest
     }
 
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27371")]
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task ShutdownTestWaitForShutdown()

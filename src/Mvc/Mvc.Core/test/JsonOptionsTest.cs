@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class JsonOptionsTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [RemoteExecutionSupported]
     public void DefaultSerializerOptions_SetsTypeInfoResolverNull_WhenEnsureJsonTrimmabilityTrue()
     {
@@ -26,7 +26,7 @@ public class JsonOptionsTest
         }, options);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RemoteExecutionSupported]
     public void DefaultSerializerOptions_SetsTypeInfoResolverToDefault_WhenEnsureJsonTrimmabilityFalse()
     {

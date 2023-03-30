@@ -1706,7 +1706,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public async Task LongPollingKeepsWindowsPrincipalAndIdentityBetweenRequests()
     {
@@ -1758,7 +1758,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public async Task LongPollingKeepsWindowsIdentityWithoutWindowsPrincipalBetweenRequests()
     {

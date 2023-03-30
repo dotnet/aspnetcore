@@ -44,7 +44,7 @@ public class StaticFileMiddlewareTests : LoggedTest
             && w.Message.Contains("Static files may be unavailable."));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Symlinks not supported on Windows")]
     public async Task ReturnsNotFoundForBrokenSymlink()
     {

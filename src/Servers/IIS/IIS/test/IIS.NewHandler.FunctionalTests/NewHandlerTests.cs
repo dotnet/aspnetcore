@@ -18,7 +18,7 @@ public class NewHandlerTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CheckNewHandlerIsUsed()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();

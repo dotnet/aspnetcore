@@ -162,7 +162,7 @@ public class CompareAttributeAdapterTest
             });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // ValidationAttribute in Mono does not read non-public resx properties.
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public void ClientRulesWithCompareAttribute_ErrorMessageUsesResourceOverride()

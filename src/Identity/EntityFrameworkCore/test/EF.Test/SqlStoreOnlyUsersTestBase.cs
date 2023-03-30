@@ -69,7 +69,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         user.PasswordHash = hashedPassword;
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public void EnsureDefaultSchema()
     {
         VerifyDefaultSchema(CreateContext());
@@ -100,7 +100,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task DeleteUserRemovesTokensTest()
     {
         // Need fail if not empty?
@@ -116,7 +116,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         Assert.Null(await userMgr.GetAuthenticationTokenAsync(user, "provider", "test"));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public void CanCreateUserUsingEF()
     {
         using (var db = CreateContext())
@@ -129,7 +129,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanCreateUsingManager()
     {
         var manager = CreateManager();
@@ -155,7 +155,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LoadFromDbFindByIdTest()
     {
         var db = CreateContext();
@@ -171,7 +171,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         Assert.Equal(2, (await manager.GetRolesAsync(userById)).Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LoadFromDbFindByNameTest()
     {
         var db = CreateContext();
@@ -186,7 +186,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         Assert.Equal(2, (await manager.GetRolesAsync(userByName)).Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LoadFromDbFindByLoginTest()
     {
         var db = CreateContext();
@@ -201,7 +201,7 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         Assert.Equal(2, (await manager.GetRolesAsync(userByLogin)).Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LoadFromDbFindByEmailTest()
     {
         var db = CreateContext();

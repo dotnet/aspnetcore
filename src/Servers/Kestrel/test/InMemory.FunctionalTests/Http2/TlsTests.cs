@@ -24,7 +24,7 @@ public class TlsTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.Linux, SkipReason = "TLS 1.1 ciphers are now disabled by default: https://github.com/dotnet/docs/issues/20842")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10,

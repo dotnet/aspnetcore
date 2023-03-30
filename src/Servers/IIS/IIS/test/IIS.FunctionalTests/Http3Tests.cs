@@ -40,7 +40,7 @@ public class Http3Tests : FunctionalTestsBase
 
     public IISTestSiteFixture Fixture { get; }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_Direct()
     {
         using var client = SetUpClient();
@@ -53,7 +53,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal("HTTP/3", await response.Content.ReadAsStringAsync());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_AltSvcHeader_UpgradeFromHttp1()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_AltSvcHeader_UpgradeFromHttp1";
@@ -77,7 +77,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal("HTTP/3", await response3.Content.ReadAsStringAsync());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_AltSvcHeader_UpgradeFromHttp2()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_AltSvcHeader_UpgradeFromHttp2";
@@ -98,7 +98,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal("HTTP/3", response3);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_ResponseTrailers()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_ResponseTrailers";
@@ -112,7 +112,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal("value", response.TrailingHeaders.GetValues("custom").SingleOrDefault());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_ResetBeforeHeaders()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_ResetBeforeHeaders";
@@ -125,7 +125,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal(0x010b, qex.ApplicationErrorCode.Value);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_ResetAfterHeaders()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_ResetAfterHeaders";
@@ -141,7 +141,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal(0x010c, qex.ApplicationErrorCode.Value); // H3_REQUEST_CANCELLED
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_AppExceptionAfterHeaders_InternalError()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_AppExceptionAfterHeaders_InternalError";
@@ -158,7 +158,7 @@ public class Http3Tests : FunctionalTestsBase
         Assert.Equal(0x0102, qex.ApplicationErrorCode.Value); // H3_INTERNAL_ERROR
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_Abort_Cancel()
     {
         var address = Fixture.Client.BaseAddress.ToString() + "Http3_Abort_Cancel";

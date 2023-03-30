@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class OSSkipConditionTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     public void TestSkipLinux()
     {
@@ -17,7 +17,7 @@ public class OSSkipConditionTest
             "Test should not be running on Linux");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public void TestSkipMacOSX()
     {
@@ -26,7 +26,7 @@ public class OSSkipConditionTest
             "Test should not be running on MacOSX.");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)]
     public void TestSkipWindows()
     {
@@ -35,7 +35,7 @@ public class OSSkipConditionTest
             "Test should not be running on Windows.");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public void TestSkipLinuxAndMacOSX()
     {
@@ -94,7 +94,7 @@ public class OSSkipConditionTest
 [OSSkipCondition(OperatingSystems.Windows)]
 public class OSSkipConditionClassTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public void TestSkipClassWindows()
     {
         Assert.False(

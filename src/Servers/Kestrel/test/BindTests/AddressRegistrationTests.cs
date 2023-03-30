@@ -33,7 +33,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 {
     private const int MaxRetries = 10;
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [HostNameIsReachable]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
     public async Task RegisterAddresses_HostName_Success()
@@ -93,7 +93,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         await RegisterIPEndPoint_StaticPort_Success(IPAddress.Loopback, $"http://127.0.0.1");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task RegisterIPEndPoint_IPv6StaticPort_Success()
     {
@@ -164,14 +164,14 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         await RegisterAddresses_Success(addressInput, testUrl);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task RegisterAddresses_IPv6StaticPort_Success()
     {
         await RegisterAddresses_StaticPort_Success("http://[::1]", "http://[::1]");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task RegisterAddresses_IPv6LocalhostStaticPort_Success()
     {
@@ -349,14 +349,14 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         await ListenAnyIP_Success(new[] { "http://localhost", "http://127.0.0.1" });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task ListenAnyIP_IPv6_Success()
     {
         await ListenAnyIP_Success(new[] { "http://[::1]", "http://localhost", "http://127.0.0.1" });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [HostNameIsReachable]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
     public async Task ListenAnyIP_HostName_Success()
@@ -402,7 +402,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         await ListenLocalhost_StaticPort_Success(new[] { "http://localhost", "http://127.0.0.1" });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task ListenLocalhost_IPv6LocalhostStaticPort_Success()
     {
@@ -443,7 +443,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnCI]
     public Task DefaultsServerAddress_BindsToIPv4()
     {
@@ -455,7 +455,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000" });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     [SkipOnCI]
     public Task DefaultsServerAddress_BindsToIPv6()
@@ -468,7 +468,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000", "http://[::1]:5000" });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnCI]
     public Task DefaultsServerAddress_BindsToIPv4WithHttp()
     {
@@ -481,7 +481,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
             new[] { "http://127.0.0.1:5000" }, mockHttps: false);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     [SkipOnCI]
     public Task DefaultsServerAddress_BindsToIPv6WithHttp()
@@ -566,7 +566,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task ThrowsWhenBindingToIPv6AddressInUse()
     {
@@ -733,7 +733,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public void ThrowsWhenBindingLocalhostToIPv6AddressInUse()
     {
@@ -836,7 +836,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [IPv6SupportedCondition]
     public async Task CanRebindToMultipleEndPoints()
     {

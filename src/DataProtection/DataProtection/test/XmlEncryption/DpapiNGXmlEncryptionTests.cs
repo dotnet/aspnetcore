@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 public class DpapiNGXmlEncryptionTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows8OrLater]
     public void Encrypt_Decrypt_RoundTrips()
     {

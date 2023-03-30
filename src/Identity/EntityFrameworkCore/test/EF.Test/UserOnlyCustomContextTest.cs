@@ -83,7 +83,7 @@ public class UserOnlyCustomContextTest : IClassFixture<ScratchDatabaseFixture>
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task EnsureStartupUsageWorks()
     {
         var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();

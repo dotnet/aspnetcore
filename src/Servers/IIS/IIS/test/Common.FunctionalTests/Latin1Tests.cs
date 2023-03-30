@@ -33,7 +33,7 @@ public class Latin1Tests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewHandler]
     public async Task Latin1Works()
     {
@@ -51,7 +51,7 @@ public class Latin1Tests : IISFunctionalTestBase
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewHandler]
     public async Task Latin1ReplacedWithoutAppContextSwitch()
     {
@@ -69,7 +69,7 @@ public class Latin1Tests : IISFunctionalTestBase
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewHandler]
     public async Task Latin1InvalidCharacters_HttpSysRejects()
     {

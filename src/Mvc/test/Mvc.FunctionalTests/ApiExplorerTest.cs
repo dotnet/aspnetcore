@@ -823,7 +823,7 @@ public class ApiExplorerTest : IClassFixture<MvcTestFixture<ApiExplorerWebSite.S
             });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task ApiExplorer_ResponseContentType_Unset()

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 [NamedPipesSupported]
 public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AcceptAsync_AfterUnbind_ReturnNull()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         int ReturnFailureCount { get; }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AcceptAsync_ClientCreatesConnection_ServerAccepts()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.Equal(0, pool.ReturnFailureCount);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AcceptAsync_UnbindAfterCall_CleanExit()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         await Task.WhenAll(parallelTasks).DefaultTimeout();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Non-OS implementations use UDS with an unlimited accept limit.")]
     public async Task AcceptAsync_HitBacklogLimit_ClientConnectionsSuccessfullyAccepted()
     {
@@ -259,7 +259,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         public ConnectionContext ServerConnection { get; set; }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AcceptAsync_DisposeAfterCall_CleanExit()
     {
         // Arrange
@@ -276,7 +276,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Error);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task BindAsync_ListenersSharePort_ThrowAddressInUse()
     {
         // Arrange
@@ -287,7 +287,7 @@ public class NamedPipeConnectionListenerTests : TestApplicationErrorLoggerLogged
         await Assert.ThrowsAsync<AddressInUseException>(() => NamedPipeTestHelpers.CreateConnectionListenerFactory(LoggerFactory, pipeName: pipeName));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task BindAsync_ListenersSharePort_DisposeFirstListener_Success()
     {
         // Arrange

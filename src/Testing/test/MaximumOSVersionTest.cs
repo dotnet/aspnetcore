@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing;
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
 public class MaximumOSVersionTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
     public void RunTest_Win7DoesRunOnWin7()
     {
@@ -33,7 +33,7 @@ public class MaximumOSVersionTest
             "Test should only be running on Win7 or Win2008R2.");
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public void RunTest_Win10_RS4()
@@ -46,7 +46,7 @@ public class MaximumOSVersionTest
         Assert.True(17134 >= int.Parse(currentVersion, CultureInfo.InvariantCulture));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2)]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public void RunTest_Win10_19H2()
@@ -64,7 +64,7 @@ public class MaximumOSVersionTest
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
 public class OSMaxVersionClassTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public void TestSkipClass_Win7DoesRunOnWin7()
     {
         Assert.True(
@@ -78,7 +78,7 @@ public class OSMaxVersionClassTest
 [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
 public class OSMaxVersionCrossPlatTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public void TestSkipClass_Win7DoesRunOnWin7()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

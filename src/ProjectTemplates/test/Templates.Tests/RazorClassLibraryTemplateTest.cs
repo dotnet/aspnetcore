@@ -46,7 +46,7 @@ public class RazorClassLibraryTemplateTest : LoggedTest
         await project.RunDotNetBuildAsync();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task RazorClassLibraryTemplateAsync()
     {

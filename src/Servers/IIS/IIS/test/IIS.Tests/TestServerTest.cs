@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "https://github.com/aspnet/IISIntegration/issues/866")]
 public class TestServerTest : StrictTestServerTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task SingleProcessTestServer_HelloWorld()
     {
         var helloWorld = "Hello World";

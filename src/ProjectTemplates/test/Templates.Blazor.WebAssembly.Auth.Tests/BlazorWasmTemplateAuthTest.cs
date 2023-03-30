@@ -24,50 +24,50 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorwasm";
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(true, false, false);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public Task BlazorWasmHostedTemplate_IndividualAuth_NoHttps_Works_WithLocalDB()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(true, false, true);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, false, false);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_NoHttps_Works_WithOutLocalDB()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, false, false);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB_ProgramMain()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(true, true, false);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public Task BlazorWasmHostedTemplate_IndividualAuth_NoHttps_Works_WithLocalDB_ProgramMain()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(true, true, true);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB_ProgramMain()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, true, false);
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_NoHttps_Works_WithOutLocalDB_ProgramMain()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, true, true);

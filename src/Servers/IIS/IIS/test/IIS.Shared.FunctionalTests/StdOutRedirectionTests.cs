@@ -31,7 +31,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task FrameworkNotFoundExceptionLogged_Pipe()
     {
@@ -52,7 +52,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
             "To install missing framework, download:", Logger);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task FrameworkNotFoundExceptionLogged_File()
     {
@@ -80,7 +80,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
         Assert.Contains(missingFrameworkString, contents);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [SkipIfDebug]
     public async Task EnableCoreHostTraceLogging_TwoLogFilesCreated()

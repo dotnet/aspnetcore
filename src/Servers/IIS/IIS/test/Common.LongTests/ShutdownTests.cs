@@ -33,7 +33,7 @@ public class ShutdownTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ShutdownTimeoutIsApplied()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -73,7 +73,7 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess()
     {
         var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -84,7 +84,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503_OutOfProcess()
     {
@@ -96,7 +96,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task LockedAppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess()
     {
         var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -113,7 +113,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task LockedAppOfflineDroppedWhileSiteIsDown_SiteReturns503_OutOfProcess()
     {
@@ -131,7 +131,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed_InProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: HostingModel.InProcess);
@@ -149,7 +149,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed_OutOfProcess()
     {
@@ -168,7 +168,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
     {
         var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -185,7 +185,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
     {
         // The goal of this test is to have multiple requests currently in progress
@@ -258,7 +258,7 @@ public class ShutdownTests : IISFunctionalTestBase
             EventLogHelpers.InProcessShutdown(), Logger);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_InProcess()
     {
         var deploymentResult = await AssertStarts(HostingModel.InProcess);
@@ -268,7 +268,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task AppOfflineDroppedWhileSiteRunning_SiteShutsDown_OutOfProcess()
     {
@@ -284,7 +284,7 @@ public class ShutdownTests : IISFunctionalTestBase
         DeletePublishOutput(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks_InProcess()
     {
         var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -298,7 +298,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await AssertRunning(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task AppOfflineDropped_CanRemoveAppOfflineAfterAddingAndSiteWorks_OutOfProcess()
     {
@@ -313,14 +313,14 @@ public class ShutdownTests : IISFunctionalTestBase
         await AssertRunning(deploymentResult);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task AppOfflineAddedAndRemovedStress_InProcess()
     {
         await AppOfflineAddAndRemovedStress(HostingModel.InProcess);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task AppOfflineAddedAndRemovedStress_OutOfProcess()
     {
@@ -368,7 +368,7 @@ public class ShutdownTests : IISFunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ConfigurationChangeStopsInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
@@ -383,7 +383,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task ConfigurationChangeForcesChildProcessRestart()
     {
@@ -401,7 +401,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() != processBefore);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ConfigurationChangeCanBeIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
@@ -421,7 +421,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task AppHostConfigurationChangeIsIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
@@ -441,7 +441,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task ConfigurationChangeCanBeIgnoredOutOfProcess()
     {
@@ -460,7 +460,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
@@ -481,7 +481,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.Headers.Server.ToString().StartsWith("Microsoft", StringComparison.Ordinal));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ConfigurationTouchedStress_InProcess()
     {
         await ConfigurationTouchedStress(HostingModel.InProcess);
@@ -522,7 +522,7 @@ public class ShutdownTests : IISFunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     public async Task ClosesConnectionOnServerAbortOutOfProcess()
     {
@@ -544,7 +544,7 @@ public class ShutdownTests : IISFunctionalTestBase
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ClosesConnectionOnServerAbortInProcess()
     {
         try

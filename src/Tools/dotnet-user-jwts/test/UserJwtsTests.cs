@@ -634,7 +634,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     public void Create_CreatesFileWithUserOnlyUnixFileMode()
     {

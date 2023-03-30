@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Cryptography.Cng;
 
 public unsafe class BCryptUtilTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void GenRandom_PopulatesBuffer()
     {

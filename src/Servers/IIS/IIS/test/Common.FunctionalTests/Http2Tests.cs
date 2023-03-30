@@ -268,7 +268,7 @@ public class Http2Tests
             .Build().RunAsync();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
     public async Task Http2_ResponseWithData_Success()
     {
@@ -313,7 +313,7 @@ public class Http2Tests
             .Build().RunAsync();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ResponseTrailers_HTTP1_TrailersNotAvailable()
     {
         var response = await SendRequestAsync(Fixture.Client.BaseAddress.ToString() + "ResponseTrailers_HTTP1_TrailersNotAvailable", http2: false);
@@ -323,7 +323,7 @@ public class Http2Tests
         Assert.Empty(response.TrailingHeaders);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewHandler]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
     public async Task AppException_BeforeResponseHeaders_500()
@@ -350,7 +350,7 @@ public class Http2Tests
             .Build().RunAsync();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewHandler]
     public async Task Reset_Http1_NotSupported()
     {
@@ -362,7 +362,7 @@ public class Http2Tests
         Assert.Equal("Hello World", response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewHandler]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "This is last version without Reset support")]

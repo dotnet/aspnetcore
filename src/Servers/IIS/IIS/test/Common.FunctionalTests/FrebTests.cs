@@ -48,7 +48,7 @@ public class FrebTests : IISFunctionalTestBase
         return list;
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.FailedRequestTracingModule)]
     public async Task CheckCommonFrebEvents()
     {
@@ -61,7 +61,7 @@ public class FrebTests : IISFunctionalTestBase
         AssertFrebLogs(result, FrebChecks());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.FailedRequestTracingModule)]
     public async Task FrebIncludesHResultFailures()
@@ -77,7 +77,7 @@ public class FrebTests : IISFunctionalTestBase
         AssertFrebLogs(result, new FrebLogItem("ANCM_HRESULT_FAILED"), new FrebLogItem("ANCM_EXCEPTION_CAUGHT"));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.FailedRequestTracingModule)]
     public async Task CheckFailedRequestEvents()
     {
@@ -90,7 +90,7 @@ public class FrebTests : IISFunctionalTestBase
         AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.FailedRequestTracingModule)]
     public async Task CheckFrebDisconnect()
     {

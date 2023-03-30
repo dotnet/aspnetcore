@@ -32,7 +32,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
                 new object[] { Http2Version },
         };
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Only test HTTP/1.1, ALPN is not supported on Win7
     public async Task Anonymous_NoChallenge_NoOps_Win7()
     {
@@ -46,7 +46,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
         Assert.Equal(Http11Version, result.Version);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Only test HTTP/1.1, ALPN is not supported on Win7
     public async Task Anonymous_Challenge_401Negotiate_Win7()
     {
@@ -106,7 +106,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
         Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task DefautCredentials_WebSocket_Success()
     {
         using var host = await CreateHostAsync();

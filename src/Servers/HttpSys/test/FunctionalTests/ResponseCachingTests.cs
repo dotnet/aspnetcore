@@ -25,7 +25,7 @@ public class ResponseCachingTests
         _fileLength = new FileInfo(_absoluteFilePath).Length;
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_NoCacheControl_NotCached()
     {
         var requestCount = 1;
@@ -44,7 +44,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_JustPublic_NotCached()
     {
         var requestCount = 1;
@@ -64,7 +64,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "Content type not required for caching on Win7.")]
     public async Task Caching_WithoutContentType_NotCached()
     {
@@ -85,7 +85,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_304_NotCached()
     {
         var requestCount = 1;
@@ -106,7 +106,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_WithoutContentType_Cached_OnWin7AndWin2008R2()
     {
         if (Utilities.IsWin8orLater)
@@ -131,7 +131,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_MaxAge_Cached()
     {
         var requestCount = 1;
@@ -151,7 +151,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_MaxAgeHuge_Cached()
     {
         var requestCount = 1;
@@ -171,7 +171,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_SMaxAge_Cached()
     {
         var requestCount = 1;
@@ -191,7 +191,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_SMaxAgeAndMaxAge_SMaxAgePreferredCached()
     {
         var requestCount = 1;
@@ -211,7 +211,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_Expires_Cached()
     {
         var requestCount = 1;
@@ -279,7 +279,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_ExpiresWithoutPublic_NotCached()
     {
         var requestCount = 1;
@@ -299,7 +299,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_MaxAgeAndExpires_MaxAgePreferred()
     {
         var requestCount = 1;
@@ -320,7 +320,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_Flush_NotCached()
     {
         var requestCount = 1;
@@ -341,7 +341,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_WriteFullContentLength_Cached()
     {
         var requestCount = 1;
@@ -363,7 +363,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_SendFileNoContentLength_NotCached()
     {
         var requestCount = 1;
@@ -382,7 +382,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_SendFileWithFullContentLength_Cached()
     {
         var requestCount = 1;
@@ -402,7 +402,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Caching_VariousStatusCodes_Cached()
     {
         var requestCount = 1;

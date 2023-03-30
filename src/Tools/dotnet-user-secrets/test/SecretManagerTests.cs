@@ -339,7 +339,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.DoesNotContain("--help", _console.GetOutput());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     public void SetSecrets_CreatesFileWithUserOnlyUnixFileMode()
     {

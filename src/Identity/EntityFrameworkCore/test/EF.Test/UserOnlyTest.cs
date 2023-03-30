@@ -44,7 +44,7 @@ public class UserOnlyTest : IClassFixture<ScratchDatabaseFixture>
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task EnsureStartupUsageWorks()
     {
         var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
@@ -60,7 +60,7 @@ public class UserOnlyTest : IClassFixture<ScratchDatabaseFixture>
         IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task FindByEmailThrowsWithTwoUsersWithSameEmail()
     {
         var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();

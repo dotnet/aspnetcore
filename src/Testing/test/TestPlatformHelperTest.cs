@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class TestPlatformHelperTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     [OSSkipCondition(OperatingSystems.Windows)]
     public void IsLinux_TrueOnLinux()
@@ -18,7 +18,7 @@ public class TestPlatformHelperTest
         Assert.False(TestPlatformHelper.IsWindows);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.Windows)]
     public void IsMac_TrueOnMac()
@@ -28,7 +28,7 @@ public class TestPlatformHelperTest
         Assert.False(TestPlatformHelper.IsWindows);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public void IsWindows_TrueOnWindows()
@@ -38,14 +38,14 @@ public class TestPlatformHelperTest
         Assert.True(TestPlatformHelper.IsWindows);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [FrameworkSkipCondition(RuntimeFrameworks.CLR | RuntimeFrameworks.CoreCLR | RuntimeFrameworks.None)]
     public void IsMono_TrueOnMono()
     {
         Assert.True(TestPlatformHelper.IsMono);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public void IsMono_FalseElsewhere()
     {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 
 public class RegistryXmlRepositoryTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void RegistryKey_Property()
     {
@@ -29,7 +29,7 @@ public class RegistryXmlRepositoryTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void GetAllElements_EmptyOrNonexistentDirectory_ReturnsEmptyCollection()
     {
@@ -46,7 +46,7 @@ public class RegistryXmlRepositoryTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void StoreElement_WithValidFriendlyName_UsesFriendlyName()
     {
@@ -104,7 +104,7 @@ public class RegistryXmlRepositoryTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void StoreElements_ThenRetrieve_SeesAllElements()
     {

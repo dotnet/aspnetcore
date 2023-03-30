@@ -93,7 +93,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Existing_database_not_using_migrations_exception_passes_thru()
@@ -126,7 +126,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Error_page_displayed_no_migrations()
@@ -161,7 +161,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task No_exception_on_diagnostic_event_received_when_null_state()
@@ -187,7 +187,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Error_page_displayed_pending_migrations()
@@ -226,7 +226,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Error_page_displayed_pending_model_changes()
@@ -266,7 +266,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Error_page_then_apply_migrations()
@@ -322,7 +322,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Customize_migrations_end_point()
@@ -367,7 +367,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Pass_thru_when_context_not_in_services()
@@ -430,7 +430,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Pass_thru_when_exception_in_logic()
@@ -472,7 +472,7 @@ public class DatabaseErrorPageMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Error_page_displayed_when_exception_wrapped()

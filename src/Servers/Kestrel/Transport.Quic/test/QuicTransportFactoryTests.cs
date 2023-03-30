@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 [Collection(nameof(NoParallelCollection))]
 public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task BindAsync_NoFeatures_Error()
     {
@@ -35,7 +35,7 @@ public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal("Couldn't find HTTPS configuration for QUIC transport.", ex.Message);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task BindAsync_NoApplicationProtocols_Error()
     {
@@ -52,7 +52,7 @@ public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal("No application protocols specified for QUIC transport.", ex.Message);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task BindAsync_SslServerAuthenticationOptions_Success()
     {

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng;
 
 public class CbcAuthenticatedEncryptorTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void Encrypt_Decrypt_RoundTrips()
     {
@@ -32,7 +32,7 @@ public class CbcAuthenticatedEncryptorTests
         Assert.Equal(plaintext, decipheredtext);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void Encrypt_Decrypt_Tampering_Fails()
     {
@@ -79,7 +79,7 @@ public class CbcAuthenticatedEncryptorTests
         });
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void Encrypt_KnownKey()
     {

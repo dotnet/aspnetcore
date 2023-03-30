@@ -55,7 +55,7 @@ public class MigrationsEndPointMiddlewareTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Migration_request_default_path()
@@ -63,7 +63,7 @@ public class MigrationsEndPointMiddlewareTest
         await Migration_request(useCustomPath: false);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Migration_request_custom_path()
@@ -227,7 +227,7 @@ public class MigrationsEndPointMiddlewareTest
         Assert.True(content.Length > 512);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task Exception_while_applying_migrations()

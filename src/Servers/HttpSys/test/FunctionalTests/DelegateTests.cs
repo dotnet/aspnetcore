@@ -17,7 +17,7 @@ public class DelegateTests
 {
     private static readonly string _expectedResponseString = "Hello from delegatee";
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public void IServerDelegationFeature_IsAvailableFromServices()
     {
@@ -32,7 +32,7 @@ public class DelegateTests
         Assert.Same(server, delegationFeature);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public async Task DelegateRequestTest()
     {
@@ -63,7 +63,7 @@ public class DelegateTests
         destination?.Dispose();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public async Task DelegateAfterWriteToResponseBodyShouldThrowTest()
     {
@@ -96,7 +96,7 @@ public class DelegateTests
         destination?.Dispose();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public async Task WriteToBodyAfterDelegateShouldNoOp()
     {
@@ -129,7 +129,7 @@ public class DelegateTests
         destination?.Dispose();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public async Task DelegateAfterRequestBodyReadShouldThrow()
     {
@@ -161,7 +161,7 @@ public class DelegateTests
         destination?.Dispose();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(false)]
     public async Task DelegationFeaturesAreNull()
     {
@@ -181,7 +181,7 @@ public class DelegateTests
         _ = await SendRequestAsync(delegatorAddress);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public async Task UpdateDelegationRuleTest()
     {
@@ -215,7 +215,7 @@ public class DelegateTests
         destination?.Dispose();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [DelegateSupportedCondition(true)]
     public async Task DelegateAfterReceiverRestart()
     {

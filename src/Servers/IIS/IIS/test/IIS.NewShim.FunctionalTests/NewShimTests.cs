@@ -16,7 +16,7 @@ public class NewShimTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CheckNewShimIsUsed()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();

@@ -119,7 +119,7 @@ public abstract class ConsumesAttributeTestsBase<TStartup> : IClassFixture<MvcTe
         Assert.Equal(expectedString, product.SampleString);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task DerivedClassLevelAttribute_OverridesBaseClassLevel()
@@ -163,7 +163,7 @@ public abstract class ConsumesAttributeTestsBase<TStartup> : IClassFixture<MvcTe
         Assert.Equal("Read from JSON: some input", product.SampleString);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task XmlSyntaxSuffix_SelectsActionConsumingXml()

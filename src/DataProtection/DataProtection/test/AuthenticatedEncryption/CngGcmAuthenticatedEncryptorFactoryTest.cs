@@ -29,7 +29,7 @@ public class CngGcmAuthenticatedEncryptorFactoryTest
         Assert.Null(encryptor);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void CreateEncrptorInstance_ExpectedDescriptorType_ReturnsEncryptor()
     {

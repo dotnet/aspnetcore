@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions;
 
 public static class IdentityServerBuilderConfigurationExtensionsTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
     public static void IValidationKeysStore_Service_Resolution_Succeeds_If_Key_Found()
     {

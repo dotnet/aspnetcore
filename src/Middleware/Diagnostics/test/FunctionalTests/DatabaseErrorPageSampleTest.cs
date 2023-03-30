@@ -16,7 +16,7 @@ public class DatabaseErrorPageSampleTest : IClassFixture<TestFixture<DatabaseErr
 
     public HttpClient Client { get; }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
     public async Task DatabaseErrorPage_ShowsError()

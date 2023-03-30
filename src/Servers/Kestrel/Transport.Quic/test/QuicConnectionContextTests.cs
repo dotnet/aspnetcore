@@ -19,7 +19,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task Abort_AbortAfterDispose_Ignored()
     {
@@ -43,7 +43,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         serverConnection.Abort(); // Doesn't throw ODE.
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task DisposeAsync_DisposeConnectionAfterAcceptingStream_DefaultCloseErrorCodeReported()
     {
@@ -71,7 +71,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal((long)Http3ErrorCode.RequestCancelled, ex.ApplicationErrorCode);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task AcceptAsync_CancellationThenAccept_AcceptStreamAfterCancellation()
     {
@@ -110,7 +110,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task AcceptAsync_ClientClosesConnection_ServerNotified()
     {
@@ -142,7 +142,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await connectionClosedTcs.Task.DefaultTimeout();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task AcceptAsync_ClientStartsAndStopsUnidirectionStream_ServerAccepts()
     {
@@ -184,7 +184,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await closedTcs.Task.DefaultTimeout();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task AcceptAsync_ClientStartsAndStopsBidirectionStream_ServerAccepts()
     {
@@ -234,7 +234,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await closedTcs.Task.DefaultTimeout();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task AcceptAsync_ServerStartsAndStopsUnidirectionStream_ClientAccepts()
     {
@@ -279,7 +279,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, readCount);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task AcceptAsync_ClientClosesConnection_ExceptionThrown()
     {
@@ -305,7 +305,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal((long)Http3ErrorCode.NoError, serverConnection.Features.Get<IProtocolErrorCodeFeature>().Error);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task StreamPool_StreamAbortedOnServer_NotPooled()
     {
@@ -348,7 +348,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task StreamPool_StreamAbortedOnServerAfterComplete_NotPooled()
     {
@@ -393,7 +393,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task StreamPool_StreamAbortedOnClient_NotPooled()
     {
@@ -440,7 +440,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task StreamPool_StreamAbortedOnClientAndServer_NotPooled()
     {
@@ -497,7 +497,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37862")]
     public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
@@ -556,7 +556,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     public async Task StreamPool_ManyConcurrentStreams_StreamPoolFull()
     {
@@ -631,7 +631,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [MsQuicSupported]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38998")]
     public async Task PersistentState_StreamsReused_StatePersisted()

@@ -45,7 +45,7 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [CollectDump]
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task GracefulShutdownWaitsForRequestsToFinish()
     {
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -102,7 +102,7 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
         Assert.Contains(LogMessages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39986")]
     public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
     {

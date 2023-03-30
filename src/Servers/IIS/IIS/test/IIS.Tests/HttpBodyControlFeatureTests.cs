@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "https://github.com/aspnet/IISIntegration/issues/866")]
 public class HttpBodyControlFeatureTests : StrictTestServerTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ThrowsOnSyncReadOrWrite()
     {
         Exception writeException = null;

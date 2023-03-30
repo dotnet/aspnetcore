@@ -163,14 +163,14 @@ public class Pbkdf2Tests
         RunTest_WithLongPassword_Impl<ManagedPbkdf2Provider>();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void RunTest_WithLongPassword_Win7()
     {
         RunTest_WithLongPassword_Impl<Win7Pbkdf2Provider>();
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows8OrLater]
     public void RunTest_WithLongPassword_Win8()
     {

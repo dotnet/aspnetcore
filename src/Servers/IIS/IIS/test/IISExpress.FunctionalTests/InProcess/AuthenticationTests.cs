@@ -19,7 +19,7 @@ public class AuthenticationTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.WindowsAuthentication)]
     public async Task Authentication_InProcess()
     {

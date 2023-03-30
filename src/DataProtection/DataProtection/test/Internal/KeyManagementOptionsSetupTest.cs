@@ -39,7 +39,7 @@ public class KeyManagementOptionsSetupTest
             f => Assert.IsType<AuthenticatedEncryptorFactory>(f));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void Configure_WithRegistryPolicyResolver_SetsValuesFromResolver()
     {

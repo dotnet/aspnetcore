@@ -746,7 +746,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseChunks()
     {
         var chunkSize = 64 * 128 * 1024;

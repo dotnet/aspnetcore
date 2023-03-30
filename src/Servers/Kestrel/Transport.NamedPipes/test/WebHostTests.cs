@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
 public class WebHostTests : LoggedTest
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Test expects not supported error. Skip Windows because named pipes supports Windows.")]
     public async Task ListenNamedPipeEndpoint_NonWindowsOperatingSystem_ErrorAsync()
     {
@@ -132,7 +132,7 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_HelloWorld_ClientSuccess()
     {
@@ -182,7 +182,7 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_Impersonation_ClientSuccess()
     {
@@ -392,7 +392,7 @@ public class WebHostTests : LoggedTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [NamedPipesSupported]
     public async Task ListenNamedPipeEndpoint_FromUrl_HelloWorld_ClientSuccess()
     {

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 public class UnixDomainSocketsTest : TestApplicationErrorLoggerLoggedTest
 {
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
-    [ConditionalFact]
+    // [ConditionalFact]
     [CollectDump]
     public async Task TestUnixDomainSocket()
     {
@@ -129,7 +129,7 @@ public class UnixDomainSocketsTest : TestApplicationErrorLoggerLoggedTest
     }
 
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
-    [ConditionalFact]
+    // [ConditionalFact]
     [CollectDump]
     public async Task TestUnixDomainSocketWithUrl()
     {

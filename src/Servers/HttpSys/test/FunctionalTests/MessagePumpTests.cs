@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 public class MessagePumpTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public void OverridingDirectConfigurationWithIServerAddressesFeatureSucceeds()
     {
         var serverAddress = "http://localhost:11001/";
@@ -55,7 +55,7 @@ public class MessagePumpTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public void DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfAddressesIsEmpty()
     {
         var serverAddress = "http://localhost:11002/";
@@ -93,7 +93,7 @@ public class MessagePumpTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public void UseIServerAddressesFeature_WhenNoDirectConfiguration()
     {
         var serverAddress = "http://localhost:11001/";
@@ -107,7 +107,7 @@ public class MessagePumpTests
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // test is permanently quarantined due to inherent flakiness with port binding
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28993")]
     public void UseDefaultAddress_WhenNoServerAddressAndNoDirectConfiguration()

@@ -112,7 +112,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public void XmlDataContractSerializer_CachesSerializerForType()
@@ -132,7 +132,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         Assert.Equal(1, formatter.createSerializerCalledCount);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public void DefaultConstructor_ExpectedWriterSettings_Created()
@@ -148,7 +148,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         Assert.False(writerSettings.CheckCharacters);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task SuppliedWriterSettings_TakeAffect()
@@ -176,7 +176,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesSimpleTypes()
@@ -201,7 +201,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesComplexTypes()
@@ -236,7 +236,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesOnModifiedWriterSettings()
@@ -267,7 +267,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesUTF16Output()
@@ -297,7 +297,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesIndentedOutput()
@@ -323,7 +323,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_VerifyBodyIsNotClosedAfterOutputIsWritten()
@@ -341,7 +341,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         Assert.True(body.CanRead);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_DoesntFlushOutputStream()
@@ -473,7 +473,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         await Assert.ThrowsAsync<SerializationException>(async () => await formatter.WriteAsync(outputFormatterContext));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_ThrowsWhenNotConfiguredWithPreserveReferences()
@@ -490,7 +490,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         await Assert.ThrowsAsync<SerializationException>(async () => await formatter.WriteAsync(outputFormatterContext));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesWhenConfiguredWithRootName()
@@ -534,7 +534,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesWhenConfiguredWithKnownTypes()
@@ -581,7 +581,7 @@ public class XmlDataContractSerializerOutputFormatterTest
         XmlAssert.Equal(expectedOutput, content);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // Mono issue - https://github.com/aspnet/External/issues/18
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
     public async Task WriteAsync_WritesWhenConfiguredWithPreserveReferences()

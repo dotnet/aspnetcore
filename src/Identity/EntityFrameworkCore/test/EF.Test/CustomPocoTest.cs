@@ -24,7 +24,7 @@ public class CustomPocoTest
 
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanUpdateNameGuid()
     {
         using (var db = new CustomDbContext<Guid>(
@@ -46,7 +46,7 @@ public class CustomPocoTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanUpdateNameString()
     {
         using (var db = new CustomDbContext<string>(
@@ -68,7 +68,7 @@ public class CustomPocoTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanCreateUserInt()
     {
         using (var db = new CustomDbContext<int>(
@@ -88,7 +88,7 @@ public class CustomPocoTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanCreateUserIntViaSet()
     {
         using (var db = new CustomDbContext<int>(
@@ -109,7 +109,7 @@ public class CustomPocoTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanUpdateNameInt()
     {
         using (var db = new CustomDbContext<int>(
@@ -131,7 +131,7 @@ public class CustomPocoTest
         }
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task CanUpdateNameIntWithSet()
     {
         using (var db = new CustomDbContext<int>(

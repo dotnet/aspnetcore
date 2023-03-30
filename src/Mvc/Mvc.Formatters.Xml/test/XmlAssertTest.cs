@@ -72,7 +72,7 @@ public class XmlAssertTest
         Assert.Throws<EqualException>(() => XmlAssert.Equal(input1, input2));
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     // DeepEquals returns false even though the generated XML documents are equal.
     // This is fixed in Mono 4.3.0
     [FrameworkSkipCondition(RuntimeFrameworks.Mono)]

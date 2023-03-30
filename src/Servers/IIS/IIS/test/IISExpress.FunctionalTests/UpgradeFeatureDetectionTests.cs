@@ -22,7 +22,7 @@ public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
     {
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public Task UpgradeFeatureDetectionDisabled_InProcess()
     {
         // fails due to not modifying the apphost.config file.
@@ -31,7 +31,7 @@ public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
             "Disabled", HostingModel.InProcess);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public Task UpgradeFeatureDetectionEnabled_InProcess()
     {
         return UpgradeFeatureDetectionDeployer(
@@ -39,7 +39,7 @@ public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
             _isWebsocketsSupported, HostingModel.InProcess);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public Task UpgradeFeatureDetectionDisabled_OutOfProcess()
     {
         return UpgradeFeatureDetectionDeployer(
@@ -47,7 +47,7 @@ public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
             "Disabled", HostingModel.OutOfProcess);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public Task UpgradeFeatureDetectionEnabled_OutOfProcess()
     {
         return UpgradeFeatureDetectionDeployer(

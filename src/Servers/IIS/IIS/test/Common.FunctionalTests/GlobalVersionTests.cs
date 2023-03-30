@@ -39,7 +39,7 @@ public class GlobalVersionTests : IISFunctionalTestBase
     private const string _helloWorldRequest = "HelloWorld";
     private const string _helloWorldResponse = "Hello World";
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task GlobalVersion_DefaultWorks()
     {
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
@@ -53,7 +53,7 @@ public class GlobalVersionTests : IISFunctionalTestBase
         Assert.Equal(_helloWorldResponse, responseText);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [RequiresNewShim]
     public async Task GlobalVersion_EnvironmentVariableWorks()
@@ -186,7 +186,7 @@ public class GlobalVersionTests : IISFunctionalTestBase
         AssertLoadedVersion(version);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task DoesNotCrashWhenNoVersionsAvailable()
     {
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();

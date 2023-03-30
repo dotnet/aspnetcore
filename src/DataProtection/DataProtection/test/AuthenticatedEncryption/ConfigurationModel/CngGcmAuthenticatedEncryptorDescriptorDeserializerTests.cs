@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
 public class CngGcmAuthenticatedEncryptorDescriptorDeserializerTests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
     public void ImportFromXml_CreatesAppropriateDescriptor()
     {

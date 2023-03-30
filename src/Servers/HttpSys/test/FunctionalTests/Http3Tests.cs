@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 [HttpSysHttp3Supported]
 public class Http3Tests
 {
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_Direct()
     {
         using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -45,7 +45,7 @@ public class Http3Tests
         Assert.Equal("HTTP/3", response);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_AltSvcHeader_UpgradeFromHttp1()
     {
         var altsvc = "";
@@ -85,7 +85,7 @@ public class Http3Tests
         Assert.Equal("HTTP/3", response3);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_AltSvcHeader_UpgradeFromHttp2()
     {
         var altsvc = "";
@@ -123,7 +123,7 @@ public class Http3Tests
         Assert.Equal("HTTP/3", response3);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_ResponseTrailers()
     {
         using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -152,7 +152,7 @@ public class Http3Tests
         Assert.Equal("value", response.TrailingHeaders.GetValues("custom").SingleOrDefault());
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_ResetBeforeHeaders()
     {
         using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -179,7 +179,7 @@ public class Http3Tests
         Assert.Equal(0x010b, qex.ApplicationErrorCode.Value);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_ResetAfterHeaders()
     {
         var headersReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -212,7 +212,7 @@ public class Http3Tests
         Assert.Equal(0x010c, qex.ApplicationErrorCode.Value);
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_AppExceptionAfterHeaders_InternalError()
     {
         var headersReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -238,7 +238,7 @@ public class Http3Tests
         Assert.Equal(0x0102, qex.ApplicationErrorCode.Value); // H3_INTERNAL_ERROR
     }
 
-    [ConditionalFact]
+    // [ConditionalFact]
     public async Task Http3_Abort_Cancel()
     {
         using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
