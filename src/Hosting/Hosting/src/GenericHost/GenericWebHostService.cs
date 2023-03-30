@@ -64,12 +64,15 @@ internal sealed partial class GenericWebHostService : IHostedService
         var addresses = serverAddressesFeature?.Addresses;
         if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
         {
+            var source = "Configuration[ServerUrls]";
+
             // We support reading "urls" from app configuration
             var urls = Configuration[WebHostDefaults.ServerUrlsKey];
 
             // But fall back to host settings
             if (string.IsNullOrEmpty(urls))
             {
+                source = "WebHostOptions";
                 urls = Options.WebHostOptions.ServerUrls;
             }
 
@@ -77,6 +80,8 @@ internal sealed partial class GenericWebHostService : IHostedService
             var httpsPorts = Configuration[WebHostDefaults.HttpsPortsKey] ?? string.Empty;
             if (string.IsNullOrEmpty(urls))
             {
+                source = "Configuration[HttpsPorts]";
+
                 // HTTP_PORTS and HTTPS_PORTS, these are lower priority than Urls.
                 static string ExpandPorts(string ports, string scheme)
                 {
@@ -96,6 +101,11 @@ internal sealed partial class GenericWebHostService : IHostedService
 
             if (!string.IsNullOrEmpty(urls))
             {
+                if (urls.Contains("https"))
+                {
+                    throw new InvalidOperationException($"PURPLE {urls} from {source}");
+                }
+
                 // We support reading "preferHostingUrls" from app configuration
                 var preferHostingUrlsConfig = Configuration[WebHostDefaults.PreferHostingUrlsKey];
 
