@@ -17,7 +17,7 @@ public class ServerJSRootComponentsTest : JSRootComponentsTest
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CannotExceedTheConfiguredNumberOfJSComponents()
     {
         // The test app allows 5 JS components

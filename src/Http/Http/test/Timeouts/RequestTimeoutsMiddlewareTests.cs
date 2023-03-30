@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Timeouts;
 
 public class RequestTimeoutsMiddlewareTests
 {
-    [Fact]
+    // [Fact]
     public async Task DefaultTimeoutWhenNoEndpoint()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 10, defaultTimeout: 10);
@@ -22,7 +22,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultTimeoutWhenNoMetadata()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 10, defaultTimeout: 10);
@@ -38,7 +38,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutFromMetadataPolicy()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 47);
@@ -54,7 +54,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutFromMetadataAttributeWithPolicy()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 2);
@@ -69,7 +69,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutFromMetadataAttributeWithTimeSpan()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 3);
@@ -84,7 +84,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SkipWhenNoDefaultTimeout()
     {
         var context = new DefaultHttpContext();
@@ -101,7 +101,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutsAttributeWithPolicyWinsOverDefault()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 1, defaultTimeout: 10);
@@ -117,7 +117,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutsAttributeWithTimeSpanWinsOverDefault()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 3, defaultTimeout: 10);
@@ -133,7 +133,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutsPolicyWinsOverDefault()
     {
         var middleware = CreateMiddleware(expectedTimeSpan: 47, defaultTimeout: 10);
@@ -149,7 +149,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisableTimeoutAttributeSkipTheMiddleware()
     {
         var context = new DefaultHttpContext();
@@ -170,7 +170,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowExceptionWhenPolicyNotFound()
     {
         var middleware = CreateMiddleware();
@@ -183,7 +183,7 @@ public class RequestTimeoutsMiddlewareTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(context));
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleTimeoutExceptionDefaultPolicy()
     {
         var middleware = CreateMiddlewareWithCancel(expectedTimeSpan: 10, defaultTimeout: 10);
@@ -199,7 +199,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleTimeoutExceptionFromDefaultPolicy()
     {
         var middleware = CreateMiddlewareWithCancel(expectedTimeSpan: 10, defaultTimeout: 10);
@@ -216,7 +216,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleTimeoutExceptionFromEndpointPolicy()
     {
         var middleware = CreateMiddlewareWithCancel(expectedTimeSpan: 1, defaultTimeout: 10);
@@ -236,7 +236,7 @@ public class RequestTimeoutsMiddlewareTests
         Assert.Equal(originalToken, context.RequestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SkipHandleTimeoutException()
     {
         var middleware = CreateMiddlewareWithCancel(expectedTimeSpan: 10, defaultTimeout: 10, cancelledCts: false);

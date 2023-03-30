@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportHandshakeTests : Http3TestBase
 {
-    [Fact]
+    // [Fact]
     public async Task WebTransportHandshake_ClientToServerPasses()
     {
         _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;

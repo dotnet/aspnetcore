@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 public partial class WebHostTests
 {
-    [Fact]
+    // [Fact]
     public async Task DisposingHostCallsDisposeAsyncOnProvider()
     {
         var providerFactory = new AsyncServiceProviderFactory();

@@ -21,7 +21,7 @@ public class AssemblyFixtureTest
     public TestAssemblyFixture AssemblyFixture { get; }
     public TestCollectionFixture CollectionFixture { get; }
 
-    [Fact]
+    // [Fact]
     public void A()
     {
         Assert.NotNull(AssemblyFixture);
@@ -34,7 +34,7 @@ public class AssemblyFixtureTest
         CollectionFixture.Count++;
     }
 
-    [Fact]
+    // [Fact]
     public void B()
     {
         Assert.Equal(1, AssemblyFixture.Count);

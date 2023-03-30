@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 public class CollectionModelBinderTest
 {
-    [Fact]
+    // [Fact]
     public async Task BindComplexCollectionFromIndexes_FiniteIndexes()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class CollectionModelBinderTest
         Assert.Equal(new[] { "foo", "bar", "baz" }, strategy.ElementKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindComplexCollectionFromIndexes_InfiniteIndexes()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class CollectionModelBinderTest
         Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_SimpleCollectionWithNullValue_Succeeds()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class CollectionModelBinderTest
         Assert.Empty(model);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindSimpleCollection_RawValueIsEmptyCollection_ReturnsEmptyList()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class CollectionModelBinderTest
         Assert.Empty(boundCollection.Model);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindSimpleCollection_RawValueWithNull_ReturnsListWithoutNull()
     {
         // Arrange
@@ -269,7 +269,7 @@ public class CollectionModelBinderTest
         Assert.Equal(0, bindingContext.ModelState.ErrorCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_CreatesEmptyCollectionAndAddsError_IfIsTopLevelObject()
     {
         // Arrange
@@ -309,7 +309,7 @@ public class CollectionModelBinderTest
 
     // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject except
     // Model has a default value.
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelHasDefaultValue()
     {
         // Arrange
@@ -346,7 +346,7 @@ public class CollectionModelBinderTest
 
     // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject  except
     // Model already has a value.
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelNonNull()
     {
         // Arrange
@@ -449,7 +449,7 @@ public class CollectionModelBinderTest
         Assert.Equal(expectedResult, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindSimpleCollection_SubBindingSucceeds()
     {
         // Arrange

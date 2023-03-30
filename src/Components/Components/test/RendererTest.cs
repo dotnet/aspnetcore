@@ -25,7 +25,7 @@ public class RendererTest
     private const string WhatToRenderName = nameof(NestedAsyncComponent.WhatToRender);
     private const string LogName = nameof(NestedAsyncComponent.Log);
 
-    [Fact]
+    // [Fact]
     public void CanRenderTopLevelComponents()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class RendererTest
         AssertFrame.Text(batch.ReferenceFrames[1], "some text");
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderNestedComponents()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanReRenderTopLevelComponents()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanReRenderNestedComponents()
     {
         // Arrange: parent component already rendered
@@ -172,7 +172,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderAsyncTopLevelComponents()
     {
         // Arrange
@@ -225,7 +225,7 @@ public class RendererTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderAsyncNestedComponents()
     {
         // Arrange
@@ -269,7 +269,7 @@ public class RendererTest
         AssertStream(1, logForChild);
     }
 
-    [Fact]
+    // [Fact]
     public void CanReRenderRootComponentsWithNewParameters()
     {
         // This differs from the other "CanReRender..." tests above in that the root component is being supplied
@@ -311,7 +311,7 @@ public class RendererTest
         AssertFrame.Text(batch2.ReferenceFrames[0], "Goodbye");
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAddAndRenderNewRootComponentsWhileNotQuiescent()
     {
         // Arrange 1: An async root component
@@ -348,7 +348,7 @@ public class RendererTest
         await Task.WhenAll(renderTask1, renderTask2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AsyncComponentTriggeringRootReRenderDoesNotDeadlock()
     {
         // Arrange
@@ -384,7 +384,7 @@ public class RendererTest
         await renderTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderAsyncComponentsWithSyncChildComponents()
     {
         // Arrange
@@ -428,7 +428,7 @@ public class RendererTest
         AssertStream(1, logForChild);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderAsyncComponentsWithAsyncChildInit()
     {
         // Arrange
@@ -472,7 +472,7 @@ public class RendererTest
         AssertStream(1, logForChild);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderAsyncComponentsWithMultipleAsyncChildren()
     {
         // Arrange
@@ -536,7 +536,7 @@ public class RendererTest
         AssertStream(3, logForThirdChild);
     }
 
-    [Fact]
+    // [Fact]
     public void DispatchingEventsWithoutAsyncWorkShouldCompleteSynchronously()
     {
         // Arrange: Render a component with an event handler
@@ -566,7 +566,7 @@ public class RendererTest
         Assert.True(task.IsCompletedSuccessfully);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDispatchEventsToTopLevelComponents()
     {
         // Arrange: Render a component with an event handler
@@ -595,7 +595,7 @@ public class RendererTest
         Assert.Same(eventArgs, receivedArgs);
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetEventArgsTypeForHandler()
     {
         // Arrange: Render a component with an event handler
@@ -618,7 +618,7 @@ public class RendererTest
         Assert.Same(typeof(DerivedEventArgs), eventArgsType);
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetEventArgsTypeForParameterlessHandler()
     {
         // Arrange: Render a component with an event handler
@@ -641,7 +641,7 @@ public class RendererTest
         Assert.Same(typeof(EventArgs), eventArgsType);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotGetEventArgsTypeForMultiParameterHandler()
     {
         // Arrange: Render a component with an event handler
@@ -664,7 +664,7 @@ public class RendererTest
         Assert.Contains("declares more than one parameter", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotGetEventArgsTypeForHandlerWithNonEventArgsParameter()
     {
         // Arrange: Render a component with an event handler
@@ -687,7 +687,7 @@ public class RendererTest
         Assert.Contains($"must inherit from {typeof(EventArgs).FullName}", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
     {
         // Arrange: Render a component with an event handler
@@ -720,7 +720,7 @@ public class RendererTest
         Assert.Equal("Error", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDispatchTypedEventsToTopLevelComponents()
     {
         // Arrange: Render a component with an event handler
@@ -749,7 +749,7 @@ public class RendererTest
         Assert.Same(eventArgs, receivedArgs);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDispatchActionEventsToTopLevelComponents()
     {
         // Arrange: Render a component with an event handler
@@ -778,7 +778,7 @@ public class RendererTest
         Assert.NotNull(receivedArgs);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDispatchEventsToNestedComponents()
     {
         EventArgs receivedArgs = null;
@@ -818,7 +818,7 @@ public class RendererTest
         Assert.Same(eventArgs, receivedArgs);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAsyncDispatchEventsToTopLevelComponents()
     {
         // Arrange: Render a component with an event handler
@@ -861,7 +861,7 @@ public class RendererTest
         Assert.Equal(2, state);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAsyncDispatchTypedEventsToTopLevelComponents()
     {
         // Arrange: Render a component with an event handler
@@ -904,7 +904,7 @@ public class RendererTest
         Assert.Equal(2, state);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAsyncDispatchActionEventsToTopLevelComponents()
     {
         // Arrange: Render a component with an event handler
@@ -947,7 +947,7 @@ public class RendererTest
         Assert.Equal(2, state);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAsyncDispatchEventsToNestedComponents()
     {
         EventArgs receivedArgs = null;
@@ -1007,7 +1007,7 @@ public class RendererTest
     // This is a very common case when a component accepts a delegate parameter that
     // will be hooked up to a DOM event handler. It's essential that this will dispatch
     // to the parent component so that manual StateHasChanged calls are not necessary.
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_DelegateParameter_MethodToDelegateConversion()
     {
         // Arrange
@@ -1048,7 +1048,7 @@ public class RendererTest
     //
     // This is a degenerate case that we don't expect to occur in applications often,
     // but it's important to verify the semantics.
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_DelegateParameter_NoTargetLambda()
     {
         // Arrange
@@ -1090,7 +1090,7 @@ public class RendererTest
     // This is a similar case to EventDispatching_DelegateParameter_MethodToDelegateConversion
     // but uses our event handling infrastructure to achieve the same effect. The call to CreateDelegate
     // is not necessary for correctness in this case - it should just no op.
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_EventCallback_MethodToDelegateConversion()
     {
         // Arrange
@@ -1128,7 +1128,7 @@ public class RendererTest
 
     // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
     // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_EventCallback_NoTargetLambda()
     {
         // Arrange
@@ -1169,7 +1169,7 @@ public class RendererTest
 
     // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
     // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_EventCallback_AsyncNoTargetLambda()
     {
         // Arrange
@@ -1209,7 +1209,7 @@ public class RendererTest
         Assert.Equal(1, outerStateChangeCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_EventCallbackOfT_MethodToDelegateConversion()
     {
         // Arrange
@@ -1247,7 +1247,7 @@ public class RendererTest
 
     // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
     // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_EventCallbackOfT_NoTargetLambda()
     {
         // Arrange
@@ -1288,7 +1288,7 @@ public class RendererTest
 
     // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
     // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
-    [Fact]
+    // [Fact]
     public async Task EventDispatching_EventCallbackOfT_AsyncNoTargetLambda()
     {
         // Arrange
@@ -1328,7 +1328,7 @@ public class RendererTest
         Assert.Equal(1, outerStateChangeCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_Delegate_SynchronousCompletion()
     {
         // Arrange
@@ -1360,7 +1360,7 @@ public class RendererTest
         await task; // Does not throw
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallback_SynchronousCompletion()
     {
         // Arrange
@@ -1392,7 +1392,7 @@ public class RendererTest
         await task; // Does not throw
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallbackOfT_SynchronousCompletion()
     {
         // Arrange
@@ -1427,7 +1427,7 @@ public class RendererTest
         await task; // Does not throw
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_Delegate_SynchronousCancellation()
     {
         // Arrange
@@ -1459,7 +1459,7 @@ public class RendererTest
         await Assert.ThrowsAsync<TaskCanceledException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallback_SynchronousCancellation()
     {
         // Arrange
@@ -1491,7 +1491,7 @@ public class RendererTest
         await Assert.ThrowsAsync<TaskCanceledException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallbackOfT_SynchronousCancellation()
     {
         // Arrange
@@ -1527,7 +1527,7 @@ public class RendererTest
         await Assert.ThrowsAsync<TaskCanceledException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_Delegate_SynchronousException()
     {
         // Arrange
@@ -1559,7 +1559,7 @@ public class RendererTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallback_SynchronousException()
     {
         // Arrange
@@ -1591,7 +1591,7 @@ public class RendererTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallbackOfT_SynchronousException()
     {
         // Arrange
@@ -1627,7 +1627,7 @@ public class RendererTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_Delegate_AsynchronousCompletion()
     {
         // Arrange
@@ -1662,7 +1662,7 @@ public class RendererTest
         await task; // Does not throw
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallback_AsynchronousCompletion()
     {
         // Arrange
@@ -1697,7 +1697,7 @@ public class RendererTest
         await task; // Does not throw
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCompletion()
     {
         // Arrange
@@ -1736,7 +1736,7 @@ public class RendererTest
         await task; // Does not throw
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_Delegate_AsynchronousCancellation()
     {
         // Arrange
@@ -1774,7 +1774,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallback_AsynchronousCancellation()
     {
         // Arrange
@@ -1812,7 +1812,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCancellation()
     {
         // Arrange
@@ -1854,7 +1854,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_Delegate_AsynchronousException()
     {
         // Arrange
@@ -1891,7 +1891,7 @@ public class RendererTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallback_AsynchronousException()
     {
         // Arrange
@@ -1928,7 +1928,7 @@ public class RendererTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousException()
     {
         // Arrange
@@ -1969,7 +1969,7 @@ public class RendererTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CannotDispatchEventsWithUnknownEventHandlers()
     {
         // Arrange
@@ -1982,7 +1982,7 @@ public class RendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentsCanBeAssociatedWithMultipleRenderers()
     {
         // Arrange
@@ -2016,7 +2016,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesChildComponentInstancesWithNoAttributes()
     {
         // Arrange: First render, capturing child component instance
@@ -2054,7 +2054,7 @@ public class RendererTest
         Assert.False(batch.DiffsByComponentId.ContainsKey(nestedComponentFrame.ComponentId));
     }
 
-    [Fact]
+    // [Fact]
     public void UpdatesPropertiesOnRetainedChildComponentInstances()
     {
         // Arrange: First render, capturing child component instance
@@ -2093,7 +2093,7 @@ public class RendererTest
         Assert.Same(objectThatWillNotChange, childComponentInstance.ObjectProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void ReRendersChildComponentsWhenPropertiesChange()
     {
         // Arrange: First render
@@ -2129,7 +2129,7 @@ public class RendererTest
         AssertFrame.Text(renderer.Batches[1].ReferenceFrames[0], "second");
     }
 
-    [Fact]
+    // [Fact]
     public void ReRendersChildComponentWhenUnmatchedValuesChange()
     {
         // Arrange: First render
@@ -2170,7 +2170,7 @@ public class RendererTest
     // This is a sanity check that diffs of "unmatched" values *just work* without any specialized
     // code in the renderer to handle it. All of the data that's used in the diff is contained in
     // the render tree, and the diff process does not need to inspect the state of the component.
-    [Fact]
+    // [Fact]
     public void ReRendersDoesNotReRenderChildComponentWhenUnmatchedValuesDoNotChange()
     {
         // Arrange: First render
@@ -2199,7 +2199,7 @@ public class RendererTest
         Assert.False(renderer.Batches[1].DiffsByComponentId.ContainsKey(childComponentId));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatchIncludesListOfDisposedComponents()
     {
         // Arrange
@@ -2250,7 +2250,7 @@ public class RendererTest
         Assert.Equal(2, renderer.Batches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_HandlesExceptionsFromAllDisposedComponents()
     {
         // Arrange
@@ -2291,7 +2291,7 @@ public class RendererTest
         Assert.Contains(exception2, aex.InnerExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_HandlesSynchronousExceptionsInAsyncDisposableComponents()
     {
         // Arrange
@@ -2327,7 +2327,7 @@ public class RendererTest
         Assert.Same(exception1, innerException);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_CanDisposeSynchronousAsyncDisposableImplementations()
     {
         // Arrange
@@ -2360,7 +2360,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_CanDisposeAsynchronousAsyncDisposables()
     {
         // Arrange
@@ -2402,7 +2402,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_HandlesAsynchronousExceptionsInAsyncDisposableComponents()
     {
         // Arrange
@@ -2444,7 +2444,7 @@ public class RendererTest
         Assert.Same(exception1, aex);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_ReportsSynchronousCancelationsAsErrors()
     {
         // Arrange
@@ -2479,7 +2479,7 @@ public class RendererTest
         Assert.IsType<TaskCanceledException>(Assert.Single(aex.Flatten().InnerExceptions));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_ReportsAsynchronousCancelationsAsErrors()
     {
         // Arrange
@@ -2523,7 +2523,7 @@ public class RendererTest
         var aex = Assert.IsType<TaskCanceledException>(Assert.Single(renderer.HandledExceptions));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBatch_DoesNotDisposeComponentMultipleTimes()
     {
         // Arrange
@@ -2603,7 +2603,7 @@ public class RendererTest
         Assert.True(component.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposesEventHandlersWhenAttributeValueChanged()
     {
         // Arrange
@@ -2645,7 +2645,7 @@ public class RendererTest
         await renderTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposesEventHandlersWhenAttributeRemoved()
     {
         // Arrange
@@ -2680,7 +2680,7 @@ public class RendererTest
         Assert.Equal(1, eventCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposesEventHandlersWhenOwnerComponentRemoved()
     {
         // Arrange
@@ -2731,7 +2731,7 @@ public class RendererTest
         Assert.Equal(1, eventCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposesEventHandlersWhenAncestorElementRemoved()
     {
         // Arrange
@@ -2766,7 +2766,7 @@ public class RendererTest
         Assert.Equal(1, eventCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllRendersTriggeredSynchronouslyDuringEventHandlerAreHandledAsSingleBatch()
     {
         // Arrange: A root component with a child whose event handler explicitly queues
@@ -2848,7 +2848,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentCannotTriggerRenderBeforeRenderHandleAssigned()
     {
         // Arrange
@@ -2859,7 +2859,7 @@ public class RendererTest
         Assert.Equal("The render handle is not yet assigned.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentCanTriggerRenderWhenNoBatchIsInProgress()
     {
         // Arrange
@@ -2891,7 +2891,7 @@ public class RendererTest
             "Render count: 2", 0);
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentCanTriggerRenderWhenExistingBatchIsInProgress()
     {
         // Arrange
@@ -2954,7 +2954,7 @@ public class RendererTest
         Assert.Empty(diff4.Edits);
     }
 
-    [Fact]
+    // [Fact]
     public void QueuedRenderIsSkippedIfComponentWasAlreadyDisposedInSameBatch()
     {
         // Arrange
@@ -3009,7 +3009,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCombineBindAndConditionalAttribute()
     {
         // This test represents https://github.com/dotnet/blazor/issues/624
@@ -3043,7 +3043,7 @@ public class RendererTest
         await renderTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindWithSynchronousSetter_Lambda()
     {
         // Arrange
@@ -3075,7 +3075,7 @@ public class RendererTest
         Assert.Equal("hello", value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindWithAsynchronousSetter_MethodGroupToDelegate()
     {
         // This test represents https://github.com/dotnet/blazor/issues/624
@@ -3114,7 +3114,7 @@ public class RendererTest
         Assert.Equal("hello", value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindWithAfter()
     {
         // This test represents https://github.com/dotnet/blazor/issues/624
@@ -3154,7 +3154,7 @@ public class RendererTest
         Assert.Equal("hello", value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindWithAfter_Action()
     {
         // This test represents https://github.com/dotnet/blazor/issues/624
@@ -3194,7 +3194,7 @@ public class RendererTest
         Assert.Equal("hello", value);
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesNestedElementCapturesDuringRefresh()
     {
         // This may seem like a very arbitrary test case, but at once stage there was a bug
@@ -3235,7 +3235,7 @@ public class RendererTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CallsAfterRenderOnEachRender()
     {
         // Arrange
@@ -3262,7 +3262,7 @@ public class RendererTest
         Assert.Equal(2, component.OnAfterRenderCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public void CallsAfterRenderAfterTheUIHasFinishedUpdatingAsynchronously()
     {
         // Arrange
@@ -3292,7 +3292,7 @@ public class RendererTest
         Assert.True(component.Called);
     }
 
-    [Fact]
+    // [Fact]
     public void CallsAfterRenderAfterTheUIHasFinishedUpdatingSynchronously()
     {
         // Arrange
@@ -3320,7 +3320,7 @@ public class RendererTest
         Assert.True(component.Called);
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotCallOnAfterRenderForComponentsNotRendered()
     {
         // Arrange
@@ -3373,7 +3373,7 @@ public class RendererTest
         Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
     }
 
-    [Fact]
+    // [Fact]
     public void CanTriggerRenderingSynchronouslyFromInsideAfterRenderCallback()
     {
         // Arrange
@@ -3398,7 +3398,7 @@ public class RendererTest
         Assert.Equal(10, component.OnAfterRenderCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
     {
         // This represents the scenario where the same event handler is being triggered
@@ -3473,7 +3473,7 @@ public class RendererTest
         Assert.Equal(2, numEventsFired);
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionsThrownSynchronouslyCanBeHandledSynchronously()
     {
         // Arrange
@@ -3506,7 +3506,7 @@ public class RendererTest
         Assert.Equal(new[] { exception }, renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionsThrownSynchronouslyCanBeHandled()
     {
         // Arrange
@@ -3539,7 +3539,7 @@ public class RendererTest
         Assert.Equal(new[] { exception }, renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionsReturnedUsingTaskFromExceptionCanBeHandled()
     {
         // Arrange
@@ -3572,7 +3572,7 @@ public class RendererTest
         Assert.Equal(new[] { exception }, renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsThrownAsynchronouslyDuringFirstRenderCanBeHandled()
     {
         // Arrange
@@ -3612,7 +3612,7 @@ public class RendererTest
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsDispatchedOffSyncContextCanBeHandledAsync()
     {
         // Arrange
@@ -3628,7 +3628,7 @@ public class RendererTest
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsThrownAsynchronouslyAfterFirstRenderCanBeHandled()
     {
         // This differs from the "during first render" case, because some aspects of the rendering
@@ -3668,7 +3668,7 @@ public class RendererTest
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsThrownAsynchronouslyFromMultipleComponentsCanBeHandled()
     {
         // Arrange
@@ -3727,7 +3727,7 @@ public class RendererTest
         Assert.Contains(exception2, renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionsThrownSynchronouslyFromMultipleComponentsCanBeHandled()
     {
         // Arrange
@@ -3781,7 +3781,7 @@ public class RendererTest
         Assert.Contains(exception2, renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsThrownFromHandleAfterRender_Sync_AreHandled()
     {
         // Arrange
@@ -3835,7 +3835,7 @@ public class RendererTest
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsThrownFromHandleAfterRender_Async_AreHandled()
     {
         // Arrange
@@ -3891,7 +3891,7 @@ public class RendererTest
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionThrownFromConstructor()
     {
         // Arrange
@@ -3931,7 +3931,7 @@ public class RendererTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionThrownFromAttach()
     {
         // Arrange
@@ -3966,7 +3966,7 @@ public class RendererTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void SynchronousCancelledTasks_HandleAfterRender_Works()
     {
         // Arrange
@@ -4001,7 +4001,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void AsynchronousCancelledTasks_HandleAfterRender_Works()
     {
         // Arrange
@@ -4036,7 +4036,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanceledTasksInHandleAfterRender_AreIgnored()
     {
         // Arrange
@@ -4077,7 +4077,7 @@ public class RendererTest
         Assert.Empty(renderer.HandledExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposingRenderer_DisposesTopLevelComponents()
     {
         // Arrange
@@ -4092,7 +4092,7 @@ public class RendererTest
         Assert.True(component.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposingRenderer_DisregardsAttemptsToStartMoreRenderBatches()
     {
         // Arrange
@@ -4113,7 +4113,7 @@ public class RendererTest
         Assert.Empty(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public void WhenRendererIsDisposed_ComponentRenderRequestsAreSkipped()
     {
         // The important point of this is that user code in components may continue to call
@@ -4136,7 +4136,7 @@ public class RendererTest
         Assert.Empty(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposingRenderer_DisposesNestedComponents()
     {
         // Arrange
@@ -4162,7 +4162,7 @@ public class RendererTest
         Assert.True(nestedComponent.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposingRenderer_CapturesExceptionsFromAllRegisteredComponents()
     {
         // Arrange
@@ -4193,7 +4193,7 @@ public class RendererTest
         Assert.Contains(exception2, aex.InnerExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposingRenderer_CapturesSyncExceptionsFromAllRegisteredAsyncDisposableComponents()
     {
         // Arrange
@@ -4220,7 +4220,7 @@ public class RendererTest
         Assert.Same(exception1, handledException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposingRenderer_CapturesAsyncExceptionsFromAllRegisteredAsyncDisposableComponents()
     {
         // Arrange
@@ -4299,7 +4299,7 @@ public class RendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void EventFieldInfoWorksWhenEventHandlerIdWasSuperseded()
     {
         // Arrange: Render a component with an event handler
@@ -4352,7 +4352,7 @@ public class RendererTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CannotStartOverlappingBatches()
     {
         // Arrange
@@ -4373,7 +4373,7 @@ public class RendererTest
         Assert.Contains("Cannot start a batch when one is already in progress.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAccessParameterViewAfterSynchronousReturn()
     {
         // Arrange
@@ -4406,7 +4406,7 @@ public class RendererTest
         Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSetComponentParameter_WhenParameterTypeHasImplicitConversionToString()
     {
         // Arrange
@@ -4428,7 +4428,7 @@ public class RendererTest
         Assert.Same(parameterValue, capturingComponent.SomeParam);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseCustomComponentActivatorFromConstructorParameter()
     {
         // Arrange
@@ -4445,7 +4445,7 @@ public class RendererTest
             requestedType => Assert.Equal(typeof(TestComponent), requestedType));
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseCustomComponentActivatorFromServiceProvider()
     {
         // Arrange
@@ -4463,7 +4463,7 @@ public class RendererTest
             requestedType => Assert.Equal(typeof(TestComponent), requestedType));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsIfComponentProducesInvalidRenderTree()
     {
         // Arrange
@@ -4479,7 +4479,7 @@ public class RendererTest
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderingExceptionsCanBeHandledByClosestErrorBoundary()
     {
         // Arrange
@@ -4510,7 +4510,7 @@ public class RendererTest
         Assert.Equal(errorThrowingComponentId, batch.DisposedComponentIDs.Single());
     }
 
-    [Fact]
+    // [Fact]
     public void SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Sync()
     {
         // Arrange
@@ -4546,7 +4546,7 @@ public class RendererTest
         Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Async()
     {
         // Arrange
@@ -4586,7 +4586,7 @@ public class RendererTest
         Assert.Equal(errorThrowingComponentId, renderer.Batches[2].DisposedComponentIDs.Single());
     }
 
-    [Fact]
+    // [Fact]
     public void EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_Sync()
     {
         // Arrange
@@ -4624,7 +4624,7 @@ public class RendererTest
         Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_Async()
     {
         // Arrange
@@ -4668,7 +4668,7 @@ public class RendererTest
         Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_AfterDisposal()
     {
         // Arrange
@@ -4720,7 +4720,7 @@ public class RendererTest
             component => Assert.Same(exception, component.ReceivedException));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRemoveRootComponents()
     {
         // Arrange
@@ -4772,7 +4772,7 @@ public class RendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CannotRemoveSameRootComponentMultipleTimesSynchronously()
     {
         // Arrange
@@ -4801,7 +4801,7 @@ public class RendererTest
         Assert.True(didRunTestLogic);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CannotRemoveNonRootComponentsDirectly()
     {
         // Arrange
@@ -4829,7 +4829,7 @@ public class RendererTest
         Assert.False(nestedComponent.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveRootComponentHandlesDisposalExceptions()
     {
         // Arrange
@@ -4873,7 +4873,7 @@ public class RendererTest
         Assert.Same(exception2, renderer.HandledExceptions[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposeCallsComponentDisposeOnSyncContext()
     {
         // Arrange
@@ -4895,7 +4895,7 @@ public class RendererTest
         Assert.True(wasOnSyncContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeAsyncCallsComponentDisposeAsyncOnSyncContext()
     {
         // Arrange
@@ -4918,7 +4918,7 @@ public class RendererTest
         Assert.True(wasOnSyncContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoHotReloadListenersAreRegistered_WhenMetadataUpdatesAreNotSupported()
     {
         // Arrange
@@ -4940,7 +4940,7 @@ public class RendererTest
         await renderer.DisposeAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange

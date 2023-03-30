@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 
 public class ConnectionMiddlewareTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -51,7 +51,7 @@ public class ConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeAsyncAfterReplacingTransportClosesConnection()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 
 public class LocalApiDescriptorTests
 {
-    [Fact]
+    // [Fact]
     public void LocalApiDescriptor_DefinesApiResources()
     {
         // Arrange

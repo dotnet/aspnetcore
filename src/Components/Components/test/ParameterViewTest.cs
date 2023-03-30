@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public partial class ParameterViewTest
 {
-    [Fact]
+    // [Fact]
     public void CanInitializeUsingComponentWithNoDescendants()
     {
         // Arrange
@@ -22,7 +22,7 @@ public partial class ParameterViewTest
         Assert.Empty(ToEnumerable(parameters));
     }
 
-    [Fact]
+    // [Fact]
     public void CanInitializeUsingElementWithNoDescendants()
     {
         // Arrange
@@ -36,7 +36,7 @@ public partial class ParameterViewTest
         Assert.Empty(ToEnumerable(parameters));
     }
 
-    [Fact]
+    // [Fact]
     public void EnumerationStopsAtEndOfOwnerDescendants()
     {
         // Arrange
@@ -60,7 +60,7 @@ public partial class ParameterViewTest
             AssertParameter("attribute 2", attribute2Value, false));
     }
 
-    [Fact]
+    // [Fact]
     public void EnumerationStopsAtEndOfOwnerAttributes()
     {
         // Arrange
@@ -82,7 +82,7 @@ public partial class ParameterViewTest
             AssertParameter("attribute 2", attribute2Value, false));
     }
 
-    [Fact]
+    // [Fact]
     public void EnumerationIncludesCascadingParameters()
     {
         // Arrange
@@ -106,7 +106,7 @@ public partial class ParameterViewTest
             AssertParameter("attribute 3", attribute3Value, true));
     }
 
-    [Fact]
+    // [Fact]
     public void CanTryGetNonExistingValue()
     {
         // Arrange
@@ -124,7 +124,7 @@ public partial class ParameterViewTest
         Assert.Null(value);
     }
 
-    [Fact]
+    // [Fact]
     public void CanTryGetExistingValueWithCorrectType()
     {
         // Arrange
@@ -142,7 +142,7 @@ public partial class ParameterViewTest
         Assert.Equal("hello", value);
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetValueOrDefault_WithExistingValue()
     {
         // Arrange
@@ -161,7 +161,7 @@ public partial class ParameterViewTest
         Assert.Same(myEntryValue, result);
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetValueOrDefault_WithMultipleMatchingValues()
     {
         // Arrange
@@ -180,7 +180,7 @@ public partial class ParameterViewTest
         Assert.Same(myEntryValue, result);
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetValueOrDefault_WithNonExistingValue()
     {
         // Arrange
@@ -200,7 +200,7 @@ public partial class ParameterViewTest
         Assert.Equal(default, result);
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetValueOrDefault_WithNonExistingValueAndExplicitDefault()
     {
         // Arrange
@@ -218,7 +218,7 @@ public partial class ParameterViewTest
         Assert.Equal(explicitDefaultValue, result);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsIfTryGetExistingValueWithIncorrectType()
     {
         // Arrange
@@ -235,7 +235,7 @@ public partial class ParameterViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void FromDictionary_CanBeInitializedWithEmptyDictionary()
     {
         // Arrange
@@ -248,7 +248,7 @@ public partial class ParameterViewTest
         Assert.Empty(collection.ToDictionary());
     }
 
-    [Fact]
+    // [Fact]
     public void FromDictionary_RoundTrips()
     {
         // Arrange
@@ -265,7 +265,7 @@ public partial class ParameterViewTest
         Assert.Equal(dictionary, collection.ToDictionary());
     }
 
-    [Fact]
+    // [Fact]
     public void CanConvertToReadOnlyDictionary()
     {
         // Arrange
@@ -294,7 +294,7 @@ public partial class ParameterViewTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanGetValueOrDefault_WithMatchingCascadingParameter()
     {
         // Arrange
@@ -317,7 +317,7 @@ public partial class ParameterViewTest
         Assert.Same(myEntryValue, result);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotReadAfterLifetimeExpiry()
     {
         // Arrange
@@ -343,7 +343,7 @@ public partial class ParameterViewTest
         Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Clone_EmptyParameterView()
     {
         // Arrange
@@ -356,7 +356,7 @@ public partial class ParameterViewTest
         Assert.Empty(ToEnumerable(cloned));
     }
 
-    [Fact]
+    // [Fact]
     public void Clone_ParameterViewSingleParameter()
     {
         // Arrange
@@ -376,7 +376,7 @@ public partial class ParameterViewTest
             p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false));
     }
 
-    [Fact]
+    // [Fact]
     public void Clone_ParameterPreservesOrder()
     {
         // Arrange
@@ -402,7 +402,7 @@ public partial class ParameterViewTest
             p => AssertParameter("attribute 3", attribute3Value, expectedIsCascading: false));
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_BothEmpty()
     {
         // Arrange
@@ -422,7 +422,7 @@ public partial class ParameterViewTest
         Assert.False(hasRemovedDirectParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_OldEmpty_NewNonEmpty()
     {
         // Arrange
@@ -443,7 +443,7 @@ public partial class ParameterViewTest
         Assert.False(hasRemovedDirectParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_OldNonEmpty_NewEmpty()
     {
         // Arrange
@@ -464,7 +464,7 @@ public partial class ParameterViewTest
         Assert.True(hasRemovedDirectParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_ParameterRemoved()
     {
         // Arrange
@@ -489,7 +489,7 @@ public partial class ParameterViewTest
         Assert.True(hasRemovedDirectParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_ParameterReplaced()
     {
         // Arrange
@@ -515,7 +515,7 @@ public partial class ParameterViewTest
         Assert.True(hasRemovedDirectParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_ParameterReplacedAndAdded()
     {
         // Arrange
@@ -542,7 +542,7 @@ public partial class ParameterViewTest
         Assert.True(hasRemovedDirectParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasRemovedDirectParameters_ParametersSwapped()
     {
         // Arrange

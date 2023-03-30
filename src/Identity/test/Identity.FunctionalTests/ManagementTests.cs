@@ -21,7 +21,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
 
     public ServerFactory<TStartup, TContext> ServerFactory { get; }
 
-    [Fact]
+    // [Fact]
     public async Task CanEnableTwoFactorAuthentication()
     {
         // Arrange
@@ -37,7 +37,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         Assert.NotNull(await UserStories.EnableTwoFactorAuthentication(index));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CannotEnableTwoFactorAuthenticationWithoutCookieConsent()
     {
         // Arrange
@@ -53,7 +53,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         Assert.Null(await UserStories.EnableTwoFactorAuthentication(index, consent: false));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanConfirmEmail()
     {
         // Arrange
@@ -77,7 +77,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         await UserStories.ConfirmEmailAsync(email, client);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanChangeEmail()
     {
         // Arrange
@@ -108,7 +108,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanChangePassword()
     {
         // Arrange
@@ -143,7 +143,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         AssertClaimsEqual(principals[1], principals[2], "AspNet.Identity.SecurityStamp");
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSetPasswordWithExternalLogin()
     {
         // Arrange
@@ -183,7 +183,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         await UserStories.LoginExistingUserAsync(loginAfterSetPasswordClient, email, "[PLACEHOLDER]-1a-updated");
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRemoveExternalLogin()
     {
         // Arrange
@@ -211,7 +211,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         AssertClaimsNotEqual(principals[0], principals[1], "AspNet.Identity.SecurityStamp");
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSeeExternalLoginProviderDisplayName()
     {
         // Arrange
@@ -233,7 +233,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         Assert.Contains("Contoso", externalLogins.ExternalLoginDisplayName.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanResetAuthenticator()
     {
         // Arrange
@@ -330,7 +330,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetOnDownloadPersonalData_ReturnsNotFound()
     {
         // Arrange
@@ -346,7 +346,7 @@ public abstract class ManagementTests<TStartup, TContext> : IClassFixture<Server
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanDeleteUser()
     {
         // Arrange

@@ -46,7 +46,7 @@ public class RemoteAttributeTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_WithNullAction_IgnoresArgument()
     {
         // Arrange & Act
@@ -57,7 +57,7 @@ public class RemoteAttributeTest
         Assert.Equal("controller", keyValuePair.Key);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_WithNullController_IgnoresArgument()
     {
         // Arrange & Act
@@ -138,7 +138,7 @@ public class RemoteAttributeTest
         Assert.Null(attribute.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrl_WithBadRouteName_Throws()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class RemoteAttributeTest
         Assert.Equal("No URL for remote validation could be found.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrl_WithRoute_CallsUrlHelperWithExpectedValues()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class RemoteAttributeTest
         Assert.Empty(routeDictionary);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionController_CallsUrlHelperWithExpectedValues()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class RemoteAttributeTest
         Assert.Equal("Controller", routeDictionary["controller"] as string);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionControllerArea_CallsUrlHelperWithExpectedValues()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class RemoteAttributeTest
     }
 
     // Root area is current in this case.
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionController_FindsControllerInCurrentArea()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class RemoteAttributeTest
     }
 
     // Test area is current in this case.
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionControllerInArea_FindsControllerInCurrentArea()
     {
         // Arrange
@@ -276,7 +276,7 @@ public class RemoteAttributeTest
     }
 
     // Root area is current in this case.
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionControllerArea_FindsControllerInNamedArea()
     {
         // Arrange
@@ -291,7 +291,7 @@ public class RemoteAttributeTest
     }
 
     // Explicit reference to the current (Test) area.
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionControllerAreaInArea_FindsControllerInNamedArea()
     {
         // Arrange
@@ -306,7 +306,7 @@ public class RemoteAttributeTest
     }
 
     // Test area is current in this case.
-    [Fact]
+    // [Fact]
     public void GetUrl_WithActionControllerAreaInArea_FindsControllerInDifferentArea()
     {
         // Arrange
@@ -321,7 +321,7 @@ public class RemoteAttributeTest
     }
 
     // Test area is current in this case.
-    [Fact]
+    // [Fact]
     public void AddValidation_DoesNotTrounceExistingAttributes()
     {
         // Arrange

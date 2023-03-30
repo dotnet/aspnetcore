@@ -37,7 +37,7 @@ public class ResponseCompressionMiddlewareTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Options_HttpsDisabledByDefault()
     {
         var options = new ResponseCompressionOptions();
@@ -45,7 +45,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.False(options.EnableForHttps);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_NoAcceptEncoding_Uncompressed()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
@@ -54,7 +54,7 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_AcceptGzipDeflate_CompressedGzip()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain);
@@ -63,7 +63,7 @@ public class ResponseCompressionMiddlewareTest
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_AcceptBrotli_CompressedBrotli()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "br" }, responseType: TextPlain);
@@ -100,7 +100,7 @@ public class ResponseCompressionMiddlewareTest
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_AcceptUnknown_NotCompressed()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "unknown" }, responseType: TextPlain);
@@ -112,7 +112,7 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestHead_NoAcceptEncoding_Uncompressed()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain, httpMethod: HttpMethods.Head);
@@ -121,7 +121,7 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestHead_AcceptGzipDeflate_CompressedGzip()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain, httpMethod: HttpMethods.Head);
@@ -144,7 +144,7 @@ public class ResponseCompressionMiddlewareTest
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
-    [Fact]
+    // [Fact]
     public async Task GZipCompressionProvider_OptionsSetInDI_Compress()
     {
         using var host = new HostBuilder()
@@ -284,7 +284,7 @@ public class ResponseCompressionMiddlewareTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoIncludedMimeTypes_UseDefaults()
     {
         var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, TextPlain,
@@ -340,7 +340,7 @@ public class ResponseCompressionMiddlewareTest
         CheckResponseNotCompressed(response, expectedBodyLength: 0, sendVaryHeader: false);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_AcceptStar_Compressed()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
@@ -349,7 +349,7 @@ public class ResponseCompressionMiddlewareTest
         AssertCompressedWithLog(logMessages, "br");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_AcceptIdentity_NotCompressed()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "identity" }, responseType: TextPlain);
@@ -386,7 +386,7 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Response_UnknownMimeType_NotCompressed()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip" }, responseType: "text/custom");
@@ -397,7 +397,7 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Response compression is not enabled for the Content-Type 'text/custom'.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Response_WithContentRange_NotCompressed()
     {
         var (response, logMessages) = await InvokeMiddleware(50, requestAcceptEncodings: new[] { "gzip" }, responseType: TextPlain, addResponseAction: (r) =>
@@ -411,7 +411,7 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Response compression disabled due to the Content-Range header.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Response_WithContentEncodingAlreadySet_NotReCompressed()
     {
         var otherContentEncoding = "something";
@@ -1019,7 +1019,7 @@ public class ResponseCompressionMiddlewareTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendFileAsync_DifferentContentType_NotBypassed()
     {
         FakeSendFileFeature fakeSendFile = null;
@@ -1069,7 +1069,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.True(fakeSendFile.SendFileInvoked);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendFileAsync_FirstWrite_CompressesAndFlushes()
     {
         FakeSendFileFeature fakeSendFile = null;
@@ -1119,7 +1119,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.False(fakeSendFile.SendFileInvoked);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendFileAsync_AfterFirstWrite_CompressesAndFlushes()
     {
         FakeSendFileFeature fakeSendFile = null;

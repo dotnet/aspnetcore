@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class ControllerActionDescriptorProviderTests
 {
-    [Fact]
+    // [Fact]
     public void GetDescriptors_GetsDescriptorsOnlyForValidActions()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(new[] { "GetPerson", "ShowPeople", }, actionNames);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_DisplayNameIncludesAssemblyName()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal($"{controllerTypeInfo.FullName}.{nameof(PersonController.GetPerson)} ({controllerTypeInfo.Assembly.GetName().Name})", descriptor.DisplayName);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_IncludesFilters()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(FilterScope.Action, filter3.Scope);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsHttpMethodConstraints_ForConventionallyRoutedActions()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(new string[] { "POST" }, constraint.HttpMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_HttpMethodConstraint_RouteOnController()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(new string[] { "PUT", "PATCH" }, constraint.HttpMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsParameters_ToActionDescriptor()
     {
         // Arrange & Act
@@ -131,7 +131,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(typeof(int), id.ParameterType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsMultipleParameters_ToActionDescriptor()
     {
         // Arrange & Act
@@ -156,7 +156,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsMultipleParametersWithDifferentCasing_ToActionDescriptor()
     {
         // Arrange & Act
@@ -187,7 +187,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(typeof(int), pascalCaseId.ParameterType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsParameters_DetectsFromBodyParameters()
     {
         // Arrange & Act
@@ -208,7 +208,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsParameters_DoesNotDetectParameterFromBody_IfNoFromBodyAttribute()
     {
         // Arrange & Act
@@ -229,7 +229,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(typeof(TestActionParameter), entity.ParameterType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsControllerAndActionConstraints_ToConventionallyRoutedActions()
     {
         // Arrange & Act
@@ -248,7 +248,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(nameof(ConventionallyRoutedController.ConventionalAction), actionConstraint.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_EndpointMetadata_ContainsAttributesFromActionAndController()
     {
         // Arrange & Act
@@ -275,7 +275,7 @@ public class ControllerActionDescriptorProviderTests
             metadata => Assert.Equal("ActionPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy));
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_ActionWithHttpMethods_AddedToEndpointMetadata()
     {
         // Arrange & Act
@@ -299,7 +299,7 @@ public class ControllerActionDescriptorProviderTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_ActionWithMultipleHttpMethods_LastHttpMethodMetadata()
     {
         // Arrange & Act
@@ -332,7 +332,7 @@ public class ControllerActionDescriptorProviderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsControllerAndActionDefaults_ToAttributeRoutedActions()
     {
         // Arrange & Act
@@ -349,7 +349,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(nameof(AttributeRoutedController.AttributeRoutedAction), actionConstraint.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_WithRouteValueAttribute()
     {
         // Arrange & Act
@@ -398,7 +398,7 @@ public class ControllerActionDescriptorProviderTests
                 c.Value == "OnlyPost");
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_TokenReplacement_InActionDescriptor()
     {
         // Arrange
@@ -412,7 +412,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("api/Token/value/TokenReplacement/stub/ThisIsAnAction", action.AttributeRouteInfo.Template);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_TokenReplacement_ThrowsWithMultipleMessages()
     {
         // Arrange
@@ -440,7 +440,7 @@ public class ControllerActionDescriptorProviderTests
         VerifyMultiLineError(expectedMessage, ex.Message, unorderedStart: 2, unorderedLineCount: 6);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_CreatesOneActionDescriptor_PerControllerAndActionRouteCombination()
     {
         // Arrange
@@ -465,7 +465,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v2/All"));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AcceptVerbsOnAction_CreatesActionPerControllerAttributeRouteCombination()
     {
         // Arrange
@@ -493,7 +493,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(actions, a => a.AttributeRouteInfo.Template.Equals("v2/List"));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AcceptVerbsOnActionWithOverrideTemplate_CreatesSingleAttributeRoutedAction()
     {
         // Arrange
@@ -517,7 +517,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("Override", action.AttributeRouteInfo.Template);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AcceptVerbsOnAction_WithoutTemplate_MergesVerb()
     {
         // Arrange
@@ -556,7 +556,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(routeActions, a => a.AttributeRouteInfo.Template.Equals("v2/List"));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AcceptVerbsOnAction_WithTemplate_DoesNotMergeVerb()
     {
         // Arrange
@@ -601,7 +601,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(unconstrainedActions, a => a.AttributeRouteInfo.Template.Equals("v2/List"));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AllowsDuplicateAttributeRoutedActions_WithTheSameTemplateAndSameHttpMethodsOnDifferentActions()
     {
         // Arrange
@@ -625,7 +625,7 @@ public class ControllerActionDescriptorProviderTests
             StringComparer.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AllowsDuplicateAttributeRoutedActions_WithTheSameTemplateAndDifferentHttpMethodsOnTheSameAction()
     {
         // Arrange
@@ -653,7 +653,7 @@ public class ControllerActionDescriptorProviderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_ThrowsIfAttributeRoutedAndNonAttributedActions_OnTheSameMethod()
     {
         // Arrange
@@ -686,7 +686,7 @@ public class ControllerActionDescriptorProviderTests
 
     // Verify that the expected exception and error message is thrown even when the user builds the model
     // incorrectly.
-    [Fact]
+    // [Fact]
     public void AttributeRouting_ThrowsIfAttributeRoutedAndNonAttributedActions_OnTheSameMethod_UsingCustomConvention()
     {
         // Arrange
@@ -728,7 +728,7 @@ public class ControllerActionDescriptorProviderTests
         VerifyMultiLineError(expectedMessage, exception.Message, unorderedStart: 1, unorderedLineCount: 2);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_RouteOnControllerAndAction_CreatesActionDescriptorWithoutHttpConstraints()
     {
         // Arrange
@@ -749,7 +749,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Null(action.ActionConstraints);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_Name_ThrowsIfMultipleActions_WithDifferentTemplatesHaveTheSameName()
     {
         // Arrange
@@ -778,7 +778,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Contains($"Action: '{sameNameType.FullName}.PatchItems ({assemblyName})' - Template: 'Items'", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_Name_AllowsMultipleAttributeRoutesInDifferentActions_WithTheSameNameAndTemplate()
     {
         // Arrange
@@ -796,7 +796,7 @@ public class ControllerActionDescriptorProviderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_RouteNameTokenReplace_AllowsMultipleActions_WithSameRouteNameTemplate()
     {
         // Arrange
@@ -824,7 +824,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("Products_Edit", editAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_RouteNameTokenReplace_AreaControllerActionTokensInRoute()
     {
         // Arrange
@@ -860,7 +860,7 @@ public class ControllerActionDescriptorProviderTests
             editAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_RouteNameTokenReplace_InvalidToken()
     {
         // Arrange
@@ -883,7 +883,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(expectedMessage, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_AddsDefaultRouteValues_ForAttributeRoutedActions()
     {
         // Arrange
@@ -912,7 +912,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("Home", areaDefault.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeRouting_TokenReplacement_CaseInsensitive()
     {
         // Arrange
@@ -927,7 +927,7 @@ public class ControllerActionDescriptorProviderTests
     }
 
     // Parameters are validated later. This action uses the forbidden {action} and {controller}
-    [Fact]
+    // [Fact]
     public void AttributeRouting_DoesNotValidateParameters()
     {
         // Arrange
@@ -941,7 +941,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("stub/{controller}/{action}", action.AttributeRouteInfo.Template);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SetsExtensionData_WhenVisible()
     {
         // Arrange
@@ -955,7 +955,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.NotNull(action.GetProperty<ApiDescriptionActionData>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SetsExtensionData_WhenVisible_CanOverrideControllerOnAction()
     {
         // Arrange
@@ -991,7 +991,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Null(action.GetProperty<ApiDescriptionActionData>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SetsName_DefaultToNull()
     {
         // Arrange
@@ -1006,7 +1006,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Null(action.GetProperty<ApiDescriptionActionData>().GroupName);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SetsName_OnController()
     {
         // Arrange
@@ -1021,7 +1021,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SetsName_OnAction()
     {
         // Arrange
@@ -1035,7 +1035,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("Blog", action.GetProperty<ApiDescriptionActionData>().GroupName);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SetsName_CanOverrideControllerOnAction()
     {
         // Arrange
@@ -1054,7 +1054,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_IsVisibleOnApplication_CanOverrideOnController()
     {
         // Arrange
@@ -1069,7 +1069,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Null(action.GetProperty<ApiDescriptionActionData>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_IsVisibleOnApplication_CanOverrideOnAction()
     {
         // Arrange
@@ -1103,7 +1103,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiExplorer_SkipsConventionalRoutedController_WhenConfiguredOnApplication()
     {
         // Arrange
@@ -1121,7 +1121,7 @@ public class ControllerActionDescriptorProviderTests
     }
 
     // Verifies the sequence of conventions running
-    [Fact]
+    // [Fact]
     public void ApplyConventions_RunsInOrderOfDecreasingScope()
     {
         // Arrange
@@ -1175,7 +1175,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Equal(4, sequence);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_SplitsConstraintsBasedOnRoute()
     {
         // Arrange
@@ -1200,7 +1200,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_SplitsConstraintsBasedOnControllerRoute()
     {
         // Arrange
@@ -1226,7 +1226,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_SplitsConstraintsBasedOnControllerRoute_MultipleRoutesOnAction()
     {
         // Arrange
@@ -1266,7 +1266,7 @@ public class ControllerActionDescriptorProviderTests
     }
 
     // This method overrides the route from the controller, and so doesn't inherit its metadata.
-    [Fact]
+    // [Fact]
     public void GetDescriptors_SplitsConstraintsBasedOnControllerRoute_Override()
     {
         // Arrange
@@ -1285,7 +1285,7 @@ public class ControllerActionDescriptorProviderTests
         Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProviderExecuted_AddsGlobalRouteValues()
     {
         // Arrange

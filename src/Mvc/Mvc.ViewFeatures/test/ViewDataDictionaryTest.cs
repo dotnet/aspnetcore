@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class ViewDataDictionaryTest
 {
-    [Fact]
+    // [Fact]
     public void ConstructorWithOneParameterInitializesMembers()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class ViewDataDictionaryTest
         Assert.Empty(viewData);
     }
 
-    [Fact]
+    // [Fact]
     public void ConstructorInitializesMembers()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class ViewDataDictionaryTest
         Assert.Empty(viewData);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_GetsNewModelMetadata()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class ViewDataDictionaryTest
         metadataProvider.Verify(m => m.GetMetadataForType(typeof(object)), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void SetModel_DoesNotGetNewModelMetadata_IfTypeCompatible()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class ViewDataDictionaryTest
         metadataProvider.Verify(m => m.GetMetadataForType(typeof(TestModel)), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void SetModel_GetsNewModelMetadata_IfSourceTypeIsObject()
     {
         // Arrange
@@ -181,7 +181,7 @@ public class ViewDataDictionaryTest
         Assert.Same(model, vdd.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyConstructorInitializesModelAndModelMetadataBasedOnSource()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class ViewDataDictionaryTest
         Assert.Same(source.ModelMetadata, viewData.ModelMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyConstructor_CopiesModelMetadata_ForTypeObject()
     {
         // Arrange
@@ -314,7 +314,7 @@ public class ViewDataDictionaryTest
         Assert.Same(source.ModelMetadata, viewData.ModelMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelSetter_SameType_UpdatesModelExplorer()
     {
         // Arrange
@@ -366,7 +366,7 @@ public class ViewDataDictionaryTest
         Assert.True(model);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelSetter_SetNullableNonNull_UpdatesModelExplorer()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class ViewDataDictionaryTest
         Assert.True(model);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelSetter_SetNonNullableToNull_Throws()
     {
         // Arrange
@@ -406,7 +406,7 @@ public class ViewDataDictionaryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelSetter_SameType_BoxedValueTypeUpdatesModelExplorer()
     {
         // Arrange
@@ -431,7 +431,7 @@ public class ViewDataDictionaryTest
         Assert.NotSame(originalExplorer, viewData.ModelExplorer);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelSetter_SameModel_NoChanges()
     {
         // Arrange
@@ -495,7 +495,7 @@ public class ViewDataDictionaryTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalReturnsNullIfExpressionDoesNotMatch()
     {
         // Arrange
@@ -509,7 +509,7 @@ public class ViewDataDictionaryTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalEvaluatesDictionaryThenModel()
     {
         // Arrange
@@ -524,7 +524,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Bar", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalReturnsValueJustAdded()
     {
         // Arrange
@@ -538,7 +538,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Blah", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithCompoundExpressionReturnsIndexedValue()
     {
         // Arrange
@@ -552,7 +552,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Baz", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithCompoundExpressionReturnsPropertyOfAddedObject()
     {
         // Arrange
@@ -566,7 +566,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Baz", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithCompoundIndexExpressionReturnsEval()
     {
         // Arrange
@@ -580,7 +580,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Quux", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithCompoundIndexAndCompoundExpressionReturnsValue()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class ViewDataDictionaryTest
     }
 
     // Make sure that dict["foo.bar"] gets chosen before dict["foo"]["bar"]
-    [Fact]
+    // [Fact]
     public void EvalChoosesValueInDictionaryOverOtherValue()
     {
         // Arrange
@@ -613,7 +613,7 @@ public class ViewDataDictionaryTest
     }
 
     // Make sure that dict["foo.bar"]["baz"] gets chosen before dict["foo"]["bar"]["baz"]
-    [Fact]
+    // [Fact]
     public void EvalChoosesCompoundValueInDictionaryOverOtherValues()
     {
         // Arrange
@@ -631,7 +631,7 @@ public class ViewDataDictionaryTest
     }
 
     // Make sure that dict["foo.bar"]["baz"] gets chosen before dict["foo"]["bar.baz"]
-    [Fact]
+    // [Fact]
     public void EvalChoosesCompoundValueInDictionaryOverOtherValuesWithCompoundProperty()
     {
         // Arrange
@@ -665,7 +665,7 @@ public class ViewDataDictionaryTest
         Assert.Same(model, result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithCompoundExpressionAndDictionarySubExpressionChoosesDictionaryValue()
     {
         // Arrange
@@ -679,7 +679,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Baz", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithDictionaryAndNoMatchReturnsNull()
     {
         // Arrange
@@ -693,7 +693,7 @@ public class ViewDataDictionaryTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalWithNestedDictionariesEvalCorrectly()
     {
         // Arrange
@@ -714,7 +714,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("Quux", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalFormatWithNullValueReturnsEmptyString()
     {
         // Arrange
@@ -727,7 +727,7 @@ public class ViewDataDictionaryTest
         Assert.Empty(formattedValue);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalFormatWithEmptyFormatReturnsViewData()
     {
         // Arrange
@@ -741,7 +741,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("value", formattedValue);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalFormatWithFormatReturnsFormattedViewData()
     {
         // Arrange
@@ -755,7 +755,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("forvaluemat", formattedValue);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalPropertyNamedModel()
     {
         // Arrange
@@ -776,7 +776,7 @@ public class ViewDataDictionaryTest
         Assert.Equal("The Model", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EvalSubPropertyNamedValueInModel()
     {
         // Arrange

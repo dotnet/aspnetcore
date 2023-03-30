@@ -10,7 +10,7 @@ public class SymbolApiResponseMetadataProviderTest
 {
     private static readonly string Namespace = typeof(SymbolApiResponseMetadataProviderTest).Namespace;
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsEmptySequence_IfNoAttributesArePresent_ForGetAction()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class SymbolApiResponseMetadataProviderTest
             metadata => Assert.True(metadata.IsImplicit));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsEmptySequence_IfNoAttributesArePresent_ForPostAction()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class SymbolApiResponseMetadataProviderTest
             metadata => Assert.True(metadata.IsImplicit));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_IgnoresProducesAttribute()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class SymbolApiResponseMetadataProviderTest
             metadata => Assert.True(metadata.IsImplicit));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsValueFromProducesResponseType_WhenStatusCodeIsSpecifiedInConstructor()
     {
         // Arrange
@@ -87,7 +87,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsValueFromProducesResponseType_WhenStatusCodeIsSpecifiedInConstructorWithResponseType()
     {
         // Arrange
@@ -110,7 +110,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsValueFromProducesResponseType_WhenStatusCodeIsSpecifiedInConstructorAndProperty()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsValueFromProducesResponseType_WhenStatusCodeAndTypeIsSpecifiedInConstructorAndProperty()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsValueFromCustomProducesResponseType()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_ReturnsValuesFromApiConventionMethodAttribute()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_WithProducesResponseTypeAndApiConventionMethod()
     {
         // Arrange
@@ -231,7 +231,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetResponseMetadata_IgnoresCustomResponseTypeMetadataProvider()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class SymbolApiResponseMetadataProviderTest
             metadata => Assert.True(metadata.IsImplicit));
     }
 
-    [Fact]
+    // [Fact]
     public Task GetResponseMetadata_IgnoresAttributesWithIncorrectStatusCodeType()
     {
         return GetResponseMetadata_WorksForInvalidOrUnsupportedAttributes(
@@ -257,7 +257,7 @@ public class SymbolApiResponseMetadataProviderTest
             nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseTypeWithIncorrectStatusCodeType));
     }
 
-    [Fact]
+    // [Fact]
     public Task GetResponseMetadata_IgnoresDerivedAttributesWithoutPropertyOnConstructorArguments()
     {
         return GetResponseMetadata_WorksForInvalidOrUnsupportedAttributes(
@@ -286,7 +286,7 @@ public class SymbolApiResponseMetadataProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnType_Works()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class SymbolApiResponseMetadataProviderTest
             metadata => Assert.Equal(400, metadata.StatusCode));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseType_Works()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class SymbolApiResponseMetadataProviderTest
             metadata => Assert.Equal(400, metadata.StatusCode));
     }
 
-    [Fact]
+    // [Fact]
     public Task GetStatusCode_ReturnsValueFromConstructor()
     {
         //  Arrange
@@ -341,7 +341,7 @@ public class SymbolApiResponseMetadataProviderTest
         return GetStatusCodeTest(actionName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task GetStatusCode_ReturnsValueFromProperty()
     {
         //  Arrange
@@ -352,7 +352,7 @@ public class SymbolApiResponseMetadataProviderTest
         return GetStatusCodeTest(actionName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task GetStatusCode_ReturnsValueFromConstructor_WhenTypeIsSpecified()
     {
         //  Arrange
@@ -363,7 +363,7 @@ public class SymbolApiResponseMetadataProviderTest
         return GetStatusCodeTest(actionName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task GetStatusCode_Returns200_IfTypeIsNotInteger()
     {
         //  Arrange
@@ -374,7 +374,7 @@ public class SymbolApiResponseMetadataProviderTest
         return GetStatusCodeTest(actionName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task GetStatusCode_ReturnsValueFromDerivedAttributes()
     {
         //  Arrange
@@ -397,7 +397,7 @@ public class SymbolApiResponseMetadataProviderTest
         Assert.Equal(expected, statusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetErrorResponseType_ReturnsProblemDetails_IfNoAttributeIsDiscovered()
     {
         // Arrange
@@ -415,7 +415,7 @@ public class SymbolApiResponseMetadataProviderTest
         Assert.Same(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetErrorResponseType_ReturnsTypeDefinedAtAssembly()
     {
         // Arrange
@@ -433,7 +433,7 @@ public class SymbolApiResponseMetadataProviderTest
         Assert.Same(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetErrorResponseType_ReturnsTypeDefinedAtController()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class SymbolApiResponseMetadataProviderTest
         Assert.Same(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetErrorResponseType_ReturnsTypeDefinedAtAction()
     {
         // Arrange

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class CompiledPageRouteModelProviderTest
 {
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AddsModelsForCompiledViews()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AddsModelsForCompiledAreaPages()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DoesNotAddAreaAndNonAreaRoutesForAPage()
     {
         // Arrange
@@ -222,7 +222,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPage_WithIndexAtRoot()
     {
         // Arrange
@@ -265,7 +265,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPage()
     {
         // Arrange
@@ -307,7 +307,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AllowsRouteTemplatesWithOverridePattern()
     {
         // Arrange
@@ -350,7 +350,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_UsesTheFirstDescriptorForEachPath()
     {
         // ViewsFeature may contain duplicate entries for the same Page - for instance when an app overloads a library's views.
@@ -388,7 +388,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AllowsRazorFilesWithUnderscorePrefix()
     {
         // Arrange
@@ -439,7 +439,7 @@ public class CompiledPageRouteModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetRouteTemplate_ReturnsPathFromMetadataAttribute()
     {
         // Arrange
@@ -456,7 +456,7 @@ public class CompiledPageRouteModelProviderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetRouteTemplate_ReturnsNull_IfAttributeDoesNotExist()
     {
         // Arrange

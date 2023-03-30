@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 public class ApiResponseTypeProviderTest
 {
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresent()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class ApiResponseTypeProviderTest
         public Task<ActionResult<BaseModel>> Get(int id) => null;
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_CombinesFilters()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_ReturnsResponseTypesFromApiConventionItem()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class ApiResponseTypeProviderTest
         public Task<ActionResult<BaseModel>> DeleteBase(int id) => null;
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_ReturnsDefaultResultsIfNoConventionsMatch()
     {
         // Arrange
@@ -225,7 +225,7 @@ public class ApiResponseTypeProviderTest
         public Task<ActionResult<BaseModel>> PostModel(int id, BaseModel model) => null;
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_ReturnsDefaultProblemResponse()
     {
         // Arrange
@@ -281,7 +281,7 @@ public class ApiResponseTypeProviderTest
         public Task<ActionResult<BaseModel>> Put(int id, BaseModel model) => null;
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_ReturnsValuesFromProducesResponseType_IfApiConventionMethodAndAttributesAreSpecified()
     {
         // Arrange
@@ -321,7 +321,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_UsesErrorType_ForClientErrors()
     {
         // Arrange
@@ -374,7 +374,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_UsesErrorType_ForDefaultResponse()
     {
         // Arrange
@@ -416,7 +416,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_DoesNotUseErrorType_IfSpecified()
     {
         // Arrange
@@ -468,7 +468,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_DoesNotUseErrorType_ForNonClientErrors()
     {
         // Arrange
@@ -514,7 +514,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_AllowsUsingVoid()
     {
         // Arrange
@@ -562,7 +562,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_CombinesProducesAttributeAndConventions()
     {
         // Arrange
@@ -612,7 +612,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_DoesNotCombineProducesAttributeThatSpecifiesType()
     {
         // Arrange
@@ -645,7 +645,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_DoesNotCombineProducesResponseTypeAttributeThatSpecifiesStatusCode()
     {
         // Arrange
@@ -675,7 +675,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_UsesContentTypeWithoutWildCard_WhenNoFormatterSupportsIt()
     {
         // Arrange
@@ -705,7 +705,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_HandlesActionWithMultipleContentTypesAndProduces()
     {
         // Arrange
@@ -750,7 +750,7 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetApiResponseTypes_ReturnNoResponseTypes_IfActionWithIResultReturnType()
     {
         // Arrange

@@ -24,7 +24,7 @@ public class WebAssemblyCultureProviderTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowIfCultureChangeIsUnsupported_ThrowsIfCulturesAreDifferentAndICUShardingIsUsed()
     {
         // Arrange

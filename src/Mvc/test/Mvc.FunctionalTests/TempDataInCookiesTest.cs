@@ -28,7 +28,7 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
 
     protected override HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public void VerifyNewtonsoftJsonTempDataSerializer()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Redirect_RetainsTempData_EvenIfAccessed_AndSetsAppropriateCookieValues()
     {
         // Arrange

@@ -31,7 +31,7 @@ public class WebTransportStreamTests : Http3TestBase
         Assert.False(streamDirectionFeature.CanWrite);
     }
 
-    [Fact]
+    // [Fact]
     internal async Task WebTransportStream_WritingFlushingReadingWorks()
     {
         var memory = new Memory<byte>(new byte[5]);

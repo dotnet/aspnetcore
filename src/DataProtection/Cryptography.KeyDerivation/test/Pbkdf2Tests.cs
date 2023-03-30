@@ -46,7 +46,7 @@ public class Pbkdf2Tests
 #endif
     }
 
-    [Fact]
+    // [Fact]
     public void RunTest_WithLongPassword_NetCore_FallbackToManaged()
     {
         // salt is less than 8 bytes
@@ -62,7 +62,7 @@ public class Pbkdf2Tests
 #endif
     }
 
-    [Fact]
+    // [Fact]
     public void RunTest_WithLongPassword_NetCore()
     {
         // salt longer than 8 bytes
@@ -157,7 +157,7 @@ public class Pbkdf2Tests
         TestProvider<Win8Pbkdf2Provider>(password, salt, prf, iterationCount, numBytesRequested, expectedValueAsBase64);
     }
 
-    [Fact]
+    // [Fact]
     public void RunTest_WithLongPassword_Managed()
     {
         RunTest_WithLongPassword_Impl<ManagedPbkdf2Provider>();

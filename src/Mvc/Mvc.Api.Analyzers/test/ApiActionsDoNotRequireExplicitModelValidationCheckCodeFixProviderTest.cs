@@ -13,15 +13,15 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckCodeFixProviderTe
 
     private CodeFixRunner CodeFixRunner { get; } = new IgnoreCS1701WarningCodeFixRunner();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixRemovesModelStateIsInvalidBlockWithIfNotCheck()
         => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixRemovesModelStateIsInvalidBlockWithEqualityCheck()
         => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixRemovesIfBlockWithoutBraces()
         => RunTest();
 

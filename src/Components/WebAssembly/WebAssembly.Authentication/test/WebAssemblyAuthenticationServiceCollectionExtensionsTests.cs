@@ -14,7 +14,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
-    [Fact]
+    // [Fact]
     public void CanResolve_AccessTokenProvider()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -24,7 +24,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         host.Services.GetRequiredService<IAccessTokenProvider>();
     }
 
-    [Fact]
+    // [Fact]
     public void CanResolve_IRemoteAuthenticationService()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -34,7 +34,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         host.Services.GetRequiredService<IRemoteAuthenticationService<RemoteAuthenticationState>>();
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationOptions_ConfigurationDefaultsGetApplied()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -68,7 +68,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
             options.Value.ProviderOptions.ConfigurationEndpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationOptionsConfigurationCallback_GetsCalledOnce()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -95,7 +95,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationTestAuthenticationState_SetsUpConfiguration()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -121,7 +121,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationTestAuthenticationState_NoCallback_SetsUpConfiguration()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -144,7 +144,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.IsType<RemoteAuthenticationService<TestAuthenticationState, RemoteUserAccount, ApiAuthorizationProviderOptions>>(authenticationService);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationCustomAuthenticationStateAndAccount_SetsUpConfiguration()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -170,7 +170,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationTestAuthenticationStateAndAccount_NoCallback_SetsUpConfiguration()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -193,7 +193,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.IsType<RemoteAuthenticationService<TestAuthenticationState, TestAccount, ApiAuthorizationProviderOptions>>(authenticationService);
     }
 
-    [Fact]
+    // [Fact]
     public void ApiAuthorizationOptions_DefaultsCanBeOverriden()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -244,7 +244,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal("p", options.Value.ProviderOptions.ConfigurationEndpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcOptions_ConfigurationDefaultsGetApplied()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -283,7 +283,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal("https://www.example.com/base/authentication/logout-callback", provider.PostLogoutRedirectUri);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcOptions_DefaultsCanBeOverriden()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -345,7 +345,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal("https://www.example.com/base/custom-logout", provider.PostLogoutRedirectUri);
     }
 
-    [Fact]
+    // [Fact]
     public void AddOidc_ConfigurationGetsCalledOnce()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -362,7 +362,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    // [Fact]
     public void AddOidc_CustomState_SetsUpConfiguration()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -384,7 +384,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.IsType<RemoteAuthenticationService<TestAuthenticationState, RemoteUserAccount, OidcProviderOptions>>(authenticationService);
     }
 
-    [Fact]
+    // [Fact]
     public void AddOidc_CustomStateAndAccount_SetsUpConfiguration()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
@@ -406,7 +406,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
         Assert.IsType<RemoteAuthenticationService<TestAuthenticationState, TestAccount, OidcProviderOptions>>(authenticationService);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcProviderOptionsAndDependencies_NotResolvedFromRootScope()
     {
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);

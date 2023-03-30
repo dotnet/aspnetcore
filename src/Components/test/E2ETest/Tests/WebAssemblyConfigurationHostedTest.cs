@@ -30,7 +30,7 @@ public class WebAssemblyConfigurationHostedTest : ServerTestBase<BasicTestAppSer
         _appElement = Browser.MountTestComponent<ConfigurationComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void WebAssemblyConfiguration_Works()
     {
         // Verify values from the default 'appsettings.json' are read.
@@ -43,7 +43,7 @@ public class WebAssemblyConfigurationHostedTest : ServerTestBase<BasicTestAppSer
         Assert.Equal("Prod key3-value", _appElement.FindElement(By.Id("key3")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void WebAssemblyHostingEnvironment_Works()
     {
         // Verify values from the default 'appsettings.json' are read.

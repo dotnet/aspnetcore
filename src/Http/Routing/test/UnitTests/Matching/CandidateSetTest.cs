@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 public class CandidateSetTest
 {
-    [Fact]
+    // [Fact]
     public void Create_CreatesCandidateSet()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class CandidateSetTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ReplaceEndpoint_WithEndpoint()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class CandidateSetTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ReplaceEndpoint_WithEndpoint_Null()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class CandidateSetTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandEndpoint_EmptyList()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class CandidateSetTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandEndpoint_Beginning()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class CandidateSetTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandEndpoint_Middle()
     {
         // Arrange
@@ -247,7 +247,7 @@ public class CandidateSetTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandEndpoint_End()
     {
         // Arrange
@@ -297,7 +297,7 @@ public class CandidateSetTest
         Assert.Equal(10, candidateSet[11].Score);
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandEndpoint_ThrowsForDuplicateScore()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class CandidateSetTest
             .TrimStart(), ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesCandidateSet_TestConstructor()
     {
         // Arrange

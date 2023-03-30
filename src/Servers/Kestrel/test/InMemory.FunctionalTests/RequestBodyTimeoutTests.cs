@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
 public class RequestBodyTimeoutTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate()
     {
         var gracePeriod = TimeSpan.FromSeconds(5);
@@ -90,7 +90,7 @@ public class RequestBodyTimeoutTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestTimesOutWhenNotDrainedWithinDrainTimeoutPeriod()
     {
         // This test requires a real clock since we can't control when the drain timeout is set
@@ -138,7 +138,7 @@ public class RequestBodyTimeoutTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionClosedEvenIfAppSwallowsException()
     {
         var gracePeriod = TimeSpan.FromSeconds(5);

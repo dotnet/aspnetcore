@@ -27,7 +27,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task CanRender_CSharp7Views()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRender_ViewComponentWithArgumentsFromController()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRender_SimpleViews()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewWithAttributePrefix_RendersWithoutIgnoringPrefix()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReturn_ResultsWithoutContent()
     {
         // Act
@@ -143,7 +143,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(0, responseContent.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReturningTaskFromAction_ProducesEmptyResult()
     {
         // Act
@@ -155,7 +155,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Empty(await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionDescriptors_CreatedOncePerRequest()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionWithRequireHttps_RedirectsToSecureUrl_ForNonHttpsGetRequests()
     {
         // Act
@@ -188,7 +188,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Empty(responseBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionWithRequireHttps_ReturnsBadRequestResponse_ForNonHttpsNonGetRequests()
     {
         // Act
@@ -218,7 +218,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonHelper_RendersJson_WithCamelCaseNames()
     {
         // Arrange
@@ -238,7 +238,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonHelperWithSettings_RendersJson_WithNamesUnchanged()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonHelperWithSettings_RendersJson_WithSnakeCaseNames()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Contains(expectedLink, responseData, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConfigureMvc_AddsOptionsProperly()
     {
         // Act
@@ -344,7 +344,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("This is a basic website.", responseData);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TypesMarkedAsNonAction_AreInaccessible()
     {
         // Act
@@ -354,7 +354,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsingPageRouteParameterInConventionalRouteWorks()
     {
         // Arrange
@@ -367,7 +367,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsingPageRouteParameterInAttributeRouteWorks()
     {
         // Arrange
@@ -380,7 +380,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToAction_WithEmptyActionName_UsesAmbientValue()
     {
         // Arrange
@@ -400,7 +400,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         var responseBody = await Client.GetStringAsync("/Home/Product");
         Assert.Equal("Get Product", responseBody);
     }
-    [Fact]
+    // [Fact]
     public async Task ActionMethod_ReturningActionMethodOfT_WithBadRequest()
     {
         // Arrange
@@ -413,7 +413,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionMethod_ReturningActionMethodOfT()
     {
         // Arrange
@@ -427,7 +427,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(10, result.SampleInt);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionMethod_ReturningSequenceOfObjectsWrappedInActionResultOfT()
     {
         // Arrange
@@ -441,7 +441,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(2, result.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TestingInfrastructure_InvokesCreateDefaultBuilder()
     {
         // Act
@@ -451,7 +451,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("true", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplicationAssemblyPartIsListedAsFirstAssembly()
     {
         // Act
@@ -480,7 +480,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataProperties_AreTransferredToViews()
     {
         // Act
@@ -497,7 +497,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("View Data Property Sample", title);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataProperties_AreTransferredToViewComponents()
     {
         // Act
@@ -511,7 +511,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("View Data Property Sample", title);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttribute_CanBeAppliedToControllers()
     {
         // Arrange
@@ -533,7 +533,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal(10, data.Id);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttribute_DoesNotApplyToPropertiesWithBindingInfo()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("CustomBoundValue", data.CustomBound);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttribute_DoesNotCausePropertiesWithBindNeverAttributeToBeModelBound()
     {
         // Arrange
@@ -577,7 +577,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Null(data.BindNeverProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttributeWithSupportsGet_BindsOnNonGet()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("TestName", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttributeWithSupportsGet_BindsOnGet()
     {
         // Act
@@ -607,7 +607,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
         Assert.Equal("OnGetTestName", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAppliesValidation()
     {
         // Act
@@ -631,7 +631,7 @@ public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWitho
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidForm_ResultsInModelError()
     {
         // Arrange

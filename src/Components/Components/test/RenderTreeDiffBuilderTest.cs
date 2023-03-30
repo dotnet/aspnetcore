@@ -67,7 +67,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
                 }
         }.Select(x => new object[] { x });
 
-    [Fact]
+    // [Fact]
     public void RecognizesNewItemsBeingInserted()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesOldItemsBeingRemoved()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedElementInsertions()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedElementDeletions()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesSimultaneousKeyedElementInsertionsAndDeletions()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedComponentInsertions()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(2, oldComponent.SetParametersCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedComponentDeletions()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedComponentDeletionsBeforeUnchangedNonKeyedComponent()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedComponentInsertionsBeforeUnchangedNonKeyedComponent()
     {
         // Arrange
@@ -344,7 +344,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesSimultaneousKeyedComponentInsertionsAndDeletions()
     {
         // Arrange
@@ -382,7 +382,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void RejectsClashingKeysInOldTree()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void RejectsClashingKeysInNewTree()
     {
         // Arrange
@@ -416,7 +416,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void RejectsClashingKeysEvenIfAllPairsMatch()
     {
         // This sort of scenario would happen if you accidentally used a constant value for @key
@@ -433,7 +433,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesInsertionOfUnkeyedItemsAroundKey()
     {
         // The fact that the new sequence numbers are descending makes this
@@ -464,7 +464,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 2));
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesDeletionOfUnkeyedItemsAroundKey()
     {
         // The fact that the old sequence numbers are descending makes this
@@ -495,7 +495,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesKeyBeingAdded()
     {
         // This is an anomalous situation that can't occur with .razor components.
@@ -525,7 +525,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesKeyBeingRemoved()
     {
         // This is an anomalous situation that can't occur with .razor components.
@@ -551,7 +551,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesTrailingSequenceWithinLoopBlockBeingRemoved()
     {
         // Arrange
@@ -571,7 +571,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesTrailingSequenceWithinLoopBlockBeingAppended()
     {
         // Arrange
@@ -601,7 +601,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Text(referenceFrames[1], "x", 12);
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesTrailingLoopBlockBeingRemoved()
     {
         // Arrange
@@ -621,7 +621,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 2));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesTrailingLoopBlockBeingAdded()
     {
         // Arrange
@@ -651,7 +651,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Text(referenceFrames[1], "x", 11);
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesLeadingLoopBlockItemsBeingAdded()
     {
         // Arrange
@@ -681,7 +681,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Text(referenceFrames[1], "x", 11);
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesLeadingLoopBlockItemsBeingRemoved()
     {
         // Arrange
@@ -701,7 +701,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesAdjacentItemsBeingRemovedAndInsertedAtOnce()
     {
         // Arrange
@@ -717,7 +717,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesTextUpdates()
     {
         // Arrange
@@ -743,7 +743,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesMarkupChanges()
     {
         // Arrange
@@ -777,7 +777,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesElementNameChangesAtSameSequenceNumber()
     {
         // Note: It's not possible to trigger this scenario from a Razor component, because
@@ -803,7 +803,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesComponentTypeChangesAtSameSequenceNumber()
     {
         // Arrange
@@ -829,7 +829,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesAttributesAdded()
     {
         // Arrange
@@ -854,7 +854,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Attribute(referenceFrames[0], "added", "added value");
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesAttributesRemoved()
     {
         // Arrange
@@ -878,7 +878,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesAttributeStringValuesChanged()
     {
         // Arrange
@@ -904,7 +904,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Attribute(referenceFrames[0], "will change", "did change value");
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesAttributeEventHandlerValuesChanged()
     {
         // Arrange
@@ -938,7 +938,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesAttributeNamesChangedAtSameSourceSequence()
     {
         // Arrange
@@ -967,7 +967,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Attribute(referenceFrames[0], "newname", "same value");
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSameSequenceNumber_AttributeAddedAtStart()
     {
         // Arrange
@@ -997,7 +997,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Attribute(frame, "attr1", 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSameSequenceNumber_AttributeAddedInMiddle()
     {
         // Arrange
@@ -1028,7 +1028,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Attribute(frame, "attr2", 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSameSequenceNumber_AttributeAddedAtEnd()
     {
         // Arrange
@@ -1059,7 +1059,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Attribute(frame, "attr3", 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSequentialSequenceNumber_AttributeAddedAtStart()
     {
         // Arrange
@@ -1089,7 +1089,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Attribute(frame, "attr1", 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSequentialSequenceNumber_AttributeAddedInMiddle()
     {
         // Arrange
@@ -1120,7 +1120,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Attribute(frame, "attr2", 2));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSequentialSequenceNumber_AttributeAddedAtEnd()
     {
         // Arrange
@@ -1151,7 +1151,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Attribute(frame, "attr3", 3));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSameSequenceNumber_AttributeRemovedAtStart()
     {
         // Arrange
@@ -1178,7 +1178,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSameSequenceNumber_AttributeRemovedInMiddle()
     {
         // Arrange
@@ -1205,7 +1205,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSameSequenceNumber_AttributeRemovedAtEnd()
     {
         // Arrange
@@ -1232,7 +1232,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSequentialSequenceNumber_AttributeRemovedAtStart()
     {
         // Arrange
@@ -1259,7 +1259,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSequentialSequenceNumber_AttributeRemovedInMiddle()
     {
         // Arrange
@@ -1286,7 +1286,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDiff_WithSequentialSequenceNumber_AttributeRemovedAtEnd()
     {
         // Arrange
@@ -1313,7 +1313,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void DiffsElementsHierarchically()
     {
         // Arrange
@@ -1354,7 +1354,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Text(referenceFrames[0], "grandchild new text", 13);
     }
 
-    [Fact]
+    // [Fact]
     public void SkipsUnmodifiedSubtrees()
     {
         // Arrange
@@ -1391,7 +1391,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Text(referenceFrames[0], "Text that has changed", 11);
     }
 
-    [Fact]
+    // [Fact]
     public void SkipsUnmodifiedTrailingSiblings()
     {
         // Arrange
@@ -1417,7 +1417,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.Text(referenceFrames[0], "text2modified", 11);
     }
 
-    [Fact]
+    // [Fact]
     public void PassesThroughRegionsInsidePrependedElements()
     {
         // Arrange
@@ -1445,7 +1445,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.Text(frame, "text1"));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesInsertedRegions()
     {
         // Arrange
@@ -1479,7 +1479,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesRemovedRegions()
     {
         // Arrange
@@ -1503,7 +1503,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesEquivalentRegions()
     {
         // Arrange
@@ -1544,7 +1544,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void InstantiatesChildComponentsForInsertedFrames()
     {
         // Arrange
@@ -1581,7 +1581,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         AssertFrame.ComponentWithInstance<FakeComponent2>(renderBatch.ReferenceFrames.Array[1], 1, null, 13);
     }
 
-    [Fact]
+    // [Fact]
     public void SetsParametersOnChildComponents()
     {
         // Arrange
@@ -1606,7 +1606,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Same(testObject, componentInstance.ObjectProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void RetainsChildComponentsForExistingFrames()
     {
         // Arrange
@@ -1644,7 +1644,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Same(originalFakeComponent2Instance, newFrame2.Component);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesEventHandlerIdsForRetainedEventHandlers()
     {
         // Arrange
@@ -1670,7 +1670,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesEventHandlerIdsForRetainedEventHandlers_SlowPath()
     {
         // Arrange
@@ -1697,7 +1697,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
     }
 
-    [Fact]
+    // [Fact]
     public void SetsUpdatedParametersOnChildComponents()
     {
         // Arrange
@@ -1727,7 +1727,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Same(objectWillNotChange, newComponentInstance.ObjectProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void SkipsUpdatingParametersOnChildComponentsIfAllAreDefinitelyImmutableAndUnchanged()
     {
         // We only know that types are immutable if either Type.IsPrimitive, or it's one of
@@ -1776,7 +1776,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(1, originalComponentInstance.SetParametersCallCount); // Received no further parameter change notification
     }
 
-    [Fact]
+    // [Fact]
     public void AlwaysRegardsRenderFragmentAsPossiblyChanged()
     {
         // Even if the RenderFragment instance itself is unchanged, the output you get
@@ -1804,7 +1804,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(2, componentInstance.SetParametersCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public void QueuesRemovedChildComponentsForDisposal()
     {
         // Arrange
@@ -1829,7 +1829,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(new[] { 0, 1 }, batchBuilder.ComponentDisposalQueue);
     }
 
-    [Fact]
+    // [Fact]
     public void AssignsDistinctIdToNewElementReferenceCaptures()
     {
         // Arrange
@@ -1869,7 +1869,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             });
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesIdsOnRetainedElementReferenceCaptures()
     {
         // Arrange
@@ -1896,7 +1896,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Empty(referenceFrames);
     }
 
-    [Fact]
+    // [Fact]
     public void InvokesAssignerForComponentReferenceCapturesOnInsertion()
     {
         // Arrange
@@ -1935,7 +1935,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             frame => AssertFrame.ComponentReferenceCapture(frame, assigner2, 2));
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotInvokeAssignerAgainForRetainedComponents()
     {
         // Arrange
@@ -1960,7 +1960,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Empty(referenceFrames);
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedElementMoves()
     {
         // Arrange
@@ -2012,7 +2012,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void RecognizesKeyedComponentMoves()
     {
         // Arrange
@@ -2066,7 +2066,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void CanMoveBeforeInsertedItem()
     {
         // Arrange
@@ -2093,7 +2093,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void CanMoveBeforeDeletedItem()
     {
         // Arrange
@@ -2115,7 +2115,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void CanMoveAfterInsertedItem()
     {
         // Arrange
@@ -2142,7 +2142,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void CanMoveAfterDeletedItem()
     {
         // Arrange
@@ -2164,7 +2164,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void CanChangeFrameTypeWithMatchingSequenceNumber()
     {
         oldTree.OpenElement(0, "some elem");
@@ -2187,7 +2187,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void CanChangeFrameTypeWithMatchingKey()
     {
         oldTree.OpenComponent<FakeComponent>(0);

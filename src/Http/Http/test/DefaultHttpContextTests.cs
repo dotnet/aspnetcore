@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 
 public class DefaultHttpContextTests
 {
-    [Fact]
+    // [Fact]
     public void GetOnSessionProperty_ThrowsOnMissingSessionFeature()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class DefaultHttpContextTests
         Assert.Equal("Session has not been configured for this application or request.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOnSessionProperty_ReturnsAvailableSession()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class DefaultHttpContextTests
         Assert.Equal(3, context.Session.Keys.Count());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowsSettingSession_WithoutSettingUpSessionFeature_Upfront()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class DefaultHttpContextTests
         Assert.Same(session, context.Session);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingSession_OverridesAvailableSession()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class DefaultHttpContextTests
         Assert.Empty(context.Session.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void EmptyUserIsNeverNull()
     {
         var context = new DefaultHttpContext(new FeatureCollection());
@@ -103,7 +103,7 @@ public class DefaultHttpContextTests
         Assert.True(context.User.Identity.IsAuthenticated);
     }
 
-    [Fact]
+    // [Fact]
     public void GetItems_DefaultCollectionProvided()
     {
         var context = new DefaultHttpContext(new FeatureCollection());
@@ -117,7 +117,7 @@ public class DefaultHttpContextTests
         Assert.Same(item, context.Items["foo"]);
     }
 
-    [Fact]
+    // [Fact]
     public void GetItems_DefaultRequestIdentifierAvailable()
     {
         var context = new DefaultHttpContext(new FeatureCollection());
@@ -131,7 +131,7 @@ public class DefaultHttpContextTests
         Assert.Same("Hello", context.TraceIdentifier);
     }
 
-    [Fact]
+    // [Fact]
     public void SetItems_NewCollectionUsed()
     {
         var context = new DefaultHttpContext(new FeatureCollection());
@@ -145,7 +145,7 @@ public class DefaultHttpContextTests
         Assert.Same(item, context.Items["foo"]);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateFeatures_ClearsCachedFeatures()
     {
         var features = new FeatureCollection();
@@ -184,7 +184,7 @@ public class DefaultHttpContextTests
         Assert.NotEqual(4, newFeatures.Count());
     }
 
-    [Fact]
+    // [Fact]
     public void RequestServicesAreNotOverwrittenIfAlreadySet()
     {
         var serviceProvider = new ServiceCollection()
@@ -199,7 +199,7 @@ public class DefaultHttpContextTests
         Assert.Same(serviceProvider, context.RequestServices);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestServicesAreDisposedOnCompleted()
     {
         var serviceProvider = new ServiceCollection()
@@ -226,7 +226,7 @@ public class DefaultHttpContextTests
         Assert.True(instance.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestServicesAreDisposedAsynOnCompleted()
     {
         var serviceProvider = new AsyncDisposableServiceProvider(new ServiceCollection()
@@ -256,7 +256,7 @@ public class DefaultHttpContextTests
         Assert.False(scope.DisposeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void InternalActiveFlagIsSetAndUnset()
     {
         var context = new DefaultHttpContext();

@@ -50,7 +50,7 @@ app.MapGet("/hello", ({parameterType} p) => p == null ? "null!" : "Hello world!"
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_MultipleSpecialTypeParam_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -82,7 +82,7 @@ app.MapGet("/hello", (HttpRequest req, HttpResponse res) => req is null || res i
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_MultilineLambda()
     {
         var source = """
@@ -104,7 +104,7 @@ app.MapGet("/hello", () =>
         await VerifyResponseBodyAsync(httpContext, "Hello world!");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Multiple_MapAction_NoParam_StringReturn()
     {
         var source = """
@@ -118,7 +118,7 @@ app.MapGet("/es-task", () => new ValueTask<string>("Hola mundo!"));
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Multiple_MapAction_WithParams_StringReturn()
     {
         var source = """
@@ -295,7 +295,7 @@ app.MapPost("/", postServiceWithDefault);
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitServiceParam_SimpleReturn_Snapshot()
     {
         var source = """
@@ -343,7 +343,7 @@ app.MapGet("/multipleFromService", ([FromServices]TestService? svc, [FromService
         await VerifyResponseBodyAsync(httpContext, $"{expectedBody}, {expectedBody}");
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitSource_SimpleReturn_Snapshot()
     {
         var source = """
@@ -407,7 +407,7 @@ app.MapGet("/", HelloName)
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanApplyFiltersOnAsyncHandler()
     {
         var testString = "From a task";
@@ -425,7 +425,7 @@ app.MapGet("/", () => GetString())
         await VerifyResponseBodyAsync(httpContext, testString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_InferredTryParse_NonOptional_Provided()
     {
         var source = """

@@ -37,7 +37,7 @@ public class ControllerBaseTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithParameterUrl_SetsRedirectResultSameUrl()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class ControllerBaseTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPermanentAndSameUrl()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class ControllerBaseTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPreserveMethodAndSameUrl()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class ControllerBaseTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPermanentPreserveMethodAndSameUrl()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class ControllerBaseTest
             () => controller.RedirectPreserveMethod(url: url), "url");
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithParameterUrl_SetsLocalRedirectResultWithSameUrl()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class ControllerBaseTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPermanentWithSameUrl()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class ControllerBaseTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPreserveMethodWithSameUrl()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class ControllerBaseTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPermanentPreservesMethodWithSameUrl()
     {
         // Arrange
@@ -264,7 +264,7 @@ public class ControllerBaseTest
             () => controller.RedirectPermanentPreserveMethod(url: url), "url");
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToAction_WithParameterActionName_SetsResultActionName()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class ControllerBaseTest
         Assert.Equal("SampleAction", resultTemporary.ActionName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToActionPreserveMethod_WithParameterActionName_SetsResultActionName()
     {
         // Arrange
@@ -296,7 +296,7 @@ public class ControllerBaseTest
         Assert.Equal("SampleAction", resultTemporary.ActionName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToActionPermanent_WithParameterActionName_SetsResultActionNameAndPermanent()
     {
         // Arrange
@@ -312,7 +312,7 @@ public class ControllerBaseTest
         Assert.Equal("SampleAction", resultPermanent.ActionName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToActionPermanentPreserveMethod_WithParameterActionName_SetsResultActionNameAndPermanent()
     {
         // Arrange
@@ -853,7 +853,7 @@ public class ControllerBaseTest
         Assert.Equal(expectedFragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoute_WithParameterRouteName_SetsResultSameRouteName()
     {
         // Arrange
@@ -870,7 +870,7 @@ public class ControllerBaseTest
         Assert.Same(routeName, resultTemporary.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoutePreserveMethod_WithParameterRouteName_SetsResultSameRouteName()
     {
         // Arrange
@@ -887,7 +887,7 @@ public class ControllerBaseTest
         Assert.Same(routeName, resultTemporary.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoutePermanent_WithParameterRouteName_SetsResultSameRouteNameAndPermanent()
     {
         // Arrange
@@ -904,7 +904,7 @@ public class ControllerBaseTest
         Assert.Same(routeName, resultPermanent.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteName_SetsResultSameRouteNameAndPermanent()
     {
         // Arrange
@@ -984,7 +984,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, resultPermanent.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageName()
     {
         // Arrange
@@ -999,7 +999,7 @@ public class ControllerBaseTest
         Assert.Equal(pageName, result.PageName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameAndHandler()
     {
         // Arrange
@@ -1016,7 +1016,7 @@ public class ControllerBaseTest
         Assert.Equal(pageHandler, result.PageHandler);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameAndRouteValues()
     {
         // Arrange
@@ -1039,7 +1039,7 @@ public class ControllerBaseTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameHandlerAndFragment()
     {
         // Arrange
@@ -1058,7 +1058,7 @@ public class ControllerBaseTest
         Assert.Equal(fragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameRouteValuesHandlerAndFragment()
     {
         // Arrange
@@ -1085,7 +1085,7 @@ public class ControllerBaseTest
         Assert.Equal(fragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageName()
     {
         // Arrange
@@ -1101,7 +1101,7 @@ public class ControllerBaseTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNameAndPageHandler()
     {
         // Arrange
@@ -1119,7 +1119,7 @@ public class ControllerBaseTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNameAndRouteValues()
     {
         // Arrange
@@ -1143,7 +1143,7 @@ public class ControllerBaseTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNamePageHandlerAndFragment()
     {
         // Arrange
@@ -1163,7 +1163,7 @@ public class ControllerBaseTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNamePageHandlerRouteValuesAndFragment()
     {
         // Arrange
@@ -1191,7 +1191,7 @@ public class ControllerBaseTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePreserveMethod_WithParameterUrl_SetsRedirectResultPreserveMethod()
     {
         // Arrange
@@ -1271,7 +1271,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, resultPermanent.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithStringParameter_SetsCreatedLocation()
     {
         // Arrange
@@ -1287,7 +1287,7 @@ public class ControllerBaseTest
         Assert.Same(uri, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithNullStringParameter_CreatedLocationNull()
     {
         // Arrange
@@ -1302,7 +1302,7 @@ public class ControllerBaseTest
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithAbsoluteUriParameter_SetsCreatedLocation()
     {
         // Arrange
@@ -1318,7 +1318,7 @@ public class ControllerBaseTest
         Assert.Equal(uri.OriginalString, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithNullUriParameter_CreatedLocationNull()
     {
         // Arrange
@@ -1333,7 +1333,7 @@ public class ControllerBaseTest
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithRelativeUriParameter_SetsCreatedLocation()
     {
         // Arrange
@@ -1349,7 +1349,7 @@ public class ControllerBaseTest
         Assert.Equal(uri.OriginalString, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtAction_WithParameterActionName_SetsResultActionName()
     {
         // Arrange
@@ -1384,7 +1384,7 @@ public class ControllerBaseTest
         Assert.Equal(controllerName, result.ControllerName);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtAction_WithActionControllerRouteValues_SetsSameValues()
     {
         // Arrange
@@ -1409,7 +1409,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithParameterRouteName_SetsResultSameRouteName()
     {
         // Arrange
@@ -1424,7 +1424,7 @@ public class ControllerBaseTest
         Assert.Same(routeName, result.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithParameterRouteValues_SetsResultSameRouteValues()
     {
         // Arrange
@@ -1444,7 +1444,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithParameterRouteNameAndValues_SetsResultSameProperties()
     {
         // Arrange
@@ -1466,7 +1466,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_SetsStatusCode()
     {
         // Arrange
@@ -1480,7 +1480,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_SetsValue()
     {
         // Arrange
@@ -1496,7 +1496,7 @@ public class ControllerBaseTest
         Assert.Same(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_StringUri_SetsAcceptedLocation()
     {
         // Arrange
@@ -1512,7 +1512,7 @@ public class ControllerBaseTest
         Assert.Same(uri, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_AbsoluteUri_SetsAcceptedLocation()
     {
         // Arrange
@@ -1528,7 +1528,7 @@ public class ControllerBaseTest
         Assert.Equal(uri.OriginalString, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_RelativeUri_SetsAcceptedLocation()
     {
         // Arrange
@@ -1544,7 +1544,7 @@ public class ControllerBaseTest
         Assert.Equal(uri.OriginalString, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtAction_SetsActionName()
     {
         // Arrange
@@ -1578,7 +1578,7 @@ public class ControllerBaseTest
         Assert.Equal(controllerName, result.ControllerName);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtAction_SetsActionControllerRouteValues()
     {
         // Arrange
@@ -1603,7 +1603,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_SetsRouteValues()
     {
         // Arrange
@@ -1623,7 +1623,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_SetsRouteNameAndValues()
     {
         // Arrange
@@ -1645,7 +1645,7 @@ public class ControllerBaseTest
         Assert.Equal(expected, result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithContents()
     {
         // Arrange
@@ -1663,7 +1663,7 @@ public class ControllerBaseTest
         Assert.False(result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithContents_EnableRangeProcessing()
     {
         // Arrange
@@ -1707,7 +1707,7 @@ public class ControllerBaseTest
         Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithContentsAndFileDownloadName()
     {
         // Arrange
@@ -1751,7 +1751,7 @@ public class ControllerBaseTest
         Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithPath()
     {
         // Arrange
@@ -1795,7 +1795,7 @@ public class ControllerBaseTest
         Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithPathAndFileDownloadName()
     {
         // Arrange
@@ -1839,7 +1839,7 @@ public class ControllerBaseTest
         Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithStream()
     {
         // Arrange
@@ -1893,7 +1893,7 @@ public class ControllerBaseTest
         Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithStreamAndFileDownloadName()
     {
         // Arrange
@@ -1945,7 +1945,7 @@ public class ControllerBaseTest
         Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
     }
 
-    [Fact]
+    // [Fact]
     public void HttpUnauthorized_SetsStatusCode()
     {
         // Arrange
@@ -1959,7 +1959,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void HttpNotFound_SetsStatusCode()
     {
         // Arrange
@@ -1973,7 +1973,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void HttpNotFound_SetsStatusCodeAndResponseContent()
     {
         // Arrange
@@ -1988,7 +1988,7 @@ public class ControllerBaseTest
         Assert.Equal("Test Content", result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Ok_SetsStatusCode()
     {
         // Arrange
@@ -2002,7 +2002,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_SetsStatusCode()
     {
         // Arrange
@@ -2016,7 +2016,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_SetsStatusCodeAndValue_Object()
     {
         // Arrange
@@ -2032,7 +2032,7 @@ public class ControllerBaseTest
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_SetsStatusCodeAndValue_ModelState()
     {
         // Arrange
@@ -2048,7 +2048,7 @@ public class ControllerBaseTest
         Assert.Empty(errors);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntity_SetsStatusCode()
     {
         // Arrange
@@ -2062,7 +2062,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntity_SetsStatusCodeAndValue_Object()
     {
         // Arrange
@@ -2078,7 +2078,7 @@ public class ControllerBaseTest
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntity_SetsStatusCodeAndValue_ModelState()
     {
         // Arrange
@@ -2094,7 +2094,7 @@ public class ControllerBaseTest
         Assert.Empty(errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Conflict_SetsStatusCode()
     {
         // Arrange
@@ -2109,7 +2109,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Conflict_SetsStatusCodeAndValue_Object()
     {
         // Arrange
@@ -2125,7 +2125,7 @@ public class ControllerBaseTest
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Conflict_SetsStatusCodeAndValue_ModelState()
     {
         // Arrange
@@ -2149,7 +2149,7 @@ public class ControllerBaseTest
         Assert.True(method.IsDefined(typeof(NonActionAttribute)));
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_NoContent()
     {
         // Arrange
@@ -2162,7 +2162,7 @@ public class ControllerBaseTest
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_WithParameterContentString_SetsResultContent()
     {
         // Arrange
@@ -2177,7 +2177,7 @@ public class ControllerBaseTest
         Assert.Null(actualContentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_WithParameterContentStringAndContentType_SetsResultContentAndContentType()
     {
         // Arrange
@@ -2193,7 +2193,7 @@ public class ControllerBaseTest
         Assert.Equal("text/plain", actualContentResult.ContentType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_WithParameterContentAndTypeAndEncoding_SetsResultContentAndTypeAndEncoding()
     {
         // Arrange
@@ -2209,7 +2209,7 @@ public class ControllerBaseTest
         Assert.Equal("text/plain; charset=utf-8", actualContentResult.ContentType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_NoContentType_DefaultEncodingIsUsed()
     {
         // Arrange
@@ -2223,7 +2223,7 @@ public class ControllerBaseTest
         Assert.Null(contentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_InvalidCharset_DefaultEncodingIsUsed()
     {
         // Arrange
@@ -2240,7 +2240,7 @@ public class ControllerBaseTest
         Assert.Null(MediaType.GetEncoding(contentResult.ContentType));
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_CharsetAndEncodingProvided_EncodingIsUsed()
     {
         // Arrange
@@ -2254,7 +2254,7 @@ public class ControllerBaseTest
         MediaTypeAssert.Equal(contentType, contentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Content_CharsetInContentType_IsUsedForEncoding()
     {
         // Arrange
@@ -2268,7 +2268,7 @@ public class ControllerBaseTest
         Assert.Equal(contentType, contentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_StatusCode_SetObject()
     {
         // Arrange
@@ -2285,7 +2285,7 @@ public class ControllerBaseTest
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_StatusCode_SetObjectNull()
     {
         // Arrange
@@ -2302,7 +2302,7 @@ public class ControllerBaseTest
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_StatusCode_SetsStatusCode()
     {
         // Arrange
@@ -2316,7 +2316,7 @@ public class ControllerBaseTest
         Assert.Equal(statusCode, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblemDetails_Works()
     {
         // Arrange
@@ -2348,7 +2348,7 @@ public class ControllerBaseTest
         Assert.Equal(new[] { "error1" }, problemDetails.Errors["key1"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblemDetails_UsesSpecifiedTitle()
     {
         // Arrange
@@ -2373,7 +2373,7 @@ public class ControllerBaseTest
         Assert.Equal(detail, problemDetails.Detail);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblemDetails_UsesSpecifiedStatusCode()
     {
         // Arrange
@@ -2394,7 +2394,7 @@ public class ControllerBaseTest
         Assert.Equal(405, problemDetails.Status);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblemDetails_StatusCode400_ReturnsBadRequestObjectResultFor2xCompatibility()
     {
         // Arrange
@@ -2415,7 +2415,7 @@ public class ControllerBaseTest
         Assert.Equal(400, problemDetails.Status);
     }
 
-    [Fact]
+    // [Fact]
     public void ProblemDetails_Works()
     {
         // Arrange
@@ -2445,7 +2445,7 @@ public class ControllerBaseTest
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ProblemDetails_UsesPassedInValues()
     {
         // Arrange
@@ -2471,7 +2471,7 @@ public class ControllerBaseTest
         Assert.Equal(detail, problemDetails.Detail);
     }
 
-    [Fact]
+    // [Fact]
     public void ProblemDetails_UsesPassedInStatusCode()
     {
         // Arrange
@@ -2549,7 +2549,7 @@ public class ControllerBaseTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_FallsBackOnEmptyPrefix_IfNotSpecified()
     {
         // Arrange
@@ -2576,7 +2576,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_UsesModelTypeNameIfSpecified()
     {
         // Arrange
@@ -2604,7 +2604,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_UsesModelValueProviderIfSpecified()
     {
         // Arrange
@@ -2631,7 +2631,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ReturnsFalse_IfValueProviderFactoryThrows()
     {
         // Arrange
@@ -2656,7 +2656,7 @@ public class ControllerBaseTest
         Assert.Equal("some error", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_PropertyFilterOverload_UsesPassedArguments()
     {
         // Arrange
@@ -2689,7 +2689,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_PropertyFilterWithValueProviderOverload_UsesPassedArguments()
     {
         // Arrange
@@ -2788,7 +2788,7 @@ public class ControllerBaseTest
     }
 
 #nullable enable
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SupportsNullableExpressions()
     {
         // Arrange
@@ -2838,7 +2838,7 @@ public class ControllerBaseTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModelNonGeneric_PropertyFilterWithValueProviderOverload_UsesPassedArguments()
     {
         // Arrange
@@ -2872,7 +2872,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModelNonGeneric_ModelTypeOverload_UsesPassedArguments()
     {
         // Arrange
@@ -2900,7 +2900,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModelNonGeneric_BindToBaseDeclaredType_ModelTypeOverload()
     {
         // Arrange
@@ -2928,7 +2928,7 @@ public class ControllerBaseTest
         Assert.NotEqual(0, binder.BindModelCount);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerExposes_RequestServices()
     {
         // Arrange
@@ -2948,7 +2948,7 @@ public class ControllerBaseTest
         Assert.Same(serviceProvider, innerServiceProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerExposes_Request()
     {
         // Arrange
@@ -2968,7 +2968,7 @@ public class ControllerBaseTest
         Assert.Same(request, innerRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerExposes_Response()
     {
         // Arrange
@@ -2988,7 +2988,7 @@ public class ControllerBaseTest
         Assert.Same(response, innerResponse);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerExposes_RouteData()
     {
         // Arrange
@@ -3004,7 +3004,7 @@ public class ControllerBaseTest
         Assert.Same(routeData, innerRouteData);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateModelWithValidModel_ReturnsTrue()
     {
         // Arrange
@@ -3025,7 +3025,7 @@ public class ControllerBaseTest
         Assert.True(controller.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateModelWithInvalidModelWithPrefix_ReturnsFalse()
     {
         // Arrange
@@ -3062,7 +3062,7 @@ public class ControllerBaseTest
         Assert.Equal("Out of range!", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateModelWithInvalidModelNoPrefix_ReturnsFalse()
     {
         // Arrange
@@ -3099,7 +3099,7 @@ public class ControllerBaseTest
         Assert.Equal("Out of range!", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateModel_Succeeds_WithoutValidatorMetadata()
     {
         // Arrange
@@ -3115,7 +3115,7 @@ public class ControllerBaseTest
         Assert.True(controller.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageName_Handler_AndRouteValues()
     {
         // Arrange

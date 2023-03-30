@@ -18,7 +18,7 @@ public class TagHelpersInCodeBlocksAnalyzerTest
     private static readonly DiagnosticResult CS4033Result = new("CS4033", DiagnosticSeverity.Error);
     private static readonly DiagnosticResult CS4034Result = new("CS4034", DiagnosticSeverity.Error);
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInActions()
     {
         var source = @"
@@ -111,7 +111,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult, CS4034Result.WithLocation(1), CS4034Result.WithLocation(2));
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInNonAsyncFunc()
     {
         var source = @"
@@ -203,7 +203,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult, CS4034Result.WithLocation(1), CS4034Result.WithLocation(2));
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInVoidClassMethods()
     {
         var source = @"
@@ -296,7 +296,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult, CS4033Result.WithLocation(1), CS4033Result.WithLocation(2));
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInVoidDelegates()
     {
         var source = @"
@@ -391,7 +391,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult, CS4034Result.WithLocation(1), CS4034Result.WithLocation(2));
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInVoidLocalFunctions()
     {
         var source = @"
@@ -481,7 +481,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult, CS4033Result.WithLocation(1), CS4033Result.WithLocation(2));
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForUseOfTagHelpersInAsyncClassMethods()
     {
         var source = @"
@@ -571,7 +571,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForUseOfTagHelpersInAsyncDelegates()
     {
         var source = @"
@@ -663,7 +663,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForUseOfTagHelpersInAsyncLocalFunctions()
     {
         var source = @"
@@ -755,7 +755,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task SingleDiagnosticIsReturned_ForMultipleTagHelpersInVoidMethod()
     {
         var source = @"

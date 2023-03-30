@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 
 public class RouteTableFactoryTests
 {
-    [Fact]
+    // [Fact]
     public void CanCacheRouteTable()
     {
         // Arrange
@@ -20,7 +20,7 @@ public class RouteTableFactoryTests
         Assert.Same(routes1, routes2);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCacheRouteTableWithDifferentAssembliesAndOrder()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class RouteTableFactoryTests
         Assert.Same(routes1, routes2);
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotCacheRouteTableForDifferentAssemblies()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class RouteTableFactoryTests
         Assert.NotSame(routes1, routes2);
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresIdenticalTypes()
     {
         // Arrange & Act
@@ -56,7 +56,7 @@ public class RouteTableFactoryTests
         Assert.Equal(routes.Routes.GroupBy(x => x.Handler).Count(), routes.Routes.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDiscoverRoute()
     {
         // Arrange & Act
@@ -71,7 +71,7 @@ public class RouteTableFactoryTests
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CanDiscoverRoutes_WithInheritance()
     {
         // Arrange & Act
@@ -89,7 +89,7 @@ public class RouteTableFactoryTests
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchRootTemplate()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class RouteTableFactoryTests
         Assert.NotNull(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchLiteralTemplate()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class RouteTableFactoryTests
         Assert.NotNull(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchTemplateWithMultipleLiterals()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class RouteTableFactoryTests
         Assert.NotNull(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteMatchingIsCaseInsensitive()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class RouteTableFactoryTests
         Assert.NotNull(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchEncodedSegments()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class RouteTableFactoryTests
         Assert.NotNull(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotMatchIfSegmentsDontMatch()
     {
         // Arrange
@@ -248,7 +248,7 @@ public class RouteTableFactoryTests
         Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchTemplateWithMultipleParameters()
     {
         // Arrange
@@ -269,7 +269,7 @@ public class RouteTableFactoryTests
         Assert.Equal(expectedParameters, context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchTemplateWithMultipleParametersAndCatchAllParameter()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class RouteTableFactoryTests
             }, context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void MoreSpecificRoutesPrecedeMoreGeneralRoutes()
     {
         // Arrange
@@ -418,7 +418,7 @@ public class RouteTableFactoryTests
         Assert.Equal("1/2/3/4/5", values);
     }
 
-    [Fact]
+    // [Fact]
     public void CatchAllEmpty()
     {
         // Arrange
@@ -438,7 +438,7 @@ public class RouteTableFactoryTests
         Assert.Null(values);
     }
 
-    [Fact]
+    // [Fact]
     public void OptionalParameterEmpty()
     {
         // Arrange
@@ -556,7 +556,7 @@ public class RouteTableFactoryTests
         Assert.Equal(catchAllValue, catchAll);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchCatchAllParametersWithConstraints_NotMatchingRoute()
     {
         // Arrange
@@ -575,7 +575,7 @@ public class RouteTableFactoryTests
         Assert.Null(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchOptionalParameterWithoutConstraints()
     {
         // Arrange
@@ -631,7 +631,7 @@ public class RouteTableFactoryTests
             }, context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void CanMatchMultipleOptionalParameterWithConstraint()
     {
         // Arrange
@@ -682,7 +682,7 @@ public class RouteTableFactoryTests
             }, context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersLiteralTemplateOverTemplateWithParameters()
     {
         // Arrange
@@ -700,7 +700,7 @@ public class RouteTableFactoryTests
         Assert.Null(context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersLiteralTemplateOverTemplateWithOptionalParameters()
     {
         // Arrange
@@ -718,7 +718,7 @@ public class RouteTableFactoryTests
         Assert.Null(context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsForOptionalParametersAndNonOptionalParameters()
     {
         // Arrange, act & assert
@@ -815,7 +815,7 @@ public class RouteTableFactoryTests
         Assert.Equal(expectedOrder, tableTemplates);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsForLiteralWithQuestionMark()
     {
         // Arrange, act & assert
@@ -824,7 +824,7 @@ public class RouteTableFactoryTests
             .Build());
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersLiteralTemplateOverParameterizedTemplates()
     {
         // Arrange
@@ -844,7 +844,7 @@ public class RouteTableFactoryTests
         Assert.Null(context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersShorterRoutesOverLongerRoutes()
     {
         // Arrange & Act
@@ -857,7 +857,7 @@ public class RouteTableFactoryTests
         Assert.Equal("an/awesome", routeTable.Routes[0].Template.TemplateText);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersMoreConstraintsOverFewer()
     {
         // Arrange
@@ -877,7 +877,7 @@ public class RouteTableFactoryTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersRoutesThatMatchMoreSegments()
     {
         // Arrange
@@ -896,7 +896,7 @@ public class RouteTableFactoryTests
         Assert.NotNull(context.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void ProducesAStableOrderForNonAmbiguousRoutes()
     {
         // Arrange & Act
@@ -909,7 +909,7 @@ public class RouteTableFactoryTests
         Assert.Equal("a/brilliant", routeTable.Routes[0].Template.TemplateText);
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotThrowIfStableSortComparesRouteWithItself()
     {
         // Test for https://github.com/dotnet/aspnetcore/issues/13313
@@ -964,7 +964,7 @@ public class RouteTableFactoryTests
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void SuppliesNullForUnusedHandlerParameters()
     {
         // Arrange

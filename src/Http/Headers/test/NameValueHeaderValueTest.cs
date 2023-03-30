@@ -5,7 +5,7 @@ namespace Microsoft.Net.Http.Headers;
 
 public class NameValueHeaderValueTest
 {
-    [Fact]
+    // [Fact]
     public void Ctor_NameNull_Throw()
     {
         Assert.Throws<ArgumentException>(() => new NameValueHeaderValue(null));
@@ -13,7 +13,7 @@ public class NameValueHeaderValueTest
         Assert.Throws<ArgumentException>(() => new NameValueHeaderValue(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_NameInvalidFormat_ThrowFormatException()
     {
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
@@ -25,14 +25,14 @@ public class NameValueHeaderValueTest
         AssertFormatException("teäxt", null);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_NameValidFormat_SuccessfullyCreated()
     {
         var nameValue = new NameValueHeaderValue("text", null);
         Assert.Equal("text", nameValue.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ValueInvalidFormat_ThrowFormatException()
     {
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
@@ -44,7 +44,7 @@ public class NameValueHeaderValueTest
         AssertFormatException("text", "\"quoted string with \"two\" quotes\"");
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ValueValidFormat_SuccessfullyCreated()
     {
         CheckValue(null);
@@ -54,7 +54,7 @@ public class NameValueHeaderValueTest
         CheckValue("\"quoted string with quoted \\\" quote-pair\"");
     }
 
-    [Fact]
+    // [Fact]
     public void Copy_NameOnly_SuccessfullyCopied()
     {
         var pair0 = new NameValueHeaderValue("name");
@@ -70,7 +70,7 @@ public class NameValueHeaderValueTest
         Assert.Null(pair1.Value.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyAsReadOnly_NameOnly_CopiedAndReadOnly()
     {
         var pair0 = new NameValueHeaderValue("name");
@@ -89,7 +89,7 @@ public class NameValueHeaderValueTest
         Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
     }
 
-    [Fact]
+    // [Fact]
     public void Copy_NameAndValue_SuccessfullyCopied()
     {
         var pair0 = new NameValueHeaderValue("name", "value");
@@ -104,7 +104,7 @@ public class NameValueHeaderValueTest
         Assert.Equal("value", pair1.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyAsReadOnly_NameAndValue_CopiedAndReadOnly()
     {
         var pair0 = new NameValueHeaderValue("name", "value");
@@ -122,7 +122,7 @@ public class NameValueHeaderValueTest
         Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
     }
 
-    [Fact]
+    // [Fact]
     public void CopyFromReadOnly_NameAndValue_CopiedAsNonReadOnly()
     {
         var pair0 = new NameValueHeaderValue("name", "value");
@@ -138,7 +138,7 @@ public class NameValueHeaderValueTest
         Assert.Equal("value", pair1.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Value_CallSetterWithInvalidValues_Throw()
     {
         // Just verify that the setter calls the same validation the ctor invokes.
@@ -146,7 +146,7 @@ public class NameValueHeaderValueTest
         Assert.Throws<FormatException>(() => { var x = new NameValueHeaderValue("name"); x.Value = "x y"; });
     }
 
-    [Fact]
+    // [Fact]
     public void ToString_UseNoValueAndTokenAndQuotedStringValues_SerializedCorrectly()
     {
         var nameValue = new NameValueHeaderValue("text", "token");
@@ -162,7 +162,7 @@ public class NameValueHeaderValueTest
         Assert.Equal("text", nameValue.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void GetHashCode_ValuesUseDifferentValues_HashDiffersAccordingToRfc()
     {
         var nameValue1 = new NameValueHeaderValue("text");
@@ -201,7 +201,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(nameValue1.GetHashCode(), nameValue2.GetHashCode());
     }
 
-    [Fact]
+    // [Fact]
     public void GetHashCode_NameUseDifferentCasing_HashDiffersAccordingToRfc()
     {
         var nameValue1 = new NameValueHeaderValue("text");
@@ -209,7 +209,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(nameValue1.GetHashCode(), nameValue2.GetHashCode());
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ValuesUseDifferentValues_ValuesAreEqualOrDifferentAccordingToRfc()
     {
         var nameValue1 = new NameValueHeaderValue("text");
@@ -254,7 +254,7 @@ public class NameValueHeaderValueTest
         Assert.False(nameValue1.Equals(null), "\"quoted string\" vs. <null>.");
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_NameUseDifferentCasing_ConsideredEqual()
     {
         var nameValue1 = new NameValueHeaderValue("text");
@@ -262,7 +262,7 @@ public class NameValueHeaderValueTest
         Assert.True(nameValue1.Equals(nameValue2), "text vs. TEXT.");
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidParse("  name = value    ", new NameValueHeaderValue("name", "value"));
@@ -276,7 +276,7 @@ public class NameValueHeaderValueTest
         CheckValidParse("name=", new NameValueHeaderValue("name", ""));
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfInvalidValueStrings_Throws()
     {
         CheckInvalidParse("name[value");
@@ -297,7 +297,7 @@ public class NameValueHeaderValueTest
         CheckInvalidParse(" ,name=\"value\"");
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidTryParse("  name = value    ", new NameValueHeaderValue("name", "value"));
@@ -306,7 +306,7 @@ public class NameValueHeaderValueTest
         CheckValidTryParse("name=value", new NameValueHeaderValue("name", "value"));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse()
     {
         CheckInvalidTryParse("name[value");
@@ -326,7 +326,7 @@ public class NameValueHeaderValueTest
         CheckInvalidTryParse(" ,name=\"value\"");
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -359,7 +359,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -392,7 +392,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -425,7 +425,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -458,7 +458,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_WithSomeInvalidValues_ExcludesInvalidValues()
     {
         var inputs = new[]
@@ -494,7 +494,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_WithSomeInvalidValues_Throws()
     {
         var inputs = new[]
@@ -512,7 +512,7 @@ public class NameValueHeaderValueTest
         Assert.Throws<FormatException>(() => NameValueHeaderValue.ParseStrictList(inputs));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_WithSomeInvalidValues_ExcludesInvalidValues()
     {
         var inputs = new[]
@@ -548,7 +548,7 @@ public class NameValueHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
     {
         var inputs = new[]

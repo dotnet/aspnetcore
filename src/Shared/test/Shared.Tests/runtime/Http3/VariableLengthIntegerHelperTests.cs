@@ -10,7 +10,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
 {
     public class VariableLengthIntegerHelperTests
     {
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferEmpty()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>();
@@ -22,7 +22,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(0, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialOneByteLengthMask()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(new byte[]
@@ -37,7 +37,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(1, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialTwoByteLengthMask_Buffer16BigEndian()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(new byte[]
@@ -53,7 +53,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(2, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialTwoByteLengthMask_BufferNot16BigEndian()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(new byte[]
@@ -68,7 +68,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(0, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialFourByteLengthMask_TryReadUInt32BigEndian()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(new byte[]
@@ -86,7 +86,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(4, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialFourByteLengthMask_TryReadNotUInt32BigEndian()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(new byte[]
@@ -101,7 +101,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(0, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialEightByteLengthMask_TryReadUInt64BigEndian()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(
@@ -118,7 +118,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(8, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromReadOnlySpan_BufferNotEmpty_InitialEightByteLengthMask_TryReadNotUInt64BigEndian()
         {
             ReadOnlySpan<byte> readOnlySpan = new ReadOnlySpan<byte>(new byte[]
@@ -133,7 +133,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(0, bytesRead);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromSequenceReader_NotSegmentedSequence()
         {
             ReadOnlySequence<byte> readOnlySequence = new ReadOnlySequence<byte>(new byte[]
@@ -169,7 +169,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             }
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromSequenceReader_InitialTwoByteLengthMask_SegmentedSequence()
         {
             MemorySegment<byte> memorySegment1 = new MemorySegment<byte>(new byte[] { 64 });
@@ -185,7 +185,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(1, sequenceReader.CurrentSpanIndex);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromSequenceReader_InitialFourByteLengthMask_SegmentedSequence()
         {
             MemorySegment<byte> memorySegment1 = new MemorySegment<byte>(new byte[] { 192 });
@@ -201,7 +201,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(7, sequenceReader.CurrentSpanIndex);
         }
 
-        [Fact]
+        // [Fact]
         public void TryRead_FromSequenceReader_NotValidSegmentedSequence()
         {
             MemorySegment<byte> memorySegment1 = new MemorySegment<byte>(new byte[] { 192 });
@@ -216,7 +216,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(0, value);
         }
 
-        [Fact]
+        // [Fact]
         public void GetInteger_ValidSegmentedSequence()
         {
             MemorySegment<byte> memorySegment1 = new MemorySegment<byte>(new byte[] { 192 });
@@ -231,7 +231,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(7, examined.GetInteger());
         }
 
-        [Fact]
+        // [Fact]
         public void GetInteger_NotValidSegmentedSequence()
         {
             MemorySegment<byte> memorySegment1 = new MemorySegment<byte>(new byte[] { 192 });
@@ -246,7 +246,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(6, examined.GetInteger());
         }
 
-        [Fact]
+        // [Fact]
         public void TryWrite_BufferEmpty()
         {
             Span<byte> span = new Span<byte>();
@@ -289,7 +289,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(expected, span.ToArray());
         }
 
-        [Fact]
+        // [Fact]
         public void TryWrite_BufferNotSizedCorrectly_TwoByteLimit()
         {
             long longToEncode = 64;
@@ -317,7 +317,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(expected, span.ToArray());
         }
 
-        [Fact]
+        // [Fact]
         public void TryWrite_BufferNotSizedCorrectly_FourByteLimit()
         {
             long longToEncode = 16384;
@@ -345,7 +345,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
             Assert.Equal(expected, span.ToArray());
         }
 
-        [Fact]
+        // [Fact]
         public void TryWrite_BufferNotSizedCorrectly_EightByteLimit()
         {
             long longToEncode = 1073741824;

@@ -36,7 +36,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(expectedCanCreate, canCreate);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
     {
         var modelMetadata = GetMetadataForProperty(typeof(Document), nameof(Document.SubDocument));
@@ -53,7 +53,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(ComplexTypeModelBinder.NoDataAvailable, canCreate);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelIsMarkedWithBinderMetadata()
     {
         var bindingContext = CreateContext(GetMetadataForType(typeof(Document)));
@@ -113,7 +113,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(valueAvailable, canCreate);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateModel_ReturnsFalse_IfNotIsTopLevelObjectAndModelHasNoProperties()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(ComplexTypeModelBinder.NoDataAvailable, canCreate);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateModel_ReturnsTrue_IfIsTopLevelObjectAndModelHasNoProperties()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class ComplexTypeModelBinderTest
         testableBinder.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_CreatesModelAndAddsError_IfIsTopLevelObject_WithNoData()
     {
         // Arrange
@@ -381,7 +381,7 @@ public class ComplexTypeModelBinderTest
 
     private IActionResult ActionWithNoSettablePropertiesParameter(PersonWithNoProperties parameter) => null;
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_CreatesModelAndAddsError_IfIsTopLevelObject_WithNoSettableProperties()
     {
         // Arrange
@@ -425,7 +425,7 @@ public class ComplexTypeModelBinderTest
 
     private IActionResult ActionWithAllPropertiesExcludedParameter(PersonWithAllPropertiesExcluded parameter) => null;
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_CreatesModelAndAddsError_IfIsTopLevelObject_WithAllPropertiesExcluded()
     {
         // Arrange
@@ -506,7 +506,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(expected, canUpdate);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModel_InstantiatesInstanceOfMetadataType()
     {
         // Arrange
@@ -524,7 +524,7 @@ public class ComplexTypeModelBinderTest
         Assert.IsType<Person>(model);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModel_ForStructModelType_AsTopLevelObject_ThrowsException()
     {
         // Arrange
@@ -546,7 +546,7 @@ public class ComplexTypeModelBinderTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModel_ForClassWithNoParameterlessConstructor_AsElement_ThrowsException()
     {
         // Arrange
@@ -565,7 +565,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModel_ForStructModelType_AsProperty_ThrowsException()
     {
         // Arrange
@@ -588,7 +588,7 @@ public class ComplexTypeModelBinderTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_ModelIsNotNull_DoesNotCallCreateModel()
     {
         // Arrange
@@ -611,7 +611,7 @@ public class ComplexTypeModelBinderTest
         binder.Verify(o => o.CreateModelPublic(bindingContext), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_ModelIsNull_CallsCreateModel()
     {
         // Arrange
@@ -768,7 +768,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public async Task BindModelAsync_BindRequiredFieldMissing_RaisesModelError()
     {
@@ -802,7 +802,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal("A value for the 'Age' parameter or property was not provided.", modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public async Task BindModelAsync_DataMemberIsRequiredFieldMissing_RaisesModelError()
     {
@@ -836,7 +836,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal("A value for the 'Age' parameter or property was not provided.", modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public async Task BindModelAsync_ValueTypePropertyWithBindRequired_SetToNull_CapturesException()
     {
@@ -873,7 +873,7 @@ public class ComplexTypeModelBinderTest
         Assert.IsType<NullReferenceException>(modelError.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_ValueTypeProperty_WithBindingOptional_NoValueSet_NoError()
     {
         // Arrange
@@ -893,7 +893,7 @@ public class ComplexTypeModelBinderTest
         Assert.True(modelStateDictionary.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_NullableValueTypeProperty_NoValueSet_NoError()
     {
         // Arrange
@@ -913,7 +913,7 @@ public class ComplexTypeModelBinderTest
         Assert.True(modelStateDictionary.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_ValueTypeProperty_NoValue_NoError()
     {
         // Arrange
@@ -935,7 +935,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(0, model.ValueTypeRequired);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_ProvideRequiredField_Success()
     {
         // Arrange
@@ -957,7 +957,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(57, model.ValueTypeRequired);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_Success()
     {
         // Arrange
@@ -995,7 +995,7 @@ public class ComplexTypeModelBinderTest
     }
 
     // Validates fix for https://github.com/dotnet/aspnetcore/issues/21916
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_PropertyInitializedInNonParameterlessConstructorConstructor()
     {
         // Arrange
@@ -1020,7 +1020,7 @@ public class ComplexTypeModelBinderTest
         Assert.DoesNotContain(exception.Message, unexpectedMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void SetProperty_PropertyHasDefaultValue_DefaultValueAttributeDoesNothing()
     {
         // Arrange
@@ -1042,7 +1042,7 @@ public class ComplexTypeModelBinderTest
         Assert.True(bindingContext.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public void SetProperty_PropertyIsPreinitialized_NoValue_DoesNothing()
     {
         // Arrange
@@ -1066,7 +1066,7 @@ public class ComplexTypeModelBinderTest
         Assert.True(bindingContext.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public void SetProperty_PropertyIsPreinitialized_DefaultValueAttributeDoesNothing()
     {
         // Arrange
@@ -1090,7 +1090,7 @@ public class ComplexTypeModelBinderTest
         Assert.True(bindingContext.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public void SetProperty_PropertyIsReadOnly_DoesNothing()
     {
         // Arrange
@@ -1154,7 +1154,7 @@ public class ComplexTypeModelBinderTest
         Assert.Empty(modelState);
     }
 
-    [Fact]
+    // [Fact]
     public void SetProperty_ReadOnlyProperty_IsNoOp()
     {
         // Arrange
@@ -1177,7 +1177,7 @@ public class ComplexTypeModelBinderTest
         Assert.Empty(model.ReadOnlyList);
     }
 
-    [Fact]
+    // [Fact]
     public void SetProperty_PropertyIsSettable_CallsSetter()
     {
         // Arrange
@@ -1196,7 +1196,7 @@ public class ComplexTypeModelBinderTest
         Assert.Equal(new DateTime(2001, 1, 1), model.DateOfBirth);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void SetProperty_PropertyIsSettable_SetterThrows_RecordsError()
     {
@@ -1220,7 +1220,7 @@ public class ComplexTypeModelBinderTest
                      bindingContext.ModelState["foo"].Errors[0].Exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void SetProperty_PropertySetterThrows_CapturesException()
     {

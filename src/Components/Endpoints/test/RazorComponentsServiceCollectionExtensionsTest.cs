@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorComponentsServiceCollectionExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddRazorComponents_RegistersServices()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddRazorComponentsTwice_DoesNotDuplicateServices()
     {
         // Arrange

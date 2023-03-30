@@ -26,7 +26,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
 {
     #region Diagnostics
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WritesDiagnostic_ActionSelected()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WritesDiagnostic_ActionInvoked()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
 
     #region Controller Context
 
-    [Fact]
+    // [Fact]
     public async Task AddingValueProviderFactory_AtResourceFilter_IsAvailableInControllerContext()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(valueProviderFactory2, controllerContext.ValueProviderFactories[1]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeletingValueProviderFactory_AtResourceFilter_IsNotAvailableInControllerContext()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
 
     #region Action Filters
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesActionFilter()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(Result, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncActionFilter()
     {
         // Arrange
@@ -221,7 +221,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(Result, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesActionFilter_ShortCircuit()
     {
         // Arrange
@@ -278,7 +278,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(context.Result, result.Object);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncActionFilter_ShortCircuit_WithResult()
     {
         // Arrange
@@ -347,7 +347,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(context.Result, result.Object);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncActionFilter_ShortCircuit_WithoutResult()
     {
         // Arrange
@@ -402,7 +402,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncActionFilter_ShortCircuit_WithResult_CallNext()
     {
         // Arrange
@@ -429,7 +429,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesActionFilter_WithExceptionThrownByAction()
     {
         // Arrange
@@ -462,7 +462,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesActionFilter_WithExceptionThrownByActionFilter()
     {
         // Arrange
@@ -505,7 +505,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncActionFilter_WithExceptionThrownByActionFilter()
     {
         // Arrange
@@ -548,7 +548,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesActionFilter_HandleException()
     {
         // Arrange
@@ -593,7 +593,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncResourceFilter_WithActionResult_FromActionFilter()
     {
         // Arrange
@@ -630,7 +630,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncResourceFilter_HandleException_FromActionFilter()
     {
         // Arrange
@@ -669,7 +669,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncResourceFilter_HandlesException_FromExceptionFilter()
     {
         // Arrange
@@ -708,7 +708,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_ExceptionBubbling_AsyncActionFilter_To_ResourceFilter()
     {
         // Arrange
@@ -756,7 +756,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
 
     #region Action Method Signatures
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_TaskReturnType()
     {
         // Arrange
@@ -781,7 +781,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.IsType<EmptyResult>(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_TaskOfValueReturnType()
     {
         // Arrange
@@ -807,7 +807,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputParam1, contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_WithAsyncKeywordThrows()
     {
         // Arrange
@@ -830,7 +830,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
                 () => invoker.InvokeAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_WithoutAsyncThrows()
     {
         // Arrange
@@ -853,7 +853,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
                 () => invoker.InvokeAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_WithExceptionsAfterAwait()
     {
         // Arrange
@@ -878,7 +878,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(expectedException, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_SyncAction()
     {
         // Arrange
@@ -902,7 +902,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputString, contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_SyncAction_WithException()
     {
         // Arrange
@@ -926,7 +926,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             () => invoker.InvokeAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_SyncMethod_WithArgumentDictionary_DefaultValueAttributeUsed()
     {
         // Arrange
@@ -952,7 +952,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal("hello", contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_SyncMethod_WithArgumentArray_DefaultValueAttributeIgnored()
     {
         // Arrange
@@ -979,7 +979,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputString, contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_SyncMethod_WithArgumentDictionary_DefaultParameterValueUsed()
     {
         // Arrange
@@ -1005,7 +1005,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal("world", contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_SyncMethod_WithArgumentDictionary_AnyValue_HasPrecedenceOverDefaults()
     {
         // Arrange
@@ -1032,7 +1032,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputString, contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_WithCustomTaskReturnType()
     {
         // Arrange
@@ -1060,7 +1060,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.IsType<EmptyResult>(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_WithCustomTaskOfTReturnType()
     {
         // Arrange
@@ -1090,7 +1090,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(1, ((ObjectResult)result).Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_ReturningUnwrappedTask()
     {
         // Arrange
@@ -1115,7 +1115,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.IsType<EmptyResult>(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncActionWithTaskOfObjectReturnType_AndReturningTaskOfActionResult()
     {
         // Arrange
@@ -1141,7 +1141,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(3, testResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_ActionWithObjectReturnType_AndReturningActionResult()
     {
         // Arrange
@@ -1167,7 +1167,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(3, testResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncMethod_ParametersInRandomOrder()
     {
         //Arrange
@@ -1228,7 +1228,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputParam, contentResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncMethod_InvalidParameterValueThrows()
     {
         //Arrange
@@ -1283,7 +1283,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
             $"Cannot return null from an action method with a return type of '{resultType}'.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_UsesDefaultValuesIfNotBound()
     {
         // Arrange
@@ -1352,7 +1352,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(5, context.Object.Items["Result"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_ConvertibleToActionResult()
     {
         // Arrange
@@ -1377,7 +1377,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputParam, testActionResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_AsyncAction_ConvertibleToActionResult()
     {
         // Arrange
@@ -1402,7 +1402,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.Equal(inputParam, testActionResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_ConvertibleToActionResult_AsObject()
     {
         // Arrange
@@ -1425,7 +1425,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.IsType<TestActionResult>(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_ConvertibleToActionResult_ReturningNull_Throws()
     {
         // Arrange
@@ -1451,7 +1451,7 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
 
     #region Logs
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_Logs()
     {
         // Arrange

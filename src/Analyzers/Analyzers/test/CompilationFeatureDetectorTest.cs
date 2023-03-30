@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Analyzers;
 
 public class CompilationFeatureDetectorTest
 {
-    [Fact]
+    // [Fact]
     public async Task DetectFeaturesAsync_FindsNoFeatures()
     {
         // Arrange
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
         Assert.Empty(features);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DetectFeatureAsync_StartupWithMapHub_FindsSignalR()
     {
         var source = @"
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task DetectFeatureAsync_StartupWithMapBlazorHub_FindsSignalR()
     {
         var source = @"

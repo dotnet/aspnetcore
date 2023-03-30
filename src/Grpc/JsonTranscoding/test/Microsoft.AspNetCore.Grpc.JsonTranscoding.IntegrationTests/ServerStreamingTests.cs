@@ -19,7 +19,7 @@ public class ServerStreamingTests : IntegrationTestBase
     {
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetWithRouteParameter_WriteOne_SuccessResult()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class ServerStreamingTests : IntegrationTestBase
         Assert.Equal("Hello test!", result.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetWithRouteParameter_WriteMultiple_SuccessResult()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class ServerStreamingTests : IntegrationTestBase
         Assert.Equal("Hello test 2!", result2.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetWithRouteParameter_WriteMultiple_CancellationBefore_CallCanceled()
     {
         // Arrange

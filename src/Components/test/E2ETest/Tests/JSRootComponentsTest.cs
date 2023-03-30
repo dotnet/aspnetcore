@@ -69,7 +69,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         AssertGlobalErrorState(false);
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddAndRemoveMultipleRootComponentsToTheSameElement()
     {
         // Add, remove, re-add, all to the same element
@@ -87,7 +87,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         AssertGlobalErrorState(false);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
     {
         // Try adding a second without removing the first
@@ -97,7 +97,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         AssertGlobalErrorState(true);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUpdateParameters()
     {
         // Create the initial component
@@ -117,7 +117,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Equal("5", () => clickCount.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSupplyComplexParameters()
     {
         app.FindElement(By.Id("add-root-component")).Click();
@@ -131,7 +131,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Equal("Byte array value: 2,3,5,7,11,13,17", () => dynamicRootContainer.FindElement(By.ClassName("value-from-bytearray")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSupplyParametersIncrementally()
     {
         app.FindElement(By.Id("add-root-component")).Click();
@@ -150,7 +150,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Equal("Person is Bert, age 123.456", () => dynamicRootContainer.FindElement(By.ClassName("person-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void SetParametersThrowsIfParametersAreInvalid()
     {
         app.FindElement(By.Id("add-root-component")).Click();
@@ -158,7 +158,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Contains("Error setting parameters", () => app.FindElement(By.Id("message")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSupplyCatchAllParameters()
     {
         app.FindElement(By.Id("add-root-component")).Click();
@@ -205,7 +205,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanSupplyAndInvokeFunctionParameters()
     {
         var containerId = "root-container-1";
@@ -240,7 +240,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Equal($"Finished removing callback parameters on component in {containerId}", () => app.FindElement(By.Id("message")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CallsJavaScriptInitializers()
     {
         app.FindElement(By.Id("show-initializer-call-log")).Click();

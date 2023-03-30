@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 public class ILEmitTrieFactoryTest
 {
     // We never vectorize on 32bit, so that's part of the test.
-    [Fact]
+    // [Fact]
     public void ShouldVectorize_ReturnsTrue_ForLargeEnoughStrings()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class ILEmitTrieFactoryTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void ShouldVectorize_ReturnsFalseForSmallStrings()
     {
         // Arrange

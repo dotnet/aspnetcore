@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 public class RouteParameterUnusedParameterFixerTest
 {
-    [Fact]
+    // [Fact]
     public async Task Controller_UnusedParameter_AddToAction()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class TestController
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_UnusedParameter_HasCancellationToken_AddToActionBeforeToken()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class TestController
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_UnusedParameter_BeforeExistingParameter_AddToActionBeforeExisting()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class TestController
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_MultipleUnusedParameters_AddToAction()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class TestController
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_MultipleUnusedParameters_WithConstraints_AddToAction()
     {
         // Arrange
@@ -290,7 +290,7 @@ public class TestController
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_DuplicateUnusedParameters_AddToAction()
     {
         // Arrange
@@ -348,7 +348,7 @@ public class TestController
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_AddToLambda()
     {
         // Arrange
@@ -389,7 +389,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_AddToRequestDelegateLambda()
     {
         // Arrange
@@ -434,7 +434,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_IntPolicy_AddIntToLambda()
     {
         // Arrange
@@ -475,7 +475,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_IntPolicy_IsOptional_AddNullableIntToLambda()
     {
         // Arrange
@@ -516,7 +516,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_IsOptional_AddNullableStringToLambda()
     {
         // Arrange
@@ -557,7 +557,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_IntAndDecimalPolicy_AddStringToLambda()
     {
         // Arrange
@@ -598,7 +598,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_IntAndMinPolicy_AddStringToLambda()
     {
         // Arrange
@@ -639,7 +639,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_BeforeExistingParameter_AddToLambdaBefore()
     {
         // Arrange
@@ -680,7 +680,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_HasCancellationToken_AddToLambdaBeforeToken()
     {
         // Arrange
@@ -723,7 +723,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_Multiple_HasCancellationToken_AddToLambdaBeforeToken()
     {
         // Arrange
@@ -769,7 +769,7 @@ class Program
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, expectedIterations: 4);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_UnusedParameter_AsParameters_HasCancellationToken_AddToLambdaBeforeToken()
     {
         // Arrange

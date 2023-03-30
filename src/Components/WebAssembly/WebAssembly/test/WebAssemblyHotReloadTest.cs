@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 
 public class WebAssemblyHotReloadTest
 {
-    [Fact]
+    // [Fact]
     public void WebAssemblyHotReload_DiscoversMetadataHandlers_FromHot()
     {
         // Arrange

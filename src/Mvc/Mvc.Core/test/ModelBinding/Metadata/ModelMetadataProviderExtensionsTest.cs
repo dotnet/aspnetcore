@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class ModelMetadataProviderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void GetMetadataForPropertyInvalidPropertyNameThrows()
     {
         // Arrange

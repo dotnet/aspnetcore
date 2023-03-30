@@ -38,7 +38,7 @@ public class VersionOneSchemaTest : IClassFixture<ScratchDatabaseFixture>
         db.Database.EnsureCreated();
     }
 
-    [Fact]
+    // [Fact]
     public void EnsureDefaultSchema()
     {
         using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();

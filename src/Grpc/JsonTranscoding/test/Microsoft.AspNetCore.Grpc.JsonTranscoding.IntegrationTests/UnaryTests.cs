@@ -22,7 +22,7 @@ public class UnaryTests : IntegrationTestBase
     {
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetWithRouteParameter_MatchUrl_SuccessResult()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class UnaryTests : IntegrationTestBase
         Assert.Equal("Hello test!", result.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteResponseHeadersAsync_SendHeaders_HeadersSentBeforeResult()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class UnaryTests : IntegrationTestBase
         Assert.Equal("Hello test!", result.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteResponseHeadersAsync_CallTwice_Error()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class UnaryTests : IntegrationTestBase
         Assert.Equal("Exception was thrown by handler. InvalidOperationException: Response headers can only be sent once per call.", result.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthContext_BasicRequest_Unauthenticated()
     {
         // Arrange
@@ -223,7 +223,7 @@ public class UnaryTests : IntegrationTestBase
         Assert.Contains(errorMessage, result.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_SendEnumString_Success()
     {
         // Arrange

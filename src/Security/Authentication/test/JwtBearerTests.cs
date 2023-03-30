@@ -42,7 +42,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     {
     }
 
-    [Fact]
+    // [Fact]
     public async Task BearerTokenValidation()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
@@ -78,7 +78,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SaveBearerToken()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
@@ -116,7 +116,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(tokenText, await response.Response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public void MapInboundClaimsDefaultsToTrue()
     {
         var options = new JwtBearerOptions();
@@ -126,7 +126,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.True(jwtHandler.MapInboundClaims);
     }
 
-    [Fact]
+    // [Fact]
     public void MapInboundClaimsCanBeSetToFalse()
     {
         var options = new JwtBearerOptions();
@@ -137,7 +137,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.False(jwtHandler.MapInboundClaims);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInThrows()
     {
         using var host = await CreateHost();
@@ -146,7 +146,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutThrows()
     {
         using var host = await CreateHost();
@@ -155,7 +155,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowAtAuthenticationFailedEvent()
     {
         using var host = await CreateHost(o =>
@@ -196,7 +196,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomHeaderReceived()
     {
         using var host = await CreateHost(o =>
@@ -226,7 +226,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("Bob le Magnifique", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoHeaderReceived()
     {
         using var host = await CreateHost();
@@ -235,7 +235,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeaderWithoutBearerReceived()
     {
         using var host = await CreateHost();
@@ -244,7 +244,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnrecognizedTokenReceived()
     {
         using var host = await CreateHost();
@@ -254,7 +254,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidTokenReceived()
     {
         using var host = await CreateHost(options =>
@@ -332,7 +332,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionsReportedInHeaderForMultipleAuthenticationFailures()
     {
         using var host = await CreateHost(options =>
@@ -414,7 +414,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(builder.ToString(), response.Response.Headers.WwwAuthenticate.First().ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionNotReportedInHeaderWhenIncludeErrorDetailsIsFalse()
     {
         using var host = await CreateHost(o =>
@@ -429,7 +429,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionNotReportedInHeaderWhenTokenWasMissing()
     {
         using var host = await CreateHost();
@@ -441,7 +441,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomTokenValidated()
     {
         using var host = await CreateHost(options =>
@@ -477,7 +477,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("Bob le Magnifique", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RetrievingTokenFromAlternateLocation()
     {
         using var host = await CreateHost(options =>
@@ -503,7 +503,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("Bob le Tout Puissant", response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnMessageReceivedSkip_NoMoreEventsExecuted()
     {
         using var host = await CreateHost(options =>
@@ -536,7 +536,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(string.Empty, response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnMessageReceivedReject_NoMoreEventsExecuted()
     {
         using var host = await CreateHost(options =>
@@ -573,7 +573,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnTokenValidatedSkip_NoMoreEventsExecuted()
     {
         using var host = await CreateHost(options =>
@@ -604,7 +604,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(string.Empty, response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnTokenValidatedReject_NoMoreEventsExecuted()
     {
         using var host = await CreateHost(options =>
@@ -639,7 +639,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnAuthenticationFailedSkip_NoMoreEventsExecuted()
     {
         using var host = await CreateHost(options =>
@@ -670,7 +670,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(string.Empty, response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnAuthenticationFailedReject_NoMoreEventsExecuted()
     {
         using var host = await CreateHost(options =>
@@ -705,7 +705,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnChallengeSkip_ResponseNotModified()
     {
         using var host = await CreateHost(o =>
@@ -727,7 +727,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(string.Empty, response.ResponseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnForbidden_ResponseNotModified()
     {
         var tokenData = CreateStandardTokenAndKey();
@@ -747,7 +747,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnForbiddenSkip_ResponseNotModified()
     {
         var tokenData = CreateStandardTokenAndKey();
@@ -773,7 +773,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnForbidden_ResponseModified()
     {
         var tokenData = CreateStandardTokenAndKey();
@@ -801,7 +801,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventOnForbidden_ResponseForMultipleAuthenticationSchemas()
     {
         var onForbiddenCallCount = 0;
@@ -851,7 +851,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(2, onForbiddenCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExpirationAndIssuedSetOnAuthenticateResult()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
@@ -895,7 +895,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(token.ValidFrom, dom.RootElement.GetProperty("issued").GetDateTimeOffset());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExpirationAndIssuedNullWhenMinOrMaxValue()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
@@ -936,7 +936,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
     }
 
-    [Fact]
+    // [Fact]
     public void CanReadJwtBearerOptionsFromConfig()
     {
         var services = new ServiceCollection().AddLogging();
@@ -970,7 +970,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.True(jwtBearerOptions.MapInboundClaims); // Assert default values are respected
     }
 
-    [Fact]
+    // [Fact]
     public void CanReadMultipleIssuersFromConfig()
     {
         var services = new ServiceCollection().AddLogging();

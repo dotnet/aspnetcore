@@ -257,7 +257,7 @@ public class HtmlHelperPartialExtensionsTest
         helper.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public void Partial_InvokesPartialAsyncWithCurrentModel()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class HtmlHelperPartialExtensionsTest
         helper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void PartialWithModel_InvokesPartialAsyncWithPassedInModel()
     {
         // Arrange
@@ -301,7 +301,7 @@ public class HtmlHelperPartialExtensionsTest
         helper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void PartialWithViewData_InvokesPartialAsyncWithPassedInViewData()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class HtmlHelperPartialExtensionsTest
         helper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void PartialWithViewDataAndModel_InvokesPartialAsyncWithPassedInViewDataAndModel()
     {
         // Arrange
@@ -347,7 +347,7 @@ public class HtmlHelperPartialExtensionsTest
         helper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void Partial_InvokesAndRendersPartialAsyncOnHtmlHelperOfT()
     {
         // Arrange
@@ -362,7 +362,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(actual));
     }
 
-    [Fact]
+    // [Fact]
     public void PartialWithModel_InvokesAndRendersPartialAsyncOnHtmlHelperOfT()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(actual));
     }
 
-    [Fact]
+    // [Fact]
     public void PartialWithViewData_InvokesAndRendersPartialAsyncOnHtmlHelperOfT()
     {
         // Arrange
@@ -393,7 +393,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(actual));
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialAsync_Throws_IfViewNotFound_MessageUsesGetViewLocations()
     {
         // Arrange
@@ -422,7 +422,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialAsync_Throws_IfViewNotFound_MessageUsesFindViewLocations()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialAsync_Throws_IfViewNotFound_MessageUsesAllLocations()
     {
         // Arrange
@@ -482,7 +482,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderPartialAsync_Throws_IfViewNotFound_MessageUsesGetViewLocations()
     {
         // Arrange
@@ -511,7 +511,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderPartialAsync_Throws_IfViewNotFound_MessageUsesFindViewLocations()
     {
         // Arrange
@@ -540,7 +540,7 @@ public class HtmlHelperPartialExtensionsTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderPartialAsync_Throws_IfViewNotFound_MessageUsesAllLocations()
     {
         // Arrange

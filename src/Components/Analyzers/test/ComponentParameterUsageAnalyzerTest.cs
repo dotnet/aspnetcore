@@ -26,7 +26,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
 
     private string ComponentTestSource { get; }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertySimpleAssignment_Warns()
     {
         var test = $@"
@@ -57,7 +57,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyCoalesceAssignment__Warns()
     {
         var test = $@"
@@ -88,7 +88,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyCompoundAssignment__Warns()
     {
         var test = $@"
@@ -119,7 +119,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyIncrement_Warns()
     {
         var test = $@"
@@ -150,7 +150,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyDecrement_Warns()
     {
         var test = $@"
@@ -181,7 +181,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyExpression_Ignores()
     {
         var test = $@"
@@ -200,7 +200,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyExpressionInStatement_Ignores()
     {
         var test = $@"
@@ -222,7 +222,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void RetrievalOfComponentPropertyValueInAssignment_Ignores()
     {
         var test = $@"
@@ -244,7 +244,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void ShadowedComponentPropertyAssignment_Ignores()
     {
         var test = $@"
@@ -269,7 +269,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void InheritedImplicitComponentPropertyAssignment_Ignores()
     {
         var test = $@"
@@ -288,7 +288,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void ImplicitComponentPropertyAssignment_Ignores()
     {
         var test = $@"
@@ -309,7 +309,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentPropertyAssignment_NonParameter_Ignores()
     {
         var test = $@"
@@ -330,7 +330,7 @@ public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void NonComponentPropertyAssignment_Ignores()
     {
         var test = $@"

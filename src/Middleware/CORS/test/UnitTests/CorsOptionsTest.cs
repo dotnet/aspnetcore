@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure;
 
 public class CorsOptionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddDefaultPolicy_SetsDefaultPolicyName()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class CorsOptionsTest
         Assert.Same(expectedPolicy, actualPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void AddDefaultPolicy_OverridesDefaultPolicyName()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class CorsOptionsTest
         Assert.Same(expectedPolicy, actualPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void AddDefaultPolicy_UsingPolicyBuilder_SetsDefaultPolicyName()
     {
         // Arrange

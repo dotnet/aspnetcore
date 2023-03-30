@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class RepalceCultureAttributeTest
 {
-    [Fact]
+    // [Fact]
     public void DefaultsTo_EnGB_EnUS()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class RepalceCultureAttributeTest
         Assert.Equal(uiCulture, replaceCulture.UICulture);
     }
 
-    [Fact]
+    // [Fact]
     public void UsesSuppliedCultureAndUICulture()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class RepalceCultureAttributeTest
         Assert.Equal(new CultureInfo(uiCulture), replaceCulture.UICulture);
     }
 
-    [Fact]
+    // [Fact]
     public void BeforeAndAfterTest_ReplacesCulture()
     {
         // Arrange

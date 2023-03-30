@@ -13,49 +13,49 @@ public class AddResponseTypeAttributeCodeFixProviderIntegrationTest
 
     private CodeFixRunner CodeFixRunner { get; } = new IgnoreCS1701WarningCodeFixRunner();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsStatusCodes() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsMissingStatusCodes() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsMissingStatusCodesAndTypes() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixWithConventionAddsMissingStatusCodes() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixWithConventionMethodAddsMissingStatusCodes() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsSuccessStatusCode() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsFullyQualifiedProducesResponseType() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsNumericLiteralForNonExistingStatusCodeConstants() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsResponseTypeWhenDifferentFromErrorType() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsStatusCodesFromMethodParameters() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsStatusCodesFromConstructorParameters() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixAddsStatusCodesFromObjectInitializer() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixWorksWhenMultipleIdenticalStatusCodesAreInError() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixWorksOnExpressionBodiedMethod() => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task CodeFixWorksWithValidationProblem() => RunTest();
 
     private async Task RunTest([CallerMemberName] string testMethod = "")

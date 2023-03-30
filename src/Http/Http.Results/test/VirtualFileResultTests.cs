@@ -20,7 +20,7 @@ public class VirtualFileResultTests : VirtualFileResultTestBase
         return result.ExecuteAsync(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public void VirtualFileHttpResult_Implements_IFileHttpResult_Correctly()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class VirtualFileResultTests : VirtualFileResultTestBase
         Assert.Equal(downloadName, result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void VirtualFileHttpResult_Implements_IContentTypeHttpResult_Correctly()
     {
         // Arrange

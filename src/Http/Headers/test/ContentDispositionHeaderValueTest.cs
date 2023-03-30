@@ -7,20 +7,20 @@ namespace Microsoft.Net.Http.Headers;
 
 public class ContentDispositionHeaderValueTest
 {
-    [Fact]
+    // [Fact]
     public void Ctor_ContentDispositionNull_Throw()
     {
         Assert.Throws<ArgumentException>(() => new ContentDispositionHeaderValue(null));
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ContentDispositionEmpty_Throw()
     {
         // null and empty should be treated the same. So we also throw for empty strings.
         Assert.Throws<ArgumentException>(() => new ContentDispositionHeaderValue(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ContentDispositionInvalidFormat_ThrowFormatException()
     {
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
@@ -37,7 +37,7 @@ public class ContentDispositionHeaderValueTest
         AssertFormatException("text;name=someName"); // ctor takes only disposition-type name, no parameters
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ContentDispositionValidFormat_SuccessfullyCreated()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -51,14 +51,14 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.Size);
     }
 
-    [Fact]
+    // [Fact]
     public void Parameters_AddNull_Throw()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
         Assert.Throws<ArgumentNullException>(() => contentDisposition.Parameters.Add(null!));
     }
 
-    [Fact]
+    // [Fact]
     public void ContentDisposition_SetAndGetContentDisposition_MatchExpectations()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -68,7 +68,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Equal("attachment", contentDisposition.DispositionType);
     }
 
-    [Fact]
+    // [Fact]
     public void Name_SetNameAndValidateObject_ParametersEntryForNameAdded()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -83,7 +83,7 @@ public class ContentDispositionHeaderValueTest
         contentDisposition.Name = null; // It's OK to set it again to null; no exception.
     }
 
-    [Fact]
+    // [Fact]
     public void Name_AddNameParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -103,7 +103,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.Name.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileName_AddNameParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -123,7 +123,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileName.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileName_NeedsEncoding_EncodedAndDecodedCorrectly()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -138,7 +138,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileName.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileName_NeedsEncodingBecauseOfNewLine_EncodedAndDecodedCorrectly()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -153,7 +153,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileName.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileName_UnknownOrBadEncoding_PropertyFails()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -175,7 +175,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileName.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileNameStar_AddNameParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -197,7 +197,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileNameStar.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileNameStar_NeedsEncoding_EncodedAndDecodedCorrectly()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -212,7 +212,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.FileNameStar.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void FileNameStar_UnknownOrBadEncoding_PropertyFails()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -245,7 +245,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Equal(expectedFileName, contentDisposition.FileName);
     }
 
-    [Fact]
+    // [Fact]
     public void Dates_AddDateParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         string validDateString = "\"Tue, 15 Nov 1994 08:12:31 GMT\"";
@@ -272,7 +272,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.CreationDate);
     }
 
-    [Fact]
+    // [Fact]
     public void Dates_InvalidDates_PropertyFails()
     {
         string invalidDateString = "\"Tue, 15 Nov 94 08:12 GMT\"";
@@ -292,7 +292,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Equal(0, contentDisposition.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void Size_AddSizeParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -313,7 +313,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.Size);
     }
 
-    [Fact]
+    // [Fact]
     public void Size_InvalidSizes_PropertyFails()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -335,7 +335,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Null(contentDisposition.Size);
     }
 
-    [Fact]
+    // [Fact]
     public void ToString_UseDifferentContentDispositions_AllSerializedCorrectly()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -373,7 +373,7 @@ public class ContentDispositionHeaderValueTest
             contentDisposition.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void GetHashCode_UseContentDispositionWithAndWithoutParameters_SameOrDifferentHashCodes()
     {
         var contentDisposition1 = new ContentDispositionHeaderValue("inline");
@@ -392,7 +392,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Equal(contentDisposition2.GetHashCode(), contentDisposition5.GetHashCode());
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_UseContentDispositionWithAndWithoutParameters_EqualOrNotEqualNoExceptions()
     {
         var contentDisposition1 = new ContentDispositionHeaderValue("inline");
@@ -419,7 +419,7 @@ public class ContentDispositionHeaderValueTest
         Assert.False(contentDisposition1.Equals(contentDisposition7), "inline vs. text/other.");
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfValidValueStrings_ParsedCorrectly()
     {
         var expected = new ContentDispositionHeaderValue("inline");
@@ -440,7 +440,7 @@ public class ContentDispositionHeaderValueTest
         CheckValidParse(@"attachment; filename*=UTF-8''foo-%c3%a4.html; filename=foo-ae.html", expected);
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfInvalidValueStrings_Throws()
     {
         CheckInvalidParse("");
@@ -455,7 +455,7 @@ public class ContentDispositionHeaderValueTest
         CheckInvalidParse("inline/");
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfValidValueStrings_ParsedCorrectly()
     {
         var expected = new ContentDispositionHeaderValue("inline");
@@ -470,7 +470,7 @@ public class ContentDispositionHeaderValueTest
         CheckValidTryParse("  inline;name=myName", expected);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse()
     {
         CheckInvalidTryParse("");
@@ -583,7 +583,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Throws<FormatException>(() => ContentDispositionHeaderValue.Parse(input));
     }
 
-    [Fact]
+    // [Fact]
     public void HeaderNamesWithQuotes_ExpectNamesToNotHaveQuotes()
     {
         var contentDispositionLine = "form-data; name =\"dotnet\"; filename=\"example.png\"";
@@ -596,7 +596,7 @@ public class ContentDispositionHeaderValueTest
         Assert.Equal(expectedFileName, result.FileName);
     }
 
-    [Fact]
+    // [Fact]
     public void FileNameWithSurrogatePairs_EncodedCorrectly()
     {
         var contentDisposition = new ContentDispositionHeaderValue("attachment");

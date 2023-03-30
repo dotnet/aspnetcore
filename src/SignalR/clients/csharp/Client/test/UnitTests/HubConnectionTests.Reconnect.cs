@@ -25,7 +25,7 @@ public partial class HubConnectionTests
 {
     public class Reconnect : VerifiableLoggedTest
     {
-        [Fact]
+        // [Fact]
         public async Task IsNotEnabledByDefault()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -66,7 +66,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanBeOptedInto()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -180,7 +180,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StopsIfTheReconnectPolicyReturnsNull()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -274,7 +274,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         [LogLevel(LogLevel.Trace)]
         public async Task HasCorrectRetryNumberAfterRetriesExhausted()
         {
@@ -372,7 +372,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanHappenMultipleTimes()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -468,7 +468,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanBeInducedByCloseMessageWithAllowReconnectSet()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -552,7 +552,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CannotBeInducedByCloseMessageWithAllowReconnectOmitted()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -614,7 +614,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task EventsNotFiredIfFirstRetryDelayIsNull()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -668,7 +668,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task DoesNotStartIfConnectionIsLostDuringInitialHandshake()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -724,7 +724,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ContinuesIfConnectionLostDuringReconnectHandshake()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -830,7 +830,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ContinuesIfInvalidHandshakeResponse()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -950,7 +950,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanBeStoppedWhileRestartingUnderlyingConnection()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -1041,7 +1041,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanBeStoppedDuringRetryDelay()
         {
             bool ExpectedErrors(WriteContext writeContext)

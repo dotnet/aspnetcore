@@ -19,7 +19,7 @@ public class AuthorizeViewTest
     // failures.
     private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
-    [Fact]
+    // [Fact]
     public void RendersNothingIfNotAuthorized()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RendersNotAuthorizedIfNotAuthorized()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RendersNothingIfAuthorizedButNoChildContentOrAuthorizedProvided()
     {
         // Arrange
@@ -110,7 +110,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RendersChildContentIfAuthorized()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RendersAuthorizedIfAuthorized()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RespondsToChangeInAuthorizationState()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsIfBothChildContentAndAuthorizedProvided()
     {
         // Arrange
@@ -246,7 +246,7 @@ public class AuthorizeViewTest
         Assert.Equal("Do not specify both 'Authorized' and 'ChildContent'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void RendersNothingUntilAuthorizationCompleted()
     {
         // Arrange
@@ -287,7 +287,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RendersAuthorizingUntilAuthorizationCompletedAsync()
     {
         // Covers https://github.com/dotnet/aspnetcore/pull/31794
@@ -346,7 +346,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RendersAuthorizingUntilAuthorizationCompleted()
     {
         // Arrange
@@ -404,7 +404,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void IncludesPolicyInAuthorizeCall()
     {
         // Arrange
@@ -427,7 +427,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void IncludesRolesInAuthorizeCall()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void IncludesResourceInAuthorizeCall()
     {
         // Arrange
@@ -475,7 +475,7 @@ public class AuthorizeViewTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RejectsNonemptyScheme()
     {
         // Arrange

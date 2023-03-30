@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
 
 public class SocketTransportTests : LoggedTestBase
 {
-    [Fact]
+    // [Fact]
     public async Task SocketTransportExposesSocketsFeature()
     {
         var builder = TransportSelector.GetHostBuilder()

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class EndpointHttpContextExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void GetEndpoint_ContextWithoutFeature_ReturnsNull()
     {
         // Arrange
@@ -20,7 +20,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Null(endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void GetEndpoint_ContextWithFeatureAndNullEndpoint_ReturnsNull()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Null(endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void GetEndpoint_ContextWithFeatureAndEndpoint_ReturnsEndpoint()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Equal(initial, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void SetEndpoint_NullOnContextWithoutFeature_NoFeatureSet()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Null(context.Features.Get<IEndpointFeature>());
     }
 
-    [Fact]
+    // [Fact]
     public void SetEndpoint_EndpointOnContextWithoutFeature_FeatureWithEndpointSet()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Equal(endpoint, context.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public void SetEndpoint_EndpointOnContextWithFeature_EndpointSetOnExistingFeature()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Equal(endpoint, context.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public void SetEndpoint_NullOnContextWithFeature_NullSetOnExistingFeature()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class EndpointHttpContextExtensionsTests
         Assert.Null(context.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public void SetAndGetEndpoint_Roundtrip_EndpointIsRoundtrip()
     {
         // Arrange

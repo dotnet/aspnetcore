@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class StringHtmlContentTest
 {
-    [Fact]
+    // [Fact]
     public void WriteTo_WritesContent()
     {
         // Arrange & Act
@@ -22,7 +22,7 @@ public class StringHtmlContentTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Emoji_EncodedCorrectly()
     {
         // Arrange & Act

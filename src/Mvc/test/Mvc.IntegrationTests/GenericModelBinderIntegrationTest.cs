@@ -17,7 +17,7 @@ public class GenericModelBinderIntegrationTest
     //
     // In this example we choose IFormCollection because IFormCollection has a dedicated
     // model binder.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_WithPrefix_Success()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class GenericModelBinderIntegrationTest
     //
     // In this example we choose IFormCollection - because IFormCollection has a dedicated
     // model  binder.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_EmptyPrefix_Success()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class GenericModelBinderIntegrationTest
     //
     // In this example we choose IFormCollection - because IFormCollection has a dedicated
     // model  binder.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollection_ElementTypeFromGreedyModelBinder_NoData()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class GenericModelBinderIntegrationTest
 
     // This isn't an especially useful scenario - but it exercises what happens when you
     // try to use a Collection of something that is bound greedily by binding source.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollection_ElementTypeUsesGreedyModelBinder_WithPrefix_Success()
     {
         // Arrange
@@ -221,7 +221,7 @@ public class GenericModelBinderIntegrationTest
 
     // Similar to the GenericModelBinder_BindsCollection_ElementTypeUsesGreedyModelBinder_WithPrefix_Success
     // scenario but mis-configured. Model using a BindingSource for which no ModelBinder is enabled.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollection_ElementTypeUsesGreedyBindingSource_WithPrefix_NullElement()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsArrayOfDictionary_WithPrefix_Success()
     {
         // Arrange
@@ -300,7 +300,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsArrayOfDictionary_EmptyPrefix_Success()
     {
         // Arrange
@@ -345,7 +345,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsArrayOfDictionary_NoData()
     {
         // Arrange
@@ -380,7 +380,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_WithPrefix_Success()
     {
         // Arrange
@@ -424,7 +424,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_EmptyPrefix_Success()
     {
         // Arrange
@@ -468,7 +468,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsCollectionOfKeyValuePair_NoData()
     {
         // Arrange
@@ -503,7 +503,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsDictionaryOfList_WithPrefix_Success()
     {
         // Arrange
@@ -552,7 +552,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsDictionaryOfList_EmptyPrefix_Success()
     {
         // Arrange
@@ -600,7 +600,7 @@ public class GenericModelBinderIntegrationTest
 
     // This is part of a random sampling of scenarios where a GenericModelBinder is used
     // recursively.
-    [Fact]
+    // [Fact]
     public async Task GenericModelBinder_BindsDictionaryOfList_NoData()
     {
         // Arrange

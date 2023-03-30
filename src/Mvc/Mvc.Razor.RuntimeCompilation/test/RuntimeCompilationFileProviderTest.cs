@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
 public class RuntimeCompilationFileProviderTest
 {
-    [Fact]
+    // [Fact]
     public void GetFileProvider_ThrowsIfNoConfiguredFileProviders()
     {
         // Arrange

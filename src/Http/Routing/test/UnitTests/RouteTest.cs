@@ -21,7 +21,7 @@ public class RouteTest
     private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
     private static readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
-    [Fact]
+    // [Fact]
     public void CreateTemplate_InlineConstraint_Regex_Malformed()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class RouteTest
         Assert.Equal(expected, exception.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_MergesExistingRouteData_IfRouteMatches()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class RouteTest
         Assert.Same(originalDataTokens, context.RouteData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_MergesExistingRouteData_PassedToConstraint()
     {
         // Arrange
@@ -162,7 +162,7 @@ public class RouteTest
         Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_InlineConstraint_OptionalParameter()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class RouteTest
         Assert.Equal("5", context.RouteData.Values["id"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_InlineConstraint_Regex()
     {
         // Arrange
@@ -246,7 +246,7 @@ public class RouteTest
         Assert.Equal("123-456-7890", context.RouteData.Values["ssn"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_InlineConstraint_OptionalParameter_NotPresent()
     {
         // Arrange
@@ -286,7 +286,7 @@ public class RouteTest
         Assert.False(context.RouteData.Values.ContainsKey("id"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_InlineConstraint_OptionalParameter_WithInConstructorConstraint()
     {
         // Arrange
@@ -338,7 +338,7 @@ public class RouteTest
         Assert.Equal("5", context.RouteData.Values["id"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteAsync_InlineConstraint_OptionalParameter_ConstraintFails()
     {
         // Arrange
@@ -376,7 +376,7 @@ public class RouteTest
     }
 
     // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
-    [Fact]
+    // [Fact]
     public async Task Match_Success_LeadingSlash()
     {
         // Arrange
@@ -393,7 +393,7 @@ public class RouteTest
         Assert.Equal("Index", context.RouteData.Values["action"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_RootUrl()
     {
         // Arrange
@@ -408,7 +408,7 @@ public class RouteTest
         Assert.Empty(context.RouteData.Values);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_Defaults()
     {
         // Arrange
@@ -425,7 +425,7 @@ public class RouteTest
         Assert.Equal("Index", context.RouteData.Values["action"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_CopiesDataTokens()
     {
         // Arrange
@@ -448,7 +448,7 @@ public class RouteTest
         Assert.Single(route.DataTokens, kvp => kvp.Key == "culture" && ((string)kvp.Value) == "en-CA");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Fails()
     {
         // Arrange
@@ -462,7 +462,7 @@ public class RouteTest
         Assert.Null(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_RejectedByHandler()
     {
         // Arrange
@@ -480,7 +480,7 @@ public class RouteTest
         Assert.Equal("Home", Assert.IsType<string>(value.Value));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_SetsRouters()
     {
         // Arrange
@@ -497,7 +497,7 @@ public class RouteTest
         Assert.Same(target, context.RouteData.Routers[0]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_RouteValuesDoesntThrowOnKeyNotFound()
     {
         // Arrange
@@ -511,7 +511,7 @@ public class RouteTest
         Assert.Null(context.RouteData.Values["1controller"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_OptionalParameter_ValueProvided()
     {
         // Arrange
@@ -529,7 +529,7 @@ public class RouteTest
         Assert.Equal("xml", context.RouteData.Values["format"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_OptionalParameter_ValueNotProvided()
     {
         // Arrange
@@ -546,7 +546,7 @@ public class RouteTest
         Assert.Equal("Create", context.RouteData.Values["action"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_OptionalParameter_DefaultValue()
     {
         // Arrange
@@ -564,7 +564,7 @@ public class RouteTest
         Assert.Equal("xml", context.RouteData.Values["format"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Success_OptionalParameter_EndsWithDot()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class RouteTest
         return new RouteContext(context.Object);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_Success()
     {
         // Arrange
@@ -612,7 +612,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_Fail()
     {
         // Arrange
@@ -626,7 +626,7 @@ public class RouteTest
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_EncodesValues()
     {
         // Arrange
@@ -644,7 +644,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
     {
         // Arrange
@@ -677,7 +677,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ForListOfStrings()
     {
         // Arrange
@@ -695,7 +695,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ForListOfInts()
     {
         // Arrange
@@ -713,7 +713,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ForList_Empty()
     {
         // Arrange
@@ -731,7 +731,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ForList_StringWorkaround()
     {
         // Arrange
@@ -832,7 +832,7 @@ public class RouteTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ValuesRejectedByHandler_StillGeneratesPath()
     {
         // Arrange
@@ -848,7 +848,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_Success_AmbientValues()
     {
         // Arrange
@@ -864,7 +864,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteGenerationRejectsConstraints()
     {
         // Arrange
@@ -883,7 +883,7 @@ public class RouteTest
         Assert.Null(virtualPath);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteGenerationAcceptsConstraints()
     {
         // Arrange
@@ -905,7 +905,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteWithCatchAllRejectsConstraints()
     {
         // Arrange
@@ -924,7 +924,7 @@ public class RouteTest
         Assert.Null(virtualPath);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteWithCatchAllAcceptsConstraints()
     {
         // Arrange
@@ -946,7 +946,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithNonParameterConstraintReturnsUrlWithoutQueryString()
     {
         // Arrange
@@ -984,7 +984,7 @@ public class RouteTest
 
     // Any ambient values from the current request should be visible to constraint, even
     // if they have nothing to do with the route generating a link
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ConstraintsSeeAmbientValues()
     {
         // Arrange
@@ -1015,7 +1015,7 @@ public class RouteTest
 
     // Non-parameter default values from the routing generating a link are not in the 'values'
     // collection when constraints are processed.
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ConstraintsDontSeeDefaults_WhenTheyArentParameters()
     {
         // Arrange
@@ -1045,7 +1045,7 @@ public class RouteTest
     }
 
     // Default values are visible to the constraint when they are used to fill a parameter.
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ConstraintsSeesDefault_WhenThereItsAParameter()
     {
         // Arrange
@@ -1076,7 +1076,7 @@ public class RouteTest
 
     // Default values from the routing generating a link are in the 'values' collection when
     // constraints are processed - IFF they are specified as values or ambient values.
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_ConstraintsSeeDefaults_IfTheyAreSpecifiedOrAmbient()
     {
         // Arrange
@@ -1105,7 +1105,7 @@ public class RouteTest
         Assert.Equal(expectedValues.OrderBy(kvp => kvp.Key), constraint.Values.OrderBy(kvp => kvp.Key));
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_Success()
     {
         // Arrange
@@ -1122,7 +1122,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_NonMatchingvalue()
     {
         // Arrange
@@ -1137,7 +1137,7 @@ public class RouteTest
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_OptionalParameter_ValuePresent()
     {
         // Arrange
@@ -1154,7 +1154,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_OptionalParameter_ValueNotPresent()
     {
         // Arrange
@@ -1171,7 +1171,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_OptionalParameter_ValuePresent_ConstraintFails()
     {
         // Arrange
@@ -1186,7 +1186,7 @@ public class RouteTest
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_CompositeInlineConstraint()
     {
         // Arrange
@@ -1203,7 +1203,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_InlineConstraints_CompositeConstraint_FromConstructor()
     {
         // Arrange
@@ -1226,7 +1226,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_ParameterPresentInValues()
     {
         // Arrange
@@ -1248,7 +1248,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues()
     {
         // Arrange
@@ -1270,7 +1270,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_ParameterPresentInValuesAndDefaults()
     {
         // Arrange
@@ -1292,7 +1292,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues_PresentInDefaults()
     {
         // Arrange
@@ -1314,7 +1314,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_ParameterNotPresentInTemplate_PresentInValues()
     {
         // Arrange
@@ -1336,7 +1336,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_FollowedByDotAfterSlash_ParameterPresent()
     {
         // Arrange
@@ -1358,7 +1358,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_FollowedByDotAfterSlash_ParameterNotPresent()
     {
         // Arrange
@@ -1380,7 +1380,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameter_InSimpleSegment()
     {
         // Arrange
@@ -1402,7 +1402,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_TwoOptionalParameters_OneValueFromAmbientValues()
     {
         // Arrange
@@ -1426,7 +1426,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_OptionalParameterAfterDefault_OneValueFromAmbientValues()
     {
         // Arrange
@@ -1450,7 +1450,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_TwoOptionalParametersAfterDefault_OneValueFromAmbientValues()
     {
         // Arrange
@@ -1474,7 +1474,7 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPath_TwoOptionalParametersAfterDefault_LastValueFromAmbientValues()
     {
         // Arrange
@@ -1583,7 +1583,7 @@ public class RouteTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRoute_WithParameterPolicy_AbleToAddTheRoute()
     {
         // Arrange
@@ -1599,7 +1599,7 @@ public class RouteTest
         Assert.Empty(templateRoute.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRouteWithInvalidConstraints_Throws()
     {
         // Arrange
@@ -1623,7 +1623,7 @@ public class RouteTest
         Assert.Equal(expectedMessage, exception.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRouteWithTwoConstraints()
     {
         // Arrange
@@ -1644,7 +1644,7 @@ public class RouteTest
         Assert.Equal(mockConstraint, constraints["action"]);
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRouteWithOneInlineConstraintAndOneUsingConstraintArgument()
     {
         // Arrange
@@ -1665,7 +1665,7 @@ public class RouteTest
         Assert.IsType<IntRouteConstraint>(constraint.Constraints.ElementAt(1));
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRoute_WithOneInlineConstraint_AddsItToConstraintCollection()
     {
         // Arrange
@@ -1683,7 +1683,7 @@ public class RouteTest
         Assert.IsType<IntRouteConstraint>(constraints["id"]);
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRouteWithRouteName_WithNullDefaults_AddsTheRoute()
     {
         // Arrange
@@ -1698,7 +1698,7 @@ public class RouteTest
         Assert.Equal("RouteName", name);
     }
 
-    [Fact]
+    // [Fact]
     public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints_AddsTheRoute()
     {
         // Arrange

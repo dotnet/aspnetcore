@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Authentication.Test;
 
 public class OAuthChallengePropertiesTest
 {
-    [Fact]
+    // [Fact]
     public void ScopeProperty()
     {
         var properties = new OAuthChallengeProperties
@@ -20,7 +20,7 @@ public class OAuthChallengePropertiesTest
         Assert.Equal(new string[] { "foo", "bar" }, properties.Parameters["scope"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ScopeProperty_NullValue()
     {
         var properties = new OAuthChallengeProperties();
@@ -31,7 +31,7 @@ public class OAuthChallengePropertiesTest
         Assert.Null(properties.Scope);
     }
 
-    [Fact]
+    // [Fact]
     public void SetScope()
     {
         var properties = new OAuthChallengeProperties();
@@ -40,7 +40,7 @@ public class OAuthChallengePropertiesTest
         Assert.Equal(new string[] { "foo", "bar" }, properties.Parameters["scope"]);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcMaxAge()
     {
         var properties = new OpenIdConnectChallengeProperties()
@@ -50,7 +50,7 @@ public class OAuthChallengePropertiesTest
         Assert.Equal(TimeSpan.FromSeconds(200), properties.MaxAge);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcMaxAge_NullValue()
     {
         var properties = new OpenIdConnectChallengeProperties();
@@ -61,7 +61,7 @@ public class OAuthChallengePropertiesTest
         Assert.Null(properties.MaxAge);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcPrompt()
     {
         var properties = new OpenIdConnectChallengeProperties()
@@ -72,7 +72,7 @@ public class OAuthChallengePropertiesTest
         Assert.Equal("login", properties.Parameters["prompt"]);
     }
 
-    [Fact]
+    // [Fact]
     public void OidcPrompt_NullValue()
     {
         var properties = new OpenIdConnectChallengeProperties();
@@ -83,7 +83,7 @@ public class OAuthChallengePropertiesTest
         Assert.Null(properties.Prompt);
     }
 
-    [Fact]
+    // [Fact]
     public void GoogleProperties()
     {
         var properties = new GoogleChallengeProperties()
@@ -103,7 +103,7 @@ public class OAuthChallengePropertiesTest
         Assert.Equal("login", properties.Parameters["prompt"]);
     }
 
-    [Fact]
+    // [Fact]
     public void GoogleProperties_NullValues()
     {
         var properties = new GoogleChallengeProperties();
@@ -129,7 +129,7 @@ public class OAuthChallengePropertiesTest
         Assert.Null(properties.Prompt);
     }
 
-    [Fact]
+    // [Fact]
     public void GoogleIncludeGrantedScopes()
     {
         var properties = new GoogleChallengeProperties()

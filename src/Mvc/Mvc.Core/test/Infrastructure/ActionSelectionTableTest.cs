@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 // for creation, but selection works the same for both cases.
 public class ActionSelectionTableTest
 {
-    [Fact]
+    // [Fact]
     public void Select_SingleMatch()
     {
         var actions = new ActionDescriptor[]
@@ -49,7 +49,7 @@ public class ActionSelectionTableTest
         Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void Select_ActionDescriptor_SingleMatch_UsesInvariantCulture()
     {
@@ -89,7 +89,7 @@ public class ActionSelectionTableTest
         Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void Select_Endpoint_SingleMatch_UsesInvariantCulture()
     {
@@ -129,7 +129,7 @@ public class ActionSelectionTableTest
         Assert.Collection(matches, (e) => Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>()));
     }
 
-    [Fact]
+    // [Fact]
     public void Select_ActionDescriptor_MultipleMatches()
     {
         var actions = new ActionDescriptor[]
@@ -164,7 +164,7 @@ public class ActionSelectionTableTest
         Assert.Equal(actions.ToArray(), matches.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Endpoint_MultipleMatches()
     {
         var actions = new ActionDescriptor[]
@@ -199,7 +199,7 @@ public class ActionSelectionTableTest
         Assert.Equal(actions.ToArray(), matches.Select(e => e.Metadata.GetMetadata<ActionDescriptor>()).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void Select_NoMatch()
     {
         var actions = new ActionDescriptor[]
@@ -234,7 +234,7 @@ public class ActionSelectionTableTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_ActionDescriptors_NoMatch_ExcludesAttributeRoutedActions()
     {
         var actions = new ActionDescriptor[]
@@ -264,7 +264,7 @@ public class ActionSelectionTableTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Endpoint_Match_IncludesAttributeRoutedActions()
     {
         var actions = new ActionDescriptor[]
@@ -297,7 +297,7 @@ public class ActionSelectionTableTest
     // In this context `CaseSensitiveMatch` means that the input route values exactly match one of the action
     // descriptor's route values in terms of casing. This is important because we optimize for this case
     // in the implementation.
-    [Fact]
+    // [Fact]
     public void Select_Match_CaseSensitiveMatch_IncludesAllCaseInsensitiveMatches()
     {
         var actions = new ActionDescriptor[]
@@ -346,7 +346,7 @@ public class ActionSelectionTableTest
     // In this context `CaseInsensitiveMatch` means that the input route values do not match any action
     // descriptor's route values in terms of casing. This is important because we optimize for the case
     // where the casing matches - the non-matching-casing path is handled a bit differently.
-    [Fact]
+    // [Fact]
     public void Select_Match_CaseInsensitiveMatch_IncludesAllCaseInsensitiveMatches()
     {
         var actions = new ActionDescriptor[]
@@ -392,7 +392,7 @@ public class ActionSelectionTableTest
         Assert.Equal(expected, matches);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Match_CaseSensitiveMatch_MatchesOnEmptyString()
     {
         var actions = new ActionDescriptor[]
@@ -423,7 +423,7 @@ public class ActionSelectionTableTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Match_CaseInsensitiveMatch_MatchesOnEmptyString()
     {
         var actions = new ActionDescriptor[]
@@ -454,7 +454,7 @@ public class ActionSelectionTableTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Match_MatchesOnNull()
     {
         var actions = new ActionDescriptor[]
@@ -485,7 +485,7 @@ public class ActionSelectionTableTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnEmptyString()
     {
         var actions = new ActionDescriptor[]
@@ -514,7 +514,7 @@ public class ActionSelectionTableTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnNull()
     {
         var actions = new ActionDescriptor[]

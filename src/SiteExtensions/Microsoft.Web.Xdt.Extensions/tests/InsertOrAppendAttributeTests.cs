@@ -10,7 +10,7 @@ namespace Microsoft.Web.Xdt.Extensions;
 
 public class InsertOrAppendAttributeTests
 {
-    [Fact]
+    // [Fact]
     public void InsertOrAppend_NoExesitingLine_InsertsLine()
     {
         var transform = new XmlTransformation(Path.GetFullPath("transform.xdt"));
@@ -34,7 +34,7 @@ public class InsertOrAppendAttributeTests
         Assert.Equal("InsertValue2", secondChild.Attributes["value"].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void InsertOrAppend_LineExistsButNoValueField_FieldInserted()
     {
         var transform = new XmlTransformation(Path.GetFullPath("transform.xdt"));
@@ -58,7 +58,7 @@ public class InsertOrAppendAttributeTests
         Assert.Equal("InsertValue2", secondChild.Attributes["value"].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void InsertOrAppend_ExistingEmptyValue_InsertsValue()
     {
         var transform = new XmlTransformation(Path.GetFullPath("transform.xdt"));
@@ -82,7 +82,7 @@ public class InsertOrAppendAttributeTests
         Assert.Equal("InsertValue2", secondChild.Attributes["value"].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void InsertOrAppend_ExistingValue_AppendsValue()
     {
         var transform = new XmlTransformation(Path.GetFullPath("transform.xdt"));

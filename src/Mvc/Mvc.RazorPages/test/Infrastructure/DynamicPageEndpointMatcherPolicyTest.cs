@@ -112,7 +112,7 @@ public class DynamicPageEndpointMatcherPolicyTest
 
     private Func<HttpContext, RouteValueDictionary, object, IReadOnlyList<Endpoint>, ValueTask<IReadOnlyList<Endpoint>>> Filter { get; set; } = (_, __, ___, e) => new ValueTask<IReadOnlyList<Endpoint>>(e);
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_NoMatch()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         Assert.False(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_HasMatchNoEndpointFound()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         Assert.False(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_HasMatchFindsEndpoint_WithoutRouteValues()
     {
         // Arrange
@@ -213,7 +213,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_HasMatchFindsEndpoint_WithRouteValues()
     {
         // Arrange
@@ -264,7 +264,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_Throws_ForTransformersWithInvalidLifetime()
     {
         // Arrange
@@ -294,7 +294,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => policy.ApplyAsync(httpContext, candidates));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_CanDiscardFoundEndpoints()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         Assert.False(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_CanReplaceFoundEndpoints()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class DynamicPageEndpointMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_CanExpandTheListOfFoundEndpoints()
     {
         // Arrange

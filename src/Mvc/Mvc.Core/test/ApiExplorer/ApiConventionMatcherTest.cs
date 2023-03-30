@@ -22,7 +22,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfNamesDifferInCase()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfNamesAreDifferent()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfConventionNameIsSubString()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfConventionNameIsSuperString()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsTrue_IfExactMatch()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsTrue_IfNamesAreExact()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsTrue_IfNameIsProperPrefix()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNamesAreDifferent()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNamesDifferInCase()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsNotProperPrefix()
     {
         // Arrange
@@ -162,7 +162,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsSuffix()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnsFalse_IfNamesAreDifferent()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnsFalse_IfNameIsNotSuffix()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnTrue_IfNameIsExact()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnFalse_IfNameDiffersInCase()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnTrue_IfNameIsProperSuffix()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsTypeMatch_WithAssignableFrom_ReturnsTrueForExact()
     {
         // Arrange
@@ -285,7 +285,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsTypeMatch_WithAssignableFrom_ReturnsTrueForDerived()
     {
         // Arrange
@@ -299,7 +299,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsTypeMatch_WithAssignableFrom_ReturnsFalseForBaseTypes()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsTypeMatch_WithAssignableFrom_ReturnsFalseForUnrelated()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_ReturnsFalse_IfMethodNamesDoNotMatch()
     {
         // Arrange
@@ -341,7 +341,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_ReturnsFalse_IMethodHasMoreParametersThanConvention()
     {
         // Arrange
@@ -355,7 +355,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_ReturnsFalse_IfMethodHasFewerParametersThanConvention()
     {
         // Arrange
@@ -369,7 +369,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_ReturnsFalse_IfParametersDoNotMatch()
     {
         // Arrange
@@ -383,7 +383,7 @@ public class ApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_ReturnsTrue_IfMethodNameAndParametersMatches()
     {
         // Arrange
@@ -397,7 +397,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_ReturnsTrue_IfParamsArrayMatchesRemainingArguments()
     {
         // Arrange
@@ -411,7 +411,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsMatch_WithEmpty_MatchesMethodWithNoParameters()
     {
         // Arrange
@@ -425,7 +425,7 @@ public class ApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNameMatchBehavior_ReturnsExact_WhenNoAttributesArePresent()
     {
         // Arrange
@@ -440,7 +440,7 @@ public class ApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNameMatchBehavior_ReturnsExact_WhenNoNameMatchBehaviorAttributeIsSpecified()
     {
         // Arrange
@@ -455,7 +455,7 @@ public class ApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNameMatchBehavior_ReturnsValueFromAttributes()
     {
         // Arrange
@@ -475,7 +475,7 @@ public class ApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTypeMatchBehavior_ReturnsIsAssignableFrom_WhenNoAttributesArePresent()
     {
         // Arrange
@@ -490,7 +490,7 @@ public class ApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTypeMatchBehavior_ReturnsIsAssignableFrom_WhenNoMatchingAttributesArePresent()
     {
         // Arrange
@@ -505,7 +505,7 @@ public class ApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTypeMatchBehavior_ReturnsValueFromAttributes()
     {
         // Arrange

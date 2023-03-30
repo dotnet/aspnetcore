@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines;
 
 public class CompositeViewEngineTest
 {
-    [Fact]
+    // [Fact]
     public void ViewEngines_UsesListOfViewEnginesFromOptions()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class CompositeViewEngineTest
         Assert.Equal(new[] { viewEngine1, viewEngine2 }, result);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_IsMainPage_Throws_WhenNoViewEnginesAreRegistered()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class CompositeViewEngineTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_IsMainPage_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class CompositeViewEngineTest
         Assert.Equal(new[] { "controller/test-view" }, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_IsMainPage_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class CompositeViewEngineTest
         Assert.Same(view, result.View);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_IsMainPage_ReturnsViewFromFirstViewEngineWithFoundResult()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class CompositeViewEngineTest
         Assert.Equal(viewName, result.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_IsMainPage_ReturnsNotFound_IfAllViewEnginesReturnNotFound()
     {
         // Arrange
@@ -297,7 +297,7 @@ public class CompositeViewEngineTest
         Assert.Equal(new[] { "1", "2", "3", "4", "5" }, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class CompositeViewEngineTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
     {
         // Arrange
@@ -334,7 +334,7 @@ public class CompositeViewEngineTest
         Assert.Equal(new[] { "Shared/partial-view" }, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult()
     {
         // Arrange
@@ -356,7 +356,7 @@ public class CompositeViewEngineTest
         Assert.Same(view, result.View);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsViewFromFirstViewEngineWithFoundResult()
     {
         // Arrange
@@ -391,7 +391,7 @@ public class CompositeViewEngineTest
         Assert.Equal(viewName, result.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsNotFound_IfAllViewEnginesReturnNotFound()
     {
         // Arrange

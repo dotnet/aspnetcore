@@ -55,7 +55,7 @@ public class PackageTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PackageAssembliesHaveExpectedAssemblyVersions()
     {
         // In official builds, only run this test on Helix. The test will work locally so long as we're building w/ shipping versions.

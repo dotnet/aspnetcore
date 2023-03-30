@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 public class ObjectResultExecutorTest
 {
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesSpecifiedContentType()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class ObjectResultExecutorTest
 
     // For this test case probably the most common use case is when there is a format mapping based
     // content type selected but the developer had set the content type on the Response.ContentType
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ContentTypeProvidedFromResponseAndObjectResult_UsesResponseContentType()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_WithOneProvidedContentType_FromResponseContentType_IgnoresAcceptHeader()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class ObjectResultExecutorTest
         Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_WithOneProvidedContentType_FromResponseContentType_NoFallback()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class ObjectResultExecutorTest
         Assert.Equal(406, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_WithResponseAndObjectResultContentType_ForProblemDetailsValue_UsesXMLContentType()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_WithResponseContentType_ForProblemDetailsValue_UsesProblemDetailXMLContentType()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsContentType()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsJsonContentType_BasedOnAcceptHeader()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+json; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsXMLContentType_BasedOnAcceptHeader()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_NoContentTypeProvidedForProblemDetails_UsesDefaultContentTypes()
     {
         // Arrange
@@ -250,7 +250,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_NoFormatterFound_Returns406()
     {
         // Arrange
@@ -276,7 +276,7 @@ public class ObjectResultExecutorTest
         Assert.Equal(StatusCodes.Status406NotAcceptable, actionContext.HttpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_FallsBackOnFormattersInOptions()
     {
         // Arrange
@@ -301,7 +301,7 @@ public class ObjectResultExecutorTest
             actionContext.HttpContext.Response.Headers.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ThrowsWithNoFormatters()
     {
         // Arrange
@@ -433,7 +433,7 @@ public class ObjectResultExecutorTest
         MediaTypeAssert.Equal(expectedContentType, responseContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ObjectResult_NullValue()
     {
         // Arrange

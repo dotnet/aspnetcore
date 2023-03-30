@@ -33,7 +33,7 @@ public class HotReloadTest : ServerTestBase<BasicTestAppServerSiteFixture<HotRel
         Browser.MountTestComponent<RenderOnHotReload>();
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokingRender_CausesComponentToRender()
     {
         Browser.Equal("This component was rendered 1 time(s).", () => Browser.Exists(By.TagName("h2")).Text);

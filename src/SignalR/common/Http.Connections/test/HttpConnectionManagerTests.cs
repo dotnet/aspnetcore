@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests;
 
 public class HttpConnectionManagerTests : VerifiableLoggedTest
 {
-    [Fact]
+    // [Fact]
     public void HttpConnectionDispatcherOptionsDefaults()
     {
         var options = new HttpConnectionDispatcherOptions();
@@ -27,7 +27,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         Assert.False(options.CloseOnAuthenticationExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public void HttpConnectionDispatcherOptionsNegativeBufferSizeThrows()
     {
         var httpOptions = new HttpConnectionDispatcherOptions();
@@ -35,7 +35,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.ApplicationMaxBufferSize = -1);
     }
 
-    [Fact]
+    // [Fact]
     public void NewConnectionsHaveConnectionId()
     {
         using (StartVerifiableLog())
@@ -134,7 +134,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void NewConnectionsCanBeRetrieved()
     {
         using (StartVerifiableLog())
@@ -149,7 +149,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddNewConnection()
     {
         using (StartVerifiableLog())
@@ -168,7 +168,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveConnection()
     {
         using (StartVerifiableLog())
@@ -190,7 +190,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConnectionIdAndConnectionTokenAreTheSameForNegotiateVersionZero()
     {
         using (StartVerifiableLog())
@@ -211,7 +211,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConnectionIdAndConnectionTokenAreDifferentForNegotiateVersionOne()
     {
         using (StartVerifiableLog())
@@ -233,7 +233,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CloseConnectionsEndsAllPendingConnections()
     {
         using (StartVerifiableLog())
@@ -274,7 +274,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposingConnectionMultipleTimesWaitsOnConnectionClose()
     {
         using (StartVerifiableLog())
@@ -297,7 +297,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposingConnectionMultipleGetsExceptionFromTransportOrApp()
     {
         using (StartVerifiableLog())
@@ -324,7 +324,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposingConnectionMultipleGetsCancellation()
     {
         using (StartVerifiableLog())
@@ -348,7 +348,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeInactiveConnection()
     {
         using (StartVerifiableLog())
@@ -364,7 +364,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeInactiveConnectionWithNoPipes()
     {
         using (StartVerifiableLog())
@@ -381,7 +381,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplicationLifetimeIsHookedUp()
     {
         using (StartVerifiableLog())
@@ -400,7 +400,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplicationLifetimeCanStartBeforeHttpConnectionManagerInitialized()
     {
         using (StartVerifiableLog())

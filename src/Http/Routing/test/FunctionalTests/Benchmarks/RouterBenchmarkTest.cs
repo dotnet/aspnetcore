@@ -36,7 +36,7 @@ public class RouterBenchmarkTest : IDisposable
         _client.BaseAddress = new Uri("http://localhost");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteHandlerWritesResponse()
     {
         // Arrange

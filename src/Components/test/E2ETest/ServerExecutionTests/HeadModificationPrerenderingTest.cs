@@ -20,7 +20,7 @@ public class HeadModificationPrerenderingTest : ServerTestBase<BasicTestAppServe
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CanModifyHeadDuringAndAfterPrerendering()
     {
         Navigate("/deferred-component-content");

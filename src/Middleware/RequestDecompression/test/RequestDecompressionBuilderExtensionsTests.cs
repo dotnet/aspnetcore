@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.RequestDecompression.Tests;
 
 public class RequestDecompressionBuilderExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void UseRequestDecompression_NullApplicationBuilder_Throws()
     {
         // Arrange

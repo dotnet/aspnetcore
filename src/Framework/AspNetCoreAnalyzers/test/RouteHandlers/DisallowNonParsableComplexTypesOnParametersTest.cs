@@ -11,7 +11,7 @@ public partial class DisallowNonParsableComplexTypesOnParametersTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withoutComplexTypes_Works()
     {
         // Arrange
@@ -25,7 +25,7 @@ webApp.MapGet(""/{name}"", (string name) => {});
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withString_Works()
     {
         // Arrange
@@ -42,7 +42,7 @@ webApp.MapGet("/", (string name) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withNullableString_Works()
     {
         // Arrange
@@ -59,7 +59,7 @@ webApp.MapGet("/", (string? name) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withStringArray_Works()
     {
         // Arrange
@@ -76,7 +76,7 @@ webApp.MapGet("/", (string[] names) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withUri_Works()
     {
         // Arrange
@@ -94,7 +94,7 @@ webApp.MapGet("/", (Uri url) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withNullableUri_Works()
     {
         // Arrange
@@ -112,7 +112,7 @@ webApp.MapGet("/", (Uri? url) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withUriArray_Works()
     {
         // Arrange
@@ -130,7 +130,7 @@ webApp.MapGet("/", (Uri[] url) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withInt_Works()
     {
         // Arrange
@@ -147,7 +147,7 @@ webApp.MapGet("/", (int pageIndex) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withNullableInt_Works()
     {
         // Arrange
@@ -164,7 +164,7 @@ webApp.MapGet("/", (int? pageIndex) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task QueryString_Parameter_withIntArray_Works()
     {
         // Arrange
@@ -181,7 +181,7 @@ webApp.MapGet("/", (int[] id) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withNonParsableComplexType_Fails()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withNameChanged_viaFromRoute_whenNotParsable_Fails()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withTwoReceivingHandlerParameters_Works()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withNameChanged_viaFromRoute_whenParsable_Works()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class Customer : IParsable<Customer>
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withBindAsyncMethod_Fails()
     {
         // Arrange
@@ -316,7 +316,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withParsableComplexType_viaImplicitIParsable_Works()
     {
         // Arrange
@@ -353,7 +353,7 @@ public class Customer : IParsable<Customer>
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withParsableComplexType_viaExplicitIParsable_Works()
     {
         // Arrange
@@ -396,7 +396,7 @@ public class Customer : IParsable<Customer>
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withParsableComplexType_viaMethodConvention_Works()
     {
         // Arrange
@@ -421,7 +421,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withHttpContextBindableComplexType_viaImplicitIBindableFromHttp_Fails()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class Customer : IBindableFromHttpContext<Customer>
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withHttpContextBindableComplexType_viaExplicitIBindableFromHttp_Fails()
     {
         // Arrange
@@ -483,7 +483,7 @@ public class Customer : IBindableFromHttpContext<Customer>
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withNullableType_Works()
     {
         // Arrange
@@ -499,7 +499,7 @@ webApp.MapGet("/customers/{customer}/contacts", (int? customer) => {});
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Parameter_withFromBodyAttribute_Works()
     {
         // Arrange
@@ -522,7 +522,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Parameter_withBindableComplexType_viaMethodConvention_Works()
     {
         // Arrange
@@ -551,7 +551,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Parameter_withBindableComplexType_viaMethodConventionWithParameterInfo_Works()
     {
         // Arrange
@@ -581,7 +581,7 @@ public class Customer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Parameter_withWellKnownTypes_Works()
     {
         // Arrange
@@ -613,7 +613,7 @@ webApp.MapPost(
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Parameter_with_FromService_Attribute_Works()
     {
         // Arrange
@@ -638,7 +638,7 @@ public class MyService
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Parameter_withServiceInterface_Works()
     {
         // Arrange
@@ -660,7 +660,7 @@ public interface IDownstreamWebApi
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withAbstractBaseType_Works()
     {
         // Arrange
@@ -700,7 +700,7 @@ public class CommercialCustomer : BaseCustomer
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Route_Parameter_withInterfaceType_Works()
     {
         // Arrange

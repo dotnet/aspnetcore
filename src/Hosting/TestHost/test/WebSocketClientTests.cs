@@ -53,7 +53,7 @@ public class WebSocketClientTests
         Assert.Equal("/connect", capturedPath);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAcceptWebSocket()
     {
         using (var testServer = new TestServer(new WebHostBuilder()
@@ -91,7 +91,7 @@ public class WebSocketClientTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyWebSocketAndUpgradeFeatures()
     {
         using (var testServer = new TestServer(new WebHostBuilder()

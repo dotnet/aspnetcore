@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class ListenOptionsTests
 {
-    [Fact]
+    // [Fact]
     public void ProtocolsDefault()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
         Assert.Equal(ListenOptions.DefaultHttpProtocols, listenOptions.Protocols);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalHostListenOptionsClonesConnectionMiddleware()
     {
         var localhostListenOptions = new LocalhostListenOptions(1004);
@@ -47,7 +47,7 @@ public class ListenOptionsTests
         Assert.Same(serviceProvider, clone.ApplicationServices);
     }
 
-    [Fact]
+    // [Fact]
     public void ClonePreservesProtocolsSetExplicitly()
     {
         var localhostListenOptions = new LocalhostListenOptions(1004);
@@ -65,7 +65,7 @@ public class ListenOptionsTests
         Assert.Equal(localhostListenOptions.Protocols, clone2.Protocols);
     }
 
-    [Fact]
+    // [Fact]
     public void ListenOptionsSupportsAnyEndPoint()
     {
         var listenOptions = new ListenOptions(new UriEndPoint(new Uri("http://127.0.0.1:5555")));

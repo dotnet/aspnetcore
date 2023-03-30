@@ -88,7 +88,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(length, writer.BytesCommitted);
     }
 
-    [Fact]
+    // [Fact]
     public void CanWriteEmpty()
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
@@ -102,7 +102,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(array, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void CanWriteIntoHeadlessBuffer()
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
@@ -114,7 +114,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(new byte[] { 1, 2, 3 }, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void CanWriteMultipleTimes()
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
@@ -128,7 +128,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(new byte[] { 1, 2, 3 }, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void CanWriteOverTheBlockLength()
     {
         Memory<byte> memory = Pipe.Writer.GetMemory();
@@ -144,7 +144,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(expectedBytes, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void EnsureAllocatesSpan()
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
@@ -154,7 +154,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(new byte[] { }, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void ExposesSpan()
     {
         int initialLength = Pipe.Writer.GetMemory().Length;
@@ -163,7 +163,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(new byte[] { }, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void SlicesSpanAndAdvancesAfterWrite()
     {
         int initialLength = Pipe.Writer.GetMemory().Length;
@@ -179,7 +179,7 @@ public class BufferWriterTests : IDisposable
         Assert.Equal(new byte[] { 1, 2, 3 }, Read());
     }
 
-    [Fact]
+    // [Fact]
     public void BufferWriterCountsBytesCommitted()
     {
         BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);

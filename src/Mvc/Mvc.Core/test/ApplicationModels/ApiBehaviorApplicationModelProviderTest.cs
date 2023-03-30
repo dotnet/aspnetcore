@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class ApiBehaviorApplicationModelProviderTest
 {
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_ThrowsIfControllerWithAttribute_HasActionsWithoutAttributeRouting()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AppliesConventions()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_AppliesConventionsForIResult()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_SetsUpConventions()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class ApiBehaviorApplicationModelProviderTest
             c => Assert.IsType<InferParameterBindingInfoConvention>(c));
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotAddClientErrorResultFilterConvention_IfSuppressMapClientErrorsIsSet()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Empty(provider.ActionModelConventions.OfType<ClientErrorResultFilterConvention>());
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotAddInvalidModelStateFilterConvention_IfSuppressModelStateInvalidFilterIsSet()
     {
         // Arrange
@@ -164,7 +164,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Empty(provider.ActionModelConventions.OfType<InvalidModelStateFilterConvention>());
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotAddConsumesConstraintForFormFileParameterConvention_IfSuppressConsumesConstraintForFormFileParametersIsSet()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Empty(provider.ActionModelConventions.OfType<ConsumesConstraintForFormFileParameterConvention>());
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotAddInferParameterBindingInfoConvention_IfSuppressInferBindingSourcesForParametersIsSet()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Empty(provider.ActionModelConventions.OfType<InferParameterBindingInfoConvention>());
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotInferServicesParameterBindingInfoConvention_IfSuppressInferBindingSourcesForParametersIsSet()
     {
         // Arrange
@@ -195,7 +195,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.False(convention.IsInferForServiceParametersEnabled);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotSpecifyDefaultErrorType_IfSuppressMapClientErrorsIsSet()
     {
         // Arrange

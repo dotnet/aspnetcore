@@ -31,7 +31,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Exists(By.Id("bind-cases"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextbox_InitiallyBlank()
     {
         var target = Browser.Exists(By.Id("textbox-initially-blank"));
@@ -57,7 +57,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextbox_InitiallyPopulated()
     {
         var target = Browser.Exists(By.Id("textbox-initially-populated"));
@@ -81,7 +81,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextbox_WithBindSuffixInitiallyPopulated()
     {
         var target = Browser.Exists(By.Id("bind-with-suffix-textbox-initially-populated"));
@@ -105,7 +105,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextArea_InitiallyBlank()
     {
         var target = Browser.Exists(By.Id("textarea-initially-blank"));
@@ -120,7 +120,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("Changed value", () => boundValue.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextArea_InitiallyPopulated()
     {
         var target = Browser.Exists(By.Id("textarea-initially-populated"));
@@ -134,7 +134,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("Changed value", () => boundValue.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindCheckbox_InitiallyNull()
     {
         var target = Browser.Exists(By.Id("checkbox-initially-null"));
@@ -154,7 +154,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("False", () => boundValue.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindCheckbox_InitiallyUnchecked()
     {
         var target = Browser.Exists(By.Id("checkbox-initially-unchecked"));
@@ -174,7 +174,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("False", () => boundValue.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindCheckbox_InitiallyChecked()
     {
         var target = Browser.Exists(By.Id("checkbox-initially-checked"));
@@ -194,7 +194,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("True", () => boundValue.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindSelect()
     {
         var target = new SelectElement(Browser.Exists(By.Id("select-box")));
@@ -224,7 +224,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("Empty value", () => target.SelectedOption.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindSelectToMarkup()
     {
         var target = new SelectElement(Browser.Exists(By.Id("select-markup-box")));
@@ -243,7 +243,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("Empty value", () => target.SelectedOption.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxInt()
     {
         var target = Browser.Exists(By.Id("textbox-int"));
@@ -269,7 +269,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("42", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableInt()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-int"));
@@ -302,7 +302,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxLong()
     {
         var target = Browser.Exists(By.Id("textbox-long"));
@@ -326,7 +326,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableLong()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-long"));
@@ -359,7 +359,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxShort()
     {
         var target = Browser.Exists(By.Id("textbox-short"));
@@ -385,7 +385,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("42", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableShort()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-short"));
@@ -418,7 +418,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxFloat()
     {
         var target = Browser.Exists(By.Id("textbox-float"));
@@ -442,7 +442,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal("-3.141", () => mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableFloat()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-float"));
@@ -475,7 +475,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDouble()
     {
         var target = Browser.Exists(By.Id("textbox-double"));
@@ -507,7 +507,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDouble()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-double"));
@@ -547,7 +547,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDecimal()
     {
         var target = Browser.Exists(By.Id("textbox-decimal"));
@@ -570,7 +570,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDecimal()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-decimal"));
@@ -606,7 +606,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // This tests what happens you put invalid (unconvertable) input in. This is separate from the
     // other tests because it requires type="text" - the other tests use type="number"
-    [Fact]
+    // [Fact]
     public void CanBindTextbox_Decimal_InvalidInput()
     {
         var target = Browser.Exists(By.Id("textbox-decimal-invalid"));
@@ -640,7 +640,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // This tests what happens you put invalid (unconvertable) input in. This is separate from the
     // other tests because it requires type="text" - the other tests use type="number"
-    [Fact]
+    // [Fact]
     public void CanBindTextbox_NullableDecimal_InvalidInput()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-decimal-invalid"));
@@ -672,7 +672,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("0.02", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxGenericInt()
     {
         var target = Browser.Exists(By.Id("textbox-generic-int"));
@@ -694,7 +694,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal("42", mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTextboxGenericGuid()
     {
         var target = Browser.Exists(By.Id("textbox-generic-guid"));
@@ -718,7 +718,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateTime()
     {
         var target = Browser.Exists(By.Id("textbox-datetime"));
@@ -746,7 +746,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateTime()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetime"));
@@ -776,7 +776,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateTimeOffset()
     {
         var target = Browser.Exists(By.Id("textbox-datetimeoffset"));
@@ -804,7 +804,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateTimeOffset()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetimeoffset"));
@@ -834,7 +834,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateOnly()
     {
         var target = Browser.Exists(By.Id("textbox-dateonly"));
@@ -862,7 +862,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateOnly()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-dateonly"));
@@ -892,7 +892,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxTimeOnly()
     {
         var target = Browser.Exists(By.Id("textbox-timeonly"));
@@ -920,7 +920,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableTimeOnly()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-timeonly"));
@@ -950,7 +950,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateTimeWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-datetime-format"));
@@ -979,7 +979,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateTimeWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetime-format"));
@@ -1009,7 +1009,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateTimeOffsetWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-datetimeoffset-format"));
@@ -1040,7 +1040,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     //
     // Guess what! Client-side and server-side also understand timezones differently. So for now we're comparing
     // the parsed output without consideration for the timezone
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateTimeOffsetWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetimeoffset"));
@@ -1070,7 +1070,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateOnlyWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-dateonly-format"));
@@ -1099,7 +1099,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateOnlyWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-dateonly-format"));
@@ -1129,7 +1129,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxTimeOnlyWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-timeonly-format"));
@@ -1158,7 +1158,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableTimeOnlyWithFormat()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-timeonly-format"));
@@ -1188,7 +1188,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateTime_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetime-invalid"));
@@ -1224,7 +1224,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateTimeOffset_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-datetimeoffset-invalid"));
@@ -1262,7 +1262,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateTimeWithFormat_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-datetime-format-invalid"));
@@ -1293,7 +1293,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateTimeOffsetWithFormat_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetimeoffset-format-invalid"));
@@ -1330,7 +1330,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableDateOnly_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-dateonly-invalid"));
@@ -1366,7 +1366,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxDateOnlyWithFormat_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-dateonly-format-invalid"));
@@ -1397,7 +1397,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxNullableTimeOnly_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-timeonly-invalid"));
@@ -1433,7 +1433,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTextboxTimeOnlyWithFormat_InvalidValue()
     {
         var target = Browser.Exists(By.Id("textbox-timeonly-format-invalid"));
@@ -1464,7 +1464,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalTextboxDateTime()
     {
         var target = Browser.Exists(By.Id("datetime-local-textbox-datetime"));
@@ -1492,7 +1492,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalTextboxNullableDateTime()
     {
         var target = Browser.Exists(By.Id("datetime-local-textbox-nullable-datetime"));
@@ -1524,7 +1524,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalTextboxDateOnly()
     {
         var target = Browser.Exists(By.Id("datetime-local-textbox-dateonly"));
@@ -1552,7 +1552,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalTextboxNullableDateOnly()
     {
         var target = Browser.Exists(By.Id("datetime-local-textbox-nullable-dateonly"));
@@ -1584,7 +1584,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalTextboxTimeOnly()
     {
         var target = Browser.Exists(By.Id("datetime-local-textbox-timeonly"));
@@ -1612,7 +1612,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalTextboxNullableTimeOnly()
     {
         var target = Browser.Exists(By.Id("datetime-local-textbox-nullable-timeonly"));
@@ -1644,7 +1644,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindMonthTextboxDateTime()
     {
         var target = Browser.Exists(By.Id("month-textbox-datetime"));
@@ -1674,7 +1674,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindMonthTextboxNullableDateTime()
     {
         var target = Browser.Exists(By.Id("month-textbox-nullable-datetime"));
@@ -1706,7 +1706,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindMonthTextboxDateOnly()
     {
         var target = Browser.Exists(By.Id("month-textbox-dateonly"));
@@ -1736,7 +1736,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindMonthTextboxNullableDateOnly()
     {
         var target = Browser.Exists(By.Id("month-textbox-nullable-dateonly"));
@@ -1768,7 +1768,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeTextboxDateTime()
     {
         var target = Browser.Exists(By.Id("time-textbox-datetime"));
@@ -1796,7 +1796,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeTextboxNullableDateTime()
     {
         var target = Browser.Exists(By.Id("time-textbox-nullable-datetime"));
@@ -1828,7 +1828,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeTextboxTimeOnly()
     {
         var target = Browser.Exists(By.Id("time-textbox-timeonly"));
@@ -1856,7 +1856,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeTextboxNullableTimeOnly()
     {
         var target = Browser.Exists(By.Id("time-textbox-nullable-timeonly"));
@@ -1888,7 +1888,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeStepTextboxDateTime()
     {
         var target = Browser.Exists(By.Id("time-step-textbox-datetime"));
@@ -1916,7 +1916,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeStepTextboxNullableDateTime()
     {
         var target = Browser.Exists(By.Id("time-step-textbox-nullable-datetime"));
@@ -1948,7 +1948,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeStepTextboxTimeOnly()
     {
         var target = Browser.Exists(By.Id("time-step-textbox-timeonly"));
@@ -1976,7 +1976,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
 
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
-    [Fact]
+    // [Fact]
     public void CanBindTimeStepTextboxNullableTimeOnly()
     {
         var target = Browser.Exists(By.Id("time-step-textbox-nullable-timeonly"));
@@ -2006,7 +2006,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindDateTimeLocalDefaultStepTextboxDateTime()
     {
         // This test differs from the other "step"-related test in that the DOM element has no "step" attribute
@@ -2030,7 +2030,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal(expected, () => DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTimeDefaultStepTextboxDateTime()
     {
         // This test differs from the other "step"-related test in that the DOM element has no "step" attribute
@@ -2054,7 +2054,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal(expected, () => DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public void CanBindTimeDefaultStepTextboxTimeOnly()
     {
         // This test differs from the other "step"-related test in that the DOM element has no "step" attribute

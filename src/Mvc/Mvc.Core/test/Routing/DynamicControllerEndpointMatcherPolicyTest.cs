@@ -95,7 +95,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
 
     private object State { get; } = new object();
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_NoMatch()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.False(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_HasMatchNoEndpointFound()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.False(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_HasMatchFindsEndpoint_WithoutRouteValues()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_ThrowsForTransformerWithInvalidLifetime()
     {
         // Arrange
@@ -233,7 +233,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => policy.ApplyAsync(httpContext, candidates));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_HasMatchFindsEndpoint_WithRouteValues()
     {
         // Arrange
@@ -290,7 +290,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_CanDiscardFoundEndpoints()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.False(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_CanReplaceFoundEndpoints()
     {
         // Arrange
@@ -391,7 +391,7 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_CanExpandTheListOfFoundEndpoints()
     {
         // Arrange

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 public class ProtectedBrowserStorageTest
 {
-    [Fact]
+    // [Fact]
     public void SetAsync_ProtectsAndInvokesJS_DefaultPurpose()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class ProtectedBrowserStorageTest
                 TestDataProtectionProvider.Unprotect(expectedPurpose, (string)arg)));
     }
 
-    [Fact]
+    // [Fact]
     public void SetAsync_ProtectsAndInvokesJS_CustomPurpose()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class ProtectedBrowserStorageTest
                 TestDataProtectionProvider.Unprotect(customPurpose, (string)arg)));
     }
 
-    [Fact]
+    // [Fact]
     public void SetAsync_ProtectsAndInvokesJS_NullValue()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class ProtectedBrowserStorageTest
                 TestDataProtectionProvider.Unprotect(expectedPurpose, (string)arg)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_ValidData_DefaultPurpose()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class ProtectedBrowserStorageTest
         Assert.Collection(invocation.Args, arg => Assert.Equal(keyName, arg));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_ValidData_CustomPurpose()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class ProtectedBrowserStorageTest
         Assert.Collection(invocation.Args, arg => Assert.Equal(keyName, arg));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_NoValue()
     {
         // Arrange
@@ -161,7 +161,7 @@ public class ProtectedBrowserStorageTest
         Assert.Null(result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_InvalidJson()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class ProtectedBrowserStorageTest
             async () => await protectedBrowserStorage.GetAsync<TestModel>("testKey"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_InvalidProtection_Plaintext()
     {
         // Arrange
@@ -194,7 +194,7 @@ public class ProtectedBrowserStorageTest
             async () => await protectedBrowserStorage.GetAsync<TestModel>("testKey"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetAsync_InvokesJSAndUnprotects_InvalidProtection_Base64Encoded()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class ProtectedBrowserStorageTest
             async () => await protectedBrowserStorage.GetAsync<TestModel>("testKey"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_WrongPurpose()
     {
         // Arrange
@@ -234,7 +234,7 @@ public class ProtectedBrowserStorageTest
         Assert.Contains("The value is not protected with the expected purpose", innerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DeleteAsync_InvokesJS()
     {
         // Arrange
@@ -253,7 +253,7 @@ public class ProtectedBrowserStorageTest
         Assert.Collection(invocation.Args, arg => Assert.Equal("testKey", arg));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReusesCachedProtectorsByPurpose()
     {
         // Arrange

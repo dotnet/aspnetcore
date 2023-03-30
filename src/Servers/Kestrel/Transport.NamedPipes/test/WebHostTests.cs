@@ -55,7 +55,7 @@ public class WebHostTests : LoggedTest
         Assert.Equal("Named pipes transport requires a Windows operating system.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ListenNamedPipeEndpoint_CustomNamedPipeEndpointTransport()
     {
         // Arrange

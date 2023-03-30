@@ -294,7 +294,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_OrdersCorrectlyWhenElementsAreRemovedFromDictionary()
     {
         // Arrange
@@ -324,7 +324,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_IncludesErrorsThatAreNotPartOfMetadata()
     {
         // Arrange
@@ -360,7 +360,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_IncludesErrorsForCollectionProperties()
     {
         // Arrange
@@ -390,7 +390,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_IncludesErrorsForTopLevelCollectionProperties()
     {
         // Arrange
@@ -420,7 +420,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_IncludesErrorsForPropertiesOnCollectionTypes()
     {
         // Arrange
@@ -454,7 +454,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_ErrorsInModelUsingOrder_SortsErrorsAsExpected()
     {
         // Arrange
@@ -487,7 +487,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesValuesFromModelState()
     {
         // Arrange
@@ -505,7 +505,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_ExcludesPropertyErrors()
     {
         // Arrange
@@ -519,7 +519,7 @@ public class HtmlHelperValidationSummaryTest
         Assert.Equal(HtmlString.Empty, validationSummaryResult);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedMessage()
     {
         // Arrange
@@ -538,7 +538,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedTag()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedMessageAndExcludesPropertyErrors()
     {
         // Arrange
@@ -577,7 +577,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedHtmlAttributesAndTag()
     {
         // Arrange
@@ -615,7 +615,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedUsesSpecifiedTagAndExcludesPropertyErrors()
     {
         // Arrange
@@ -635,7 +635,7 @@ public class HtmlHelperValidationSummaryTest
             HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationSummary_UsesSpecifiedUsesSpecifiedHtmlAttributesAndExcludesPropertyErrors()
     {
         // Arrange

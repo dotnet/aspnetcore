@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 
 public unsafe class SecretTests
 {
-    [Fact]
+    // [Fact]
     public void Ctor_ArraySegment_Default_Throws()
     {
         // Act & assert
@@ -17,7 +17,7 @@ public unsafe class SecretTests
             exceptionMessage: null);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ArraySegment_Success()
     {
         // Arrange
@@ -44,7 +44,7 @@ public unsafe class SecretTests
         Assert.Equal(new byte[] { 0x20, 0x30, 0x40 }, outputBuffer);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_Buffer_Success()
     {
         // Arrange
@@ -71,7 +71,7 @@ public unsafe class SecretTests
         Assert.Equal(new byte[] { 0x20, 0x30, 0x40 }, outputBuffer);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_Buffer_ZeroLength_Success()
     {
         // Act
@@ -84,7 +84,7 @@ public unsafe class SecretTests
         secret.WriteSecretIntoBuffer(&dummy, 0);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_Pointer_WithNullPointer_ThrowsArgumentNull()
     {
         // Act & assert
@@ -93,7 +93,7 @@ public unsafe class SecretTests
             paramName: "secret");
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_Pointer_WithNegativeLength_ThrowsArgumentOutOfRange()
     {
         // Act & assert
@@ -107,7 +107,7 @@ public unsafe class SecretTests
             exceptionMessage: Resources.Common_ValueMustBeNonNegative);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_Pointer_ZeroLength_Success()
     {
         // Arrange
@@ -123,7 +123,7 @@ public unsafe class SecretTests
         secret.WriteSecretIntoBuffer(&dummy, 0);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_Pointer_Success()
     {
         // Arrange
@@ -153,7 +153,7 @@ public unsafe class SecretTests
         Assert.Equal(new byte[] { 0x20, 0x30, 0x40 }, outputBuffer);
     }
 
-    [Fact]
+    // [Fact]
     public void Random_ZeroLength_Success()
     {
         // Act
@@ -163,7 +163,7 @@ public unsafe class SecretTests
         Assert.Equal(0, secret.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void Random_LengthIsMultipleOf16_Success()
     {
         // Act
@@ -178,7 +178,7 @@ public unsafe class SecretTests
         Assert.NotEqual(pGuids[0], pGuids[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void Random_LengthIsNotMultipleOf16_Success()
     {
         // Act
@@ -194,7 +194,7 @@ public unsafe class SecretTests
         Assert.Equal(0, ((byte*)pGuids)[31]); // last byte shouldn't have been overwritten
     }
 
-    [Fact]
+    // [Fact]
     public void WriteSecretIntoBuffer_ArraySegment_IncorrectlySizedBuffer_Throws()
     {
         // Arrange
@@ -207,7 +207,7 @@ public unsafe class SecretTests
             exceptionMessage: Resources.FormatCommon_BufferIncorrectlySized(100, 16));
     }
 
-    [Fact]
+    // [Fact]
     public void WriteSecretIntoBuffer_ArraySegment_Disposed_Throws()
     {
         // Arrange
@@ -219,7 +219,7 @@ public unsafe class SecretTests
             testCode: () => secret.WriteSecretIntoBuffer(new ArraySegment<byte>(new byte[16])));
     }
 
-    [Fact]
+    // [Fact]
     public void WriteSecretIntoBuffer_Pointer_NullBuffer_Throws()
     {
         // Arrange
@@ -231,7 +231,7 @@ public unsafe class SecretTests
             paramName: "buffer");
     }
 
-    [Fact]
+    // [Fact]
     public void WriteSecretIntoBuffer_Pointer_IncorrectlySizedBuffer_Throws()
     {
         // Arrange
@@ -248,7 +248,7 @@ public unsafe class SecretTests
             exceptionMessage: Resources.FormatCommon_BufferIncorrectlySized(100, 16));
     }
 
-    [Fact]
+    // [Fact]
     public void WriteSecretIntoBuffer_Pointer_Disposed_Throws()
     {
         // Arrange

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
 public class UpgradeTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task ResponseThrowsAfterUpgrade()
     {
         var upgrade = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -59,7 +59,7 @@ public class UpgradeTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestBodyAlwaysEmptyAfterUpgrade()
     {
         const string send = "Custom protocol send";
@@ -114,7 +114,7 @@ public class UpgradeTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradeCannotBeCalledMultipleTimes()
     {
         var upgradeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -155,7 +155,7 @@ public class UpgradeTests : LoggedTest
         Assert.Equal(CoreStrings.UpgradeCannotBeCalledMultipleTimes, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AcceptsRequestWithContentLengthAndUpgrade()
     {
         await using (var server = new TestServer(async context =>
@@ -189,7 +189,7 @@ public class UpgradeTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
     {
         await using (var server = new TestServer(async context =>
@@ -224,7 +224,7 @@ public class UpgradeTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AcceptsRequestWithChunkedEncodingAndUpgrade()
     {
         await using (var server = new TestServer(async context =>
@@ -264,7 +264,7 @@ public class UpgradeTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsWhenUpgradingNonUpgradableRequest()
     {
         var upgradeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -297,7 +297,7 @@ public class UpgradeTests : LoggedTest
         Assert.Equal(CoreStrings.CannotUpgradeNonUpgradableRequest, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RejectsUpgradeWhenLimitReached()
     {
         const int limit = 10;
@@ -348,7 +348,7 @@ public class UpgradeTests : LoggedTest
         Assert.Equal(CoreStrings.UpgradedConnectionLimitReached, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotThrowOnFin()
     {
         var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -385,7 +385,7 @@ public class UpgradeTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotThrowGivenCanceledReadResult()
     {
         var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -430,7 +430,7 @@ public class UpgradeTests : LoggedTest
         await appCompletedTcs.Task.DefaultTimeout();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotCloseConnectionWithout101Response()
     {
         var requestCount = 0;

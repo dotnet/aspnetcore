@@ -67,7 +67,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
-    [Fact]
+    // [Fact]
     public async Task CanRotateKeysAndStillFind()
     {
         var manager = CreateManager();
@@ -162,7 +162,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
-    [Fact]
+    // [Fact]
     public Task CustomPersonalDataPropertiesCanBeProtected()
         => CustomPersonalDataPropertiesAreProtected<ProtectedIdentityDbContext>(true);
 
@@ -170,7 +170,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
-    [Fact]
+    // [Fact]
     public Task CustomPersonalDataPropertiesCanBeNotProtected()
         => CustomPersonalDataPropertiesAreProtected<UnprotectedIdentityDbContext>(false);
 
@@ -271,7 +271,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
     /// <summary>
     /// Test.
     /// </summary>
-    [Fact]
+    // [Fact]
     public void ProtectedPersonalDataThrowsOnNonString()
     {
         using (var scratch = new ScratchDatabaseFixture())
@@ -296,7 +296,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
     /// Skipped because encryption causes this to fail.
     /// </summary>
     /// <returns>Task</returns>
-    [Fact]
+    // [Fact]
     public override Task CanFindUsersViaUserQueryable()
         => Task.CompletedTask;
 

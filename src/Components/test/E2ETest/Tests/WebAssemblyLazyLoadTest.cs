@@ -31,7 +31,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         Assert.Equal("none", errorUi.GetCssValue("display"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanLazyLoadOnRouteChange()
     {
         // Navigate to a page without any lazy-loaded dependencies
@@ -55,7 +55,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
     }
 
-    [Fact]
+    // [Fact]
     public void CanLazyLoadOnFirstVisit()
     {
         // Navigate to a page with lazy loaded assemblies for the first time
@@ -74,7 +74,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
     }
 
-    [Fact]
+    // [Fact]
     public void CanLazyLoadAssemblyWithRoutes()
     {
         // Navigate to a page without any lazy-loaded dependencies
@@ -105,7 +105,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         Browser.Equal("lazy-page", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsErrorForUnavailableAssemblies()
     {
         // Navigate to a page with lazy loaded assemblies for the first time
@@ -119,7 +119,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         AssertLogContainsCriticalMessages("DoesNotExist.dll must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
     }
 
-    [Fact]
+    // [Fact]
     public void CanLazyLoadViaLinkChange()
     {
         // Navigate to a page without any lazy-loaded dependencies

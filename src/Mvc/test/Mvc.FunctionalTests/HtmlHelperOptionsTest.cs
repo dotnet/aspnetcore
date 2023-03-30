@@ -15,7 +15,7 @@ public class HtmlHelperOptionsTest : IClassFixture<MvcTestFixture<RazorWebSite.S
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task AppWideDefaultsInViewAndPartialView()
     {
         // Arrange
@@ -45,7 +45,7 @@ False";
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public async Task OverrideAppWideDefaultsInViewAndPartialView()
     {

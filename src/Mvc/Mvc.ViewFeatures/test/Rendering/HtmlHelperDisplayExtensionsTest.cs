@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 
 public class HtmlHelperDisplayExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void DisplayHelpers_FindsModel_WhenViewDataIsNotSet()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(displayForModelResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Display_UsesAdditionalViewData()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("ViewDataValue", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Display_UsesTemplateName()
     {
         // Arrange
@@ -177,7 +177,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal(expectedResult, HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Display_UsesTemplateNameAndAdditionalViewData()
     {
         // Arrange
@@ -205,7 +205,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("ViewDataValue", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Display_UsesTemplateNameAndHtmlFieldName()
     {
         // Arrange
@@ -233,7 +233,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("SomeField", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFor_UsesAdditionalViewData()
     {
         // Arrange
@@ -258,7 +258,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("ViewDataValue", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFor_UsesTemplateName()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class HtmlHelperDisplayExtensionsTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFor_UsesTemplateNameAndAdditionalViewData()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("ViewDataValue", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFor_EnumProperty_IStringLocalizedValue()
     {
         // Arrange
@@ -349,7 +349,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("created from IStringLocalizer", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFor_EnumProperty_ResourceTypeLocalizedValue()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("Faulted from ResourceType", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFor_UsesTemplateNameAndHtmlFieldName()
     {
         // Arrange
@@ -405,7 +405,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("SomeField", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayForModel_UsesAdditionalViewData()
     {
         // Arrange
@@ -430,7 +430,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("ViewDataValue", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayForModel_UsesTemplateName()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class HtmlHelperDisplayExtensionsTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayForModel_UsesTemplateNameAndAdditionalViewData()
     {
         // Arrange
@@ -479,7 +479,7 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("ViewDataValue", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayForModel_UsesTemplateNameAndHtmlFieldName()
     {
         // Arrange

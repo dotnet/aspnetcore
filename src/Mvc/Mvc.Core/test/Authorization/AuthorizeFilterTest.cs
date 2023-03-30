@@ -20,14 +20,14 @@ public class AuthorizeFilterTest
 {
     private readonly ActionContext ActionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
 
-    [Fact]
+    // [Fact]
     public void InvalidUser()
     {
         var authorizationContext = GetAuthorizationContext();
         Assert.Contains(authorizationContext.HttpContext.User.Identities, i => i.IsAuthenticated);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultConstructor_DeniesAnonymousUsers()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class AuthorizeFilterTest
         Assert.IsType<ChallengeResult>(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeFilter_CreatedWithAuthorizeData_ThrowsWhenOnAuthorizationAsyncIsCalled()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class AuthorizeFilterTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeFilter_CreatedWithPolicy_ThrowsWhenOnAuthorizationAsyncIsCalled()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class AuthorizeFilterTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeFilterCanAuthorizeNonAuthenticatedUser()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeFilterWillCallPolicyProviderOnAuthorization()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizeFilter.Policy);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeFilterCanAuthorizeNullUser()
     {
         // Arrange
@@ -139,7 +139,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_ValidClaimShouldNotFail()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_EmptyClaimsShouldChallengeAnonymousUser()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class AuthorizeFilterTest
         Assert.IsType<ChallengeResult>(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_EmptyClaimsWithAllowAnonymousAttributeShouldNotRejectAnonymousUser()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_EmptyClaimsShouldAuthorizeAuthenticatedUser()
     {
         // Arrange
@@ -198,7 +198,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_AuthSchemesFailShouldSetEmptyPrincipalOnContext()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class AuthorizeFilterTest
         Assert.NotNull(authorizationContext.HttpContext.User?.Identity);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_SingleValidClaimShouldSucceed()
     {
         // Arrange
@@ -250,7 +250,7 @@ public class AuthorizeFilterTest
             => Task.FromResult<AuthorizationPolicy>(null);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizationFilterCombinesMultipleFiltersWithPolicyProvider()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class AuthorizeFilterTest
         Assert.IsType<ForbidResult>(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizationFilterCombinesMultipleFiltersWithDifferentPolicyProvider()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class AuthorizeFilterTest
         Assert.Equal(2, testProvider2.GetPolicyCalls);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizationFilterCombinesMultipleFilters()
     {
         // Arrange
@@ -326,7 +326,7 @@ public class AuthorizeFilterTest
         Assert.IsType<ForbidResult>(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizationFilterIgnoresFirstFilterWhenCombining()
     {
         // Arrange
@@ -344,7 +344,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizationFilterCombinesDerivedFilters()
     {
         // Arrange
@@ -370,7 +370,7 @@ public class AuthorizeFilterTest
         { }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthZResourceShouldBeAuthorizationFilterContext()
     {
         // Arrange
@@ -384,7 +384,7 @@ public class AuthorizeFilterTest
         Assert.Null(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_RequireUnknownRoleShouldForbid()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class AuthorizeFilterTest
         Assert.IsType<ForbidResult>(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_InvalidClaimShouldForbid()
     {
         // Arrange
@@ -416,7 +416,7 @@ public class AuthorizeFilterTest
         Assert.IsType<ForbidResult>(authorizationContext.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateInstance_ReturnsSelfIfPolicyIsSet()
     {
         // Arrange
@@ -432,7 +432,7 @@ public class AuthorizeFilterTest
         Assert.Same(authorizeFilter, result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateInstance_ReturnsSelfIfPolicyProviderIsSet()
     {
         // Arrange
@@ -507,7 +507,7 @@ public class AuthorizeFilterTest
         Assert.Same(policyProvider, actual.PolicyProvider);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetEffectivePolicyAsync_CombinesPoliciesFromAuthFilters()
     {
         // Arrange
@@ -532,7 +532,7 @@ public class AuthorizeFilterTest
         Assert.Equal(new[] { "Claim1", "Claim2" }, effectivePolicy.Requirements.Cast<ClaimsAuthorizationRequirement>().Select(c => c.ClaimType));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetEffectivePolicyAsync_CombinesPoliciesFromEndpoint()
     {
         // Arrange

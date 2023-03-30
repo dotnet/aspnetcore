@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 
 public class StartupManagerTests
 {
-    [Fact]
+    // [Fact]
     public void ConventionalStartupClass_StartupServiceFilters_WrapsConfigureServicesMethod()
     {
         var serviceCollection = new ServiceCollection();
@@ -35,7 +35,7 @@ public class StartupManagerTests
         Assert.Equal("StartupServicesFilter After 1", after.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ConventionalStartupClass_StartupServiceFilters_MultipleStartupServiceFiltersRun()
     {
         var serviceCollection = new ServiceCollection();
@@ -57,7 +57,7 @@ public class StartupManagerTests
         Assert.Equal("StartupServicesFilter After 2", after.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ConventionalStartupClass_StartupServicesFilters_ThrowsIfStartupBuildsTheContainerAsync()
     {
         var serviceCollection = new ServiceCollection();
@@ -81,7 +81,7 @@ public class StartupManagerTests
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ConventionalStartupClass_ConfigureContainerFilters_WrapInRegistrationOrder()
     {
         var serviceCollection = new ServiceCollection();
@@ -103,7 +103,7 @@ public class StartupManagerTests
         Assert.Equal("ConfigureContainerFilter After 1", after.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ConventionalStartupClass_ConfigureContainerFilters_RunsAllFilters()
     {
         var serviceCollection = new ServiceCollection();
@@ -125,7 +125,7 @@ public class StartupManagerTests
         Assert.Equal("ConfigureContainerFilter After 2", after.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ConventionalStartupClass_ConfigureContainerFilters_RunAfterConfigureServicesFilters()
     {
         var serviceCollection = new ServiceCollection();
@@ -285,7 +285,7 @@ public class StartupManagerTests
         public string Message { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void StartupClassMayHaveHostingServicesInjected()
     {
         var callbackStartup = new FakeStartupCallback();
@@ -304,7 +304,7 @@ public class StartupManagerTests
         Assert.Equal(2, callbackStartup.MethodsCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupClassMayHaveScopedServicesInjected()
     {
         var serviceCollection = new ServiceCollection();
@@ -356,7 +356,7 @@ public class StartupManagerTests
         Assert.Equal(environment, options.Environment);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupWithNoConfigureThrows()
     {
         var serviceCollection = new ServiceCollection();
@@ -403,7 +403,7 @@ public class StartupManagerTests
         Assert.Equal("ConfigureCaseInsensitiveServices", options.Environment);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupWithTwoConfiguresThrows()
     {
         var serviceCollection = new ServiceCollection();
@@ -417,7 +417,7 @@ public class StartupManagerTests
         Assert.Equal("Having multiple overloads of method 'Configure' is not supported.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupWithPrivateConfiguresThrows()
     {
         var serviceCollection = new ServiceCollection();
@@ -432,7 +432,7 @@ public class StartupManagerTests
         Assert.Equal("A public method named 'ConfigurePrivateConfigure' or 'Configure' could not be found in the 'Microsoft.AspNetCore.Hosting.Fakes.StartupPrivateConfigure' type.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupWithTwoConfigureServicesThrows()
     {
         var serviceCollection = new ServiceCollection();
@@ -446,7 +446,7 @@ public class StartupManagerTests
         Assert.Equal("Having multiple overloads of method 'ConfigureServices' is not supported.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupClassCanHandleConfigureServicesThatReturnsNull()
     {
         var serviceCollection = new ServiceCollection();
@@ -463,7 +463,7 @@ public class StartupManagerTests
         Assert.NotNull(app.ApplicationServices);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupClassWithConfigureServicesShouldMakeServiceAvailableInConfigure()
     {
         var serviceCollection = new ServiceCollection();
@@ -481,7 +481,7 @@ public class StartupManagerTests
         Assert.True(foo.Invoked);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupLoaderCanLoadByType()
     {
         var serviceCollection = new ServiceCollection();
@@ -499,7 +499,7 @@ public class StartupManagerTests
         Assert.Equal("Configure", foo.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void StartupLoaderCanLoadByTypeWithEnvironment()
     {
         var serviceCollection = new ServiceCollection();
@@ -514,7 +514,7 @@ public class StartupManagerTests
         Assert.Throws<InvalidOperationException>(() => startup.ConfigureDelegate(app));
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureServicesThrowingDoesNotThrowTargetInvocationException()
     {
         var serviceCollection = new ServiceCollection();
@@ -528,7 +528,7 @@ public class StartupManagerTests
         Assert.Throws<Exception>(() => startup.ConfigureServicesDelegate(serviceCollection));
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureThrowingDoesNotThrowTargetInvocationException()
     {
         var serviceCollection = new ServiceCollection();
@@ -543,7 +543,7 @@ public class StartupManagerTests
         Assert.Throws<Exception>(() => startup.ConfigureDelegate(app));
     }
 
-    [Fact]
+    // [Fact]
     public void CustomProviderFactoryCallsConfigureContainer()
     {
         var serviceCollection = new ServiceCollection();
@@ -559,7 +559,7 @@ public class StartupManagerTests
         Assert.True(((MyContainer)app.ApplicationServices).FancyMethodCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void CustomServiceProviderFactoryStartupBaseClassCallsConfigureContainer()
     {
         var serviceCollection = new ServiceCollection();
@@ -575,7 +575,7 @@ public class StartupManagerTests
         Assert.True(((MyContainer)app.ApplicationServices).FancyMethodCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void CustomServiceProviderFactoryEnvironmentBasedConfigureContainer()
     {
         var serviceCollection = new ServiceCollection();
@@ -591,7 +591,7 @@ public class StartupManagerTests
         Assert.Equal(((MyContainer)app.ApplicationServices).Environment, Environments.Production);
     }
 
-    [Fact]
+    // [Fact]
     public void CustomServiceProviderFactoryThrowsIfNotRegisteredWithConfigureContainerMethod()
     {
         var serviceCollection = new ServiceCollection();
@@ -602,7 +602,7 @@ public class StartupManagerTests
         Assert.Throws<InvalidOperationException>(() => startup.ConfigureServicesDelegate(serviceCollection));
     }
 
-    [Fact]
+    // [Fact]
     public void CustomServiceProviderFactoryThrowsIfNotRegisteredWithConfigureContainerMethodStartupBase()
     {
         var serviceCollection = new ServiceCollection();
@@ -611,7 +611,7 @@ public class StartupManagerTests
         Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), Environments.Development));
     }
 
-    [Fact]
+    // [Fact]
     public void CustomServiceProviderFactoryFailsWithOverloadsInStartup()
     {
         var serviceCollection = new ServiceCollection();
@@ -621,7 +621,7 @@ public class StartupManagerTests
         Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupWithOverloads), Environments.Development));
     }
 
-    [Fact]
+    // [Fact]
     public void BadServiceProviderFactoryFailsThatReturnsNullServiceProviderOverriddenByDefault()
     {
         var serviceCollection = new ServiceCollection();

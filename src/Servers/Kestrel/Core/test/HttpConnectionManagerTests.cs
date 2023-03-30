@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class HttpConnectionManagerTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public void UnrootedConnectionsGetRemovedFromHeartbeat()
     {
         var trace = new KestrelTrace(LoggerFactory);

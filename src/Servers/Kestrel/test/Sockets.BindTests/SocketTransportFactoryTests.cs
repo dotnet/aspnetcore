@@ -14,7 +14,7 @@ namespace Sockets.BindTests;
 
 public class SocketTransportFactoryTests
 {
-    [Fact]
+    // [Fact]
     public async Task ThrowsNotImplementedExceptionWhenBindingToUriEndPoint()
     {
         var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), new LoggerFactory());

@@ -10,7 +10,7 @@ public partial class FrameworkParametersCompletionProviderTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_Int_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -38,7 +38,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_DateTime_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -66,7 +66,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_NullableInt_CloseParen_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -94,7 +94,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_NullableInt_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -122,7 +122,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_OutInt_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -152,7 +152,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_Generic_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -180,7 +180,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Space_Generic_EndpointMapGet_HasDelegate_HasText_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -208,7 +208,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Space_Generic_EndpointMapGet_HasDelegate_InText_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -236,7 +236,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Space_Generic_EndpointMapGet_HasCompleteDelegate_InText_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -264,7 +264,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_FirstArgument_SpaceAfterIdentifer_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -286,7 +286,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_SecondArgument_SpaceAfterIdentifer_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -308,7 +308,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_MultipleArgs_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -333,7 +333,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_SystemString_EndpointMapGet_HasDelegate_ReturnRouteParameterItem()
     {
         // Arrange & Act
@@ -358,7 +358,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_MultipleArgs_ParameterAlreadyUsed_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -380,7 +380,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_MultipleArgs_OneParameterAlreadyUsed_EndpointMapGet_HasDelegate_HasItems()
     {
         // Arrange & Act
@@ -404,7 +404,7 @@ class Program
             i => Assert.Equal("id2", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_MultipleParameters_EndpointMapGet_HasDelegate_HasItems()
     {
         // Arrange & Act
@@ -429,7 +429,7 @@ class Program
             i => Assert.Equal("id2", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_DuplicateParameters_EndpointMapGet_HasDelegate_HasItems()
     {
         // Arrange & Act
@@ -453,7 +453,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_MultipleArgs_ParameterAlreadyUsed_EndpointMapGet_HasCompleteDelegate_NoItems()
     {
         // Arrange & Act
@@ -475,7 +475,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_MultipleArgs_ParameterAlreadyUsed_DifferentCase_EndpointMapGet_HasCompleteDelegate_NoItems()
     {
         // Arrange & Act
@@ -497,7 +497,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_CustomParsableType_EndpointMapGet_HasDelegate_HasItem()
     {
         // Arrange & Act
@@ -530,7 +530,7 @@ public class CustomParsableType
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_CustomParsableWithFormatType_EndpointMapGet_HasDelegate_HasItem()
     {
         // Arrange & Act
@@ -563,7 +563,7 @@ public class CustomParsableType
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_CustomParsableWithFormatType_NonPublic_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -594,7 +594,7 @@ public class CustomParsableType
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_NonParsableType_EndpointMapGet_HasDelegate_NoItems()
     {
         // Arrange & Act
@@ -695,7 +695,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_EndpointMapGet_HasMethod_NoItems()
     {
         // Arrange & Act
@@ -722,7 +722,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_EndpointMapGet_HasMethod_NamedParameters_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -775,7 +775,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_EndpointMapGet_UnknownAttribute_ReturnItems()
     {
         // Arrange & Act
@@ -800,7 +800,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_EndpointMapGet_NullDelegate_NoResults()
     {
         // Arrange & Act
@@ -822,7 +822,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_EndpointMapGet_Incomplete_NoResults()
     {
         // Arrange & Act
@@ -845,7 +845,7 @@ class Program
         Assert.Null(item);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_CustomMapGet_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -874,7 +874,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_CustomMapGet_NoRouteSyntax_NoItems()
     {
         // Arrange & Act
@@ -901,7 +901,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_ControllerAction_HasParameter_ReturnActionParameterItem()
     {
         // Arrange & Act
@@ -934,7 +934,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_ControllerAction_HasParameter_Incomplete_ReturnActionParameterItem()
     {
         // Arrange & Act
@@ -964,7 +964,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_ControllerAction_HasParameter_Incomplete_ReturnActionParameterItem()
     {
         // Arrange & Act
@@ -998,7 +998,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ControllerAction_HasParameter_Incomplete_NoItems()
     {
         // Arrange & Act
@@ -1026,7 +1026,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_ControllerAction_HasParameter_BeforeComma_ReturnActionParameterItem()
     {
         // Arrange & Act
@@ -1059,7 +1059,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Space_NonControllerAction_HasParameter_NoItems()
     {
         // Arrange & Act

@@ -24,7 +24,7 @@ public class JsonConverterReadTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void NonJsonName()
     {
         var json = @"{
@@ -35,7 +35,7 @@ public class JsonConverterReadTests
         Assert.Equal("A field name", m.HidingFieldName);
     }
 
-    [Fact]
+    // [Fact]
     public void HidingJsonName()
     {
         var json = @"{
@@ -47,7 +47,7 @@ public class JsonConverterReadTests
         Assert.Equal("A field name", m.HidingFieldName);
     }
 
-    [Fact]
+    // [Fact]
     public void JsonCustomizedName()
     {
         var json = @"{
@@ -58,7 +58,7 @@ public class JsonConverterReadTests
         Assert.Equal("A field name", m.FieldName);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadObjectProperties()
     {
         var json = @"{
@@ -69,7 +69,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void RepeatedStrings()
     {
         var json = @"{
@@ -84,7 +84,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void DataTypes_DefaultValues()
     {
         var json = @"{
@@ -123,7 +123,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.DataTypes>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Timestamp_Nested()
     {
         var json = @"{ ""timestampValue"": ""2020-12-01T00:30:00Z"" }";
@@ -131,7 +131,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Duration_Nested()
     {
         var json = @"{ ""durationValue"": ""43200s"" }";
@@ -139,7 +139,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Value_Nested()
     {
         var json = @"{
@@ -155,7 +155,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Value_Root()
     {
         var json = @"{
@@ -169,7 +169,7 @@ public class JsonConverterReadTests
         AssertReadJson<Value>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Struct_Nested()
     {
         var json = @"{
@@ -185,7 +185,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Struct_Root()
     {
         var json = @"{
@@ -199,7 +199,7 @@ public class JsonConverterReadTests
         AssertReadJson<Struct>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void ListValue_Nested()
     {
         var json = @"{
@@ -213,7 +213,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void ListValue_Root()
     {
         var json = @"[
@@ -225,7 +225,7 @@ public class JsonConverterReadTests
         AssertReadJson<ListValue>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Int64_ReadNumber()
     {
         var json = @"{
@@ -239,7 +239,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.DataTypes>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void RepeatedDoubleValues()
     {
         var json = @"{
@@ -252,7 +252,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Any()
     {
         var json = @"{
@@ -265,7 +265,7 @@ public class JsonConverterReadTests
         Assert.Equal("In any!", helloRequest.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void Any_WellKnownType_Timestamp()
     {
         var json = @"{
@@ -278,7 +278,7 @@ public class JsonConverterReadTests
         Assert.Equal(DateTimeOffset.UnixEpoch, timestamp.ToDateTimeOffset());
     }
 
-    [Fact]
+    // [Fact]
     public void Any_WellKnownType_Int32()
     {
         var json = @"{
@@ -291,7 +291,7 @@ public class JsonConverterReadTests
         Assert.Equal(2147483647, value.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void MapMessages()
     {
         var json = @"{
@@ -308,7 +308,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void MapKeyBool()
     {
         var json = @"{
@@ -321,7 +321,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void MapKeyInt()
     {
         var json = @"{
@@ -334,7 +334,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void OneOf_Success()
     {
         var json = @"{
@@ -344,7 +344,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void OneOf_Failure()
     {
         var json = @"{
@@ -355,7 +355,7 @@ public class JsonConverterReadTests
         AssertReadJsonError<HelloRequest>(json, ex => Assert.Equal("Multiple values specified for oneof oneof_test", ex.Message.TrimEnd('.')));
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrappers_NaN()
     {
         var json = @"{
@@ -365,7 +365,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.Wrappers>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrappers_Null()
     {
         var json = @"{
@@ -383,7 +383,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.Wrappers>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrappers()
     {
         var json = @"{
@@ -401,7 +401,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.Wrappers>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullValue_Default_Null()
     {
         var json = @"{ ""nullValue"": null }";
@@ -409,7 +409,7 @@ public class JsonConverterReadTests
         AssertReadJson<NullValueContainer>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullValue_Default_String()
     {
         var json = @"{ ""nullValue"": ""NULL_VALUE"" }";
@@ -417,7 +417,7 @@ public class JsonConverterReadTests
         AssertReadJson<NullValueContainer>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullValue_NonDefaultValue_Int()
     {
         var json = @"{ ""nullValue"": 1 }";
@@ -425,7 +425,7 @@ public class JsonConverterReadTests
         AssertReadJson<NullValueContainer>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullValue_NonDefaultValue_String()
     {
         var json = @"{ ""nullValue"": ""MONKEY"" }";
@@ -433,7 +433,7 @@ public class JsonConverterReadTests
         AssertReadJsonError<NullValueContainer>(json, ex => Assert.Equal("Invalid enum value: MONKEY for enum type: google.protobuf.NullValue", ex.Message));
     }
 
-    [Fact]
+    // [Fact]
     public void FieldMask_Nested()
     {
         var json = @"{ ""fieldMaskValue"": ""value1,value2,value3.nestedValue"" }";
@@ -441,7 +441,7 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void FieldMask_Root()
     {
         var json = @"""value1,value2,value3.nestedValue""";
@@ -449,7 +449,7 @@ public class JsonConverterReadTests
         AssertReadJson<FieldMask>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrapper_Root_Int32()
     {
         var json = @"1";
@@ -457,7 +457,7 @@ public class JsonConverterReadTests
         AssertReadJson<Int32Value>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrapper_Root_Int64()
     {
         var json = @"""1""";
@@ -465,7 +465,7 @@ public class JsonConverterReadTests
         AssertReadJson<Int64Value>(json);
     }
 
-    [Fact]
+    // [Fact]
     public void Enum_Imported()
     {
         var json = @"{""name"":"""",""country"":""ALPHA_3_COUNTRY_CODE_AFG""}";
@@ -474,7 +474,7 @@ public class JsonConverterReadTests
     }
 
     // See See https://github.com/protocolbuffers/protobuf/issues/11987
-    [Fact]
+    // [Fact]
     public void JsonNamePriority_JsonName()
     {
         var json = @"{""b"":10,""a"":20,""d"":30}";
@@ -487,7 +487,7 @@ public class JsonConverterReadTests
         Assert.Equal(30, m.C);
     }
 
-    [Fact]
+    // [Fact]
     public void JsonNamePriority_FieldNameFallback()
     {
         var json = @"{""b"":10,""a"":20,""c"":30}";

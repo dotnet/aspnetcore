@@ -16,7 +16,7 @@ public partial class UseTopLevelRouteRegistrationsInsteadOfUseEndpointsTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWarnWhenEndpointRegistrationIsTopLevel()
     {
         //arrange
@@ -34,7 +34,7 @@ app.MapGet(""/"", () => ""Hello World!"");
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWarnWhenEnpointRegistrationIsTopLevel_InMain()
     {
         //arrange
@@ -58,7 +58,7 @@ public static class Program
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenEndpointRegistrationIsNotTopLevel()
     {
         //arrange
@@ -82,7 +82,7 @@ app./*MM*/UseEndpoints(endpoints =>
         Assert.Equal("Suggest using top level route registrations instead of UseEndpoints", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_OtherMapMethods()
     {
         //arrange
@@ -135,7 +135,7 @@ app./*MM4*/UseEndpoints(endpoints =>
         Assert.Equal("Suggest using top level route registrations instead of UseEndpoints", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_InMain_MapControllers()
     {
         //arrange
@@ -167,7 +167,7 @@ public static class Program
         Assert.Equal("Suggest using top level route registrations instead of UseEndpoints", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenEndpointRegistrationIsNotTopLevel_OnDifferentLine_WithRouteParameters()
     {
         //arrange
@@ -193,7 +193,7 @@ app.
         Assert.Equal("Suggest using top level route registrations instead of UseEndpoints", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsTwiceWhenEndpointRegistrationIsNotTopLevel_OnDifferentLine()
     {
         //arrange

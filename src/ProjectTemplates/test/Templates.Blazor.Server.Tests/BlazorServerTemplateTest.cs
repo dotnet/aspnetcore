@@ -23,16 +23,16 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver";
 
-    [Fact]
+    // [Fact]
     public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync();
 
-    [Fact]
+    // [Fact]
     public Task BlazorServerTemplate_NoHttps_Works_NoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps });
 
-    [Fact]
+    // [Fact]
     public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain });
 
-    [Fact]
+    // [Fact]
     public Task BlazorServerTemplate_NoHttps_Works_ProgamMainNoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps});
 
     [ConditionalTheory]

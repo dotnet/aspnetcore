@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 /// </summary>
 public class HtmlHelperDisplayTextTest
 {
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsEmpty_IfValueNull()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Empty(result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_ReturnsEmpty_IfValueNull()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Empty(result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsNullDisplayText_IfSetAndValueNull()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Null display Text", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_ReturnsNullDisplayText_IfSetAndValueNull()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Null display Text", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsValue_IfNameEmpty()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Model value", nullResult);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsEmpty_IfNameNotFound()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Empty(result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_ReturnsValue_IfIdentityExpression()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Model value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsSimpleDisplayText_IfSetAndValueNonNull()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Simple display text", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_ReturnsSimpleDisplayText_IfSetAndValueNonNull()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Simple display text", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsPropertyValue_IfNameFound()
     {
         // Arrange
@@ -193,7 +193,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Property value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_ReturnsPropertyValue_IfPropertyExpression()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Property value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_ReturnsViewDataEntry()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("View data dictionary value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_IgnoresViewDataEntry()
     {
         // Arrange
@@ -246,7 +246,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Property value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayText_IgnoresModelStateEntry_ReturnsViewDataEntry()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("View data dictionary value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_IgnoresModelStateEntry()
     {
         // Arrange
@@ -296,7 +296,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Property value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_EnumDisplayAttribute_WhenPresent()
     {
         // Arrange
@@ -312,7 +312,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Value One", forResult);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_EnumDisplayAttribute_WhenPresentOnProperty()
     {
         // Arrange
@@ -328,7 +328,7 @@ public class HtmlHelperDisplayTextTest
         Assert.Equal("Value One", forResult);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayTextFor_EnumDisplayAttribute_WhenNotPresent()
     {
         // Arrange

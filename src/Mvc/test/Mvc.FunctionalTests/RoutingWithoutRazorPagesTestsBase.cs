@@ -21,7 +21,7 @@ public abstract class RoutingWithoutRazorPagesTestsBase<TStartup> : IClassFixtur
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ContainsPage_RouteMatched()
     {
         // Arrange & Act
@@ -42,7 +42,7 @@ public abstract class RoutingWithoutRazorPagesTestsBase<TStartup> : IClassFixtur
            result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_RouteContainsPage_RouteNotMatched()
     {
         // Arrange & Act

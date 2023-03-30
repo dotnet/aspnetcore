@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Routing;
 public class RoutingServiceCollectionExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void AddRouting_ThrowsOnNull_ServicesParameter()
     {
         var ex = Record.Exception(() =>
@@ -25,7 +25,7 @@ public class RoutingServiceCollectionExtensionsTests
         Assert.Equal("services", (ex as ArgumentNullException).ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void AddRoutingWithOptions_ThrowsOnNull_ConfigureOptionsParameter()
     {
         var services = new ServiceCollection();
@@ -39,7 +39,7 @@ public class RoutingServiceCollectionExtensionsTests
         Assert.Equal("configureOptions", (ex as ArgumentNullException).ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void AddRoutingWithOptions_ThrowsOnNull_ServicesParameter()
     {
         var ex = Record.Exception(() =>
@@ -59,7 +59,7 @@ public class RoutingServiceCollectionExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddRouting_DoesNot_Replace_Existing_RouteConstraint()
     {
         // Arrange

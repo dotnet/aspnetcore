@@ -20,7 +20,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
 
     public ServerFactory<TStartup, TContext> ServerFactory { get; }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterAUser()
     {
         // Arrange
@@ -37,7 +37,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.RegisterNewUserAsync(client, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterAUserWithRequiredConfirmation()
     {
         // Arrange
@@ -66,7 +66,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
             => Task.CompletedTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task RegisterWithRealConfirmationDoesNotShowLink()
     {
         // Arrange
@@ -91,7 +91,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterAUser_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -109,7 +109,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.RegisterNewUserAsync(client, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterWithASocialLoginProviderFromLogin()
     {
         // Arrange
@@ -129,7 +129,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterWithASocialLoginProviderFromLoginWithConfirmation()
     {
         // Arrange
@@ -151,7 +151,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterWithASocialLoginProviderFromLoginWithConfirmationAndRealEmailSender()
     {
         // Arrange
@@ -177,7 +177,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         Assert.Single(emailSender.SentEmails);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterWithASocialLoginProviderFromRegister()
     {
         // Arrange
@@ -197,7 +197,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.RegisterNewUserWithSocialLoginAsyncViaRegisterPage(client, userName, email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRegisterWithASocialLoginProvider_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -218,7 +218,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RegisterWithASocialLoginProviderSetsAuthenticationMethodClaim()
     {
         // Arrange

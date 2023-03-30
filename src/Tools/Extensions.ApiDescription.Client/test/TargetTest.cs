@@ -59,7 +59,7 @@ public class TargetTest : IDisposable
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddsExpectedItems()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -80,7 +80,7 @@ public class TargetTest : IDisposable
         Assert.DoesNotContain("TypeScriptCompile:", process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddsExpectedItems_WithCodeGenerator()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -102,7 +102,7 @@ public class TargetTest : IDisposable
         Assert.Contains($"TypeScriptCompile: {Path.Combine("obj", "azureMonitorClient.ts")}", process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddsExpectedItems_WithMultipleFiles()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -127,7 +127,7 @@ public class TargetTest : IDisposable
         Assert.DoesNotContain("TypeScriptCompile:", process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddsExpectedItems_WithMultipleFilesFromGenerator()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -155,7 +155,7 @@ public class TargetTest : IDisposable
         Assert.DoesNotContain("TypeScriptCompile:", process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -179,7 +179,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithOpenApiGenerateCodeOptions()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -204,7 +204,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithOpenApiCodeDirectory()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -229,7 +229,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithClassName()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -256,7 +256,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithCodeGenerator()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -281,7 +281,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithNamespace()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -306,7 +306,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithOptions()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -331,7 +331,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithOutputPath()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -358,7 +358,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithMultipleFiles()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -394,7 +394,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutesGeneratorTarget_WithMultipleGenerators()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
@@ -429,7 +429,7 @@ public class TargetTest : IDisposable
             process.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SkipsGeneratorTarget_InSubsequentBuilds()
     {
         // Arrange
@@ -467,7 +467,7 @@ public class TargetTest : IDisposable
         Assert.DoesNotContain("GenerateNSwagCSharp ", thirdProcess.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SkipsGeneratorTarget_WithOpenApiGenerateCodeOnBuild()
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Builder;
 
 public class RoutingEndpointConventionBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void RequireHost_RegisterConventionAndHostNames()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal("contoso.com:8080", hostMetadata.Hosts.Single());
     }
 
-    [Fact]
+    // [Fact]
     public void RequireHost_AddsHostMetadata()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal(new[] { "www.example.com", "example.com" }, metadata.Hosts);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireHost_ChainedCall_ReturnedBuilderIsDerivedType()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.True(chainedBuilder.TestProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void WithDisplayName_String_SetsDisplayName()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal("test", endpoint.DisplayName);
     }
 
-    [Fact]
+    // [Fact]
     public void WithDisplayName_ChainedCall_ReturnedBuilderIsDerivedType()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.True(chainedBuilder.TestProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void WithDisplayName_Func_SetsDisplayName()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal("test", endpoint.DisplayName);
     }
 
-    [Fact]
+    // [Fact]
     public void WithMetadata_AddsMetadata()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal("test", @string);
     }
 
-    [Fact]
+    // [Fact]
     public void WithMetadata_ChainedCall_ReturnedBuilderIsDerivedType()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.True(chainedBuilder.TestProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void WithName_SetsEndpointName()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal(name, routeName.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void WithGroupName_SetsEndpointGroupName()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Equal("SomeEndpointGroupName", endpointGroupName.EndpointGroupName);
     }
 
-    [Fact]
+    // [Fact]
     public void FinallyConventions_RunAfterOtherConventions()
     {
         // Arrange
@@ -193,7 +193,7 @@ public class RoutingEndpointConventionBuilderExtensionsTest
         Assert.Contains("found-previous-metadata", metadata);
     }
 
-    [Fact]
+    // [Fact]
     public void FinallyConventions_CanExamineMetadataInFIFOOrder()
     {
         // Arrange

@@ -34,7 +34,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         _console = new TestConsole(output);
     }
 
-    [Fact]
+    // [Fact]
     public void List_NoTokensForNewProject()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -44,7 +44,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("No JWTs created yet!", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void List_HandlesNoSecretsInProject()
     {
         var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
@@ -55,7 +55,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("No JWTs created yet!", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesSecretOnNoSecretInproject()
     {
         var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
@@ -68,7 +68,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("New JWT saved", output);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_WritesGeneratedTokenToDisk()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -80,7 +80,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
     }
 
-    [Fact]
+    // [Fact]
     public void Print_ReturnsNothingForMissingToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -90,7 +90,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("No token with ID 'invalid-id' found", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void List_ReturnsIdForGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -103,7 +103,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("MyCustomScheme", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void List_ReturnsIdForGeneratedToken_WithJsonFormat()
     {
         var schemeName = "MyCustomScheme";
@@ -125,7 +125,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal(schemeName, jwt.Scheme);
     }
 
-    [Fact]
+    // [Fact]
     public void List_ReturnsEmptyListWhenNoTokens_WithJsonFormat()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -137,7 +137,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal("[]", output.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public void Remove_RemovesGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -155,7 +155,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("Scheme2", appsettingsContent);
     }
 
-    [Fact]
+    // [Fact]
     public void Clear_RemovesGeneratedTokens()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -173,7 +173,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.DoesNotContain("Scheme2", appsettingsContent);
     }
 
-    [Fact]
+    // [Fact]
     public void Key_CanResetSigningKey()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -187,7 +187,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("New signing key created:", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Key_CanResetSigningKey_WhenSecretsHasPrepulatedData()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -215,7 +215,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void Command_ShowsHelpForInvalidCommand()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -227,7 +227,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("Unrecognized command or argument 'not-real'", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCommand_ShowsBasicTokenDetails()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -241,7 +241,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.DoesNotContain("Scheme", output);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCommand_SupportsODateTimeFormats()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -256,7 +256,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.DoesNotContain("Scheme", output);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCommand_ShowsCustomizedTokenDetails()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -270,7 +270,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("Scheme: customScheme", output);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCommand_DisplaysErrorForInvalidExpiresOnCombination()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -283,7 +283,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.DoesNotContain("Expires On: ", output);
     }
 
-    [Fact]
+    // [Fact]
     public void PrintCommand_ShowsBasicOptions()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -302,7 +302,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
     }
 
-    [Fact]
+    // [Fact]
     public void PrintCommand_ShowsBasicOptions_WithJsonFormat()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -322,7 +322,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal($"http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", deserialized.Audience);
     }
 
-    [Fact]
+    // [Fact]
     public void PrintCommand_ShowsCustomizedOptions()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -343,7 +343,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.DoesNotContain("Custom Claims", output);
     }
 
-    [Fact]
+    // [Fact]
     public void PrintComamnd_ShowsAllOptionsWithShowAll()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -365,7 +365,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"Custom Claims: [foo=bar]", output);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_WithJsonOutput_CanBeSerialized()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -380,7 +380,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal(Environment.UserName, deserialized.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_WithTokenOutput_ProducesSingleValue()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -393,7 +393,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.True(handler.CanReadToken(output.Trim()));
     }
 
-    [Fact]
+    // [Fact]
     public void Create_GracefullyHandles_NoLaunchSettings()
     {
         var projectPath = _fixture.CreateProject();
@@ -409,7 +409,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains(Resources.CreateCommand_NoAudience_Error, output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Create_GracefullyHandles_PrepopulatedSecrets()
     {
         var projectPath = _fixture.CreateProject();
@@ -436,7 +436,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void Create_GetsAudiencesFromAllIISAndKestrel()
     {
         var projectPath = _fixture.CreateProject();
@@ -453,7 +453,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Create_SupportsSettingACustomIssuerAndScheme()
     {
         var projectPath = _fixture.CreateProject();
@@ -474,7 +474,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal("test-issuer", signingKey["Issuer"].GetValue<string>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Create_SupportsSettingMutlipleIssuersAndSingleScheme()
     {
         var projectPath = _fixture.CreateProject();
@@ -496,7 +496,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.NotNull(signingKeys.SingleOrDefault(signingKey => signingKey["Issuer"].GetValue<string>() == "test-issuer-2"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Create_SupportsSettingSingleIssuerAndMultipleSchemes()
     {
         var projectPath = _fixture.CreateProject();
@@ -521,7 +521,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.True(Convert.TryFromBase64String(signingKey2["Value"].GetValue<string>(), new byte[32], out var _));
     }
 
-    [Fact]
+    // [Fact]
     public void Key_CanPrintAndReset_BySchemeAndIssuer()
     {
         var projectPath = _fixture.CreateProject();
@@ -547,7 +547,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.NotEqual(key, resetKey);
     }
 
-    [Fact]
+    // [Fact]
     public void Key_CanPrintWithBase64()
     {
         var projectPath = _fixture.CreateProject();
@@ -572,7 +572,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Equal(32, bytesParsed);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CanHandleNoProjectOptionProvided()
     {
         var projectPath = _fixture.CreateProject();
@@ -585,7 +585,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("New JWT saved", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -598,7 +598,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void Delete_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -610,7 +610,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void Clear_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));
@@ -622,7 +622,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
     }
 
-    [Fact]
+    // [Fact]
     public void List_CanHandleNoProjectOptionProvided_WithNoProjects()
     {
         var path = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest"));

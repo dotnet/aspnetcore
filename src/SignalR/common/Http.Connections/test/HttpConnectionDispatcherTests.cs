@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests;
 
 public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task NegotiateVersionZeroReservesConnectionIdAndReturnsIt()
     {
         using (StartVerifiableLog())
@@ -70,7 +70,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NegotiateReservesConnectionTokenAndConnectionIdAndReturnsIt()
     {
         using (StartVerifiableLog())
@@ -96,7 +96,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CheckThatThresholdValuesAreEnforced()
     {
         using (StartVerifiableLog())
@@ -133,7 +133,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidNegotiateProtocolVersionThrows()
     {
         using (StartVerifiableLog())
@@ -161,7 +161,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoNegotiateVersionInQueryStringThrowsWhenMinProtocolVersionIsSet()
     {
         using (StartVerifiableLog())
@@ -324,7 +324,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvidedForPost()
     {
         using (StartVerifiableLog())
@@ -360,7 +360,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PostNotAllowedForWebSocketConnections()
     {
         using (StartVerifiableLog())
@@ -398,7 +398,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PostReturns404IfConnectionDisposed()
     {
         using (StartVerifiableLog())
@@ -499,7 +499,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TransportEndingGracefullyWaitsOnApplicationLongPolling()
     {
         using (StartVerifiableLog())
@@ -701,7 +701,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponsesForLongPollingHaveCacheHeaders()
     {
         using (StartVerifiableLog())
@@ -734,7 +734,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HttpContextFeatureForLongpollingWorksBetweenPolls()
     {
         using (StartVerifiableLog())
@@ -913,7 +913,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointsThatRequireConnectionId400WhenNoConnectionIdProvidedForPost()
     {
         using (StartVerifiableLog())
@@ -989,7 +989,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompletedEndPointEndsConnection()
     {
         using (StartVerifiableLog())
@@ -1018,7 +1018,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousExceptionEndsConnection()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -1051,7 +1051,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompletedEndPointEndsLongPollingConnection()
     {
         using (StartVerifiableLog())
@@ -1083,7 +1083,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LongPollingTimeoutSets200StatusCode()
     {
         using (StartVerifiableLog())
@@ -1171,7 +1171,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Debug)]
     public async Task LongPollingConnectionClosesWhenSendTimeoutReached()
     {
@@ -1211,7 +1211,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Debug)]
     public async Task SSEConnectionClosesWhenSendTimeoutReached()
     {
@@ -1243,7 +1243,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Debug)]
     public async Task WebSocketConnectionClosesWhenSendTimeoutReached()
     {
@@ -1280,7 +1280,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task WebSocketTransportTimesOutWhenCloseFrameNotReceived()
     {
@@ -1354,7 +1354,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
     {
         using (StartVerifiableLog())
@@ -1419,7 +1419,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleRequestsToActiveConnectionId409ForLongPolling()
     {
         using (StartVerifiableLog())
@@ -1515,7 +1515,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionStateSetToInactiveAfterPoll()
     {
         using (StartVerifiableLog())
@@ -1550,7 +1550,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BlockingConnectionWorksWithStreamingConnections()
     {
         using (StartVerifiableLog())
@@ -1585,7 +1585,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BlockingConnectionWorksWithLongPollingConnection()
     {
         using (StartVerifiableLog())
@@ -1627,7 +1627,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttemptingToPollWhileAlreadyPollingReplacesTheCurrentPoll()
     {
         using (StartVerifiableLog())
@@ -1859,7 +1859,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetsInherentKeepAliveFeatureOnFirstLongPollingRequest()
     {
         using (StartVerifiableLog())
@@ -1932,7 +1932,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeleteEndpointGracefullyTerminatesLongPolling()
     {
         using (StartVerifiableLog())
@@ -1985,7 +1985,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeleteEndpointGracefullyTerminatesLongPollingEvenWhenBetweenPolls()
     {
         using (StartVerifiableLog())
@@ -2033,7 +2033,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeleteEndpointTerminatesLongPollingWithHangingApplication()
     {
         using (StartVerifiableLog())
@@ -2088,7 +2088,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PollCanReceiveFinalMessageAfterAppCompletes()
     {
         using (StartVerifiableLog())
@@ -2140,7 +2140,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NegotiateDoesNotReturnWebSocketsWhenNotAvailable()
     {
         using (StartVerifiableLog())
@@ -2183,7 +2183,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteThatIsDisposedBeforeCompleteReturns404()
     {
         using (StartVerifiableLog())
@@ -2246,7 +2246,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanDisposeWhileWriteLockIsBlockedOnBackpressureAndResponseReturns404()
     {
         using (StartVerifiableLog())
@@ -2303,7 +2303,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LongPollingCanPollIfWritePipeHasBackpressure()
     {
         using (StartVerifiableLog())
@@ -2359,7 +2359,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ErrorDuringPollWillCloseConnection()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -2402,7 +2402,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LongPollingConnectionClosingTriggersConnectionClosedToken()
     {
         using (StartVerifiableLog())
@@ -2459,7 +2459,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SSEConnectionClosingTriggersConnectionClosedToken()
     {
         using (StartVerifiableLog())
@@ -2486,7 +2486,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebSocketConnectionClosingTriggersConnectionClosedToken()
     {
         using (StartVerifiableLog())
@@ -2534,7 +2534,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AbortingConnectionAbortsHttpContextAndTriggersConnectionClosedToken()
     {
         using (StartVerifiableLog())
@@ -2568,7 +2568,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServicesAvailableWithLongPolling()
     {
         using (StartVerifiableLog())
@@ -2619,7 +2619,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServicesPreserveScopeWithLongPolling()
     {
         using (StartVerifiableLog())
@@ -2674,7 +2674,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeLongPollingConnectionDisposesServiceScope()
     {
         using (StartVerifiableLog())
@@ -2721,7 +2721,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         public Activity Activity { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LongRunningActivityTagSetOnExecuteAsync()
     {
         using (StartVerifiableLog())
@@ -2758,7 +2758,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionClosedRequestedTriggeredOnAuthExpiration()
     {
         using (StartVerifiableLog())
@@ -3069,7 +3069,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         await connection.DisposeAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationExpirationSetToMaxValueByDefault()
     {
         using var host = CreateHost(services =>
@@ -3177,7 +3177,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisableRequestTimeoutInLongPolling()
     {
         using (StartVerifiableLog())

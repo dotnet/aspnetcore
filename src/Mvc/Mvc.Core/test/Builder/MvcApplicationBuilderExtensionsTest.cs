@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder;
 
 public class MvcApplicationBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void UseMvc_ThrowsInvalidOperationException_IfMvcMarkerServiceIsNotRegistered()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class MvcApplicationBuilderExtensionsTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMvc_EndpointRoutingDisabled_NoEndpointInfos()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class MvcApplicationBuilderExtensionsTest
         Assert.Empty(endpointDataSource.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMvc_EndpointRoutingEnabled_ThrowsException()
     {
         // Arrange

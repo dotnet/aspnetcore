@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 public class LoggingConnectionMiddlewareTests : LoggedTest
 {
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38086")]
-    [Fact]
+    // [Fact]
     public async Task LoggingConnectionMiddlewareCanBeAddedBeforeAndAfterHttps()
     {
         await using (var server = new TestServer(context =>

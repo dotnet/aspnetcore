@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
 {
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitQuery_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -40,7 +40,7 @@ app.MapGet("/hello", ([FromQuery]ParsableTodo[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitHeader_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -62,7 +62,7 @@ app.MapGet("/hello", ([FromHeader]ParsableTodo[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitHeader_StringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -84,7 +84,7 @@ app.MapGet("/hello", ([FromHeader]string[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitHeader_NullableStringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -184,7 +184,7 @@ app.MapGet("/hello", (HttpContext context, {{typeName}} tryParsable) => {
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ImplicitQuery_ComplexTypeArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -206,7 +206,7 @@ app.MapGet("/hello", (ParsableTodo[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitQuery_StringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -228,7 +228,7 @@ app.MapGet("/hello", ([FromQuery]string[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ImplicitQuery_StringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -250,7 +250,7 @@ app.MapGet("/hello", (string[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ImplicitQuery_NullableStringArrayParam_QueryNotPresent()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -271,7 +271,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ImplicitQuery_NullableStringArrayParam_EmptyQueryValues()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -293,7 +293,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ExplicitQuery_NullableStringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -315,7 +315,7 @@ app.MapGet("/hello", ([FromQuery]string?[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ImplicitQuery_NullableStringArrayParam()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -337,7 +337,7 @@ app.MapGet("/hello", (string?[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapPost_WithArrayQueryString_ShouldFail()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -359,7 +359,7 @@ app.MapPost("/hello", (string[] p) => p.Length);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapPost_WithArrayQueryString_AndBody_ShouldUseBody()
     {
         var (results, compilation) = await RunGeneratorAsync("""

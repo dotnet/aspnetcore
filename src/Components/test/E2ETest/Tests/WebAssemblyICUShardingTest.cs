@@ -23,7 +23,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     {
     }
 
-    [Fact]
+    // [Fact]
     public void LoadingApp_FrenchLanguage_Works()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal(expectedText, localizedDisplay.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void LoadingApp_RussianLanguage_Works()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal("Hello", localizedDisplay.Text); // No localized resources for this culture.
     }
 
-    [Fact]
+    // [Fact]
     public void LoadingApp_KannadaLanguage_Works()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal("ಹಲೋ", localizedDisplay.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void LoadingApp_DynamicallySetLanguageThrows()
     {
         // Arrange

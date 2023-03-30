@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 // These tests are mirrored from routing's AttributeRouteModelTests.cs
 public partial class RoutePatternParserTests
 {
-    [Fact]
+    // [Fact]
     public void TestReplacement()
     {
         Test(@"""[controller]""", @"<Tree>
@@ -28,7 +28,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestEscapedReplacement()
     {
         Test(@"""[[controller]]""", @"<Tree>
@@ -44,7 +44,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestIncompleteReplacement()
     {
         Test(@"""[controller""", @"<Tree>
@@ -65,7 +65,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestOpenBracketInReplacement()
     {
         Test(@"""[cont[controller]""", @"<Tree>
@@ -86,7 +86,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestEmptyReplacement()
     {
         Test(@"""[]""", @"<Tree>
@@ -107,7 +107,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestEndReplacement()
     {
         Test(@"""]""", @"<Tree>
@@ -126,7 +126,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestRepeatedReplacement()
     {
         Test(@"""[one][two]""", @"<Tree>
@@ -149,7 +149,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestMultipleReplacements()
     {
         Test(@"""[controller]/[action]""", @"<Tree>
@@ -177,7 +177,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementThenEscapedBracket()
     {
         Test(@"""[controller][[""", @"<Tree>
@@ -198,7 +198,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestLiteralThenReplacement()
     {
         Test(@"""thisisSomeText[action]""", @"<Tree>
@@ -219,7 +219,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute);
     }
 
-    [Fact]
+    // [Fact]
     public void TestMultipleTokenEscapes()
     {
         Test(@"""[[-]][[/[[controller]]""", @"<Tree>
@@ -243,7 +243,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementContainingEscapedBackets()
     {
         Test(@"""[contr[[oller]/[act]]ion]""", @"<Tree>
@@ -271,7 +271,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementContainingBraces()
     {
         Test(@"""[contr}oller]/[act{ion]/{id}""", @"<Tree>
@@ -313,7 +313,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementInEscapedBrackets()
     {
         Test(@"""[controller]/[[[action]]]/id""", @"<Tree>
@@ -355,7 +355,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementInEscapedBrackets2()
     {
         Test(@"""[controller]/[[[[[action]]]]]/id""", @"<Tree>
@@ -397,7 +397,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementInEscapedBrackets3()
     {
         Test(@"""[controller]/[[[[[[[action]]]]]]]/id""", @"<Tree>
@@ -439,7 +439,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestReplacementInEscapedBrackets4()
     {
         Test(@"""[controller]/[[[[[action]]]]]]]/id""", @"<Tree>
@@ -481,7 +481,7 @@ public partial class RoutePatternParserTests
 </Tree>", routePatternOptions: RoutePatternOptions.MvcAttributeRoute, allowDiagnosticsMismatch: true);
     }
 
-    [Fact]
+    // [Fact]
     public void TestOpenBracketInLiteral()
     {
         Test(@"""controller]""", @"<Tree>

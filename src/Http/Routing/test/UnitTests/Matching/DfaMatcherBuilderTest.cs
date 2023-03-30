@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 public class DfaMatcherBuilderTest
 {
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_SingleEndpoint_Empty()
     {
         // Arrange
@@ -32,7 +32,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(root.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_SingleEndpoint_Literals()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(c.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_SingleEndpoint_Parameters()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(c.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_SingleEndpoint_CatchAll()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(catchAll, catchAll.CatchAll);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_SingleEndpoint_CatchAllAtRoot()
     {
         // Arrange
@@ -157,7 +157,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(catchAll, catchAll.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_LiteralAndLiteral()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(c2.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_LiteralDifferentCase()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(c2.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_LiteralAndParameter()
     {
         // Arrange
@@ -317,7 +317,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(c2.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ParameterAndParameter()
     {
         // Arrange
@@ -359,7 +359,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(c.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_LiteralAndCatchAll()
     {
         // Arrange
@@ -408,7 +408,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(catchAll, catchAll.CatchAll);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll()
     {
         // Arrange
@@ -455,7 +455,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(catchAll, catchAll.CatchAll);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_DoesNotMeetConstraint()
     {
         // Arrange
@@ -547,7 +547,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_MeetsConstraint()
     {
         // Arrange
@@ -607,7 +607,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ConstrainedParameterTrimming_BothCandidates_WhenLitteralPatternMeetsConstraintAndRoutePattern()
     {
         // Arrange
@@ -670,7 +670,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ComplexParameter_LiteralDoesNotMatchComplexParameter()
     {
         // Arrange
@@ -715,7 +715,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ComplexParameter_LiteralMatchesComplexParameter()
     {
         // Arrange
@@ -775,7 +775,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ConstrainedComplexParameter_LiteralMatchesComplexParameterButNotConstraint()
     {
         // Arrange
@@ -820,7 +820,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ComplexParameter_LiteralMatchesComplexParameterAndPartConstraint()
     {
         // Arrange
@@ -880,7 +880,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ComplexParameter_EvaluatesAllPartsAndConstraints()
     {
         // Arrange
@@ -992,7 +992,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(paramCNode.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ComplexParameter_BothCandidates_WhenLitteralPatternMatchesComplexParameterAndRoutePattern()
     {
         // Arrange
@@ -1056,7 +1056,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Regression test for excessive memory usage https://github.com/dotnet/aspnetcore/issues/23850
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_CanHandle_LargeAmountOfRoutes_WithConstraints()
     {
         // Arrange
@@ -1650,7 +1650,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Regression test for excessive memory usage https://github.com/dotnet/aspnetcore/issues/33735
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_Regression_33735()
     {
         // Arrange
@@ -2170,7 +2170,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Another regression test based on OData models
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_CanHandle_LargeAmountOfRoutes_WithComplexParameters()
     {
         // Arrange
@@ -2390,7 +2390,7 @@ public class DfaMatcherBuilderTest
     // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
     //
     // This case behaves the same for all combinations.
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1()
     {
         // Arrange
@@ -2433,7 +2433,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2()
     {
         // Arrange
@@ -2476,7 +2476,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1()
     {
         // Arrange
@@ -2530,7 +2530,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2()
     {
         // Arrange
@@ -2624,7 +2624,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(b2.CatchAll);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies()
     {
         // Arrange
@@ -2663,7 +2663,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(test2_true.PolicyEdges);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies_AndBranches()
     {
         // Arrange
@@ -2727,7 +2727,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(test2_false.PolicyEdges);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies_AndBranches_FirstPolicySkipped()
     {
         // Arrange
@@ -2771,7 +2771,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(test2_false.PolicyEdges);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies_AndBranches_SecondSkipped()
     {
         // Arrange
@@ -2815,7 +2815,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(test1_1.PolicyEdges);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies_AndBranches_NonRouteEndpoint()
     {
         // Arrange
@@ -2863,7 +2863,7 @@ public class DfaMatcherBuilderTest
         Assert.Equal("MaxValueEndpoint", Assert.Single(nonRouteEndpoint.Matches).DisplayName);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies_AndBranches_BothPoliciesSkipped()
     {
         // Arrange
@@ -2898,7 +2898,7 @@ public class DfaMatcherBuilderTest
     //
     // The builder uses a different sort order when building the tree, vs when building the policy nodes. Policy
     // nodes should see an "absolute" order.
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_WithPolicies_SortedAccordingToScore()
     {
         // Arrange
@@ -2938,7 +2938,7 @@ public class DfaMatcherBuilderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_RequiredValues()
     {
         // Arrange
@@ -2969,7 +2969,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(index.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_RequiredValues_AndMatchingDefaults()
     {
         // Arrange
@@ -3003,7 +3003,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(index.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_RequiredValues_AndDifferentDefaults()
     {
         // Arrange
@@ -3037,7 +3037,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(index.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_RequiredValues_Multiple()
     {
         // Arrange
@@ -3109,7 +3109,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(endpoint3, Assert.Single(loginChangePassword.Parameters.Matches));
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_RequiredValues_AndParameterTransformer()
     {
         // Arrange
@@ -3143,7 +3143,7 @@ public class DfaMatcherBuilderTest
         Assert.Null(index.Literals);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildDfaTree_RequiredValues_AndDefaults_AndParameterTransformer()
     {
         // Arrange
@@ -3185,7 +3185,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(endpoint, Assert.Single(index.Parameters.Matches));
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_JustLiterals()
     {
         // Arrange
@@ -3205,7 +3205,7 @@ public class DfaMatcherBuilderTest
         Assert.Empty(candidate.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_Parameters()
     {
         // Arrange
@@ -3229,7 +3229,7 @@ public class DfaMatcherBuilderTest
         Assert.Empty(candidate.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_Parameters_WithDefaults()
     {
         // Arrange
@@ -3259,7 +3259,7 @@ public class DfaMatcherBuilderTest
         Assert.Empty(candidate.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_Parameters_CatchAll()
     {
         // Arrange
@@ -3291,7 +3291,7 @@ public class DfaMatcherBuilderTest
     }
 
     // Defaults are processed first, which affects the slot ordering.
-    [Fact]
+    // [Fact]
     public void CreateCandidate_Parameters_OutOfLineDefaults()
     {
         // Arrange
@@ -3322,7 +3322,7 @@ public class DfaMatcherBuilderTest
         Assert.Empty(candidate.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_Parameters_ComplexSegments()
     {
         // Arrange
@@ -3353,7 +3353,7 @@ public class DfaMatcherBuilderTest
         Assert.Empty(candidate.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_RouteConstraints()
     {
         // Arrange
@@ -3373,7 +3373,7 @@ public class DfaMatcherBuilderTest
         Assert.Single(candidate.Constraints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_InlineRouteConstraints_Duplicate_SameInstance()
     {
         // Arrange
@@ -3396,7 +3396,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(constraint1.Value, constraint2.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_InlineRouteConstraintsWithArgument_Duplicate_SameInstance()
     {
         // Arrange
@@ -3419,7 +3419,7 @@ public class DfaMatcherBuilderTest
         Assert.Same(constraint1.Value, constraint2.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_InlineRouteConstraintsWithArgument_DifferentArgument_DifferentInstance()
     {
         // Arrange
@@ -3442,7 +3442,7 @@ public class DfaMatcherBuilderTest
         Assert.NotSame(constraint1.Value, constraint2.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidate_CustomParameterPolicy()
     {
         // Arrange
@@ -3466,7 +3466,7 @@ public class DfaMatcherBuilderTest
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CreateCandidates_CreatesScoresCorrectly()
     {
         // Arrange

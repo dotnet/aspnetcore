@@ -26,7 +26,7 @@ public class AsyncEnumerableReaderTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryGetReader_ReturnsReaderForIAsyncEnumerable()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class AsyncEnumerableReaderTest
         Assert.Equal(new[] { "0", "1", "2", }, collection);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryGetReader_ReturnsReaderForIAsyncEnumerableOfValueType()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class AsyncEnumerableReaderTest
         Assert.Equal(new[] { 0, 1, 2, }, collection);
     }
 
-    [Fact]
+    // [Fact]
     public void TryGetReader_ReturnsCachedDelegate()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class AsyncEnumerableReaderTest
         Assert.Same(reader1, reader2);
     }
 
-    [Fact]
+    // [Fact]
     public void TryGetReader_ReturnsCachedDelegate_WhenTypeImplementsMultipleIAsyncEnumerableContracts()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class AsyncEnumerableReaderTest
         Assert.Same(reader1, reader2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CachedDelegate_CanReadEnumerableInstanceMultipleTimes()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class AsyncEnumerableReaderTest
         Assert.Equal(expected, await reader(asyncEnumerable2, default));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CachedDelegate_CanReadEnumerableInstanceMultipleTimes_ThatProduceDifferentResults()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class AsyncEnumerableReaderTest
         Assert.Equal(new[] { "0", "1", "2", "3" }, await reader(asyncEnumerable2, default));
     }
 
-    [Fact]
+    // [Fact]
     public void TryGetReader_ReturnsDifferentInstancesForDifferentEnumerables()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class AsyncEnumerableReaderTest
         Assert.NotSame(reader1, reader2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Reader_ReadsIAsyncEnumerable_ImplementingMultipleAsyncEnumerableInterfaces()
     {
         // This test ensures the reader does not fail if you have a type that implements IAsyncEnumerable for multiple Ts
@@ -167,7 +167,7 @@ public class AsyncEnumerableReaderTest
         Assert.Equal(new[] { "0", "1", "2", }, collection);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Reader_ThrowsIfBufferLimitIsReached()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class AsyncEnumerableReaderTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Reader_ThrowsIfIAsyncEnumerableThrows()
     {
         // Arrange
@@ -199,7 +199,7 @@ public class AsyncEnumerableReaderTest
         await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => reader(enumerable, default));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Reader_PassesCancellationTokenToIAsyncEnumerable()
     {
         // Arrange

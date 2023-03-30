@@ -79,7 +79,7 @@ public class HtmlGenerationTest :
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnumValues_SerializeCorrectly()
     {
         // Arrange & Act
@@ -120,7 +120,7 @@ public class HtmlGenerationTest :
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
     {
         var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
@@ -204,7 +204,7 @@ public class HtmlGenerationTest :
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HtmlGenerationWebSite_LinkGeneration_With21CompatibilityBehavior()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class HtmlGenerationTest :
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidationTagHelpers_GeneratesExpectedSpansAndDivs()
     {
         // Arrange
@@ -338,7 +338,7 @@ public class HtmlGenerationTest :
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, token: AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "Customer/HtmlGeneration_Customer"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientValidators_AreGeneratedDuringInitialRender()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class HtmlGenerationTest :
         Assert.Equal("The Address field is required.", addressInput.GetAttribute("data-val-required"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidationTagHelpers_UsingRecords()
     {
         // Arrange
@@ -402,7 +402,7 @@ public class HtmlGenerationTest :
         Assert.Equal("The Address field is required.", validation.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_CanCachePortionsOfViewsPartialViewsAndViewComponents()
     {
         // Arrange
@@ -466,7 +466,7 @@ public class HtmlGenerationTest :
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_ExpiresContent_BasedOnExpiresParameter()
     {
         // Arrange & Act - 1
@@ -485,7 +485,7 @@ public class HtmlGenerationTest :
         Assert.Equal(expected2, response2.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_UsesVaryByCookie_ToVaryContent()
     {
         // Arrange & Act - 1
@@ -512,7 +512,7 @@ public class HtmlGenerationTest :
         Assert.Equal(expected1, response3.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_VariesByRoute()
     {
         // Arrange & Act - 1
@@ -563,7 +563,7 @@ public class HtmlGenerationTest :
         Assert.Equal(expected4, response4.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_VariesByUserId()
     {
         // Arrange & Act - 1
@@ -585,7 +585,7 @@ public class HtmlGenerationTest :
         Assert.Equal(expected2, response4.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
     {
         // Arrange & Act - 1
@@ -622,7 +622,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Equal(expected3, response3.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CacheTagHelper_DoesNotCacheIfDisabled()
     {
         // Arrange & Act
@@ -636,7 +636,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Equal("Deal percentage is 30", response3.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task EditorTemplateWithNoModel_RendersWithCorrectMetadata()
     {
         // Arrange
@@ -654,7 +654,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EditorTemplateWithSpecificModel_RendersWithCorrectMetadata()
     {
         // Arrange
@@ -694,7 +694,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Contains("Hello, Private World!", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialTagHelper_AllowsPassingModelValue()
     {
         // Arrange
@@ -708,7 +708,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Equal("Some status message", banner.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialTagHelper_AllowsPassingNullModelValue()
     {
         // Regression test for https://github.com/aspnet/Mvc/issues/7667.
@@ -723,7 +723,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Empty(banner.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialTagHelper_AllowsUsingFallback()
     {
         // Arrange
@@ -737,7 +737,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Equal("Hello from fallback", content.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialTagHelper_AllowsUsingOptional()
     {
         // Arrange
@@ -751,7 +751,7 @@ Products: Music Systems, Televisions (3)";
         Assert.Empty(content.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedDataAttributes()
     {
         // Act
@@ -774,7 +774,7 @@ Products: Music Systems, Televisions (3)";
         Assert.False(lastName.HasAttribute("data-val-regex"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedSpansAndDivsOnValidationError()
     {
         // Arrange

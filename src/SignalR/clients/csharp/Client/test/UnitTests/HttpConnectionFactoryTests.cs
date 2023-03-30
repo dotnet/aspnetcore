@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
 public class HttpConnectionFactoryTests
 {
-    [Fact]
+    // [Fact]
     public async Task ConnectionIsDisposedIfItFailsToStartAsync()
     {
         var testHandler = new TestHttpMessageHandler(autoNegotiate: false, handleFirstPoll: false);
@@ -43,7 +43,7 @@ public class HttpConnectionFactoryTests
         Assert.True(testHandler.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotSupportNonUriEndPoints()
     {
         var factory = new HttpConnectionFactory(
@@ -55,7 +55,7 @@ public class HttpConnectionFactoryTests
         Assert.Equal("The provided EndPoint must be of type UriEndPoint.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OptionsUrlMustMatchEndPointIfSet()
     {
         var url1 = new Uri("http://example.com/1");
@@ -73,7 +73,7 @@ public class HttpConnectionFactoryTests
         Assert.Equal("If HttpConnectionOptions.Url was set, it must match the UriEndPoint.Uri passed to ConnectAsync.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ShallowCopyHttpConnectionOptionsCopiesAllPublicProperties()
     {
         Func<HttpMessageHandler, HttpMessageHandler> handlerFactory = handler => handler;

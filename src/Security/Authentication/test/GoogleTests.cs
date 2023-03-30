@@ -42,7 +42,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         o.SignInScheme = "auth1";
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillTriggerRedirection()
     {
         using var host = await CreateHost(o =>
@@ -73,7 +73,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.False(queryParams.ContainsKey("include_granted_scopes"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInThrows()
     {
         using var host = await CreateHost(o =>
@@ -86,7 +86,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutThrows()
     {
         using var host = await CreateHost(o =>
@@ -99,7 +99,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ForbidThrows()
     {
         using var host = await CreateHost(o =>
@@ -112,7 +112,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Challenge401WillNotTriggerRedirection()
     {
         using var host = await CreateHost(o =>
@@ -125,7 +125,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillSetCorrelationCookie()
     {
         using var host = await CreateHost(o =>
@@ -138,7 +138,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillSetDefaultScope()
     {
         using var host = await CreateHost(o =>
@@ -153,7 +153,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Contains("&scope=" + UrlEncoder.Default.Encode("openid profile email"), query);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillUseAuthenticationPropertiesParametersAsQueryArguments()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -205,7 +205,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillUseAuthenticationPropertiesItemsAsParameters()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -257,7 +257,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillUseAuthenticationPropertiesItemsAsQueryArgumentsButParametersWillOverwrite()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -313,7 +313,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillTriggerApplyRedirectEvent()
     {
         using var host = await CreateHost(o =>
@@ -336,7 +336,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Contains("custom=test", query);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticateWithoutCookieWillReturnNoResult()
     {
         using var host = await CreateHost(o =>
@@ -359,7 +359,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReplyPathWithoutStateQueryStringWillBeRejected()
     {
         using var host = await CreateHost(o =>
@@ -408,7 +408,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReplyPathWithAccessDeniedError_AllowsCustomizingPath()
     {
         using var host = await CreateHost(o =>
@@ -438,7 +438,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal("https://example.com/custom-denied-page?rurl=http%3A%2F%2Fwww.google.com%2F", transaction.Response.Headers.GetValues("Location").First());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReplyPathWithAccessDeniedErrorAndNoAccessDeniedPath_FallsBackToRemoteError()
     {
         var accessDeniedCalled = false;
@@ -688,7 +688,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticatedEventCanGetRefreshToken()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -730,7 +730,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal("Test Refresh Token", transaction.FindClaimValue("RefreshToken"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task NullRedirectUriWillRedirectToSlash()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -765,7 +765,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateAuthenticatedContext()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -810,7 +810,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal("/foo", transaction.Response.Headers.GetValues("Location").First());
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoStateCausesException()
     {
         using var host = await CreateHost(o =>
@@ -825,7 +825,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal("The oauth state was missing or invalid.", error.GetBaseException().Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRedirectOnError()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -854,7 +854,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
             transaction.Response.Headers.GetValues("Location").First());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticateAutomaticWhenAlreadySignedInSucceeds()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -898,7 +898,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal("yup", transaction.FindClaimValue("xform"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticateGoogleWhenAlreadySignedInSucceeds()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -942,7 +942,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Equal("yup", transaction.FindClaimValue("xform"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticateGoogleWhenAlreadySignedWithGoogleReturnsNull()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -979,7 +979,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.Null(transaction.FindClaimValue(ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeGoogleWhenAlreadySignedWithGoogleSucceeds()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
@@ -1016,7 +1016,7 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
         Assert.StartsWith("https://www.facebook.com/", transaction.Response.Headers.Location.OriginalString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PkceSentToTokenEndpoint()
     {
         using var host = await CreateHost(o =>

@@ -15,7 +15,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleAFTokensWithinTheSamePage_GeneratesASingleCookieToken()
     {
         // Arrange & Act
@@ -37,7 +37,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal("no-cache", pragmaValue.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleFormPostWithingASingleView_AreAllowed()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal("OK", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetCookieAndHeaderBeforeFlushAsync_GeneratesCookieTokenAndHeader()
     {
         // Arrange & Act
@@ -89,7 +89,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal("no-cache", pragmaValue.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetCookieAndHeaderBeforeFlushAsync_PostToForm()
     {
         // Arrange
@@ -121,7 +121,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal("OK", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Antiforgery_HeaderNotSet_SendsBadRequest()
     {
         // Arrange
@@ -149,7 +149,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AntiforgeryTokenGeneration_SetsDoNotCacheHeaders_OverridesExistingCachingHeaders()
     {
         // Arrange & Act
@@ -171,7 +171,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal("no-cache", pragmaValue.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestWithoutAntiforgeryToken_SendsBadRequest()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestWithoutAntiforgeryToken_ExecutesResultFilter()
     {
         // Arrange

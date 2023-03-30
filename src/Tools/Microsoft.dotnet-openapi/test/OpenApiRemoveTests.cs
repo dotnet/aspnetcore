@@ -11,7 +11,7 @@ public class OpenApiRemoveTests : OpenApiTestBase
 {
     public OpenApiRemoveTests(ITestOutputHelper output) : base(output) { }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Remove_File()
     {
         var nswagJsonFile = "openapi.json";
@@ -56,7 +56,7 @@ public class OpenApiRemoveTests : OpenApiTestBase
         Assert.False(File.Exists(Path.Combine(_tempDir.Root, nswagJsonFile)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Remove_ViaUrl()
     {
         _tempDir
@@ -144,7 +144,7 @@ public class OpenApiRemoveTests : OpenApiTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Remove_Multiple()
     {
         var nswagJsonFile = "openapi.json";

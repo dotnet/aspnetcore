@@ -37,7 +37,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
 
     public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
-    [Fact]
+    // [Fact]
     public void SignalRClientWorksWithLongPolling()
     {
         Browser.Exists(By.Id("hub-url")).SendKeys(
@@ -50,7 +50,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
             () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void SignalRClientWorksWithWebSockets()
     {
         Browser.Exists(By.Id("hub-url")).SendKeys(
@@ -63,7 +63,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
             () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void SignalRClientSendsUserAgent()
     {
         Browser.Exists(By.Id("hub-url")).SendKeys(

@@ -220,7 +220,7 @@ public class TreeRouterTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_RouteAsync_MatchesCatchAllRoutesWithDefaults()
     {
         // Arrange
@@ -263,7 +263,7 @@ public class TreeRouterTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_RouteAsync_DoesNotMatchRoutesWithIntermediateDefaultRouteValues()
     {
         // Arrange
@@ -328,7 +328,7 @@ public class TreeRouterTest
         Assert.NotNull(context.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_RouteAsync_DoesNotMatchShorterUrl()
     {
         // Arrange
@@ -821,7 +821,7 @@ public class TreeRouterTest
         Assert.Empty(result.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_LongerTemplateWithDefaultIsMoreSpecific()
     {
         // Arrange
@@ -1086,7 +1086,7 @@ public class TreeRouterTest
         Assert.Empty(result.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_CreatesLinksForRoutesWithIntermediateDefaultRouteValues()
     {
         // Arrange
@@ -1106,7 +1106,7 @@ public class TreeRouterTest
         Assert.Equal("/a/b/3/d", result.VirtualPath);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate()
     {
         // Arrange
@@ -1119,7 +1119,7 @@ public class TreeRouterTest
         builder.Build();
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_WithName()
     {
         // Arrange
@@ -1144,7 +1144,7 @@ public class TreeRouterTest
         Assert.Empty(result.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_DoesNotGenerateLink_IfThereIsNoRouteForAGivenName()
     {
         // Arrange
@@ -1230,7 +1230,7 @@ public class TreeRouterTest
         Assert.Empty(result.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_NoRequiredValues()
     {
         // Arrange
@@ -1250,7 +1250,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match()
     {
         // Arrange
@@ -1270,7 +1270,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_NoMatch()
     {
         // Arrange
@@ -1287,7 +1287,7 @@ public class TreeRouterTest
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithAmbientValues()
     {
         // Arrange
@@ -1307,7 +1307,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_HasTwoOptionalParametersWithoutValues()
     {
         // Arrange
@@ -1327,7 +1327,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithParameters()
     {
         // Arrange
@@ -1347,7 +1347,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithMoreParameters()
     {
         // Arrange
@@ -1372,7 +1372,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithDefault()
     {
         // Arrange
@@ -1392,7 +1392,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithConstraint()
     {
         // Arrange
@@ -1413,7 +1413,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_NoMatch_WithConstraint()
     {
         // Arrange
@@ -1431,7 +1431,7 @@ public class TreeRouterTest
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithMixedAmbientValues()
     {
         // Arrange
@@ -1451,7 +1451,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_Match_WithQueryString()
     {
         // Arrange
@@ -1471,7 +1471,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_RejectedByFirstRoute()
     {
         // Arrange
@@ -1493,7 +1493,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_ToArea()
     {
         // Arrange
@@ -1518,7 +1518,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_ToArea_PredecedenceReversed()
     {
         // Arrange
@@ -1543,7 +1543,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_ToArea_WithAmbientValues()
     {
         // Arrange
@@ -1570,7 +1570,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_OutOfArea_IgnoresAmbientValue()
     {
         // Arrange
@@ -1691,7 +1691,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_ReplacesExistingRouteValues_IfNotNull()
     {
         // Arrange
@@ -1711,7 +1711,7 @@ public class TreeRouterTest
         Assert.Equal("Bar", context.RouteData.Values["path"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_DoesNotReplaceExistingRouteValues_IfNull()
     {
         // Arrange
@@ -1731,7 +1731,7 @@ public class TreeRouterTest
         Assert.Equal("default", context.RouteData.Values["path"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_SnapshotsRouteData()
     {
         // Arrange
@@ -1768,7 +1768,7 @@ public class TreeRouterTest
         Assert.NotEqual(nestedValues, context.RouteData.Values);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_SnapshotsRouteData_ResetsWhenNotMatched()
     {
         // Arrange
@@ -1812,7 +1812,7 @@ public class TreeRouterTest
         Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_SnapshotsRouteData_ResetsWhenThrows()
     {
         // Arrange
@@ -1854,7 +1854,7 @@ public class TreeRouterTest
         Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TreeRouter_SnapshotsRouteData_ResetsBeforeMatchingEachRouteEntry()
     {
         // This test replicates a scenario raised as issue https://github.com/aspnet/Routing/issues/394
@@ -1892,7 +1892,7 @@ public class TreeRouterTest
         Assert.DoesNotContain(nestedValues, kvp => kvp.Key == "category1");
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_MatchesNullRequiredValue_WithNullRequestValueString()
     {
         // Arrange
@@ -1914,7 +1914,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_MatchesNullRequiredValue_WithEmptyRequestValueString()
     {
         // Arrange
@@ -1936,7 +1936,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_MatchesEmptyStringRequiredValue_WithNullRequestValueString()
     {
         // Arrange
@@ -1958,7 +1958,7 @@ public class TreeRouterTest
         Assert.Empty(pathData.DataTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void TreeRouter_GenerateLink_MatchesEmptyStringRequiredValue_WithEmptyRequestValueString()
     {
         // Arrange

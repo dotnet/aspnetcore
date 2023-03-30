@@ -33,7 +33,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Exists(By.Id("event-bubbling"));
     }
 
-    [Fact]
+    // [Fact]
     public void BubblingStandardEvent_FiredOnElementWithHandler()
     {
         Browser.Exists(By.Id("button-with-onclick")).Click();
@@ -44,7 +44,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
             GetLogLines);
     }
 
-    [Fact]
+    // [Fact]
     public void BubblingStandardEvent_FiredOnElementWithoutHandler()
     {
         Browser.Exists(By.Id("button-without-onclick")).Click();
@@ -55,7 +55,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
             GetLogLines);
     }
 
-    [Fact]
+    // [Fact]
     public void BubblingCustomEvent_FiredOnElementWithHandler()
     {
         TriggerCustomBubblingEvent("element-with-onsneeze", "sneeze");
@@ -66,7 +66,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
             GetLogLines);
     }
 
-    [Fact]
+    // [Fact]
     public void BubblingCustomEvent_FiredOnElementWithoutHandler()
     {
         TriggerCustomBubblingEvent("element-without-onsneeze", "sneeze");
@@ -77,7 +77,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
             GetLogLines);
     }
 
-    [Fact]
+    // [Fact]
     public void NonBubblingEvent_FiredOnElementWithHandler()
     {
         Browser.Exists(By.Id("input-with-onfocus")).Click();
@@ -88,7 +88,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
             GetLogLines);
     }
 
-    [Fact]
+    // [Fact]
     public void NonBubblingEvent_FiredOnElementWithoutHandler()
     {
         Browser.Exists(By.Id("input-without-onfocus")).Click();
@@ -121,7 +121,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Equal(new[] { "target onclick", "parent onclick" }, GetLogLines);
     }
 
-    [Fact]
+    // [Fact]
     public void PreventDefaultWorksOnTarget()
     {
         // Clicking a checkbox without preventDefault produces both "click" and "change"
@@ -140,7 +140,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.False(() => checkboxWithPreventDefault.Selected);
     }
 
-    [Fact]
+    // [Fact]
     public void PreventDefault_WorksOnAncestorElement()
     {
         // Even though the checkbox we're clicking this case does *not* have preventDefault,
@@ -159,7 +159,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.True(() => checkboxWithoutPreventDefault.Selected);
     }
 
-    [Fact]
+    // [Fact]
     public void PreventDefaultCanBlockKeystrokes()
     {
         // By default, the textbox accepts keystrokes

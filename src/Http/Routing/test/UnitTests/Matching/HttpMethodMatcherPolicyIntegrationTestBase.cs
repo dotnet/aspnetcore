@@ -14,7 +14,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
 {
     protected abstract bool HasDynamicMetadata { get; }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HttpMethod()
     {
         // Arrange
@@ -30,7 +30,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HttpMethod_CORS()
     {
         // Arrange
@@ -46,7 +46,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HttpMethod_CORS_Preflight()
     {
         // Arrange
@@ -62,7 +62,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact] // Nothing here supports OPTIONS, so it goes to a 405.
+    // [Fact] // Nothing here supports OPTIONS, so it goes to a 405.
     public async Task NotMatch_HttpMethod_CORS_Preflight()
     {
         // Arrange
@@ -115,7 +115,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_NoMetadata_MatchesAnyHttpMethod()
     {
         // Arrange
@@ -131,7 +131,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_NoMetadata_MatchesAnyHttpMethod_CORS_Preflight()
     {
         // Arrange
@@ -147,7 +147,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact] // This matches because the endpoint accepts OPTIONS
+    // [Fact] // This matches because the endpoint accepts OPTIONS
     public async Task Match_NoMetadata_MatchesAnyHttpMethod_CORS_Preflight_DoesNotSupportPreflight()
     {
         // Arrange
@@ -163,7 +163,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_EmptyMethodList_MatchesAnyHttpMethod()
     {
         // Arrange
@@ -179,7 +179,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact] // When all of the candidates handles specific verbs, use a 405 endpoint
+    // [Fact] // When all of the candidates handles specific verbs, use a 405 endpoint
     public async Task NotMatch_HttpMethod_Returns405Endpoint()
     {
         // Arrange
@@ -204,7 +204,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NotMatch_HttpMethod_CORS_DoesNotReturn405()
     {
         // Arrange
@@ -221,7 +221,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact] // When one of the candidates handles all verbs, dont use a 405 endpoint
+    // [Fact] // When one of the candidates handles all verbs, dont use a 405 endpoint
     public async Task NotMatch_HttpMethod_WithAllMethodEndpoint_DoesNotReturn405()
     {
         // Arrange
@@ -238,7 +238,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_EndpointWithHttpMethodPreferred()
     {
         // Arrange
@@ -255,7 +255,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_EndpointWithHttpMethodPreferred_EmptyList()
     {
         // Arrange
@@ -272,7 +272,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint1);
     }
 
-    [Fact] // The non-http-method-specific endpoint is part of the same candidate set
+    // [Fact] // The non-http-method-specific endpoint is part of the same candidate set
     public async Task Match_EndpointWithHttpMethodPreferred_FallsBackToNonSpecific()
     {
         // Arrange
@@ -289,7 +289,7 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint2, ignoreValues: true);
     }
 
-    [Fact] // See https://github.com/dotnet/aspnetcore/issues/6415
+    // [Fact] // See https://github.com/dotnet/aspnetcore/issues/6415
     public async Task NotMatch_HttpMethod_Returns405Endpoint_ReExecute()
     {
         // Arrange

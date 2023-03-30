@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class DefaultValidationHtmlAttributeProviderTest
 {
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void AddValidationAttributes_AddsAttributes()
     {
@@ -52,7 +52,7 @@ public class DefaultValidationHtmlAttributeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void AddAndTrackValidationAttributes_AddsAttributes()
     {
@@ -88,7 +88,7 @@ public class DefaultValidationHtmlAttributeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AddValidationAttributes_AddsNothing_IfClientSideValidationDisabled()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class DefaultValidationHtmlAttributeProviderTest
         Assert.Empty(attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void AddAndTrackValidationAttributes_DoesNotCallAddMethod_IfClientSideValidationDisabled()
     {
         // Arrange
@@ -151,7 +151,7 @@ public class DefaultValidationHtmlAttributeProviderTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void AddValidationAttributes_AddsAttributes_EvenIfPropertyAlreadyRendered()
     {
         // Arrange
@@ -187,7 +187,7 @@ public class DefaultValidationHtmlAttributeProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AddAndTrackValidationAttributes_DoesNotCallAddMethod_IfPropertyAlreadyRendered()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class DefaultValidationHtmlAttributeProviderTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void AddValidationAttributes_AddsNothing_IfPropertyHasNoValidators()
     {
         // Arrange

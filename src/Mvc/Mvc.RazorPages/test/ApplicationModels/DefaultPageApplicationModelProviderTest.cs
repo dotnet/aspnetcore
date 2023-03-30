@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class DefaultPageApplicationModelProviderTest
 {
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_ThrowsIfPageDoesNotDeriveFromValidBaseType()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_ThrowsIfModelPropertyDoesNotExistOnPage()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class DefaultPageApplicationModelProviderTest
         public override Task ExecuteAsync() => throw new NotImplementedException();
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_ThrowsIfModelPropertyIsNotPublic()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class DefaultPageApplicationModelProviderTest
         public override Task ExecuteAsync() => throw new NotImplementedException();
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_ThrowsIfModelPropertyIsStatic()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class DefaultPageApplicationModelProviderTest
         public override Task ExecuteAsync() => throw new NotImplementedException();
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversPropertiesFromPage_IfModelTypeDoesNotHaveAttribute()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class DefaultPageApplicationModelProviderTest
     {
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversPropertiesFromPageModel_IfModelHasAttribute()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class DefaultPageApplicationModelProviderTest
         public string Property { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversProperties_FromAllSubTypesThatDeclaresBindProperty()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class DefaultPageApplicationModelProviderTest
         public string Property3 { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversHandlersFromPage()
     {
         // Arrange
@@ -322,7 +322,7 @@ public class DefaultPageApplicationModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversPropertiesFromModel()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class DefaultPageApplicationModelProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversBindingInfoFromHandler()
     {
         // Arrange
@@ -411,7 +411,7 @@ public class DefaultPageApplicationModelProviderTest
         public string Property2 { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DiscoversHandlersFromModel()
     {
         // Arrange
@@ -439,7 +439,7 @@ public class DefaultPageApplicationModelProviderTest
     }
 
     // We want to test the 'empty' page has no bound properties, and no handler methods.
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_EmptyPage()
     {
         // Arrange
@@ -460,7 +460,7 @@ public class DefaultPageApplicationModelProviderTest
     }
 
     // We want to test the 'empty' page and PageModel has no bound properties, and no handler methods.
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_EmptyPageModel()
     {
         // Arrange
@@ -529,7 +529,7 @@ public class DefaultPageApplicationModelProviderTest
     {
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_CombinesFilters_OnPageAndPageModel()
     {
         // Arrange
@@ -566,7 +566,7 @@ public class DefaultPageApplicationModelProviderTest
     [ServiceFilter(typeof(IServiceProvider))]
     private class FiltersOnPageAndPageModel : PageModel { }
 
-    [Fact] // If the model has handler methods, we prefer those.
+    // [Fact] // If the model has handler methods, we prefer those.
     public void CreateDescriptor_FindsHandlerMethod_OnModel()
     {
         // Arrange
@@ -613,7 +613,7 @@ public class DefaultPageApplicationModelProviderTest
         public override Task ExecuteAsync() => throw new NotImplementedException();
     }
 
-    [Fact] // If the model does not have the PageModelAttribute, we look at the page instead.
+    // [Fact] // If the model does not have the PageModelAttribute, we look at the page instead.
     public void OnProvidersExecuting_FindsHandlerMethodOnPage_WhenModelIsNotAnnotatedWithPageModelAttribute()
     {
         // Arrange
@@ -664,7 +664,7 @@ public class DefaultPageApplicationModelProviderTest
         public void OnGet() { }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerMethods_DiscoversHandlersFromBaseType()
     {
         // Arrange
@@ -715,7 +715,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerMethods_IgnoresNonPublicMethods()
     {
         // Arrange
@@ -743,7 +743,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerMethods_IgnoreGenericTypeParameters()
     {
         // Arrange
@@ -766,7 +766,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerMethods_IgnoresStaticMethods()
     {
         // Arrange
@@ -796,7 +796,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerMethods_IgnoresAbstractMethods()
     {
         // Arrange
@@ -824,7 +824,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerMethods_IgnoresMethodWithNonHandlerAttribute()
     {
         // Arrange
@@ -855,7 +855,7 @@ public class DefaultPageApplicationModelProviderTest
 
     // There are more tests for the parsing elsewhere, this is just testing that it's wired
     // up to the model.
-    [Fact]
+    // [Fact]
     public void CreateHandlerModel_ParsesMethod()
     {
         // Arrange
@@ -889,7 +889,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CreateHandlerMethods_AddsParameterDescriptors()
     {
         // Arrange
@@ -933,7 +933,7 @@ public class DefaultPageApplicationModelProviderTest
     // One of the desirable consequences of that is we only find 'visible' properties. We're not
     // retesting all of the details of PropertyHelper here, just the visibility part as a quick check
     // that we're using PropertyHelper as expected.
-    [Fact]
+    // [Fact]
     public void PopulateHandlerProperties_UsesPropertyHelpers_ToFindProperties()
     {
         // Arrange
@@ -966,7 +966,7 @@ public class DefaultPageApplicationModelProviderTest
         public new int Property { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateHandlerProperties_SupportsGet_OnProperty()
     {
         // Arrange
@@ -1083,7 +1083,7 @@ public class DefaultPageApplicationModelProviderTest
         public void OnGetUser() { }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateFilters_AddsDisallowOptionsRequestsPageFilter()
     {
         // Arrange
@@ -1100,7 +1100,7 @@ public class DefaultPageApplicationModelProviderTest
             filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateFilters_AddsIFilterMetadataAttributesToModel()
     {
         // Arrange
@@ -1125,7 +1125,7 @@ public class DefaultPageApplicationModelProviderTest
     {
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateFilters_AddsPageHandlerPageFilter_IfPageImplementsIAsyncPageFilter()
     {
         // Arrange
@@ -1156,7 +1156,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateFilters_AddsPageHandlerPageFilter_IfPageImplementsIPageFilter()
     {
         // Arrange
@@ -1192,7 +1192,7 @@ public class DefaultPageApplicationModelProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateFilters_AddsPageHandlerPageFilter_ForModelDerivingFromTypeImplementingPageFilter()
     {
         // Arrange

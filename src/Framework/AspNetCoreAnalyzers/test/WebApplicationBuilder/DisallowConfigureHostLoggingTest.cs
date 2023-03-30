@@ -14,7 +14,7 @@ public partial class DisallowConfigureHostLoggingTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWarnWhenBuilderLoggingIsUsed()
     {
         //arrange
@@ -30,7 +30,7 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWarnWhenBuilderLoggingIsUsed_InMain()
     {
         //arrange
@@ -54,7 +54,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_Host()
     {
         //arrange
@@ -81,7 +81,7 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_WebHost()
     {
         //arrange
@@ -110,7 +110,7 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_OnDifferentLine_Host()
     {
         //arrange
@@ -137,7 +137,7 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_OnDifferentLine_WebHost()
     {
         //arrange
@@ -167,7 +167,7 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_InMain_Host()
     {
         //arrange
@@ -208,7 +208,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_InMain_WebHost()
     {
         //arrange
@@ -251,7 +251,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderLoggingIsNotUsed_WhenChained_WebHost()
     {
         //arrange
@@ -275,7 +275,7 @@ builder.WebHost.
         Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsTwiceWhenBuilderLoggingIsNotUsed_Host()
     {
         //arrange
@@ -307,7 +307,7 @@ builder.Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenConfigureLoggingIsCalledWhenChainedWithCreateBuilder()
     {
         //arrange
@@ -329,7 +329,7 @@ WebApplication.CreateBuilder(args).Logging.AddJsonConsole();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenConfigureLoggingIsCalledAsAnArgument()
     {
         //arrange

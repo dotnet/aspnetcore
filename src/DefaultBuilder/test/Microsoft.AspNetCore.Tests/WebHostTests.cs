@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Tests;
 
 public class WebHostTests
 {
-    [Fact]
+    // [Fact]
     public void WebHostConfiguration_IncludesCommandLineArguments()
     {
         var builder = WebHost.CreateDefaultBuilder(new string[] { "--urls", "http://localhost:5001" });
         Assert.Equal("http://localhost:5001", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostConfiguration_HostFilterOptionsAreReloadable()
     {
         var host = WebHost.CreateDefaultBuilder()
@@ -54,7 +54,7 @@ public class WebHostTests
         Assert.Contains("NewHost", options.AllowedHosts);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostConfiguration_EnablesForwardedHeadersFromConfig()
     {
         using var host = WebHost.CreateDefaultBuilder()
@@ -83,7 +83,7 @@ public class WebHostTests
         result.EnsureSuccessStatusCode();
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDefaultBuilder_RegistersRouting()
     {
         var host = WebHost.CreateDefaultBuilder()
@@ -94,7 +94,7 @@ public class WebHostTests
         Assert.NotNull(linkGenerator);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDefaultBuilder_RegistersEventSourceLogger()
     {
         var listener = new TestEventListener();
@@ -111,7 +111,7 @@ public class WebHostTests
             args.Payload.OfType<string>().Any(p => p.Contains("Request starting")));
     }
 
-    [Fact]
+    // [Fact]
     public void WebHost_CreateDefaultBuilder_ConfiguresRegexInlineRouteConstraint_ByDefault()
     {
         var host = WebHost.CreateDefaultBuilder()

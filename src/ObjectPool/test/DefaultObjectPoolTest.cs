@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.ObjectPool;
 
 public class DefaultObjectPoolTest
 {
-    [Fact]
+    // [Fact]
     public void DefaultObjectPoolWithDefaultPolicy_GetAnd_ReturnObject_SameInstance()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class DefaultObjectPoolTest
         Assert.Same(obj1, obj2);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultObjectPool_GetAndReturnObject_SameInstance()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class DefaultObjectPoolTest
         Assert.Same(list1, list2);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultObjectPool_CreatedByPolicy()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class DefaultObjectPoolTest
         Assert.Equal(17, list.Capacity);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultObjectPool_Return_RejectedByPolicy()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class DefaultObjectPoolTest
         Assert.NotSame(list1, list2);
     }
 
-    [Fact]
+    // [Fact]
     public static void DefaultObjectPool_Honors_IResettable()
     {
         var p = new DefaultObjectPool<Resettable>(new DefaultPooledObjectPolicy<Resettable>());

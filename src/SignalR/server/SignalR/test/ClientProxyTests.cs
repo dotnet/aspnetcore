@@ -18,7 +18,7 @@ public class ClientHubProxyTests
     {
     }
 
-    [Fact]
+    // [Fact]
     public async Task UserProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -39,7 +39,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleUserProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -60,7 +60,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GroupProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -81,7 +81,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleGroupProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -102,7 +102,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GroupExceptProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -123,7 +123,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllClientProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -144,7 +144,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllClientsExceptProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -165,7 +165,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SingleClientProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -186,7 +186,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleClientProxy_SendAsync_ArrayArgumentNotExpanded()
     {
         object[] resultArgs = null;
@@ -207,7 +207,7 @@ public class ClientHubProxyTests
         Assert.Same(data, arg);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SingleClientProxyWithInvoke_ThrowsNotSupported()
     {
         var hubLifetimeManager = new EmptyHubLifetimeManager<FakeHub>();

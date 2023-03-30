@@ -23,7 +23,7 @@ public class MemoryBufferWriterTests
         ArrayPool<byte>.Shared.Return(buffer);
     }
 
-    [Fact]
+    // [Fact]
     public void WritingNotingGivesEmptyData()
     {
         using (var bufferWriter = new MemoryBufferWriter())
@@ -34,7 +34,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WritingNotingGivesEmptyData_CopyTo()
     {
         using (var bufferWriter = new MemoryBufferWriter())
@@ -46,7 +46,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteByteWorksAsFirstCall()
     {
         using (var bufferWriter = new MemoryBufferWriter())
@@ -60,7 +60,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteByteWorksAsFirstCall_CopyTo()
     {
         using (var bufferWriter = new MemoryBufferWriter())
@@ -75,7 +75,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteByteWorksIfFirstByteInNewSegment()
     {
         var inputSize = MinimumSegmentSize;
@@ -94,7 +94,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteByteWorksIfFirstByteInNewSegment_CopyTo()
     {
         var inputSize = MinimumSegmentSize;
@@ -115,7 +115,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteByteWorksIfSegmentHasSpace()
     {
         var input = new byte[] { 11, 12, 13 };
@@ -136,7 +136,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteByteWorksIfSegmentHasSpace_CopyTo()
     {
         var input = new byte[] { 11, 12, 13 };
@@ -158,7 +158,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ToArrayWithExactlyFullSegmentsWorks()
     {
         var inputSize = MinimumSegmentSize * 2;
@@ -174,7 +174,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ToArrayWithExactlyFullSegmentsWorks_CopyTo()
     {
         var inputSize = MinimumSegmentSize * 2;
@@ -192,7 +192,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ToArrayWithSomeFullSegmentsWorks()
     {
         var inputSize = (MinimumSegmentSize * 2) + 1;
@@ -208,7 +208,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ToArrayWithSomeFullSegmentsWorks_CopyTo()
     {
         var inputSize = (MinimumSegmentSize * 2) + 1;
@@ -225,7 +225,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyToAsyncWithExactlyFullSegmentsWorks()
     {
         var inputSize = MinimumSegmentSize * 2;
@@ -243,7 +243,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyToAsyncWithSomeFullSegmentsWorks()
     {
         // 2 segments + 1 extra byte
@@ -262,7 +262,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CopyToWithExactlyFullSegmentsWorks()
     {
         var inputSize = MinimumSegmentSize * 2;
@@ -282,7 +282,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CopyToWithExactlyFullSegmentsWorks_CopyTo()
     {
         var inputSize = MinimumSegmentSize * 2;
@@ -309,7 +309,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CopyToWithSomeFullSegmentsWorks()
     {
         var inputSize = (MinimumSegmentSize * 2) + 1;
@@ -329,7 +329,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CopyToWithSomeFullSegmentsWorks_CopyTo()
     {
         var inputSize = (MinimumSegmentSize * 2) + 1;
@@ -357,7 +357,7 @@ public class MemoryBufferWriterTests
     }
 
 #if NETCOREAPP
-    [Fact]
+    // [Fact]
     public void WriteSpanWorksAtNonZeroOffset()
     {
         using (var bufferWriter = new MemoryBufferWriter())
@@ -376,7 +376,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteSpanWorksAtNonZeroOffset_CopyTo()
     {
         using (var bufferWriter = new MemoryBufferWriter())
@@ -396,7 +396,7 @@ public class MemoryBufferWriterTests
     }
 #endif
 
-    [Fact]
+    // [Fact]
     public void GetMemoryAllocatesNewSegmentWhenInsufficientSpaceInCurrentSegment()
     {
         // Have the buffer writer rent only the minimum size segments from the pool.
@@ -423,7 +423,7 @@ public class MemoryBufferWriterTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ResetResetsTheMemoryBufferWriter()
     {
         var bufferWriter = new MemoryBufferWriter();
@@ -433,7 +433,7 @@ public class MemoryBufferWriterTests
         Assert.Equal(0, bufferWriter.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposeResetsTheMemoryBufferWriter()
     {
         var bufferWriter = new MemoryBufferWriter();

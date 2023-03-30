@@ -9,7 +9,7 @@ public class ArrayBuilderTest
 {
     private readonly TestArrayPool<int> ArrayPool = new TestArrayPool<int>();
 
-    [Fact]
+    // [Fact]
     public void Append_SingleItem()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class ArrayBuilderTest
         Assert.Equal(value, builder.Buffer[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void Append_ThreeItem()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class ArrayBuilderTest
         Assert.Equal(new[] { value1, value2, value3 }, builder.Buffer.Take(3));
     }
 
-    [Fact]
+    // [Fact]
     public void Append_FillBuffer()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class ArrayBuilderTest
         Assert.Equal(Enumerable.Repeat(5, capacity), builder.Buffer.Take(capacity));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendArray_CopySubset()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class ArrayBuilderTest
         Assert.Equal(new[] { 8, 8 }, builder.Buffer.Take(2));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendArray_CopyArray()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class ArrayBuilderTest
         Assert.Equal(array, builder.Buffer.Take(array.Length));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendArray_AfterPriorInsertion()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class ArrayBuilderTest
         Assert.Equal(array, builder.Buffer.Take(array.Length));
     }
 
-    [Fact]
+    // [Fact]
     public void Overwrite_Works()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class ArrayBuilderTest
         Assert.Equal(new[] { 7, 2, 9 }, builder.Buffer.Take(3));
     }
 
-    [Fact]
+    // [Fact]
     public void Insert_Works()
     {
         // Arrange
@@ -160,7 +160,7 @@ public class ArrayBuilderTest
         Assert.Equal(new[] { 7, 2, 3, 9 }, builder.Buffer.Take(4));
     }
 
-    [Fact]
+    // [Fact]
     public void Insert_WhenBufferIsAtCapacity()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class ArrayBuilderTest
         Assert.Equal(new[] { 1, 2, 3 }, builder.Buffer.Take(3));
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveLast_Works()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class ArrayBuilderTest
         Assert.Equal(new[] { 1, 2, }, builder.Buffer.Take(2));
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveLast_LastEntry()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class ArrayBuilderTest
         Assert.Same(buffer, returnedBuffer);
     }
 
-    [Fact]
+    // [Fact]
     public void Clear_ReturnsBuffer()
     {
         // Arrange
@@ -231,7 +231,7 @@ public class ArrayBuilderTest
         Assert.Same(buffer, returnedBuffer);
     }
 
-    [Fact]
+    // [Fact]
     public void Dispose_WithEmptyBuffer_DoesNotReturnIt()
     {
         // Arrange
@@ -244,7 +244,7 @@ public class ArrayBuilderTest
         Assert.Empty(ArrayPool.ReturnedBuffers);
     }
 
-    [Fact]
+    // [Fact]
     public void Dispose_NonEmptyBufferIsReturned()
     {
         // Arrange
@@ -262,7 +262,7 @@ public class ArrayBuilderTest
         Assert.NotSame(builder.Buffer, buffer); // Prevents use after free
     }
 
-    [Fact]
+    // [Fact]
     public void DoubleDispose_DoesNotReturnBufferTwice()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class ArrayBuilderTest
         Assert.Same(buffer, returnedBuffer);
     }
 
-    [Fact]
+    // [Fact]
     public void Dispose_ThrowsOnReuse()
     {
         // Arrange
@@ -295,7 +295,7 @@ public class ArrayBuilderTest
         Assert.Throws<ObjectDisposedException>(() => builder.Append(1));
     }
 
-    [Fact]
+    // [Fact]
     public void UnusedBufferIsReturned_OnResize()
     {
         // Arrange

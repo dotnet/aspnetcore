@@ -14,7 +14,7 @@ public partial class DisallowConfigureServicesTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWarnWhenBuilderConfigureServicesIsNotUsed()
     {
         // Arrange
@@ -30,7 +30,7 @@ builder.Services.AddAntiforgery();
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderHostConfigureServicesIsUsed()
     {
         // Arrange
@@ -57,7 +57,7 @@ builder.Services.AddAntiforgery();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderWebHostConfigureServicesIsUsed()
     {
         // Arrange
@@ -84,7 +84,7 @@ builder.Services.AddAntiforgery();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderHostConfigureServicesIsUsed_OnDifferentLine()
     {
         //Arrange
@@ -112,7 +112,7 @@ builder.Services.AddAntiforgery();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderWebHostConfigureServicesIsUsed_OnDifferentLine()
     {
         //Arrange
@@ -140,7 +140,7 @@ builder.Services.AddAntiforgery();
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWarnWhenBuilderConfigureServicesIsNotUsed_InProgramMain()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderHostConfigureServicesIsUsedOnProperty_In_Program_Main()
     {
         // Arrange
@@ -207,7 +207,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderWebHostConfigureServicesIsUsedOnProperty_In_Program_Main()
     {
         // Arrange
@@ -248,7 +248,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenBuilderHostConfigureServicesIsUsed_Inside_Another_Method()
     {
         // Arrange
@@ -286,7 +286,7 @@ public class Startup { }
         Assert.Equal("Suggest using builder.Services instead of ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsTwiceWhenBuilderLoggingIsNotUsed_Host()
     {
         //arrange

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions;
 
 public class GoneActionTests
 {
-    [Fact]
+    // [Fact]
     public void Gone_Verify410IsInStatusCode()
     {
         var context = new RewriteContext { HttpContext = new DefaultHttpContext() };

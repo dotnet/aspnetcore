@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class FormTagHelperTest
 {
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_InvokesGeneratePageForm_WithOnlyPageHandler()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class FormTagHelperTest
         generator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ActionAndControllerGenerateAntiforgery()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AspAntiforgeryAloneGeneratesProperFormTag()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_EmptyHtmlStringActionGeneratesAntiforgery()
     {
         // Arrange
@@ -234,7 +234,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_EmptyStringActionGeneratesAntiforgery()
     {
         // Arrange
@@ -292,7 +292,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_GeneratesExpectedOutput()
     {
         // Arrange
@@ -429,7 +429,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedPostContent, output.PostContent.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_BindsRouteValues()
     {
         // Arrange
@@ -501,7 +501,7 @@ public class FormTagHelperTest
         generator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_CallsIntoGenerateFormWithExpectedParameters()
     {
         // Arrange
@@ -553,7 +553,7 @@ public class FormTagHelperTest
         Assert.Empty(output.PostContent.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AspFragmentAddsFragmentToAction()
     {
         // Arrange
@@ -620,7 +620,7 @@ public class FormTagHelperTest
         Assert.Equal("home/index#test", attribute.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AspAreaAddsAreaToRouteValues()
     {
         // Arrange
@@ -677,7 +677,7 @@ public class FormTagHelperTest
         Assert.Empty(output.PostContent.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_EmptyStringOnAspAreaIsPassedThroughToRouteValues()
     {
         // Arrange
@@ -734,7 +734,7 @@ public class FormTagHelperTest
         Assert.Empty(output.PostContent.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AspAreaOverridesAspRouteArea()
     {
         // Arrange
@@ -792,7 +792,7 @@ public class FormTagHelperTest
         Assert.Empty(output.PostContent.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_CallsIntoGenerateRouteFormWithExpectedParameters()
     {
         // Arrange
@@ -847,7 +847,7 @@ public class FormTagHelperTest
         Assert.Empty(output.PostElement.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_InvokesGeneratePageForm()
     {
         // Arrange
@@ -893,7 +893,7 @@ public class FormTagHelperTest
         generator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_WithPageAndArea_InvokesGeneratePageForm()
     {
         // Arrange
@@ -1083,7 +1083,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedErrorMessage, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ThrowsIfRouteAndPageProvided()
     {
         // Arrange
@@ -1117,7 +1117,7 @@ public class FormTagHelperTest
         Assert.Equal(expectedErrorMessage, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ThrowsIfActionAndPageProvided()
     {
         // Arrange

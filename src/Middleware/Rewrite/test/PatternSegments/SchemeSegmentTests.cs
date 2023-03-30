@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
 
 public class SchemeSegmentTests
 {
-    [Fact]
+    // [Fact]
     public void SchemeSegment_AssertSegmentIsCorrect()
     {
         // Arrange

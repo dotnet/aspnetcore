@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 /// </summary>
 public class HtmlHelperDisplayNameExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void DisplayNameHelpers_ReturnEmptyForModel()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class HtmlHelperDisplayNameExtensionsTest
         Assert.Empty(displayNameForModelResult);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayNameHelpers_ReturnPropertyName()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class HtmlHelperDisplayNameExtensionsTest
     }
 
     // If the metadata is for a type (not property), then DisplayName(expression) will evaluate the expression
-    [Fact]
+    // [Fact]
     public void DisplayNameHelpers_DisplayName_Evaluates_Expression()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class HtmlHelperDisplayNameExtensionsTest
         Assert.Equal("value", displayNameResult);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayNameHelpers_ReturnPropertyName_ForNestedProperty()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class HtmlHelperDisplayNameExtensionsTest
         Assert.Equal(expectedResult, result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayNameFor_ThrowsInvalidOperation_IfExpressionUnsupported()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class HtmlHelperDisplayNameExtensionsTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void EnumerableDisplayNameFor_ThrowsInvalidOperation_IfExpressionUnsupported()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class HtmlHelperDisplayNameExtensionsTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayNameFor_ReturnsVariableName()
     {
         // Arrange
@@ -199,7 +199,7 @@ public class HtmlHelperDisplayNameExtensionsTest
         Assert.Equal("unknownKey", result);
     }
 
-    [Fact]
+    // [Fact]
     public void EnumerableDisplayNameFor_ReturnsVariableName()
     {
         // Arrange

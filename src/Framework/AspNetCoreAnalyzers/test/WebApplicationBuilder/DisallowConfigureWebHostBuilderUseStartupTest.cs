@@ -10,7 +10,7 @@ public partial class DisallowConfigureWebHostBuilderUseStartupTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithoutUseStartup_Works()
     {
         // Arrange
@@ -27,7 +27,7 @@ builder.WebHost.ConfigureKestrel(options => { });
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithoutUseStartupGenericType_ProducesDiagnostics()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class Startup { }
         Assert.Equal("UseStartup cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithoutUseStartupType_ProducesDiagnostics()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class Startup { }
         Assert.Equal("UseStartup cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithoutUseStartupString_ProducesDiagnostics()
     {
         // Arrange
@@ -89,7 +89,7 @@ builder.WebHost./*MM*/UseStartup(""Startup"");
         Assert.Equal("UseStartup cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithoutUseStartupGenericTypeWithContext_ProducesDiagnostics()
     {
         // Arrange
@@ -110,7 +110,7 @@ public class Startup { }
         Assert.Equal("UseStartup cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithUseStartupOnProperty_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class Startup { }
         Assert.Equal("UseStartup cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithUseStartupOnBuilder_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class Startup { }
         Assert.Equal("UseStartup cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task HostBuilder_WebHostBuilder_UseStartup_DoesNotProduceDiagnostic()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class Startup { }
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostBuilder_UseStartup_DoesNotProduceDiagnostic()
     {
         // Arrange

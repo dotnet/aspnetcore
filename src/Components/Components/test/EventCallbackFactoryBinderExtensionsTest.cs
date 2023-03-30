@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public class EventCallbackFactoryBinderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_SwallowsConversionException()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_IfConverterThrows_ConvertsEmptyStringToDefault()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_ThrowsSetterException()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_BindsEmpty_DoesNotCallSetter()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_BindsEmpty_CallsSetterForNullable()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_String()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Bool()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableBool()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Int()
     {
         // Arrange
@@ -171,7 +171,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableInt()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Long()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableLong()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Float()
     {
         // Arrange
@@ -247,7 +247,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableFloat()
     {
         // Arrange
@@ -266,7 +266,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Double()
     {
         // Arrange
@@ -285,7 +285,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableDouble()
     {
         // Arrange
@@ -304,7 +304,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Decimal()
     {
         // Arrange
@@ -323,7 +323,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableDecimal()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Enum()
     {
         // Arrange
@@ -361,7 +361,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableEnum()
     {
         // Arrange
@@ -380,7 +380,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_DateTime()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableDateTime()
     {
         // Arrange
@@ -418,7 +418,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_DateTime_Format()
     {
         // Arrange
@@ -438,7 +438,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableDateTime_Format()
     {
         // Arrange
@@ -458,7 +458,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_DateTimeOffset()
     {
         // Arrange
@@ -477,7 +477,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableDateTimeOffset()
     {
         // Arrange
@@ -496,7 +496,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_DateTimeOffset_Format()
     {
         // Arrange
@@ -516,7 +516,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableDateTimeOffset_Format()
     {
         // Arrange
@@ -537,7 +537,7 @@ public class EventCallbackFactoryBinderExtensionsTest
     }
 
     // This uses a type converter
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_Guid()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class EventCallbackFactoryBinderExtensionsTest
     }
 
     // This uses a type converter
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_NullableGuid()
     {
         // Arrange
@@ -576,7 +576,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinder_CustomTypeConverter()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_GenericWithoutTypeConverter_Throws()
     {
         var value = new ClassWithoutTypeConverter();

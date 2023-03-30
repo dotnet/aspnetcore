@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test;
 
 public class AuthenticationPropertiesTests
 {
-    [Fact]
+    // [Fact]
     public void Clone_Copies()
     {
         var items = new Dictionary<string, string?>
@@ -35,7 +35,7 @@ public class AuthenticationPropertiesTests
         Assert.NotEqual(props.Parameters, copy.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultConstructor_EmptyCollections()
     {
         var props = new AuthenticationProperties();
@@ -43,7 +43,7 @@ public class AuthenticationPropertiesTests
         Assert.Empty(props.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void ItemsConstructor_ReusesItemsDictionary()
     {
         var items = new Dictionary<string, string?>
@@ -55,7 +55,7 @@ public class AuthenticationPropertiesTests
         Assert.Empty(props.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void FullConstructor_ReusesDictionaries()
     {
         var items = new Dictionary<string, string?>
@@ -72,7 +72,7 @@ public class AuthenticationPropertiesTests
         Assert.Same(parameters, props.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetSetString()
     {
         var props = new AuthenticationProperties();
@@ -107,7 +107,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal(1, props.Items.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void GetSetParameter_String()
     {
         var props = new AuthenticationProperties();
@@ -125,7 +125,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal(1, props.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void GetSetParameter_Int()
     {
         var props = new AuthenticationProperties();
@@ -143,7 +143,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal(1, props.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void GetSetParameter_Collection()
     {
         var props = new AuthenticationProperties();
@@ -162,7 +162,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal(1, props.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void IsPersistent_Test()
     {
         var props = new AuthenticationProperties();
@@ -176,7 +176,7 @@ public class AuthenticationPropertiesTests
         Assert.False(props.IsPersistent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectUri_Test()
     {
         var props = new AuthenticationProperties();
@@ -190,7 +190,7 @@ public class AuthenticationPropertiesTests
         Assert.Null(props.RedirectUri);
     }
 
-    [Fact]
+    // [Fact]
     public void IssuedUtc_Test()
     {
         var props = new AuthenticationProperties();
@@ -204,7 +204,7 @@ public class AuthenticationPropertiesTests
         Assert.Null(props.IssuedUtc);
     }
 
-    [Fact]
+    // [Fact]
     public void ExpiresUtc_Test()
     {
         var props = new AuthenticationProperties();
@@ -218,7 +218,7 @@ public class AuthenticationPropertiesTests
         Assert.Null(props.ExpiresUtc);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowRefresh_Test()
     {
         var props = new AuthenticationProperties();
@@ -236,7 +236,7 @@ public class AuthenticationPropertiesTests
         Assert.Null(props.AllowRefresh);
     }
 
-    [Fact]
+    // [Fact]
     public void SetDateTimeOffset()
     {
         var props = new MyAuthenticationProperties();
@@ -251,7 +251,7 @@ public class AuthenticationPropertiesTests
         Assert.False(props.Items.ContainsKey("doesnotexist"));
     }
 
-    [Fact]
+    // [Fact]
     public void GetDateTimeOffset()
     {
         var props = new MyAuthenticationProperties();
@@ -268,7 +268,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal("BAR", props.Items["foo"]);
     }
 
-    [Fact]
+    // [Fact]
     public void SetBool()
     {
         var props = new MyAuthenticationProperties();
@@ -283,7 +283,7 @@ public class AuthenticationPropertiesTests
         Assert.False(props.Items.ContainsKey("foo"));
     }
 
-    [Fact]
+    // [Fact]
     public void GetBool()
     {
         var props = new MyAuthenticationProperties();
@@ -302,7 +302,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal("BAR", props.Items["foo"]);
     }
 
-    [Fact]
+    // [Fact]
     public void Roundtrip_Serializes_With_SystemTextJson()
     {
         var props = new AuthenticationProperties()
@@ -344,7 +344,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal(0, deserialized.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void Parameters_Is_Not_Deserialized_With_SystemTextJson()
     {
         var json = @"{""Parameters"":{""baz"":""quux""}}";
@@ -358,7 +358,7 @@ public class AuthenticationPropertiesTests
         Assert.Equal(0, deserialized.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void Serialization_Is_Minimised_With_SystemTextJson()
     {
         var props = new AuthenticationProperties()

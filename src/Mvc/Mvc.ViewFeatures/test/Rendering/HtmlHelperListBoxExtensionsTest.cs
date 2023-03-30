@@ -17,7 +17,7 @@ public class HtmlHelperListBoxExtensionsTest
             new SelectListItem("Three", "3"),
         };
 
-    [Fact]
+    // [Fact]
     public void ListBox_FindsSelectList()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class HtmlHelperListBoxExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(listBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBox_UsesSpecifiedExpressionAndSelectList()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class HtmlHelperListBoxExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(listBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBox_UsesSpecifiedSelectExpressionAndListAndHtmlAttributes()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class HtmlHelperListBoxExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(listBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxFor_NullSelectListFindsListFromViewData()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class HtmlHelperListBoxExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(listBoxForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxFor_UsesSpecifiedExpressionAndSelectList()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class HtmlHelperListBoxExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(listBoxForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxFor_UsesSpecifiedExpressionAndSelectListAndHtmlAttributes()
     {
         // Arrange

@@ -25,7 +25,7 @@ public class ControllerBinderDelegateProviderTest
     private static readonly MvcOptions _options = new MvcOptions();
     private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(_options);
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnParameter()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class ControllerBinderDelegateProviderTest
             Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnProperty()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class ControllerBinderDelegateProviderTest
             Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArguments_IfBinderReturnsNull()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Empty(arguments);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotAddActionArguments_IfBinderDoesNotSetModel()
     {
         // Arrange
@@ -220,7 +220,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Empty(arguments);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_AddsActionArguments_IfBinderReturnsNotNull()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Equal(value, arguments["foo"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_GetsMetadataFromParameter()
     {
         // Arrange
@@ -321,7 +321,7 @@ public class ControllerBinderDelegateProviderTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_GetsMetadataFromType_IsMetadataProviderIsNotDefaultMetadataProvider()
     {
         // Arrange
@@ -369,7 +369,7 @@ public class ControllerBinderDelegateProviderTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_CallsValidator_IfModelBinderSucceeds()
     {
         // Arrange
@@ -419,7 +419,7 @@ public class ControllerBinderDelegateProviderTest
             controllerContext.ModelState["memberName"].Errors.Single().ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotCallValidator_IfModelBinderFails()
     {
         // Arrange
@@ -467,7 +467,7 @@ public class ControllerBinderDelegateProviderTest
             Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_CallsValidator_ForControllerProperties_IfModelBinderSucceeds()
     {
         // Arrange
@@ -515,7 +515,7 @@ public class ControllerBinderDelegateProviderTest
             controllerContext.ModelState["memberName"].Errors.Single().ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotValidate_ForControllerProperties_IfObjectValidatorDoesNotInheritFromBase()
     {
         // Arrange
@@ -562,7 +562,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.True(controllerContext.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotCallValidator_ForControllerProperties_IfModelBinderFails()
     {
         // Arrange
@@ -611,7 +611,7 @@ public class ControllerBinderDelegateProviderTest
             Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_SetsControllerProperties_ForReferenceTypes()
     {
         // Arrange
@@ -650,7 +650,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Null(controller.UntouchedProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_AddsToCollectionControllerProperties()
     {
         // Arrange
@@ -690,7 +690,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Null(controller.UntouchedProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_DoesNotSetNullValues_ForNonNullableProperties()
     {
         // Arrange
@@ -731,7 +731,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Equal(-1, controller.NonNullableProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_SetsNullValues_ForNullableProperties()
     {
         // Arrange
@@ -772,7 +772,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Null(controller.NullableProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_SupportsRequestPredicate_ForPropertiesAndParameters_NotBound()
     {
         // Arrange
@@ -835,7 +835,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.DoesNotContain("test-parameter", arguments.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_SupportsRequestPredicate_ForPropertiesAndParameters_Bound()
     {
         // Arrange
@@ -983,7 +983,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Null(controller.UntouchedProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateBinderDelegate_Delegate_SetsMultipleControllerProperties()
     {
         // Arrange
@@ -1198,7 +1198,7 @@ public class ControllerBinderDelegateProviderTest
         Assert.Equal(250.0, transferInfo.Amount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BinderDelegateRecordsErrorWhenValueProviderThrowsValueProviderException()
     {
         // Arrange

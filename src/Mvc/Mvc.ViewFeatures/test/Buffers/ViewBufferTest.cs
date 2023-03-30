@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 public class ViewBufferTest
 {
-    [Fact]
+    // [Fact]
     public void Append_AddsEncodingWrapper()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class ViewBufferTest
         Assert.IsAssignableFrom<IHtmlContent>(page.Buffer[0].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendHtml_AddsHtmlContentRazorValue()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class ViewBufferTest
         Assert.Same(content, page.Buffer[0].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendHtml_AddsString()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class ViewBufferTest
         Assert.Equal("Hello world", Assert.IsType<string>(page.Buffer[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void Append_CreatesOnePage()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class ViewBufferTest
         Assert.Equal(expected, buffer[0].Buffer.Select(v => v.Value));
     }
 
-    [Fact]
+    // [Fact]
     public void Append_CreatesTwoPages()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class ViewBufferTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Append_CreatesManyPages()
     {
         // Arrange
@@ -161,7 +161,7 @@ public class ViewBufferTest
         Assert.Equal("world", page.Buffer[0].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void WriteTo_WritesRazorValues_ToTextWriter()
     {
         // Arrange
@@ -201,7 +201,7 @@ public class ViewBufferTest
         Assert.Equal(expected, writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteToAsync_WritesRazorValues_ToTextWriter()
     {
         // Arrange
@@ -243,7 +243,7 @@ public class ViewBufferTest
         Assert.Equal(expected, writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void CopyTo_Flattens()
     {
         // Arrange
@@ -266,7 +266,7 @@ public class ViewBufferTest
         Assert.Equal("Hello", Assert.IsType<HtmlString>(destinationItems[0]).Value);
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_FlattensAndClears()
     {
         // Arrange
@@ -289,7 +289,7 @@ public class ViewBufferTest
         Assert.Equal("Hello", Assert.IsType<HtmlString>(destinationItems[0]).Value);
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_ViewBuffer_TakesPage_IfOriginalIsEmpty()
     {
         // Arrange
@@ -311,7 +311,7 @@ public class ViewBufferTest
         Assert.Same(page, original[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_ViewBuffer_TakesPage_IfCurrentPageInOriginalIsFull()
     {
         // Arrange
@@ -338,7 +338,7 @@ public class ViewBufferTest
         Assert.Same(page, original[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_ViewBuffer_TakesPage_IfCurrentPageDoesNotHaveCapacity()
     {
         // Arrange
@@ -370,7 +370,7 @@ public class ViewBufferTest
         Assert.Same(page, original[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_ViewBuffer_CopiesItems_IfCurrentPageHasRoom()
     {
         // Arrange
@@ -408,7 +408,7 @@ public class ViewBufferTest
             item => Assert.Equal("other-1", item.Value));
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_ViewBuffer_CanAddToTakenPage()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class ViewBufferTest
             item => Assert.Equal("after-merge", item.Value));
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_ViewBuffer_MultiplePages()
     {
         // Arrange

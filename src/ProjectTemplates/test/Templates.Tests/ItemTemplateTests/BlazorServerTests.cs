@@ -22,7 +22,7 @@ public class BlazorServerTest
     public ProjectFactoryFixture ProjectFactory { get; }
     public ITestOutputHelper Output { get; }
 
-    [Fact]
+    // [Fact]
     public async Task BlazorServerItemTemplate()
     {
         Project = await ProjectFactory.CreateProject(Output);

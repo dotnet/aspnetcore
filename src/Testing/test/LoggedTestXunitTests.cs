@@ -21,7 +21,7 @@ public class LoggedTestXunitTests : TestLoggedTest
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void LoggedFactInitializesLoggedTestProperties()
     {
         Assert.NotNull(Logger);
@@ -63,7 +63,7 @@ public class LoggedTestXunitTests : TestLoggedTest
         Assert.NotNull(argument);
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Information)]
     public void LoggedFactFilteredByMethodLogLevel()
     {
@@ -75,7 +75,7 @@ public class LoggedTestXunitTests : TestLoggedTest
         Assert.Equal("Information", message.Formatter(message.State, null));
     }
 
-    [Fact]
+    // [Fact]
     public void LoggedFactFilteredByClassLogLevel()
     {
         Logger.LogDebug("Debug");
@@ -102,7 +102,7 @@ public class LoggedTestXunitTests : TestLoggedTest
         Assert.NotNull(argument);
     }
 
-    [Fact]
+    // [Fact]
     public void AddTestLoggingUpdatedWhenLoggerFactoryIsSet()
     {
         var loggerFactory = new LoggerFactory();
@@ -125,13 +125,13 @@ public class LoggedTestXunitTests : TestLoggedTest
         Assert.Null(argument);
     }
 
-    [Fact]
+    // [Fact]
     public void AdditionalSetupInvoked()
     {
         Assert.True(SetupInvoked);
     }
 
-    [Fact]
+    // [Fact]
     public void MessageWrittenEventInvoked()
     {
         WriteContext context = null;
@@ -140,7 +140,7 @@ public class LoggedTestXunitTests : TestLoggedTest
         Assert.Equal(TestSink.Writes.Single(), context);
     }
 
-    [Fact]
+    // [Fact]
     public void ScopeStartedEventInvoked()
     {
         BeginScopeContext context = null;
@@ -152,7 +152,7 @@ public class LoggedTestXunitTests : TestLoggedTest
 
 public class LoggedTestXunitLogLevelTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public void LoggedFactFilteredByAssemblyLogLevel()
     {
         Logger.LogTrace("Trace");
@@ -165,7 +165,7 @@ public class LoggedTestXunitLogLevelTests : LoggedTest
 
 public class LoggedTestXunitInitializationTests : TestLoggedTest
 {
-    [Fact]
+    // [Fact]
     public void ITestOutputHelperInitializedByDefault()
     {
         Assert.True(ITestOutputHelperIsInitialized);

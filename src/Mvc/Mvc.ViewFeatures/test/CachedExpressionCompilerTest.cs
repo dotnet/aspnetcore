@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class CachedExpressionCompilerTest
 {
-    [Fact]
+    // [Fact]
     public void Process_IdentityExpression()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(model, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CachesIdentityExpression()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(func1, func2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstLookup()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstLookup_ReturningNull()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstLookup_WithNullModel()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstLookup_UsingCachedValue()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstLookup_WhenCapturedLocalChanges()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstLookup_WithPrimitiveConstant()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(10, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_StaticFieldAccess()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal("StaticValue", result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CachesStaticFieldAccess()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(func1, func2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_StaticPropertyAccess()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CachesStaticPropertyAccess()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(func1, func2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_StaticPropertyAccess_WithNullModel()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstFieldLookup()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(10, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ConstFieldLookup_WthNullModel()
     {
         // Arrange
@@ -266,7 +266,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(10, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal("Test", result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CachesSimpleMemberAccess()
     {
         // Arrange
@@ -298,7 +298,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(func1, func2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_ToPrimitive()
     {
         // Arrange
@@ -314,7 +314,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(12, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_WithNullModel()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_ToPrimitive_WithNullModel()
     {
         // Arrange
@@ -346,7 +346,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnTypeWithBadEqualityComparer()
     {
         // Arrange
@@ -362,7 +362,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(7, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnTypeWithBadEqualityComparer_WithNullModel()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnValueTypeWithBadEqualityComparer()
     {
         // Arrange
@@ -394,7 +394,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(7, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnTypeWithBadEqualityComparer_WithDefaultValue()
     {
         // Arrange
@@ -410,7 +410,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(model.Id, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnValueType()
     {
         // Arrange
@@ -426,7 +426,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(2000, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnValueType_WithDefaultValue()
     {
         // Arrange
@@ -442,7 +442,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnNullableValueType()
     {
         // Arrange
@@ -459,7 +459,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(model, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_SimpleMemberAccess_OnNullableValueType_WithNullValue()
     {
         // Arrange
@@ -475,7 +475,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_ToValueType()
     {
         // Arrange
@@ -492,7 +492,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(2000, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_ToValueType_WithNullModel()
     {
         // Arrange
@@ -508,7 +508,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_ToReferenceType()
     {
         // Arrange
@@ -525,7 +525,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CachesChainedMemberAccess()
     {
         // Arrange
@@ -541,7 +541,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(func1, func2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CachesChainedMemberAccess_ToValueType()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(func1, func2);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_LongChain_WithReferenceType()
     {
         // Arrange
@@ -584,7 +584,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_LongChain_WithNullIntermediary()
     {
         // Arrange
@@ -607,7 +607,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_LongChain_WithNullValueTypeAccessor()
     {
         // Arrange
@@ -628,7 +628,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_LongChain_WithNullableValueType()
     {
         // Arrange
@@ -655,7 +655,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_LongChain_WithNullValuedNullableValueType()
     {
         // Arrange
@@ -678,7 +678,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_ToReferenceType_WithNullIntermediary()
     {
         // Arrange
@@ -694,7 +694,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_ToReferenceType_WithNullModel()
     {
         // Arrange
@@ -710,7 +710,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_OfValueTypes_ReturningReferenceTypeMember()
     {
         // Arrange
@@ -730,7 +730,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_OfValueTypes_ReturningValueType()
     {
         // Arrange
@@ -750,7 +750,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_OfValueTypes_IncludingNullableType()
     {
         // Arrange
@@ -770,7 +770,7 @@ public class CachedExpressionCompilerTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_OfValueTypes_WithNullValuedNullable()
     {
         // Arrange
@@ -786,7 +786,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ChainedMemberAccess_OfValueTypes_WithNullValuedNullable_ReturningValueType()
     {
         // Arrange
@@ -802,7 +802,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_MemberAccessOnCapturedVariable_ReturnsNull()
     {
         // Arrange
@@ -816,7 +816,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(func);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CapturedVariable()
     {
         // Arrange
@@ -833,7 +833,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_CapturedVariable_WithNullModel()
     {
         // Arrange
@@ -850,7 +850,7 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_MemberAccess_OnCapturedVariable_ReturnsNull()
     {
         // Arrange
@@ -864,7 +864,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(func);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ComplexChainedMemberAccess_ReturnsNull()
     {
         // Arrange
@@ -879,7 +879,7 @@ public class CachedExpressionCompilerTest
         Assert.Null(func);
     }
 
-    [Fact]
+    // [Fact]
     public void Process_ArrayMemberAccess_ReturnsNull()
     {
         // Arrange

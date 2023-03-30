@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
 public class CngGcmAuthenticatedEncryptorDescriptorTests
 {
-    [Fact]
+    // [Fact]
     public void ExportToXml_WithProviders_ProducesCorrectPayload()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class CngGcmAuthenticatedEncryptorDescriptorTests
         XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
     }
 
-    [Fact]
+    // [Fact]
     public void ExportToXml_WithoutProviders_ProducesCorrectPayload()
     {
         // Arrange

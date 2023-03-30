@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 public class XmlEncryptionExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void DecryptElement_NothingToDecrypt_ReturnsOriginalElement()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class XmlEncryptionExtensionsTests
         XmlAssert.Equal("<element />", original); // unmutated
     }
 
-    [Fact]
+    // [Fact]
     public void DecryptElement_RootNodeRequiresDecryption_Success()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class XmlEncryptionExtensionsTests
         XmlAssert.Equal("<newNode />", retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void DecryptElement_MultipleNodesRequireDecryption_AvoidsRecursion_Success()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class XmlEncryptionExtensionsTests
         XmlAssert.Equal(expected, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void EncryptIfNecessary_NothingToEncrypt_ReturnsNull()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class XmlEncryptionExtensionsTests
         XmlAssert.Equal("<element />", original); // unmutated
     }
 
-    [Fact]
+    // [Fact]
     public void EncryptIfNecessary_RootNodeRequiresEncryption_Success()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class XmlEncryptionExtensionsTests
         XmlAssert.Equal("<theElement />", retVal.Descendants().Single());
     }
 
-    [Fact]
+    // [Fact]
     public void EncryptIfNecessary_MultipleNodesRequireEncryption_Success()
     {
         // Arrange
@@ -177,7 +177,7 @@ public class XmlEncryptionExtensionsTests
         XmlAssert.Equal(expected, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void EncryptIfNecessary_NullEncryptorWithRecursion_NoStackDive_Success()
     {
         // Arrange

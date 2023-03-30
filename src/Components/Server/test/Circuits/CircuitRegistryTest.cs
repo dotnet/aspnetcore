@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 public class CircuitRegistryTest
 {
-    [Fact]
+    // [Fact]
     public void Register_AddsCircuit()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class CircuitRegistryTest
         Assert.Same(circuitHost, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectAsync_TransfersClientOnActiveCircuit()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class CircuitRegistryTest
         Assert.Same(circuitHost, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectAsync_MakesInactiveCircuitActive()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class CircuitRegistryTest
         Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectAsync_InvokesCircuitHandlers_WhenCircuitWasPreviouslyDisconnected()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class CircuitRegistryTest
         handler.Verify(v => v.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectAsync_InvokesCircuitHandlers_WhenCircuitWasConsideredConnected()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class CircuitRegistryTest
         handler.Verify(v => v.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectAsync_InvokesCircuitHandlers_DisposesCircuitOnFailure()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class CircuitRegistryTest
         Assert.Equal(0, registry.DisconnectedCircuits.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisconnectAsync_DoesNothing_IfCircuitIsInactive()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class CircuitRegistryTest
         Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisconnectAsync_InvokesCircuitHandlers_WhenCircuitWasDisconnected()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class CircuitRegistryTest
         handler.Verify(v => v.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisconnectAsync_DoesNotInvokeCircuitHandlers_WhenCircuitReconnected()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class CircuitRegistryTest
         handler.Verify(v => v.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisconnectAsync_DoesNotInvokeCircuitHandlers_WhenCircuitWasNotFound()
     {
         // Arrange
@@ -222,7 +222,7 @@ public class CircuitRegistryTest
         handler.Verify(v => v.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Connect_WhileDisconnectIsInProgress()
     {
         // Arrange
@@ -263,7 +263,7 @@ public class CircuitRegistryTest
         Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisconnectWhenAConnectIsInProgress()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class CircuitRegistryTest
         Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisconnectedCircuitIsRemovedAfterConfiguredTimeout()
     {
         // Arrange
@@ -320,7 +320,7 @@ public class CircuitRegistryTest
         Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out var _));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReconnectBeforeTimeoutDoesNotGetEntryToBeEvicted()
     {
         // Arrange

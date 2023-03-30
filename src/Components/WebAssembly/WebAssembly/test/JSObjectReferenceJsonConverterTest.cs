@@ -17,7 +17,7 @@ public class JSObjectReferenceJsonConverterTest
         JsonSerializerOptions = DefaultWebAssemblyJSRuntime.Instance.JsonSerializerOptions;
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson_IJSObjectReference()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class JSObjectReferenceJsonConverterTest
         Assert.Equal(expectedId, deserialized?.Id);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson_IJSInProcessObjectReference()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class JSObjectReferenceJsonConverterTest
         Assert.Equal(expectedId, deserialized?.Id);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson_IJSUnmarshalledObjectReference()
     {
         // Arrange

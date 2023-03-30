@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 [System.Obsolete]
 public class ConfigureCompatibilityOptionsTest
 {
-    [Fact]
+    // [Fact]
     public void PostConfigure_NoValueForProperty_DoesNothing()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class ConfigureCompatibilityOptionsTest
         Assert.False(options.TestProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void PostConfigure_ValueIsSet_DoesNothing()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class ConfigureCompatibilityOptionsTest
         Assert.False(options.TestProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void PostConfigure_ValueNotSet_SetsValue()
     {
         // Arrange

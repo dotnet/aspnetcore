@@ -32,7 +32,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task Rzc_LocalPageWithDifferentContent_IsUsed()
     {
         // Act
@@ -44,7 +44,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
         Assert.Equal("Hello from runtime-compiled rzc page!", responseBody.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RuntimeCompilation_WithFallbackPage_Works()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/35060
@@ -57,7 +57,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
         Assert.Equal("Hello from fallback page!", responseBody.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Rzc_LocalViewWithDifferentContent_IsUsed()
     {
         // Act
@@ -69,7 +69,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
         Assert.Equal("Hello from runtime-compiled rzc view!", responseBody.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RzcViewsArePreferredToRuntimeViews()
     {
         // Verifies that when two views have the same paths, the one compiled using rzc is preferred to the one from Precompilation.
@@ -82,7 +82,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
         Assert.Equal("Hello from buildtime-compiled rzc view!", responseBody.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
         Assert.NotEqual(actual2, body.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange

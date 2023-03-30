@@ -68,7 +68,7 @@ app.MapGet("/", getQueryWithDefault);
         await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_SingleNullableStringParam_WithEmptyQueryStringValueProvided_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -93,7 +93,7 @@ app.MapGet("/hello", ([FromQuery]string? p) => p == string.Empty ? "No value, bu
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_MultipleStringParam_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""

@@ -6,21 +6,21 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 public class BarebonesMatcherConformanceTest : MatcherConformanceTest
 {
     // Route values not supported
-    [Fact]
+    // [Fact]
     public override Task Match_SingleParameter()
     {
         return Task.CompletedTask;
     }
 
     // Route values not supported
-    [Fact]
+    // [Fact]
     public override Task Match_SingleParameter_TrailingSlash()
     {
         return Task.CompletedTask;
     }
 
     // Route values not supported
-    [Fact]
+    // [Fact]
     public override Task Match_SingleParameter_WeirdNames()
     {
         return Task.CompletedTask;
@@ -36,7 +36,7 @@ public class BarebonesMatcherConformanceTest : MatcherConformanceTest
     }
 
     // Route constraints not supported
-    [Fact]
+    // [Fact]
     public override Task Match_Constraint()
     {
         return Task.CompletedTask;

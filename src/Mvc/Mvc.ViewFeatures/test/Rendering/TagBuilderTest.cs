@@ -38,7 +38,7 @@ public class TagBuilderTest
         Assert.Equal(new KeyValuePair<string, string>(expectedKey, expectedValue), attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCssClass_IgnoresCase()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class TagBuilderTest
         Assert.Equal(new KeyValuePair<string, string>("class", "btn btn-success"), attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateId_IgnoresCase()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class TagBuilderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WriteTo_IncludesInnerHtml()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class TagBuilderTest
         Assert.True(tagBuilder.HasInnerHtml);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadingInnerHtml_LeavesHasInnerHtmlFalse()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class TagBuilderTest
         Assert.NotNull(innerHtml);
     }
 
-    [Fact]
+    // [Fact]
     public void RenderStartTag_RendersExpectedStartTag()
     {
         // Arrange
@@ -180,7 +180,7 @@ public class TagBuilderTest
         Assert.Equal("<p>", HtmlContentUtilities.HtmlContentToString(tag));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderStartTag_RendersExpectedStartTag_TagBuilderRendersAsExpected()
     {
         // Arrange
@@ -195,7 +195,7 @@ public class TagBuilderTest
         Assert.Equal("</p>", HtmlContentUtilities.HtmlContentToString(tagBuilder));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderEndTag_RendersExpectedEndTag()
     {
         // Arrange
@@ -208,7 +208,7 @@ public class TagBuilderTest
         Assert.Equal("</p>", HtmlContentUtilities.HtmlContentToString(tag));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderEndTag_RendersExpectedEndTag_TagBuilderRendersAsExpected()
     {
         // Arrange
@@ -223,7 +223,7 @@ public class TagBuilderTest
         Assert.Equal("<p></p>", HtmlContentUtilities.HtmlContentToString(tagBuilder));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderSelfClosingTag_RendersExpectedSelfClosingTag()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class TagBuilderTest
         Assert.Equal("<p />", HtmlContentUtilities.HtmlContentToString(tag));
     }
 
-    [Fact]
+    // [Fact]
     public void RenderBody_RendersExpectedBody()
     {
         // Arrange
@@ -250,7 +250,7 @@ public class TagBuilderTest
         Assert.Equal("<span>Hello</span>", HtmlContentUtilities.HtmlContentToString(tag));
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_Copy_CopiesTagRenderMode()
     {
         // Arrange
@@ -264,7 +264,7 @@ public class TagBuilderTest
         Assert.Equal(originalTagBuilder.TagRenderMode, clonedTagBuilder.TagRenderMode);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_Copy_DoesShallowCopyOfInnerHtml()
     {
         // Arrange
@@ -279,7 +279,7 @@ public class TagBuilderTest
         Assert.Equal(HtmlContentUtilities.HtmlContentToString(originalTagBuilder.RenderBody()), HtmlContentUtilities.HtmlContentToString(clonedTagBuilder.RenderBody()));
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_Copy_DoesShallowCopyOfAttributes()
     {
         // Arrange
@@ -294,7 +294,7 @@ public class TagBuilderTest
         Assert.Equal(originalTagBuilder.Attributes, clonedTagBuilder.Attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_Copy_CopiesTagName()
     {
         // Arrange

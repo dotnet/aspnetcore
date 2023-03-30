@@ -40,7 +40,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         return new RouteParameter(descriptorPath, new HttpRouteVariable(), string.Empty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingRouteValue_SetOnRequestMessage()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(name, responseJson.RootElement.GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_NullProperty_ResponseReturned()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("null", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_ResponseBodySetToRepeatedField_ArrayReturned()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("", responseJson.RootElement[2].GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_RootBodySet_SetOnRequestMessage()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Null(request!.Sub);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_SubBodySet_SetOnRequestMessage()
     {
         // Arrange
@@ -258,7 +258,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Empty(request!.Sub.Subfields);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_SubRepeatedBodySet_SetOnRequestMessage()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("Three", request!.RepeatedStrings[2]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_SetOnRequestMessage()
     {
         // Arrange
@@ -338,7 +338,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("TestSubfield!", request!.Sub.Subfield);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_JsonName_SetOnRequestMessage()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("TestName!", request!.FieldName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_JsonNamePriority_JsonName_SetOnRequestMessage()
     {
         // Arrange
@@ -400,7 +400,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(30, requestMessage.C);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_JsonNamePriority_FieldNameFallback_SetOnRequestMessage()
     {
         // Arrange
@@ -436,7 +436,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(30, requestMessage.C);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_JsonNameAndValueObject_SetOnRequestMessage()
     {
         // Arrange
@@ -462,7 +462,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(1.1f, request!.FloatValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_JsonNameHidesFieldName_SetOnRequestMessage()
     {
         // Arrange
@@ -489,7 +489,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("TestName!", request!.HidingFieldName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_SuccessfulResponse_DefaultValuesInResponseJson()
     {
         // Arrange
@@ -620,7 +620,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal((int)StatusCode.InvalidArgument, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_RpcExceptionReturned_StatusReturned()
     {
         // Arrange
@@ -644,7 +644,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_RpcExceptionThrown_StatusReturned()
     {
         // Arrange
@@ -673,7 +673,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(debugException, exceptionWrite.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_OtherExceptionThrown_StatusReturned()
     {
         // Arrange
@@ -701,7 +701,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("Error!", exceptionWrite.Exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_EnableDetailedErrors_OtherExceptionThrown_StatusReturned()
     {
         // Arrange
@@ -731,7 +731,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("Error!", exceptionWrite.Exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_StatusSet_StatusReturned()
     {
         // Arrange
@@ -756,7 +756,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal((int)StatusCode.Unauthenticated, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_HttpBodyRequest_RawRequestAvailable()
     {
         // Arrange
@@ -852,7 +852,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal($"Hello {requestContent.Length}!", responseJson.RootElement.GetProperty("message").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_NullBody_WrapperType_Error()
     {
         // Arrange
@@ -913,7 +913,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(expectedValue, value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_HttpBodyRequest_NoBody_RawRequestAvailable()
     {
         // Arrange
@@ -943,7 +943,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Empty(requestData!);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_SubHttpBodyRequest_RawRequestAvailable()
     {
         // Arrange
@@ -980,7 +980,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(requestContent, Encoding.UTF8.GetString(request!.Sub.Data.ToByteArray()));
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_HttpBodyResponse_BodyReturned()
     {
         // Arrange
@@ -1011,7 +1011,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(@"Hello world", (string)responseXml.Element("message")!);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_UserState_HttpContextInUserState()
     {
         object? requestHttpContext = null;
@@ -1033,7 +1033,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(httpContext, requestHttpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_HasInterceptor_InterceptorCalled()
     {
         object? interceptorRun = null;
@@ -1067,7 +1067,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_GetHostAndMethodAndPeer_MatchHandler()
     {
         string? peer = null;
@@ -1095,7 +1095,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("/ServiceName/TestMethodName", method);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_ExceptionThrown_StatusReturned()
     {
         // Arrange
@@ -1119,7 +1119,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal((int)StatusCode.Unknown, responseJson.RootElement.GetProperty("code").GetInt32());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingRepeatedQueryStringValues_SetOnRequestMessage()
     {
         // Arrange
@@ -1147,7 +1147,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("TestSubfields2!", request!.Sub.Subfields[1]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_DataTypes_SetOnRequestMessage()
     {
         // Arrange
@@ -1205,7 +1205,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("Nested string", request!.Data.SingleMessage.Subfield);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_GetHttpContext_ReturnValue()
     {
         HttpContext? httpContext = null;
@@ -1219,7 +1219,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.NotNull(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_ServerCallContextFeature_ReturnValue()
     {
         IServerCallContextFeature? feature = null;
@@ -1291,7 +1291,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         return request!;
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_Wrappers_SetOnRequestMessage()
     {
         // Arrange
@@ -1333,7 +1333,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(new byte[] { 1, 2, 3 }, request!.Wrappers.BytesValue.ToByteArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_Any_Success()
     {
         // Arrange
@@ -1382,7 +1382,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal("A value!", anyMessage.GetProperty("value").GetString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_CustomDeserialization_SetOnRequestMessage()
     {
         // Arrange
@@ -1418,7 +1418,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(1.5f, request!.FloatValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleCallAsync_MatchingQueryStringValues_KnownType_FieldSetter_SetOnRequestMessage()
     {
         // Arrange

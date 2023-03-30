@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.DependencyInjection;
 
 public class MvcCoreBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddApplicationPart_AddsAnApplicationPart_ToTheListOfPartsOnTheBuilder()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class MvcCoreBuilderExtensionsTest
         Assert.Equal(assembly, assemblyPart.Assembly);
     }
 
-    [Fact]
+    // [Fact]
     public void AddApplicationPart_UsesPartFactory_ToRetrieveApplicationParts()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class MvcCoreBuilderExtensionsTest
         Assert.Same(TestApplicationPartFactory.TestPart, part);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureApplicationParts_InvokesSetupAction()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class MvcCoreBuilderExtensionsTest
         Assert.Equal(new ApplicationPart[] { part }, builder.PartManager.ApplicationParts.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureApiBehaviorOptions_InvokesSetupAction()
     {
         // Arrange

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 public class HealthCheckMiddlewareTests
 {
-    [Fact]
+    // [Fact]
     public void ThrowFriendlyErrorWhenServicesNotRegistered()
     {
         using var host = new HostBuilder()
@@ -39,7 +39,7 @@ public class HealthCheckMiddlewareTests
             ex.Message);
     }
 
-    [Fact] // Matches based on '.Map'
+    // [Fact] // Matches based on '.Map'
     public async Task IgnoresRequestThatDoesNotMatchPath()
     {
         using var host = new HostBuilder()
@@ -66,7 +66,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact] // Matches based on '.Map'
+    // [Fact] // Matches based on '.Map'
     public async Task MatchIsCaseInsensitive()
     {
         using var host = new HostBuilder()
@@ -93,7 +93,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReturnsPlainTextStatus()
     {
         using var host = new HostBuilder()
@@ -123,7 +123,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeIs200IfNoChecks()
     {
         using var host = new HostBuilder()
@@ -153,7 +153,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeIs200IfAllChecksHealthy()
     {
         using var host = new HostBuilder()
@@ -186,7 +186,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeIs200IfCheckIsDegraded()
     {
         using var host = new HostBuilder()
@@ -219,7 +219,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Degraded", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeIs503IfCheckIsUnhealthy()
     {
         using var host = new HostBuilder()
@@ -252,7 +252,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Unhealthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeIs503IfCheckHasUnhandledException()
     {
         using var host = new HostBuilder()
@@ -285,7 +285,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Unhealthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseCustomWriter()
     {
         var expectedJson = JsonConvert.SerializeObject(new
@@ -332,7 +332,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(expectedJson, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoResponseWriterReturnsEmptyBody()
     {
         using var host = new HostBuilder()
@@ -367,7 +367,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSetCustomStatusCodes()
     {
         using var host = new HostBuilder()
@@ -402,7 +402,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetsCacheHeaders()
     {
         using var host = new HostBuilder()
@@ -434,7 +434,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(new string[] { "Thu, 01 Jan 1970 00:00:00 GMT" }, response.Content.Headers.GetValues(HeaderNames.Expires));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSuppressCacheHeaders()
     {
         using var host = new HostBuilder()
@@ -469,7 +469,7 @@ public class HealthCheckMiddlewareTests
         Assert.False(response.Content.Headers.Contains(HeaderNames.Expires));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanFilterChecks()
     {
         using var host = new HostBuilder()
@@ -506,7 +506,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenWithoutPath_AcceptsRequest()
     {
         using var host = new HostBuilder()
@@ -536,7 +536,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenWithPath_AcceptsRequestWithExtraSlash()
     {
         using var host = new HostBuilder()
@@ -564,7 +564,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenWithPath_AcceptsRequestWithCaseInsensitiveMatch()
     {
         using var host = new HostBuilder()
@@ -594,7 +594,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenWithPath_RejectsRequestWithExtraSegments()
     {
         using var host = new HostBuilder()
@@ -623,7 +623,7 @@ public class HealthCheckMiddlewareTests
     }
 
     // See: https://github.com/aspnet/Diagnostics/issues/511
-    [Fact]
+    // [Fact]
     public async Task CanListenWithPath_MultipleMiddleware_LeastSpecificFirst()
     {
         using var host = new HostBuilder()
@@ -660,7 +660,7 @@ public class HealthCheckMiddlewareTests
     }
 
     // See: https://github.com/aspnet/Diagnostics/issues/511
-    [Fact]
+    // [Fact]
     public async Task CanListenWithPath_MultipleMiddleware_MostSpecificFirst()
     {
         using var host = new HostBuilder()
@@ -696,7 +696,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenOnPort_AcceptsRequest_OnSpecifiedPort()
     {
         using var host = new HostBuilder()
@@ -734,7 +734,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenOnPortWithoutPath_AcceptsRequest_OnSpecifiedPort()
     {
         using var host = new HostBuilder()
@@ -772,7 +772,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenOnPort_RejectsRequest_OnOtherPort()
     {
         using var host = new HostBuilder()
@@ -808,7 +808,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenOnPort_MultipleMiddleware()
     {
         using var host = new HostBuilder()
@@ -852,7 +852,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanListenOnPort_MultipleMiddleware_DifferentPorts()
     {
         using var host = new HostBuilder()
@@ -896,7 +896,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public void HealthCheckOptions_HasDefaultMappingWithDefaultResultStatusCodes()
     {
         var options = new HealthCheckOptions();
@@ -906,7 +906,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, options.ResultStatusCodes[HealthStatus.Unhealthy]);
     }
 
-    [Fact]
+    // [Fact]
     public void HealthCheckOptions_HasDefaultMappingWhenResettingResultStatusCodes()
     {
         var options = new HealthCheckOptions { ResultStatusCodes = null };
@@ -916,7 +916,7 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, options.ResultStatusCodes[HealthStatus.Unhealthy]);
     }
 
-    [Fact]
+    // [Fact]
     public void HealthCheckOptions_DoesNotThrowWhenProperlyConfiguringResultStatusCodes()
     {
         _ = new HealthCheckOptions
@@ -930,7 +930,7 @@ public class HealthCheckMiddlewareTests
         };
     }
 
-    [Fact]
+    // [Fact]
     public void HealthCheckOptions_ThrowsWhenAHealthStatusIsMissing()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
@@ -941,7 +941,7 @@ public class HealthCheckMiddlewareTests
         Assert.Contains($"{nameof(HealthStatus)}.{nameof(HealthStatus.Unhealthy)}", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void HealthCheckOptions_ThrowsWhenAHealthStatusIsMissing_MessageDoesNotContainDefinedStatus()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>

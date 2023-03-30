@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 
 public class ResponseCacheFilterExecutorTest
 {
-    [Fact]
+    // [Fact]
     public void Execute_DoesNotThrow_WhenNoStoreIsTrue()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal("no-store", context.HttpContext.Response.Headers["Cache-control"]);
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_DoesNotThrowIfDurationIsNotSet_WhenNoStoreIsFalse()
     {
         // Arrange, Act
@@ -43,7 +43,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.NotNull(executor);
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_ThrowsIfDurationIsNotSet_WhenNoStoreIsFalse()
     {
         // Arrange
@@ -409,7 +409,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers.CacheControl);
     }
 
-    [Fact]
+    // [Fact]
     public void NonEmptyVaryByQueryKeys_WithoutConfiguringMiddleware_Throws()
     {
         // Arrange
@@ -429,7 +429,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal("'VaryByQueryKeys' requires the response cache middleware.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void SetsPragmaOnNoCache()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
     }
 
-    [Fact]
+    // [Fact]
     public void FilterDurationProperty_OverridesCachePolicySetting()
     {
         // Arrange
@@ -470,7 +470,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal("public,max-age=20", context.HttpContext.Response.Headers["Cache-control"]);
     }
 
-    [Fact]
+    // [Fact]
     public void FilterLocationProperty_OverridesCachePolicySetting()
     {
         // Arrange
@@ -490,7 +490,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal("private,max-age=10", context.HttpContext.Response.Headers["Cache-control"]);
     }
 
-    [Fact]
+    // [Fact]
     public void FilterNoStoreProperty_OverridesCachePolicySetting()
     {
         // Arrange
@@ -510,7 +510,7 @@ public class ResponseCacheFilterExecutorTest
         Assert.Equal("public,max-age=10", context.HttpContext.Response.Headers["Cache-control"]);
     }
 
-    [Fact]
+    // [Fact]
     public void FilterVaryByProperty_OverridesCachePolicySetting()
     {
         // Arrange

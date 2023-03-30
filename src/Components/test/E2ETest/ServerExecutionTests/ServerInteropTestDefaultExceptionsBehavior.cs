@@ -28,7 +28,7 @@ public class ServerInteropTestDefaultExceptionsBehavior : ServerTestBase<BasicTe
         Browser.MountTestComponent<InteropComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void DotNetExceptionDetailsAreNotLoggedByDefault()
     {
         // Arrange

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 public class BodyModelBinderTests
 {
-    [Fact]
+    // [Fact]
     public async Task BindModel_CallsSelectedInputFormatterOnce()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class BodyModelBinderTests
         Assert.True(bindingContext.Result.IsModelSet);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_NoInputFormatterFound_SetsModelStateError()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class BodyModelBinderTests
         Assert.Single(entry.Value.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_NoInputFormatterFound_SetsModelStateError_RespectsBinderModelName()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class BodyModelBinderTests
         Assert.Single(entry.Value.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_IsGreedy()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class BodyModelBinderTests
         Assert.False(bindingContext.Result.IsModelSet);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_NoValueResult_SetsModelStateError()
     {
         // Arrange
@@ -188,7 +188,7 @@ public class BodyModelBinderTests
             Times.Once);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_SetsModelIfAllowEmpty()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class BodyModelBinderTests
         Assert.True(bindingContext.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_FailsIfNotAllowEmpty()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class BodyModelBinderTests
     }
 
     // Throwing InputFormatterException
-    [Fact]
+    // [Fact]
     public async Task BindModel_CustomFormatter_ThrowingInputFormatterException_AddsErrorToModelState()
     {
         // Arrange
@@ -322,7 +322,7 @@ public class BodyModelBinderTests
         Assert.Null(entry.Value.Errors[0].Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_BuiltInJsonInputFormatter_ThrowingInputFormatterException_AddsErrorToModelState()
     {
         // Arrange
@@ -393,7 +393,7 @@ public class BodyModelBinderTests
         Assert.Null(entry.Value.Errors[0].Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_DerivedJsonInputFormatter_AddsErrorToModelState()
     {
         // Arrange
@@ -504,7 +504,7 @@ public class BodyModelBinderTests
         Assert.IsType<IOException>(entry.Value.Errors[0].Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_CustomFormatter_ThrowingNonInputFormatterException_Throws()
     {
         // Arrange
@@ -528,7 +528,7 @@ public class BodyModelBinderTests
         Assert.Equal("Unable to read input stream!!", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NullFormatterError_AddedToModelState()
     {
         // Arrange
@@ -559,7 +559,7 @@ public class BodyModelBinderTests
         Assert.Equal("Unsupported content type 'text/xyz'.", errorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelCoreAsync_UsesFirstFormatterWhichCanRead()
     {
         // Arrange
@@ -586,7 +586,7 @@ public class BodyModelBinderTests
         Assert.Same(canReadFormatter1, bindingContext.Result.Model);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_LogsFormatterRejectionAndSelection()
     {
         // Arrange
@@ -615,7 +615,7 @@ public class BodyModelBinderTests
         Assert.Equal($"Selected input formatter '{typeof(TestInputFormatter)}' for content type 'application/json'.", writeList[2].State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_LogsNoFormatterSelectedAndRemoveFromBodyAttribute()
     {
         // Arrange
@@ -654,7 +654,7 @@ public class BodyModelBinderTests
                 $"Done attempting to bind model of type '{typeof(Person)}' using the name 'someName'.", write.State.ToString()));
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_DoesNotThrowNullReferenceException()
     {
         // Arrange

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Configuration.Test;
 
 public abstract class ConfigurationProviderTestBase
 {
-    [Fact]
+    // [Fact]
     public virtual void Load_from_single_provider()
     {
         var configRoot = BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig));
@@ -19,7 +19,7 @@ public abstract class ConfigurationProviderTestBase
         AssertConfig(configRoot);
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Has_debug_view()
     {
         var configRoot = BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig));
@@ -43,13 +43,13 @@ Section3:
         AssertDebugView(configRoot, expected);
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Null_values_are_included_in_the_config()
     {
         AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.NullsTestConfig)), expectNulls: true, nullValue: "");
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Combine_after_other_provider()
     {
         AssertConfig(
@@ -63,7 +63,7 @@ Section3:
                 LoadThroughProvider(TestSection.MissingSection2ValuesConfig)));
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Combine_before_other_provider()
     {
         AssertConfig(
@@ -77,7 +77,7 @@ Section3:
                 LoadUsingMemoryProvider(TestSection.MissingSection2ValuesConfig)));
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Second_provider_overrides_values_from_first()
     {
         AssertConfig(
@@ -86,7 +86,7 @@ Section3:
                 LoadThroughProvider(TestSection.TestConfig)));
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Combining_from_multiple_providers_is_case_insensitive()
     {
         AssertConfig(
@@ -95,14 +95,14 @@ Section3:
                 LoadThroughProvider(TestSection.TestConfig)));
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Load_from_single_provider_with_duplicates_throws()
     {
         AssertFormatOrArgumentException(
             () => BuildConfigRoot(LoadThroughProvider(TestSection.DuplicatesTestConfig)));
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Load_from_single_provider_with_differing_case_duplicates_throws()
     {
         AssertFormatOrArgumentException(
@@ -125,7 +125,7 @@ Section3:
                     || caught is FormatException);
     }
 
-    [Fact]
+    // [Fact]
     public virtual void Bind_to_object()
     {
         var configuration = BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig));

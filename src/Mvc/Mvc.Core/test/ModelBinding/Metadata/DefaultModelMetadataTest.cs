@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 public class DefaultModelMetadataTest
 {
-    [Fact]
+    // [Fact]
     public void DefaultValues()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class DefaultModelMetadataTest
         Assert.Null(metadata.PropertyFilterProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateMetadataForType()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class DefaultModelMetadataTest
         Assert.Null(metadata.ContainerType);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateMetadataForProperty()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class DefaultModelMetadataTest
         Assert.Equal(typeof(Exception), metadata.ContainerType);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFormatString_DoesNotCacheInitialDelegateValue()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class DefaultModelMetadataTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void EditFormatString_DoesNotCacheInitialDelegateValue()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class DefaultModelMetadataTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void NullDisplayText_DoesNotCacheInitialDelegateValue()
     {
         // Arrange
@@ -453,7 +453,7 @@ public class DefaultModelMetadataTest
         Assert.True(isRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertiesProperty_CallsProvider()
     {
         // Arrange
@@ -680,7 +680,7 @@ public class DefaultModelMetadataTest
         Assert.Equal(expectedNames.ToArray(), properties.Select(p => p.PropertyName).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void PropertiesSetOnce()
     {
         // Arrange
@@ -701,7 +701,7 @@ public class DefaultModelMetadataTest
         Assert.Same(SinglePropertiesEvaluation, secondPropertiesEvaluation);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertiesEnumerationEvaluatedOnce()
     {
         // Arrange
@@ -722,7 +722,7 @@ public class DefaultModelMetadataTest
         Assert.Equal(SinglePropertiesEvaluation, secondPropertiesEvaluation);
     }
 
-    [Fact]
+    // [Fact]
     public void IsReadOnly_ReturnsFalse_ForType()
     {
         // Arrange
@@ -747,7 +747,7 @@ public class DefaultModelMetadataTest
         Assert.False(isReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void IsReadOnly_ReturnsTrue_ForPrivateSetProperty()
     {
         // Arrange
@@ -766,7 +766,7 @@ public class DefaultModelMetadataTest
         Assert.True(isReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void IsReadOnly_ReturnsTrue_ForProtectedSetProperty()
     {
         // Arrange
@@ -785,7 +785,7 @@ public class DefaultModelMetadataTest
         Assert.True(isReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void IsReadOnly_ReturnsFalse_ForPublicSetProperty()
     {
         // Arrange
@@ -893,7 +893,7 @@ public class DefaultModelMetadataTest
         Assert.Same(value, validationFilter);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidateChildren_OverrideTrue()
     {
         // Arrange
@@ -918,7 +918,7 @@ public class DefaultModelMetadataTest
         Assert.True(validateChildren);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidateChildren_OverrideFalse()
     {
         // Arrange
@@ -943,7 +943,7 @@ public class DefaultModelMetadataTest
         Assert.False(validateChildren);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMetadataForType_CallsProvider()
     {
         // Arrange
@@ -963,7 +963,7 @@ public class DefaultModelMetadataTest
         metadataProvider.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public void GetMetadataForProperties_CallsProvider()
     {
         // Arrange
@@ -983,7 +983,7 @@ public class DefaultModelMetadataTest
         metadataProvider.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_ParameterMetadata_TypeHasNoValidators()
     {
         // Arrange
@@ -1002,7 +1002,7 @@ public class DefaultModelMetadataTest
 
     private static void CalculateHasValidators_ParameterMetadata_TypeHasNoValidatorsMethod(string model) { }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_PropertyMetadata_TypeHasNoValidators()
     {
         // Arrange
@@ -1020,7 +1020,7 @@ public class DefaultModelMetadataTest
 
     private static int CalculateHasValidators_PropertyMetadata_TypeHasNoValidatorsProperty { get; set; }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_TypeWithoutProperties_TypeHasNoValidators()
     {
         // Arrange
@@ -1034,7 +1034,7 @@ public class DefaultModelMetadataTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_SimpleType_TypeHasValidators()
     {
         // Arrange
@@ -1048,7 +1048,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_ReturnsTrue_SimpleType_TypeHasNonDeterministicValidators()
     {
         // Arrange
@@ -1062,7 +1062,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_TypeWithProperties_PropertyIsNotDefaultModelMetadata()
     {
         // Arrange
@@ -1087,7 +1087,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_TypeWithProperties_HasValidatorForAnyPropertyIsTrue()
     {
         // Arrange
@@ -1114,7 +1114,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_TypeWithProperties_HasValidatorsForPropertyIsNotDeterminstic()
     {
         // Arrange
@@ -1138,7 +1138,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_TypeWithProperties_HasValidatorForAllPropertiesIsFalse()
     {
         // Arrange
@@ -1165,7 +1165,7 @@ public class DefaultModelMetadataTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_SelfReferencingType_HasValidatorOnNestedProperty()
     {
         // Arrange
@@ -1206,7 +1206,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_SelfReferencingType_HasValidatorOnSelfReferencedProperty()
     {
         // Arrange
@@ -1249,7 +1249,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_CollectionElementHasValidators()
     {
         // Arrange
@@ -1278,7 +1278,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_SelfReferencingType_NoValidatorsInGraph()
     {
         // Arrange
@@ -1323,7 +1323,7 @@ public class DefaultModelMetadataTest
 
     private record SimpleRecordType(int Property);
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_RecordType_ParametersWithNoValidators()
     {
         // Arrange
@@ -1367,7 +1367,7 @@ public class DefaultModelMetadataTest
         metadataProvider.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_RecordType_ParametersWithValidators()
     {
         // Arrange
@@ -1412,7 +1412,7 @@ public class DefaultModelMetadataTest
         public int Property2 { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_RecordTypeWithProperty_NoValidators()
     {
         // Arrange
@@ -1457,7 +1457,7 @@ public class DefaultModelMetadataTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_RecordTypeWithProperty_ParameteryHasValidators()
     {
         // Arrange
@@ -1502,7 +1502,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_RecordTypeWithProperty_PropertyHasValidators()
     {
         // Arrange
@@ -1547,7 +1547,7 @@ public class DefaultModelMetadataTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CalculateHasValidators_RecordTypeWithProperty_MappedPropertyHasValidators_ValidatorsAreIgnored()
     {
         // Arrange

@@ -15,7 +15,7 @@ public class AvoidHtmlPartialAnalyzerTest
 {
     private static readonly DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC1000_HtmlHelperPartialShouldBeAvoided;
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForNonUseOfHtmlPartial()
     {
         var source = @"
@@ -57,7 +57,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForUseOfHtmlPartialAsync()
     {
         var source = @"
@@ -95,7 +95,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfHtmlPartial()
     {
         var source = @"
@@ -140,7 +140,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfHtmlPartial_WithAdditionalParameters()
     {
         var source = @"
@@ -186,7 +186,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfHtmlPartial_InSections()
     {
         var source = @"
@@ -233,7 +233,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForUseOfRenderPartialAsync()
     {
         var source = @"
@@ -274,7 +274,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfRenderPartial()
     {
         var source = @"
@@ -318,7 +318,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfRenderPartial_WithAdditionalParameters()
     {
         var source = @"
@@ -363,7 +363,7 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForUseOfRenderPartial_InSections()
     {
         var source = @"

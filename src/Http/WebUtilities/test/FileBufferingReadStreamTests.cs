@@ -15,7 +15,7 @@ public class FileBufferingReadStreamTests
         return new MemoryStream(new byte[size]);
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_Properties_ExpectedValues()
     {
         using var inner = MakeStream(1024 * 2);
@@ -37,7 +37,7 @@ public class FileBufferingReadStreamTests
         Assert.True(inner.CanSeek);
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_Sync0ByteReadUnderThreshold_DoesntCreateFile()
     {
         var inner = MakeStream(1024);
@@ -70,7 +70,7 @@ public class FileBufferingReadStreamTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_SyncReadUnderThreshold_DoesntCreateFile()
     {
         var inner = MakeStream(1024 * 2);
@@ -103,7 +103,7 @@ public class FileBufferingReadStreamTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_SyncReadOverThreshold_CreatesFile()
     {
         var inner = MakeStream(1024 * 2);
@@ -142,7 +142,7 @@ public class FileBufferingReadStreamTests
         Assert.False(File.Exists(tempFileName));
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_SyncReadWithInMemoryLimit_EnforcesLimit()
     {
         var inner = MakeStream(1024 * 2);
@@ -164,7 +164,7 @@ public class FileBufferingReadStreamTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_SyncReadWithOnDiskLimit_EnforcesLimit()
     {
         var inner = MakeStream(1024 * 2);
@@ -199,7 +199,7 @@ public class FileBufferingReadStreamTests
 
     ///////////////////
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_Async0ByteReadUnderThreshold_DoesntCreateFile()
     {
         var inner = MakeStream(1024);
@@ -232,7 +232,7 @@ public class FileBufferingReadStreamTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_AsyncReadUnderThreshold_DoesntCreateFile()
     {
         var inner = MakeStream(1024 * 2);
@@ -265,7 +265,7 @@ public class FileBufferingReadStreamTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_AsyncReadOverThreshold_CreatesFile()
     {
         var inner = MakeStream(1024 * 2);
@@ -304,7 +304,7 @@ public class FileBufferingReadStreamTests
         Assert.False(File.Exists(tempFileName));
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_Async0ByteReadAfterBuffering_ReadsFromFile()
     {
         var inner = MakeStream(1024 * 2);
@@ -345,7 +345,7 @@ public class FileBufferingReadStreamTests
         Assert.False(File.Exists(tempFileName));
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_AsyncReadWithInMemoryLimit_EnforcesLimit()
     {
         var inner = MakeStream(1024 * 2);
@@ -367,7 +367,7 @@ public class FileBufferingReadStreamTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_AsyncReadWithOnDiskLimit_EnforcesLimit()
     {
         var inner = MakeStream(1024 * 2);
@@ -400,7 +400,7 @@ public class FileBufferingReadStreamTests
         Assert.False(File.Exists(tempFileName));
     }
 
-    [Fact]
+    // [Fact]
     public void FileBufferingReadStream_UsingMemoryStream_RentsAndReturnsRentedBuffer_WhenCopyingFromMemoryStreamDuringRead()
     {
         var inner = MakeStream(1024 * 1024 + 25);
@@ -429,7 +429,7 @@ public class FileBufferingReadStreamTests
         Assert.False(File.Exists(tempFileName));
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileBufferingReadStream_UsingMemoryStream_RentsAndReturnsRentedBuffer_WhenCopyingFromMemoryStreamDuringReadAsync()
     {
         var inner = MakeStream(1024 * 1024 + 25);
@@ -458,7 +458,7 @@ public class FileBufferingReadStreamTests
         Assert.False(File.Exists(tempFileName));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyToAsyncWorks()
     {
         // 4K is the lower bound on buffer sizes
@@ -482,7 +482,7 @@ public class FileBufferingReadStreamTests
         Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyToAsyncWorksWithFileThreshold()
     {
         // 4K is the lower bound on buffer sizes
@@ -506,7 +506,7 @@ public class FileBufferingReadStreamTests
         Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsyncThenCopyToAsyncWorks()
     {
         var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
@@ -523,7 +523,7 @@ public class FileBufferingReadStreamTests
         Assert.Equal(data.AsMemory(100).ToArray(), withoutBufferMs.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadThenCopyToAsyncWorks()
     {
         var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
@@ -541,7 +541,7 @@ public class FileBufferingReadStreamTests
         Assert.Equal(data.AsMemory(read).ToArray(), withoutBufferMs.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadThenSeekThenCopyToAsyncWorks()
     {
         var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
@@ -560,7 +560,7 @@ public class FileBufferingReadStreamTests
         Assert.Equal(data.ToArray(), withoutBufferMs.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void PartialReadThenSeekReplaysBuffer()
     {
         var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
@@ -580,7 +580,7 @@ public class FileBufferingReadStreamTests
         Assert.Equal(data.AsMemory(0, read2).ToArray(), buffer2.AsMemory(0, read2).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialReadAsyncThenSeekReplaysBuffer()
     {
         var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();

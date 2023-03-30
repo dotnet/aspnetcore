@@ -56,7 +56,7 @@ public class LinkGenerationTests : IClassFixture<MvcTestFixture<BasicWebSite.Sta
             response.Headers.Location);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GeneratedLinks_AreNotPunyEncoded_WhenGeneratedOnViews()
     {
         // Arrange

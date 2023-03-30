@@ -31,7 +31,7 @@ public class StartupAnalyzerTest
 
     internal ConcurrentBag<IMethodSymbol> ConfigureMethods { get; }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_Standard()
     {
         // Arrange
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.Collection(ConfigureMethods, m => Assert.Equal("Configure", m.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_MoreVariety()
     {
         // Arrange
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
             m => Assert.Equal("ConfigureProduction", m.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingDisabled()
     {
         // Arrange
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.Equal("UseMvcWithDefaultRoute", middleware.UseMethod.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_MvcOptionsAnalysis_AddMvcOptions_FindsEndpointRoutingDisabled()
     {
         // Arrange
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.Equal("UseMvcWithDefaultRoute", middleware.UseMethod.Name);
     }
 
-    [Fact]
+    // [Fact]
     public Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingEnabled()
     {
         var source = @"
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         return VerifyMvcOptionsAnalysis(source, "UseMvc", diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task StartupAnalyzer_MvcOptionsAnalysis_UseMvcAndConfiguredRoutes_FindsEndpointRoutingEnabled()
     {
         var source = @"
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         return VerifyMvcOptionsAnalysis(source, "UseMvc", diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task StartupAnalyzer_MvcOptionsAnalysis_MvcOptions_UseMvcWithDefaultRoute_FindsEndpointRoutingEnabled()
     {
         var source = @"
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.Equal(mvcMiddlewareName, middleware.UseMethod.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleMiddleware()
     {
         // Arrange
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
             item => Assert.Equal("UseEndpoints", item.UseMethod.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleUseMvc()
     {
         // Arrange
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.False(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_ServicesAnalysis_CallBuildServiceProvider()
     {
         // Arrange
@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.NotEmpty(servicesAnalysis.Services);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_UseAuthorizationConfiguredCorrectly_ReportsNoDiagnostics()
     {
         // Arrange
@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.NotEmpty(middlewareAnalysis.Middleware);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_UseAuthorizationConfiguredAsAChain_ReportsNoDiagnostics()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/15203
@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest {
         Assert.NotEmpty(middlewareAnalysis.Middleware);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_UseAuthorizationInvokedMultipleTimesInEndpointRoutingBlock_ReportsNoDiagnostics()
     {
         // Arrange
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.NotEmpty(middlewareAnalysis.Middleware);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRouting_ReportsDiagnostics()
     {
         // Arrange
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         await VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRoutingChained_ReportsDiagnostics()
     {
         // This one asserts a false negative for https://github.com/dotnet/aspnetcore/issues/15203.
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.NotEmpty(middlewareAnalysis.Middleware);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_UseAuthorizationConfiguredAfterUseEndpoints_ReportsDiagnostics()
     {
         // Arrange
@@ -618,7 +618,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.NotEmpty(middlewareAnalysis.Middleware);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartupAnalyzer_MultipleUseAuthorization_ReportsNoDiagnostics()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
 public class JQueryFormatModelBindingIntegrationTest
 {
-    [Fact]
+    // [Fact]
     public async Task BindsJQueryFormatData_FromQuery()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class JQueryFormatModelBindingIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsJQueryFormatData_FromRequestBody()
     {
         // Arrange

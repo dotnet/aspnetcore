@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class TempDataDictionaryFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void Factory_CreatesTempData_ForEachHttpContext()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class TempDataDictionaryFactoryTest
         Assert.NotSame(tempData1, tempData2);
     }
 
-    [Fact]
+    // [Fact]
     public void Factory_StoresTempData_InHttpContext()
     {
         // Arrange

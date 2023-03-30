@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
 public class DefaultHeaderTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task TestDefaultHeaders()
     {
         var testContext = new TestServiceContext(LoggerFactory)

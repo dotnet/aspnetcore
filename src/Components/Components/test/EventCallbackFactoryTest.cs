@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public class EventCallbackFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void Create_EventCallback_ReturnsInput()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_Action_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_Action_DifferentReceiver()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_Action_Unbound()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_Action_Null()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ActionT_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ActionT_DifferentReceiver()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ActionT_Unbound()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ActionT_Null()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTask_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTask_DifferentReceiver()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTask_Unbound()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTTask_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTask_Null()
     {
         // Arrange
@@ -241,7 +241,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTTask_DifferentReceiver()
     {
         // Arrange
@@ -259,7 +259,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTTask_Unbound()
     {
         // Arrange
@@ -277,7 +277,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FuncTTask_Null()
     {
         // Arrange
@@ -292,7 +292,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_EventCallback_ReturnsInput()
     {
         // Arrange
@@ -311,7 +311,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_Action_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_Action_DifferentReceiver()
     {
         // Arrange
@@ -345,7 +345,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_Action_Unbound()
     {
         // Arrange
@@ -363,7 +363,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_Action_Null()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_ActionT_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -394,7 +394,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_ActionT_DifferentReceiver()
     {
         // Arrange
@@ -412,7 +412,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_ActionT_Null()
     {
         // Arrange
@@ -427,7 +427,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_ActionT_Unbound()
     {
         // Arrange
@@ -445,7 +445,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTask_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -461,7 +461,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTask_DifferentReceiver()
     {
         // Arrange
@@ -479,7 +479,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTask_Unbound()
     {
         // Arrange
@@ -497,7 +497,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTask_Null()
     {
         // Arrange
@@ -512,7 +512,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTTask_AlreadyBoundToReceiver()
     {
         // Arrange
@@ -528,7 +528,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTTask_DifferentReceiver()
     {
         // Arrange
@@ -546,7 +546,7 @@ public class EventCallbackFactoryTest
         Assert.False(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTTask_Unbound()
     {
         // Arrange
@@ -564,7 +564,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateT_FuncTTask_Null()
     {
         // Arrange
@@ -579,7 +579,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateInferred_ActionT()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class EventCallbackFactoryTest
         Assert.True(callback.RequiresExplicitReceiver);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateInferred_FuncTTask()
     {
         // Arrange

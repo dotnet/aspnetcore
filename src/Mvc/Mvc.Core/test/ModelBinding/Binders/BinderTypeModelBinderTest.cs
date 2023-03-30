@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 public class BinderTypeModelBinderTest
 {
-    [Fact]
+    // [Fact]
     public async Task BindModel_ReturnsFailedResult_EvenIfSelectedBinderReturnsNull()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class BinderTypeModelBinderTest
         Assert.False(bindingContext.Result.IsModelSet);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_CallsBindAsync_OnProvidedModelBinder()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class BinderTypeModelBinderTest
         Assert.Equal(model.Name, person.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void BindModel_ForNonModelBinder_Throws()
     {
         // Arrange

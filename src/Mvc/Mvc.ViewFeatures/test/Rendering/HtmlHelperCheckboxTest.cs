@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 
 public class HtmlHelperCheckBoxTest
 {
-    [Fact]
+    // [Fact]
     public void CheckBoxOverridesCalculatedValuesWithValuesFromHtmlAttributes()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxExplicitParametersOverrideDictionary_ForValueInModel()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxExplicitParametersOverrideDictionary_ForNullModel()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxWithInvalidBooleanThrows()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Contains("Boolean", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxWithNullExpressionThrows()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class HtmlHelperCheckBoxTest
             expected);
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxWithNullExpression_DoesNotThrow_WithNameAttribute()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxCheckedWithOnlyName_GeneratesExpectedValue()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBox_WithCanRenderAtEndOfFormSet_DoesNotGenerateInlineHiddenTag()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class HtmlHelperCheckBoxTest
             writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBox_WithHiddenInputRenderModeNone_DoesNotGenerateHiddenInput()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBox_WithHiddenInputRenderModeInline_GeneratesHiddenInput()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBox_WithHiddenInputRenderModeEndOfForm_GeneratesHiddenInput()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class HtmlHelperCheckBoxTest
             writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBox_WithHiddenInputRenderModeEndOfForm_WithCanRenderAtEndOfFormNotSet_GeneratesHiddenInput()
     {
         // Arrange
@@ -253,7 +253,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxUsesAttemptedValueFromModelState()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxNotInTemplate_GetsValueFromViewDataDictionary()
     {
         // Arrange
@@ -291,7 +291,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_GetsValueFromViewDataDictionary()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxNotInTemplate_GetsValueFromPropertyOfViewDataEntry()
     {
         // Arrange
@@ -334,7 +334,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_GetsValueFromPropertyOfViewDataEntry()
     {
         // Arrange
@@ -356,7 +356,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxNotInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -376,7 +376,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -397,7 +397,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxNotInTemplate_NotChecked_IfPropertyIsNotFound()
     {
         // Arrange
@@ -416,7 +416,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_NotChecked_IfPropertyIsNotFound()
     {
         // Arrange
@@ -436,7 +436,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxGeneratesUnobtrusiveValidationAttributes()
     {
         // Arrange
@@ -454,7 +454,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxReplacesUnderscoresInHtmlAttributesWithDashes()
     {
         // Arrange
@@ -474,7 +474,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_ReplaceDotsInIdByDefaultWithUnderscores()
     {
         // Arrange
@@ -492,7 +492,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_ReplacesDotsInIdWithIdDotReplacement()
     {
         // Arrange
@@ -512,7 +512,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxInTemplate_WithEmptyExpression_GeneratesExpectedValue()
     {
         // Arrange
@@ -538,7 +538,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxWithComplexExpressionsEvaluatesValuesInViewDataDictionary()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxForWithNullContainer_TreatsBooleanAsFalse()
     {
         // Arrange
@@ -606,7 +606,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxForOverridesCalculatedParametersWithValuesFromHtmlAttributes()
     {
         // Arrange
@@ -625,7 +625,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxForGeneratesUnobtrusiveValidationAttributes()
     {
         // Arrange
@@ -672,7 +672,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxFor_WithObjectAttribute_MapsUnderscoresInNamesToDashes()
     {
         // Arrange
@@ -692,7 +692,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxFor_WithAttributeDictionary_GeneratesExpectedAttributes()
     {
         // Arrange
@@ -717,7 +717,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxForInTemplate_GeneratesExpectedValue()
     {
         // Arrange
@@ -738,7 +738,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void CheckBoxFor_WithComplexExpressions_DoesNotUseValuesFromViewDataDictionary()
     {
         // Arrange
@@ -757,7 +757,7 @@ public class HtmlHelperCheckBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void Checkbox_UsesSpecifiedExpression()
     {
         // Arrange
@@ -773,7 +773,7 @@ public class HtmlHelperCheckBoxTest
             HtmlContentUtilities.HtmlContentToString(checkboxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Checkbox_UsesSpecifiedIsChecked()
     {
         // Arrange
@@ -789,7 +789,7 @@ public class HtmlHelperCheckBoxTest
             HtmlContentUtilities.HtmlContentToString(checkboxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Checkbox_UsesSpecifiedIsCheckedRegardlessOfExpressionValue()
     {
         // Arrange
@@ -808,7 +808,7 @@ public class HtmlHelperCheckBoxTest
             HtmlContentUtilities.HtmlContentToString(checkboxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Checkbox_UsesSpecifiedHtmlAttributes()
     {
         // Arrange

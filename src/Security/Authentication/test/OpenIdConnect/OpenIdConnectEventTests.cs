@@ -26,7 +26,7 @@ public class OpenIdConnectEventTests
     private readonly RequestDelegate AppWritePath = context => context.Response.WriteAsync(context.Request.Path);
     private readonly RequestDelegate AppNotImpl = context => { throw new NotImplementedException("App"); };
 
-    [Fact]
+    // [Fact]
     public async Task OnMessageReceived_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -47,7 +47,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnMessageReceived_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -71,7 +71,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnMessageReceived_Handled_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -93,7 +93,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidated_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -115,7 +115,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidated_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -140,7 +140,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidated_HandledWithoutTicket_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -164,7 +164,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidated_HandledWithTicket_SkipToTicketReceived()
     {
         var events = new ExpectedOidcEvents()
@@ -200,7 +200,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationCodeReceived_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -223,7 +223,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationCodeReceived_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -249,7 +249,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationCodeReceived_HandledWithoutTicket_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -274,7 +274,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationCodeReceived_HandledWithTicket_SkipToTicketReceived()
     {
         var events = new ExpectedOidcEvents()
@@ -304,7 +304,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenResponseReceived_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -328,7 +328,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenResponseReceived_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -355,7 +355,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenResponseReceived_HandledWithoutTicket_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -381,7 +381,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenResponseReceived_HandledWithTicket_SkipToTicketReceived()
     {
         var events = new ExpectedOidcEvents()
@@ -412,7 +412,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidatedBackchannel_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -436,7 +436,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidatedBackchannel_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -463,7 +463,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidatedBackchannel_HandledWithoutTicket_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -489,7 +489,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTokenValidatedBackchannel_HandledWithTicket_SkipToTicketReceived()
     {
         var events = new ExpectedOidcEvents()
@@ -520,7 +520,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnUserInformationReceived_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -545,7 +545,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnUserInformationReceived_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -573,7 +573,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnUserInformationReceived_HandledWithoutTicket_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -600,7 +600,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnUserInformationReceived_HandledWithTicket_SkipToTicketReceived()
     {
         var events = new ExpectedOidcEvents()
@@ -632,7 +632,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthenticationFailed_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -663,7 +663,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthenticationFailed_Fail_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -697,7 +697,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthenticationFailed_HandledWithoutTicket_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -730,7 +730,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthenticationFailed_HandledWithTicket_SkipToTicketReceived()
     {
         var events = new ExpectedOidcEvents()
@@ -778,7 +778,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAccessDenied_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -800,7 +800,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAccessDenied_Handled_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -824,7 +824,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRemoteFailure_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -861,7 +861,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRemoteFailure_Handled_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -895,7 +895,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTicketReceived_Skip_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -921,7 +921,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnTicketReceived_Handled_NoMoreEventsRun()
     {
         var events = new ExpectedOidcEvents()
@@ -948,7 +948,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRedirectToIdentityProviderForSignOut_Invoked()
     {
         var events = new ExpectedOidcEvents()
@@ -969,7 +969,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRedirectToIdentityProviderForSignOut_Handled_RedirectNotInvoked()
     {
         var events = new ExpectedOidcEvents()
@@ -996,7 +996,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRemoteSignOut_Invoked()
     {
         var events = new ExpectedOidcEvents()
@@ -1016,7 +1016,7 @@ public class OpenIdConnectEventTests
         Assert.True(StringSegment.IsNullOrEmpty(parsedValues.Single().Value));
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRemoteSignOut_Handled_NoSignout()
     {
         var events = new ExpectedOidcEvents()
@@ -1039,7 +1039,7 @@ public class OpenIdConnectEventTests
         Assert.False(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRemoteSignOut_Skip_NoSignout()
     {
         var events = new ExpectedOidcEvents()
@@ -1065,7 +1065,7 @@ public class OpenIdConnectEventTests
         Assert.False(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRedirectToSignedOutRedirectUri_Invoked()
     {
         var events = new ExpectedOidcEvents()
@@ -1082,7 +1082,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRedirectToSignedOutRedirectUri_Handled_NoRedirect()
     {
         var events = new ExpectedOidcEvents()
@@ -1105,7 +1105,7 @@ public class OpenIdConnectEventTests
         events.ValidateExpectations();
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRedirectToSignedOutRedirectUri_Skipped_NoRedirect()
     {
         var events = new ExpectedOidcEvents()

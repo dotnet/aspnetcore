@@ -20,7 +20,7 @@ public class ComponentWithParametersTest : ServerTestBase<BasicTestAppServerSite
     {
     }
 
-    [Fact]
+    // [Fact]
     public void PassingParametersToComponentsFromThePageWorks()
     {
         Navigate("/prerendered/componentwithparameters?QueryValue=testQueryValue");

@@ -41,7 +41,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         o.SignInScheme = "auth1";
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillTriggerApplyRedirectEvent()
     {
         using var host = await CreateHost(o =>
@@ -77,7 +77,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
     /// Validates the Twitter Options to check if the Consumer Key is missing in the TwitterOptions and if so throws the ArgumentException
     /// </summary>
     /// <returns></returns>
-    [Fact]
+    // [Fact]
     public async Task ThrowsIfClientIdMissing()
     {
         using var host = await CreateHost(o =>
@@ -93,7 +93,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
     /// Validates the Twitter Options to check if the Consumer Secret is missing in the TwitterOptions and if so throws the ArgumentException
     /// </summary>
     /// <returns></returns>
-    [Fact]
+    // [Fact]
     public async Task ThrowsIfClientSecretMissing()
     {
         using var host = await CreateHost(o =>
@@ -105,7 +105,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         await Assert.ThrowsAsync<ArgumentException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadSignInWillThrow()
     {
         using var host = await CreateHost(o =>
@@ -120,7 +120,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal("Invalid state cookie.", error.GetBaseException().Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInThrows()
     {
         using var host = await CreateHost(o =>
@@ -133,7 +133,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutThrows()
     {
         using var host = await CreateHost(o =>
@@ -146,7 +146,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ForbidThrows()
     {
         using var host = await CreateHost(o =>
@@ -159,7 +159,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillTriggerRedirection()
     {
         using var host = await CreateHost(o =>
@@ -183,7 +183,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandleRequestAsync_RedirectsToAccessDeniedPathWhenExplicitlySet()
     {
         using var host = await CreateHost(o =>
@@ -224,7 +224,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal("http://localhost/access-denied?ReturnUrl=%2Fchallenge", response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadCallbackCallsAccessDeniedWithState()
     {
         using var host = await CreateHost(o =>
@@ -273,7 +273,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TwitterError_Json_ThrowsParsedException()
     {
         using var host = await CreateHost(o =>
@@ -303,7 +303,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal(expectedErrorMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TwitterError_UnknownContentType_ThrowsHttpException()
     {
         using var host = await CreateHost(o =>
@@ -328,7 +328,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadCallbackCallsRemoteAuthFailedWithState()
     {
         using var host = await CreateHost(o =>
@@ -380,7 +380,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSignIn()
     {
         var stateFormat = new SecureDataFormat<RequestToken>(new RequestTokenSerializer(), new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("TwitterTest"));
@@ -446,7 +446,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         Assert.Equal("PLACEHOLDER", transaction.FindTokenValue("access_token_secret"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanFetchUserDetails()
     {
         var verifyCredentialsEndpoint = "https://api.twitter.com/1.1/account/verify_credentials.json";

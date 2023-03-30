@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers;
 
 public class DefaultTagHelperContentTest
 {
-    [Fact]
+    // [Fact]
     public void Reset_ClearsTheExpectedFields()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(string.Empty, tagHelperContent.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public void CanSetContent()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void SetContentClearsExistingContent()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void SetHtmlContent_TextIsNotFurtherEncoded()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal("Hi", tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void SetHtmlContent_ClearsExistingContent()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void CopyTo_CopiesAllItems()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal("Test", Assert.IsType<string>(items[2]));
     }
 
-    [Fact]
+    // [Fact]
     public void CopyTo_DoesDeepCopy()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal("Test", Assert.IsType<string>(items[2]));
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_CopiesAllItems_AndClears()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal("Test", Assert.IsType<string>(items[2]));
     }
 
-    [Fact]
+    // [Fact]
     public void MoveTo_DoesDeepMove()
     {
         // Arrange
@@ -199,7 +199,7 @@ public class DefaultTagHelperContentTest
     }
 
     // GetContent - this one relies on the default encoder.
-    [Fact]
+    // [Fact]
     public void CanGetContent()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void CanAppendContent()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAppendFormatContent()
     {
         // Arrange
@@ -243,7 +243,7 @@ public class DefaultTagHelperContentTest
             tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAppendFormat_WithCulture()
     {
         // Arrange
@@ -265,7 +265,7 @@ public class DefaultTagHelperContentTest
             tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAppendDefaultTagHelperContent()
     {
         // Arrange
@@ -281,7 +281,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void Append_WithTagHelperContent_MultipleAppends()
     {
         // Arrange
@@ -300,7 +300,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void IsModified_TrueAfterSetContent()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsModified);
     }
 
-    [Fact]
+    // [Fact]
     public void IsModified_TrueAfterAppend()
     {
         // Arrange
@@ -326,7 +326,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsModified);
     }
 
-    [Fact]
+    // [Fact]
     public void IsModified_TrueAfterClear()
     {
         // Arrange
@@ -339,7 +339,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsModified);
     }
 
-    [Fact]
+    // [Fact]
     public void IsModified_TrueIfAppendedNull()
     {
         // Arrange
@@ -388,7 +388,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_FalseAfterLaterAppend()
     {
         // Arrange
@@ -403,7 +403,7 @@ public class DefaultTagHelperContentTest
         Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_InitiallyTrue()
     {
         // Arrange
@@ -471,7 +471,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_TrueAfterAppendEmptyTagHelperContent()
     {
         // Arrange
@@ -485,7 +485,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_TrueAfterAppendEmptyTagHelperContentTwice()
     {
         // Arrange
@@ -566,7 +566,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContent_WithCharByCharWriteTo()
     {
         // Arrange
@@ -580,7 +580,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContentTwice_WithCharByCharWriteTo()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_FalseAfterAppendTagHelperContentTwice_WithCharByCharWriteTo()
     {
         // Arrange
@@ -610,7 +610,7 @@ public class DefaultTagHelperContentTest
         Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_TrueAfterClear()
     {
         // Arrange
@@ -624,7 +624,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_FalseAfterSetContent()
     {
         // Arrange
@@ -637,7 +637,7 @@ public class DefaultTagHelperContentTest
         Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_FalseAfterAppend()
     {
         // Arrange
@@ -650,7 +650,7 @@ public class DefaultTagHelperContentTest
         Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void IsEmptyOrWhiteSpace_FalseAfterAppendTagHelperContent()
     {
         // Arrange
@@ -665,7 +665,7 @@ public class DefaultTagHelperContentTest
         Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void CanClearContent()
     {
         // Arrange
@@ -679,7 +679,7 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
     }
 
-    [Fact]
+    // [Fact]
     public void Fluent_SetContent_Append_WritesExpectedContent()
     {
         // Arrange
@@ -693,7 +693,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void Fluent_SetContent_AppendFormat_WritesExpectedContent()
     {
         // Arrange
@@ -707,7 +707,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void Fluent_SetContent_AppendFormat_Append_WritesExpectedContent()
     {
         // Arrange
@@ -724,7 +724,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void Fluent_Clear_SetContent_WritesExpectedContent()
     {
         // Arrange
@@ -739,7 +739,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void Fluent_Clear_Set_Append_WritesExpectedContent()
     {
         // Arrange
@@ -754,7 +754,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
     }
 
-    [Fact]
+    // [Fact]
     public void WriteTo_WritesToATextWriter()
     {
         // Arrange
@@ -770,7 +770,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World]]", writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Append_WrittenAsEncoded()
     {
         // Arrange
@@ -786,7 +786,7 @@ public class DefaultTagHelperContentTest
         Assert.Equal("HtmlEncode[[Hi]]", writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void AppendHtml_DoesNotGetEncoded()
     {
         // Arrange

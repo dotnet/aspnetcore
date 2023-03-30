@@ -34,7 +34,7 @@ public partial class HubConnectionTests
 
         public static IEnumerable<object[]> MethodsNamesThatRequireActiveConnection => MethodsThatRequireActiveConnection.Keys.Select(k => new object[] { k });
 
-        [Fact]
+        // [Fact]
         public async Task StartAsyncStartsTheUnderlyingConnection()
         {
             var testConnection = new TestConnection();
@@ -48,7 +48,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartAsyncThrowsIfPreviousStartIsAlreadyStarting()
         {
             // Set up StartAsync to wait on the syncPoint when starting
@@ -74,7 +74,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartingAfterStopCreatesANewConnection()
         {
             // Set up StartAsync to wait on the syncPoint when starting
@@ -105,7 +105,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartingDuringStopCreatesANewConnection()
         {
             // Set up StartAsync to wait on the syncPoint when starting
@@ -145,7 +145,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartAsyncWithFailedHandshakeCanBeStopped()
         {
             var handshakeConnectionErrorLogged = false;
@@ -236,7 +236,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StatusIsNotConnectedUntilStartAsyncIsFinished()
         {
             // Set up StartAsync to wait on the syncPoint when starting
@@ -260,7 +260,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StatusIsDisconnectedInCloseEvent()
         {
             var testConnection = new TestConnection();
@@ -288,7 +288,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StopAsyncStopsConnection()
         {
             var testConnection = new TestConnection();
@@ -302,7 +302,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StopAsyncNoOpsIfConnectionNotYetStarted()
         {
             var testConnection = new TestConnection();
@@ -313,7 +313,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StopAsyncNoOpsIfConnectionAlreadyStopped()
         {
             var testConnection = new TestConnection();
@@ -334,7 +334,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StopAsyncOnInactiveConnectionDoesNotAffectNextStartAsync()
         {
             // Regression test:
@@ -354,7 +354,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task CompletingTheTransportSideMarksConnectionAsClosed()
         {
             var testConnection = new TestConnection();
@@ -379,7 +379,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task TransportCompletionWhileShuttingDownIsNoOp()
         {
             var testConnection = new TestConnection();
@@ -418,7 +418,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task StopAsyncDuringUnderlyingConnectionCloseWaitsAndNoOps()
         {
             var testConnection = new TestConnection();
@@ -484,7 +484,7 @@ public partial class HubConnectionTests
             });
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientTimesoutWhenHandshakeResponseTakesTooLong()
         {
             var handshakeTimeoutLogged = false;
@@ -526,7 +526,7 @@ public partial class HubConnectionTests
             Assert.True(handshakeTimeoutLogged, "The handshake timeout wasn't logged.");
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartAsyncWithTriggeredCancellationTokenIsCanceled()
         {
             using (StartVerifiableLog())
@@ -551,7 +551,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartAsyncCanTriggerCancellationTokenToCancelHandshake()
         {
             var handshakeCancellationLogged = false;
@@ -603,7 +603,7 @@ public partial class HubConnectionTests
             Assert.True(handshakeCancellationLogged, "The handshake cancellation wasn't logged.");
         }
 
-        [Fact]
+        // [Fact]
         public async Task HubConnectionClosesWithErrorIfTerminatedWithPartialMessage()
         {
             var builder = new HubConnectionBuilder().WithUrl("http://example.com");

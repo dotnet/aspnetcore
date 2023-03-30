@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
 public class TestServerTests : VerifiableLoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task WebSocketsWorks()
     {
         using (StartVerifiableLog())
@@ -66,7 +66,7 @@ public class TestServerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())

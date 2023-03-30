@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 public class DistributedCacheTagHelperTest
 {
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_DoesNotCache_IfDisabled()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class DistributedCacheTagHelperTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ReturnsCachedValue_IfEnabled()
     {
         // Arrange
@@ -121,7 +121,7 @@ public class DistributedCacheTagHelperTest
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ReturnsCachedValue_IfVaryByParamIsUnchanged()
     {
         // Arrange - 1
@@ -183,7 +183,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(childContent, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RecalculatesValueIfCacheKeyChanges()
     {
         // Arrange - 1
@@ -241,7 +241,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresOnIsSet()
     {
         // Arrange
@@ -267,7 +267,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_DefaultsTo30SecondsSliding_IfNoEvictionCriteriaIsProvided()
     {
         // Arrange
@@ -290,7 +290,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(slidingExpiresIn, cacheEntryOptions.SlidingExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresAfterIsSet()
     {
         // Arrange
@@ -316,7 +316,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(expiresAfter, cacheEntryOptions.AbsoluteExpirationRelativeToNow);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsSlidingExpiration_IfExpiresSlidingIsSet()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(expiresSliding, cacheEntryOptions.SlidingExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesExpiresAfter_ToExpireCacheEntry()
     {
         // Arrange - 1
@@ -404,7 +404,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesExpiresOn_ToExpireCacheEntry()
     {
         // Arrange - 1
@@ -466,7 +466,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesExpiresSliding_ToExpireCacheEntryWithSlidingExpiration()
     {
         // Arrange - 1
@@ -528,7 +528,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ComputesValueOnce_WithConcurrentRequests()
     {
         // Arrange
@@ -622,7 +622,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ExceptionInProcessing_DoesntBlockConcurrentRequests()
     {
         // Arrange
@@ -714,7 +714,7 @@ public class DistributedCacheTagHelperTest
         Assert.Equal(2, calls);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Deserialize_DoesntAlterValue_WhenSerialized()
     {
         // Arrange

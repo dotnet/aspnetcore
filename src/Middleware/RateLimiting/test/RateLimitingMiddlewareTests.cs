@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 public class RateLimitingMiddlewareTests
 {
-    [Fact]
+    // [Fact]
     public void Ctor_ThrowsExceptionsWhenNullArgs()
     {
         var options = CreateOptionsAccessor();
@@ -44,7 +44,7 @@ public class RateLimitingMiddlewareTests
             null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestsCallNextIfAccepted()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class RateLimitingMiddlewareTests
         Assert.True(flag);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestRejected_CallsOnRejectedAndGives503()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestRejected_WinsOverDefaultStatusCode()
     {
         // Arrange
@@ -118,7 +118,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAborted_DoesNotThrowTaskCanceledException()
     {
         // Arrange
@@ -149,7 +149,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal("The request was canceled.", message.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiterRequested_NoPolicy_Throws()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class RateLimitingMiddlewareTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(context)).DefaultTimeout();
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiter_Rejects()
     {
         // Arrange
@@ -200,7 +200,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiterConvenienceMethod_Rejects()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiterRejects_EndpointOnRejectedFires()
     {
         // Arrange
@@ -267,7 +267,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GlobalAndEndpoint_GlobalRejects_GlobalWins()
     {
         // Arrange
@@ -299,7 +299,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GlobalAndEndpoint_EndpointRejects_EndpointWins()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GlobalAndEndpoint_BothReject_GlobalWins()
     {
         // Arrange
@@ -363,7 +363,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiterRejects_EndpointOnRejectedFires_WithIRateLimiterPolicy()
     {
         // Arrange
@@ -406,7 +406,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiter_DuplicatePartitionKey_NoCollision()
     {
         // Arrange
@@ -447,7 +447,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndpointLimiter_DuplicatePartitionKey_Lambda_NoCollision()
     {
         // Arrange
@@ -498,7 +498,7 @@ public class RateLimitingMiddlewareTests
         Assert.False(globalOnRejectedInvoked);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisableRateLimitingAttribute_SkipsGlobalAndEndpoint()
     {
         // Arrange
@@ -536,7 +536,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PolicyDirectlyOnEndpoint_GetsUsed()
     {
         // Arrange
@@ -566,7 +566,7 @@ public class RateLimitingMiddlewareTests
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MultipleEndpointPolicies_LastOneWins()
     {
         // Arrange

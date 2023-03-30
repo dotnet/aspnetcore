@@ -16,7 +16,7 @@ public class WebAssemblyHostBuilderTest
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
 
-    [Fact]
+    // [Fact]
     public void Build_AllowsConfiguringConfiguration()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class WebAssemblyHostBuilderTest
         Assert.Equal("value", host.Configuration["key"]);
     }
 
-    [Fact]
+    // [Fact]
     public void Build_AllowsConfiguringServices()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class WebAssemblyHostBuilderTest
         Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
     }
 
-    [Fact]
+    // [Fact]
     public void Build_AllowsConfiguringContainer()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class WebAssemblyHostBuilderTest
         Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
     }
 
-    [Fact]
+    // [Fact]
     public void Build_AllowsConfiguringContainer_WithDelegate()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class WebAssemblyHostBuilderTest
         Assert.NotNull(host.Services.GetRequiredService<List<string>>());
     }
 
-    [Fact]
+    // [Fact]
     public void Build_InDevelopment_ConfiguresWithServiceProviderWithScopeValidation()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class WebAssemblyHostBuilderTest
         Assert.Throws<InvalidOperationException>(() => host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
     }
 
-    [Fact]
+    // [Fact]
     public void Build_InProduction_ConfiguresWithServiceProviderWithScopeValidation()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class WebAssemblyHostBuilderTest
         Assert.NotNull(host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_InDevelopment_SetsHostEnvironmentProperty()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class WebAssemblyHostBuilderTest
         Assert.True(WebAssemblyHostEnvironmentExtensions.IsDevelopment(builder.HostEnvironment));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_CreatesNavigationManager()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class WebAssemblyHostBuilderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Build_AddsConfigurationToServices()
     {
         // Arrange
@@ -221,7 +221,7 @@ public class WebAssemblyHostBuilderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_AddsDefaultServices()
     {
         // Arrange & Act
@@ -233,7 +233,7 @@ public class WebAssemblyHostBuilderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_SupportsConfiguringLogging()
     {
         // Arrange

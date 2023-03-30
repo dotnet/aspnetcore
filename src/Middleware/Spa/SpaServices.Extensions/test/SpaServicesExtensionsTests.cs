@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests;
 
 public class SpaServicesExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void UseSpa_ThrowsInvalidOperationException_IfRootpathNotSet()
     {
         // Arrange

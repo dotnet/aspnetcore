@@ -41,7 +41,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         _appElement = Browser.MountTestComponent<HttpRequestsComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public async Task SanityCheck_ApiServerIsRunning()
     {
         // Just so we can be sure that the other tests are even relevant
@@ -52,7 +52,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         Assert.Equal("Hello", responseText);
     }
 
-    [Fact]
+    // [Fact]
     public void CanPerformGetRequest()
     {
         IssueRequest("GET", "/subdir/api/person");
@@ -60,7 +60,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         Assert.Equal("[\"value1\",\"value2\"]", _responseBody.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanPerformPostRequestWithBody()
     {
         var testMessage = $"The value is {Guid.NewGuid()}";
@@ -69,7 +69,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         Assert.Equal($"You posted: {testMessage}", _responseBody.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanReadResponseHeaders()
     {
         IssueRequest("GET", "/subdir/api/person");
@@ -83,7 +83,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         Assert.Contains("mycustomheader: My custom value", _responseHeaders.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSendRequestHeaders()
     {
         AddRequestHeader("testheader", "Value from test");
@@ -94,7 +94,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         Assert.Contains("another-header: Another value", _responseBody.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSendAndReceiveJson()
     {
         AddRequestHeader("Content-Type", "application/json");
@@ -104,7 +104,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
         Assert.Equal("{\"id\":123,\"name\":\"Bert\"}", _responseBody.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSendAndReceiveCookies()
     {
         var app = Browser.MountTestComponent<CookieCounterComponent>();

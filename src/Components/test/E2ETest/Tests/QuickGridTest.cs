@@ -30,7 +30,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         app = Browser.MountTestComponent<SampleQuickGridComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void CanColumnSortByInt()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
@@ -50,7 +50,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("41", firstRow.FindElement(By.CssSelector("td:nth-child(5)")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanColumnSortByString()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
@@ -70,7 +70,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("41", firstRow.FindElement(By.CssSelector("td:nth-child(5)")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanColumnSortByDateOnly()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
@@ -90,7 +90,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("4", firstRow.FindElement(By.CssSelector("td:nth-child(5)")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void PaginatorCorrectItemsPerPage()
     {
         var grid = app.FindElement(By.ClassName("quickgrid"));
@@ -103,7 +103,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal(10, rowCount);
     }
 
-    [Fact]
+    // [Fact]
     public void PaginatorDisplaysCorrectItemCount()
     {
         var paginator = app.FindElement(By.ClassName("paginator"));

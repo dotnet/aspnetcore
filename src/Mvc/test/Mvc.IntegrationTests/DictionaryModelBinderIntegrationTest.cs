@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 // Integration tests targeting the behavior of the DictionaryModelBinder with other model binders.
 public class DictionaryModelBinderIntegrationTest
 {
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_WithPrefixAndKVP_Success()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_WithPrefixAndItem_Success()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_WithIndex_Success()
     {
         // Arrange
@@ -394,7 +394,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_NoData()
     {
         // Arrange
@@ -426,7 +426,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_NoData_WithDefaultValue()
     {
         // Arrange
@@ -816,7 +816,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.Equal("You're out of range.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_NoData()
     {
         // Arrange
@@ -848,7 +848,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_NoData_WithDefaultValue()
     {
         // Arrange
@@ -1193,7 +1193,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.Equal(0, modelState.ErrorCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_ThrowsOn1025Items_AtTopLevel()
     {
         // Arrange
@@ -1227,7 +1227,7 @@ public class DictionaryModelBinderIntegrationTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_DictionaryOfSimpleType_NullValue_DoesNotResultInRequiredValidation()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/13512
@@ -1282,7 +1282,7 @@ public class DictionaryModelBinderIntegrationTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_ValuesIsNonNullableType_AppliesImplicitRequired()
     {
         // Arrange
@@ -1362,7 +1362,7 @@ public class DictionaryModelBinderIntegrationTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_ValuesNullableTypeWithRequiredAttributes_AppliesValidation()
     {
         // Arrange

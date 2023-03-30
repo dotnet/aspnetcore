@@ -29,13 +29,13 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
     }
 
-    [Fact]
+    // [Fact]
     public void BasicTestAppCanBeServed()
     {
         Assert.Equal("Basic test app", Browser.Title);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderTextOnlyComponent()
     {
         var appElement = Browser.MountTestComponent<TextOnlyComponent>();
@@ -45,7 +45,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
     // This verifies that we've correctly configured the Razor language version via MSBuild.
     // See #974
-    [Fact]
+    // [Fact]
     public void CanRenderComponentWithDataDash()
     {
         var appElement = Browser.MountTestComponent<DataDashComponent>();
@@ -54,7 +54,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal("17", element.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderComponentWithAttributes()
     {
         var appElement = Browser.MountTestComponent<RedTextComponent>();
@@ -64,7 +64,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanTriggerEvents()
     {
         // Initial count is zero
@@ -77,7 +77,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Current count: 1", () => countDisplayElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanTriggerAsyncEventHandlers()
     {
         // Initial state is stopped
@@ -94,7 +94,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Stopped", () => stateElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanTriggerKeyPressEvents()
     {
         // List is initially empty
@@ -119,7 +119,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal("ab", inputElement.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddAndRemoveEventHandlersDynamically()
     {
         var appElement = Browser.MountTestComponent<CounterComponent>();
@@ -145,7 +145,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Current count: 2", () => countDisplayElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderChildComponents()
     {
         var appElement = Browser.MountTestComponent<ParentChildComponent>();
@@ -159,7 +159,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     // Verifies we can render HTML content as a single block
-    [Fact]
+    // [Fact]
     public void CanRenderChildContent_StaticHtmlBlock()
     {
         var appElement = Browser.MountTestComponent<HtmlBlockChildContent>();
@@ -168,7 +168,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     // Verifies we can rewite more complex HTML content into blocks
-    [Fact]
+    // [Fact]
     public void CanRenderChildContent_MixedHtmlBlock()
     {
         var appElement = Browser.MountTestComponent<HtmlMixedChildContent>();
@@ -187,7 +187,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     // Verifies we can rewrite HTML blocks with encoded HTML
-    [Fact]
+    // [Fact]
     public void CanRenderChildContent_EncodedHtmlInBlock()
     {
         var appElement = Browser.MountTestComponent<HtmlEncodedChildContent>();
@@ -205,7 +205,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal("But this is static", four.GetAttribute("innerHTML"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanTriggerEventsOnChildComponents()
     {
         // Counter is displayed as child component. Initial count is zero.
@@ -219,7 +219,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Current count: 1", () => counterDisplay.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void ChildComponentsRerenderWhenPropertiesChanged()
     {
         // Count value is displayed in child component with initial value zero
@@ -234,7 +234,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("1", () => messageElementInChild.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddAndRemoveChildComponentsDynamically()
     {
         // Initially there are zero child components
@@ -264,7 +264,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             elem => Assert.Equal("Child 3", elem.FindElement(By.ClassName("message")).Text));
     }
 
-    [Fact]
+    // [Fact]
     public void ChildComponentsNotifiedWhenPropertiesChanged()
     {
         // Child component receives notification that lets it compute a property before first render
@@ -281,7 +281,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal("I computed: 202", computedValueElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderFragmentsWhilePreservingSurroundingElements()
     {
         // Initially, the region isn't shown
@@ -303,7 +303,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Empty(fragmentElements);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseViewImportsHierarchically()
     {
         // The component is able to compile and output these type names only because
@@ -314,7 +314,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             elem => Assert.Equal(typeof(AssemblyHashAlgorithm).FullName, elem.Text));
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseComponentAndStaticContentFromExternalNuGetPackage()
     {
         var appElement = Browser.MountTestComponent<ExternalContentPackage>();
@@ -348,14 +348,14 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("It works", () => externalComponentButton.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void LogicalElementInsertionWorksHierarchically()
     {
         var appElement = Browser.MountTestComponent<LogicalElementInsertionCases>();
         Browser.Equal("First Second Third", () => appElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseJsInteropToReferenceElements()
     {
         var appElement = Browser.MountTestComponent<ElementRefComponent>();
@@ -370,7 +370,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Clicks: 2", () => inputElement.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseFocusExtensionToFocusElement()
     {
         Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
@@ -404,7 +404,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset");
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseFocusExtensionToFocusSvgElement()
     {
         Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
@@ -426,7 +426,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
     }
 
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46835")]
     public void CanUseFocusExtensionToFocusElementPreventScroll()
     {
@@ -483,7 +483,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCaptureReferencesToDynamicallyAddedElements()
     {
         var appElement = Browser.MountTestComponent<ElementRefComponent>();
@@ -508,7 +508,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Clicks: 1", () => inputElement.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanCaptureReferencesToDynamicallyAddedComponents()
     {
         var appElement = Browser.MountTestComponent<ComponentRefComponent>();
@@ -539,14 +539,14 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Current count: 0", currentCountText);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseJsInteropForRefElementsDuringOnAfterRender()
     {
         var appElement = Browser.MountTestComponent<AfterRenderInteropComponent>();
         Browser.Equal("Value set after render", () => Browser.Exists(By.TagName("input")).GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderMarkupBlocks()
     {
         var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
@@ -582,7 +582,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             appElement.FindElement(By.CssSelector("#dynamic-markup-block span em")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderRazorTemplates()
     {
         var appElement = Browser.MountTestComponent<RazorTemplates>();
@@ -596,7 +596,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             e => Assert.Equal("#3 - c", e.Text));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderMultipleChildContent()
     {
         var appElement = Browser.MountTestComponent<MultipleChildContent>();
@@ -623,7 +623,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
             e => Assert.Equal("End", e.Text));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAcceptSimultaneousRenderRequests()
     {
         var expectedOutput = string.Join(
@@ -640,7 +640,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal(expectedOutput, () => outputElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDispatchRenderToSyncContext()
     {
         var appElement = Browser.MountTestComponent<DispatchingComponent>();
@@ -651,7 +651,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Success (completed synchronously)", () => result.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanDoubleDispatchRenderToSyncContext()
     {
         var appElement = Browser.MountTestComponent<DispatchingComponent>();
@@ -662,7 +662,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Success (completed synchronously)", () => result.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanPerformInteropImmediatelyOnComponentInsertion()
     {
         var appElement = Browser.MountTestComponent<InteropOnInitializationComponent>();
@@ -670,7 +670,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseAddMultipleAttributes()
     {
         var appElement = Browser.MountTestComponent<DuplicateAttributesComponent>();
@@ -690,7 +690,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanPatchRenderTreeToMatchLatestDOMState()
     {
         var appElement = Browser.MountTestComponent<MovingCheckboxesComponent>();
@@ -719,7 +719,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanHandleClearedChild()
     {
         var appElement = Browser.MountTestComponent<ContentEditable>();

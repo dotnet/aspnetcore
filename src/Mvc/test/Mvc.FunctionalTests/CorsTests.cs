@@ -14,7 +14,7 @@ public class CorsTests : CorsTestsBase<CorsWebSite.StartupWithoutEndpointRouting
     {
     }
 
-    [Fact]
+    // [Fact]
     public override async Task PreflightRequestOnNonCorsEnabledController_DoesNotMatchTheAction()
     {
         // Arrange

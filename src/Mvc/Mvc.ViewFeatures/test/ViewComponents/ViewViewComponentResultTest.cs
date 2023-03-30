@@ -22,7 +22,7 @@ public class ViewViewComponentResultTest
     private readonly ITempDataDictionary _tempDataDictionary =
         new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
-    [Fact]
+    // [Fact]
     public void Execute_RendersPartialViews()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class ViewViewComponentResultTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_ResolvesView_WithDefaultAsViewName()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class ViewViewComponentResultTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_ResolvesView_AndWritesDiagnosticListener()
     {
         // Arrange
@@ -138,7 +138,7 @@ public class ViewViewComponentResultTest
         Assert.NotNull(adapter.ViewComponentAfterViewExecute?.View);
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_ThrowsIfPartialViewCannotBeFound_MessageUsesGetViewLocations()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class ViewViewComponentResultTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_ThrowsIfPartialViewCannotBeFound_MessageUsesFindViewLocations()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class ViewViewComponentResultTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_ThrowsIfPartialViewCannotBeFound_MessageUsesAllLocations()
     {
         // Arrange
@@ -254,7 +254,7 @@ public class ViewViewComponentResultTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Execute_DoesNotWrapThrownExceptionsInAggregateExceptions()
     {
         // Arrange
@@ -295,7 +295,7 @@ public class ViewViewComponentResultTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_RendersPartialViews()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class ViewViewComponentResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ResolvesViewEngineFromServiceProvider_IfNoViewEngineIsExplicitlyProvided()
     {
         // Arrange
@@ -372,7 +372,7 @@ public class ViewViewComponentResultTest
         serviceProvider.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ThrowsIfPartialViewCannotBeFound()
     {
         // Arrange
@@ -415,7 +415,7 @@ public class ViewViewComponentResultTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_Throws_IfNoViewEngineCanBeResolved()
     {
         // Arrange

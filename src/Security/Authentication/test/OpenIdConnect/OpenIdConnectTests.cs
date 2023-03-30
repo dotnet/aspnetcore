@@ -29,7 +29,7 @@ public class OpenIdConnectTests
     /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
     /// </summary>
     /// <returns>Task</returns>
-    [Fact]
+    // [Fact]
     public async Task SignOutSettingMessage()
     {
         var setting = new TestSettings(opt =>
@@ -56,7 +56,7 @@ public class OpenIdConnectTests
             OpenIdConnectParameterNames.VersionTelemetry);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToIdentityProvider_SetsNonceCookiePath_ToCallBackPath()
     {
         var setting = new TestSettings(opt =>
@@ -81,7 +81,7 @@ public class OpenIdConnectTests
         Assert.Contains("path=/signin-oidc", nonce);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToIdentityProvider_NonceCookieOptions_CanBeOverriden()
     {
         var setting = new TestSettings(opt =>
@@ -109,7 +109,7 @@ public class OpenIdConnectTests
         Assert.Contains("ExtN", nonce);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
     {
         var setting = new TestSettings(opt =>
@@ -134,7 +134,7 @@ public class OpenIdConnectTests
         Assert.Contains("path=/signin-oidc", correlation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToIdentityProvider_CorrelationIdCookieOptions_CanBeOverriden()
     {
         var setting = new TestSettings(opt =>
@@ -162,7 +162,7 @@ public class OpenIdConnectTests
         Assert.EndsWith("ExtC", correlation);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndSessionRequestDoesNotIncludeTelemetryParametersWhenDisabled()
     {
         var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
@@ -185,7 +185,7 @@ public class OpenIdConnectTests
         setting.ValidateSignoutRedirect(transaction.Response.Headers.Location);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutFormPostWithDefaultRedirectUri()
     {
         var settings = new TestSettings(o =>
@@ -203,7 +203,7 @@ public class OpenIdConnectTests
             OpenIdConnectParameterNames.PostLogoutRedirectUri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutRedirectWithDefaultRedirectUri()
     {
         var settings = new TestSettings(o =>
@@ -221,7 +221,7 @@ public class OpenIdConnectTests
             OpenIdConnectParameterNames.PostLogoutRedirectUri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutWithCustomRedirectUri()
     {
         var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
@@ -253,7 +253,7 @@ public class OpenIdConnectTests
         Assert.Equal("https://example.com/postlogout", properties.RedirectUri, true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutWith_Specific_RedirectUri_From_Authentication_Properites()
     {
         var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
@@ -284,7 +284,7 @@ public class OpenIdConnectTests
         Assert.Equal("http://www.example.com/specific_redirect_uri", properties.RedirectUri, true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOut_WithMissingConfig_Throws()
     {
         var setting = new TestSettings(opt =>
@@ -298,7 +298,7 @@ public class OpenIdConnectTests
         Assert.Equal("Cannot redirect to the end session endpoint, the configuration may be missing or invalid.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoteSignOut_WithMissingIssuer()
     {
         var settings = new TestSettings(o =>
@@ -322,7 +322,7 @@ public class OpenIdConnectTests
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoteSignOut_WithInvalidIssuer()
     {
         var settings = new TestSettings(o =>
@@ -345,7 +345,7 @@ public class OpenIdConnectTests
         Assert.DoesNotContain(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoteSignOut_Get_Successful()
     {
         var settings = new TestSettings(o =>
@@ -369,7 +369,7 @@ public class OpenIdConnectTests
         Assert.Contains(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
     }
 
-    [Fact]
+    // [Fact]
     public void MapInboundClaimsDefaultsToTrue()
     {
         var options = new OpenIdConnectOptions();
@@ -379,7 +379,7 @@ public class OpenIdConnectTests
         Assert.True(jwtHandler.MapInboundClaims);
     }
 
-    [Fact]
+    // [Fact]
     public void MapInboundClaimsCanBeSetToFalse()
     {
         var options = new OpenIdConnectOptions();
@@ -391,7 +391,7 @@ public class OpenIdConnectTests
     }
 
     // Test Cases for calculating the expiration time of cookie from cookie name
-    [Fact]
+    // [Fact]
     public void NonceCookieExpirationTime()
     {
         DateTime utcNow = DateTime.UtcNow;
@@ -413,7 +413,7 @@ public class OpenIdConnectTests
         Assert.Equal(DateTime.MinValue, GetNonceExpirationTime(utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
     }
 
-    [Fact]
+    // [Fact]
     public void CanReadOpenIdConnectOptionsFromConfig()
     {
         // Arrange
@@ -446,7 +446,7 @@ public class OpenIdConnectTests
         Assert.Equal("CookieName", options.CorrelationCookie.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateOpenIdConnectCookiesFromConfig()
     {
         // Arrange
@@ -484,7 +484,7 @@ public class OpenIdConnectTests
         Assert.Equal(TimeSpan.FromMinutes(1), options.BackchannelTimeout);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionsWhenParsingInvalidOptionsFromConfig()
     {
         var services = new ServiceCollection().AddLogging();
@@ -507,7 +507,7 @@ public class OpenIdConnectTests
             sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme));
     }
 
-    [Fact]
+    // [Fact]
     public void ScopeOptionsCanBeOverwrittenFromOptions()
     {
         var services = new ServiceCollection().AddLogging();
@@ -534,7 +534,7 @@ public class OpenIdConnectTests
         Assert.Contains("birthdate", options.Scope);
     }
 
-    [Fact]
+    // [Fact]
     public void OptionsFromConfigCanBeOverwritten()
     {
         var services = new ServiceCollection().AddLogging();

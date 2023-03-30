@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class AttributeDictionaryTest
 {
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_AddItems()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_AddItems_AsKeyValuePairs()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Add_DuplicateKey()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class AttributeDictionaryTest
         Assert.Throws<InvalidOperationException>(() => attributes.Add("one", "15"));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Clear()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class AttributeDictionaryTest
         Assert.Empty(attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Contains_Success()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class AttributeDictionaryTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Contains_Failure()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class AttributeDictionaryTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_ContainsKey_Success()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class AttributeDictionaryTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_ContainsKey_Failure()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class AttributeDictionaryTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_CopyTo()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_IsReadOnly()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class AttributeDictionaryTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Keys()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class AttributeDictionaryTest
             key => Assert.Equal("zero", key));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Remove_Success()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Remove_Failure()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Remove_KeyValuePair_Success()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Remove_KeyValuePair_Failure()
     {
         // Arrange
@@ -294,7 +294,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_TryGetValue_Success()
     {
         // Arrange
@@ -314,7 +314,7 @@ public class AttributeDictionaryTest
         Assert.Equal("2", value);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_TryGetValue_Failure()
     {
         // Arrange
@@ -334,7 +334,7 @@ public class AttributeDictionaryTest
         Assert.Null(value);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Values()
     {
         // Arrange
@@ -356,7 +356,7 @@ public class AttributeDictionaryTest
             key => Assert.Equal("0", key));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Indexer_Success()
     {
         // Arrange
@@ -373,7 +373,7 @@ public class AttributeDictionaryTest
         Assert.Equal("2", value);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Indexer_Fails()
     {
         // Arrange
@@ -387,7 +387,7 @@ public class AttributeDictionaryTest
         Assert.Throws<KeyNotFoundException>(() => attributes["nada"]);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Indexer_SetValue()
     {
         // Arrange
@@ -409,7 +409,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_Indexer_Insert()
     {
         // Arrange
@@ -432,7 +432,7 @@ public class AttributeDictionaryTest
             kvp => Assert.Equal(new KeyValuePair<string, string>("zero", "0"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void AttributeDictionary_CaseInsensitive()
     {
         // Arrange

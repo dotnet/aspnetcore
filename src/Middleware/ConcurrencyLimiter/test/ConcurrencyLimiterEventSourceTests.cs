@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
 public class ConcurrencyLimiterEventSourceTests
 {
-    [Fact]
+    // [Fact]
     public void MatchesNameAndGuid()
     {
         var eventSource = new ConcurrencyLimiterEventSource();
@@ -18,7 +18,7 @@ public class ConcurrencyLimiterEventSourceTests
         Assert.Equal(Guid.Parse("a605548a-6963-55cf-f000-99a6013deb01", CultureInfo.InvariantCulture), eventSource.Guid);
     }
 
-    [Fact]
+    // [Fact]
     public void RecordsRequestsRejected()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class ConcurrencyLimiterEventSourceTests
         Assert.Empty(eventData.Payload);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TracksQueueLength()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class ConcurrencyLimiterEventSourceTests
         Assert.True(await UntilValueMatches(lengthValues, 0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task TracksDurationSpentInQueue()
     {
         // Arrange

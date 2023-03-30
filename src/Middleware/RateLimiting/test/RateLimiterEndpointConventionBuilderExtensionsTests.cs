@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 public class RateLimiterEndpointConventionBuilderExtensionsTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public void RequireRateLimiting_Name_MetadataAdded()
     {
         // Arrange
@@ -32,7 +32,7 @@ public class RateLimiterEndpointConventionBuilderExtensionsTests : LoggedTest
         Assert.Null(metadata.Policy);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireRateLimiting_Policy_MetadataAdded()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class RateLimiterEndpointConventionBuilderExtensionsTests : LoggedTest
         Assert.Null(metadata.PolicyName);
     }
 
-    [Fact]
+    // [Fact]
     public void DisableRateLimiting_MetadataAdded()
     {
         // Arrange

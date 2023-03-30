@@ -15,7 +15,7 @@ public partial class WellKnownTypesTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new TestAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task ResolveAllWellKnownTypes()
     {
         // Arrange

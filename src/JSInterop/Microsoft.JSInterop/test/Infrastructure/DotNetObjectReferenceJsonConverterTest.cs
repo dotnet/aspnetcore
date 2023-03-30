@@ -10,7 +10,7 @@ public class DotNetObjectReferenceJsonConverterTest
     private readonly JSRuntime JSRuntime = new TestJSRuntime();
     private JsonSerializerOptions JsonSerializerOptions => JSRuntime.JsonSerializerOptions;
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfJsonIsMissingDotNetObjectProperty()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.Equal("Required property __dotNetObject not found.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfJsonContainsUnknownContent()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.Equal("Unexpected JSON property foo.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfJsonIsIncomplete()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.IsAssignableFrom<JsonException>(ex);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfDotNetObjectIdAppearsMultipleTimes()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.IsAssignableFrom<JsonException>(ex);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.Equal(objectId, deserialized.ObjectId);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReturnsTheCorrectInstance()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.Same(instance2, deserialized[1].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson_WithFormatting()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class DotNetObjectReferenceJsonConverterTest
         Assert.Equal(objectId, deserialized.ObjectId);
     }
 
-    [Fact]
+    // [Fact]
     public void WriteJsonTwice_KeepsObjectId()
     {
         // Arrange

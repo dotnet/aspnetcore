@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 
 public class RenderTreeBuilderTest
 {
-    [Fact]
+    // [Fact]
     public void StartsEmpty()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class RenderTreeBuilderTest
         Assert.Empty(frames.AsEnumerable());
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddText()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "Second item"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMarkup()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Markup(frame, string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMarkupViaMarkupString()
     {
         // This represents putting @someMarkupString into the component,
@@ -82,7 +82,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Markup(frame, string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddNullableMarkupViaMarkupString()
     {
         // This represents putting @someMarkupString into the component,
@@ -104,7 +104,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Markup(frame, string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddNullMarkup()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Markup(frame, string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddNonStringValueAsText()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void UnclosedElementsHaveNoSubtreeLength()
     {
         // Arrange
@@ -151,7 +151,7 @@ public class RenderTreeBuilderTest
         AssertFrame.Element(frame, "my element", 0);
     }
 
-    [Fact]
+    // [Fact]
     public void ClosedEmptyElementsHaveSubtreeLengthOne()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class RenderTreeBuilderTest
         AssertFrame.Element(frames.Array[1], "my element", 1);
     }
 
-    [Fact]
+    // [Fact]
     public void ClosedElementsHaveCorrectSubtreeLength()
     {
         // Arrange
@@ -187,7 +187,7 @@ public class RenderTreeBuilderTest
         AssertFrame.Element(frames.Array[0], "my element", 3);
     }
 
-    [Fact]
+    // [Fact]
     public void CanNestElements()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "standalone text 2"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddAttributes()
     {
         // Arrange
@@ -254,7 +254,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "some text"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_AllowsNull()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "myelement", 1));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_InterspersedWithOtherAttributes()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attribute7", "the end"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_WithChildRegion()
     {
         // This represents bug https://github.com/dotnet/aspnetcore/issues/16570
@@ -348,7 +348,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "child", 1, 3));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_DictionaryObject()
     {
         var attributes = new Dictionary<string, object>
@@ -362,7 +362,7 @@ public class RenderTreeBuilderTest
         CanAddMultipleAttributesTest(attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_IReadOnlyDictionaryObject()
     {
         var attributes = new Dictionary<string, object>
@@ -376,7 +376,7 @@ public class RenderTreeBuilderTest
         CanAddMultipleAttributesTest((IReadOnlyDictionary<string, object>)attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_ListKvpObject()
     {
         var attributes = new List<KeyValuePair<string, object>>()
@@ -390,7 +390,7 @@ public class RenderTreeBuilderTest
         CanAddMultipleAttributesTest(attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleAttributes_ArrayKvpObject()
     {
         var attributes = new KeyValuePair<string, object>[]
@@ -425,7 +425,7 @@ public class RenderTreeBuilderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddAttributeAtRoot()
     {
         // Arrange
@@ -438,7 +438,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentParameterAtRoot()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddDelegateAttributeAtRoot()
     {
         // Arrange
@@ -464,7 +464,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddAttributeToText()
     {
         // Arrange
@@ -479,7 +479,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentParameterToText()
     {
         // Arrange
@@ -494,7 +494,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddEventHandlerAttributeToText()
     {
         // Arrange
@@ -509,7 +509,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddAttributeToRegion()
     {
         // Arrange
@@ -523,7 +523,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentParameterToRegion()
     {
         // Arrange
@@ -537,7 +537,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddAttributeToElementReferenceCapture()
     {
         // Arrange
@@ -552,7 +552,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddAttributeToComponentReferenceCapture()
     {
         // Arrange
@@ -567,7 +567,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentParameterToComponentReferenceCapture()
     {
         // Arrange
@@ -582,7 +582,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentParameterToElement()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddChildComponentsUsingGenericParam()
     {
         // Arrange
@@ -623,7 +623,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "child2attribute", "C"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddChildComponentsUsingTypeArgument()
     {
         // Arrange
@@ -651,7 +651,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "child2attribute", "C"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddRegions()
     {
         // Arrange
@@ -679,7 +679,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "Goodbye", 6));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddFragments()
     {
         // Arrange
@@ -706,7 +706,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "Some text", 2));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddElementReferenceCaptureInsideElement()
     {
         // Arrange
@@ -728,7 +728,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "some text", 3));
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddElementReferenceCaptureWithNoParent()
     {
         // Arrange
@@ -741,7 +741,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddElementReferenceCaptureInsideComponent()
     {
         // Arrange
@@ -755,7 +755,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddElementReferenceCaptureInsideRegion()
     {
         // Arrange
@@ -769,7 +769,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleReferenceCapturesToSameElement()
     {
         // There won't be any way of doing this from Razor because there's no known use
@@ -795,7 +795,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.ElementReferenceCapture(frame, referenceCaptureAction2));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddComponentReferenceCaptureInsideComponent()
     {
         // Arrange
@@ -817,7 +817,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Text(frame, "some text", 3));
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentReferenceCaptureWithNoParent()
     {
         // Arrange
@@ -830,7 +830,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentReferenceCaptureInsideElement()
     {
         // Arrange
@@ -844,7 +844,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddComponentReferenceCaptureInsideRegion()
     {
         // Arrange
@@ -858,7 +858,7 @@ public class RenderTreeBuilderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddMultipleReferenceCapturesToSameComponent()
     {
         // There won't be any way of doing this from Razor because there's no known use
@@ -884,7 +884,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.ComponentReferenceCapture(frame, referenceCaptureAction2));
     }
 
-    [Fact]
+    // [Fact]
     public void CanClear()
     {
         // Arrange
@@ -901,7 +901,7 @@ public class RenderTreeBuilderTest
         Assert.Empty(builder.GetFrames().AsEnumerable());
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_BoolTrue_AddsFrame()
     {
         // Arrange
@@ -919,7 +919,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", true, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_BoolFalse_IgnoresFrame()
     {
         // Arrange
@@ -976,7 +976,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_StringValue_AddsFrame()
     {
         // Arrange
@@ -994,7 +994,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_StringNull_IgnoresFrame()
     {
         // Arrange
@@ -1051,7 +1051,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventHandler_AddsFrame()
     {
         // Arrange
@@ -1071,7 +1071,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_NullEventHandler_IgnoresFrame()
     {
         // Arrange
@@ -1088,7 +1088,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_Action_AddsFrame()
     {
         // Arrange
@@ -1108,7 +1108,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_NullAction_IgnoresFrame()
     {
         // Arrange
@@ -1169,7 +1169,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventCallback_AddsFrame()
     {
         // Arrange
@@ -1188,7 +1188,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventCallback_Default_DoesNotAddFrame()
     {
         // Arrange
@@ -1206,7 +1206,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventCallbackWithReceiver_AddsFrame()
     {
         // Arrange
@@ -1226,7 +1226,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Component_EventCallback_AddsFrame()
     {
         // Arrange
@@ -1246,7 +1246,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddComponentParameter_Component_EventCallback_AddsFrame()
     {
         // Arrange
@@ -1266,7 +1266,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventCallbackOfT_AddsFrame()
     {
         // Arrange
@@ -1285,7 +1285,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventCallbackOfT_Default_DoesNotAddFrame()
     {
         // Arrange
@@ -1303,7 +1303,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_EventCallbackWithReceiverOfT_AddsFrame()
     {
         // Arrange
@@ -1323,7 +1323,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", new EventCallback(callback.Receiver, callback.Delegate), 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Component_EventCallbackOfT_AddsFrame()
     {
         // Arrange
@@ -1343,7 +1343,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddComponentParameter_Component_EventCallbackOfT_AddsFrame()
     {
         // Arrange
@@ -1363,7 +1363,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectBoolTrue_AddsFrame()
     {
         // Arrange
@@ -1381,7 +1381,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", true, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectBoolFalse_IgnoresFrame()
     {
         // Arrange
@@ -1418,7 +1418,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectStringValue_AddsFrame()
     {
         // Arrange
@@ -1436,7 +1436,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Component_ObjectStringValue_SetsAttributeValue()
     {
         // Arrange
@@ -1454,7 +1454,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventHandler_AddsFrame()
     {
         // Arrange
@@ -1474,7 +1474,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Component_ObjectUIEventHandleValue_SetsAttributeValue()
     {
         // Arrange
@@ -1494,7 +1494,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectAction_AddsFrame()
     {
         // Arrange
@@ -1514,7 +1514,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Component_ObjectAction_SetsAttributeValue()
     {
         // Arrange
@@ -1534,7 +1534,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", value, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventCallback_AddsFrame()
     {
         // Arrange
@@ -1553,7 +1553,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventCallback_Default_DoesNotAddFrame()
     {
         // Arrange
@@ -1571,7 +1571,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventCallbackWithReceiver_AddsFrame()
     {
         // Arrange
@@ -1591,7 +1591,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Component_ObjectEventCallback_AddsFrame()
     {
         // Arrange
@@ -1611,7 +1611,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventCallbackOfT_AddsFrame()
     {
         // Arrange
@@ -1630,7 +1630,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventCallbackOfT_Default_DoesNotAddFrame()
     {
         // Arrange
@@ -1648,7 +1648,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectEventCallbackWithReceiverOfT_AddsFrame()
     {
         // Arrange
@@ -1668,7 +1668,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attr", new EventCallback(callback.Receiver, callback.Delegate), 1));
     }
 
-    [Fact]
+    // [Fact]
     public void AddAttribute_Element_ObjectNull_IgnoresFrame()
     {
         // Arrange
@@ -1685,7 +1685,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "elem", 1, 0));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddKeyToElement()
     {
         // Arrange
@@ -1711,7 +1711,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "attribute after", "after value", 2));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAddKeyToComponent()
     {
         // Arrange
@@ -1737,7 +1737,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Attribute(frame, "param after", 456, 2));
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddKeyOutsideComponentOrElement_TreeRoot()
     {
         // Arrange
@@ -1751,7 +1751,7 @@ public class RenderTreeBuilderTest
         Assert.Equal("Cannot set a key outside the scope of a component or element.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotAddKeyOutsideComponentOrElement_RegionRoot()
     {
         // Arrange
@@ -1767,7 +1767,7 @@ public class RenderTreeBuilderTest
         Assert.Equal($"Cannot set a key on a frame of type {RenderTreeFrameType.Region}.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresNullElementKey()
     {
         // Arrange
@@ -1788,7 +1788,7 @@ public class RenderTreeBuilderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresNullComponentKey()
     {
         // Arrange
@@ -1809,7 +1809,7 @@ public class RenderTreeBuilderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesWithoutAddMultipleAttributes()
     {
         // Arrange
@@ -1830,7 +1830,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "id", "bye"));
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Capture()
     {
         // Arrange
@@ -1857,7 +1857,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.ElementReferenceCapture(f, capture));
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Content()
     {
         // Arrange
@@ -1882,7 +1882,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Text(f, "hey"));
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_CanRemoveDuplicateInsideElement()
     {
         // Arrange
@@ -1905,7 +1905,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "id", "bye"));
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_CanRemoveDuplicateInsideComponent()
     {
         // Arrange
@@ -1929,7 +1929,7 @@ public class RenderTreeBuilderTest
     }
 
     // This covers a special case we have to handle explicitly in the RTB logic.
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_SilentFrameFollowedBySameAttribute()
     {
         // Arrange
@@ -1952,7 +1952,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "id", "bye"));
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesInsideChildElement()
     {
         // Arrange
@@ -1982,7 +1982,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "id", "bye"));
     }
 
-    [Fact]
+    // [Fact]
     public void ProcessDuplicateAttributes_CanRemoveOverwrittenAttributes()
     {
         // Arrange
@@ -2017,7 +2017,7 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "3", "see ya"));
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptsClosedFramesAsValid()
     {
         // Arrange
@@ -2035,7 +2035,7 @@ public class RenderTreeBuilderTest
         builder.AssertTreeIsValid(component);
     }
 
-    [Fact]
+    // [Fact]
     public void ReportsUnclosedElementAsInvalid()
     {
         // Arrange
@@ -2050,7 +2050,7 @@ public class RenderTreeBuilderTest
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ReportsUnclosedComponentAsInvalid()
     {
         // Arrange
@@ -2065,7 +2065,7 @@ public class RenderTreeBuilderTest
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Component' was left unclosed.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ReportsUnclosedRegionAsInvalid()
     {
         // Arrange

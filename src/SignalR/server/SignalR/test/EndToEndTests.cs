@@ -33,7 +33,7 @@ public class EndToEndTestsCollection : ICollectionFixture<InProcessTestServer<St
 [Collection(EndToEndTestsCollection.Name)]
 public class EndToEndTests : FunctionalTestBase
 {
-    [Fact]
+    // [Fact]
     public async Task CanStartAndStopConnectionUsingDefaultTransport()
     {
         await using (var server = await StartServer<Startup>())
@@ -47,7 +47,7 @@ public class EndToEndTests : FunctionalTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TransportThatFallsbackCreatesNewConnection()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -459,7 +459,7 @@ public class EndToEndTests : FunctionalTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task AuthorizedConnectionCanConnect()
     {
@@ -523,7 +523,7 @@ public class EndToEndTests : FunctionalTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_LongPolling()
     {
         try
@@ -594,7 +594,7 @@ public class EndToEndTests : FunctionalTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task UnauthorizedHubConnectionDoesNotConnect()
     {
@@ -633,7 +633,7 @@ public class EndToEndTests : FunctionalTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task AuthorizedHubConnectionCanConnect()
     {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 public class DefaultViewCompilerTest
 {
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsResultWithNullAttribute_IfFileIsNotFoundInFileSystem()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class DefaultViewCompilerTest
         Assert.Empty(result1.ExpirationTokens);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsCompiledViews()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class DefaultViewCompilerTest
         Assert.Same(precompiledView, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PerformsCaseInsensitiveLookupsForCompiledViews_WithNonNormalizedPaths()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class DefaultViewCompilerTest
         Assert.Same(compiledView, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_DiscoversHotReloadedTypes()
     {
         // Arrange

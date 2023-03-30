@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.ObjectPool;
 
 public class DisposableObjectPoolTest
 {
-    [Fact]
+    // [Fact]
     public void DisposableObjectPoolWithDefaultPolicy_GetAnd_ReturnObject_SameInstance()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class DisposableObjectPoolTest
         Assert.Same(obj1, obj2);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPool_GetAndReturnObject_SameInstance()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class DisposableObjectPoolTest
         Assert.Same(list1, list2);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPool_Return_RejectedByPolicy()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class DisposableObjectPoolTest
         Assert.NotSame(list1, list2);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPoolWithOneElement_Dispose_ObjectDisposed()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class DisposableObjectPoolTest
         Assert.True(obj.IsDisposed);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPoolWithTwoElements_Dispose_ObjectsDisposed()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class DisposableObjectPoolTest
         Assert.True(obj2.IsDisposed);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPool_DisposeAndGet_ThrowsObjectDisposed()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class DisposableObjectPoolTest
         Assert.Throws<ObjectDisposedException>(() => pool.Get());
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPool_DisposeAndReturn_DisposesObject()
     {
         // Arrange

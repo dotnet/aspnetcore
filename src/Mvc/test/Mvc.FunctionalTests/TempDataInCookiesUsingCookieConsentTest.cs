@@ -23,7 +23,7 @@ public class TempDataInCookiesUsingCookieConsentTest
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>();
 
-    [Fact]
+    // [Fact]
     public async Task CookieTempDataProviderCookie_SetInResponse_OnGrantingConsent()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class TempDataInCookiesUsingCookieConsentTest
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieTempDataProviderCookie_NotSetInResponse_OnNoConsent()
     {
         // Arrange

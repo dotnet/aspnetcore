@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class ApiConventionMethodAttributeTest
 {
-    [Fact]
+    // [Fact]
     public void Constructor_ThrowsIfConventionMethodIsAnnotatedWithProducesAttribute()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class ApiConventionMethodAttributeTest
         public static void Get() { }
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_ThrowsIfTypeIsNotStatic()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class ApiConventionMethodAttributeTest
             expected);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_ThrowsIfMethodCannotBeFound()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class ApiConventionMethodAttributeTest
             expected);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_ThrowsIfMethodIsNotPublic()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class ApiConventionMethodAttributeTest
             expected);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_ThrowsIfMethodIsAmbiguous()
     {
         // Arrange

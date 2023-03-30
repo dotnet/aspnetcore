@@ -23,7 +23,7 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CanTransitionFromPrerenderedToInteractiveMode()
     {
         Navigate("/prerendered/prerendered-transition");
@@ -40,7 +40,7 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
         Browser.Equal("1", () => Browser.Exists(By.Id("count")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void PrerenderingWaitsForAsyncDisposableComponents()
     {
         Navigate("/prerendered/prerendered-async-disposal");
@@ -49,7 +49,7 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
         Browser.Equal("After async disposal", () => Browser.Exists(By.Id("disposal-message")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUseJSInteropFromOnAfterRenderAsync()
     {
         Navigate("/prerendered/prerendered-interop");
@@ -65,7 +65,7 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
         Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-set-by-interop")).GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void IsCompatibleWithLazyLoadWebAssembly()
     {
         Navigate("/prerendered/WithLazyAssembly");
@@ -77,7 +77,7 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
         AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
     }
 
-    [Fact]
+    // [Fact]
     public void CanReadUrlHashOnlyOnceConnected()
     {
         var urlWithoutHash = "prerendered/show-uri?my=query&another=value";

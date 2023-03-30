@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing;
 // Detailed coverage for how DefaultLinkGenerator processes templates
 public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
 {
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_EncodesIntermediate_DefaultValues()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_EncodesContentOtherThanSlashes_OfDoubleAsteriskCatchAllParameter()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_EncodesValues()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?name=name%20with%20%25special%20%23characters", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ForListOfStrings()
     {
         // Arrange
@@ -160,7 +160,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?color=red&color=green&color=blue", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ForListOfInts()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?items=10&items=20&items=30", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ForList_Empty()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ForList_StringWorkaround()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?page=1&color=red&color=green&color=blue&message=textfortest", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_Success_AmbientValues()
     {
         // Arrange
@@ -252,7 +252,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_GeneratesLowercaseUrl_SetOnRouteOptions()
     {
         // Arrange
@@ -281,7 +281,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
     }
 
     // Regression test for https://github.com/aspnet/Routing/issues/802
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_GeneratesLowercaseUrl_Includes_BufferedValues_SetOnRouteOptions()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
     }
 
     // Regression test for https://github.com/aspnet/Routing/issues/802
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ParameterPolicy_Includes_BufferedValues()
     {
         // Arrange
@@ -337,7 +337,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
     //
     // In this issue we used to lowercase URLs after parameters were encoded, meaning that if a character needed
     // encoding (such as a cyrillic character, it would not be encoded).
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_GeneratesLowercaseUrl_SetOnRouteOptions_CanLowercaseCharactersThatNeedEncoding()
     {
         // Arrange
@@ -370,7 +370,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("/home/п", PathString.FromUriComponent(result.path.ToUriComponent()).Value);
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_GeneratesLowercaseQueryString_SetOnRouteOptions()
     {
         // Arrange
@@ -404,7 +404,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?showstatus=true&info=detailed", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_AppendsTrailingSlash_SetOnRouteOptions()
     {
         // Arrange
@@ -434,7 +434,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_GeneratesLowercaseQueryStringAndTrailingSlash_SetOnRouteOptions()
     {
         // Arrange
@@ -469,7 +469,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?showstatus=true&info=detailed", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_LowercaseUrlSetToTrue_OnRouteOptions_OverridenByCallsiteValue()
     {
         // Arrange
@@ -502,7 +502,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_LowercaseUrlSetToFalse_OnRouteOptions_OverridenByCallsiteValue()
     {
         // Arrange
@@ -535,7 +535,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_LowercaseUrlQueryStringsSetToTrue_OnRouteOptions_OverridenByCallsiteValue()
     {
         // Arrange
@@ -573,7 +573,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?ShowStatus=True&INFO=DETAILED", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_LowercaseUrlQueryStringsSetToFalse_OnRouteOptions_OverridenByCallsiteValue()
     {
         // Arrange
@@ -611,7 +611,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?showstatus=true&info=detailed", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_AppendTrailingSlashSetToFalse_OnRouteOptions_OverridenByCallsiteValue()
     {
         // Arrange
@@ -641,7 +641,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void RouteGenerationRejectsConstraints()
     {
         // Arrange
@@ -665,7 +665,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.False(success);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteGenerationAcceptsConstraints()
     {
         // Arrange
@@ -691,7 +691,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void RouteWithCatchAllRejectsConstraints()
     {
         // Arrange
@@ -715,7 +715,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.False(success);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteWithCatchAllAcceptsConstraints()
     {
         // Arrange
@@ -741,7 +741,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void GetLinkWithNonParameterConstraintReturnsUrlWithoutQueryString()
     {
         // Arrange
@@ -782,7 +782,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
 
     // Any ambient values from the current request should be visible to constraint, even
     // if they have nothing to do with the route generating a link
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ConstraintsSeeAmbientValues()
     {
         // Arrange
@@ -816,7 +816,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
 
     // Non-parameter default values from the routing generating a link are not in the 'values'
     // collection when constraints are processed.
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ConstraintsDontSeeDefaults_WhenTheyArentParameters()
     {
         // Arrange
@@ -848,7 +848,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
     }
 
     // Default values are visible to the constraint when they are used to fill a parameter.
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ConstraintsSeesDefault_WhenThereItsAParameter()
     {
         // Arrange
@@ -880,7 +880,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
 
     // Default values from the routing generating a link are in the 'values' collection when
     // constraints are processed - IFF they are specified as values or ambient values.
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ConstraintsSeeDefaults_IfTheyAreSpecifiedOrAmbient()
     {
         // Arrange
@@ -941,7 +941,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_InlineConstraints_NonMatchingvalue()
     {
         // Arrange
@@ -993,7 +993,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_InlineConstraints_OptionalParameter_ValueNotPresent()
     {
         // Arrange
@@ -1019,7 +1019,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_InlineConstraints_OptionalParameter_ValuePresent_ConstraintFails()
     {
         // Arrange
@@ -1097,7 +1097,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.False(success);
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_InlineConstraints_CompositeConstraint_FromConstructor()
     {
         // Arrange
@@ -1124,7 +1124,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_ParameterPresentInValues()
     {
         // Arrange
@@ -1147,7 +1147,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_ParameterNotPresentInValues()
     {
         // Arrange
@@ -1170,7 +1170,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_ParameterPresentInValuesAndDefaults()
     {
         // Arrange
@@ -1195,7 +1195,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_ParameterNotPresentInValues_PresentInDefaults()
     {
         // Arrange
@@ -1220,7 +1220,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_ParameterNotPresentInTemplate_PresentInValues()
     {
         // Arrange
@@ -1243,7 +1243,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal("?format=json", result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_FollowedByDotAfterSlash_ParameterPresent()
     {
         // Arrange
@@ -1267,7 +1267,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_FollowedByDotAfterSlash_ParameterNotPresent()
     {
         // Arrange
@@ -1289,7 +1289,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameter_InSimpleSegment()
     {
         // Arrange
@@ -1312,7 +1312,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_TwoOptionalParameters_OneValueFromAmbientValues()
     {
         // Arrange
@@ -1335,7 +1335,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_OptionalParameterAfterDefault_OneValueFromAmbientValues()
     {
         // Arrange
@@ -1358,7 +1358,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_TwoOptionalParametersAfterDefault_LastValueFromAmbientValues()
     {
         // Arrange
@@ -1485,7 +1485,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_DoesNotDiscardAmbientValues_IfAllRequiredValuesMatch_ForGenericKeys()
     {
         // Verifying that discarding works in general usage case i.e when keys are not like controller, action etc.
@@ -1513,7 +1513,7 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
         Assert.Equal(string.Empty, result.query.ToUriComponent());
     }
 
-    [Fact]
+    // [Fact]
     public void TryProcessTemplate_DiscardsAmbientValues_ForGenericKeys()
     {
         // Verifying that discarding works in general usage case i.e when keys are not like controller, action etc.

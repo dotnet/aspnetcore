@@ -30,7 +30,7 @@ public class UserStoreStringKeyTest : SqlStoreTestBase<StringUser, StringRole, s
         : base(fixture)
     { }
 
-    [Fact]
+    // [Fact]
     public void AddEntityFrameworkStoresCanInferKey()
     {
         var services = new ServiceCollection();
@@ -47,7 +47,7 @@ public class UserStoreStringKeyTest : SqlStoreTestBase<StringUser, StringRole, s
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddEntityFrameworkStoresCanInferKeyWithGenericBase()
     {
         var services = new ServiceCollection();

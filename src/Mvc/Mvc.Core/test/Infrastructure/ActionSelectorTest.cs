@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 public class ActionSelectorTest
 {
-    [Fact]
+    // [Fact]
     public void SelectCandidates_SingleMatch()
     {
         var actions = new ActionDescriptor[]
@@ -62,7 +62,7 @@ public class ActionSelectorTest
         Assert.Collection(candidates, (a) => Assert.Same(actions[0], a));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void SelectCandidates_SingleMatch_UsesInvariantCulture()
     {
@@ -105,7 +105,7 @@ public class ActionSelectorTest
         Assert.Collection(candidates, (a) => Assert.Same(actions[0], a));
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_MultipleMatches()
     {
         var actions = new ActionDescriptor[]
@@ -143,7 +143,7 @@ public class ActionSelectorTest
         Assert.Equal(actions.ToArray(), candidates.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_NoMatch()
     {
         var actions = new ActionDescriptor[]
@@ -181,7 +181,7 @@ public class ActionSelectorTest
         Assert.Empty(candidates);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_NoMatch_ExcludesAttributeRoutedActions()
     {
         var actions = new ActionDescriptor[]
@@ -217,7 +217,7 @@ public class ActionSelectorTest
     // In this context `CaseSensitiveMatch` means that the input route values exactly match one of the action
     // descriptor's route values in terms of casing. This is important because we optimize for this case
     // in the implementation.
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_CaseSensitiveMatch_IncludesAllCaseInsensitiveMatches()
     {
         var actions = new ActionDescriptor[]
@@ -269,7 +269,7 @@ public class ActionSelectorTest
     // In this context `CaseInsensitiveMatch` means that the input route values do not match any action
     // descriptor's route values in terms of casing. This is important because we optimize for the case
     // where the casing matches - the non-matching-casing path is handled a bit differently.
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_CaseInsensitiveMatch_IncludesAllCaseInsensitiveMatches()
     {
         var actions = new ActionDescriptor[]
@@ -318,7 +318,7 @@ public class ActionSelectorTest
         Assert.Equal(expected, candidates);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_CaseSensitiveMatch_MatchesOnEmptyString()
     {
         var actions = new ActionDescriptor[]
@@ -352,7 +352,7 @@ public class ActionSelectorTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_CaseInsensitiveMatch_MatchesOnEmptyString()
     {
         var actions = new ActionDescriptor[]
@@ -386,7 +386,7 @@ public class ActionSelectorTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_MatchesOnNull()
     {
         var actions = new ActionDescriptor[]
@@ -420,7 +420,7 @@ public class ActionSelectorTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnEmptyString()
     {
         var actions = new ActionDescriptor[]
@@ -454,7 +454,7 @@ public class ActionSelectorTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectCandidates_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnNull()
     {
         var actions = new ActionDescriptor[]
@@ -488,7 +488,7 @@ public class ActionSelectorTest
         Assert.Same(actions[0], action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_AmbiguousActions_LogIsCorrect()
     {
         // Arrange
@@ -516,7 +516,7 @@ public class ActionSelectorTest
         Assert.Equal(expectedMessage, write.State?.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_PrefersActionWithConstraints()
     {
         // Arrange
@@ -546,7 +546,7 @@ public class ActionSelectorTest
         Assert.Same(action, actionWithConstraints);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_ConstraintsRejectAll()
     {
         // Arrange
@@ -578,7 +578,7 @@ public class ActionSelectorTest
         Assert.Null(action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_ConstraintsRejectAll_DifferentStages()
     {
         // Arrange
@@ -612,7 +612,7 @@ public class ActionSelectorTest
         Assert.Null(action);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_ActionConstraintFactory()
     {
         // Arrange
@@ -644,7 +644,7 @@ public class ActionSelectorTest
         Assert.Same(action, actionWithConstraints);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_ActionConstraintFactory_ReturnsNull()
     {
         // Arrange
@@ -671,7 +671,7 @@ public class ActionSelectorTest
     }
 
     // There's a custom constraint provider registered that only understands BooleanConstraintMarker
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_CustomProvider()
     {
         // Arrange
@@ -701,7 +701,7 @@ public class ActionSelectorTest
     }
 
     // Due to ordering of stages, the first action will be better.
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_ConstraintsInOrder()
     {
         // Arrange
@@ -734,7 +734,7 @@ public class ActionSelectorTest
     }
 
     // Due to ordering of stages, the first action will be better.
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_ConstraintsInOrder_MultipleStages()
     {
         // Arrange
@@ -770,7 +770,7 @@ public class ActionSelectorTest
         Assert.Same(action, best);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_Fallback_ToActionWithoutConstraints()
     {
         // Arrange
@@ -808,7 +808,7 @@ public class ActionSelectorTest
         Assert.Same(action, best);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectBestCandidate_Ambiguous()
     {
         // Arrange

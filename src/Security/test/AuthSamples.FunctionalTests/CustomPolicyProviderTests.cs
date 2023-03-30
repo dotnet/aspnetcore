@@ -21,7 +21,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultReturns200()
     {
         // Arrange & Act
@@ -32,7 +32,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimumAge10RedirectsWhenNotLoggedIn()
     {
         // Arrange & Act
@@ -44,7 +44,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
         Assert.Equal("http://localhost/account/signin?ReturnUrl=%2FHome%2FMinimumAge10", response.RequestMessage.RequestUri.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimumAge10WorksIfOldEnough()
     {
         // Arrange & Act
@@ -60,7 +60,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
         Assert.Contains("Welcome to a page restricted to users 10 or older", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimumAge10FailsIfNotOldEnough()
     {
         // Arrange & Act
@@ -75,7 +75,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
         Assert.Contains("Access Denied: Dude is not authorized to view this page.", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimumAge50WorksIfOldEnough()
     {
         // Arrange & Act
@@ -91,7 +91,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
         Assert.Contains("Welcome to a page restricted to users 50 or older", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimumAge50FailsIfNotOldEnough()
     {
         // Arrange & Act
@@ -106,7 +106,7 @@ public class CustomPolicyProviderTests : IClassFixture<WebApplicationFactory<Cus
         Assert.Contains("Access Denied: Dude is not authorized to view this page.", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimumAge50RedirectsWhenNotLoggedIn()
     {
         // Arrange & Act

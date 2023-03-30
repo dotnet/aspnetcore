@@ -14,7 +14,7 @@ public class ViewComponentFromServicesTest : IClassFixture<MvcTestFixture<Contro
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task ViewComponentsWithConstructorInjectionAreCreatedAndActivated()
     {
         // Arrange

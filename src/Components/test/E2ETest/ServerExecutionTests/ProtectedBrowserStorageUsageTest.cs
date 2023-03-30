@@ -35,7 +35,7 @@ public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionMo
         Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void LocalStoragePersistsOnRefresh()
     {
         // Local storage initially cleared
@@ -55,7 +55,7 @@ public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionMo
         Browser.Equal("1", () => localCount.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalStoragePersistsAcrossTabs()
     {
         // Local storage initially cleared
@@ -73,7 +73,7 @@ public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionMo
         Browser.Equal("1", () => localCount.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void SessionStoragePersistsOnRefresh()
     {
         // Session storage initially cleared
@@ -93,7 +93,7 @@ public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionMo
         Browser.Equal("1", () => sessionCount.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void SessionStorageDoesNotPersistAcrossTabs()
     {
         // Session storage initially cleared

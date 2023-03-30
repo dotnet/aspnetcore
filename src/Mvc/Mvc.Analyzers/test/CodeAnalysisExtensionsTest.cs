@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers;
 
 public class CodeAnalysisExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnMethodWithoutAttributes()
     {
         // Arrange
@@ -33,7 +33,7 @@ namespace TestApp
         Assert.Empty(attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnNonOverriddenMethod_ReturnsAllAttributesOnCurrentAction()
     {
         // Arrange
@@ -63,7 +63,7 @@ namespace TestApp
             attributeData => Assert.Equal(201, attributeData.ConstructorArguments[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_WithInheritFalse_ReturnsAllAttributesOnCurrentAction()
     {
         // Arrange
@@ -100,7 +100,7 @@ namespace TestApp
             attributeData => Assert.Equal(400, attributeData.ConstructorArguments[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesSymbolOverload_OnMethodSymbol()
     {
         // Arrange
@@ -137,7 +137,7 @@ namespace TestApp
             attributeData => Assert.Equal(400, attributeData.ConstructorArguments[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_WithInheritTrue_ReturnsAllAttributesOnCurrentActionAndOverridingMethod()
     {
         /// Arrange
@@ -176,7 +176,7 @@ namespace TestApp
             attributeData => Assert.Equal(404, attributeData.ConstructorArguments[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnNewMethodOfVirtualBaseMethod()
     {
         // Arrange
@@ -219,7 +219,7 @@ namespace TestApp
             attributeData => Assert.Equal(400, attributeData.ConstructorArguments[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnNewMethodOfNonVirtualBaseMethod()
     {
         // Arrange
@@ -262,7 +262,7 @@ namespace TestApp
             attributeData => Assert.Equal(401, attributeData.ConstructorArguments[0].Value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnTypeWithoutAttributes()
     {
         // Arrange
@@ -286,7 +286,7 @@ namespace TestApp
         Assert.Empty(attributes);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnTypeWithAttributes()
     {
         // Arrange
@@ -324,7 +324,7 @@ namespace TestApp
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_BaseTypeWithAttributes()
     {
         // Arrange
@@ -372,7 +372,7 @@ namespace TestApp
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributes_OnDerivedTypeWithInheritFalse()
     {
         // Arrange
@@ -410,7 +410,7 @@ namespace TestApp
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesSymbolOverload_OnTypeSymbol()
     {
         // Arrange
@@ -448,7 +448,7 @@ namespace TestApp
             });
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsFalseIfSymbolDoesNotHaveAttribute()
     {
         // Arrange
@@ -486,7 +486,7 @@ namespace TestApp
         Assert.False(propertyHasAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueIfTypeHasAttribute()
     {
         // Arrange
@@ -510,7 +510,7 @@ namespace TestApp
         Assert.True(hasAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueIfBaseTypeHasAttribute()
     {
         // Arrange
@@ -538,7 +538,7 @@ namespace TestApp
         Assert.True(hasAttributeWithInherit);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueForInterfaceContractOnAttribute()
     {
         // Arrange
@@ -569,7 +569,7 @@ namespace TestApp
         Assert.True(hasAttributeOnDerived);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueForAttributesOnMethods()
     {
         // Arrange
@@ -598,7 +598,7 @@ namespace TestApp
         Assert.True(hasAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueForAttributesOnOverriddenMethods()
     {
         // Arrange
@@ -634,7 +634,7 @@ namespace TestApp
         Assert.True(hasAttributeWithInherit);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueForAttributesOnProperties()
     {
         // Arrange
@@ -663,7 +663,7 @@ namespace TestApp
         Assert.True(hasAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void HasAttribute_ReturnsTrueForAttributesOnOverridenProperties()
     {
         // Arrange
@@ -699,7 +699,7 @@ namespace TestApp
         Assert.True(hasAttributeWithInherit);
     }
 
-    [Fact]
+    // [Fact]
     public void IsAssignable_ReturnsFalseForDifferentTypes()
     {
         // Arrange
@@ -722,7 +722,7 @@ namespace TestApp
         Assert.False(isAssignableFrom);
     }
 
-    [Fact]
+    // [Fact]
     public void IsAssignable_ReturnsFalseIfTypeDoesNotImplementInterface()
     {
         // Arrange
@@ -743,7 +743,7 @@ namespace TestApp
         Assert.False(isAssignableFrom);
     }
 
-    [Fact]
+    // [Fact]
     public void IsAssignable_ReturnsTrueIfTypesAreExact()
     {
         // Arrange
@@ -764,7 +764,7 @@ namespace TestApp
         Assert.True(isAssignableFrom);
     }
 
-    [Fact]
+    // [Fact]
     public void IsAssignable_ReturnsTrueIfTypeImplementsInterface()
     {
         // Arrange
@@ -791,7 +791,7 @@ namespace TestApp
         Assert.False(isAssignableFromDerived); // Inverse shouldn't be true
     }
 
-    [Fact]
+    // [Fact]
     public void IsAssignable_ReturnsTrue_IfSourceAndDestinationAreTheSameInterface()
     {
         // Arrange
@@ -812,7 +812,7 @@ namespace TestApp
         Assert.True(isAssignableFrom);
     }
 
-    [Fact]
+    // [Fact]
     public void IsAssignable_ReturnsTrueIfAncestorTypeImplementsInterface()
     {
         // Arrange

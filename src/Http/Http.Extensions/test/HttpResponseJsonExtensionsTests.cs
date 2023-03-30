@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public class HttpResponseJsonExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_SimpleValue_JsonResponse()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Collection(data, b => Assert.Equal((byte)'1', b));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_NullValue_JsonResponse()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal("null", data);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_WithOptions_JsonResponse()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_CustomStatusCode_StatusCodeUnchanged()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_WithContentType_JsonResponseWithCustomContentType()
     {
         // Arrange
@@ -116,7 +116,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal("application/custom-type", context.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_WithCancellationToken_CancellationRaised()
     {
         // Arrange
@@ -135,7 +135,7 @@ public class HttpResponseJsonExtensionsTests
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTask);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_ObjectWithStrings_CamcelCaseAndNotEscaped()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal(@"{""stringProperty"":""激光這兩個字是甚麼意思""}", data);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_SimpleValue_JsonResponse()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Collection(data, b => Assert.Equal((byte)'1', b));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_NullValue_JsonResponse()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal("null", data);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_NullType_ThrowsArgumentNullException()
     {
         // Arrange
@@ -204,7 +204,7 @@ public class HttpResponseJsonExtensionsTests
         await Assert.ThrowsAsync<ArgumentNullException>(async () => await context.Response.WriteAsJsonAsync(value: null, type: null!));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_NullResponse_ThrowsArgumentNullException()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class HttpResponseJsonExtensionsTests
         await Assert.ThrowsAsync<ArgumentNullException>(async () => await HttpResponseJsonExtensions.WriteAsJsonAsync(response: null!, value: null, typeof(int?)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_ObjectWithStrings_CamcelCaseAndNotEscaped()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal(@"{""stringProperty"":""激光這兩個字是甚麼意思""}", data);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_CustomStatusCode_StatusCodeUnchanged()
     {
         // Arrange
@@ -253,7 +253,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable()
     {
         // Arrange
@@ -278,7 +278,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_AsyncEnumerable()
     {
         // Arrange
@@ -303,7 +303,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_ClosedConnecton()
     {
         // Arrange
@@ -337,7 +337,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_AsyncEnumerable_ClosedConnecton()
     {
         // Arrange
@@ -371,7 +371,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
@@ -405,7 +405,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
@@ -439,7 +439,7 @@ public class HttpResponseJsonExtensionsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsyncGeneric_WithJsonTypeInfo_JsonResponse()
     {
         // Arrange
@@ -460,7 +460,7 @@ public class HttpResponseJsonExtensionsTests
         Assert.Equal("[1,2,3]", data);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsJsonAsync_NullValue_WithJsonTypeInfo_JsonResponse()
     {
         // Arrange

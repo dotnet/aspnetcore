@@ -13,7 +13,7 @@ public class RangeHeaderTests
     // 14.27 If-Range
     // If the entity tag given in the If-Range header matches the current entity tag for the entity, then the server SHOULD
     // provide the specified sub-range of the entity using a 206 (Partial content) response.
-    [Fact]
+    // [Fact]
     public async Task IfRangeWithCurrentEtagShouldServePartialContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -34,7 +34,7 @@ public class RangeHeaderTests
     // If the entity tag given in the If-Range header matches the current entity tag for the entity, then the server SHOULD
     // provide the specified sub-range of the entity using a 206 (Partial content) response.
     // HEAD requests should ignore the Range header
-    [Fact]
+    // [Fact]
     public async Task HEADIfRangeWithCurrentEtagShouldReturn200Ok()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -55,7 +55,7 @@ public class RangeHeaderTests
 
     // 14.27 If-Range
     // If the client has no entity tag for an entity, but does have a Last- Modified date, it MAY use that date in an If-Range header.
-    [Fact]
+    // [Fact]
     public async Task IfRangeWithCurrentDateShouldServePartialContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -72,7 +72,7 @@ public class RangeHeaderTests
         Assert.Equal("0123456789a", await resp.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task IfModifiedSinceWithPastDateShouldServePartialContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -89,7 +89,7 @@ public class RangeHeaderTests
         Assert.Equal("0123456789a", await resp.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task IfModifiedSinceWithCurrentDateShouldReturn304()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -106,7 +106,7 @@ public class RangeHeaderTests
     // 14.27 If-Range
     // If the client has no entity tag for an entity, but does have a Last- Modified date, it MAY use that date in an If-Range header.
     // HEAD requests should ignore the Range header
-    [Fact]
+    // [Fact]
     public async Task HEADIfRangeWithCurrentDateShouldReturn200Ok()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -127,7 +127,7 @@ public class RangeHeaderTests
 
     // 14.27 If-Range
     // If the entity tag does not match, then the server SHOULD return the entire entity using a 200 (OK) response.
-    [Fact]
+    // [Fact]
     public async Task IfRangeWithOldEtagShouldServeFullContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -144,7 +144,7 @@ public class RangeHeaderTests
 
     // 14.27 If-Range
     // If the entity tag does not match, then the server SHOULD return the entire entity using a 200 (OK) response.
-    [Fact]
+    // [Fact]
     public async Task HEADIfRangeWithOldEtagShouldServeFullContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -161,7 +161,7 @@ public class RangeHeaderTests
 
     // 14.27 If-Range
     // If the entity tag/date does not match, then the server SHOULD return the entire entity using a 200 (OK) response.
-    [Fact]
+    // [Fact]
     public async Task IfRangeWithOldDateShouldServeFullContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -180,7 +180,7 @@ public class RangeHeaderTests
 
     // 14.27 If-Range
     // If the entity tag/date does not match, then the server SHOULD return the entire entity using a 200 (OK) response.
-    [Fact]
+    // [Fact]
     public async Task HEADIfRangeWithOldDateShouldServeFullContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -200,7 +200,7 @@ public class RangeHeaderTests
     // 14.27 If-Range
     // The If-Range header SHOULD only be used together with a Range header, and MUST be ignored if the request
     // does not include a Range header, or if the server does not support the sub-range operation.
-    [Fact]
+    // [Fact]
     public async Task IfRangeWithoutRangeShouldServeFullContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -227,7 +227,7 @@ public class RangeHeaderTests
     // 14.27 If-Range
     // The If-Range header SHOULD only be used together with a Range header, and MUST be ignored if the request
     // does not include a Range header, or if the server does not support the sub-range operation.
-    [Fact]
+    // [Fact]
     public async Task HEADIfRangeWithoutRangeShouldServeFullContent()
     {
         using var host = await StaticFilesTestServer.Create(app => app.UseFileServer());

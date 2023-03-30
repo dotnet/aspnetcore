@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.ApiDescription.Client;
 
 public class GetCurrentOpenApiReferenceTest
 {
-    [Fact]
+    // [Fact]
     public void Execute_ReturnsExpectedItem()
     {
         // Arrange

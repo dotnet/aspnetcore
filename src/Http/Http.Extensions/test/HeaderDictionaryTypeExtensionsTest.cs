@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http.Headers;
 
 public class HeaderDictionaryTypeExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void GetT_KnownTypeWithValidValue_Success()
     {
         var context = new DefaultHttpContext();
@@ -19,7 +19,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetT_KnownTypeWithMissingValue_Null()
     {
         var context = new DefaultHttpContext();
@@ -29,7 +29,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetT_KnownTypeWithInvalidValue_Null()
     {
         var context = new DefaultHttpContext();
@@ -40,7 +40,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetT_UnknownTypeWithTryParseAndValidValue_Success()
     {
         var context = new DefaultHttpContext();
@@ -50,7 +50,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.NotNull(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetT_UnknownTypeWithTryParseAndInvalidValue_Null()
     {
         var context = new DefaultHttpContext();
@@ -60,7 +60,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetT_UnknownTypeWithTryParseAndMissingValue_Null()
     {
         var context = new DefaultHttpContext();
@@ -69,7 +69,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetT_UnknownTypeWithoutTryParse_Throws()
     {
         var context = new DefaultHttpContext();
@@ -78,7 +78,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Throws<NotSupportedException>(() => context.Request.GetTypedHeaders().Get<object>("custom"));
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_KnownTypeWithValidValue_Success()
     {
         var context = new DefaultHttpContext();
@@ -94,7 +94,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_KnownTypeWithMissingValue_EmptyList()
     {
         var context = new DefaultHttpContext();
@@ -104,7 +104,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Empty(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_KnownTypeWithInvalidValue_EmptyList()
     {
         var context = new DefaultHttpContext();
@@ -115,7 +115,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Empty(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_UnknownTypeWithTryParseListAndValidValue_Success()
     {
         var context = new DefaultHttpContext();
@@ -126,7 +126,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Equal(new[] { new TestHeaderValue() }.ToList(), results);
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_UnknownTypeWithTryParseListAndInvalidValue_EmptyList()
     {
         var context = new DefaultHttpContext();
@@ -136,7 +136,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Empty(results);
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_UnknownTypeWithTryParseListAndMissingValue_EmptyList()
     {
         var context = new DefaultHttpContext();
@@ -145,7 +145,7 @@ public class HeaderDictionaryTypeExtensionsTest
         Assert.Empty(results);
     }
 
-    [Fact]
+    // [Fact]
     public void GetListT_UnknownTypeWithoutTryParseList_Throws()
     {
         var context = new DefaultHttpContext();

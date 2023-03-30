@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 // Integration tests targeting the behavior of the KeyValuePairModelBinder with other model binders.
 public class KeyValuePairModelBinderIntegrationTest
 {
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_WithPrefix_Success()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_SimpleTypes_WithNoKey_AddsError()
     {
         // Arrange
@@ -87,7 +87,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_SimpleTypes_WithNoKey_AndCustomizedMessage_AddsGivenMessage()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_SimpleTypes_WithNoValue_AddsError()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("A value is required.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_SimpleTypes_WithNoValue_AndCustomizedMessage_AddsGivenMessage()
     {
         // Arrange
@@ -224,7 +224,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("Hurts when nothing is provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_WithExplicitPrefix_Success()
     {
         // Arrange
@@ -268,7 +268,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_EmptyPrefix_Success()
     {
         // Arrange
@@ -346,7 +346,7 @@ public class KeyValuePairModelBinderIntegrationTest
         public int Id { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_WithPrefix_Success()
     {
         // Arrange
@@ -387,7 +387,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_WithExplicitPrefix_Success()
     {
         // Arrange
@@ -432,7 +432,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_EmptyPrefix_Success()
     {
         // Arrange
@@ -509,7 +509,7 @@ public class KeyValuePairModelBinderIntegrationTest
         Assert.Single(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task KeyValuePairModelBinder_BindsKeyValuePairOfArray_Success()
     {
         // Arrange

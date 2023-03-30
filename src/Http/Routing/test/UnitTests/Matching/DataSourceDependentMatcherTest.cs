@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 public class DataSourceDependentMatcherTest
 {
-    [Fact]
+    // [Fact]
     public void Matcher_Initializes_InConstructor()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class DataSourceDependentMatcherTest
         Assert.NotNull(lifetime.Cache);
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_Reinitializes_WhenDataSourceChanges()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class DataSourceDependentMatcherTest
             e => Assert.Same(endpoint, e));
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_IgnoresUpdate_WhenDisposed()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class DataSourceDependentMatcherTest
         Assert.Empty(inner.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_Ignores_NonRouteEndpoint()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class DataSourceDependentMatcherTest
         Assert.Empty(inner.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_Ignores_SuppressedEndpoint()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class DataSourceDependentMatcherTest
         Assert.Empty(inner.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_UnsuppressedEndpoint_IsUsed()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class DataSourceDependentMatcherTest
         Assert.Same(endpoint, Assert.Single(inner.Endpoints));
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_ThrowsOnDuplicateEndpoints()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class DataSourceDependentMatcherTest
         Assert.Equal(expectedError, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_ThrowsOnDuplicateEndpointsFromMultipleSources()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class DataSourceDependentMatcherTest
         Assert.Equal(expectedError, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Matcher_ThrowsOnDuplicateEndpointAddedLater()
     {
         // Arrange

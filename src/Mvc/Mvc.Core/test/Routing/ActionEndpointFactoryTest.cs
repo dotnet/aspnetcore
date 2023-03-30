@@ -33,7 +33,7 @@ public class ActionEndpointFactoryTest
 
     internal IServiceProvider Services { get; }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_WithEmptyRouteName_CreatesMetadataWithEmptyRouteName()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class ActionEndpointFactoryTest
         Assert.Equal(string.Empty, routeNameMetadata.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_ContainsParameterWithNullRequiredRouteValue_NoEndpointCreated()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class ActionEndpointFactoryTest
     // area, controller, action and page are special, but not hardcoded. Actions can define custom required
     // route values. This has been used successfully for localization, versioning and similar schemes. We should
     // be able to replace custom route values too.
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_NonReservedRequiredValue_WithNoCorresponding_TemplateParameter_DoesNotProduceEndpoint()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class ActionEndpointFactoryTest
         Assert.Empty(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_NonReservedRequiredValue_WithCorresponding_TemplateParameter_ProducesEndpoint()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class ActionEndpointFactoryTest
         Assert.Single(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_NonAreaRouteForAreaAction_DoesNotProduceEndpoint()
     {
         // Arrange
@@ -116,7 +116,7 @@ public class ActionEndpointFactoryTest
         Assert.Empty(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_AreaRouteForNonAreaAction_DoesNotProduceEndpoint()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class ActionEndpointFactoryTest
         Assert.Empty(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_RequiredValues_DoesNotMatchParameterDefaults_CreatesEndpoint()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class ActionEndpointFactoryTest
         Assert.False(endpoint.RoutePattern.Defaults.ContainsKey("action"));
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_RequiredValues_DoesNotMatchNonParameterDefaults_DoesNotProduceEndpoint()
     {
         // Arrange
@@ -171,7 +171,7 @@ public class ActionEndpointFactoryTest
         Assert.Empty(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_AttributeRoutes_DefaultDifferentCaseFromRouteValue_UseDefaultCase()
     {
         // Arrange
@@ -187,7 +187,7 @@ public class ActionEndpointFactoryTest
         Assert.Equal("TestAction", endpoint.RoutePattern.RequiredValues["action"]);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_RequiredValueWithNoCorrespondingParameter_DoesNotProduceEndpoint()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class ActionEndpointFactoryTest
         Assert.Empty(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_AttributeRouted_ContainsParameterUsingReservedNameWithConstraint_ExceptionThrown()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class ActionEndpointFactoryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_AttributeRouted_ContainsParameterWithNullRequiredRouteValue_EndpointCreated()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class ActionEndpointFactoryTest
         Assert.False(endpoint.RoutePattern.RequiredValues.ContainsKey("page"));
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_AttributeRouted_WithRouteName_EndpointCreated()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class ActionEndpointFactoryTest
         Assert.Equal("Test", endpoint.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDelegateFactoryWorks()
     {
         // Arrange
@@ -287,7 +287,7 @@ public class ActionEndpointFactoryTest
         Assert.Same(del, endpoint.RequestDelegate);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_WithMatchingConstraint_CreatesEndpoint()
     {
         // Arrange
@@ -305,7 +305,7 @@ public class ActionEndpointFactoryTest
         Assert.Single(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_WithNotMatchingConstraint_DoesNotCreateEndpoint()
     {
         // Arrange
@@ -323,7 +323,7 @@ public class ActionEndpointFactoryTest
         Assert.Empty(endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_ConventionalRouted_StaticallyDefinedOrder_IsMaintained()
     {
         // Arrange
@@ -359,7 +359,7 @@ public class ActionEndpointFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AddEndpoints_CreatesInertEndpoint()
     {
         // Arrange

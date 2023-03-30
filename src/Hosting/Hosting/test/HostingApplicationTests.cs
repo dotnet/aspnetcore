@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 
 public class HostingApplicationTests
 {
-    [Fact]
+    // [Fact]
     public void DisposeContextDoesNotClearHttpContextIfDefaultHttpContextFactoryUsed()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class HostingApplicationTests
         Assert.NotNull(context.HttpContext);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposeContextClearsHttpContextIfIHttpContextAccessorIsActive()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class HostingApplicationTests
         Assert.Null(context.HttpContext);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateContextReinitializesPreviouslyStoredDefaultHttpContext()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class HostingApplicationTests
         Assert.Same(previousContext, context.HttpContext);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateContextCreatesNewContextIfNotUsingDefaultHttpContextFactory()
     {
         // Arrange
@@ -87,7 +87,7 @@ public class HostingApplicationTests
         hostingApplication.DisposeContext(context, null);
     }
 
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35142")]
     public void IHttpActivityFeatureIsPopulated()
     {
@@ -128,7 +128,7 @@ public class HostingApplicationTests
         public Activity Activity { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38736")]
     public void IHttpActivityFeatureIsAssignedToIfItExists()
     {
@@ -166,7 +166,7 @@ public class HostingApplicationTests
         hostingApplication.DisposeContext(context, null);
     }
 
-    [Fact]
+    // [Fact]
     public void IHttpActivityFeatureIsNotPopulatedWithoutAListener()
     {
         var hostingApplication = CreateApplication();

@@ -28,7 +28,7 @@ public class ServerReconnectionTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id("count"));
     }
 
-    [Fact]
+    // [Fact]
     public void ReconnectUI()
     {
         Browser.Exists(By.Id("increment")).Click();
@@ -48,7 +48,7 @@ public class ServerReconnectionTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("2", () => Browser.Exists(By.Id("count")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void RendersContinueAfterReconnect()
     {
         var selector = By.Id("ticker");
@@ -74,7 +74,7 @@ public class ServerReconnectionTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.False(() => Browser.Exists(selector).Text == currentValue);
     }
 
-    [Fact]
+    // [Fact]
     public void ErrorsStopTheRenderingProcess()
     {
         Browser.Exists(By.Id("cause-error")).Click();

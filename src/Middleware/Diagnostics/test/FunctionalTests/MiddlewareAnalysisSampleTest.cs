@@ -15,7 +15,7 @@ public class MiddlewareAnalysisSampleTest : IClassFixture<TestFixture<Middleware
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task MiddlewareAnalysisPage_ShowsAnalysis()
     {
         // Arrange

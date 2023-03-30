@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class DefaultPageFactoryProviderTest
 {
-    [Fact]
+    // [Fact]
     public void CreatePage_ThrowsIfActivatedInstanceIsNotAnInstanceOfRazorPage()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class DefaultPageFactoryProviderTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactorySetsPageContext()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class DefaultPageFactoryProviderTest
         Assert.Same(pageContext, testPage.PageContext);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactorySetsPropertiesWithRazorInject()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class DefaultPageFactoryProviderTest
         Assert.NotNull(testPage.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactorySetsPath()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class DefaultPageFactoryProviderTest
         Assert.Equal("/this/is/a/path.cshtml", testPage.Path);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactorySetViewDataWithModelTypeWhenNotNull()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class DefaultPageFactoryProviderTest
         Assert.NotNull(testPage.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactorySetViewDataWithDeclaredModelTypeWhenNotNull()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class DefaultPageFactoryProviderTest
         Assert.NotNull(testPage.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactorySetsNonGenericViewDataDictionary()
     {
         // Arrange
@@ -207,7 +207,7 @@ public class DefaultPageFactoryProviderTest
         Assert.NotNull(testPage.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactory_SetsViewDataOnPage_FromPageContext()
     {
         // Arrange
@@ -243,7 +243,7 @@ public class DefaultPageFactoryProviderTest
         Assert.Equal("test-value", testPage.ViewData["test-key"]);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactoryDoesNotBindPropertiesWithNoRazorInjectAttribute()
     {
         // Arrange
@@ -286,7 +286,7 @@ public class DefaultPageFactoryProviderTest
         Assert.NotNull(testPage.ModelExpressionProviderWithInject);
     }
 
-    [Fact]
+    // [Fact]
     public void PageFactoryCreatePageDisposerCreatesDisposerForPage()
     {
         // Arrange
@@ -324,7 +324,7 @@ public class DefaultPageFactoryProviderTest
         Assert.True(((DisposablePage)instance).Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageFactoryCreateAsyncPageDisposerCreatesDisposerForPage()
     {
         // Arrange

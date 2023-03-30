@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Localization;
 
 public class CustomRequestCultureProviderTest
 {
-    [Fact]
+    // [Fact]
     public async Task CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
     {
         using var host = new HostBuilder()

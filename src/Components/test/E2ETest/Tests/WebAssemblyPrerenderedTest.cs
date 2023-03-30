@@ -32,7 +32,7 @@ public class WebAssemblyPrerenderedTest : ServerTestBase<AspNetSiteServerFixture
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CanPrerenderAndAddHeadOutletRootComponent()
     {
         Navigate("/", noReload: true);

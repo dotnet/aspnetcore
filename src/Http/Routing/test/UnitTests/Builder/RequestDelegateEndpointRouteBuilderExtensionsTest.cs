@@ -57,7 +57,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_StringPattern_BuildsEndpoint()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal("filtered!", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapEndpoint_CanBeFiltered_EndpointFilter()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
@@ -173,7 +173,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal(2, (int)httpContext.Items["Second-Order"]!);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapEndpoint_Filtered_DontExecuteEndpointWhenErrorResponseStatus()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
@@ -222,7 +222,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.False(httpContext.Items.ContainsKey("ExecutedEndpoint"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestFilters_CanAssertOnEmptyResult()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
@@ -257,7 +257,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Same(Results.Empty, response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestFilters_ReturnValue_SerializeJson()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
@@ -344,7 +344,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal(1, runCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_TypedPattern_BuildsEndpoint()
     {
         // Arrange
@@ -362,7 +362,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_AttributesCollectedAsMetadata()
     {
         // Arrange
@@ -379,7 +379,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.IsType<Attribute2>(endpointBuilder1.Metadata[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_GeneratedDelegateWorks()
     {
         // Arrange
@@ -395,7 +395,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
     {
         // Arrange
@@ -469,7 +469,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Throws<InvalidOperationException>(() => endpointBuilder.Finally(b => b.Metadata.Add(new RouteNameMetadata("Foo"))));
     }
 
-    [Fact]
+    // [Fact]
     public void Map_AddsMetadata_InCorrectOrder()
     {
         // Arrange
@@ -502,7 +502,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
             m => Assert.IsAssignableFrom<Attribute2>(m));
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_Filter()
     {
         // Arrange

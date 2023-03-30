@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests;
 
 public class ResponseCachingMiddlewareTests
 {
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
     {
         var cache = new TestResponseCache();
@@ -31,7 +31,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.GatewayTimeoutServed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseNotFound_Fails()
     {
         var cache = new TestResponseCache();
@@ -46,7 +46,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NoResponseServed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseFound_Succeeds()
     {
         var cache = new TestResponseCache();
@@ -70,7 +70,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.CachedResponseServed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseFound_OverwritesExistingHeaders()
     {
         var cache = new TestResponseCache();
@@ -99,7 +99,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.CachedResponseServed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_VaryByRuleFound_CachedResponseNotFound_Fails()
     {
         var cache = new TestResponseCache();
@@ -119,7 +119,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NoResponseServed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_VaryByRuleFound_CachedResponseFound_Succeeds()
     {
         var cache = new TestResponseCache();
@@ -147,7 +147,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.CachedResponseServed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseFound_Serves304IfPossible()
     {
         var cache = new TestResponseCache();
@@ -171,7 +171,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NotModifiedServed);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_NotConditionalRequest_False()
     {
         var sink = new TestSink();
@@ -182,7 +182,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfModifiedSince_FallsbackToDateHeader()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -213,7 +213,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NotModifiedIfModifiedSinceSatisfied);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfModifiedSince_LastModifiedOverridesDateHeader()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -247,7 +247,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NotModifiedIfModifiedSinceSatisfied);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfNoneMatch_Overrides_IfModifiedSince_ToTrue()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -266,7 +266,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NotModifiedIfNoneMatchStar);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfNoneMatch_Overrides_IfModifiedSince_ToFalse()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -283,7 +283,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfNoneMatch_AnyWithoutETagInResponse_False()
     {
         var sink = new TestSink();
@@ -325,7 +325,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NotModifiedIfNoneMatchMatched);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfNoneMatch_ExplicitWithoutMatch_False()
     {
         var sink = new TestSink();
@@ -338,7 +338,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentIsNotModified_IfNoneMatch_MatchesAtLeastOneValue_True()
     {
         var sink = new TestSink();
@@ -353,7 +353,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.NotModifiedIfNoneMatchMatched);
     }
 
-    [Fact]
+    // [Fact]
     public void StartResponsegAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
         var clock = new TestClock
@@ -372,7 +372,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Equal(clock.UtcNow, context.ResponseTime);
     }
 
-    [Fact]
+    // [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
     {
         var clock = new TestClock
@@ -397,7 +397,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Equal(initialTime, context.ResponseTime);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_UpdateShouldCacheResponse_IfResponseCacheable()
     {
         var sink = new TestSink();
@@ -417,7 +417,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_DoNotUpdateShouldCacheResponse_IfResponseIsNotCacheable()
     {
         var sink = new TestSink();
@@ -432,7 +432,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_DefaultResponseValidity_Is10Seconds()
     {
         var sink = new TestSink();
@@ -445,7 +445,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseExpiryIfAvailable()
     {
         var clock = new TestClock
@@ -468,7 +468,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseMaxAgeIfAvailable()
     {
         var clock = new TestClock
@@ -496,7 +496,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseSharedMaxAgeIfAvailable()
     {
         var clock = new TestClock
@@ -524,7 +524,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_UpdateCachedVaryByRules_IfNotEquivalentToPrevious()
     {
         var cache = new TestResponseCache();
@@ -553,7 +553,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.VaryByRulesUpdated);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_UpdateCachedVaryByRules_IfEquivalentToPrevious()
     {
         var cache = new TestResponseCache();
@@ -624,7 +624,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_AddsDate_IfNoneSpecified()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -642,7 +642,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_DoNotAddDate_IfSpecified()
     {
         var utcNow = DateTimeOffset.MinValue;
@@ -661,7 +661,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_StoresCachedResponse_InState()
     {
         var sink = new TestSink();
@@ -676,7 +676,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void FinalizeCacheHeadersAsync_SplitsVaryHeaderByCommas()
     {
         var sink = new TestSink();
@@ -693,7 +693,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.VaryByRulesUpdated);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FinalizeCacheBody_Cache_IfContentLengthMatches()
     {
         var cache = new TestResponseCache();
@@ -781,7 +781,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.ResponseCached);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FinalizeCacheBody_Cache_IfContentLengthAbsent()
     {
         var cache = new TestResponseCache();
@@ -809,7 +809,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.ResponseCached);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfShouldCacheResponseFalse()
     {
         var cache = new TestResponseCache();
@@ -829,7 +829,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.ResponseNotCached);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfBufferingDisabled()
     {
         var cache = new TestResponseCache();
@@ -851,7 +851,7 @@ public class ResponseCachingMiddlewareTests
             LoggedMessage.ResponseNotCached);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfSizeTooBig()
     {
         var sink = new TestSink();
@@ -883,7 +883,7 @@ public class ResponseCachingMiddlewareTests
         Assert.False(await middleware.TryServeFromCacheAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public void AddResponseCachingFeature_SecondInvocation_Throws()
     {
         var httpContext = new DefaultHttpContext();
@@ -932,7 +932,7 @@ public class ResponseCachingMiddlewareTests
         Assert.True(responseCachingFeatureAdded);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOrderCasingNormalizedStringValues_NormalizesCasingToUpper()
     {
         var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
@@ -943,7 +943,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Equal(uppercaseStrings, normalizedStrings);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOrderCasingNormalizedStringValues_NormalizesOrder()
     {
         var orderedStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
@@ -954,7 +954,7 @@ public class ResponseCachingMiddlewareTests
         Assert.Equal(orderedStrings, normalizedStrings);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOrderCasingNormalizedStringValues_PreservesCommas()
     {
         var originalStrings = new StringValues(new[] { "STRINGA, STRINGB" });

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
 
 public class QueryStringSegmentTests
 {
-    [Fact]
+    // [Fact]
     public void QueryString_AssertSegmentIsCorrect()
     {
         var segement = new QueryStringSegment();

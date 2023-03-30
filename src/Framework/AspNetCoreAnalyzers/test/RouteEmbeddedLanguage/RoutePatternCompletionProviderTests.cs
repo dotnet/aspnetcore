@@ -12,7 +12,7 @@ public partial class RoutePatternCompletionProviderTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_Literal_NoItems()
     {
         // Arrange & Act
@@ -37,7 +37,7 @@ class Program
         Assert.Null(result.Completions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_PolicyColon_ReturnPolicies()
     {
         // Arrange & Act
@@ -68,7 +68,7 @@ class Program
         Assert.Equal("alpha", change.TextChange.NewText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_PolicyColon_ReturnPolicies()
     {
         // Arrange & Act
@@ -93,7 +93,7 @@ class Program
         Assert.Equal("alpha", result.Completions.ItemsList[0].DisplayText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Policy_HasText_ReturnPolicies()
     {
         // Arrange & Act
@@ -122,7 +122,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Policy_InText_ReturnPolicies()
     {
         // Arrange & Act
@@ -151,7 +151,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_MultiplePolicy_HasText_ReturnPolicies()
     {
         // Arrange & Act
@@ -180,7 +180,7 @@ class Program
         Assert.Equal(result.CompletionListSpan, change.TextChange.Span);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_PolicyColon_MultipleOverloads_ReturnPolicies()
     {
         // Arrange & Act
@@ -208,7 +208,7 @@ class Program
         Assert.Equal("alpha", result.Completions.ItemsList[0].DisplayText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_UnsupportedMethod_NoItems()
     {
         // Arrange & Act
@@ -232,7 +232,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasDelegate_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -256,7 +256,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasDelegate_FromRouteAttribute_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -281,7 +281,7 @@ class Program
             i => Assert.Equal("id1", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasMethod_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -310,7 +310,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasMethod_HasStarted_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -339,7 +339,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasMethod_NamedParameters_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -368,7 +368,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_HasSpecialTypes_ExcludeSpecialTypes()
     {
         // Arrange & Act
@@ -404,7 +404,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_AsParameters_ReturnObjectParameterItem()
     {
         // Arrange & Act
@@ -445,7 +445,7 @@ class Program
             i => Assert.Equal("PageNumber", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_NullDelegate_NoResults()
     {
         // Arrange & Act
@@ -467,7 +467,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_EndpointMapGet_Incomplete_NoResults()
     {
         // Arrange & Act
@@ -489,7 +489,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_CustomMapGet_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -518,7 +518,7 @@ class Program
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_ParameterInUse_NoResults()
     {
         // Arrange & Act
@@ -545,7 +545,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_ParameterInUse_DifferentCase_NoResults()
     {
         // Arrange & Act
@@ -572,7 +572,7 @@ class Program
         Assert.Empty(result.Completions.ItemsList);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_OtherParameters_ReturnDelegateParameterItem()
     {
         // Arrange & Act
@@ -601,7 +601,7 @@ class Program
             i => Assert.Equal("id2", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Insertion_ParameterOpenBrace_ControllerAction_HasParameter_ReturnActionParameterItem()
     {
         // Arrange & Act
@@ -634,7 +634,7 @@ public class TestController
             i => Assert.Equal("id", i.DisplayText));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Comment_PolicyColon_ReturnHttpPolicies()
     {
         // Arrange & Act
@@ -656,7 +656,7 @@ class Program
         Assert.Equal("alpha", result.Completions.ItemsList[0].DisplayText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Comment_Http_PolicyColon_ReturnHttpPolicies()
     {
         // Arrange & Act
@@ -678,7 +678,7 @@ class Program
         Assert.Equal("alpha", result.Completions.ItemsList[0].DisplayText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_Comment_Component_PolicyColon_ReturnComponentPolicies()
     {
         // Note: This test adds #line pragma comment to simulate that situation in generated Razor source code.

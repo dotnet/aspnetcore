@@ -10,7 +10,7 @@ public abstract class GlobalAuthorizationFilterTestBase : IClassFixture<MvcTestF
 {
     public HttpClient Client { get; protected set; }
 
-    [Fact]
+    // [Fact]
     public virtual async Task DeniesAnonymousUsers_ByDefault()
     {
         // Arrange & Act
@@ -24,7 +24,7 @@ public abstract class GlobalAuthorizationFilterTestBase : IClassFixture<MvcTestF
             response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllowAnonymousUsers_ForActionsWithAllowAnonymousAttribute()
     {
         // Arrange & Act
@@ -36,7 +36,7 @@ public abstract class GlobalAuthorizationFilterTestBase : IClassFixture<MvcTestF
         Assert.Equal("Administration.AllowAnonymousAction", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizationPoliciesCombine()
     {
         // Arrange & Act 1

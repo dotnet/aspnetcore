@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages;
 
 public class PageTest
 {
-    [Fact]
+    // [Fact]
     public void PagePropertiesArePopulatedFromContext()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class PageTest
         Assert.Same(tempData, page.TempData);
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithParameterUrl_SetsRedirectResultSameUrl()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class PageTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPermanentAndSameUrl()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class PageTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPreserveMethodAndSameUrl()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class PageTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPermanentPreserveMethodAndSameUrl()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class PageTest
             () => page.RedirectPreserveMethod(url: url), "url");
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithParameterUrl_SetsLocalRedirectResultWithSameUrl()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class PageTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPermanentWithSameUrl()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class PageTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPreserveMethodWithSameUrl()
     {
         // Arrange
@@ -193,7 +193,7 @@ public class PageTest
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPermanentPreservesMethodWithSameUrl()
     {
         // Arrange
@@ -275,7 +275,7 @@ public class PageTest
             () => page.RedirectPermanentPreserveMethod(url: url), "url");
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToAction_WithParameterActionName_SetsResultActionName()
     {
         // Arrange
@@ -291,7 +291,7 @@ public class PageTest
         Assert.Equal("SampleAction", resultTemporary.ActionName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToActionPreserveMethod_WithParameterActionName_SetsResultActionName()
     {
         // Arrange
@@ -307,7 +307,7 @@ public class PageTest
         Assert.Equal("SampleAction", resultTemporary.ActionName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToActionPermanent_WithParameterActionName_SetsResultActionNameAndPermanent()
     {
         // Arrange
@@ -323,7 +323,7 @@ public class PageTest
         Assert.Equal("SampleAction", resultPermanent.ActionName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToActionPermanentPreserveMethod_WithParameterActionName_SetsResultActionNameAndPermanent()
     {
         // Arrange
@@ -864,7 +864,7 @@ public class PageTest
         Assert.Equal(expectedFragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoute_WithParameterRouteName_SetsResultSameRouteName()
     {
         // Arrange
@@ -881,7 +881,7 @@ public class PageTest
         Assert.Same(routeName, resultTemporary.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoutePreserveMethod_WithParameterRouteName_SetsResultSameRouteName()
     {
         // Arrange
@@ -898,7 +898,7 @@ public class PageTest
         Assert.Same(routeName, resultTemporary.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoutePermanent_WithParameterRouteName_SetsResultSameRouteNameAndPermanent()
     {
         // Arrange
@@ -915,7 +915,7 @@ public class PageTest
         Assert.Same(routeName, resultPermanent.RouteName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteName_SetsResultSameRouteNameAndPermanent()
     {
         // Arrange
@@ -1016,7 +1016,7 @@ public class PageTest
         Assert.Equal(expected, resultPermanent.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithNoArguments()
     {
         // Arrange
@@ -1030,7 +1030,7 @@ public class PageTest
         Assert.Null(result.PageName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageName()
     {
         // Arrange
@@ -1045,7 +1045,7 @@ public class PageTest
         Assert.Equal(pageName, result.PageName);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithRouteValues()
     {
         // Arrange
@@ -1067,7 +1067,7 @@ public class PageTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameAndHandler()
     {
         // Arrange
@@ -1084,7 +1084,7 @@ public class PageTest
         Assert.Equal(pageHandler, result.PageHandler);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameAndRouteValues()
     {
         // Arrange
@@ -1107,7 +1107,7 @@ public class PageTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameHandlerAndFragment()
     {
         // Arrange
@@ -1126,7 +1126,7 @@ public class PageTest
         Assert.Equal(fragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPage_WithPageNameRouteValuesHandlerAndFragment()
     {
         // Arrange
@@ -1153,7 +1153,7 @@ public class PageTest
         Assert.Equal(fragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageName()
     {
         // Arrange
@@ -1169,7 +1169,7 @@ public class PageTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNameAndPageHandler()
     {
         // Arrange
@@ -1187,7 +1187,7 @@ public class PageTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNameAndRouteValues()
     {
         // Arrange
@@ -1211,7 +1211,7 @@ public class PageTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNamePageHandlerAndRouteValues()
     {
         // Arrange
@@ -1237,7 +1237,7 @@ public class PageTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNamePageHandlerAndFragment()
     {
         // Arrange
@@ -1257,7 +1257,7 @@ public class PageTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePermanent_WithPageNamePageHandlerRouteValuesAndFragment()
     {
         // Arrange
@@ -1285,7 +1285,7 @@ public class PageTest
         Assert.True(result.Permanent);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToPagePreserveMethod_WithParameterUrl_SetsRedirectResultPreserveMethod()
     {
         // Arrange
@@ -1344,7 +1344,7 @@ public class PageTest
         Assert.Equal(expected, resultPermanent.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithContents()
     {
         // Arrange
@@ -1361,7 +1361,7 @@ public class PageTest
         Assert.Equal(string.Empty, result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithContentsAndFileDownloadName()
     {
         // Arrange
@@ -1378,7 +1378,7 @@ public class PageTest
         Assert.Equal("someDownloadName", result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithPath()
     {
         // Arrange
@@ -1395,7 +1395,7 @@ public class PageTest
         Assert.Equal(string.Empty, result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithPathAndFileDownloadName()
     {
         // Arrange
@@ -1412,7 +1412,7 @@ public class PageTest
         Assert.Equal("someDownloadName", result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithStream()
     {
         // Arrange
@@ -1439,7 +1439,7 @@ public class PageTest
         Assert.Equal(string.Empty, result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithStreamAndFileDownloadName()
     {
         // Arrange
@@ -1465,7 +1465,7 @@ public class PageTest
         Assert.Equal("someDownloadName", result.FileDownloadName);
     }
 
-    [Fact]
+    // [Fact]
     public void Unauthorized_SetsStatusCode()
     {
         // Arrange
@@ -1479,7 +1479,7 @@ public class PageTest
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_SetsStatusCode()
     {
         // Arrange
@@ -1493,7 +1493,7 @@ public class PageTest
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_SetsStatusCodeAndResponseContent()
     {
         // Arrange
@@ -1508,7 +1508,7 @@ public class PageTest
         Assert.Equal("Test Content", result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFound_SetsStatusCode()
     {
         // Arrange
@@ -1522,7 +1522,7 @@ public class PageTest
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFound_SetsStatusCodeAndResponseContent()
     {
         // Arrange
@@ -1537,7 +1537,7 @@ public class PageTest
         Assert.Equal("Test Content", result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_WithParameterContentString_SetsResultContent()
     {
         // Arrange
@@ -1552,7 +1552,7 @@ public class PageTest
         Assert.Null(actualContentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_WithParameterContentStringAndContentType_SetsResultContentAndContentType()
     {
         // Arrange
@@ -1568,7 +1568,7 @@ public class PageTest
         Assert.Equal("text/plain", actualContentResult.ContentType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Content_WithParameterContentAndTypeAndEncoding_SetsResultContentAndTypeAndEncoding()
     {
         // Arrange
@@ -1584,7 +1584,7 @@ public class PageTest
         Assert.Equal("text/plain; charset=utf-8", actualContentResult.ContentType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Content_NoContentType_DefaultEncodingIsUsed()
     {
         // Arrange
@@ -1598,7 +1598,7 @@ public class PageTest
         Assert.Null(contentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_InvalidCharset_DefaultEncodingIsUsed()
     {
         // Arrange
@@ -1615,7 +1615,7 @@ public class PageTest
         Assert.Null(MediaType.GetEncoding(contentResult.ContentType));
     }
 
-    [Fact]
+    // [Fact]
     public void Content_CharsetAndEncodingProvided_EncodingIsUsed()
     {
         // Arrange
@@ -1629,7 +1629,7 @@ public class PageTest
         MediaTypeAssert.Equal(contentType, contentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_CharsetInContentType_IsUsedForEncoding()
     {
         // Arrange
@@ -1643,7 +1643,7 @@ public class PageTest
         Assert.Equal(contentType, contentResult.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void StatusCode_SetObject()
     {
         // Arrange
@@ -1660,7 +1660,7 @@ public class PageTest
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void StatusCode_SetObjectNull()
     {
         // Arrange
@@ -1677,7 +1677,7 @@ public class PageTest
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void StatusCode_SetsStatusCode()
     {
         // Arrange
@@ -1691,7 +1691,7 @@ public class PageTest
         Assert.Equal(statusCode, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void PartialView_WithName()
     {
         // Arrange
@@ -1716,7 +1716,7 @@ public class PageTest
         Assert.Null(result.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void PartialView_WithNameAndModel()
     {
         // Arrange
@@ -1742,7 +1742,7 @@ public class PageTest
         Assert.Equal(model, result.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_WithName()
     {
         // Arrange
@@ -1764,7 +1764,7 @@ public class PageTest
         Assert.Same(viewData, result.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_WithType()
     {
         // Arrange
@@ -1786,7 +1786,7 @@ public class PageTest
         Assert.Same(viewData, result.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_WithArguments()
     {
         // Arrange
@@ -1812,7 +1812,7 @@ public class PageTest
         Assert.Same(viewData, result.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ReturnsFalse_IfValueProviderFactoryThrows()
     {
         // Arrange

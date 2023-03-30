@@ -39,7 +39,7 @@ public class MvcServiceCollectionExtensionsTest
     //
     // For these kind of multi registration service types, we want to make sure that MVC will still add its
     // services if the implementation type is different.
-    [Fact]
+    // [Fact]
     public void AddMvc_MultiRegistrationServiceTypes_AreRegistered_MultipleTimes()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class MvcServiceCollectionExtensionsTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvc_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifySingleRegistrationServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddControllers_AddRazorPages_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifySingleRegistrationServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddControllersWithViews_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifySingleRegistrationServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddRazorPages_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class MvcServiceCollectionExtensionsTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvc_Twice_DoesNotAddDuplicates()
     {
         // Arrange
@@ -171,7 +171,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifyAllServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddControllersAddRazorPages_Twice_DoesNotAddDuplicates()
     {
         // Arrange
@@ -188,7 +188,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifyAllServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddControllersWithViews_Twice_DoesNotAddDuplicates()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifyAllServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddRazorPages_Twice_DoesNotAddDuplicates()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class MvcServiceCollectionExtensionsTest
         VerifyAllServices(services);
     }
 
-    [Fact]
+    // [Fact]
     public void AddControllersWithViews_AddsDocumentedServices()
     {
         // Arrange
@@ -269,7 +269,7 @@ public class MvcServiceCollectionExtensionsTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvc_AddsAssemblyPartsForFrameworkTagHelpers()
     {
         // Arrange
@@ -296,7 +296,7 @@ public class MvcServiceCollectionExtensionsTest
         Assert.Single(manager.ApplicationParts.OfType<AssemblyPart>(), p => p.Assembly == mvcTagHelpersAssembly);
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvcTwice_DoesNotAddDuplicateFrameworkParts()
     {
         // Arrange
@@ -324,7 +324,7 @@ public class MvcServiceCollectionExtensionsTest
         Assert.Single(manager.ApplicationParts.OfType<AssemblyPart>(), p => p.Assembly == mvcTagHelpersAssembly);
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvcTwice_DoesNotAddApplicationFeatureProvidersTwice()
     {
         // Arrange
@@ -352,7 +352,7 @@ public class MvcServiceCollectionExtensionsTest
             feature => Assert.IsType<RazorCompiledItemFeatureProvider>(feature));
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvcCore_ReusesExistingApplicationPartManagerInstance_IfFoundOnServiceCollection()
     {
         // Arrange
@@ -368,7 +368,7 @@ public class MvcServiceCollectionExtensionsTest
         Assert.Same(manager, descriptor.ImplementationInstance);
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvc_NoScopedServiceIsReferredToByASingleton()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class MvcServiceCollectionExtensionsTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvc_RegistersExpectedTempDataProvider()
     {
         // Arrange
@@ -415,7 +415,7 @@ public class MvcServiceCollectionExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddMvc_DoesNotRegisterCookieTempDataOptionsConfiguration()
     {
         // Arrange

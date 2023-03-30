@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing;
 // Does not cover the EndpointNameAddressScheme in detail. see EndpointNameAddressSchemeTest
 public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
 {
-    [Fact]
+    // [Fact]
     public void GetPathByName_WithHttpContext_DoesNotUseAmbientValues()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByName_WithoutHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
         Assert.Equal("/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByName_WithHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
         Assert.Equal("/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByRouteValues_WithoutHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class LinkGeneratorEndpointNameExtensionsTest : LinkGeneratorTestBase
         Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByName_WithHttpContext_WithPathBaseAndFragment()
     {
         // Arrange

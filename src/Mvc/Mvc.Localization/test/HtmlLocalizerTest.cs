@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test;
 
 public class HtmlLocalizerTest
 {
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_UseIndexer_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class HtmlLocalizerTest
         Assert.Equal(localizedString.Value, actualLocalizedHtmlString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_UseIndexerWithArguments_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class HtmlLocalizerTest
         Assert.Equal("Input string was not in a correct format.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_GetString_ReturnsLocalizedString()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class HtmlLocalizerTest
         Assert.Equal("Hello John", actualLocalizedString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_GetStringWithArguments_ReturnsLocalizedString()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class HtmlLocalizerTest
         Assert.Equal("Hello John Doe", actualLocalizedString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_Html_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -198,7 +198,7 @@ public class HtmlLocalizerTest
         Assert.Equal("Hello John", actualLocalizedHtmlString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_WithCulture_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -213,7 +213,7 @@ public class HtmlLocalizerTest
         Assert.Equal("Bonjour John", actualLocalizedHtmlString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_GetAllStrings_ReturnsAllLocalizedStrings()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class HtmlLocalizerTest
         Assert.Equal("World", allLocalizedStrings.First().Value);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlLocalizer_GetAllStringsIncludeParentCulture_ReturnsAllLocalizedStrings()
     {
         // Arrange

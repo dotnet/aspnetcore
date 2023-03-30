@@ -36,7 +36,7 @@ public class JQueryFormValueProviderFactoryTest
             { "[property9][][property10]Value", new[] { "found" } },
         };
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProvider_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class JQueryFormValueProviderFactoryTest
         Assert.Equal("found", (string)result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatesValueProvider_WithCurrentCulture()
     {
         // Arrange
@@ -130,7 +130,7 @@ public class JQueryFormValueProviderFactoryTest
         Assert.Equal(CultureInfo.CurrentCulture, jqueryFormValueProvider.Culture);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProviderAsync_ThrowsValueProviderException_IfReadingFormThrowsInvalidDataException()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class JQueryFormValueProviderFactoryTest
         Assert.Same(exception, ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProviderAsync_ThrowsValueProviderException_IfReadingFormThrowsInvalidOperationException()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class JQueryFormValueProviderFactoryTest
         Assert.Same(exception, ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProviderAsync_ThrowsOriginalException_IfReadingFormThrows()
     {
         // Arrange

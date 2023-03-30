@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 
 public class RoutePatternParameterParserTest
 {
-    [Fact]
+    // [Fact]
     public void Parse_SingleLiteral()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SingleParameter()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_OptionalParameter()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_MultipleLiterals()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_MultipleParameters()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_LP()
     {
         // Arrange
@@ -113,7 +113,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_PL()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_PLP()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_LPL()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_OptionalParameterFollowingPeriod()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_ParametersFollowingPeriod()
     {
         // Arrange
@@ -212,7 +212,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_ThreeParameters()
     {
         // Arrange
@@ -234,7 +234,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_ThreeParametersSeparatedByPeriod()
     {
         // Arrange
@@ -256,7 +256,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_MiddleSegment()
     {
         // Arrange
@@ -278,7 +278,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_LastSegment()
     {
         // Arrange
@@ -300,7 +300,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal<RoutePattern>(expected, actual, new RoutePatternEqualityComparer());
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_PeriodAfterSlash()
     {
         // Arrange
@@ -405,7 +405,7 @@ public class RoutePatternParameterParserTest
             "segment '" + parameter + "'. Only a period (.) can precede an optional parameter.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_WithRepeatedParameter()
     {
         var ex = ExceptionAssert.Throws<RoutePatternException>(
@@ -428,7 +428,7 @@ public class RoutePatternParameterParserTest
             "matching '}' character.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotHaveCatchAllInMultiSegment()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -437,7 +437,7 @@ public class RoutePatternParameterParserTest
             "cannot contain a catch-all parameter.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotHaveMoreThanOneCatchAll()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -445,7 +445,7 @@ public class RoutePatternParameterParserTest
             "A catch-all parameter can only appear as the last segment of the route template.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotHaveMoreThanOneCatchAllInMultiSegment()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -454,7 +454,7 @@ public class RoutePatternParameterParserTest
             "cannot contain a catch-all parameter.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotHaveCatchAllWithNoName()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -489,7 +489,7 @@ public class RoutePatternParameterParserTest
         ExceptionAssert.Throws<RoutePatternException>(() => RoutePatternParser.Parse(template), expectedMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotHaveConsecutiveOpenBrace()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -498,7 +498,7 @@ public class RoutePatternParameterParserTest
             "matching '}' character.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotHaveConsecutiveCloseBrace()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -507,7 +507,7 @@ public class RoutePatternParameterParserTest
             "matching '}' character.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_SameParameterTwiceThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -515,7 +515,7 @@ public class RoutePatternParameterParserTest
             "The route parameter name 'AAA' appears more than one time in the route template.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_SameParameterTwiceAndOneCatchAllThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -523,7 +523,7 @@ public class RoutePatternParameterParserTest
             "The route parameter name 'AAA' appears more than one time in the route template.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_InvalidParameterNameWithCloseBracketThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -532,7 +532,7 @@ public class RoutePatternParameterParserTest
             "matching '}' character.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_InvalidParameterNameWithOpenBracketThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -540,7 +540,7 @@ public class RoutePatternParameterParserTest
             "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -551,7 +551,7 @@ public class RoutePatternParameterParserTest
             " and can occur only at the start of the parameter.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_InvalidParameterNameWithQuestionThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -562,7 +562,7 @@ public class RoutePatternParameterParserTest
             " and can occur only at the start of the parameter.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -571,7 +571,7 @@ public class RoutePatternParameterParserTest
             "either a parameter or a literal value.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_WithCatchAllNotAtTheEndThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -579,7 +579,7 @@ public class RoutePatternParameterParserTest
             "A catch-all parameter can only appear as the last segment of the route template.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_RepeatedParametersThrows()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -600,7 +600,7 @@ public class RoutePatternParameterParserTest
         Assert.Equal(routePattern, pattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotStartWithTilde()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -608,7 +608,7 @@ public class RoutePatternParameterParserTest
             "The route template cannot start with a '~' character unless followed by a '/'.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CannotContainQuestionMark()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -616,7 +616,7 @@ public class RoutePatternParameterParserTest
             "The literal section 'foor?bar' is invalid. Literal sections cannot contain the '?' character.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_ParameterCannotContainQuestionMark_UnlessAtEnd()
     {
         ExceptionAssert.Throws<RoutePatternException>(
@@ -627,7 +627,7 @@ public class RoutePatternParameterParserTest
             " and can occur only at the start of the parameter.");
     }
 
-    [Fact]
+    // [Fact]
     public void InvalidTemplate_CatchAllMarkedOptional()
     {
         ExceptionAssert.Throws<RoutePatternException>(

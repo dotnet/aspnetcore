@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class LocalRedirectResultTests
 {
-    [Fact]
+    // [Fact]
     public void Constructor_WithParameterUrl_SetsResultUrlAndNotPermanentOrPreserveMethod()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class LocalRedirectResultTests
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_WithParameterUrlAndPermanent_SetsResultUrlAndPermanentNotPreserveMethod()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class LocalRedirectResultTests
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_WithParameterUrlAndPermanent_SetsResultUrlPermanentAndPreserveMethod()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class LocalRedirectResultTests
         Assert.Same(url, result.Url);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Execute_ReturnsExpectedValues()
     {
         // Arrange

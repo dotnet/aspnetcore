@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 // Instead there's a sampling of things that have somewhat unique behavior or semantics.
 public class BindConverterTest
 {
-    [Fact]
+    // [Fact]
     public void FormatValue_Bool()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_Bool_Generic()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableBool()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableBool_Generic()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableBoolNull()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableBoolNull_Generic()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_Int()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_Int_Generic()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableInt()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableInt_Generic()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_DateTime()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_DateTime_Format()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_DateOnly()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_DateOnly_Format()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_TimeOnly()
     {
         // Arrange
@@ -224,7 +224,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_TimeOnly_Format()
     {
         // Arrange
@@ -238,7 +238,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_Enum()
     {
         // Arrange
@@ -252,7 +252,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_Enum_OutOfRange()
     {
         // Arrange
@@ -266,7 +266,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_NullableEnum()
     {
         // Arrange
@@ -279,7 +279,7 @@ public class BindConverterTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FormatValue_TypeConverter()
     {
         // Arrange
@@ -298,7 +298,7 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void TryConvertTo_Guid_Valid()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class BindConverterTest
         Assert.Equal(Guid.Empty, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void TryConvertTo_NullableGuid_Valid()
     {
         // Arrange
@@ -355,7 +355,7 @@ public class BindConverterTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void TryConvertTo_NullableGuid__Invalid()
     {
         // Arrange

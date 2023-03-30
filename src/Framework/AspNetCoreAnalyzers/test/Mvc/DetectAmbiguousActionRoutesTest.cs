@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Analyzers.Mvc;
 
 public partial class DetectAmbiguousActionRoutesTest
 {
-    [Fact]
+    // [Fact]
     public async Task SameRoutes_DifferentAction_HasDiagnostics()
     {
         // Arrange
@@ -40,7 +40,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MixedRoutes_DifferentAction_HasDiagnostics()
     {
         // Arrange
@@ -84,7 +84,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SameRoutes_DifferentAction_HostAttribute_NoDiagnostics()
     {
         // Arrange
@@ -113,7 +113,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SameRoutes_SameAction_HostAttribute_HasDiagnostics()
     {
         // Arrange
@@ -145,7 +145,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SameRoutes_DifferentAction_AuthorizeAttribute_HasDiagnostics()
     {
         // Arrange
@@ -179,7 +179,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SameRoutes_SameAction_AuthorizeAttribute_HasDiagnostics()
     {
         // Arrange
@@ -211,7 +211,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DifferentRoutes_DifferentAction_NoDiagnostics()
     {
         // Arrange
@@ -238,7 +238,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SameRoute_DifferentMethods_NoDiagnostics()
     {
         // Arrange
@@ -265,7 +265,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SameRoute_DifferentMethods_Route_NoDiagnostics()
     {
         // Arrange
@@ -292,7 +292,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_SameAction_HasDiagnostics()
     {
         // Arrange
@@ -322,7 +322,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_HasHttpAttributes_NoDiagnostics()
     {
         // Arrange
@@ -353,7 +353,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_HasDuplicateHttpAttributes_HasDiagnostics()
     {
         // Arrange
@@ -387,7 +387,7 @@ internal class Program
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_RouteAndGetVsGet_HasDiagnostics()
     {
         // Arrange

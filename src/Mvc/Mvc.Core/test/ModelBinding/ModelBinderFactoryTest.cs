@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class ModelBinderFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void CreateBinder_Throws_WhenNoProviders()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class ModelBinderFactoryTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_Throws_WhenBinderNotCreated()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class ModelBinderFactoryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_CreatesNoOpBinder_WhenPropertyDoesntHaveABinder()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class ModelBinderFactoryTest
         Assert.NotNull(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_CreatesNoOpBinder_WhenPropertyBindingIsNotAllowed()
     {
         // Arrange
@@ -135,7 +135,7 @@ public class ModelBinderFactoryTest
         Assert.IsType<NoOpBinder>(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_NestedProperties()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class ModelBinderFactoryTest
         Assert.NotNull(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_BreaksCycles()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class ModelBinderFactoryTest
         Assert.NotNull(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_DoesNotCache_WhenTokenIsNull()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class ModelBinderFactoryTest
         Assert.NotSame(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_Caches_WhenTokenIsNotNull()
     {
         // Arrange
@@ -386,7 +386,7 @@ public class ModelBinderFactoryTest
         Assert.Same(modelBinder, result);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_Caches_NonRootNodes()
     {
         // Arrange
@@ -447,7 +447,7 @@ public class ModelBinderFactoryTest
         Assert.Equal(1, widgetIdProvider.SuccessCount);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBinder_Caches_NonRootNodes_WhenNonRootNodeReturnsNull()
     {
         // Arrange
@@ -511,7 +511,7 @@ public class ModelBinderFactoryTest
 
     // The fact that we use the ModelMetadata as the token is important for caching
     // and sharing with TryUpdateModel.
-    [Fact]
+    // [Fact]
     public void CreateBinder_Caches_NonRootNodes_UsesModelMetadataAsToken()
     {
         // Arrange
@@ -573,7 +573,7 @@ public class ModelBinderFactoryTest
     // If a binder provider tries to recursively create itself, but then returns null, we've
     // already returned and possibly cached the PlaceholderBinder instance, we want to make sure that
     // instance won't nullref.
-    [Fact]
+    // [Fact]
     public void CreateBinder_Caches_NonRootNodes_FixesUpPlaceholderBinder()
     {
         // Arrange

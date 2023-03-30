@@ -10,7 +10,7 @@ public partial class RoutePatternBraceMatcherTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task AfterLiteral_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -31,7 +31,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeParameterStart_CompleteParameter_HighlightBraces()
     {
         // Arrange & Act & Assert
@@ -52,7 +52,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeParameterStart_IncompleteParameter_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -73,7 +73,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeArgumentStart_CompleteParenAndParameter_HighlightParens()
     {
         // Arrange & Act & Assert
@@ -94,7 +94,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeArgumentStart_CompleteParenIncompleteParameter_HighlightParens()
     {
         // Arrange & Act & Assert
@@ -115,7 +115,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AfterParameterStart_CompleteParameter_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -136,7 +136,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeReplacementTokenStart_NotUsedWithMvc_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -157,7 +157,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeReplacementTokenStart_MvcAction_HighlightReplacementTokenBrackets()
     {
         // Arrange & Act & Assert

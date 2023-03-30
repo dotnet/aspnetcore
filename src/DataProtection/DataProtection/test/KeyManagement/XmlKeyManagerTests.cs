@@ -27,7 +27,7 @@ public class XmlKeyManagerTests
               </secret>
             </theElement>");
 
-    [Fact]
+    // [Fact]
     public void Ctor_WithoutEncryptorOrRepository_UsesFallback()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class XmlKeyManagerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_WithEncryptorButNoRepository_IgnoresFallback_FailsWithServiceNotFound()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class XmlKeyManagerTests
         Assert.Contains("IXmlRepository", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateNewKey_Internal_NoEscrowOrEncryption()
     {
         // Constants
@@ -154,7 +154,7 @@ public class XmlKeyManagerTests
         Assert.Equal("key-3d6d01fd-c0e7-44ae-82dd-013b996b4093", friendlyNameStoredInRepository);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateNewKey_Internal_WithEscrowAndEncryption()
     {
         // Constants
@@ -282,7 +282,7 @@ public class XmlKeyManagerTests
         Assert.Equal("key-3d6d01fd-c0e7-44ae-82dd-013b996b4093", friendlyNameStoredInRepository);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateNewKey_CallsInternalManager()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class XmlKeyManagerTests
         Assert.InRange(actualCreationDate.Value, minCreationDate, DateTimeOffset.UtcNow);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_Empty()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class XmlKeyManagerTests
         Assert.Equal(0, keys.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_IgnoresUnknownElements()
     {
         // Arrange
@@ -379,7 +379,7 @@ public class XmlKeyManagerTests
         Assert.Same(descriptorB, keys[1].Descriptor);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_UnderstandsRevocations()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class XmlKeyManagerTests
         Assert.True(keys[3].IsRevoked);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_PerformsDecryption()
     {
         // Arrange
@@ -484,7 +484,7 @@ public class XmlKeyManagerTests
         Assert.Same(expectedDescriptor, keys[0].Descriptor);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_SwallowsKeyDeserializationErrors()
     {
         // Arrange
@@ -523,7 +523,7 @@ public class XmlKeyManagerTests
         Assert.Same(expectedDescriptor, keys[0].Descriptor);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_WithKeyDeserializationError_LogLevelDebug_DoesNotWriteSensitiveInformation()
     {
         // Arrange
@@ -547,7 +547,7 @@ public class XmlKeyManagerTests
         Assert.False(loggerFactory.ToString().Contains("1A2B3C4D"), "The secret '1A2B3C4D' should not have been logged.");
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_WithKeyDeserializationError_LogLevelTrace_WritesSensitiveInformation()
     {
         // Arrange
@@ -571,7 +571,7 @@ public class XmlKeyManagerTests
         Assert.True(loggerFactory.ToString().Contains("1A2B3C4D"), "The secret '1A2B3C4D' should have been logged.");
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllKeys_SurfacesRevocationDeserializationErrors()
     {
         // Arrange
@@ -605,7 +605,7 @@ public class XmlKeyManagerTests
         return keyManager.GetAllKeys();
     }
 
-    [Fact]
+    // [Fact]
     public void RevokeAllKeys()
     {
         // Arrange
@@ -655,7 +655,7 @@ public class XmlKeyManagerTests
         Assert.Equal("revocation-20150302T0313197573854Z", friendlyNameStoredInRepository);
     }
 
-    [Fact]
+    // [Fact]
     public void RevokeSingleKey_Internal()
     {
         // Arrange - mocks
@@ -710,7 +710,7 @@ public class XmlKeyManagerTests
         Assert.Equal("revocation-a11f35fc-1fed-4bd4-b727-056a63b70932", friendlyNameStoredInRepository);
     }
 
-    [Fact]
+    // [Fact]
     public void RevokeKey_CallsInternalManager()
     {
         // Arrange

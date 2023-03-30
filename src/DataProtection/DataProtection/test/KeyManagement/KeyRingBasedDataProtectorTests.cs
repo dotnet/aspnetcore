@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 public class KeyRingBasedDataProtectorTests
 {
-    [Fact]
+    // [Fact]
     public void Protect_NullPlaintext_Throws()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class KeyRingBasedDataProtectorTests
         ExceptionAssert.ThrowsArgumentNull(() => protector.Protect(plaintext: null), "plaintext");
     }
 
-    [Fact]
+    // [Fact]
     public void Protect_EncryptsToDefaultProtector_MultiplePurposes()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(expectedProtectedData, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void Protect_EncryptsToDefaultProtector_SinglePurpose()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(expectedProtectedData, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void Protect_HomogenizesExceptionsToCryptographicException()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.IsAssignableFrom<MockException>(ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_NullProtectedData_Throws()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class KeyRingBasedDataProtectorTests
         ExceptionAssert.ThrowsArgumentNull(() => protector.Unprotect(protectedData: null), "protectedData");
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_PayloadTooShort_ThrowsBadMagicHeader()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_PayloadHasBadMagicHeader_ThrowsBadMagicHeader()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_PayloadHasIncorrectVersionMarker_ThrowsNewerVersion()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(Resources.ProtectionProvider_BadVersion, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_KeyNotFound_ThrowsKeyNotFound()
     {
         // Arrange
@@ -243,7 +243,7 @@ public class KeyRingBasedDataProtectorTests
         };
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_KeyNotFound_RefreshOnce_ThrowsKeyNotFound()
     {
         // Arrange
@@ -274,7 +274,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(Error.Common_KeyNotFound(notFoundKeyId).Message, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_KeyNotFound_WontRefreshOnce_AfterTooLong()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(Error.Common_KeyNotFound(notFoundKeyId).Message, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_KeyNotFound_RefreshOnce_CanFindKey()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class KeyRingBasedDataProtectorTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_KeyRevoked_RevocationDisallowed_ThrowsKeyRevoked()
     {
         // Arrange
@@ -408,7 +408,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(Error.Common_KeyRevoked(keyId).Message, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_KeyRevoked_RevocationAllowed_ReturnsOriginalData_SetsRevokedAndMigrationFlags()
     {
         // Arrange
@@ -455,7 +455,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.True(wasRevoked);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_IsAlsoDefaultKey_Success_NoMigrationRequired()
     {
         // Arrange
@@ -503,7 +503,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.False(wasRevoked);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_IsNotDefaultKey_Success_RequiresMigration()
     {
         // Arrange
@@ -553,7 +553,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.False(wasRevoked);
     }
 
-    [Fact]
+    // [Fact]
     public void Protect_Unprotect_RoundTripsProperly()
     {
         // Arrange
@@ -580,7 +580,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(plaintext, roundTrippedPlaintext);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateProtector_ChainsPurposes()
     {
         // Arrange

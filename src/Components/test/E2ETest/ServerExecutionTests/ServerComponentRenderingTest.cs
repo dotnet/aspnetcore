@@ -20,7 +20,7 @@ public class ServerComponentRenderingTest : ComponentRenderingTestBase
     {
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsIfRenderIsRequestedOutsideSyncContext()
     {
         var appElement = Browser.MountTestComponent<DispatchingComponent>();

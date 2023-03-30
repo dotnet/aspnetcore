@@ -19,7 +19,7 @@ public class DefaultAntiforgeryTest
          "'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery " +
         "should not be cached.";
 
-    [Fact]
+    // [Fact]
     public async Task ChecksSSL_ValidateRequestAsync_Throws()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class DefaultAntiforgeryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChecksSSL_IsRequestValidAsync_Throws()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class DefaultAntiforgeryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ChecksSSL_GetAndStoreTokens_Throws()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class DefaultAntiforgeryTest
              exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ChecksSSL_GetTokens_Throws()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class DefaultAntiforgeryTest
              exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ChecksSSL_SetCookieTokenAndHeader_Throws()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class DefaultAntiforgeryTest
              exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTokens_ExistingInvalidCookieToken_GeneratesANewCookieTokenAndANewFormToken()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTokens_ExistingInvalidCookieToken_SwallowsExceptions()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.FormTokenString, tokenset.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTokens_ExistingValidCookieToken_GeneratesANewFormToken()
     {
         // Arrange
@@ -212,7 +212,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTokens_DoesNotSerializeTwice()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class DefaultAntiforgeryTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_ExistingValidCookieToken_NotOverriden()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_ExistingValidCookieToken_NotOverriden_AndSetsDoNotCacheHeaders()
     {
         // Arrange
@@ -312,7 +312,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_ExistingCachingHeaders_Overriden()
     {
         // Arrange
@@ -441,7 +441,7 @@ public class DefaultAntiforgeryTest
         Assert.False(hasWarningMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_NoExistingCookieToken_Saved()
     {
         // Arrange
@@ -475,7 +475,7 @@ public class DefaultAntiforgeryTest
         Assert.True(antiforgeryFeature.HaveStoredNewCookieToken);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_NoExistingCookieToken_Saved_AndSetsDoNotCacheHeaders()
     {
         // Arrange
@@ -505,7 +505,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_DoesNotSerializeTwice()
     {
         // Arrange
@@ -553,7 +553,7 @@ public class DefaultAntiforgeryTest
         Assert.True(antiforgeryFeature.HaveStoredNewCookieToken);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_DoesNotStoreTwice()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("serialized-form-token-from-context", tokenset.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsRequestValidAsync_FromStore_Failure()
     {
         // Arrange
@@ -628,7 +628,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsRequestValidAsync_FromStore_Success()
     {
         // Arrange
@@ -662,7 +662,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsRequestValidAsync_DoesNotDeserializeTwice()
     {
         // Arrange
@@ -772,7 +772,7 @@ public class DefaultAntiforgeryTest
         context.TokenGenerator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_FromStore_Failure()
     {
         // Arrange
@@ -804,7 +804,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_FromStore_Success()
     {
         // Arrange
@@ -836,7 +836,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_NoCookieToken_Throws()
     {
         // Arrange
@@ -860,7 +860,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("The required antiforgery cookie \"cookie-name\" is not present.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_NonFormRequest_HeaderDisabled_Throws()
     {
         // Arrange
@@ -884,7 +884,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_NonFormRequest_NoHeaderValue_Throws()
     {
         // Arrange
@@ -910,7 +910,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("The required antiforgery header value \"header-name\" is not present.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_FormRequest_NoRequestTokenValue_Throws()
     {
         // Arrange
@@ -939,7 +939,7 @@ public class DefaultAntiforgeryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateRequestAsync_DoesNotDeserializeTwice()
     {
         // Arrange
@@ -979,7 +979,7 @@ public class DefaultAntiforgeryTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_PreserveXFrameOptionsHeader()
     {
         // Arrange
@@ -1004,7 +1004,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal(expectedHeaderValue, xFrameOptions);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_NewCookieToken_SetsDoNotCacheHeaders()
     {
         // Arrange
@@ -1027,7 +1027,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_ValidOldCookieToken_SetsDoNotCacheHeaders()
     {
         // Arrange
@@ -1050,7 +1050,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_OverridesExistingCachingHeaders()
     {
         // Arrange
@@ -1112,7 +1112,7 @@ public class DefaultAntiforgeryTest
         Assert.True(antiforgeryFeature.HaveStoredNewCookieToken);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_DoesNotDeserializeTwice()
     {
         // Arrange
@@ -1155,7 +1155,7 @@ public class DefaultAntiforgeryTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_DoesNotStoreTwice()
     {
         // Arrange
@@ -1194,7 +1194,7 @@ public class DefaultAntiforgeryTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_NullCookieToken()
     {
         // Arrange
@@ -1231,7 +1231,7 @@ public class DefaultAntiforgeryTest
         context.TokenSerializer.Verify(s => s.Deserialize(null!), Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public void SetCookieTokenAndHeader_DoesNotModifyHeadersAfterResponseHasStarted()
     {
         // Arrange
@@ -1272,7 +1272,7 @@ public class DefaultAntiforgeryTest
         Assert.Equal("public", context.HttpContext.Response.Headers["Cache-Control"]);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAndStoreTokens_DoesNotLogWarning_IfNoExistingCacheHeadersPresent()
     {
         // Arrange

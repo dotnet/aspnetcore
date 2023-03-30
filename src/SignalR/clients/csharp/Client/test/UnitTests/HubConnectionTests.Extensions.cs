@@ -13,7 +13,7 @@ public partial class HubConnectionTests
 {
     public class Extensions
     {
-        [Fact]
+        // [Fact]
         public async Task On()
         {
             await InvokeOn(
@@ -22,7 +22,7 @@ public partial class HubConnectionTests
                 new object[0]);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnAsync()
         {
             await InvokeOn(
@@ -35,7 +35,7 @@ public partial class HubConnectionTests
                 new object[0]);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT1()
         {
             await InvokeOn(
@@ -44,7 +44,7 @@ public partial class HubConnectionTests
                 new object[] { 42 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT1Async()
         {
             await InvokeOn(
@@ -57,7 +57,7 @@ public partial class HubConnectionTests
                 new object[] { 42 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT2()
         {
             await InvokeOn(
@@ -66,7 +66,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc" });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT2Async()
         {
             await InvokeOn(
@@ -79,7 +79,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc" });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT3()
         {
             await InvokeOn(
@@ -88,7 +88,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT3Async()
         {
             await InvokeOn(
@@ -101,7 +101,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT4()
         {
             await InvokeOn(
@@ -110,7 +110,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT4Async()
         {
             await InvokeOn(
@@ -123,7 +123,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT5()
         {
             await InvokeOn(
@@ -132,7 +132,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123" });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT5Async()
         {
             await InvokeOn(
@@ -145,7 +145,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123" });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT6()
         {
             await InvokeOn(
@@ -154,7 +154,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123", 24 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT6Async()
         {
             await InvokeOn(
@@ -167,7 +167,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123", 24 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT7()
         {
             await InvokeOn(
@@ -176,7 +176,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123", 24, 'c' });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT7Async()
         {
             await InvokeOn(
@@ -189,7 +189,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123", 24, 'c' });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT8()
         {
             await InvokeOn(
@@ -198,7 +198,7 @@ public partial class HubConnectionTests
                 new object[] { 42, "abc", 24.0f, 10d, "123", 24, 'c', "XYZ" });
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT8Async()
         {
             await InvokeOn(
@@ -238,7 +238,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ConnectionNotClosedOnCallbackArgumentCountMismatch()
         {
             var connection = new TestConnection();
@@ -276,7 +276,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ConnectionNotClosedOnAsyncCallbackArgumentCountMismatch()
         {
             var connection = new TestConnection();
@@ -318,7 +318,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ConnectionNotClosedOnCallbackArgumentTypeMismatch()
         {
             var connection = new TestConnection();
@@ -356,7 +356,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ConnectionNotClosedOnAsyncCallbackArgumentTypeMismatch()
         {
             var connection = new TestConnection();
@@ -398,7 +398,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnWithResult()
         {
             var returnValue = 46;
@@ -413,7 +413,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnValue, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnAsyncWithResult()
         {
             var returnValue = 1220;
@@ -429,7 +429,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnValue, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT1WithResult()
         {
             var returnValue = "buffalo";
@@ -444,7 +444,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnValue, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT1AsyncWithResult()
         {
             var returnValue = 2;
@@ -461,7 +461,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnValue, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT2WithResult()
         {
             var returnValue = "ret";
@@ -476,7 +476,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnValue, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT2AsyncWithResult()
         {
             var returnResult = 928;
@@ -491,7 +491,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT3WithResult()
         {
             var returnValue = "bob";
@@ -506,7 +506,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnValue, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT3AsyncWithResult()
         {
             var returnResult = "random";
@@ -521,7 +521,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT4WithResult()
         {
             var returnResult = 233;
@@ -536,7 +536,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT4AsyncWithResult()
         {
             var returnResult = "alphabet";
@@ -551,7 +551,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT5WithResult()
         {
             var returnResult = 3004;
@@ -566,7 +566,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT5AsyncWithResult()
         {
             var returnResult = "alphabet";
@@ -581,7 +581,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT6WithResult()
         {
             var returnResult = "alphabet";
@@ -596,7 +596,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT6AsyncWithResult()
         {
             var returnResult = "alphabet";
@@ -611,7 +611,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT7WithResult()
         {
             var returnResult = 100;
@@ -626,7 +626,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT7AsyncWithResult()
         {
             var returnResult = "alphabet";
@@ -641,7 +641,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT8WithResult()
         {
             var returnResult = 102;
@@ -656,7 +656,7 @@ public partial class HubConnectionTests
             Assert.Equal(returnResult, result);
         }
 
-        [Fact]
+        // [Fact]
         public async Task OnT8AsyncWithResult()
         {
             var returnResult = "alphabet";

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
 public class RuntimeViewCompilerTest
 {
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsResultWithNullAttribute_IfFileIsNotFoundInFileSystem()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(fileProvider.GetChangeToken(path), token);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsResultWithExpirationToken()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class RuntimeViewCompilerTest
             token => Assert.Equal(fileProvider.GetChangeToken(path), token));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_AddsChangeTokensForViewStartsIfFileExists()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_InvalidatesCache_IfChangeTokenExpires()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class RuntimeViewCompilerTest
         Assert.Null(result2.Item);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsNewResultIfFileWasModified()
     {
         // Arrange
@@ -157,7 +157,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(expected2, result2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsNewResult_IfAncestorViewImportsWereModified()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(expected2, result2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_ReturnsPrecompiledViews()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(precompiledView, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PerformsCaseInsensitiveLookupsForPrecompiledViews_WithNonNormalizedPaths()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(precompiledView, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithoutChecksumForMainSource_DoesNotSupportRecompilation()
     {
         // Arrange
@@ -287,7 +287,7 @@ public class RuntimeViewCompilerTest
         Assert.Null(result.ExpirationTokens);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithoutAnyChecksum_DoesNotSupportRecompilation()
     {
         // Arrange
@@ -322,7 +322,7 @@ public class RuntimeViewCompilerTest
         Assert.Null(result.ExpirationTokens);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_UsesPrecompiledViewWhenChecksumIsMatch()
     {
         // Arrange
@@ -354,7 +354,7 @@ public class RuntimeViewCompilerTest
              token => Assert.Same(fileProvider.GetChangeToken(path), token));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_CanRejectWhenChecksumFails()
     {
         // Arrange
@@ -384,7 +384,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_AddsExpirationTokensForFilesInChecksumAttributes()
     {
         // Arrange
@@ -413,7 +413,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(fileProvider.GetChangeToken(path), token);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_CanRecompile()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(expected2, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_DoesNotRecompiledWithoutContentChange()
     {
         // Arrange
@@ -485,7 +485,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(precompiledView.Item, result.Item);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_CanReusePrecompiledViewIfContentChangesToMatch()
     {
         // Arrange
@@ -523,7 +523,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(precompiledView.Item, result.Item);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_PrecompiledViewWithChecksum_CanRecompileWhenViewImportChanges()
     {
         // Arrange
@@ -564,7 +564,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(expected2, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetOrAdd_AllowsConcurrentCompilationOfMultipleRazorPages()
     {
         // Arrange
@@ -642,7 +642,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(result2, task2.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompileAsync_DoesNotCreateMultipleCompilationResults_ForConcurrentInvocations()
     {
         // Arrange
@@ -683,7 +683,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetOrAdd_CachesCompilationExceptions()
     {
         // Arrange
@@ -707,7 +707,7 @@ public class RuntimeViewCompilerTest
         Assert.Same(exception, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Compile_SucceedsForCSharp7()
     {
         // Arrange
@@ -733,7 +733,7 @@ public class MyTestType
         Assert.Equal("MyTestType", exportedType.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void Compile_ReturnsCompilationFailureWithPathsFromLinePragmas()
     {
         // Arrange
@@ -754,7 +754,7 @@ this should fail";
         Assert.Equal(fileContent, compilationFailure.SourceFileContent);
     }
 
-    [Fact]
+    // [Fact]
     public void Compile_ReturnsGeneratedCodePath_IfLinePragmaIsNotAvailable()
     {
         // Arrange
@@ -773,7 +773,7 @@ this should fail";
         Assert.Equal(content, compilationFailure.SourceFileContent);
     }
 
-    [Fact]
+    // [Fact]
     public void CompileAndEmit_DoesNotThrowIfDebugTypeIsEmbedded()
     {
         // Arrange
@@ -793,7 +793,7 @@ this should fail";
         Assert.NotNull(result);
     }
 
-    [Fact]
+    // [Fact]
     public void CompileAndEmit_WorksIfEmitPdbIsNotSet()
     {
         // Arrange

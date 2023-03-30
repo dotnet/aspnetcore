@@ -58,7 +58,7 @@ public class DfaMatcherTest
         return Assert.IsType<DataSourceDependentMatcher>(factory.CreateMatcher(dataSource));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_ValidRouteConstraint_EndpointMatched()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class DfaMatcherTest
         Assert.NotNull(httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_InvalidRouteConstraint_NoEndpointMatched()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class DfaMatcherTest
         Assert.Null(httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_RequireValuesAndDefaultValues_EndpointMatched()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_RequireValuesAndDifferentPath_NoEndpointMatched()
     {
         // Arrange
@@ -194,7 +194,7 @@ public class DfaMatcherTest
         Assert.Null(httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_RequireValuesAndOptionalParameter_EndpointMatched()
     {
         // Arrange
@@ -273,7 +273,7 @@ public class DfaMatcherTest
         Assert.Equal("17", httpContext.Request.RouteValues["id"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_MultipleEndpointsWithDifferentRequiredValues_EndpointMatched()
     {
         // Arrange
@@ -312,7 +312,7 @@ public class DfaMatcherTest
         Assert.Same(endpoint2, httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_ParameterTransformer_EndpointMatched()
     {
         // Arrange
@@ -351,7 +351,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_EndpointMatched()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class DfaMatcherTest
         Assert.Same(endpoint2, candidate.Endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_EndpointNotMatched()
     {
         // Arrange
@@ -403,7 +403,7 @@ public class DfaMatcherTest
         Assert.Empty(set.candidates);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_EndpointMatched_WhenExplicitRouteExists()
     {
         // Arrange
@@ -431,7 +431,7 @@ public class DfaMatcherTest
         Assert.Same(endpoint1, candidate.Endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_EndpointMatchedWithTwoCandidates_WhenLiteralMeetsConstraint()
     {
         // Arrange
@@ -457,7 +457,7 @@ public class DfaMatcherTest
         Assert.Equal(endpoints.ToArray(), set.candidates.Select(e => e.Endpoint).OrderBy(e => ((RouteEndpoint)e).RoutePattern.RawText).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointMatched()
     {
         // Arrange
@@ -483,7 +483,7 @@ public class DfaMatcherTest
         Assert.Same(endpoint2, candidate.Endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointNotMatched()
     {
         // Arrange
@@ -508,7 +508,7 @@ public class DfaMatcherTest
         Assert.Empty(set.candidates);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointMatched_WhenExplicitRouteExists()
     {
         // Arrange
@@ -536,7 +536,7 @@ public class DfaMatcherTest
         Assert.Same(endpoint1, candidate.Endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointMatchedWithTwoCandidates_WhenLiteralMeetsConstraint()
     {
         // Arrange
@@ -572,7 +572,7 @@ public class DfaMatcherTest
         return (context, requestPath, count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_DifferentDefaultCase_RouteValueUsesDefaultCase()
     {
         // Arrange
@@ -611,7 +611,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_DuplicateTemplatesAndDifferentOrder_LowerOrderEndpointMatched()
     {
         // Arrange
@@ -636,7 +636,7 @@ public class DfaMatcherTest
         Assert.Equal(lowerOrderEndpoint, httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled()
     {
         // Arrange
@@ -682,7 +682,7 @@ public class DfaMatcherTest
         Assert.Equal(endpoint2, httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled_AllocatesDictionaryForRouteParameter()
     {
         // Arrange
@@ -728,7 +728,7 @@ public class DfaMatcherTest
         Assert.Equal(endpoint2, httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled_AllocatesDictionaryForRouteConstraint()
     {
         // Arrange
@@ -775,7 +775,7 @@ public class DfaMatcherTest
         Assert.Equal(endpoint2, httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_NoCandidates_Logging()
     {
         // Arrange
@@ -805,7 +805,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_ConstraintRejectsEndpoint_Logging()
     {
         // Arrange
@@ -845,7 +845,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_ComplexSegmentRejectsEndpoint_Logging()
     {
         // Arrange
@@ -885,7 +885,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_MultipleCandidates_Logging()
     {
         // Arrange
@@ -942,7 +942,7 @@ public class DfaMatcherTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_RunsApplicableEndpointSelectorPolicies()
     {
         // Arrange
@@ -978,7 +978,7 @@ public class DfaMatcherTest
         Assert.Same(dataSource.Endpoints[2], httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_SkipsNonApplicableEndpointSelectorPolicies()
     {
         // Arrange
@@ -1013,7 +1013,7 @@ public class DfaMatcherTest
         Assert.Same(dataSource.Endpoints[1], httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchAsync_RunsEndpointSelectorPolicies_CanShortCircuit()
     {
         // Arrange

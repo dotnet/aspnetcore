@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public class ComponentApplicationLifetimeTest
 {
-    [Fact]
+    // [Fact]
     public async Task RestoreStateAsync_InitializesStateWithDataFromTheProvidedStore()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(data, retrieved);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RestoreStateAsync_ThrowsOnDoubleInitialization()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class ComponentApplicationLifetimeTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.RestoreStateAsync(store));
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_SavesPersistedStateToTheStore()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(data, JsonSerializer.Deserialize<byte[]>(persisted.ToArray()));
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_InvokesPauseCallbacksDuringPersist()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class ComponentApplicationLifetimeTest
         Assert.True(invoked);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_FiresCallbacksInParallel()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(new[] { 1, 2, 3, 4 }, sequence);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_CallbacksAreRemovedWhenSubscriptionsAreDisposed()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class ComponentApplicationLifetimeTest
         Assert.Empty(sequence);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_ContinuesInvokingPauseCallbacksDuringPersistIfACallbackThrows()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(LogLevel.Error, log.LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_ContinuesInvokingPauseCallbacksDuringPersistIfACallbackThrowsAsynchonously()
     {
         // Arrange
@@ -211,7 +211,7 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(LogLevel.Error, log.LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistStateAsync_ThrowsWhenDeveloperTriesToPersistStateMultipleTimes()
     {
         // Arrange

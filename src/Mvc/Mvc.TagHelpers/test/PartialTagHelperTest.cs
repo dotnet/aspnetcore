@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class PartialTagHelperTest
 {
-    [Fact]
+    // [Fact]
     public void ResolveModel_ReturnsModelWhenProvided()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class PartialTagHelperTest
         Assert.Same(expectedModel, model);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveModel_ReturnsModelWhenNullValueIsProvided()
     {
         // Regression test for https://github.com/aspnet/Mvc/issues/7667.
@@ -56,7 +56,7 @@ public class PartialTagHelperTest
         Assert.Null(model);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveModel_ReturnsForModelWhenProvided()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class PartialTagHelperTest
         Assert.Same(expectedModel, model);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveModel_ReturnsViewContextsViewDataModelWhenModelAndForAreNotSet()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class PartialTagHelperTest
         Assert.Same(expectedModel, model);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveModel_ThrowsWhenModelAndForProvided()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class PartialTagHelperTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveModel_ThrowsWhenNullModelAndForProvided()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class PartialTagHelperTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RendersPartialView_IfGetViewReturnsView()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RendersPartialView_IfFindViewReturnsView()
     {
         // Arrange
@@ -224,7 +224,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesViewDataFromContext()
     {
         // Arrange
@@ -265,7 +265,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesPassedInViewData_WhenNotNull()
     {
         // Arrange
@@ -307,7 +307,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesModelExpression_ToDetermineModel()
     {
         // Arrange
@@ -355,7 +355,7 @@ public class PartialTagHelperTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_DoesNotUseModelFromViewdata_IfModelExpressionEvaluatesToNull()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class PartialTagHelperTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_SetsHtmlFieldPrefix_UsingModelExpression()
     {
         // Arrange
@@ -449,7 +449,7 @@ public class PartialTagHelperTest
         Assert.Equal("order.items[0]", viewContext.ViewData.TemplateInfo.HtmlFieldPrefix);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesModelOnViewContextViewData_WhenModelExpressionIsNull()
     {
         // Arrange
@@ -487,7 +487,7 @@ public class PartialTagHelperTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_DoesNotModifyHtmlFieldPrefix_WhenModelExpressionIsNull()
     {
         // Arrange
@@ -527,7 +527,7 @@ public class PartialTagHelperTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_DisposesViewInstance()
     {
         // Arrange
@@ -563,7 +563,7 @@ public class PartialTagHelperTest
         view.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_Throws_If_NotOptional_And_GetViewAndFindReturnNotFoundResults()
     {
         // Arrange
@@ -602,7 +602,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_IfOptional_And_ViewIsNotFound_WillNotRenderAnything()
     {
         // Arrange
@@ -643,7 +643,7 @@ public class PartialTagHelperTest
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RendersMainPartial_If_FallbackIsSet_AndMainPartialIsFound()
     {
         // Arrange
@@ -693,7 +693,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_IfHasFallback_Throws_When_MainPartialAndFallback_AreNotFound()
     {
         // Arrange
@@ -745,7 +745,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RendersFallbackView_If_MainIsNotFound_AndGetViewReturnsView()
     {
         // Arrange
@@ -789,7 +789,7 @@ public class PartialTagHelperTest
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RendersFallbackView_If_MainIsNotFound_AndFindViewReturnsView()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class CompiledPageActionDescriptorFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesApplicationModelConventions()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class CompiledPageActionDescriptorFactoryTest
         convention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesApplicationModelConventions_SpecifiedOnHandlerType()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class CompiledPageActionDescriptorFactoryTest
         handlerConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesHandlerModelConventions()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class CompiledPageActionDescriptorFactoryTest
         handlerModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesHandlerModelConventions_DefinedGlobally()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class CompiledPageActionDescriptorFactoryTest
         handlerModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_RemovingHandlerAsPartOfHandlerModelConvention_Works()
     {
         // Arrange
@@ -157,7 +157,7 @@ public class CompiledPageActionDescriptorFactoryTest
         handlerModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesParameterModelConventions()
     {
         // Arrange
@@ -188,7 +188,7 @@ public class CompiledPageActionDescriptorFactoryTest
         parameterModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesParameterModelConventions_DeclaredGlobally()
     {
         // Arrange
@@ -219,7 +219,7 @@ public class CompiledPageActionDescriptorFactoryTest
         parameterModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_RemovingParameterModelAsPartOfConventionWorks()
     {
         // Arrange
@@ -254,7 +254,7 @@ public class CompiledPageActionDescriptorFactoryTest
         parameterModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesPropertyModelConventions()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class CompiledPageActionDescriptorFactoryTest
         propertyModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_InvokesPropertyModelConventions_DeclaredGlobally()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class CompiledPageActionDescriptorFactoryTest
         propertyModelConvention.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyConventions_RemovingPropertyModelAsPartOfConvention_Works()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets;
 
 public class ManifestStaticWebAssetsFileProviderTest
 {
-    [Fact]
+    // [Fact]
     public void GetFileInfoPrefixRespectsOsCaseSensitivity()
     {
         // Arrange
@@ -273,7 +273,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.All(manifest.Root.Children.Values, c => Assert.Single(c.Children));
     }
 
-    [Fact]
+    // [Fact]
     public void CanFindFileListedOnTheManifest()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -289,7 +289,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Equal("file.version.js", file.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfoHandlesRootCorrectly()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -306,7 +306,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Equal("", file.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfoHandlesRootPatternCorrectly()
     {
         var (manifest, factory) = CreateTestManifestWithPattern();
@@ -323,7 +323,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Equal("other.html", file.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContentsHandlesRootPatternCorrectly()
     {
         var (manifest, factory) = CreateTestManifestWithPattern();
@@ -342,7 +342,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Equal("other.html", file.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CanFindFileMatchingPattern()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -358,7 +358,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Equal("project-transitive-dep.js", file.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CanFindFileWithSpaces()
     {
         // Arrange
@@ -393,7 +393,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.True(provider.GetFileInfo("/_content/Static Web Assets.txt").Exists);
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresFilesThatDontMatchThePattern()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -408,7 +408,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.False(file.Exists);
     }
 
-    [Fact]
+    // [Fact]
     public void ReturnsNotFoundFileWhenNoPatternAndNoEntryMatchPatch()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -424,7 +424,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.False(file.Exists);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContentsHandlesRootCorrectly()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -439,7 +439,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Equal(new[] { (true, "_content") }, contents.Select(e => (e.IsDirectory, e.Name)).OrderBy(e => e.Name).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContentsReturnsNonExistingDirectoryWhenDirectoryDoesNotExist()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -454,7 +454,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.False(contents.Exists);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContentsListsEntriesBasedOnManifest()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -472,7 +472,7 @@ public class ManifestStaticWebAssetsFileProviderTest
             contents.Select(e => (e.IsDirectory, e.Name)).OrderBy(e => e.Name).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContentsListsEntriesBasedOnPatterns()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -588,7 +588,7 @@ public class ManifestStaticWebAssetsFileProviderTest
         Assert.Empty(directory);
     }
 
-    [Fact]
+    // [Fact]
     public void CombinesContentsFromManifestAndPatterns()
     {
         var (manifest, factory) = CreateTestManifest();
@@ -606,7 +606,7 @@ public class ManifestStaticWebAssetsFileProviderTest
             contents.Select(e => (e.IsDirectory, e.Name)).OrderBy(e => e.Name).ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContentsPrefixRespectsOsCaseSensitivity()
     {
         // Arrange

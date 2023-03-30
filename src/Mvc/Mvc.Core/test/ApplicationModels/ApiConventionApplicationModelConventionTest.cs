@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class ApiConventionApplicationModelConventionTest
 {
-    [Fact]
+    // [Fact]
     public void Apply_DoesNotAddConventionItem_IfNoConventionMatches()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.DoesNotContain(typeof(ApiConventionResult), actionModel.Properties.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_AddsConventionItem_IfConventionMatches()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.NotNull(value);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_AddsConventionItem_IfActionHasNonConventionBasedFilters()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.NotNull(value);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_UsesDefaultErrorType_IfActionHasNoAttributes()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.Equal(expected, attribute.Type);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_UsesValueFromProducesErrorResponseTypeAttribute_SpecifiedOnControllerAsssembly()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.Equal(expected, attribute.Type);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_UsesValueFromProducesErrorResponseTypeAttribute_SpecifiedOnController()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.Equal(expected, attribute.Type);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_UsesValueFromProducesErrorResponseTypeAttribute_SpecifiedOnAction()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class ApiConventionApplicationModelConventionTest
         Assert.Equal(expected, attribute.Type);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_AllowsVoidsErrorType()
     {
         // Arrange

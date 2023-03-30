@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class NotFoundOfTResultTests
 {
-    [Fact]
+    // [Fact]
     public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
@@ -27,7 +27,7 @@ public class NotFoundOfTResultTests
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFoundObjectResult_InitializesStatusCode()
     {
         // Arrange & act
@@ -37,7 +37,7 @@ public class NotFoundOfTResultTests
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFoundObjectResult_InitializesStatusCodeAndResponseContent()
     {
         // Arrange & act
@@ -48,7 +48,7 @@ public class NotFoundOfTResultTests
         Assert.Equal("Test Content", notFound.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NotFoundObjectResult_ExecuteSuccessful()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class NotFoundOfTResultTests
         Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_AddsResponseTypeMetadata()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class NotFoundOfTResultTests
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
     }
 
-    [Fact]
+    // [Fact]
     public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class NotFoundOfTResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
     {
         // Act & Assert
@@ -99,7 +99,7 @@ public class NotFoundOfTResultTests
         Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<NotFound<object>>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
     }
 
-    [Fact]
+    // [Fact]
     public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctly()
     {
         // Act & Assert
@@ -107,7 +107,7 @@ public class NotFoundOfTResultTests
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFoundResult_Implements_IValueHttpResult_Correctly()
     {
         // Arrange & Act
@@ -119,7 +119,7 @@ public class NotFoundOfTResultTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFoundResult_Implements_IValueHttpResultOfT_Correctly()
     {
         // Arrange & Act

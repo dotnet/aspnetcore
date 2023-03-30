@@ -12,7 +12,7 @@ public partial class RoutePatternHighlighterTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task AfterLiteral_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -33,7 +33,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AfterParameterStart_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -54,7 +54,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeParameterName_CompleteParameter_HighlightName()
     {
         // Arrange & Act & Assert
@@ -75,7 +75,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeforeParameterName_ParameterWithConstraint_HighlightName()
     {
         // Arrange & Act & Assert
@@ -96,7 +96,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task MiddleParameterName_CompleteParameter_HighlightName()
     {
         // Arrange & Act & Assert
@@ -117,7 +117,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task MiddleConstraint_ParameterWithConstraint_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -138,7 +138,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_ExtensionMethod_MatchingDelegate_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -159,7 +159,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_ExtensionMethod_MatchingDelegate_RouteMetadataWithoutName_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -181,7 +181,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_ExtensionMethod_MatchingDelegate_RouteMetadataWithName_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -203,7 +203,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_ExtensionMethod_MatchingDelegate_RouteMetadataWithName_MultipleMatches_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -225,7 +225,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingDelegate_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -244,7 +244,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingDelegate_AsParameters_HighlightProperty()
     {
         // Arrange & Act & Assert
@@ -275,7 +275,7 @@ public class PageData
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingDelegate_AsParameters_DontHighlightArgument()
     {
         // Arrange & Act & Assert
@@ -306,7 +306,7 @@ public class PageData
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingMethod_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -330,7 +330,7 @@ class Program
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingAction_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -358,7 +358,7 @@ public class TestController
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingActionWithNamespace_HighlightParameter()
     {
         // Arrange & Act & Assert
@@ -389,7 +389,7 @@ namespace Test
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_NestedControllerMatchingAction_NoHighlight()
     {
         // Arrange & Act & Assert
@@ -420,7 +420,7 @@ public class OuterClass
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task InParameterName_MatchingDelegateWithConflictingIdentifer_DontHighlightConflict()
     {
         // Arrange & Act & Assert

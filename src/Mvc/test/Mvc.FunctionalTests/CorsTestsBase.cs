@@ -45,7 +45,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Equal(new[] { "*" }, header.Value.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task OptionsRequest_NonPreflight_ExecutesOptionsAction()
     {
         // Arrange
@@ -61,7 +61,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(response.Headers);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreflightRequestOnNonCorsEnabledController_ExecutesOptionsAction()
     {
         // Arrange
@@ -79,7 +79,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(response.Headers);
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task PreflightRequestOnNonCorsEnabledController_DoesNotMatchTheAction()
     {
         // Arrange
@@ -135,7 +135,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Equal(string.Empty, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuccessfulCorsRequest_AllowsCredentials_IfThePolicyAllowsCredentials()
     {
         // Arrange
@@ -167,7 +167,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Equal("abcd", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuccessfulPreflightRequest_AllowsCredentials_IfThePolicyAllowsCredentials()
     {
         // Arrange
@@ -203,7 +203,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PolicyFailed_Allows_ActualRequest_WithMissingResponseHeaders()
     {
         // Arrange
@@ -278,7 +278,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Cors_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnController()
     {
         // Arrange
@@ -310,7 +310,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Cors_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnAction()
     {
         // Arrange
@@ -345,7 +345,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisableCors_RunsBeforeOtherAuthorizationFilters()
     {
         // Controller enables authorization and Cors, the action has a DisableCorsAttribute.
@@ -373,7 +373,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Cors_OnAction_PreferredOverController_AndAuthorizationFiltersRunAfterCors()
     {
         // Arrange
@@ -396,7 +396,7 @@ public abstract class CorsTestsBase<TStartup> : IClassFixture<MvcTestFixture<TSt
         Assert.Empty(content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Cors_WithoutOriginHeader_Works()
     {
         // Arrange

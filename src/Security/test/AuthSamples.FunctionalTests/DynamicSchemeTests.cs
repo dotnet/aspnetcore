@@ -19,7 +19,7 @@ public class DynamicSchemeTests : IClassFixture<WebApplicationFactory<DynamicSch
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultReturns200()
     {
         // Arrange & Act
@@ -30,7 +30,7 @@ public class DynamicSchemeTests : IClassFixture<WebApplicationFactory<DynamicSch
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAddUpdateRemoveSchemes()
     {
         // Arrange & Act

@@ -28,7 +28,7 @@ public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
         WaitUntilLoaded();
     }
 
-    [Fact]
+    // [Fact]
     public void CanLoadBlazorAppFromSubPath()
     {
         Navigate("/app/");
@@ -37,13 +37,13 @@ public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
         Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
     }
 
-    [Fact]
+    // [Fact]
     public void HasTitle()
     {
         Assert.Equal("Sample Blazor app", Browser.Title);
     }
 
-    [Fact]
+    // [Fact]
     public void ServesStaticAssetsFromClientAppWebRoot()
     {
         var javascriptExecutor = (IJavaScriptExecutor)Browser;

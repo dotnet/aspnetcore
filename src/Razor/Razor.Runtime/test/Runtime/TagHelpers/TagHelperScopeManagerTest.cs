@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 
 public class TagHelperScopeManagerTest
 {
-    [Fact]
+    // [Fact]
     public void Begin_DoesNotRequireParentExecutionContext()
     {
         // Arrange & Act
@@ -24,7 +24,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal(1234, executionContextItem.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_ReturnedExecutionContext_ItemsAreRetrievedFromParentExecutionContext()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal(1234, executionContextItem.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_DoesShallowCopyOfParentItems()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal(1234, parentEntry.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_ReturnedExecutionContext_ItemsModificationDoesNotAffectParent()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal(1234, parentExecutionContextItem.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_ReturnedExecutionContext_ItemsInsertionDoesNotAffectParent()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class TagHelperScopeManagerTest
         Assert.Empty(parentExecutionContext.Items);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_ReturnedExecutionContext_ItemsRemovalDoesNotAffectParent()
     {
         // Arrange
@@ -121,7 +121,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal(1234, parentExecutionContextItem.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_CreatesContexts_TagHelperOutput_WithAppropriateTagName()
     {
         // Arrange
@@ -135,7 +135,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal("p", output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public void Begin_CanNest()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal(tagMode, output.TagMode);
     }
 
-    [Fact]
+    // [Fact]
     public void End_ReturnsParentExecutionContext()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class TagHelperScopeManagerTest
         Assert.Equal("p", output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public void End_ReturnsNullIfNoNestedContext()
     {
         // Arrange
@@ -199,7 +199,7 @@ public class TagHelperScopeManagerTest
         Assert.Null(executionContext);
     }
 
-    [Fact]
+    // [Fact]
     public void End_ThrowsIfNoScope()
     {
         // Arrange

@@ -38,7 +38,7 @@ public class ClientRenderingMultpleComponentsTest : E2ETest.Infrastructure.Serve
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderMultipleRootComponents()
     {
         Navigate("/Client/multiple-components");

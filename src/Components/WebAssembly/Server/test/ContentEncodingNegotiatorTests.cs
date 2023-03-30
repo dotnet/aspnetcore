@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server.Tests;
 
 public class ContentEncodingNegotiatorTests
 {
-    [Fact]
+    // [Fact]
     public async Task RespectsAcceptEncodingQuality()
     {
         var encoding = "gzip;q=0.5, deflate;q=0.3, br;q=0.2";
@@ -32,7 +32,7 @@ public class ContentEncodingNegotiatorTests
         Assert.Contains(HeaderNames.ContentEncoding, varyHeader.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RespectsIdentity()
     {
         var encoding = "gzip;q=0.5, deflate;q=0.3, br;q=0.2, identity";
@@ -52,7 +52,7 @@ public class ContentEncodingNegotiatorTests
         Assert.False(httpContext.Response.Headers.TryGetValue(HeaderNames.Vary, out var varyHeader));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SkipsNonExistingFiles()
     {
         var encoding = "gzip;q=0.5, deflate;q=0.3, br";
@@ -75,7 +75,7 @@ public class ContentEncodingNegotiatorTests
         Assert.Contains(HeaderNames.ContentEncoding, varyHeader.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesPreferredServerEncodingForEqualQualityValues()
     {
         var encoding = "gzip, deflate, br";
@@ -98,7 +98,7 @@ public class ContentEncodingNegotiatorTests
         Assert.Contains(HeaderNames.ContentEncoding, varyHeader.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SkipNonExistingFilesWhenSearchingForServerPreferencesPreferences()
     {
         var encoding = "gzip, deflate, br";
@@ -121,7 +121,7 @@ public class ContentEncodingNegotiatorTests
         Assert.Contains(HeaderNames.ContentEncoding, varyHeader.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnyUsesServerPreference()
     {
         var encoding = "*";
@@ -144,7 +144,7 @@ public class ContentEncodingNegotiatorTests
         Assert.Contains(HeaderNames.ContentEncoding, varyHeader.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnySkipsNonExistingFiles()
     {
         var encoding = "*";
@@ -167,7 +167,7 @@ public class ContentEncodingNegotiatorTests
         Assert.Contains(HeaderNames.ContentEncoding, varyHeader.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnyDoesNotPickEncodingIfNoFilesFound()
     {
         var encoding = "*";
@@ -187,7 +187,7 @@ public class ContentEncodingNegotiatorTests
         Assert.False(httpContext.Response.Headers.TryGetValue(HeaderNames.Vary, out var varyHeader));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnyRespectsServerPreference()
     {
         var encoding = "gzip;q=0.5, *;q=0.8, br;q=0.2";

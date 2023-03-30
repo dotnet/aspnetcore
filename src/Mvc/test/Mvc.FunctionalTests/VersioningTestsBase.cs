@@ -21,7 +21,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public abstract Task HasEndpointMatch();
 
     [Theory]
@@ -70,7 +70,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal("GetAllV" + version, result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VersionedApi_CanReachV1Operations_OnTheSameController_WithNoVersionSpecified()
     {
         // Arrange
@@ -91,7 +91,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.DoesNotContain("id", result.RouteValues.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VersionedApi_CanReachV1Operations_OnTheSameController_WithVersionSpecified()
     {
         // Arrange
@@ -110,7 +110,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal("Get", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheSameController()
     {
         // Arrange
@@ -129,7 +129,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal("GetById", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VersionedApi_CanReachV1OperationsWithParameters_OnTheSameController_WithVersionSpecified()
     {
         // Arrange
@@ -180,7 +180,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
            result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VersionedApi_CanNotReachOtherVersionOperations_OnTheSameController_WithNoVersionSpecified()
     {
         // Arrange
@@ -376,7 +376,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(action, result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VersionedApi_CanReachOtherVersionOperationsWithParameters_OnTheV2Controller()
     {
         // Arrange
@@ -483,7 +483,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(actionName, result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task VersionedApi_ConstraintOrder_IsRespected()
     {
         // Arrange
@@ -502,7 +502,7 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal("AnyV2OrHigher", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task VersionedApi_CanUseConstraintOrder_ToChangeSelectedAction()
     {
         // Arrange

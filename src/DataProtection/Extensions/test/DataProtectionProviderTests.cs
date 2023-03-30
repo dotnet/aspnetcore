@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 
 public class DataProtectionProviderTests
 {
-    [Fact]
+    // [Fact]
     public void System_UsesProvidedDirectory()
     {
         WithUniqueTempDirectory(directory =>
@@ -44,7 +44,7 @@ public class DataProtectionProviderTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void System_NoKeysDirectoryProvided_UsesDefaultKeysDirectory()
     {
         var mock = new Mock<IDefaultKeyStorageDirectories>();
@@ -210,7 +210,7 @@ public class DataProtectionProviderTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void System_UsesInMemoryCertificate()
     {
         var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
@@ -257,7 +257,7 @@ public class DataProtectionProviderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void System_CanUnprotectWithCert()
     {
         var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");

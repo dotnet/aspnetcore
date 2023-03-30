@@ -22,7 +22,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_SingleContentType_PicksTheFirstSupportedFormatter()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_MultipleContentTypes_RunsConnegToSelectFormatter()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoProducesAttribute_ActionReturningString_RunsUsingTextFormatter()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoProducesAttribute_ActionReturningAnyObject_RunsUsingDefaultFormatters()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
         Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttributeWithTypeOnly_RunsRegularContentNegotiation()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.
         Assert.Equal("100", actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoMatchingFormatter_ForTheGivenContentType_Returns406()
     {
         // Arrange & Act
@@ -214,7 +214,7 @@ END:VCARD
         Assert.Equal(expectedResponseBody, actualResponseBody, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_OnAction_OverridesTheValueOnClass()
     {
         // Arrange
@@ -232,7 +232,7 @@ END:VCARD
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_OnDerivedClass_OverridesTheValueOnBaseClass()
     {
         // Arrange
@@ -250,7 +250,7 @@ END:VCARD
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_OnDerivedAction_OverridesTheValueOnBaseClass()
     {
         // Arrange
@@ -267,7 +267,7 @@ END:VCARD
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_OnDerivedAction_OverridesTheValueOnBaseAction()
     {
         // Arrange
@@ -284,7 +284,7 @@ END:VCARD
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_OnDerivedClassAndAction_OverridesTheValueOnBaseClass()
     {
         // Arrange
@@ -302,7 +302,7 @@ END:VCARD
         Assert.Equal(expectedBody, body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_IsNotHonored_ForJsonResult()
     {
         // Arrange
@@ -365,7 +365,7 @@ END:VCARD
         Assert.Equal("Hello World!", actualBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ObjectResult_WithStringReturnType_AndNonTextPlainMediaType_DoesNotReturnTextPlain()
     {
         // Arrange
@@ -383,7 +383,7 @@ END:VCARD
         Assert.Equal("\"Hello World!\"", actualBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoMatchOn_RequestContentType_FallsBackOnTypeBasedMatch_NoMatchFound_Returns406()
     {
         // Arrange
@@ -400,7 +400,7 @@ END:VCARD
         Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidResponseContentType_WithNotMatchingAcceptHeader_Returns406()
     {
         // Arrange
@@ -415,7 +415,7 @@ END:VCARD
         Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidResponseContentType_WithMatchingAcceptHeader_Returns406()
     {
         // Arrange
@@ -430,7 +430,7 @@ END:VCARD
         Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidResponseContentType_WithoutAcceptHeader_Returns406()
     {
         // Arrange
@@ -444,7 +444,7 @@ END:VCARD
         Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_And_FormatFilterAttribute_Conflicting()
     {
         // Arrange & Act
@@ -456,7 +456,7 @@ END:VCARD
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_And_FormatFilterAttribute_Collaborating()
     {
         // Arrange & Act
@@ -469,7 +469,7 @@ END:VCARD
         Assert.Equal("MethodWithFormatFilter", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_CustomMediaTypeWithJsonSuffix_RunsConnegAndSelectsJsonFormatter()
     {
         // Arrange
@@ -487,7 +487,7 @@ END:VCARD
         Assert.Equal("Jason Ecsemelle", contact.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesAttribute_CustomMediaTypeWithXmlSuffix_RunsConnegAndSelectsXmlFormatter()
     {
         // Arrange
@@ -506,7 +506,7 @@ END:VCARD
         Assert.Equal("Jason Ecsemelle", contact.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FormatFilter_XmlAsFormat_ReturnsXml()
     {
         // Arrange

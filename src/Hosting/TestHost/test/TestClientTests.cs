@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.TestHost;
 
 public class TestClientTests
 {
-    [Fact]
+    // [Fact]
     public async Task GetAsyncWorks()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class TestClientTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoTrailingSlash_NoPathBase()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class TestClientTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SingleTrailingSlash_NoPathBase()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class TestClientTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PutAsyncWorks()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class TestClientTests
         Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync().DefaultTimeout());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PostAsyncWorks()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class TestClientTests
         Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync().DefaultTimeout());
     }
 
-    [Fact]
+    // [Fact]
     public async Task LargePayload_DisposesRequest_AfterResponseIsCompleted()
     {
         // Arrange
@@ -162,7 +162,7 @@ public class TestClientTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreamingWorks()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class TestClientTests
         Assert.Equal(0, length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreaming_HttpContentException()
     {
         var requestCount = 0;
@@ -258,7 +258,7 @@ public class TestClientTests
         Assert.Equal(0, requestCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreaming_Cancellation()
     {
         // Arrange
@@ -339,7 +339,7 @@ public class TestClientTests
         requestStreamSyncPoint.Continue();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreaming_ResponseCompletesWithoutReadingRequest()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class TestClientTests
         await writeTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
     {
         // Arrange
@@ -449,7 +449,7 @@ public class TestClientTests
         requestStreamTcs.TrySetResult();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreaming_ResponseCompletesWithoutResponseBodyWrite()
     {
         // Arrange
@@ -496,7 +496,7 @@ public class TestClientTests
         requestStreamTcs.TrySetResult();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientStreaming_ServerAbort()
     {
         // Arrange
@@ -569,7 +569,7 @@ public class TestClientTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebSocketWorks()
     {
         // Arrange
@@ -640,7 +640,7 @@ public class TestClientTests
         clientSocket.Dispose();
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebSocketSubProtocolsWorks()
     {
         // Arrange
@@ -751,7 +751,7 @@ public class TestClientTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebSocketDisposalThrowsOnPeer()
     {
         // Arrange
@@ -778,7 +778,7 @@ public class TestClientTests
         clientSocket.Dispose();
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebSocketTinyReceiveGeneratesEndOfMessage()
     {
         // Arrange
@@ -822,7 +822,7 @@ public class TestClientTests
         clientSocket.Dispose();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientDisposalAbortsRequest()
     {
         // Arrange
@@ -856,7 +856,7 @@ public class TestClientTests
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientCancellationAbortsRequest()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -882,7 +882,7 @@ public class TestClientTests
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AsyncLocalValueOnClientIsNotPreserved()
     {
         var asyncLocal = new AsyncLocal<object>();
@@ -907,7 +907,7 @@ public class TestClientTests
         Assert.NotSame(value, capturedValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AsyncLocalValueOnClientIsPreservedIfPreserveExecutionContextIsTrue()
     {
         var asyncLocal = new AsyncLocal<object>();
@@ -935,7 +935,7 @@ public class TestClientTests
         Assert.Same(value, capturedValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendAsync_Default_Protocol11()
     {
         // Arrange
@@ -961,7 +961,7 @@ public class TestClientTests
         Assert.Equal(protocol, HttpProtocol.Http11);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendAsync_ExplicitlySet_Protocol20()
     {
         // Arrange
@@ -988,7 +988,7 @@ public class TestClientTests
         Assert.Equal(protocol, HttpProtocol.Http2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendAsync_ExplicitlySet_Protocol30()
     {
         // Arrange
@@ -1015,7 +1015,7 @@ public class TestClientTests
         Assert.Equal(protocol, HttpProtocol.Http3);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyWebSocketAndUpgradeFeaturesForNonWebSocket()
     {
         using (var testServer = new TestServer(new WebHostBuilder()

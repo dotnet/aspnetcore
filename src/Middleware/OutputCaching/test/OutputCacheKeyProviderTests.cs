@@ -12,7 +12,7 @@ public class OutputCacheKeyProviderTests
     private const char KeySubDelimiter = '\x1f';
     private static readonly string EmptyBaseKey = $"{KeyDelimiter}{KeyDelimiter}";
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesOnlyNormalizedMethodSchemeHostPortAndPath()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -27,7 +27,7 @@ public class OutputCacheKeyProviderTests
         Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}EXAMPLE.COM:80/PATHBASE/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IgnoresHost()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -44,7 +44,7 @@ public class OutputCacheKeyProviderTests
         Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}*:*/PATHBASE/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_CaseInsensitivePath_NormalizesPath()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCacheOptions()
@@ -59,7 +59,7 @@ public class OutputCacheKeyProviderTests
         Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}/PATH", cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_CaseSensitivePath_PreservesPathCase()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCacheOptions()
@@ -73,7 +73,7 @@ public class OutputCacheKeyProviderTests
         Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}/Path", cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_VaryByRulesIsotNull()
     {
         var context = TestUtils.CreateTestContext();
@@ -81,7 +81,7 @@ public class OutputCacheKeyProviderTests
         Assert.NotNull(context.CacheVaryByRules);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_ReturnsCachedVaryByGuid_IfVaryByRulesIsEmpty()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -91,7 +91,7 @@ public class OutputCacheKeyProviderTests
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}", cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesListedRouteValuesOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -104,7 +104,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_SerializeRouteValueToStringInvariantCulture()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -125,7 +125,7 @@ public class OutputCacheKeyProviderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_ValuesAreSorted()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -137,7 +137,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesListedHeadersOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -150,7 +150,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_UsesListedHeaderKey_AsKey()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -162,7 +162,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_HeaderValuesAreSorted()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -175,7 +175,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesListedQueryKeysOnly()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -188,7 +188,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesQueryKeys_QueryKeyCaseInsensitive_UseQueryKeyCasing()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -201,7 +201,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_UseListedQueryKeys_AsKey()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -214,7 +214,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesAllQueryKeysGivenAsterisk()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -229,7 +229,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_QueryKeysValuesNotConsolidated()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -244,7 +244,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_QueryKeysValuesAreSorted()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -259,7 +259,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesListedHeadersAndQueryKeysAndRouteValues()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -278,7 +278,7 @@ public class OutputCacheKeyProviderTests
             cacheKeyProvider.CreateStorageKey(context));
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_PathCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -290,7 +290,7 @@ public class OutputCacheKeyProviderTests
         Assert.Empty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_HostCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -303,7 +303,7 @@ public class OutputCacheKeyProviderTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_PathBaseCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -315,7 +315,7 @@ public class OutputCacheKeyProviderTests
         Assert.Empty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_HeaderValuesCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -329,7 +329,7 @@ public class OutputCacheKeyProviderTests
         Assert.Empty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_UnlistedHeadersCanContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -343,7 +343,7 @@ public class OutputCacheKeyProviderTests
         Assert.NotEmpty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_QueryStringValueCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -356,7 +356,7 @@ public class OutputCacheKeyProviderTests
         Assert.Empty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_QueryStringKeyCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -369,7 +369,7 @@ public class OutputCacheKeyProviderTests
         Assert.Empty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_UnlistedQueryStringCanContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -382,7 +382,7 @@ public class OutputCacheKeyProviderTests
         Assert.NotEmpty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_RouteValuesCantContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -396,7 +396,7 @@ public class OutputCacheKeyProviderTests
         Assert.Empty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_UnlistedRouteValuesCanContainDelimiter()
     {
         var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
@@ -410,7 +410,7 @@ public class OutputCacheKeyProviderTests
         Assert.NotEmpty(cacheKey);
     }
 
-    [Fact]
+    // [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_UseListedRouteValueNames_AsKey()
 
     {

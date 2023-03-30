@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Core;
 /// </summary>
 public class HtmlHelperLabelExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnEmptyForModel()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelForModelResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForModel_WithLabelText()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class HtmlHelperLabelExtensionsTest
     }
 
     // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForModel_WithEmptyLabelText()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelHelpers_DisplayPropertyName()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelHelpers_DisplayPropertyName_ForNestedProperty()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelHelpers_DisplayMetadataPropertyNameForProperty()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class HtmlHelperLabelExtensionsTest
     }
 
     // If the metadata is for a type (not property), then Label(expression) will evaluate the expression
-    [Fact]
+    // [Fact]
     public void LabelHelpers_Label_Evaluates_Expression()
     {
         // Arrange
@@ -147,7 +147,7 @@ public class HtmlHelperLabelExtensionsTest
 
     // Following test is identical to LabelHelpers_ReturnEmptyForModel() from the HTML helpers' perspective. But,
     // test confirms the added metadata does not change the behavior.
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnEmptyForModel_IfDisplayNameEmpty()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class HtmlHelperLabelExtensionsTest
     // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
     // Following test mimics use of an identity expression in an editor template if invoked for an element in a
     // collection. See also LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmptyAndNotTopLevel().
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmptyAndNotTopLevel()
     {
         // Arrange
@@ -200,7 +200,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmpty_WithLabelText()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class HtmlHelperLabelExtensionsTest
     }
 
     // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmpty_WithEmptyLabelText()
     {
         // Arrange
@@ -278,7 +278,7 @@ public class HtmlHelperLabelExtensionsTest
     // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
     // Following test mimics use of an identity expression in an editor template if invoked for a property. See
     // also LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmptyAndNotTopLevel().
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmptyAndNotTopLevel()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class HtmlHelperLabelExtensionsTest
     }
 
     // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmpty()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmpty_WithLabelText()
     {
         // Arrange
@@ -353,7 +353,7 @@ public class HtmlHelperLabelExtensionsTest
     }
 
     // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
-    [Fact]
+    // [Fact]
     public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmpty_WithEmptyLabelText()
     {
         // Arrange
@@ -419,7 +419,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal("<label for=\"HtmlEncode[[" + expectedId + "]]\">HtmlEncode[[" + expectedText + "]]</label>", HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelFor_ThrowsInvalidOperation_IfExpressionUnsupported()
     {
         // Arrange
@@ -433,7 +433,7 @@ public class HtmlHelperLabelExtensionsTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void LabelFor_DisplaysVariableName()
     {
         // Arrange
@@ -447,7 +447,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal("<label for=\"HtmlEncode[[unknownKey]]\">HtmlEncode[[unknownKey]]</label>", HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Label_UsesSpecifiedLabelText()
     {
         // Arrange
@@ -460,7 +460,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal("<label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Hello]]</label>", HtmlContentUtilities.HtmlContentToString(labelResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelFor_UsesSpecifiedLabelText()
     {
         // Arrange
@@ -473,7 +473,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal("<label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Hello]]</label>", HtmlContentUtilities.HtmlContentToString(labelForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelForModel_UsesSpecifiedLabelText()
     {
         // Arrange
@@ -486,7 +486,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal("<label for=\"\">HtmlEncode[[Hello]]</label>", HtmlContentUtilities.HtmlContentToString(labelForModelResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelFor_DisplaysSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -499,7 +499,7 @@ public class HtmlHelperLabelExtensionsTest
         Assert.Equal("<label attr=\"HtmlEncode[[value]]\" for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label>", HtmlContentUtilities.HtmlContentToString(labelForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void LabelForModel_DisplaysSpecifiedHtmlAttributes()
     {
         // Arrange

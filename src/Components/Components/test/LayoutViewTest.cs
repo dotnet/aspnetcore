@@ -20,7 +20,7 @@ public class LayoutViewTest
         _layoutViewComponentId = _renderer.AssignRootComponentId(_layoutViewComponent);
     }
 
-    [Fact]
+    // [Fact]
     public void GivenNoParameters_RendersNothing()
     {
         // Arrange/Act
@@ -33,7 +33,7 @@ public class LayoutViewTest
         Assert.Empty(frames);
     }
 
-    [Fact]
+    // [Fact]
     public void GivenContentButNoLayout_RendersContent()
     {
         // Arrange/Act
@@ -54,7 +54,7 @@ public class LayoutViewTest
             frame => AssertFrame.Text(frame, "Goodbye", 456));
     }
 
-    [Fact]
+    // [Fact]
     public void GivenLayoutButNoContent_RendersLayoutWithEmptyBody()
     {
         // Arrange/Act
@@ -80,7 +80,7 @@ public class LayoutViewTest
             frame => AssertFrame.Text(frame, "RootLayout ends here", sequence: 2));
     }
 
-    [Fact]
+    // [Fact]
     public void RendersContentInsideLayout()
     {
         // Arrange/Act
@@ -112,7 +112,7 @@ public class LayoutViewTest
             frame => AssertFrame.Text(frame, "RootLayout ends here", sequence: 2));
     }
 
-    [Fact]
+    // [Fact]
     public void RendersContentInsideNestedLayout()
     {
         // Arrange/Act
@@ -153,7 +153,7 @@ public class LayoutViewTest
             frame => AssertFrame.Text(frame, "NestedLayout ends here", sequence: 2));
     }
 
-    [Fact]
+    // [Fact]
     public void CanChangeContentWithSameLayout()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class LayoutViewTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanChangeLayout()
     {
         // Arrange

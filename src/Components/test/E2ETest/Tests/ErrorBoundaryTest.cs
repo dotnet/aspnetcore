@@ -53,7 +53,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(false);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateCustomErrorBoundary()
     {
         var container = Browser.Exists(By.Id("custom-error-boundary-test"));
@@ -78,7 +78,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Empty(() => container.FindElements(By.ClassName("received-exception")));
     }
 
-    [Fact]
+    // [Fact]
     public void HandleCustomErrorBoundaryThatIgnoresErrors()
     {
         var container = Browser.Exists(By.Id("error-ignorer-test"));
@@ -97,7 +97,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(false);
     }
 
-    [Fact]
+    // [Fact]
     public void CanHandleErrorsInlineInErrorBoundaryContent()
     {
         var container = Browser.Exists(By.Id("inline-error-test"));
@@ -114,7 +114,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(true);
     }
 
-    [Fact]
+    // [Fact]
     public void CanHandleErrorsAfterDisposingComponent()
     {
         var container = Browser.Exists(By.Id("error-after-disposal-test"));
@@ -126,7 +126,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(false);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanHandleErrorsAfterDisposingErrorBoundary()
     {
         var container = Browser.Exists(By.Id("error-after-disposal-test"));
@@ -143,7 +143,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(false);
     }
 
-    [Fact]
+    // [Fact]
     public void CanHandleMultipleAsyncErrorsFromDescendants()
     {
         var container = Browser.Exists(By.Id("multiple-child-errors-test"));

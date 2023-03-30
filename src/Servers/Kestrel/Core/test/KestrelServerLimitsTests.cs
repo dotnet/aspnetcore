@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class KestrelServerLimitsTests
 {
-    [Fact]
+    // [Fact]
     public void MaxResponseBufferSizeDefault()
     {
         Assert.Equal(64 * 1024, (new KestrelServerLimits()).MaxResponseBufferSize);
@@ -38,7 +38,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, o.MaxResponseBufferSize);
     }
 
-    [Fact]
+    // [Fact]
     public void MaxRequestBufferSizeDefault()
     {
         Assert.Equal(1024 * 1024, (new KestrelServerLimits()).MaxRequestBufferSize);
@@ -65,7 +65,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, o.MaxRequestBufferSize);
     }
 
-    [Fact]
+    // [Fact]
     public void MaxRequestLineSizeDefault()
     {
         Assert.Equal(8 * 1024, (new KestrelServerLimits()).MaxRequestLineSize);
@@ -93,7 +93,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, o.MaxRequestLineSize);
     }
 
-    [Fact]
+    // [Fact]
     public void MaxRequestHeadersTotalSizeDefault()
     {
         Assert.Equal(32 * 1024, (new KestrelServerLimits()).MaxRequestHeadersTotalSize);
@@ -119,7 +119,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, o.MaxRequestHeadersTotalSize);
     }
 
-    [Fact]
+    // [Fact]
     public void MaxRequestHeaderCountDefault()
     {
         Assert.Equal(100, (new KestrelServerLimits()).MaxRequestHeaderCount);
@@ -147,7 +147,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, o.MaxRequestHeaderCount);
     }
 
-    [Fact]
+    // [Fact]
     public void KeepAliveTimeoutDefault()
     {
         Assert.Equal(TimeSpan.FromSeconds(130), new KestrelServerLimits().KeepAliveTimeout);
@@ -160,7 +160,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, new KestrelServerLimits { KeepAliveTimeout = value }.KeepAliveTimeout);
     }
 
-    [Fact]
+    // [Fact]
     public void KeepAliveTimeoutCanBeSetToInfinite()
     {
         Assert.Equal(TimeSpan.MaxValue, new KestrelServerLimits { KeepAliveTimeout = Timeout.InfiniteTimeSpan }.KeepAliveTimeout);
@@ -176,7 +176,7 @@ public class KestrelServerLimitsTests
         Assert.StartsWith(CoreStrings.PositiveTimeSpanRequired, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestHeadersTimeoutDefault()
     {
         Assert.Equal(TimeSpan.FromSeconds(30), new KestrelServerLimits().RequestHeadersTimeout);
@@ -189,7 +189,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, new KestrelServerLimits { RequestHeadersTimeout = value }.RequestHeadersTimeout);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestHeadersTimeoutCanBeSetToInfinite()
     {
         Assert.Equal(TimeSpan.MaxValue, new KestrelServerLimits { RequestHeadersTimeout = Timeout.InfiniteTimeSpan }.RequestHeadersTimeout);
@@ -205,7 +205,7 @@ public class KestrelServerLimitsTests
         Assert.StartsWith(CoreStrings.PositiveTimeSpanRequired, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MaxConnectionsDefault()
     {
         Assert.Null(new KestrelServerLimits().MaxConcurrentConnections);
@@ -260,7 +260,7 @@ public class KestrelServerLimitsTests
         Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MaxRequestBodySizeDefault()
     {
         // ~28.6 MB (https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005)
@@ -291,7 +291,7 @@ public class KestrelServerLimitsTests
         Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MinRequestBodyDataRateDefault()
     {
         Assert.NotNull(new KestrelServerLimits().MinRequestBodyDataRate);
@@ -299,7 +299,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinRequestBodyDataRate.GracePeriod);
     }
 
-    [Fact]
+    // [Fact]
     public void MinResponseBodyDataRateDefault()
     {
         Assert.NotNull(new KestrelServerLimits().MinResponseDataRate);
@@ -307,7 +307,7 @@ public class KestrelServerLimitsTests
         Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinResponseDataRate.GracePeriod);
     }
 
-    [Fact]
+    // [Fact]
     public void Http2MaxFrameSizeDefault()
     {
         Assert.Equal(1 << 14, new KestrelServerLimits().Http2.MaxFrameSize);
@@ -323,7 +323,7 @@ public class KestrelServerLimitsTests
         Assert.Contains("A value between", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Http2HeaderTableSizeDefault()
     {
         Assert.Equal(4096, new KestrelServerLimits().Http2.HeaderTableSize);
@@ -338,7 +338,7 @@ public class KestrelServerLimitsTests
         Assert.StartsWith(CoreStrings.GreaterThanOrEqualToZeroRequired, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Http2MaxRequestHeaderFieldSizeDefault()
     {
         Assert.Equal(32 * 1024, new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize);

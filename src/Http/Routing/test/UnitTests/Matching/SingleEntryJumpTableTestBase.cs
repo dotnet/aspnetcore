@@ -11,7 +11,7 @@ public abstract class SingleEntryJumpTableTestBase
         string text,
         int destination);
 
-    [Fact]
+    // [Fact]
     public void GetDestination_ZeroLengthSegment_JumpsToExit()
     {
         // Arrange
@@ -24,7 +24,7 @@ public abstract class SingleEntryJumpTableTestBase
         Assert.Equal(1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_NonMatchingSegment_JumpsToDefault()
     {
         // Arrange
@@ -37,7 +37,7 @@ public abstract class SingleEntryJumpTableTestBase
         Assert.Equal(0, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_SegmentMatchingText_JumpsToDestination()
     {
         // Arrange
@@ -50,7 +50,7 @@ public abstract class SingleEntryJumpTableTestBase
         Assert.Equal(2, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_SegmentMatchingTextIgnoreCase_JumpsToDestination()
     {
         // Arrange

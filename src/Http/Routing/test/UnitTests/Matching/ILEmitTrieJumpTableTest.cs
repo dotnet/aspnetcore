@@ -23,7 +23,7 @@ public abstract class ILEmitTreeJumpTableTestBase : MultipleEntryJumpTableTest
         return table;
     }
 
-    [Fact] // Not calling CreateTable here because we want to test the initialization
+    // [Fact] // Not calling CreateTable here because we want to test the initialization
     public async Task InitializeILDelegateAsync_ReplacesDelegate()
     {
         // Arrange

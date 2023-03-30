@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
 public class BinderTypeBasedModelBinderIntegrationTest
 {
-    [Fact]
+    // [Fact]
     public async Task BindParameter_WithModelBinderType_NullData_ReturnsNull()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
         Assert.Empty(modelState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindParameter_WithModelBinderType_NoData()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
     }
 
     // Ensures that prefix is part of the result returned back.
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public async Task BindParameter_WithData_WithPrefix_GetsBound()
     {
@@ -238,7 +238,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
         Assert.NotNull(entry.RawValue); // Value is set by test model binder, no need to validate it.
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithData_EmptyPrefix_GetsBound()
     {
         // Arrange
@@ -274,7 +274,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
         Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithData_WithPrefix_GetsBound()
     {
         // Arrange

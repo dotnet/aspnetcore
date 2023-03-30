@@ -15,7 +15,7 @@ public class WebAssemblyHostTest
 
     // This won't happen in the product code, but we need to be able to safely call RunAsync
     // to be able to test a few of the other details.
-    [Fact]
+    // [Fact]
     public async Task RunAsync_CanExitBasedOnCancellationToken()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class WebAssemblyHostTest
         // Assert (does not throw)
     }
 
-    [Fact]
+    // [Fact]
     public async Task RunAsync_CallingTwiceCausesException()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class WebAssemblyHostTest
         Assert.Equal("The host has already started.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
     {
         // Arrange

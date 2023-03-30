@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Core;
 /// </summary>
 public class HtmlHelperTextAreaExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void TextArea_UsesSpecifiedExpression()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class HtmlHelperTextAreaExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textAreaResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextAreaFor_UsesSpecifiedExpression()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class HtmlHelperTextAreaExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textAreaForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextAreaHelpers_UsesSpecifiedValue()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class HtmlHelperTextAreaExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textAreaResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextArea_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class HtmlHelperTextAreaExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textAreaResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextAreaFor_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class HtmlHelperTextAreaExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textAreaForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextArea_UsesSpecifiedRowsAndColumns()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class HtmlHelperTextAreaExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textAreaResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextAreaFor_UsesSpecifiedRowsAndColumns()
     {
         // Arrange

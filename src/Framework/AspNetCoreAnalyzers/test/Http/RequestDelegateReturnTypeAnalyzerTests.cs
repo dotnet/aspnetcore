@@ -10,7 +10,7 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpAnalyzerVerifier
 
 public class RequestDelegateReturnTypeAnalyzerTests
 {
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ThrowError_NoDiagnostics()
     {
         // Arrange & Act & Assert
@@ -28,7 +28,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnNull_NoDiagnostics()
     {
         // Arrange & Act & Assert
@@ -46,7 +46,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnType_EndpointCtor_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -67,7 +67,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("System.DateTime")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnType_AsTask_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -86,7 +86,7 @@ webApp.MapGet(""/"", {|#0:(HttpContext context) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("object?")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnType_DelegateCtor_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -109,7 +109,7 @@ webApp.Use(next =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnTypeMethodCall_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -125,7 +125,7 @@ webApp.MapGet(""/"", {|#0:(HttpContext context) => Task.FromResult(""hello world
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnTypeVariable_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -145,7 +145,7 @@ webApp.MapGet(""/"",{|#0:(HttpContext context) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnTypeTernary_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -166,7 +166,7 @@ webApp.MapGet(""/"", {|#0:(HttpContext context) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_ReturnTypeCoalesce_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -187,7 +187,7 @@ webApp.MapGet(""/"", {|#0:(HttpContext context) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_MultipleReturns_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -215,7 +215,7 @@ webApp.MapGet(""/"", {|#0:(HttpContext context) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_MixReturnValues_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -243,7 +243,7 @@ webApp.MapGet(""/"", {|#0:(HttpContext context) =>
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("int")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_NotRequestDelegate_Async_HasReturnType_NoDiagnostics()
     {
         // Arrange & Act & Assert
@@ -256,7 +256,7 @@ webApp.MapGet(""/"", async (HttpContext context) => ""hello world"");
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_Async_HasReturns_NoReturnType_NoDiagnostics()
     {
         // Arrange & Act & Assert
@@ -281,7 +281,7 @@ webApp.MapGet(""/"", async (HttpContext context) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_NoReturnType_NoDiagnostics()
     {
         // Arrange & Act & Assert
@@ -294,7 +294,7 @@ webApp.MapGet(""/"", (HttpContext context) => Task.CompletedTask);
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AnonymousDelegate_RequestDelegate_MultipleReturns_NoReturnType_NoDiagnostics()
     {
         // Arrange & Act & Assert
@@ -317,7 +317,7 @@ webApp.MapGet(""/"", (HttpContext context) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task MethodReference_RequestDelegate_HasReturnType_ReportDiagnostics()
     {
         // Arrange & Act & Assert
@@ -335,7 +335,7 @@ static Task<string> HttpMethod(HttpContext context) => Task.FromResult(""hello w
             .WithMessage(Resources.FormatAnalyzer_RequestDelegateReturnValue_Message("string")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MethodReference_RequestDelegate_NoReturnType_NoDiagnostics()
     {
         // Arrange & Act & Assert

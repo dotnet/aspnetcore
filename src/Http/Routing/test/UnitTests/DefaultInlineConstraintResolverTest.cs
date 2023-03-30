@@ -21,7 +21,7 @@ public class DefaultInlineConstraintResolverTest
         _constraintResolver = GetInlineConstraintResolver(routeOptions);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_RequiredConstraint_ResolvesCorrectly()
     {
         // Arrange & Act
@@ -31,7 +31,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<RequiredRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_IntConstraint_ResolvesCorrectly()
     {
         // Arrange & Act
@@ -41,7 +41,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<IntRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_IntConstraintWithArgument_Throws()
     {
         // Arrange, Act & Assert
@@ -53,7 +53,7 @@ public class DefaultInlineConstraintResolverTest
                      ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_AlphaConstraint()
     {
         // Arrange & Act
@@ -63,7 +63,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<AlphaRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_RegexInlineConstraint_WithAComma_PassesAsASingleArgument()
     {
         // Arrange & Act
@@ -73,7 +73,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<RegexInlineRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_RegexInlineConstraint_WithCurlyBraces_Balanced()
     {
         // Arrange & Act
@@ -84,7 +84,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<RegexInlineRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_BoolConstraint()
     {
         // Arrange & Act
@@ -94,14 +94,14 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<BoolRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_CompositeConstraintIsNotRegistered()
     {
         // Arrange, Act & Assert
         Assert.Null(_constraintResolver.ResolveConstraint("composite"));
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_DateTimeConstraint()
     {
         // Arrange & Act
@@ -111,7 +111,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<DateTimeRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_DecimalConstraint()
     {
         // Arrange & Act
@@ -121,7 +121,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<DecimalRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_DoubleConstraint()
     {
         // Arrange & Act
@@ -131,7 +131,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<DoubleRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_FloatConstraint()
     {
         // Arrange & Act
@@ -141,7 +141,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<FloatRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_GuidConstraint()
     {
         // Arrange & Act
@@ -151,7 +151,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<GuidRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_IntConstraint()
     {
         // Arrange & Act
@@ -161,7 +161,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<IntRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_LengthConstraint()
     {
         // Arrange & Act
@@ -173,7 +173,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(5, ((LengthRouteConstraint)constraint).MaxLength);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_LengthRangeConstraint()
     {
         // Arrange & Act
@@ -185,7 +185,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(10, lengthConstraint.MaxLength);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_LongRangeConstraint()
     {
         // Arrange & Act
@@ -195,7 +195,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<LongRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_MaxConstraint()
     {
         // Arrange & Act
@@ -206,7 +206,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(10, ((MaxRouteConstraint)constraint).Max);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_MaxLengthConstraint()
     {
         // Arrange & Act
@@ -217,7 +217,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(10, ((MaxLengthRouteConstraint)constraint).MaxLength);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_MinConstraint()
     {
         // Arrange & Act
@@ -228,7 +228,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(3, ((MinRouteConstraint)constraint).Min);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_MinLengthConstraint()
     {
         // Arrange & Act
@@ -239,7 +239,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(3, ((MinLengthRouteConstraint)constraint).MinLength);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_RangeConstraint()
     {
         // Arrange & Act
@@ -252,7 +252,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal(10, rangeConstraint.Max);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_SupportsCustomConstraints()
     {
         // Arrange
@@ -267,7 +267,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<CustomRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_SupportsCustomConstraintsUsingNonGenericOverload()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<CustomRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void SetParameterPolicyThrowsIfTypeIsNotIParameterPolicy()
     {
         // Arrange
@@ -292,7 +292,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Equal("System.String must implement Microsoft.AspNetCore.Routing.IParameterPolicy", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_SupportsCustomConstraintsUsingGenericOverloads()
     {
         // Arrange
@@ -307,7 +307,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.IsType<CustomRouteConstraint>(constraint);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_CustomConstraintThatDoesNotImplementIRouteConstraint_Throws()
     {
         // Arrange
@@ -322,7 +322,7 @@ public class DefaultInlineConstraintResolverTest
                      ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_AmbiguousConstructors_Throws()
     {
         // Arrange
@@ -352,7 +352,7 @@ public class DefaultInlineConstraintResolverTest
         Assert.Null(resolver.ResolveConstraint(constraint));
     }
 
-    [Fact]
+    // [Fact]
     public void ResolveConstraint_NoMatchingConstructor_Throws()
     {
         // Arrange

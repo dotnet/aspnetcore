@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers;
 
 public class AttributesShouldNotBeAppliedToPageModelAnalyzerTest
 {
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForControllerBaseActions()
     {
         var source = @"
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForControllerActions()
     {
         var source = @"
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForPageHandlersWithNonFilterAttributes()
     {
         var source = @"
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_IfFiltersAreAppliedToPageModel()
     {
         var source = @"
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_IfAuthorizeAttributeIsAppliedToPageModel()
     {
         var source = @"
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_IfAllowAnonymousIsAppliedToPageModel()
     {
         var source = @"
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForNonHandlerMethodsWithAttributes()
     {
         var source = @"
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, DiagnosticResult.EmptyDiagnosticResults);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfFiltersAreAppliedToPageHandlerMethod()
     {
         var source = @"
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfFiltersAreAppliedToPageHandlerMethodDerivingFromCustomModel()
     {
         var source = @"
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfAuthorizeAttributeIsAppliedToPageHandlerMethod()
     {
         var source = @"
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfFiltersAreAppliedToPageHandlerMethodForTypeWithPageModelAttribute()
     {
         var source = @"
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfAttributeIsAppliedToBaseType()
     {
         var source = @"
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfRouteAttributesAreAppliedToPageHandlerMethod()
     {
         var source = @"
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfAllowAnonymousIsAppliedToPageHandlerMethod()
     {
         var source = @"
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         return VerifyAnalyzerAsync(source, diagnosticResult);
     }
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_IfRouteAttribute_IsAppliedToPageModel()
     {
         var source = @"

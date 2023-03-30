@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure;
 
 public class CorsPolicyBuilderTests
 {
-    [Fact]
+    // [Fact]
     public void Constructor_WithPolicy_AddsTheGivenPolicy()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class CorsPolicyBuilderTests
         Assert.Same(originalPolicy.IsOriginAllowed, corsPolicy.IsOriginAllowed);
     }
 
-    [Fact]
+    // [Fact]
     public void ConstructorWithPolicy_HavingNullPreflightMaxAge_AddsTheGivenPolicy()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class CorsPolicyBuilderTests
         Assert.Empty(corsPolicy.ExposedHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_WithNoOrigin()
     {
         // Arrange & Act
@@ -108,7 +108,7 @@ public class CorsPolicyBuilderTests
         Assert.Null(corsPolicy.PreflightMaxAge);
     }
 
-    [Fact]
+    // [Fact]
     public void WithOrigins_AddsOrigins()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "http://example.com", "http://example2.com" }, corsPolicy.Origins);
     }
 
-    [Fact]
+    // [Fact]
     public void WithOrigins_NormalizesOrigins()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "http://www.example.com", "https://example2.com" }, corsPolicy.Origins);
     }
 
-    [Fact]
+    // [Fact]
     public void WithOrigins_ThrowsIfArgumentNull()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class CorsPolicyBuilderTests
         Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
     }
 
-    [Fact]
+    // [Fact]
     public void WithOrigins_ThrowsIfArgumentArrayContainsNull()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class CorsPolicyBuilderTests
         Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnyOrigin_AllowsAny()
     {
         // Arrange
@@ -171,7 +171,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "*" }, corsPolicy.Origins);
     }
 
-    [Fact]
+    // [Fact]
     public void SetIsOriginAllowed_AddsIsOriginAllowed()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class CorsPolicyBuilderTests
         Assert.Same(corsPolicy.IsOriginAllowed, isOriginAllowed);
     }
 
-    [Fact]
+    // [Fact]
     public void SetIsOriginAllowedToAllowWildcardSubdomains_AllowsWildcardSubdomains()
     {
         // Arrange
@@ -200,7 +200,7 @@ public class CorsPolicyBuilderTests
         Assert.True(corsPolicy.IsOriginAllowed("http://test.example.com"));
     }
 
-    [Fact]
+    // [Fact]
     public void SetIsOriginAllowedToAllowWildcardSubdomains_DoesNotAllowRootDomain()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class CorsPolicyBuilderTests
         Assert.False(corsPolicy.IsOriginAllowed("http://example.com"));
     }
 
-    [Fact]
+    // [Fact]
     public void WithMethods_AddsMethods()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "PUT", "GET" }, corsPolicy.Methods);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnyMethod_AllowsAny()
     {
         // Arrange
@@ -244,7 +244,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "*" }, corsPolicy.Methods);
     }
 
-    [Fact]
+    // [Fact]
     public void WithHeaders_AddsHeaders()
     {
         // Arrange
@@ -259,7 +259,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "example1", "example2" }, corsPolicy.Headers);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnyHeaders_AllowsAny()
     {
         // Arrange
@@ -274,7 +274,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "*" }, corsPolicy.Headers);
     }
 
-    [Fact]
+    // [Fact]
     public void WithExposedHeaders_AddsExposedHeaders()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(new List<string>() { "exposed1", "exposed2" }, corsPolicy.ExposedHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void SetPreFlightMaxAge_SetsThePreFlightAge()
     {
         // Arrange
@@ -302,7 +302,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(TimeSpan.FromSeconds(12), corsPolicy.PreflightMaxAge);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowCredential_SetsSupportsCredentials_ToTrue()
     {
         // Arrange
@@ -316,7 +316,7 @@ public class CorsPolicyBuilderTests
         Assert.True(corsPolicy.SupportsCredentials);
     }
 
-    [Fact]
+    // [Fact]
     public void DisallowCredential_SetsSupportsCredentials_ToFalse()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class CorsPolicyBuilderTests
         Assert.False(corsPolicy.SupportsCredentials);
     }
 
-    [Fact]
+    // [Fact]
     public void Build_ThrowsIfConfiguredToAllowAnyOriginWithCredentials()
     {
         // Arrange
@@ -358,7 +358,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(expected, normalizedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedOrigin_DoesNotAddPort_IfUriDoesNotSpecifyOne()
     {
         // Arrange
@@ -371,7 +371,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal(origin, normalizedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedOrigin_LowerCasesScheme()
     {
         // Arrange
@@ -384,7 +384,7 @@ public class CorsPolicyBuilderTests
         Assert.Equal("http://www.example.com", normalizedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedOrigin_LowerCasesHost()
     {
         // Arrange

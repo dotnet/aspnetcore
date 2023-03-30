@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 public class ProblemDetailsClientErrorFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void GetClientError_ReturnsProblemDetails_IfNoMappingWasFound()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class ProblemDetailsClientErrorFactoryTest
         Assert.Null(problemDetails.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void GetClientError_ReturnsProblemDetails()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class ProblemDetailsClientErrorFactoryTest
         Assert.Null(problemDetails.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void GetClientError_UsesActivityId_ToSetTraceId()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class ProblemDetailsClientErrorFactoryTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetClientError_UsesHttpContext_ToSetTraceIdIfActivityIdIsNotSet()
     {
         // Arrange

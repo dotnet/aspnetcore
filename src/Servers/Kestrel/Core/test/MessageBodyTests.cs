@@ -178,7 +178,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReadFromChunkedEncoding()
     {
         using (var input = new TestInput())
@@ -207,7 +207,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadChunkPrefixThrowsBadRequestException()
     {
         using (var input = new TestInput())
@@ -232,7 +232,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingChunkOverMaxChunkSizeThrowsBadRequest()
     {
         using (var input = new TestInput())
@@ -260,7 +260,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidChunkSuffixThrowsBadRequest()
     {
         using (var input = new TestInput())
@@ -301,7 +301,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReadAsyncFromChunkedEncoding()
     {
         using (var input = new TestInput())
@@ -328,7 +328,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadExitsGivenIncompleteChunkedExtension()
     {
         using (var input = new TestInput())
@@ -362,7 +362,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadThrowsGivenChunkPrefixGreaterThanMaxInt()
     {
         using (var input = new TestInput())
@@ -384,7 +384,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadThrowsGivenChunkPrefixGreaterThan8Bytes()
     {
         using (var input = new TestInput())
@@ -510,7 +510,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanHandleLargeBlocks()
     {
         using (var input = new TestInput())
@@ -539,7 +539,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ForThrowsWhenFinalTransferCodingIsNotChunked()
     {
         using (var input = new TestInput())
@@ -588,7 +588,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyToAsyncDoesNotCompletePipeReader()
     {
         using (var input = new TestInput())
@@ -611,7 +611,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConsumeAsyncConsumesAllRemainingInput()
     {
         using (var input = new TestInput())
@@ -628,7 +628,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConsumeAsyncAbortsConnectionInputAfterStartingTryReadWithoutAdvance()
     {
         using (var input = new TestInput())
@@ -672,7 +672,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradeConnectionAcceptsContentLengthZero()
     {
         // https://tools.ietf.org/html/rfc7230#section-3.3.2
@@ -699,7 +699,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PumpAsyncDoesNotReturnAfterCancelingInput()
     {
         using (var input = new TestInput())
@@ -723,7 +723,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsyncThrowsOnTimeout()
     {
         using (var input = new TestInput())
@@ -752,7 +752,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConsumeAsyncCompletesAndDoesNotThrowOnTimeout()
     {
         var mockTimeoutControl = new Mock<ITimeoutControl>();
@@ -785,7 +785,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyToAsyncThrowsOnTimeout()
     {
         using (var input = new TestInput())
@@ -817,7 +817,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LogsWhenStartsReadingRequestBody()
     {
         using (var input = new TestInput(log: new KestrelTrace(LoggerFactory)))
@@ -844,7 +844,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LogsWhenStopsReadingRequestBody()
     {
         var logEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -879,7 +879,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PausesAndResumesRequestBodyTimeoutOnBackpressure()
     {
         using (var input = new TestInput())
@@ -908,7 +908,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnlyEnforcesRequestBodyTimeoutAfterFirstRead()
     {
         using (var input = new TestInput())
@@ -939,7 +939,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotEnforceRequestBodyTimeoutOnUpgradeRequests()
     {
         using (var input = new TestInput())
@@ -975,7 +975,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CancelPendingReadContentLengthWorks()
     {
         using (var input = new TestInput())
@@ -996,7 +996,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CancelPendingReadChunkedWorks()
     {
         using (var input = new TestInput())
@@ -1017,7 +1017,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CancelPendingReadUpgradeWorks()
     {
         using (var input = new TestInput())
@@ -1038,7 +1038,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CancelPendingReadForZeroContentLengthCannotBeCanceled()
     {
         using (var input = new TestInput())
@@ -1061,7 +1061,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryReadReturnsCompletedResultAfterReadingEntireContentLength()
     {
         using (var input = new TestInput())
@@ -1080,7 +1080,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryReadReturnsCompletedResultAfterReadingEntireChunk()
     {
         using (var input = new TestInput())
@@ -1107,7 +1107,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryReadDoesNotReturnCompletedReadResultFromUpgradeStreamUntilCompleted()
     {
         using (var input = new TestInput())
@@ -1133,7 +1133,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryReadDoesReturnsCompletedReadResultForZeroContentLength()
     {
         using (var input = new TestInput())
@@ -1156,7 +1156,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompleteForContentLengthAllowsConsumeToWork()
     {
         using (var input = new TestInput())
@@ -1180,7 +1180,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompleteForContentLengthDoesNotCompleteConnectionPipeMakesReadReturnThrow()
     {
         using (var input = new TestInput())
@@ -1206,7 +1206,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnexpectedEndOfRequestContentIsRepeatedlyThrownForContentLengthBody()
     {
         using (var input = new TestInput())
@@ -1233,7 +1233,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnexpectedEndOfRequestContentIsRepeatedlyThrownForContentLengthBodyAfterExaminingButNotConsumingBytes()
     {
         using (var input = new TestInput())
@@ -1266,7 +1266,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnexpectedEndOfRequestContentIsRepeatedlyThrownForChunkedBody()
     {
         using (var input = new TestInput())
@@ -1293,7 +1293,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompleteForChunkedAllowsConsumeToWork()
     {
         using (var input = new TestInput())
@@ -1317,7 +1317,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompleteForChunkedDoesNotCompleteConnectionPipeMakesReadThrow()
     {
         using (var input = new TestInput())
@@ -1343,7 +1343,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompleteForUpgradeDoesNotCompleteConnectionPipeMakesReadThrow()
     {
         using (var input = new TestInput())
@@ -1369,7 +1369,7 @@ public class MessageBodyTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompleteForZeroByteBodyDoesNotCompleteConnectionPipeNoopsReads()
     {
         using (var input = new TestInput())

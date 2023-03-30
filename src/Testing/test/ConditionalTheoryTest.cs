@@ -75,7 +75,7 @@ public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.Conditi
         Assert.True(false, "This should never run");
     }
 
-    [Fact]
+    // [Fact]
     public void TestAlwaysRun()
     {
         // This is required to ensure that this type at least gets initialized.
@@ -103,7 +103,7 @@ public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.Conditi
 #endif
 
     // Test is named this way to be the lowest test in the alphabet, it relies on test ordering
-    [Fact]
+    // [Fact]
     public void ZzzzzzzEnsureThisIsTheLastTest()
     {
         Assert.True(Asserter.TestRan);

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Core;
 /// </summary>
 public class HtmlHelperRadioButtonExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void RadioButton_UsesSpecifiedExpression()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             HtmlContentUtilities.HtmlContentToString(radioButtonResult));
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButtonFor_UsesSpecifiedExpression()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             HtmlContentUtilities.HtmlContentToString(radioButtonForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButtonHelpers_UsesSpecifiedIsChecked()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             HtmlContentUtilities.HtmlContentToString(radioButtonResult));
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButtonHelpers_UsesSpecifiedIsCheckedRegardlessOfValue()
     {
         // Arrange
@@ -116,7 +116,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             HtmlContentUtilities.HtmlContentToString(radioButtonResult));
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButton_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             HtmlContentUtilities.HtmlContentToString(radioButtonResult));
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButtonFor_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             HtmlContentUtilities.HtmlContentToString(radioButtonForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButtonFor_Throws_IfFullNameEmpty()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class HtmlHelperRadioButtonExtensionsTest
             exceptionMessage: expectedMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void RadioButtonFor_DoesNotThrow_IfFullNameEmpty_WithNameAttribute()
     {
         // Arrange

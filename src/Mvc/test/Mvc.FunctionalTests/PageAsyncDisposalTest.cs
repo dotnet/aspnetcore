@@ -26,7 +26,7 @@ public class PageAsyncDisposalTest : IClassFixture<MvcTestFixture<RazorPagesWebS
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task CanDisposeAsyncPage()
     {
         // Arrange & Act

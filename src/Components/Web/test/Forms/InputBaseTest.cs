@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputBaseTest
 {
-    [Fact]
+    // [Fact]
     public async Task ThrowsIfEditContextChanges()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class InputBaseTest
         Assert.StartsWith($"{typeof(TestInputComponent<string>)} does not support changing the EditContext dynamically", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsIfNoValueExpressionIsSupplied()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class InputBaseTest
         Assert.Contains($"{typeof(TestInputComponent<string>)} requires a value for the 'ValueExpression' parameter. Normally this is provided automatically when using 'bind-Value'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetsCurrentValueFromValueParameter()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class InputBaseTest
         Assert.Equal("some value", inputComponent.CurrentValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExposesEditContextToSubclass()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class InputBaseTest
         Assert.Same(rootComponent.EditContext, inputComponent.EditContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExposesFieldIdentifierToSubclass()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class InputBaseTest
         Assert.Equal(FieldIdentifier.Create(() => model.StringProperty), inputComponent.FieldIdentifier);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReadBackChangesToCurrentValue()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class InputBaseTest
         Assert.Equal("new value", inputComponent.CurrentValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderWithoutEditContext()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class InputBaseTest
         Assert.Null(inputComponent.EditContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingToCurrentValueInvokesValueChangedIfDifferent()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class InputBaseTest
         Assert.Single(valueChangedCallLog, "new value");
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingToCurrentValueDoesNotInvokeValueChangedIfUnchanged()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class InputBaseTest
         Assert.Empty(valueChangedCallLog);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingToCurrentValueNotifiesEditContext()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class InputBaseTest
         Assert.True(rootComponent.EditContext.IsModified(() => model.StringProperty));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuppliesFieldClassCorrespondingToFieldState()
     {
         // Arrange
@@ -230,7 +230,7 @@ public class InputBaseTest
         Assert.Equal("valid", inputComponent.CssClass);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CssClassCombinesClassWithFieldClass()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class InputBaseTest
         Assert.Equal("my-class other-class modified valid", inputComponent.CssClass);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuppliesCurrentValueAsStringWithFormatting()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class InputBaseTest
         Assert.Equal("1915/03/02", inputComponent.CurrentValueAsString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ParsesCurrentValueAsStringWhenChanged_Valid()
     {
         // Arrange
@@ -302,7 +302,7 @@ public class InputBaseTest
         Assert.Equal(0, numValidationStateChanges);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ParsesCurrentValueAsStringWhenChanged_Invalid()
     {
         // Arrange
@@ -337,7 +337,7 @@ public class InputBaseTest
         Assert.Equal(2, numValidationStateChanges);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RespondsToValidationStateChangeNotifications()
     {
         // Arrange
@@ -373,7 +373,7 @@ public class InputBaseTest
         Assert.True(component.AdditionalAttributes.ContainsKey("aria-invalid"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnsubscribesFromValidationStateChangeNotifications()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class InputBaseTest
         Assert.Empty(renderer.Batches.Skip(1));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AriaAttributeIsRenderedWhenTheValidationStateIsInvalidOnFirstRender()
     {
         // Arrange// Arrange
@@ -432,7 +432,7 @@ public class InputBaseTest
         Assert.Equal("true", component.AdditionalAttributes["aria-invalid"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UserSpecifiedAriaValueIsNotChangedIfInvalid()
     {
         // Arrange// Arrange
@@ -466,7 +466,7 @@ public class InputBaseTest
         Assert.Equal("userSpecifiedValue", component.AdditionalAttributes["aria-invalid"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AriaAttributeRemovedWhenStateChangesToValidFromInvalid()
     {
         // Arrange

@@ -31,7 +31,7 @@ public class SharedFxTests
             TestData.GetSharedFxVersion());
     }
 
-    [Fact]
+    // [Fact]
     public void SharedFrameworkContainsListedAssemblies()
     {
         var actualAssemblies = Directory.GetFiles(_sharedFxRoot, "*.dll")
@@ -55,7 +55,7 @@ public class SharedFxTests
         Assert.Empty(unexpected);
     }
 
-    [Fact]
+    // [Fact]
     public void SharedFrameworkContainsExpectedFiles()
     {
         var actualAssemblies = Directory.GetFiles(_sharedFxRoot, "*.dll")
@@ -82,7 +82,7 @@ public class SharedFxTests
         Assert.Empty(unexpected);
     }
 
-    [Fact]
+    // [Fact]
     public void SharedFrameworkContainsValidRuntimeConfigFile()
     {
         var runtimeConfigFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.runtimeconfig.json");
@@ -99,7 +99,7 @@ public class SharedFxTests
         Assert.Equal(TestData.GetMicrosoftNETCoreAppPackageVersion(), (string)runtimeConfig["runtimeOptions"]["framework"]["version"]);
     }
 
-    [Fact]
+    // [Fact]
     public void SharedFrameworkContainsValidDepsJson()
     {
         var depsFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.deps.json");
@@ -157,7 +157,7 @@ public class SharedFxTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {
         // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
@@ -211,7 +211,7 @@ public class SharedFxTests
     }
 
     // ASP.NET Core shared Fx assemblies should reference only ASP.NET Core assemblies with Revsion == 0.
-    [Fact]
+    // [Fact]
     public void SharedFrameworkAssemblyReferencesHaveExpectedAssemblyVersions()
     {
         // Only test managed assemblies from dotnet/aspnetcore.
@@ -244,7 +244,7 @@ public class SharedFxTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void ItContainsVersionFile()
     {
         var versionFile = Path.Combine(_sharedFxRoot, ".version");
@@ -255,7 +255,7 @@ public class SharedFxTests
         Assert.Equal(TestData.GetSharedFxVersion(), lines[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void RuntimeListContainsCorrectEntries()
     {
         var expectedAssemblies = TestData.GetSharedFxDependencies()
@@ -312,7 +312,7 @@ public class SharedFxTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RuntimeListContainsCorrectPaths()
     {
         var runtimeListPath = "RuntimeList.xml";

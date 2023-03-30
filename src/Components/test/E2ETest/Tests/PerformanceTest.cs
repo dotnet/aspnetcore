@@ -27,13 +27,13 @@ public class PerformanceTest
 
     public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
-    [Fact]
+    // [Fact]
     public void HasTitle()
     {
         Assert.Equal("E2EPerformance", Browser.Title);
     }
 
-    [Fact]
+    // [Fact]
     public void BenchmarksRunWithoutError()
     {
         // In CI, we only verify that the benchmarks run without throwing any

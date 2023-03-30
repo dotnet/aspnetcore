@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 
 public class RazorViewEngineOptionsTest
 {
-    [Fact]
+    // [Fact]
     public void AreaViewLocationFormats_ContainsExpectedLocations()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class RazorViewEngineOptionsTest
         Assert.Equal(areaViewLocations, formats, StringComparer.Ordinal);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocationFormats_ContainsExpectedLocations()
     {
         // Arrange

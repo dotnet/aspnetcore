@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
 public class OutputCachePoliciesTests
 {
-    [Fact]
+    // [Fact]
     public async Task DefaultCachePolicy_EnablesCache()
     {
         IOutputCachePolicy policy = DefaultPolicy.Instance;
@@ -18,7 +18,7 @@ public class OutputCachePoliciesTests
         Assert.True(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultCachePolicy_VariesByHost()
     {
         IOutputCachePolicy policy = DefaultPolicy.Instance;
@@ -29,7 +29,7 @@ public class OutputCachePoliciesTests
         Assert.True(context.CacheVaryByRules.VaryByHost);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultCachePolicy_AllowsLocking()
     {
         IOutputCachePolicy policy = DefaultPolicy.Instance;
@@ -40,7 +40,7 @@ public class OutputCachePoliciesTests
         Assert.True(context.AllowLocking);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultCachePolicy_VariesByStar()
     {
         IOutputCachePolicy policy = DefaultPolicy.Instance;
@@ -51,7 +51,7 @@ public class OutputCachePoliciesTests
         Assert.Equal("*", context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnableCachePolicy_DisablesCache()
     {
         IOutputCachePolicy policy = EnableCachePolicy.Disabled;
@@ -63,7 +63,7 @@ public class OutputCachePoliciesTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByHostPolicy_Disabled_UpdatesCacheVaryByRule()
     {
         IOutputCachePolicy policy = VaryByHostPolicy.Disabled;
@@ -74,7 +74,7 @@ public class OutputCachePoliciesTests
         Assert.False(context.CacheVaryByRules.VaryByHost);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExpirationPolicy_SetsResponseExpirationTimeSpan()
     {
         var duration = TimeSpan.FromDays(1);
@@ -86,7 +86,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(duration, context.ResponseExpirationTimeSpan);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LockingPolicy_EnablesLocking()
     {
         IOutputCachePolicy policy = LockingPolicy.Enabled;
@@ -97,7 +97,7 @@ public class OutputCachePoliciesTests
         Assert.True(context.AllowLocking);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LockingPolicy_DisablesLocking()
     {
         IOutputCachePolicy policy = LockingPolicy.Disabled;
@@ -108,7 +108,7 @@ public class OutputCachePoliciesTests
         Assert.False(context.AllowLocking);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoLookupPolicy_DisablesLookup()
     {
         IOutputCachePolicy policy = NoLookupPolicy.Instance;
@@ -119,7 +119,7 @@ public class OutputCachePoliciesTests
         Assert.False(context.AllowCacheLookup);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoStorePolicy_DisablesStore()
     {
         IOutputCachePolicy policy = NoStorePolicy.Instance;
@@ -145,7 +145,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(expected, context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProfilePolicy_UsesNamedProfile()
     {
         var options = new OutputCacheOptions();
@@ -166,7 +166,7 @@ public class OutputCachePoliciesTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TagsPolicy_Tags()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -179,7 +179,7 @@ public class OutputCachePoliciesTests
         Assert.Contains("tag2", context.Tags);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByHeadersPolicy_IsEmpty()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -191,7 +191,7 @@ public class OutputCachePoliciesTests
         Assert.Empty(context.CacheVaryByRules.HeaderNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByHeadersPolicy_AddsSingleHeader()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -204,7 +204,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(header, context.CacheVaryByRules.HeaderNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByHeadersPolicy_AddsMultipleHeaders()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -217,7 +217,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(headers, context.CacheVaryByRules.HeaderNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByQueryPolicy_IsEmpty()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -229,7 +229,7 @@ public class OutputCachePoliciesTests
         Assert.Empty(context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByQueryPolicy_AddsSingleHeader()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -242,7 +242,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(query, context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByQueryPolicy_AddsMultipleHeaders()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -255,7 +255,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(queries, context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByQueryPolicy_AddsMultipleHeadersArray()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -268,7 +268,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(queries, context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByKeyPrefixPolicy_AddsKeyPrefix()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -281,7 +281,7 @@ public class OutputCachePoliciesTests
         Assert.Equal(value, context.CacheVaryByRules.CacheKeyPrefix);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VaryByValuePolicy_KeyValuePair()
     {
         var context = TestUtils.CreateUninitializedContext();

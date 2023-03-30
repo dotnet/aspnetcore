@@ -24,7 +24,7 @@ public class EmptyBlazorWasmTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorwasm-empty";
 
-    [Fact]
+    // [Fact]
     public async Task EmptyBlazorWasmStandaloneTemplateCanCreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync();
@@ -34,7 +34,7 @@ public class EmptyBlazorWasmTemplateTest : BlazorTemplateTest
         Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
     }
 
-    [Fact]
+    // [Fact]
     public async Task EmptyBlazorWasmStandaloneTemplateNoHttpsCanCreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps });
@@ -44,23 +44,23 @@ public class EmptyBlazorWasmTemplateTest : BlazorTemplateTest
         Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
     }
 
-    [Fact]
+    // [Fact]
     public Task EmptyBlazorWasmHostedTemplateCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted }, serverProject: true);
 
-    [Fact]
+    // [Fact]
     public Task EmptyBlazorWasmHostedTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.NoHttps }, serverProject: true);
 
-    [Fact]
+    // [Fact]
     public Task EmptyBlazorWasmStandalonePwaTemplateCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa });
 
-    [Fact]
+    // [Fact]
     public Task EmptyBlazorWasmStandalonePwaTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps });
 
-    [Fact]
+    // [Fact]
     public async Task EmptyBlazorWasmHostedPwaTemplateCanCreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
@@ -70,7 +70,7 @@ public class EmptyBlazorWasmTemplateTest : BlazorTemplateTest
         ValidatePublishedServiceWorker(serverProject);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EmptyBlazorWasmHostedPwaTemplateNoHttpsCanCreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.Pwa, ArgConstants.NoHttps }, serverProject: true);

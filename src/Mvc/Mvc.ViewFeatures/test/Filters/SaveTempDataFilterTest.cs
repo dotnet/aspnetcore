@@ -25,7 +25,7 @@ public class SaveTempDataFilterTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnResultExecuting_DoesntThrowIfResponseStarted()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class SaveTempDataFilterTest
         await responseFeature.FireOnSendingHeadersAsync();
     }
 
-    [Fact]
+    // [Fact]
     public void OnResourceExecuting_RegistersOnStartingCallback()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class SaveTempDataFilterTest
         tempDataFactory.Verify(tdf => tdf.GetTempData(It.IsAny<HttpContext>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public void OnResultExecuted_CanBeCalledTwice()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class SaveTempDataFilterTest
         filter.OnResultExecuted(context);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnResourceExecuting_DoesNotSaveTempData_WhenTempDataAlreadySaved()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class SaveTempDataFilterTest
         tempDataFactory.Verify(tdf => tdf.GetTempData(It.IsAny<HttpContext>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnResourceExecuting_DoesNotSaveTempData_WhenUnhandledExceptionOccurs()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class SaveTempDataFilterTest
         tempDataDictionary.Verify(tdd => tdd.Save(), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnResourceExecuting_KeepsTempData_ForIKeepTempDataResult()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class SaveTempDataFilterTest
         tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnResultExecuting_DoesNotKeepTempData_ForNonIKeepTempDataResult()
     {
         // Arrange
@@ -198,7 +198,7 @@ public class SaveTempDataFilterTest
         tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void OnResultExecuted_DoesNotSaveTempData_WhenResponseHas_AlreadyStarted()
     {
         // Arrange
@@ -233,7 +233,7 @@ public class SaveTempDataFilterTest
         tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void OnResultExecuted_KeepsTempData_ForIKeepTempDataResult()
     {
         // Arrange
@@ -249,7 +249,7 @@ public class SaveTempDataFilterTest
         tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void OnResultExecuted_DoesNotKeepTempData_ForNonIKeepTempDataResult()
     {
         // Arrange

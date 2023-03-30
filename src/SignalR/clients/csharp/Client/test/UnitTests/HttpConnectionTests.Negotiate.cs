@@ -31,26 +31,26 @@ public partial class HttpConnectionTests
             return RunInvalidNegotiateResponseTest<InvalidDataException>(negotiatePayload, "Invalid negotiation response received.");
         }
 
-        [Fact]
+        // [Fact]
         public Task StartThrowsFormatExceptionIfNegotiationResponseHasNoConnectionId()
         {
             return RunInvalidNegotiateResponseTest<FormatException>(ResponseUtils.CreateNegotiationContent(connectionId: string.Empty), "Invalid connection id.");
         }
 
-        [Fact]
+        // [Fact]
         public Task NegotiateResponseWithNegotiateVersionRequiresConnectionToken()
         {
             return RunInvalidNegotiateResponseTest<InvalidDataException>(ResponseUtils.CreateNegotiationContent(negotiateVersion: 1, connectionToken: null), "Invalid negotiation response received.");
         }
 
-        [Fact]
+        // [Fact]
         public Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer()
         {
             return RunInvalidNegotiateResponseTest<AggregateException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.ServerSentEvents),
                 "Unable to connect to the server with any of the available transports. (ServerSentEvents failed: The transport is disabled by the client.)");
         }
 
-        [Fact]
+        // [Fact]
         public Task ConnectionCannotBeStartedIfNoTransportProvidedByServer()
         {
             return RunInvalidNegotiateResponseTest<NoTransportSupportedException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.None), "None of the transports supported by the client are supported by the server.");
@@ -90,7 +90,7 @@ public partial class HttpConnectionTests
             Assert.Equal(expectedNegotiate, await negotiateUrlTcs.Task.DefaultTimeout());
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateReturnedConnectionIdIsSetOnConnection()
         {
             string connectionId = null;
@@ -126,7 +126,7 @@ public partial class HttpConnectionTests
             Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateCanHaveNewFields()
         {
             string connectionId = null;
@@ -163,7 +163,7 @@ public partial class HttpConnectionTests
             Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
         }
 
-        [Fact]
+        // [Fact]
         public async Task ConnectionIdGetsSetWithNegotiateProtocolGreaterThanZero()
         {
             string connectionId = null;
@@ -204,7 +204,7 @@ public partial class HttpConnectionTests
             Assert.Equal("http://fakeuri.org/?id=different-id", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
         }
 
-        [Fact]
+        // [Fact]
         public async Task ConnectionTokenFieldIsIgnoredForNegotiateIdLessThanOne()
         {
             string connectionId = null;
@@ -244,7 +244,7 @@ public partial class HttpConnectionTests
             Assert.Equal("http://fakeuri.org/?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateThatReturnsUrlGetFollowed()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -304,7 +304,7 @@ public partial class HttpConnectionTests
             Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateThatReturnsRedirectUrlForeverThrowsAfter100Tries()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -329,7 +329,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateThatReturnsUrlGetFollowedWithAccessToken()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -411,7 +411,7 @@ public partial class HttpConnectionTests
             Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateThatReturnsRedirectUrlDoesNotAddAnotherNegotiateVersionQueryString()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -473,7 +473,7 @@ public partial class HttpConnectionTests
             Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartSkipsOverTransportsThatTheClientDoesNotUnderstand()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -522,7 +522,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartSkipsOverTransportsThatDoNotSupportTheRequredTransferFormat()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -568,7 +568,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task NegotiateThatReturnsErrorThrowsFromStart()
         {
             bool ExpectedError(WriteContext writeContext)

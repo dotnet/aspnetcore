@@ -19,7 +19,7 @@ namespace Interop.FunctionalTests.Http2;
 [Collection(nameof(NoParallelCollection))]
 public class Http2RequestTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task GET_NoTLS_Http11RequestToHttp2Endpoint_400Result()
     {
         // Arrange

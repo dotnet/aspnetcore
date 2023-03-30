@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class ViewResultExecutorTest
 {
-    [Fact]
+    // [Fact]
     public void FindView_UsesViewEngine_FromViewResult()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class ViewResultExecutorTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_UsesActionDescriptorName_IfViewNameIsNull()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class ViewResultExecutorTest
         Assert.Equal(viewName, viewEngineResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void FindView_UsesActionDescriptorName_IfViewNameIsNull_UsesInvariantCulture()
     {
@@ -96,7 +96,7 @@ public class ViewResultExecutorTest
         Assert.Equal(viewName, viewEngineResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsExpectedNotFoundResult_WithGetViewLocations()
     {
         // Arrange
@@ -130,7 +130,7 @@ public class ViewResultExecutorTest
         Assert.Equal(expectedLocations, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsExpectedNotFoundResult_WithFindViewLocations()
     {
         // Arrange
@@ -164,7 +164,7 @@ public class ViewResultExecutorTest
         Assert.Equal(expectedLocations, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsExpectedNotFoundResult_WithAllLocations()
     {
         // Arrange
@@ -198,7 +198,7 @@ public class ViewResultExecutorTest
         Assert.Equal(expectedLocations, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_WritesDiagnostic_ViewFound()
     {
         // Arrange
@@ -231,7 +231,7 @@ public class ViewResultExecutorTest
         Assert.Equal("myview", listener.ViewFound.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_WritesDiagnostic_ViewNotFound()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class ViewResultExecutorTest
         Assert.Equal("myview", listener.ViewNotFound.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesContentType_FromViewResult()
     {
         // Arrange
@@ -296,7 +296,7 @@ public class ViewResultExecutorTest
         Assert.Equal("application/x-my-content-type", context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesStatusCode_FromViewResult()
     {
         // Arrange

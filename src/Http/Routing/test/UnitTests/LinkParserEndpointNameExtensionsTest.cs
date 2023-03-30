@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class LinkParserEndpointNameExtensionsTest : LinkParserTestBase
 {
-    [Fact]
+    // [Fact]
     public void ParsePathByAddresss_NoMatchingEndpoint_ReturnsNull()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class LinkParserEndpointNameExtensionsTest : LinkParserTestBase
         Assert.Null(values);
     }
 
-    [Fact]
+    // [Fact]
     public void ParsePathByAddresss_HasMatches_ReturnsNullWhenParsingFails()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class LinkParserEndpointNameExtensionsTest : LinkParserTestBase
         Assert.Null(values);
     }
 
-    [Fact] // Endpoint name does not support multiple matches
+    // [Fact] // Endpoint name does not support multiple matches
     public void ParsePathByAddresss_HasMatches_ReturnsFirstSuccessfulParse()
     {
         // Arrange

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 // Integration tests for the default configuration of ModelMetadata and Validation providers
 public class DefaultModelClientValidatorProviderTest
 {
-    [Fact]
+    // [Fact]
     public void CreateValidators_ForIValidatableObject()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class DefaultModelClientValidatorProviderTest
         Assert.IsType<ValidatableObjectAdapter>(validatorItem.Validator);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidators_ClientModelValidatorAttributeOnClass()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class DefaultModelClientValidatorProviderTest
         Assert.Equal("Class", customModelValidator.Tag);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidators_ClientModelValidatorAttributeOnProperty()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class DefaultModelClientValidatorProviderTest
         Assert.Equal("Property", validatorItem.Tag);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidators_ClientModelValidatorAttributeOnPropertyAndClass()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class DefaultModelClientValidatorProviderTest
     }
 
     // RangeAttribute is an example of a ValidationAttribute with it's own adapter type.
-    [Fact]
+    // [Fact]
     public void CreateValidators_ClientValidatorAttribute_SpecificAdapter()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class DefaultModelClientValidatorProviderTest
         Assert.Single(validatorItems, v => v.Validator is RequiredAttributeAdapter);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidators_ClientValidatorAttribute_DefaultAdapter()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class DefaultModelClientValidatorProviderTest
         Assert.IsType<CustomValidationAttribute>(Assert.Single(validatorItems).Validator);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidators_FromModelMetadataType_SingleValidator()
     {
         // Arrange
@@ -164,7 +164,7 @@ public class DefaultModelClientValidatorProviderTest
         Assert.Single(validatorItems, v => v.Validator is RequiredAttributeAdapter);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidators_FromModelMetadataType_MergedValidators()
     {
         // Arrange

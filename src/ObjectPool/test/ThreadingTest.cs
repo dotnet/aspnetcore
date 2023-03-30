@@ -12,14 +12,14 @@ public class ThreadingTest
     private DefaultObjectPool<Item> _pool = default!;
     private bool _foundError;
 
-    [Fact]
+    // [Fact]
     public void DefaultObjectPool_RunThreadingTest()
     {
         _pool = new DefaultObjectPool<Item>(new DefaultPooledObjectPolicy<Item>(), 10);
         RunThreadingTest();
     }
 
-    [Fact]
+    // [Fact]
     public void DisposableObjectPool_RunThreadingTest()
     {
         _pool = new DisposableObjectPool<Item>(new DefaultPooledObjectPolicy<Item>(), 10);

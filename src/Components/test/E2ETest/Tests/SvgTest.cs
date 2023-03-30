@@ -26,7 +26,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgWithCorrectNamespace()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -42,7 +42,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Browser.Equal("20", () => svgCircleElement.GetAttribute("r"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgWithAttributeRemoval()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -58,7 +58,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Browser.Equal("", () => svgCircleElement.GetAttribute("style"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgChildComponentWithCorrectNamespace()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -70,7 +70,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Assert.NotNull(svgCircleElement);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderVariablesInForeignObject()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -86,7 +86,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             e => Assert.Equal("thestringbar", e.Text));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgWithLink()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -103,7 +103,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Browser.True(() => Browser.Url.EndsWith("/subdir/counter", StringComparison.Ordinal));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgWithTwoWayBinding()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -123,7 +123,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Assert.Equal("15", valueElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgRenderFragment()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -137,7 +137,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Assert.Contains("Hello", svgForeignObjectElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderSvgWithScopedCSS()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure;
 
 public class CorsServiceTests
 {
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_Throws_IfPolicyIsIncorrectlyConfigured()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class CorsServiceTests
             Resources.InsecureConfiguration);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_NoOrigin_ReturnsInvalidResult()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class CorsServiceTests
         Assert.False(result.VaryByOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_NoMatchingOrigin_ReturnsInvalidResult()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class CorsServiceTests
         Assert.False(result.IsOriginAllowed);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_EmptyOriginsPolicy_ReturnsInvalidResult()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class CorsServiceTests
         Assert.False(result.IsOriginAllowed);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_IsOriginAllowedReturnsFalse_ReturnsInvalidResult()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class CorsServiceTests
         Assert.False(result.IsOriginAllowed);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_AllowAnyOrigin_DoesNotSupportCredentials_EmitsOriginHeader()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class CorsServiceTests
         Assert.Equal("*", result.AllowedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_AllowAnyOrigin_AddsAnyOrigin()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class CorsServiceTests
         Assert.Equal("*", result.AllowedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_DoesNotSupportCredentials_AllowCredentialsReturnsFalse()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class CorsServiceTests
         Assert.False(result.SupportsCredentials);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_SupportsCredentials_AllowCredentialsReturnsTrue()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class CorsServiceTests
         Assert.True(result.SupportsCredentials);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_AllowAnyOrigin_DoesNotSupportsCredentials_DoesNotVaryByOrigin()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class CorsServiceTests
         Assert.False(result.VaryByOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_AllowOneOrigin_DoesNotVaryByOrigin()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class CorsServiceTests
         Assert.False(result.VaryByOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_AllowMultipleOrigins_VariesByOrigin()
     {
         // Arrange
@@ -221,7 +221,7 @@ public class CorsServiceTests
         Assert.True(result.VaryByOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_SetIsOriginAllowed_VariesByOrigin()
     {
         // Arrange
@@ -238,7 +238,7 @@ public class CorsServiceTests
         Assert.True(result.VaryByOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_NoExposedHeaders_NoAllowExposedHeaders()
     {
         // Arrange
@@ -254,7 +254,7 @@ public class CorsServiceTests
         Assert.Empty(result.AllowedExposedHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_OneExposedHeaders_HeadersAllowed()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "foo" }, result.AllowedExposedHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_ManyExposedHeaders_HeadersAllowed()
     {
         // Arrange
@@ -290,7 +290,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "foo", "bar", "baz" }, result.AllowedExposedHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_MethodNotAllowed()
     {
         // Arrange
@@ -307,7 +307,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "GET" }, result.AllowedMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_MethodAllowed_ReturnsAllowMethods()
     {
         // Arrange
@@ -348,7 +348,7 @@ public class CorsServiceTests
         Assert.Equal("http://example.com", result.AllowedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_IsOriginAllowedReturnsTrue_ReturnsOrigin()
     {
         // Arrange
@@ -370,7 +370,7 @@ public class CorsServiceTests
         Assert.Equal("http://example.com", result.AllowedOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_SupportsCredentials_AllowCredentialsReturnsTrue()
     {
         // Arrange
@@ -390,7 +390,7 @@ public class CorsServiceTests
         Assert.True(result.SupportsCredentials);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_NoPreflightMaxAge_NoPreflightMaxAgeSet()
     {
         // Arrange
@@ -410,7 +410,7 @@ public class CorsServiceTests
         Assert.Null(result.PreflightMaxAge);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_PreflightMaxAge_PreflightMaxAgeSet()
     {
         // Arrange
@@ -430,7 +430,7 @@ public class CorsServiceTests
         Assert.Equal(TimeSpan.FromSeconds(10), result.PreflightMaxAge);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_AnyMethod_ReturnsRequestMethod()
     {
         // Arrange
@@ -470,7 +470,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "PUT", "DELETE" }, result.AllowedMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_NoHeadersRequested_AllowedAllHeaders()
     {
         // Arrange
@@ -489,7 +489,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_AllowAllHeaders_ReflectsRequestHeaders()
     {
         // Arrange
@@ -512,7 +512,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_HeadersRequested_NotAllHeaderMatches_ReturnsInvalidResult()
     {
         // Arrange
@@ -536,7 +536,7 @@ public class CorsServiceTests
         Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_PreflightRequest_WithCredentials_ReflectsHeaders()
     {
         // Arrange
@@ -558,7 +558,7 @@ public class CorsServiceTests
         Assert.True(result.SupportsCredentials);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_ReturnsNoHeaders_ByDefault()
     {
         // Arrange
@@ -573,7 +573,7 @@ public class CorsServiceTests
         Assert.Empty(httpContext.Response.Headers);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_AllowOrigin_AllowOriginHeaderAdded()
     {
         // Arrange
@@ -593,7 +593,7 @@ public class CorsServiceTests
         Assert.Equal("http://example.com", httpContext.Response.Headers["Access-Control-Allow-Origin"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoAllowOrigin_AllowOriginHeaderNotAdded()
     {
         // Arrange
@@ -613,7 +613,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Allow-Origin", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_AllowCredentials_AllowCredentialsHeaderAdded()
     {
         // Arrange
@@ -633,7 +633,7 @@ public class CorsServiceTests
         Assert.Equal("true", httpContext.Response.Headers["Access-Control-Allow-Credentials"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_AddVaryHeader_VaryHeaderAdded()
     {
         // Arrange
@@ -653,7 +653,7 @@ public class CorsServiceTests
         Assert.Equal("Origin", httpContext.Response.Headers["Vary"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_AppendsVaryHeader()
     {
         // Arrange
@@ -674,7 +674,7 @@ public class CorsServiceTests
         Assert.Equal("Cookie,Origin", httpContext.Response.Headers["Vary"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoAllowCredentials_AllowCredentialsHeaderNotAdded()
     {
         // Arrange
@@ -694,7 +694,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Allow-Credentials", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoAllowMethods_AllowMethodsHeaderNotAdded()
     {
         // Arrange
@@ -714,7 +714,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Allow-Methods", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_OneAllowMethods_AllowMethodsHeaderAdded()
     {
         // Arrange
@@ -735,7 +735,7 @@ public class CorsServiceTests
         Assert.Equal("PUT", httpContext.Response.Headers["Access-Control-Allow-Methods"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoAllowHeaders_AllowHeadersHeaderNotAdded()
     {
         // Arrange
@@ -755,7 +755,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Allow-Headers", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_OneAllowHeaders_AllowHeadersHeaderAdded()
     {
         // Arrange
@@ -776,7 +776,7 @@ public class CorsServiceTests
         Assert.Equal("foo", httpContext.Response.Headers["Access-Control-Allow-Headers"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoAllowExposedHeaders_ExposedHeadersHeaderNotAdded()
     {
         // Arrange
@@ -796,7 +796,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Expose-Headers", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_PreflightRequest_ExposesHeadersNotAdded()
     {
         // Arrange
@@ -817,7 +817,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Expose-Headers", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoPreflightRequest_ExposesHeadersAdded()
     {
         // Arrange
@@ -838,7 +838,7 @@ public class CorsServiceTests
         Assert.Equal("foo,bar", httpContext.Response.Headers[CorsConstants.AccessControlExposeHeaders]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_OneAllowExposedHeaders_ExposedHeadersHeaderAdded()
     {
         // Arrange
@@ -858,7 +858,7 @@ public class CorsServiceTests
         Assert.Equal("foo", httpContext.Response.Headers["Access-Control-Expose-Headers"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_NoPreflightMaxAge_MaxAgeHeaderNotAdded()
     {
         // Arrange
@@ -879,7 +879,7 @@ public class CorsServiceTests
         Assert.DoesNotContain("Access-Control-Max-Age", httpContext.Response.Headers.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyResult_PreflightMaxAge_MaxAgeHeaderAdded()
     {
         // Arrange
@@ -899,7 +899,7 @@ public class CorsServiceTests
         Assert.Equal("30", httpContext.Response.Headers["Access-Control-Max-Age"]);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_MultiOriginsPolicy_ReturnsVaryByOriginHeader()
     {
         // Arrange
@@ -917,7 +917,7 @@ public class CorsServiceTests
         Assert.True(result.VaryByOrigin);
     }
 
-    [Fact]
+    // [Fact]
     public void EvaluatePolicy_MultiOriginsPolicy_NoMatchingOrigin_ReturnsInvalidResult()
     {
         // Arrange

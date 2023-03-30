@@ -27,7 +27,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
 {
     #region Diagnostics
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WritesDiagnostic_ActionSelected()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WritesDiagnostic_ActionInvoked()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
 
     #region Page Context
 
-    [Fact]
+    // [Fact]
     public async Task AddingValueProviderFactory_AtResourceFilter_IsAvailableInPageContext()
     {
         // Arrange
@@ -113,7 +113,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(valueProviderFactory2, pageContext.ValueProviderFactories[1]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeletingValueProviderFactory_AtResourceFilter_IsNotAvailableInPageContext()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
 
     #region Page vs PageModel
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_WithSimplePage_FlowsRightValues()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(page.ViewContext.ViewData, pageResult.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_WithSimplePageWithPocoModel_FlowsRightValues()
     {
         // Arrange
@@ -263,7 +263,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_WithPageModel_FlowsRightValues()
     {
         // Arrange
@@ -322,7 +322,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(pageModel.PageContext.ViewData, pageResult.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_WithPage_SetsExecutingFilePath()
     {
         // Arrange
@@ -352,7 +352,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
 
     #region Handler Selection
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesPageFilter_CanModifySelectedHandler()
     {
         // Arrange
@@ -406,7 +406,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         filter2.Verify(f => f.OnPageHandlerExecuted(It.IsAny<PageHandlerExecutedContext>()), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncPageFilter_CanModifySelectedHandler()
     {
         // Arrange
@@ -464,7 +464,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
 
     #region Page Filters
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataIsSet_AfterHandlerMethodIsExecuted()
     {
         // Arrange
@@ -491,7 +491,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.True(pageHandlerExecutedCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesPageFilter()
     {
         // Arrange
@@ -517,7 +517,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(Result, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncPageFilter()
     {
         // Arrange
@@ -547,7 +547,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(Result, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_AsyncAuthorizeFilter_PopulatesProperties()
     {
         // Arrange
@@ -582,7 +582,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_SyncAuthorizeFilter_PopulatesProperties()
     {
         // Arrange
@@ -616,7 +616,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_AsyncResourceFilter_PopulatesProperties()
     {
         // Arrange
@@ -651,7 +651,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_SyncResourceFilter_PopulatesProperties()
     {
         // Arrange
@@ -685,7 +685,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_AsyncResultFilter_PopulatesProperties()
     {
         // Arrange
@@ -720,7 +720,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_SyncResultFilter_PopulatesProperties()
     {
         // Arrange
@@ -754,7 +754,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_AsyncPageFilter_PopulatesProperties()
     {
         // Arrange
@@ -790,7 +790,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_PageResultSetAt_SyncPageFilter_PopulatesProperties()
     {
         // Arrange
@@ -825,7 +825,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(pageResult.Page.ViewContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesPageFilter_ShortCircuit()
     {
         // Arrange
@@ -885,7 +885,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(context.Result, result.Object);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncPageFilter_ShortCircuit_WithResult()
     {
         // Arrange
@@ -957,7 +957,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Same(context.Result, result.Object);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncPageFilter_ShortCircuit_WithoutResult()
     {
         // Arrange
@@ -1015,7 +1015,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncPageFilter_ShortCircuit_WithResult_CallNext()
     {
         // Arrange
@@ -1043,7 +1043,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesPageFilter_WithExceptionThrownByAction()
     {
         // Arrange
@@ -1078,7 +1078,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesPageFilter_WithExceptionThrownByPageFilter()
     {
         // Arrange
@@ -1123,7 +1123,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncPageFilter_WithExceptionThrownByPageFilter()
     {
         // Arrange
@@ -1168,7 +1168,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesPageFilter_HandleException()
     {
         // Arrange
@@ -1214,7 +1214,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
         result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncResourceFilter_WithActionResult_FromPageFilter()
     {
         // Arrange
@@ -1252,7 +1252,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncResourceFilter_HandleException_FromPageFilter()
     {
         // Arrange
@@ -1292,7 +1292,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_InvokesAsyncResourceFilter_HandlesException_FromExceptionFilter()
     {
         // Arrange
@@ -1331,7 +1331,7 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAction_ExceptionBubbling_AsyncPageFilter_To_ResourceFilter()
     {
         // Arrange

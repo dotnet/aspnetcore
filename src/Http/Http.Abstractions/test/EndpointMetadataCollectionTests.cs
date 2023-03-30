@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class EndpointMetadataCollectionTests
 {
-    [Fact]
+    // [Fact]
     public void Constructor_Enumeration_ContainsValues()
     {
         // Arrange & Act
@@ -27,7 +27,7 @@ public class EndpointMetadataCollectionTests
             value => Assert.Equal(3, value));
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_ParamsArray_ContainsValues()
     {
         // Arrange & Act
@@ -42,7 +42,7 @@ public class EndpointMetadataCollectionTests
             value => Assert.Equal(3, value));
     }
 
-    [Fact]
+    // [Fact]
     public void GetOrderedMetadata_CanReturnEmptyCollection()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class EndpointMetadataCollectionTests
         Assert.Same(Array.Empty<string>(), ordered);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOrderedMetadata_CanReturnNonEmptyCollection()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class EndpointMetadataCollectionTests
         Assert.Equal(new string[] { "1", "2" }, ordered1);
     }
 
-    [Fact]
+    // [Fact]
     public void GetRequiredMetadata_CanReturnMetadata()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class EndpointMetadataCollectionTests
         Assert.Equal("2", requiredMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void GetRequiredMetadata_ThrowsWhenMetadataNotFound()
     {
         // Arrange

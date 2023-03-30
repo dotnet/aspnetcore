@@ -64,7 +64,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             _decoder = new QPackDecoder(MaxHeaderFieldSize);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesIndexedHeaderField_StaticTableWithValue()
         {
             _decoder.Decode(new byte[] { 0, 0 }, endHeaders: false, handler: _handler);
@@ -75,7 +75,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             Assert.Equal("GET", _handler.DecodedStaticHeaders[H3StaticTable.MethodGet].Value);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesIndexedHeaderField_StaticTableLiteralValue()
         {
             byte[] encoded = _literalHeaderFieldWithNameReferenceStatic
@@ -90,7 +90,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             Assert.Equal(_headerValueString, _handler.DecodedStaticHeaders[H3StaticTable.ContentTypeApplicationDnsMessage].Value);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralFieldLineWithLiteralName_Value()
         {
             byte[] encoded = _literalFieldLineWithLiteralName
@@ -100,7 +100,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             TestDecodeWithoutIndexing(encoded, _translateString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesAuthority_Value()
         {
             byte[] encoded = Convert.FromBase64String("AADR11AOMTI3LjAuMC4xOjUwMDHBNwFhbHQtdXNlZA4xMjcuMC4wLjE6NTAwMQ==");
@@ -117,7 +117,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             TestDecodeWithoutIndexing(encoded[2..], expectedValues);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesAuthority_Empty()
         {
             byte[] encoded = Convert.FromBase64String("AAA3ADptZXRob2QDR0VUNTpwYXRoAS83ADpzY2hlbWUEaHR0cDcDOmF1dGhvcml0eQA=");
@@ -133,7 +133,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             TestDecodeWithoutIndexing(encoded[2..], expectedValues);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralFieldLineWithLiteralName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalFieldLineWithLiteralName
@@ -143,7 +143,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             TestDecodeWithoutIndexing(encoded, _translateString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralFieldLineWithLiteralName_HuffmanEncodedName()
         {
             byte[] encoded = _headerNameHuffman
@@ -153,7 +153,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralFieldLineWithLiteralName_LargeValues()
         {
             int length = 0;

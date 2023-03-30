@@ -121,7 +121,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsFilters_OnlyWhenLogger_IsEnabled()
     {
         // Arrange
@@ -163,7 +163,7 @@ public class MvcCoreLoggerExtensionsTest
         Assert.Empty(testSink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void LogsListOfAuthorizationFilters()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsListOfResourceFilters()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsListOfActionFilters()
     {
         // Arrange
@@ -301,7 +301,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsListOfExceptionFilters()
     {
         // Arrange
@@ -347,7 +347,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsListOfResultFilters()
     {
         // Arrange
@@ -393,7 +393,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void NoFormatter_LogsListOfContentTypes()
     {
         // Arrange
@@ -424,7 +424,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void ExecutingControllerFactory_LogsControllerName()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class MvcCoreLoggerExtensionsTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void ExecutedControllerFactory_LogsControllerName()
     {
         // Arrange

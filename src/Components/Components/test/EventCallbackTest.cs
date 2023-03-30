@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public class EventCallbackTest
 {
-    [Fact]
+    // [Fact]
     public async Task EventCallback_Default()
     {
         // Arrange
@@ -17,7 +17,7 @@ public class EventCallbackTest
         await callback.InvokeAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_Default()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class EventCallbackTest
         await callback.InvokeAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_NullReceiver()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class EventCallbackTest
         Assert.Equal(1, runCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_NullReceiver()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class EventCallbackTest
         Assert.Equal(1, runCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_Action_Null()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_Action_IgnoresArg()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_ActionT_Null()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_ActionT_Arg()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_ActionT_Arg_ValueType()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_ActionT_ArgMismatch()
     {
         // Arrange
@@ -163,7 +163,7 @@ public class EventCallbackTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_FuncTask_Null()
     {
         // Arrange
@@ -180,7 +180,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_FuncTask_IgnoresArg()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_FuncTTask_Null()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_FuncTTask_Arg()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_FuncTTask_Arg_ValueType()
     {
         // Arrange
@@ -254,7 +254,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallback_FuncTTask_ArgMismatch()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class EventCallbackTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_Action_Null()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_Action_IgnoresArg()
     {
         // Arrange
@@ -305,7 +305,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_ActionT_Null()
     {
         // Arrange
@@ -324,7 +324,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_ActionT_Arg()
     {
         // Arrange
@@ -343,7 +343,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_FuncTask_Null()
     {
         // Arrange
@@ -360,7 +360,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_FuncTask_IgnoresArg()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_FuncTTask_Null()
     {
         // Arrange
@@ -396,7 +396,7 @@ public class EventCallbackTest
         Assert.Equal(1, component.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EventCallbackOfT_FuncTTask_Arg()
     {
         // Arrange

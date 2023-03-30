@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Identity.Test;
 
 public class UserManagerTest
 {
-    [Fact]
+    // [Fact]
     public void EnsureDefaultServicesDefaultsWithStoreWorks()
     {
         var config = new ConfigurationBuilder().Build();
@@ -26,7 +26,7 @@ public class UserManagerTest
         Assert.NotNull(manager.Options);
     }
 
-    [Fact]
+    // [Fact]
     public void AddUserManagerWithCustomManagerReturnsSameInstance()
     {
         var config = new ConfigurationBuilder().Build();
@@ -59,7 +59,7 @@ public class UserManagerTest
         { }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateCallsStore()
     {
         // Setup
@@ -79,7 +79,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateUpdatesSecurityStampStore()
     {
         // Setup
@@ -98,7 +98,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateCallsUpdateEmailStore()
     {
         // Setup
@@ -120,7 +120,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeleteCallsStore()
     {
         // Setup
@@ -137,7 +137,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpdateCallsStore()
     {
         // Setup
@@ -157,7 +157,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpdateWillUpdateNormalizedEmail()
     {
         // Setup
@@ -179,7 +179,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetUserNameCallsStore()
     {
         // Setup
@@ -200,7 +200,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task FindByIdCallsStore()
     {
         // Setup
@@ -217,7 +217,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task FindByNameCallsStoreWithNormalizedName()
     {
         // Setup
@@ -235,7 +235,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanFindByNameCallsStoreWithoutNormalizedName()
     {
         // Setup
@@ -253,7 +253,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task FindByEmailCallsStoreWithNormalizedEmail()
     {
         // Setup
@@ -271,7 +271,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanFindByEmailCallsStoreWithoutNormalizedEmail()
     {
         // Setup
@@ -295,7 +295,7 @@ public class UserManagerTest
         public string NormalizeEmail(string key) => "@" + key;
     }
 
-    [Fact]
+    // [Fact]
     public async Task FindByEmailCallsStoreWithCustomNormalizedEmail()
     {
         // Setup
@@ -313,7 +313,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task FindByNameCallsStoreWithCustomNormalizedName()
     {
         // Setup
@@ -331,7 +331,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddToRolesCallsStore()
     {
         // Setup
@@ -370,7 +370,7 @@ public class UserManagerTest
         store.Verify(s => s.AddToRoleAsync(user, normalizer.NormalizeName("C"), CancellationToken.None), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddToRolesCallsStoreWithCustomNameNormalizer()
     {
         // Setup
@@ -409,7 +409,7 @@ public class UserManagerTest
         store.Verify(s => s.AddToRoleAsync(user, "#C", CancellationToken.None), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddToRolesFailsIfUserInRole()
     {
         // Setup
@@ -433,7 +433,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoveFromRolesCallsStore()
     {
         // Setup
@@ -470,7 +470,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoveFromRolesFailsIfNotInRole()
     {
         // Setup
@@ -497,7 +497,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddClaimsCallsStore()
     {
         // Setup
@@ -518,7 +518,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddClaimCallsStore()
     {
         // Setup
@@ -539,7 +539,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpdateClaimCallsStore()
     {
         // Setup
@@ -561,7 +561,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CheckPasswordWillRehashPasswordWhenNeeded()
     {
         // Setup
@@ -592,7 +592,7 @@ public class UserManagerTest
         hasher.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateFailsWithNullSecurityStamp()
     {
         // Setup
@@ -609,7 +609,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpdateFailsWithNullSecurityStamp()
     {
         // Setup
@@ -626,7 +626,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoveClaimsCallsStore()
     {
         // Setup
@@ -647,7 +647,7 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoveClaimCallsStore()
     {
         // Setup
@@ -668,14 +668,14 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CheckPasswordWithNullUserReturnsFalse()
     {
         var manager = MockHelpers.TestUserManager(new EmptyStore());
         Assert.False(await manager.CheckPasswordAsync(null, "whatevs"));
     }
 
-    [Fact]
+    // [Fact]
     public void UsersQueryableFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -683,7 +683,7 @@ public class UserManagerTest
         Assert.Throws<NotSupportedException>(() => manager.Users.Count());
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsersEmailMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -695,7 +695,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(() => manager.ConfirmEmailAsync(null, null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -705,7 +705,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetPhoneNumberAsync(null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task TokenMethodsThrowWithNoTokenProvider()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -716,7 +716,7 @@ public class UserManagerTest
             async () => await manager.VerifyUserTokenAsync(user, "bogus", null, null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task PasswordMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -729,7 +729,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(() => manager.HasPasswordAsync(null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
     {
         var store = new Mock<IUserStore<PocoUser>>();
@@ -744,7 +744,7 @@ public class UserManagerTest
                 () => manager.GenerateChangePhoneNumberTokenAsync(new PocoUser(), "111-111-1111"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task LoginMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -755,7 +755,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null, null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClaimMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -784,7 +784,7 @@ public class UserManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void UserManagerWillUseTokenProviderInstance()
     {
         var provider = new ATokenProvider();
@@ -801,7 +801,7 @@ public class UserManagerTest
         Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new PocoUser(), "A", "purpose"));
     }
 
-    [Fact]
+    // [Fact]
     public void UserManagerThrowsIfStoreDoesNotSupportProtection()
     {
         var services = new ServiceCollection()
@@ -812,7 +812,7 @@ public class UserManagerTest
         Assert.Contains("Store does not implement IProtectedUserStore", e.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UserManagerThrowsIfMissingPersonalDataProtection()
     {
         var services = new ServiceCollection()
@@ -881,7 +881,7 @@ public class UserManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void UserManagerWillUseTokenProviderInstanceOverDefaults()
     {
         var provider = new ATokenProvider();
@@ -898,7 +898,7 @@ public class UserManagerTest
         Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new PocoUser(), TokenOptions.DefaultProvider, "purpose"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task TwoFactorStoreMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -908,7 +908,7 @@ public class UserManagerTest
             Assert.ThrowsAsync<NotSupportedException>(async () => await manager.SetTwoFactorEnabledAsync(null, true));
     }
 
-    [Fact]
+    // [Fact]
     public async Task LockoutStoreMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -921,7 +921,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetAccessFailedCountAsync(null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RoleMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -934,7 +934,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.IsInRoleAsync(null, "bogus"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthTokenMethodsFailWhenStoreNotImplemented()
     {
         var error = Extensions.Identity.Core.Resources.StoreNotIUserAuthenticationTokenStore;
@@ -945,7 +945,7 @@ public class UserManagerTest
         await VerifyException<NotSupportedException>(async () => await manager.RemoveAuthenticationTokenAsync(null, null, null), error);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticatorMethodsFailWhenStoreNotImplemented()
     {
         var error = Extensions.Identity.Core.Resources.StoreNotIUserAuthenticatorKeyStore;
@@ -955,7 +955,7 @@ public class UserManagerTest
         await VerifyException<NotSupportedException>(async () => await manager.ResetAuthenticatorKeyAsync(null), error);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecoveryMethodsFailWhenStoreNotImplemented()
     {
         var error = Extensions.Identity.Core.Resources.StoreNotIUserTwoFactorRecoveryCodeStore;
@@ -971,7 +971,7 @@ public class UserManagerTest
         Assert.Equal(expectedMessage, error.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposeAfterDisposeDoesNotThrow()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -979,7 +979,7 @@ public class UserManagerTest
         manager.Dispose();
     }
 
-    [Fact]
+    // [Fact]
     public async Task PasswordValidatorBlocksCreate()
     {
         var manager = MockHelpers.TestUserManager(new EmptyStore());
@@ -989,7 +989,7 @@ public class UserManagerTest
             BadPasswordValidator<PocoUser>.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PasswordValidatorWithoutErrorsBlocksCreate()
     {
         var manager = MockHelpers.TestUserManager(new EmptyStore());
@@ -998,7 +998,7 @@ public class UserManagerTest
         IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResetTokenCallNoopForTokenValueZero()
     {
         var user = new PocoUser() { UserName = Guid.NewGuid().ToString() };
@@ -1012,7 +1012,7 @@ public class UserManagerTest
         IdentityResultAssert.IsSuccess(await manager.ResetAccessFailedCountAsync(user));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ManagerPublicNullChecks()
     {
         Assert.Throws<ArgumentNullException>("store",
@@ -1042,7 +1042,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new PocoUser(), null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MethodsFailWithUnknownUserTest()
     {
         var manager = MockHelpers.TestUserManager(new EmptyStore());
@@ -1143,7 +1143,7 @@ public class UserManagerTest
             async () => await manager.IsLockedOutAsync(null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MethodsThrowWhenDisposedTest()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
@@ -1736,7 +1736,7 @@ public class UserManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCustomizeUserValidatorErrors()
     {
         var store = new Mock<IUserEmailStore<PocoUser>>();

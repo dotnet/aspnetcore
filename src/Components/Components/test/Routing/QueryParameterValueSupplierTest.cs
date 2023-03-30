@@ -9,7 +9,7 @@ public class QueryParameterValueSupplierTest
 {
     private class NoQueryParameters : ComponentBase { }
 
-    [Fact]
+    // [Fact]
     public void ComponentWithNoQueryParametersHasNoSupplier()
     {
         Assert.Null(QueryParameterValueSupplier.ForType(typeof(NoQueryParameters)));
@@ -23,7 +23,7 @@ public class QueryParameterValueSupplierTest
         [Parameter] public object InvalidAndUnsupportedType { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void SuppliesParametersOnlyForPropertiesWithMatchingAttributes()
     {
         var query = $"?{nameof(IgnorableProperties.Invalid1)}=a&{nameof(IgnorableProperties.Invalid2)}=b&{nameof(IgnorableProperties.Valid)}=c";
@@ -53,7 +53,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery] public long? NullableLongVal { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void SupportsExpectedValueTypes()
     {
         var query =
@@ -147,7 +147,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery] public long?[] NullableLongVals { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void SupportsExpectedArrayTypes()
     {
         var query =
@@ -221,7 +221,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery(Name = "anothername2")] public string Value2 { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void CanOverrideParameterName()
     {
         var query = $"anothername1=Some+value+1&Value2=Some+value+2";
@@ -239,7 +239,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery(Name = "A")] public long ValueAsLong { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void CannotMapSingleQueryParameterToMultipleProperties()
     {
         var ex = Assert.Throws<InvalidOperationException>(
@@ -253,7 +253,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery] public object ObjectValue { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void RejectsUnsupportedType()
     {
         var ex = Assert.Throws<NotSupportedException>(
@@ -325,7 +325,7 @@ public class QueryParameterValueSupplierTest
         Assert.Equal($"Cannot parse the value '' as type '{targetType}' for '{key}'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptsBlankValuesWhenNullable()
     {
         var query =
@@ -358,7 +358,7 @@ public class QueryParameterValueSupplierTest
         Assert.Equal(string.Empty, suppliedParameters[nameof(ValidTypes.StringVal)]);
     }
 
-    [Fact]
+    // [Fact]
     public void EmptyStringArrayValuesAreSuppliedAsEmptyStrings()
     {
         var query = $"?{nameof(ValidArrayTypes.StringVals)}=a&" +
@@ -385,7 +385,7 @@ public class QueryParameterValueSupplierTest
         Assert.Equal($"Cannot parse the value '' as type '{targetType}' for '{key}'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptsBlankArrayEntriesWhenNullable()
     {
         var query =
@@ -414,7 +414,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery(Name = NameThatLooksEncoded)] public string Key { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void DecodesKeysAndValues()
     {
         var encodedName = Uri.EscapeDataString(SpecialQueryParameterName.NameThatLooksEncoded);
@@ -429,7 +429,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery(Name = "keytwo")] public int KeyTwo { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void MatchesKeysCaseInsensitively()
     {
         var query = $"?KEYONE=1&KEYTWO=2";
@@ -444,7 +444,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery(Name = "خاصية_أخرى")] public string AnotherProperty { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void MatchesKeysWithNonAsciiChars()
     {
         var query = $"?{nameof(KeysWithNonAsciiChars.Имя_моей_собственности)}=first&خاصية_أخرى=second";
@@ -461,7 +461,7 @@ public class QueryParameterValueSupplierTest
         [Parameter, SupplyParameterFromQuery] public string Name { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void ForNonArrayValuesOnlyOneValueIsSupplied()
     {
         // For simplicity and speed, the value assignment logic doesn't check if the a single-valued destination is

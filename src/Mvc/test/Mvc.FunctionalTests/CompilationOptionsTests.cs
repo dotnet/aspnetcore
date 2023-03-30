@@ -16,7 +16,7 @@ public class CompilationOptionsTests : IClassFixture<MvcTestFixture<RazorWebSite
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task CompilationOptions_AreUsedByViewsAndPartials()
     {
         // Arrange

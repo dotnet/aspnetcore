@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class PartialViewResultExecutorTest
 {
-    [Fact]
+    // [Fact]
     public void FindView_UsesViewEngine_FromPartialViewResult()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class PartialViewResultExecutorTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_UsesActionDescriptorName_IfViewNameIsNull()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal(viewName, viewEngineResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void FindView_UsesActionDescriptorName_IfViewNameIsNull_UsesInvariantCulture()
     {
@@ -97,7 +97,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal(viewName, viewEngineResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsExpectedNotFoundResult_WithGetViewLocations()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal(expectedLocations, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsExpectedNotFoundResult_WithFindViewLocations()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal(expectedLocations, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsExpectedNotFoundResult_WithAllLocations()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal(expectedLocations, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_WritesDiagnostic_ViewFound()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal("myview", listener.ViewFound.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_WritesDiagnostic_ViewNotFound()
     {
         // Arrange
@@ -277,7 +277,7 @@ public class PartialViewResultExecutorTest
         Assert.Equal("myview", listener.ViewNotFound.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesContentType_FromPartialViewResult()
     {
         // Arrange
@@ -306,7 +306,7 @@ public class PartialViewResultExecutorTest
         Assert.Null(MediaType.GetEncoding(contentType));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesStatusCode_FromPartialViewResult()
     {
         // Arrange

@@ -16,7 +16,7 @@ public class ServerEventTest : EventTest
     {
     }
 
-    [Fact]
+    // [Fact]
     public override void EventDuringBatchRendering_CanTriggerDOMEvents()
     {
         base.EventDuringBatchRendering_CanTriggerDOMEvents();

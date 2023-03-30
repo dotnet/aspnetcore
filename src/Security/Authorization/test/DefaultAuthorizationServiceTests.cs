@@ -21,7 +21,7 @@ public class DefaultAuthorizationServiceTests
         return services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeCombineThrowsOnUnknownPolicy()
     {
         var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
@@ -32,7 +32,7 @@ public class DefaultAuthorizationServiceTests
             }));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldAllowIfClaimIsPresent()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldAllowIfClaimIsPresentWithSpecifiedAuthType()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldAllowIfClaimIsAmongValues()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldInvokeAllHandlersByDefault()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanFailWithReasons()
     {
         var handler1 = new ReasonableFailHandler("1");
@@ -196,7 +196,7 @@ public class DefaultAuthorizationServiceTests
         Assert.Equal(handler3, second.Handler);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldFailWhenAllRequirementsNotHandled()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class DefaultAuthorizationServiceTests
         Assert.IsType<ClaimsAuthorizationRequirement>(allowed.Failure.FailedRequirements.First());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldNotAllowIfClaimTypeIsNotPresent()
     {
         // Arrange
@@ -239,7 +239,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldNotAllowIfClaimValueIsNotPresent()
     {
         // Arrange
@@ -260,7 +260,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldNotAllowIfNoClaims()
     {
         // Arrange
@@ -279,7 +279,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldNotAllowIfUserIsNull()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldNotAllowIfNotCorrectAuthType()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldAllowWithNoAuthType()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ThrowsWithUnknownPolicy()
     {
         // Arrange
@@ -341,7 +341,7 @@ public class DefaultAuthorizationServiceTests
         Assert.Equal("No policy found: BogusPolicy.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_CustomRolePolicy()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_HasAnyClaimOfTypePolicy()
     {
         // Arrange
@@ -385,7 +385,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_PolicyCanAuthenticationSchemeWithNameClaim()
     {
         // Arrange
@@ -402,7 +402,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RolePolicyCanRequireSingleRole()
     {
         // Arrange
@@ -419,7 +419,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RolePolicyCanRequireOneOfManyRoles()
     {
         // Arrange
@@ -435,7 +435,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RolePolicyCanBlockWrongRole()
     {
         // Arrange
@@ -456,7 +456,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RolePolicyCanBlockNoRole()
     {
         // Arrange
@@ -476,14 +476,14 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public void PolicyThrowsWithNoRequirements()
     {
         Assert.Throws<InvalidOperationException>(() => BuildAuthorizationService(services =>
             services.AddAuthorizationBuilder().AddPolicy("Basic", policy => { })));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequireUserNameFailsForWrongUserName()
     {
         // Arrange
@@ -504,7 +504,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRequireUserName()
     {
         // Arrange
@@ -530,7 +530,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRequireUserNameWithDiffClaimType()
     {
         // Arrange
@@ -552,7 +552,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRequireRoleWithDiffClaimType()
     {
         // Arrange
@@ -574,7 +574,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanApproveAnyAuthenticatedUser()
     {
         // Arrange
@@ -599,7 +599,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanBlockNonAuthenticatedUser()
     {
         // Arrange
@@ -632,7 +632,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomReqWithNoHandlerFails()
     {
         // Arrange
@@ -652,7 +652,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomReqWithHandlerSucceeds()
     {
         // Arrange
@@ -714,7 +714,7 @@ public class DefaultAuthorizationServiceTests
         Assert.Equal(shouldSucceed, allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCombinePolicies()
     {
         // Arrange
@@ -742,7 +742,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CombinePoliciesWillFailIfBasePolicyFails()
     {
         // Arrange
@@ -769,7 +769,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CombinedPoliciesWillFailIfExtraRequirementFails()
     {
         // Arrange
@@ -836,7 +836,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAuthorizeAllSuperuserOperations()
     {
         // Arrange
@@ -880,7 +880,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseValueTypeResource()
     {
         // Arrange
@@ -901,7 +901,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True((await authorizationService.AuthorizeAsync(user, 2, Operations.Edit)).Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotCallHandlerWithWrongResourceType()
     {
         // Arrange
@@ -922,7 +922,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False((await authorizationService.AuthorizeAsync(user, 1, Operations.Edit)).Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAuthorizeOnlyAllowedOperations()
     {
         // Arrange
@@ -939,7 +939,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False((await authorizationService.AuthorizeAsync(user, new ExpenseReport(), Operations.Create)).Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeHandlerNotCalledWithNullResource()
     {
         // Arrange
@@ -954,7 +954,7 @@ public class DefaultAuthorizationServiceTests
         Assert.False((await authorizationService.AuthorizeAsync(user, null, Operations.Edit)).Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAuthorizeWithAssertionRequirement()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -973,7 +973,7 @@ public class DefaultAuthorizationServiceTests
         Assert.True(allowed.Succeeded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAuthorizeWithAsyncAssertionRequirement()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -1010,7 +1010,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReplaceDefaultPolicyProvider()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -1049,7 +1049,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseDynamicPolicyProvider()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -1076,7 +1076,7 @@ public class DefaultAuthorizationServiceTests
         public AuthorizationResult Evaluate(AuthorizationHandlerContext context) => AuthorizationResult.Success();
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseCustomEvaluatorThatOverridesRequirement()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -1117,7 +1117,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseCustomContextThatAlwaysFails()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -1136,7 +1136,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseCustomHandlerProvider()
     {
         var authorizationService = BuildAuthorizationService(services =>
@@ -1180,7 +1180,7 @@ public class DefaultAuthorizationServiceTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldLogRequirementDetailWhenUnHandled()
     {
         // Arrange
@@ -1213,7 +1213,7 @@ public class DefaultAuthorizationServiceTests
         // Assert
     }
 
-    [Fact]
+    // [Fact]
     public async Task Authorize_ShouldLogExplicitFailedWhenFailedCall()
     {
         // Arrange

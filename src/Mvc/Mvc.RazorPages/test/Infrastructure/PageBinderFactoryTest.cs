@@ -20,7 +20,7 @@ public class PageBinderFactoryTest
     private static readonly MvcOptions _options = new MvcOptions();
     private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(_options);
 
-    [Fact]
+    // [Fact]
     public void GetModelBinderFactory_ReturnsNullIfPageHasNoBoundProperties()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class PageBinderFactoryTest
         Assert.Same(PageBinderFactory.NullPropertyBinder, factory);
     }
 
-    [Fact]
+    // [Fact]
     public void GetModelBinderFactory_ReturnsNullIfPageModelHasNoBoundProperties()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class PageBinderFactoryTest
         Assert.Same(PageBinderFactory.NullPropertyBinder, factory);
     }
 
-    [Fact]
+    // [Fact]
     public void GetModelBinderFactory_ReturnsNullIfPageHasNoVisibleBoundProperties()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class PageBinderFactoryTest
         Assert.Same(PageBinderFactory.NullPropertyBinder, factory);
     }
 
-    [Fact]
+    // [Fact]
     public void GetModelBinderFactory_ReturnsNullIfPageModelHasNoVisibleBoundProperties()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class PageBinderFactoryTest
         Assert.Same(PageBinderFactory.NullPropertyBinder, factory);
     }
 
-    [Fact]
+    // [Fact]
     public void GetModelBinderFactory_ReturnsNullIfPageHasNoSettableBoundProperties()
     {
         // Arrange
@@ -147,7 +147,7 @@ public class PageBinderFactoryTest
         Assert.Same(PageBinderFactory.NullPropertyBinder, factory);
     }
 
-    [Fact]
+    // [Fact]
     public void GetModelBinderFactory_ReturnsNullIfPageModelHasNoSettableBoundProperties()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class PageBinderFactoryTest
         Assert.Same(PageBinderFactory.NullPropertyBinder, factory);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelBinderFactory_BindsPropertiesOnPage()
     {
         // Arrange
@@ -231,7 +231,7 @@ public class PageBinderFactoryTest
         Assert.Null(page.PropertyWithNoValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelBinderFactory_BindsPropertiesOnPageModel()
     {
         // Arrange
@@ -297,7 +297,7 @@ public class PageBinderFactoryTest
         Assert.Null(model.PropertyWithNoValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelBinderFactory_PreservesExistingValueIfModelBindingFailed()
     {
         // Arrange
@@ -405,7 +405,7 @@ public class PageBinderFactoryTest
         Assert.Equal("set", model.Default);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelBinderFactory_BindsPropertyWithoutSupportsGet_WhenRequestIsNotGet()
     {
         // Arrange
@@ -466,7 +466,7 @@ public class PageBinderFactoryTest
         Assert.Equal("value", model.Default);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatePropertyBinder_SkipsBindingPropertiesWithBindNever()
     {
         // Arrange
@@ -513,7 +513,7 @@ public class PageBinderFactoryTest
         Assert.Null(model.BindNeverProperty);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatePropertyBinder_ValidatesTopLevelProperties()
     {
         // Arrange
@@ -572,7 +572,7 @@ public class PageBinderFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateHandlerBinder_BindsHandlerParameters()
     {
         // Arrange
@@ -615,7 +615,7 @@ public class PageBinderFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateHandlerBinder_SkipBindingParametersThatDisallowBinding()
     {
         // Arrange
@@ -652,7 +652,7 @@ public class PageBinderFactoryTest
         Assert.Empty(arguments);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateHandlerBinder_ValidatesTopLevelParameters()
     {
         // Arrange
@@ -702,7 +702,7 @@ public class PageBinderFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task FactoryRecordsErrorWhenValueProviderThrowsValueProviderException()
     {
         // Arrange

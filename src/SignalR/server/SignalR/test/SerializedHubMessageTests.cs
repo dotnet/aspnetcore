@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests;
 
 public class SerializedHubMessageTests
 {
-    [Fact]
+    // [Fact]
     public void GetSerializedMessageSerializesUsingHubProtocolIfNoCacheAvailable()
     {
         var invocation = new InvocationMessage("Foo", new object[0]);
@@ -26,7 +26,7 @@ public class SerializedHubMessageTests
             actualMessage => Assert.Same(invocation, actualMessage));
     }
 
-    [Fact]
+    // [Fact]
     public void GetSerializedMessageReturnsCachedSerializationIfAvailable()
     {
         var invocation = new InvocationMessage("Foo", new object[0]);

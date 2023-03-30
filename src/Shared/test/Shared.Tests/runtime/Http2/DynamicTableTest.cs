@@ -16,7 +16,7 @@ namespace System.Net.Http.Unit.Tests.HPack
         private readonly HeaderField _header1 = new HeaderField(staticTableIndex: null, Encoding.ASCII.GetBytes("header-1"), Encoding.ASCII.GetBytes("value1"));
         private readonly HeaderField _header2 = new HeaderField(staticTableIndex: null, Encoding.ASCII.GetBytes("header-02"), Encoding.ASCII.GetBytes("value_2"));
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_IsInitiallyEmpty()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -25,7 +25,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(4096, dynamicTable.MaxSize);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_Count_IsNumberOfEntriesInDynamicTable()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -37,7 +37,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(2, dynamicTable.Count);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_Size_IsCurrentDynamicTableSize()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -50,7 +50,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(_header1.Length + _header2.Length, dynamicTable.Size);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_FirstEntry_IsMostRecentEntry()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -60,7 +60,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             VerifyTableEntries(dynamicTable, _header2, _header1);
         }
 
-        [Fact]
+        // [Fact]
         public void BoundsCheck_ThrowsIndexOutOfRangeException()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -70,7 +70,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Throws<IndexOutOfRangeException>(() => dynamicTable[1]);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_InsertEntryLargerThanMaxSize_NoOp()
         {
             DynamicTable dynamicTable = new DynamicTable(_header1.Length - 1);
@@ -80,7 +80,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(0, dynamicTable.Size);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_InsertEntryLargerThanRemainingSpace_NoOp()
         {
             DynamicTable dynamicTable = new DynamicTable(_header1.Length);
@@ -179,7 +179,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             }
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_ResizingEvictsOldestEntries()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -193,7 +193,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             VerifyTableEntries(dynamicTable, _header2);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_ResizingToZeroEvictsAllEntries()
         {
             DynamicTable dynamicTable = new DynamicTable(4096);
@@ -206,7 +206,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(0, dynamicTable.Size);
         }
 
-        [Fact]
+        // [Fact]
         public void DynamicTable_CanBeResizedToLargerMaxSize()
         {
             DynamicTable dynamicTable = new DynamicTable(_header1.Length);

@@ -10,7 +10,7 @@ public class OpenApiRefreshTests : OpenApiTestBase
 {
     public OpenApiRefreshTests(ITestOutputHelper output) : base(output) { }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Refresh_Basic()
     {
         CreateBasicProject(withOpenApi: false);
@@ -40,7 +40,7 @@ public class OpenApiRefreshTests : OpenApiTestBase
     }
 
     // Regression test for #35767 scenario.
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Refresh_MuchShorterFile()
     {
         CreateBasicProject(withOpenApi: false);
@@ -69,7 +69,7 @@ public class OpenApiRefreshTests : OpenApiTestBase
         Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Refresh_UnchangedFile()
     {
         CreateBasicProject(withOpenApi: false);

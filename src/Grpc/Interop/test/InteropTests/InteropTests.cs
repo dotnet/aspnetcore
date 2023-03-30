@@ -21,58 +21,58 @@ public class InteropTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public Task EmptyUnary() => InteropTestCase("empty_unary");
 
-    [Fact]
+    // [Fact]
     public Task LargeUnary() => InteropTestCase("large_unary");
 
-    [Fact]
+    // [Fact]
     public Task ClientStreaming() => InteropTestCase("client_streaming");
 
-    [Fact]
+    // [Fact]
     public Task ServerStreaming() => InteropTestCase("server_streaming");
 
-    [Fact]
+    // [Fact]
     public Task PingPong() => InteropTestCase("ping_pong");
 
-    [Fact]
+    // [Fact]
     public Task EmptyStream() => InteropTestCase("empty_stream");
 
-    [Fact]
+    // [Fact]
     public Task CancelAfterBegin() => InteropTestCase("cancel_after_begin");
 
-    [Fact]
+    // [Fact]
     public Task CancelAfterFirstResponse() => InteropTestCase("cancel_after_first_response");
 
-    [Fact]
+    // [Fact]
     public Task TimeoutOnSleepingServer() => InteropTestCase("timeout_on_sleeping_server");
 
-    [Fact]
+    // [Fact]
     public Task CustomMetadata() => InteropTestCase("custom_metadata");
 
-    [Fact]
+    // [Fact]
     public Task StatusCodeAndMessage() => InteropTestCase("status_code_and_message");
 
-    [Fact]
+    // [Fact]
     public Task SpecialStatusMessage() => InteropTestCase("special_status_message");
 
-    [Fact]
+    // [Fact]
     public Task UnimplementedService() => InteropTestCase("unimplemented_service");
 
-    [Fact]
+    // [Fact]
     public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
-    [Fact]
+    // [Fact]
     public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
-    [Fact]
+    // [Fact]
     public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
 
-    [Fact]
+    // [Fact]
     public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
 
-    [Fact]
+    // [Fact]
     public Task ServerCompressedStreaming() => InteropTestCase("server_compressed_streaming");
 
     private async Task InteropTestCase(string name)

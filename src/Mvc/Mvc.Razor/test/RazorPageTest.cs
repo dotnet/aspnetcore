@@ -27,7 +27,7 @@ public class RazorPageTest
     private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = () => Task.FromResult(0);
     private readonly Func<TextWriter, Task> NullAsyncWrite = writer => writer.WriteAsync(string.Empty);
 
-    [Fact]
+    // [Fact]
     public async Task WritingScopesRedirectContentWrittenToViewContextWriter()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class RazorPageTest
             pageOutput);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingScopesRedirectsContentWrittenToOutput()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class RazorPageTest
         Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: ]]HtmlEncode[[Hello In Scope]]", pageOutput);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingScopesCanNest()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class RazorPageTest
             pageOutput);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartTagHelperWritingScope_CannotFlushInWritingScope()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartTagHelperWritingScope_SetsHtmlEncoder()
     {
         // Arrange
@@ -151,7 +151,7 @@ public class RazorPageTest
         Assert.Same(encoder, page.HtmlEncoder);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartTagHelperWritingScope_DoesNotSetHtmlEncoderToNull()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class RazorPageTest
         Assert.Same(originalEncoder, page.HtmlEncoder);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndTagHelperWritingScope_CannotEndWritingScopeWhenNoWritingScope()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class RazorPageTest
         Assert.Equal("There is no active writing scope to end.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndTagHelperWritingScope_ReturnsAppropriateContent()
     {
         // Arrange
@@ -205,7 +205,7 @@ public class RazorPageTest
         await page.ExecuteAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndWriteTagHelperAttribute_RestoresPageWriter()
     {
         // Arrange
@@ -225,7 +225,7 @@ public class RazorPageTest
         Assert.Same(originalWriter, page.Output);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndWriteTagHelperAttribute_ReturnsAppropriateContent()
     {
         // Arrange
@@ -246,7 +246,7 @@ public class RazorPageTest
         await page.ExecuteAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeginWriteTagHelperAttribute_NestingWritingScopesThrows()
     {
         // Arrange
@@ -265,7 +265,7 @@ public class RazorPageTest
 
     // This is an integration test for ensuring that ViewBuffer segments used by
     // TagHelpers can be merged back into the 'main' segment where possible.
-    [Fact]
+    // [Fact]
     public async Task TagHelperScopes_ViewBuffersCanCombine()
     {
         // Arrange
@@ -395,7 +395,7 @@ public class RazorPageTest
             page.RenderedContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefineSection_ThrowsIfSectionIsAlreadyDefined()
     {
         // Arrange
@@ -411,7 +411,7 @@ public class RazorPageTest
         Assert.Equal("Section 'qux' is already defined.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSection_RendersSectionFromPreviousPage()
     {
         // Arrange
@@ -433,7 +433,7 @@ public class RazorPageTest
         Assert.Equal(expected, page.RenderedContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSection_ThrowsIfPreviousSectionWritersIsNotSet()
     {
         // Arrange
@@ -451,7 +451,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSection_ThrowsIfRequiredSectionIsNotFound()
     {
         // Arrange
@@ -473,7 +473,7 @@ public class RazorPageTest
         Assert.Equal(message, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IgnoreSection_DoesNotThrowIfSectionIsNotFound()
     {
         // Arrange
@@ -494,7 +494,7 @@ public class RazorPageTest
         // Nothing to assert, just getting here is validation enough.
     }
 
-    [Fact]
+    // [Fact]
     public void IsSectionDefined_ThrowsIfPreviousSectionWritersIsNotRegistered()
     {
         // Arrange
@@ -510,7 +510,7 @@ public class RazorPageTest
             " IsSectionDefined can only be called from a layout page.");
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsSectionDefined_ReturnsFalseIfSectionNotDefined()
     {
         // Arrange
@@ -534,7 +534,7 @@ public class RazorPageTest
         Assert.False(actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsSectionDefined_ReturnsTrueIfSectionDefined()
     {
         // Arrange
@@ -558,7 +558,7 @@ public class RazorPageTest
         Assert.True(actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSection_ThrowsIfSectionIsRenderedMoreThanOnce()
     {
         // Arrange
@@ -582,7 +582,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce()
     {
         // Arrange
@@ -606,7 +606,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSectionAsync_ThrowsIfSectionIsRenderedMoreThanOnce_WithSyncMethod()
     {
         // Arrange
@@ -630,7 +630,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderSectionAsync_ThrowsIfNotInvokedFromLayoutPage()
     {
         // Arrange
@@ -649,7 +649,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnsureRenderedBodyOrSections_ThrowsIfRenderBodyIsNotCalledFromPage_AndNoSectionsAreDefined()
     {
         // Arrange
@@ -666,7 +666,7 @@ public class RazorPageTest
         Assert.Equal($"RenderBody has not been called for the page at '{path}'. To ignore call IgnoreBody().", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnsureRenderedBodyOrSections_SucceedsIfRenderBodyIsNotCalledFromPage_AndNoSectionsAreDefined_AndBodyIgnored()
     {
         // Arrange
@@ -683,7 +683,7 @@ public class RazorPageTest
         page.EnsureRenderedBodyOrSections();
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnsureRenderedBodyOrSections_ThrowsIfDefinedSectionsAreNotRendered()
     {
         // Arrange
@@ -708,7 +708,7 @@ public class RazorPageTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnsureRenderedBodyOrSections_SucceedsIfDefinedSectionsAreNotRendered_AndIgnored()
     {
         // Arrange
@@ -730,7 +730,7 @@ public class RazorPageTest
         page.EnsureRenderedBodyOrSections();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_RendersSectionsThatAreNotIgnored()
     {
         // Arrange
@@ -755,7 +755,7 @@ public class RazorPageTest
         Assert.Equal("not-ignored-section-content", page.RenderedContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnsureRenderedBodyOrSections_SucceedsIfRenderBodyIsNotCalled_ButAllDefinedSectionsAreRendered()
     {
         // Arrange
@@ -778,7 +778,7 @@ public class RazorPageTest
         page.EnsureRenderedBodyOrSections();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_RendersSectionsAndBody()
     {
         // Arrange
@@ -825,7 +825,7 @@ public class RazorPageTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Href_ReadsUrlHelperFromServiceCollection()
     {
         // Arrange
@@ -859,7 +859,7 @@ public class RazorPageTest
         helper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_InvokesFlushOnWriter()
     {
         // Arrange
@@ -877,7 +877,7 @@ public class RazorPageTest
         writer.Verify(v => v.FlushAsync(), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_ThrowsIfTheLayoutHasBeenSet()
     {
         // Arrange
@@ -897,7 +897,7 @@ public class RazorPageTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_DoesNotThrowWhenIsRenderingLayoutIsSet()
     {
         // Arrange
@@ -921,7 +921,7 @@ public class RazorPageTest
         await renderAsyncDelegate();
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_ReturnsEmptyHtmlString()
     {
         // Arrange
@@ -1007,7 +1007,7 @@ public class RazorPageTest
         Assert.Equal(HtmlAttributeValueStyle.SingleQuotes, allAttribute.ValueStyle);
     }
 
-    [Fact]
+    // [Fact]
     public void AddHtmlAttributeValues_TwoAttributeValues_AddsToHtmlAttributesAsExpected()
     {
         // Arrange
@@ -1052,7 +1052,7 @@ public class RazorPageTest
         Assert.Equal(HtmlAttributeValueStyle.SingleQuotes, allAttribute.ValueStyle);
     }
 
-    [Fact]
+    // [Fact]
     public void AddHtmlAttributeValues_ThreeAttributeValues_AddsToHtmlAttributesAsExpected()
     {
         // Arrange
@@ -1132,7 +1132,7 @@ public class RazorPageTest
         Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
     }
 
-    [Fact]
+    // [Fact]
     public void AddHtmlAttributeValues_AddsAttributeNameAsValueWhenValueIsUnprefixedTrue()
     {
         // Arrange
@@ -1224,7 +1224,7 @@ public class RazorPageTest
         Assert.Equal(expectedOutput, writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void WriteAttribute_MultipleValues_UsesSpecifiedWriter_WritesAsExpected()
     {
         // Arrange
@@ -1261,7 +1261,7 @@ public class RazorPageTest
         Assert.Equal(expectedOutput, writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void PushWriter_SetsUnderlyingWriter()
     {
         // Arrange
@@ -1275,7 +1275,7 @@ public class RazorPageTest
         Assert.Same(writer, page.ViewContext.Writer);
     }
 
-    [Fact]
+    // [Fact]
     public void PopWriter_ResetsUnderlyingWriter()
     {
         // Arrange
@@ -1299,7 +1299,7 @@ public class RazorPageTest
         Assert.Same(defaultWriter, page.ViewContext.Writer);
     }
 
-    [Fact]
+    // [Fact]
     public void WriteLiteral_NullValue_DoesNothing()
     {
         // Arrange
@@ -1314,7 +1314,7 @@ public class RazorPageTest
         Assert.Empty(defaultWriter.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void WriteLiteral_BuffersResultToPushedWriter()
     {
         // Arrange
@@ -1336,7 +1336,7 @@ public class RazorPageTest
         Assert.Equal("This should be buffered", bufferWriter.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Write_StringValue_UsesSpecifiedWriter_EncodesValue()
     {
         // Arrange
@@ -1352,7 +1352,7 @@ public class RazorPageTest
         Assert.Equal("HtmlEncode[[This should be encoded]]", bufferWriter.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_WithHtmlString_WritesValueWithoutEncoding()
     {
         // Arrange

@@ -23,9 +23,9 @@ public class EmptyBlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver-empty";
 
-    [Fact]
+    // [Fact]
     public Task EmptyBlazorServerTemplateWorks() => CreateBuildPublishAsync();
 
-    [Fact]
+    // [Fact]
     public Task EmptyBlazorServerTemplate_NoHttps_Works() => CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps });
 }

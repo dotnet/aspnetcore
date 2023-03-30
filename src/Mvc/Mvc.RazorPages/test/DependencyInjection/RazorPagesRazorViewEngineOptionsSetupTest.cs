@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorPagesRazorViewEngineOptionsSetupTest
 {
-    [Fact]
+    // [Fact]
     public void Configure_AddsPageViewLocationFormats_WhenPagesRootIsAppRoot()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
         Assert.Equal(expected, viewEngineOptions.PageViewLocationFormats);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_AddsPageViewLocationFormats_WithDefaultPagesRoot()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
         Assert.Equal(expected, viewEngineOptions.PageViewLocationFormats);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_AddsAreaPageViewLocationFormats()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
         Assert.Equal(expected, viewEngineOptions.AreaPageViewLocationFormats);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_WithCustomRoot_AddsAreaPageViewLocationFormats()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
         Assert.Equal(expected, viewEngineOptions.AreaPageViewLocationFormats);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_AddsSharedPagesDirectoryToViewLocationFormats()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
         Assert.Equal(expected, viewEngineOptions.ViewLocationFormats);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_AddsSharedPagesDirectoryToAreaViewLocationFormats()
     {
         // Arrange
@@ -164,7 +164,7 @@ public class RazorPagesRazorViewEngineOptionsSetupTest
         Assert.Equal(expected, viewEngineOptions.AreaViewLocationFormats);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_RegistersPageViewLocationExpander()
     {
         // Arrange

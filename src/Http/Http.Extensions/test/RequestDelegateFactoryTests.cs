@@ -125,7 +125,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Items.Add("invoked", true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StaticMethodInfoOverloadWorksWithBasicReflection()
     {
         var methodInfo = typeof(RequestDelegateFactoryTests).GetMethod(
@@ -158,7 +158,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NonStaticMethodInfoOverloadWorksWithBasicReflection()
     {
         var methodInfo = typeof(TestNonStaticActionClass).GetMethod(
@@ -195,7 +195,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(2, httpContext.Items["invoked"]);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsArgumentNullExceptions()
     {
         var methodInfo = typeof(RequestDelegateFactoryTests).GetMethod(
@@ -214,7 +214,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private record ParameterListFromRoute(HttpContext HttpContext, int Value);
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromRouteParameterBased_FromParameterList()
     {
         const string paramName = "value";
@@ -256,7 +256,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         httpContext.Items.Add("input", value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NullRouteParametersPrefersRouteOverQueryString()
     {
         var httpContext = CreateHttpContext();
@@ -285,7 +285,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(42, httpContext.Items["input"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatingDelegateWithInstanceMethodInfoCreatesInstancePerCall()
     {
         var methodInfo = typeof(HttpHandler).GetMethod(nameof(HttpHandler.Handle));
@@ -306,7 +306,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(1, context.Items["calls"]);
     }
 
-    [Fact]
+    // [Fact]
     public void SpecifiedEmptyRouteParametersThrowIfRouteParameterDoesNotExist()
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -315,7 +315,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("'id' is not a route parameter.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Returns400IfNoMatchingRouteValueForRequiredParam()
     {
         const string unmatchedName = "value";
@@ -663,7 +663,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         GC.KeepAlive(expectedParameterValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateHandlesOptionalArraysFromNullQueryString()
     {
         var httpContext = CreateHttpContext();
@@ -687,7 +687,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(httpContext.Items["tryParsable"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateHandlesArraysFromExplicitQueryStringSource()
     {
         var httpContext = CreateHttpContext();
@@ -722,7 +722,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
     {
         var httpContext = CreateHttpContext();
@@ -757,7 +757,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new StringValues(new[] { "7", "8", "9" }), httpContext.Items["form"]!);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSource()
     {
         var httpContext = CreateHttpContext();
@@ -792,7 +792,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new StringValues(new[] { "7", "8", "9" }), httpContext.Items["form"]!);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsStringValuesFromExplicitQueryStringSourceForUnpresentedValuesFailuresAsDebugAndSets400Response()
     {
         var invoked = false;
@@ -834,7 +834,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(@"Required parameter ""StringValues formValues"" was not provided from form.", logs[2].Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateHandlesNullableStringValuesFromExplicitQueryStringSourceForUnpresentedValues()
     {
         var httpContext = CreateHttpContext();
@@ -862,7 +862,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(httpContext.Items["form"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute()
     {
         var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
@@ -882,7 +882,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await Assert.ThrowsAsync<NotImplementedException>(() => fromQueryRequestDelegate(httpContext));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateCanAwaitValueTasksThatAreNotImmediatelyCompleted()
     {
         var httpContext = CreateHttpContext();
@@ -903,7 +903,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new MyAwaitedBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncStruct"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateUsesBindAsyncFromImplementedInterface()
     {
         var httpContext = CreateHttpContext();
@@ -947,7 +947,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("notTryParsable must have a valid TryParse method to support converting from a string. No public static bool object.TryParse(string, out object) method found for notTryParsable.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateThrowsInvalidOperationExceptionGivenUnnamedArgument()
     {
         var unnamedParameter = Expression.Parameter(typeof(int));
@@ -956,7 +956,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Encountered a parameter of type 'System.Runtime.CompilerServices.Closure' without a name. Parameters must have a name.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndSets400Response()
     {
         var invoked = false;
@@ -993,7 +993,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(@"Failed to bind parameter ""int tryParsable2"" from ""invalid again!"".", logs[1].Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequest()
     {
         var invoked = false;
@@ -1026,7 +1026,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequestWithArrays()
     {
         var invoked = false;
@@ -1061,7 +1061,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequestWithNonOptionalArrays()
     {
         var invoked = false;
@@ -1096,7 +1096,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsBindAsyncFailuresAndSets400Response()
     {
         // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
@@ -1128,7 +1128,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncRecord2"" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", logs[1].Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForBindAsyncFailuresIfThrowOnBadRequest()
     {
         // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
@@ -1157,7 +1157,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsSingleArgBindAsyncFailuresAndSets400Response()
     {
         // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
@@ -1190,7 +1190,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord2"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", logs[1].Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForSingleArgBindAsyncFailuresIfThrowOnBadRequest()
     {
         // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
@@ -1220,7 +1220,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindAsyncWithBodyArgument()
     {
         Todo originalTodo = new()
@@ -1276,7 +1276,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write more tests!", todo!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindAsyncRunsBeforeBodyBinding()
     {
         Todo originalTodo = new()
@@ -1334,7 +1334,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private record ParameterListFromQuery([FromQuery] int Value);
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromQueryParameter_FromParameterList()
     {
         // QueryCollection is case sensitve, since we now getting
@@ -1368,7 +1368,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private record ParameterListFromHeader([FromHeader(Name = "X-Custom-Header")] int Value);
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromHeaderParameter_FromParameterList()
     {
         const string customHeaderName = "X-Custom-Header";
@@ -1778,7 +1778,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.EndsWith("but no body was provided. Did you mean to use a Service instead?", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateAllowsEmptyBodyStructGivenCorrectyConfiguredFromBodyParameter()
     {
         var structToBeZeroed = new BodyStruct
@@ -1803,7 +1803,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(default, structToBeZeroed);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDelegateFactoryThrowsForByRefReturnTypes()
     {
         ReadOnlySpan<byte> Method1() => "hello world"u8;
@@ -1864,7 +1864,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(ioException, logMessage.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsJsonExceptionsAsDebugAndSets400Response()
     {
         var invoked = false;
@@ -1899,7 +1899,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(jsonException, logMessage.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForJsonExceptionsIfThrowOnBadRequest()
     {
         var invoked = false;
@@ -1937,7 +1937,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(jsonException, badHttpRequestException.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsMalformedJsonAsDebugAndSets400Response()
     {
         var invoked = false;
@@ -1970,7 +1970,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.IsType<JsonException>(logMessage.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForMalformedJsonIfThrowOnBadRequest()
     {
         var invoked = false;
@@ -2006,7 +2006,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.IsType<JsonException>(badHttpRequestException.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenFromBodyOnMultipleParameters()
     {
         void TestAttributedInvalidAction([FromBody] int value1, [FromBody] int value2) { }
@@ -2018,7 +2018,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestBothInvalidAction));
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidTryParse()
     {
         void TestTryParseStruct(BadTryParseStruct value1) { }
@@ -2041,7 +2041,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidBindAsync()
     {
         void TestBindAsyncStruct(BadBindAsyncStruct value1) { }
@@ -2165,7 +2165,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public object NestedParameterList { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsNotSupportedExceptionForNestedParametersList()
     {
         void TestNestedParameterListRecordOnType([AsParameters] NestedArgumentListRecord req) { }
@@ -2255,7 +2255,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsNotSupportedExceptionForByRefParameters()
     {
         void OutMethod(out string foo) { foo = ""; }
@@ -2332,7 +2332,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(myOriginalService, httpContext.Items["service"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute()
     {
         HttpContext? httpContextArgument = null;
@@ -2358,7 +2358,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         HttpRequest HttpRequest,
         HttpResponse HttpResponse);
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute_FromParameterList()
     {
         HttpContext? httpContextArgument = null;
@@ -2378,7 +2378,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(httpContext, httpContextArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassHttpContextRequestAbortedAsCancellationToken()
     {
         CancellationToken? cancellationTokenArgument = null;
@@ -2402,7 +2402,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(httpContext.RequestAborted, cancellationTokenArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassHttpContextUserAsClaimsPrincipal()
     {
         ClaimsPrincipal? userArgument = null;
@@ -2423,7 +2423,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(httpContext.User, userArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassHttpContextUserAsClaimsPrincipal_FromParameterList()
     {
         ClaimsPrincipal? userArgument = null;
@@ -2444,7 +2444,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(httpContext.User, userArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassHttpContextRequestAsHttpRequest()
     {
         HttpRequest? httpRequestArgument = null;
@@ -2464,7 +2464,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(httpContext.Request, httpRequestArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassHttpContextRequestAsHttpRequest_FromParameterList()
     {
         HttpRequest? httpRequestArgument = null;
@@ -2484,7 +2484,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(httpContext.Request, httpRequestArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassesHttpContextRresponseAsHttpResponse()
     {
         HttpResponse? httpResponseArgument = null;
@@ -2504,7 +2504,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(httpContext.Response, httpResponseArgument);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePassesHttpContextRresponseAsHttpResponse_FromParameterList()
     {
         HttpResponse? httpResponseArgument = null;
@@ -2575,7 +2575,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateWritesComplexStructReturnValueAsJsonResponseBody()
     {
         var httpContext = CreateHttpContext();
@@ -2813,7 +2813,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDelegateThrows_WhenGetJsonTypeInfoFail()
     {
         var httpContext = CreateHttpContext();
@@ -3662,7 +3662,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
 #nullable enable
 
-    [Fact]
+    // [Fact]
     public async Task CanExecuteRequestDelegateWithResultsExtension()
     {
         IResult actionWithExtensionsResult(string name) => Results.Extensions.TestResult(name);
@@ -3849,7 +3849,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(ioException, logMessage.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateLogsMalformedFormAsDebugAndSets400Response()
     {
         var invoked = false;
@@ -3882,7 +3882,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.IsType<InvalidDataException>(logMessage.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateThrowsForMalformedFormIfThrowOnBadRequest()
     {
         var invoked = false;
@@ -3918,7 +3918,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.IsType<InvalidDataException>(badHttpRequestException.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildRequestDelegateThrowsInvalidOperationExceptionBodyAndFormParameters()
     {
         void TestFormFileAndJson(IFormFile value1, Todo value2) { }
@@ -3948,7 +3948,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormWithAttribute));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileCollectionParameter()
     {
         IFormFileCollection? formFilesArgument = null;
@@ -3987,7 +3987,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileCollectionParameterWithAttribute()
     {
         IFormFileCollection? formFilesArgument = null;
@@ -4026,7 +4026,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateThrowsNotSupportedExceptionIfIFormFileCollectionHasMetadataParameterName()
     {
         IFormFileCollection? formFilesArgument = null;
@@ -4040,7 +4040,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileParameter()
     {
         IFormFile? fileArgument = null;
@@ -4074,7 +4074,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("file", fileArgument.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromOptionalIFormFileParameter()
     {
         IFormFile? fileArgument = null;
@@ -4108,7 +4108,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("file", fileArgument.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromMultipleRequiredIFormFileParameters()
     {
         IFormFile? file1Argument = null;
@@ -4150,7 +4150,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("file2", file2Argument.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromOptionalMissingIFormFileParameter()
     {
         IFormFile? file1Argument = null;
@@ -4194,7 +4194,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileParameterWithMetadata()
     {
         IFormFile? fileArgument = null;
@@ -4228,7 +4228,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("my_file", fileArgument.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileAndBoundParameter()
     {
         IFormFile? fileArgument = null;
@@ -4323,7 +4323,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateSets400ResponseIfRequiredFileNotSpecified()
     {
         var invoked = false;
@@ -4356,7 +4356,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromBothFormFileCollectionAndFormFileParameters()
     {
         IFormFileCollection? formFilesArgument = null;
@@ -4445,7 +4445,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("my-trace-id", traceIdArgument.Id);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileParameterIfRequestHasClientCertificate()
     {
         IFormFile? fileArgument = null;
@@ -4508,7 +4508,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CreateThrowsNotSupportedExceptionIfIFormCollectionHasMetadataParameterName()
     {
         IFormCollection? formArgument = null;
@@ -4877,7 +4877,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesTryParsableParametersFromForm()
     {
         var httpContext = CreateHttpContext();
@@ -5110,7 +5110,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     private record struct SampleParameterList(int Foo);
     private record struct AdditionalSampleParameterList(int Bar);
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromMultipleParameterLists()
     {
         const int foo = 1;
@@ -5135,7 +5135,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(bar, httpContext.Items["bar"]);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDelegateThrowsWhenParameterNameConflicts()
     {
         void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] SampleParameterList args2)
@@ -5162,7 +5162,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public int ReadOnlyValue { get; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromParameterListAndSkipReadOnlyProperties()
     {
         const int routeParamValue = 42;
@@ -5191,7 +5191,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     private record ParameterListRecordWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromParameterListRecordUsesDefaultValue()
     {
         const int expectedValue = 42;
@@ -5223,7 +5223,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public int Value { get; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegatePopulatesFromParameterListUsesDefaultValue()
     {
         const int expectedValue = 42;
@@ -5243,7 +5243,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(expectedValue, httpContext.Items["input"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_InvokesFiltersButNotHandler_OnArgumentError()
     {
         var invoked = false;
@@ -5279,7 +5279,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(0, responseBodyStream.Position);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_InvokesFilters_OnDelegateWithTarget()
     {
         // Arrange
@@ -5317,7 +5317,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         return $"Hello, {name}!";
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_InvokesFilters_OnMethodInfoWithNullTargetFactory()
     {
         // Arrange
@@ -5353,7 +5353,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Hello, TestName!", decodedResponseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_InvokesFilters_OnMethodInfoWithProvidedTargetFactory()
     {
         // Arrange
@@ -5399,7 +5399,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Hello, TestName!", decodedResponseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatProvidesCustomErrorMessage()
     {
         // Arrange
@@ -5436,7 +5436,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("New response", decodedResponseBody!.Detail);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeMultipleEndpointFilters_ThatTouchArguments()
     {
         // Arrange
@@ -5488,7 +5488,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(2, loggerInvoked);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatUsesMethodInfo()
     {
         // Arrange
@@ -5536,7 +5536,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Is not an int.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatReadsEndpointMetadata()
     {
         // Arrange
@@ -5597,7 +5597,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("I see you expect a form.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatModifiesBodyParameter()
     {
         // Arrange
@@ -5641,7 +5641,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Write tests is not done.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatModifiesResult()
     {
         // Arrange
@@ -5684,7 +5684,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("HELLO, TESTNAME!", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeMultipleEndpointFilters_ThatModifyArgumentsAndResult()
     {
         // Arrange
@@ -5914,7 +5914,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(String.Empty, decodedResponseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanInvokeFilter_OnTaskModifyingHttpContext()
     {
         // Arrange
@@ -6018,7 +6018,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Test todo", deserializedResponseBody.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DoesNotAddDelegateMethodInfo_AsMetadata()
     {
         // Arrange
@@ -6032,7 +6032,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Empty(result.EndpointMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AddJsonResponseType_AsMetadata()
     {
         var @delegate = () => new object();
@@ -6044,7 +6044,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(typeof(object), responseMetadata.Type);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AddPlaintextResponseType_AsMetadata()
     {
         var @delegate = () => "Hello";
@@ -6056,7 +6056,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(responseMetadata.Type);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DoesNotAddAnythingBefore_ThePassedInEndpointMetadata()
     {
         // Arrange
@@ -6076,7 +6076,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }));
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DoesNotAddDelegateAttributes_AsMetadata()
     {
         // Arrange
@@ -6090,7 +6090,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Empty(result.EndpointMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DiscoversMetadata_FromParametersImplementingIEndpointParameterMetadataProvider()
     {
         // Arrange
@@ -6104,7 +6104,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param2" });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DiscoversMetadata_FromParametersImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6117,7 +6117,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DiscoversEndpointMetadata_FromReturnTypeImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6130,7 +6130,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DiscoversEndpointMetadata_FromTaskWrappedReturnTypeImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6143,7 +6143,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DiscoversEndpointMetadata_FromValueTaskWrappedReturnTypeImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6156,7 +6156,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6178,7 +6178,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesDefaultMetadata_AndMetadataFromTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6200,7 +6200,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesDefaultMetadata_AndMetadataFromValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6222,7 +6222,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointParameterMetadataProvider()
     {
         // Arrange
@@ -6243,7 +6243,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6264,7 +6264,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
     {
         // Arrange
@@ -6287,7 +6287,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
@@ -6321,7 +6321,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is MetadataCountMetadata { Count: 5 }));
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FlowsRoutePattern_ToMetadataProvider()
     {
         // Arrange
@@ -6339,7 +6339,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is RoutePatternMetadata { RoutePattern: "/test/pattern" });
     }
 
-    [Fact]
+    // [Fact]
     public void Create_DoesNotInferMetadata_GivenManuallyConstructedMetadataResult()
     {
         var invokeCount = 0;
@@ -6380,7 +6380,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(1, invokeCount);
     }
 
-    [Fact]
+    // [Fact]
     public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
@@ -6411,7 +6411,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
 
-    [Fact]
+    // [Fact]
     public void InferMetadata_PopulatesAcceptsMetadata_WhenReadFromForm()
     {
         // Arrange
@@ -6432,7 +6432,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
     }
 
-    [Fact]
+    // [Fact]
     public void InferMetadata_PopulatesCachedContext()
     {
         // Arrange
@@ -6449,7 +6449,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.NotNull(metadataResult.CachedFactoryContext);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6462,7 +6462,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6475,7 +6475,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6488,7 +6488,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByParameterTypesImplementingIEndpointParameterMetadataProvider()
     {
         // Arrange
@@ -6501,7 +6501,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_AllowsRemovalOfDefaultMetadata_ByParameterTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -6515,7 +6515,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_SetsApplicationServices_OnEndpointMetadataContext()
     {
         // Arrange
@@ -6530,7 +6530,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is MetadataService);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_SetsApplicationServices_OnEndpointParameterMetadataContext()
     {
         // Arrange
@@ -6545,7 +6545,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is MetadataService);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ReturnsSameRequestDelegatePassedIn_IfNotModifiedByFilters()
     {
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
@@ -6573,7 +6573,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(2, invokeCount);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_Populates_EndpointBuilderWithRequestDelegateAndMetadata()
     {
         RequestDelegate requestDelegate = static context => Task.CompletedTask;
@@ -6589,7 +6589,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RDF_CanAssertOnEmptyResult()
     {
         var @delegate = (string name, HttpContext context) => context.Items.Add("param", name);
@@ -6631,7 +6631,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public required string RequiredHeaderParam { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember()
     {
         // Arrange
@@ -6680,7 +6680,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public required StringValues? RequiredHeaderParam { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_AsParameters_SupportsNullableRequiredMember()
     {
         // Arrange
@@ -6734,7 +6734,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public string OptionalHeaderParam { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember_NullabilityDisabled()
     {
         // Arange

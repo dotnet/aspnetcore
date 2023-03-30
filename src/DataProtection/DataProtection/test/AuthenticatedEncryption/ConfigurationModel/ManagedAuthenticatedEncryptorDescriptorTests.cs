@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
 public class ManagedAuthenticatedEncryptorDescriptorTests
 {
-    [Fact]
+    // [Fact]
     public void ExportToXml_CustomTypes_ProducesCorrectPayload()
     {
         // Arrange

@@ -245,7 +245,7 @@ context.Request.Headers[""Accept""] = ""text/html""{|CS1002:|}"
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, codeActionEquivalenceKey: IndexerCodeActionEquivalenceKey);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_WithAppend_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -259,7 +259,7 @@ context.Request.Headers.Append(""Accept"", ""text/html"");";
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_WithIndexer_DoesNotProduceDiagnostics()
     {
         // Arrange

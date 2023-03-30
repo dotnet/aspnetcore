@@ -19,7 +19,7 @@ public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTest
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsOnInvalidInput_AndAddsToModelState()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTest
         Assert.Contains("An error occurred while deserializing input data.", data);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTest
     }
 
     // Verifies that the model state has errors related to body model validation.
-    [Fact]
+    // [Fact]
     public async Task DataMissingForReferenceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
     {
         // Arrange

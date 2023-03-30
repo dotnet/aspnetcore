@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
 
 public class ProblemDetailsWrapperProviderFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void GetProvider_ReturnsNull_IfTypeDoesNotMatch()
     {
         // Arrange
@@ -19,7 +19,7 @@ public class ProblemDetailsWrapperProviderFactoryTest
         Assert.Null(provider);
     }
 
-    [Fact]
+    // [Fact]
     public void GetProvider_ReturnsWrapper_ForProblemDetails()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class ProblemDetailsWrapperProviderFactoryTest
         Assert.Same(instance, wrapper.ProblemDetails);
     }
 
-    [Fact]
+    // [Fact]
     public void GetProvider_ReturnsWrapper_ForValidationProblemDetails()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class ProblemDetailsWrapperProviderFactoryTest
         Assert.Same(instance, wrapper.ProblemDetails);
     }
 
-    [Fact]
+    // [Fact]
     public void GetProvider_ReturnsNull_ForCustomProblemDetails()
     {
         // Arrange

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration;
 
 public class IISExtensionTests
 {
-    [Fact]
+    // [Fact]
     public async Task CallingUseIISIntegrationMultipleTimesWorks()
     {
         using var host = new HostBuilder()

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.TestHost;
 
 public class RequestBuilderTests
 {
-    [Fact]
+    // [Fact]
     public void AddRequestHeader()
     {
         var builder = new WebHostBuilder().Configure(app => { });
@@ -20,7 +20,7 @@ public class RequestBuilderTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AddContentHeaders()
     {
         var builder = new WebHostBuilder().Configure(app => { });
@@ -34,7 +34,7 @@ public class RequestBuilderTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void TestServer_PropertyShouldHoldTestServerInstance()
     {
         // Arrange

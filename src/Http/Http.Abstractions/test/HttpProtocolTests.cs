@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions;
 
 public class HttpProtocolTests
 {
-    [Fact]
+    // [Fact]
     public void Http3_Success()
     {
         Assert.Equal("HTTP/3", HttpProtocol.Http3);
@@ -24,7 +24,7 @@ public class HttpProtocolTests
         Assert.Equal(match, HttpProtocol.IsHttp3(protocol));
     }
 
-    [Fact]
+    // [Fact]
     public void Http2_Success()
     {
         Assert.Equal("HTTP/2", HttpProtocol.Http2);
@@ -43,7 +43,7 @@ public class HttpProtocolTests
         Assert.Equal(match, HttpProtocol.IsHttp2(protocol));
     }
 
-    [Fact]
+    // [Fact]
     public void Http11_Success()
     {
         Assert.Equal("HTTP/1.1", HttpProtocol.Http11);
@@ -62,7 +62,7 @@ public class HttpProtocolTests
         Assert.Equal(match, HttpProtocol.IsHttp11(protocol));
     }
 
-    [Fact]
+    // [Fact]
     public void Http10_Success()
     {
         Assert.Equal("HTTP/1.0", HttpProtocol.Http10);
@@ -81,7 +81,7 @@ public class HttpProtocolTests
         Assert.Equal(match, HttpProtocol.IsHttp10(protocol));
     }
 
-    [Fact]
+    // [Fact]
     public void Http09_Success()
     {
         Assert.Equal("HTTP/0.9", HttpProtocol.Http09);

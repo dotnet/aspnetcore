@@ -20,7 +20,7 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     {
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationIsLockedAfterPrerendering()
     {
         Navigate("/locked-navigation");

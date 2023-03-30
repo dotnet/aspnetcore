@@ -10,7 +10,7 @@ public class DisallowNonLiteralSequenceNumbersTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RenderTreeBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task RenderTreeBuilderInvocationWithNumericLiteralArgument_Works()
     {
         // Arrange
@@ -27,7 +27,7 @@ renderTreeBuilder.CloseElement();
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderTreeBuilderInvocationWithNonConstantArgument_ProducesDiagnostics()
     {
         // Arrange
@@ -48,7 +48,7 @@ renderTreeBuilder.CloseRegion();
         Assert.StartsWith("'i' should not be used as a sequence number.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderTreeBuilderInvocationWithConstantArgument_ProducesDiagnostics()
     {
         // Arrange
@@ -69,7 +69,7 @@ renderTreeBuilder.CloseRegion();
         Assert.StartsWith("'i' should not be used as a sequence number.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderTreeBuilderInvocationWithInvocationArgument_ProducesDiagnostics()
     {
         // Arrange

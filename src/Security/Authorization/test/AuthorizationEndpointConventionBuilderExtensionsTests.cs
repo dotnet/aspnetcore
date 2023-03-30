@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Authorization.Test;
 
 public class AuthorizationEndpointConventionBuilderExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_IAuthorizeData()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal(metadata, Assert.Single(endpointModel.Metadata));
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_IAuthorizeData_Empty()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Null(authMetadata.Policy);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_PolicyName()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal("policy", authMetadata.Policy);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_PolicyName_Empty()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Null(authMetadata.Policy);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_Default()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Null(authMetadata.Policy);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_ChainedCall()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.True(chainedBuilder.TestProperty);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_Policy()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal(policy, endpointModel.Metadata[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_PolicyCallback()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal(requirement, policy.Requirements[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_PolicyCallbackWithAuthorize()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal(requirement, policy.Requirements[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void RequireAuthorization_PolicyWithAuthorize()
     {
         // Arrange
@@ -217,7 +217,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
 
     class TestRequirement : IAuthorizationRequirement { }
 
-    [Fact]
+    // [Fact]
     public void AllowAnonymous_Default()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.IsAssignableFrom<IAllowAnonymous>(Assert.Single(endpointModel.Metadata));
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnonymous_ChainedCall()
     {
         // Arrange

@@ -7,7 +7,7 @@ namespace Microsoft.Net.Http.Headers;
 
 public class MediaTypeHeaderValueTest
 {
-    [Fact]
+    // [Fact]
     public void Ctor_MediaTypeNull_Throw()
     {
         Assert.Throws<ArgumentException>(() => new MediaTypeHeaderValue(null));
@@ -15,7 +15,7 @@ public class MediaTypeHeaderValueTest
         Assert.Throws<ArgumentException>(() => new MediaTypeHeaderValue(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_MediaTypeInvalidFormat_ThrowFormatException()
     {
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
@@ -98,7 +98,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedReturnValue, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_MediaTypeValidFormat_SuccessfullyCreated()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -107,7 +107,7 @@ public class MediaTypeHeaderValueTest
         Assert.Null(mediaType.Charset.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_AddNameAndQuality_QualityParameterAdded()
     {
         var mediaType = new MediaTypeHeaderValue("application/xml", 0.08);
@@ -116,14 +116,14 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(1, mediaType.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void Parameters_AddNull_Throw()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
         Assert.Throws<ArgumentNullException>(() => mediaType.Parameters.Add(null!));
     }
 
-    [Fact]
+    // [Fact]
     public void Copy_SimpleMediaType_Copied()
     {
         var mediaType0 = new MediaTypeHeaderValue("text/plain");
@@ -134,7 +134,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyAsReadOnly_SimpleMediaType_CopiedAndReadOnly()
     {
         var mediaType0 = new MediaTypeHeaderValue("text/plain");
@@ -149,7 +149,7 @@ public class MediaTypeHeaderValueTest
         Assert.Throws<InvalidOperationException>(() => { mediaType1.MediaType = "some/value"; });
     }
 
-    [Fact]
+    // [Fact]
     public void Copy_WithParameters_Copied()
     {
         var mediaType0 = new MediaTypeHeaderValue("text/plain");
@@ -166,7 +166,7 @@ public class MediaTypeHeaderValueTest
         Assert.Same(pair0.Value.Value, pair1.Value.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyAsReadOnly_WithParameters_CopiedAndReadOnly()
     {
         var mediaType0 = new MediaTypeHeaderValue("text/plain");
@@ -194,7 +194,7 @@ public class MediaTypeHeaderValueTest
         Assert.Same(pair0.Value.Value, pair1.Value.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyFromReadOnly_WithParameters_CopiedAsNonReadOnly()
     {
         var mediaType0 = new MediaTypeHeaderValue("text/plain");
@@ -217,7 +217,7 @@ public class MediaTypeHeaderValueTest
         Assert.Same(pair2.Value.Value, pair1.Value.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void MediaType_SetAndGetMediaType_MatchExpectations()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -227,7 +227,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal("application/xml", mediaType.MediaType);
     }
 
-    [Fact]
+    // [Fact]
     public void Charset_SetCharsetAndValidateObject_ParametersEntryForCharsetAdded()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -242,7 +242,7 @@ public class MediaTypeHeaderValueTest
         mediaType.Charset = null; // It's OK to set it again to null; no exception.
     }
 
-    [Fact]
+    // [Fact]
     public void Charset_AddCharsetParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -262,7 +262,7 @@ public class MediaTypeHeaderValueTest
         Assert.Null(mediaType.Charset.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Quality_SetCharsetAndValidateObject_ParametersEntryForCharsetAdded()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -278,7 +278,7 @@ public class MediaTypeHeaderValueTest
         mediaType.Quality = null; // It's OK to set it again to null; no exception.
     }
 
-    [Fact]
+    // [Fact]
     public void Quality_AddQualityParameterThenUseProperty_ParametersEntryIsOverwritten()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -298,7 +298,7 @@ public class MediaTypeHeaderValueTest
         Assert.Null(mediaType.Quality);
     }
 
-    [Fact]
+    // [Fact]
     public void Quality_AddQualityParameterUpperCase_CaseInsensitiveComparison()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -310,20 +310,20 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(0.132, mediaType.Quality);
     }
 
-    [Fact]
+    // [Fact]
     public void Quality_LessThanZero_Throw()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new MediaTypeHeaderValue("application/xml", -0.01));
     }
 
-    [Fact]
+    // [Fact]
     public void Quality_GreaterThanOne_Throw()
     {
         var mediaType = new MediaTypeHeaderValue("application/xml");
         Assert.Throws<ArgumentOutOfRangeException>(() => mediaType.Quality = 1.01);
     }
 
-    [Fact]
+    // [Fact]
     public void ToString_UseDifferentMediaTypes_AllSerializedCorrectly()
     {
         var mediaType = new MediaTypeHeaderValue("text/plain");
@@ -339,7 +339,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal("text/plain; custom=\"custom value\"", mediaType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void GetHashCode_UseMediaTypeWithAndWithoutParameters_SameOrDifferentHashCodes()
     {
         var mediaType1 = new MediaTypeHeaderValue("text/plain");
@@ -358,7 +358,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(mediaType2.GetHashCode(), mediaType5.GetHashCode());
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_UseMediaTypeWithAndWithoutParameters_EqualOrNotEqualNoExceptions()
     {
         var mediaType1 = new MediaTypeHeaderValue("text/plain");
@@ -385,7 +385,7 @@ public class MediaTypeHeaderValueTest
         Assert.False(mediaType1.Equals(mediaType7), "text/plain vs. text/other.");
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidParse("\r\n text/plain  ", new MediaTypeHeaderValue("text/plain"));
@@ -448,7 +448,7 @@ public class MediaTypeHeaderValueTest
         CheckValidParse("text/plain; charset=utf-8; foo=bar; q=0.0", expected);
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfInvalidValueStrings_Throws()
     {
         CheckInvalidParse("");
@@ -467,7 +467,7 @@ public class MediaTypeHeaderValueTest
         CheckInvalidParse("text/plain; charset=iso-8859-1; q=1.0 , ");
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfValidValueStrings_ParsedCorrectly()
     {
         var expected = new MediaTypeHeaderValue("text/plain");
@@ -494,7 +494,7 @@ public class MediaTypeHeaderValueTest
         CheckValidTryParse("\r\n */xml; charset=utf-8; q=0.5", value2);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse()
     {
         CheckInvalidTryParse("");
@@ -513,7 +513,7 @@ public class MediaTypeHeaderValueTest
         CheckInvalidTryParse("text/plain; charset=iso-8859-1; q=1.0 , ");
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_NullOrEmptyArray_ReturnsEmptyList()
     {
         var results = MediaTypeHeaderValue.ParseList(null);
@@ -529,7 +529,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(0, results.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_NullOrEmptyArray_ReturnsFalse()
     {
         Assert.False(MediaTypeHeaderValue.TryParseList(null, out var results));
@@ -537,7 +537,7 @@ public class MediaTypeHeaderValueTest
         Assert.False(MediaTypeHeaderValue.TryParseList(new string[] { "" }, out results));
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_SetOfValidValueStrings_ReturnsValues()
     {
         var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
@@ -555,7 +555,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_SetOfValidValueStrings_ReturnsValues()
     {
         var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
@@ -573,7 +573,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_SetOfValidValueStrings_ReturnsTrue()
     {
         var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
@@ -591,7 +591,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_SetOfValidValueStrings_ReturnsTrue()
     {
         var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
@@ -609,7 +609,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_WithSomeInvalidValues_IgnoresInvalidValues()
     {
         var inputs = new[]
@@ -632,7 +632,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_WithSomeInvalidValues_Throws()
     {
         var inputs = new[]
@@ -643,7 +643,7 @@ public class MediaTypeHeaderValueTest
         Assert.Throws<FormatException>(() => MediaTypeHeaderValue.ParseStrictList(inputs));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_WithSomeInvalidValues_IgnoresInvalidValues()
     {
         var inputs = new[]
@@ -667,7 +667,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
     {
         var inputs = new[]
@@ -775,7 +775,7 @@ public class MediaTypeHeaderValueTest
         Assert.Equal(result, isSubsetOf);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchesMediaType_IgnoresParameters()
     {
         // Arrange

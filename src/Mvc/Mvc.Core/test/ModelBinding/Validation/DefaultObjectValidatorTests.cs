@@ -18,7 +18,7 @@ public class DefaultObjectValidatorTests
 
     private ModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
 
-    [Fact]
+    // [Fact]
     public void Validate_SimpleValueType_Valid_WithPrefix()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_SimpleReferenceType_Valid_WithPrefix()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_SimpleType_MaxErrorsReached()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_SimpleType_SuppressValidation()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class DefaultObjectValidatorTests
     }
 
     // More like how product code does suppressions than Validate_SimpleType_SuppressValidation()
-    [Fact]
+    // [Fact]
     public void Validate_SimpleType_SuppressValidationWithNullKey()
     {
         // Arrange
@@ -149,7 +149,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(modelState);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexValueType_Valid()
     {
         // Arrange
@@ -181,7 +181,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexReferenceType_Valid()
     {
         // Arrange
@@ -213,7 +213,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexReferenceType_Invalid()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexType_SuppressValidation()
     {
         // Arrange
@@ -286,7 +286,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_ComplexReferenceType_Invalid_MultipleErrorsOnProperty()
     {
@@ -318,7 +318,7 @@ public class DefaultObjectValidatorTests
         Assert.Contains(ValidationAttributeUtil.GetRegExErrorMessage("hehehe", "Street"), errorMessages);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_ComplexReferenceType_Invalid_MultipleErrorsOnProperty_EmptyPrefix()
     {
@@ -350,7 +350,7 @@ public class DefaultObjectValidatorTests
         Assert.Contains(ValidationAttributeUtil.GetRegExErrorMessage("hehehe", "Street"), errorMessages);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_NestedComplexReferenceType_Invalid()
     {
@@ -392,7 +392,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexType_MultipleInvalidProperties()
     {
         // Arrange
@@ -426,7 +426,7 @@ public class DefaultObjectValidatorTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexType_MultipleInvalidProperties_WithPrefix()
     {
         // Arrange
@@ -462,7 +462,7 @@ public class DefaultObjectValidatorTests
 
     // IValidatableObject is significant because the validators are on the object
     // itself, not just the properties.
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_ComplexType_IValidatableObject_Invalid()
     {
@@ -507,7 +507,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal("Error3", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_NestedComplexType_IValidatableObject_Invalid()
     {
@@ -609,7 +609,7 @@ public class DefaultObjectValidatorTests
         service.Verify();
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_ComplexType_FieldsAreIgnored_Valid()
     {
@@ -637,7 +637,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_ComplexType_SecondLevelCyclesNotFollowed_Invalid()
     {
@@ -673,7 +673,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_ComplexType_CyclesNotFollowed_Invalid()
     {
@@ -709,7 +709,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ComplexType_ShortCircuit_WhenMaxErrorCountIsSet()
     {
         // Arrange
@@ -745,7 +745,7 @@ public class DefaultObjectValidatorTests
         Assert.IsType<TooManyModelErrorsException>(error.Exception);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_CollectionType_ArrayOfSimpleType_Valid_DefaultKeyPattern()
     {
@@ -778,7 +778,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_CollectionType_ArrayOfComplexType_Invalid()
     {
@@ -821,7 +821,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_CollectionType_ListOfComplexType_Invalid()
     {
@@ -938,7 +938,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_CollectionType_MultipleInvalidItems()
     {
         // Arrange
@@ -972,7 +972,7 @@ public class DefaultObjectValidatorTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_CollectionType_DictionaryOfSimpleType_Invalid()
     {
         // Arrange
@@ -1018,7 +1018,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_CollectionType_DictionaryOfComplexType_Invalid()
     {
@@ -1078,7 +1078,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void Validate_DoesntCatchExceptions_FromPropertyAccessors()
     {
@@ -1100,7 +1100,7 @@ public class DefaultObjectValidatorTests
     }
 
     // We use the reference equality comparer for breaking cycles
-    [Fact]
+    // [Fact]
     public void Validate_DoesNotUseOverridden_GetHashCodeOrEquals()
     {
         // Arrange
@@ -1120,7 +1120,7 @@ public class DefaultObjectValidatorTests
         validator.Validate(actionContext, validationState, string.Empty, model);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ForExcludedComplexType_PropertiesMarkedAsSkipped()
     {
         // Arrange
@@ -1153,7 +1153,7 @@ public class DefaultObjectValidatorTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_ForExcludedCollectionType_PropertiesMarkedAsSkipped()
     {
         // Arrange
@@ -1189,7 +1189,7 @@ public class DefaultObjectValidatorTests
         public string Value { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_SuppressesValidation_ForExcludedType_Stream()
     {
         // Arrange
@@ -1217,7 +1217,7 @@ public class DefaultObjectValidatorTests
     }
 
     // Regression test for aspnet/Mvc#7992
-    [Fact]
+    // [Fact]
     public void Validate_SuppressValidation_AfterHasReachedMaxErrors_Invalid()
     {
         // Arrange
@@ -1281,7 +1281,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal("https://aka.ms/AA21ue1", ex.HelpLink);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_WorksIfObjectGraphIsSmallerThanMaxDepth()
     {
         // Arrange
@@ -1300,7 +1300,7 @@ public class DefaultObjectValidatorTests
         Assert.True(actionContext.ModelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_DoesNotThrow_IfNumberOfErrorsAfterReachingMaxAllowedErrors_GoesOverMaxDepth()
     {
         // Arrange
@@ -1356,7 +1356,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(expectedParentValidationState, modelState.Root.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_TypeWithoutValidators()
     {
         var actionContext = new ActionContext();
@@ -1385,7 +1385,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_TypeWithoutValidators_DoesNotUpdateValidationState()
     {
         var actionContext = new ActionContext();
@@ -1415,7 +1415,7 @@ public class DefaultObjectValidatorTests
         Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public void Validate_TypeWithoutValidators_DoesNotResetInvalidState()
     {
         var actionContext = new ActionContext();

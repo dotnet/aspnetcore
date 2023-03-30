@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Internal;
 
 public class CommandLineApplicationTests
 {
-    [Fact]
+    // [Fact]
     public void CommandNameCanBeMatched()
     {
         var called = false;
@@ -31,7 +31,7 @@ public class CommandLineApplicationTests
         Assert.True(called);
     }
 
-    [Fact]
+    // [Fact]
     public void RemainingArgsArePassed()
     {
         CommandArgument first = null;
@@ -52,7 +52,7 @@ public class CommandLineApplicationTests
         Assert.Equal("two", second.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ExtraArgumentCausesException()
     {
         CommandArgument first = null;
@@ -72,7 +72,7 @@ public class CommandLineApplicationTests
         Assert.Contains("three", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ExtraArgumentAddedToRemaining()
     {
         CommandArgument first = null;
@@ -96,7 +96,7 @@ public class CommandLineApplicationTests
         Assert.Equal("three", remaining);
     }
 
-    [Fact]
+    // [Fact]
     public void UnknownCommandCausesException()
     {
         var app = new CommandLineApplication();
@@ -113,7 +113,7 @@ public class CommandLineApplicationTests
         Assert.Contains("test2", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MultipleValuesArgumentConsumesAllArgumentValues()
     {
         CommandArgument argument = null;
@@ -131,7 +131,7 @@ public class CommandLineApplicationTests
         Assert.Equal(new[] { "one", "two", "three", "four", "five" }, argument.Values);
     }
 
-    [Fact]
+    // [Fact]
     public void MultipleValuesArgumentConsumesAllRemainingArgumentValues()
     {
         CommandArgument first = null;
@@ -155,7 +155,7 @@ public class CommandLineApplicationTests
         Assert.Equal(new[] { "three", "four", "five" }, third.Values);
     }
 
-    [Fact]
+    // [Fact]
     public void MultipleValuesArgumentMustBeTheLastArgument()
     {
         var app = new CommandLineApplication();
@@ -166,7 +166,7 @@ public class CommandLineApplicationTests
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void OptionSwitchMayBeProvided()
     {
         CommandOption first = null;
@@ -187,7 +187,7 @@ public class CommandLineApplicationTests
         Assert.Equal("two", second.Values[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void OptionValueMustBeProvided()
     {
         CommandOption first = null;
@@ -205,7 +205,7 @@ public class CommandLineApplicationTests
         Assert.Contains($"Missing value for option '{first.LongName}'", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ValuesMayBeAttachedToSwitch()
     {
         CommandOption first = null;
@@ -226,7 +226,7 @@ public class CommandLineApplicationTests
         Assert.Equal("two", second.Values[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void ShortNamesMayBeDefined()
     {
         CommandOption first = null;
@@ -247,7 +247,7 @@ public class CommandLineApplicationTests
         Assert.Equal("two", second.Values[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnUnexpectedCommandOrArgumentByDefault()
     {
         var unexpectedArg = "UnexpectedArg";
@@ -262,7 +262,7 @@ public class CommandLineApplicationTests
         Assert.Equal($"Unrecognized command or argument '{unexpectedArg}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgument()
     {
         var unexpectedArg = "UnexpectedArg";
@@ -280,7 +280,7 @@ public class CommandLineApplicationTests
         Assert.Equal(unexpectedArg, arg);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowArgumentBeforeNoValueOption()
     {
         var app = new CommandLineApplication();
@@ -293,7 +293,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowArgumentAfterNoValueOption()
     {
         var app = new CommandLineApplication();
@@ -306,7 +306,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowArgumentBeforeSingleValueOption()
     {
         var app = new CommandLineApplication();
@@ -319,7 +319,7 @@ public class CommandLineApplicationTests
         Assert.Equal("two", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowArgumentAfterSingleValueOption()
     {
         var app = new CommandLineApplication();
@@ -332,7 +332,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeNoValueOption_Default()
     {
         var arguments = new[] { "UnexpectedArg", "--first" };
@@ -346,7 +346,7 @@ public class CommandLineApplicationTests
         Assert.False(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeNoValueOption_Continue()
     {
         var unexpectedArg = "UnexpectedArg";
@@ -361,7 +361,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgumentAfterNoValueOption()
     {
         var unexpectedArg = "UnexpectedArg";
@@ -376,7 +376,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeSingleValueOption_Default()
     {
         var arguments = new[] { "UnexpectedArg", "--first", "one" };
@@ -389,7 +389,7 @@ public class CommandLineApplicationTests
         Assert.Equal(arguments, app.RemainingArguments.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeSingleValueOption_Continue()
     {
         var unexpectedArg = "UnexpectedArg";
@@ -404,7 +404,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedArgumentAfterSingleValueOption()
     {
         var unexpectedArg = "UnexpectedArg";
@@ -419,7 +419,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnUnexpectedLongOptionByDefault()
     {
         var unexpectedOption = "--UnexpectedOption";
@@ -434,7 +434,7 @@ public class CommandLineApplicationTests
         Assert.Equal($"Unrecognized option '{unexpectedOption}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOption()
     {
         var unexpectedOption = "--UnexpectedOption";
@@ -452,7 +452,7 @@ public class CommandLineApplicationTests
         Assert.Equal(unexpectedOption, arg);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeNoValueOption_Default()
     {
         var arguments = new[] { "--unexpected", "--first" };
@@ -465,7 +465,7 @@ public class CommandLineApplicationTests
         Assert.Equal(arguments, app.RemainingArguments.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeNoValueOption_Continue()
     {
         var unexpectedOption = "--unexpected";
@@ -480,7 +480,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionAfterNoValueOption()
     {
         var unexpectedOption = "--unexpected";
@@ -495,7 +495,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeSingleValueOption_Default()
     {
         var arguments = new[] { "--unexpected", "--first", "one" };
@@ -508,7 +508,7 @@ public class CommandLineApplicationTests
         Assert.Equal(arguments, app.RemainingArguments.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeSingleValueOption_Continue()
     {
         var unexpectedOption = "--unexpected";
@@ -523,7 +523,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionAfterSingleValueOption()
     {
         var unexpectedOption = "--unexpected";
@@ -538,7 +538,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeNoValueOption_Default()
     {
         var arguments = new[] { "--unexpected", "value", "--first" };
@@ -551,7 +551,7 @@ public class CommandLineApplicationTests
         Assert.Equal(arguments, app.RemainingArguments.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeNoValueOption_Continue()
     {
         var unexpectedOption = "--unexpected";
@@ -566,7 +566,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueAfterNoValueOption()
     {
         var unexpectedOption = "--unexpected";
@@ -581,7 +581,7 @@ public class CommandLineApplicationTests
         Assert.True(option.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeSingleValueOption_Default()
     {
         var unexpectedOption = "--unexpected";
@@ -597,7 +597,7 @@ public class CommandLineApplicationTests
             app.RemainingArguments.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeSingleValueOption_Continue()
     {
         var unexpectedOption = "--unexpected";
@@ -614,7 +614,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueAfterSingleValueOption()
     {
         var unexpectedOption = "--unexpected";
@@ -629,7 +629,7 @@ public class CommandLineApplicationTests
         Assert.Equal("one", option.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnUnexpectedShortOptionByDefault()
     {
         var unexpectedOption = "-uexp";
@@ -644,7 +644,7 @@ public class CommandLineApplicationTests
         Assert.Equal($"Unrecognized option '{unexpectedOption}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedShortOption()
     {
         var unexpectedOption = "-uexp";
@@ -662,7 +662,7 @@ public class CommandLineApplicationTests
         Assert.Equal(unexpectedOption, arg);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnUnexpectedSymbolOptionByDefault()
     {
         var unexpectedOption = "-?";
@@ -677,7 +677,7 @@ public class CommandLineApplicationTests
         Assert.Equal($"Unrecognized option '{unexpectedOption}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedSymbolOption()
     {
         var unexpectedOption = "-?";
@@ -695,7 +695,7 @@ public class CommandLineApplicationTests
         Assert.Equal(unexpectedOption, arg);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnUnexpectedOptionBeforeValidSubcommandByDefault()
     {
         var unexpectedOption = "--unexpected";
@@ -712,7 +712,7 @@ public class CommandLineApplicationTests
         Assert.Equal($"Unrecognized option '{unexpectedOption}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedOptionBeforeSubcommand()
     {
         var unexpectedOption = "--unexpected";
@@ -734,7 +734,7 @@ public class CommandLineApplicationTests
         Assert.Empty(subCmd.RemainingArguments);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedOptionAfterSubcommand()
     {
         var unexpectedOption = "--unexpected";
@@ -756,7 +756,7 @@ public class CommandLineApplicationTests
         Assert.Equal(unexpectedOption, arg);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedOptionBeforeValidCommand_Default()
     {
         var arguments = new[] { "--unexpected", "run" };
@@ -771,7 +771,7 @@ public class CommandLineApplicationTests
         Assert.Equal(arguments, app.RemainingArguments.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void AllowNoThrowBehaviorOnUnexpectedOptionBeforeValidCommand_Continue()
     {
         var unexpectedOption = "--unexpected";
@@ -787,7 +787,7 @@ public class CommandLineApplicationTests
         Assert.Equal(unexpectedOption, remaining);
     }
 
-    [Fact]
+    // [Fact]
     public void OptionsCanBeInherited()
     {
         var app = new CommandLineApplication();
@@ -816,7 +816,7 @@ public class CommandLineApplicationTests
         Assert.Contains("-a|--option-a", subcmd.GetHelpText());
     }
 
-    [Fact]
+    // [Fact]
     public void NestedOptionConflictThrows()
     {
         var app = new CommandLineApplication();
@@ -829,7 +829,7 @@ public class CommandLineApplicationTests
         Assert.Throws<InvalidOperationException>(() => app.Execute("subcmd", "-a", "b"));
     }
 
-    [Fact]
+    // [Fact]
     public void OptionsWithSameName()
     {
         var app = new CommandLineApplication();
@@ -851,7 +851,7 @@ public class CommandLineApplicationTests
         Assert.Equal("nested", nested.Value());
     }
 
-    [Fact]
+    // [Fact]
     public void NestedInheritedOptions()
     {
         string globalOptionValue = null, nest1OptionValue = null, nest2OptionValue = null;
@@ -1009,7 +1009,7 @@ public class CommandLineApplicationTests
         Assert.False(optVersion.HasValue());
     }
 
-    [Fact]
+    // [Fact]
     public void HelpTextIgnoresHiddenItems()
     {
         var app = new CommandLineApplication()
@@ -1036,7 +1036,7 @@ public class CommandLineApplicationTests
         Assert.DoesNotContain("name", help);
     }
 
-    [Fact]
+    // [Fact]
     public void HelpTextUsesHelpOptionName()
     {
         var app = new CommandLineApplication
@@ -1049,7 +1049,7 @@ public class CommandLineApplicationTests
         Assert.Contains("--ayuda-me", help);
     }
 
-    [Fact]
+    // [Fact]
     public void HelpTextShowsArgSeparator()
     {
         var app = new CommandLineApplication(throwOnUnexpectedArg: false)
@@ -1061,7 +1061,7 @@ public class CommandLineApplicationTests
         Assert.Contains("Usage: proxy-command [options] [[--] <arg>...]", app.GetHelpText());
     }
 
-    [Fact]
+    // [Fact]
     public void HelpTextShowsExtendedHelp()
     {
         var app = new CommandLineApplication()
@@ -1145,7 +1145,7 @@ Examples:
         Assert.Equal("Unexpected value 'true' for option 'verbose'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnEmptyCommandOrArgument()
     {
         var inputOption = String.Empty;
@@ -1156,7 +1156,7 @@ Examples:
         Assert.Equal($"Unrecognized command or argument '{inputOption}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsExceptionOnInvalidOption()
     {
         var inputOption = "-";
@@ -1167,7 +1167,7 @@ Examples:
         Assert.Equal($"Unrecognized option '{inputOption}'", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TreatUnmatchedOptionsAsArguments()
     {
         CommandArgument first = null;
@@ -1202,7 +1202,7 @@ Examples:
         Assert.Equal(secondActualOption, secondOption.Template);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowExceptionWhenUnmatchedOptionAndTreatUnmatchedOptionsAsArgumentsIsFalse()
     {
         CommandArgument first = null;

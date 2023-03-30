@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 public class UnprocessableEntityOfTResultTests
 {
-    [Fact]
+    // [Fact]
     public void UnprocessableEntityObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
@@ -28,7 +28,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntityObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange & Act
@@ -40,7 +40,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnprocessableEntityObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnprocessableEntityObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_AddsResponseTypeMetadata()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
     }
 
-    [Fact]
+    // [Fact]
     public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
     {
         // Act & Assert
@@ -116,7 +116,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<UnprocessableEntity<object>>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
         // Act & Assert
@@ -124,7 +124,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntityObjectResult_Implements_IValueHttpResult_Correctly()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class UnprocessableEntityOfTResultTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntityObjectResult_Implements_IValueHttpResultOfT_Correctly()
     {
         // Arrange

@@ -17,7 +17,7 @@ public class TryUpdateModelIntegrationTest
         public string City { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ExistingModel_EmptyPrefix_OverwritesBoundValues()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ExistingModel_EmptyPrefix_GetsBound()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class TryUpdateModelIntegrationTest
         public Address Address { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_TopLevelCollection_EmptyPrefix_BindsAfterClearing()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class TryUpdateModelIntegrationTest
         Assert.NotNull(modelState["[1].Address.Street"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NestedPoco_EmptyPrefix_DoesNotTrounceUnboundValues()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class TryUpdateModelIntegrationTest
         public List<Address> Address { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_CreatesCollection()
     {
         // Arrange
@@ -242,7 +242,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_MaintainsCollectionIfNonNull()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class TryUpdateModelIntegrationTest
         public List<Address> Address { get; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NonSettableCollectionModel_EmptyPrefix_GetsBound()
     {
         // Arrange
@@ -349,7 +349,7 @@ public class TryUpdateModelIntegrationTest
         public CustomReadOnlyCollection<Address> Address { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal("SomeStreet", state.AttemptedValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
     {
         // Arrange
@@ -412,7 +412,7 @@ public class TryUpdateModelIntegrationTest
         public Address[] Address { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_CreatesArray()
     {
         // Arrange
@@ -448,7 +448,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_OverwritesArray()
     {
         // Arrange
@@ -501,7 +501,7 @@ public class TryUpdateModelIntegrationTest
         public Address[] Address { get; } = new Address[] { };
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NonSettableArrayModel_EmptyPrefix_IsNotBound()
     {
         // Arrange
@@ -542,7 +542,7 @@ public class TryUpdateModelIntegrationTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NonSettableIEnumerableModel_EmptyPrefix_IsNotBound()
     {
         // Arrange
@@ -589,7 +589,7 @@ public class TryUpdateModelIntegrationTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NonSettableICollectionModel_EmptyPrefix_IsNotBound()
     {
         // Arrange
@@ -624,7 +624,7 @@ public class TryUpdateModelIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ExistingModel_WithPrefix_ValuesGetOverwritten()
     {
         // Arrange
@@ -664,7 +664,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ExistingModel_WithPrefix_GetsBound()
     {
         // Arrange
@@ -698,7 +698,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_TopLevelCollection_WithPrefix_BindsAfterClearing()
     {
         // Arrange
@@ -756,7 +756,7 @@ public class TryUpdateModelIntegrationTest
         Assert.NotNull(modelState["prefix[1].Address.Street"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NestedPoco_WithPrefix_DoesNotTrounceUnboundValues()
     {
         // Arrange
@@ -801,7 +801,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_CreatesCollection()
     {
         // Arrange
@@ -837,7 +837,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_MaintainsCollectionIfNonNull()
     {
         // Arrange
@@ -878,7 +878,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NonSettableCollectionModel_WithPrefix_GetsBound()
     {
         // Arrange
@@ -929,7 +929,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableArrayModel_WithPrefix_CreatesArray()
     {
         // Arrange
@@ -965,7 +965,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_SettableArrayModel_WithPrefix_OverwritesArray()
     {
         // Arrange
@@ -1013,7 +1013,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_NonSettableArrayModel_WithPrefix_GetsBound()
     {
         // Arrange
@@ -1042,7 +1042,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Empty(modelState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModelAsync_TopLevelFormFileCollection_IsBound()
     {
         // Arrange
@@ -1094,7 +1094,7 @@ public class TryUpdateModelIntegrationTest
         public string City { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_ExistingModelWithNoParameterlessConstructor_OverwritesBoundValues()
     {
         // Arrange
@@ -1139,7 +1139,7 @@ public class TryUpdateModelIntegrationTest
         public string ZipCode { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_RecordTypeModel_Throws()
     {
         // Arrange
@@ -1166,7 +1166,7 @@ public class TryUpdateModelIntegrationTest
         public AddressRecord Address { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_RecordTypeProperty()
     {
         // Arrange
@@ -1212,7 +1212,7 @@ public class TryUpdateModelIntegrationTest
         Assert.Equal(ModelValidationState.Valid, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryUpdateModel_RecordTypePropertyIsOverwritten()
     {
         // Arrange

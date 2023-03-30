@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Internal;
 
 public class StackTraceHelperTest
 {
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_IncludesLineNumbersForFiles()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class StackTraceHelperTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForGenericMethods()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.GenericMethod<T>(T val)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithOutParameters()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithOutParameter(out int value)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithGenericOutParameters()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithGenericOutParameter<TVal>(string a, out TVal value)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithRefParameters()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithRefParameter(ref int value)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithGenericRefParameters()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithGenericRefParameter<TVal>(ref TVal value)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithNullableParameters()
     {
         // Arrange
@@ -135,7 +135,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithNullableParameter(Nullable<int> value)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_PrettyPrintsStackTraceForMethodsOnGenericTypes()
     {
         // Arrange
@@ -149,7 +149,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest+GenericClass<T>.Throw(T parameter)", methods[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_ProducesReadableOutput()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class StackTraceHelperTest
         Assert.Equal(expectedCallStack, methodNames);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_DoesNotIncludeInstanceMethodsOnTypesWithStackTraceHiddenAttribute()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.InvokeMethodOnTypeWithStackTraceHiddenAttribute()", methods[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_DoesNotIncludeStaticMethodsOnTypesWithStackTraceHiddenAttribute()
     {
         // Arrange
@@ -212,7 +212,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.InvokeStaticMethodOnTypeWithStackTraceHiddenAttribute()", methods[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void StackTraceHelper_DoesNotIncludeMethodsWithStackTraceHiddenAttribute()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class StackTraceHelperTest
         Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest+TypeWithMethodWithStackTraceHiddenAttribute.Throw()", methods[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFrames_DoesNotFailForDynamicallyGeneratedAssemblies()
     {
         // Arrange

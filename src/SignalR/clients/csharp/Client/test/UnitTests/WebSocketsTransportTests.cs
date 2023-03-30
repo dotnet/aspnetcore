@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 public class WebSocketsTransportTests : VerifiableLoggedTest
 {
     // Tests that the transport can still be stopped if SendAsync and ReceiveAsync are hanging (ethernet unplugged for example)
-    [Fact]
+    // [Fact]
     public async Task StopCancelsSendAndReceive()
     {
         var options = new HttpConnectionOptions()

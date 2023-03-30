@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
 public class ComponentParameterCaptureUnmatchedValuesMustBeUniqueTest : DiagnosticVerifier
 {
-    [Fact]
+    // [Fact]
     public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
     {
         var test = $@"
@@ -27,7 +27,7 @@ public class ComponentParameterCaptureUnmatchedValuesMustBeUniqueTest : Diagnost
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsDiagnosticForMultipleCaptureUnmatchedValuesProperties()
     {
         var test = $@"

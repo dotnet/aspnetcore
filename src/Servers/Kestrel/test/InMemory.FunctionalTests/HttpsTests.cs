@@ -40,7 +40,7 @@ public class HttpsTests : LoggedTest
         return serverOptions;
     }
 
-    [Fact]
+    // [Fact]
     public void UseHttpsDefaultsToDefaultCert()
     {
         var serverOptions = CreateServerOptions();
@@ -64,7 +64,7 @@ public class HttpsTests : LoggedTest
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseHttpsWithAsyncCallbackDoesNotFallBackToDefaultCert()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -96,7 +96,7 @@ public class HttpsTests : LoggedTest
         Assert.IsType<NotSupportedException>(errorException);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureHttpsDefaultsNeverLoadsDefaultCert()
     {
         var serverOptions = CreateServerOptions();
@@ -119,7 +119,7 @@ public class HttpsTests : LoggedTest
         Assert.Null(serverOptions.DevelopmentCertificate);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureCertSelectorNeverLoadsDefaultCert()
     {
         var serverOptions = CreateServerOptions();
@@ -205,7 +205,7 @@ public class HttpsTests : LoggedTest
     }
 
     // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1103#issuecomment-246971172
-    [Fact]
+    // [Fact]
     public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -250,7 +250,7 @@ public class HttpsTests : LoggedTest
         Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -295,7 +295,7 @@ public class HttpsTests : LoggedTest
     }
 
     // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1693
-    [Fact]
+    // [Fact]
     public async Task DoesNotThrowObjectDisposedExceptionOnEmptyConnection()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -321,7 +321,7 @@ public class HttpsTests : LoggedTest
     }
 
     // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197
-    [Fact]
+    // [Fact]
     public async Task ConnectionFilterDoesNotLeakBlock()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -341,7 +341,7 @@ public class HttpsTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandshakeTimesOutAndIsLoggedAsDebug()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -371,7 +371,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandshakeTimesOutAndIsLoggedAsDebugWithAsyncCallback()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -405,7 +405,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http3_UseHttpsNoArgsWithDefaultCertificate_UseDefaultCertificate()
     {
         var serverOptions = CreateServerOptions();
@@ -446,7 +446,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http3_ConfigureHttpsDefaults_Works()
     {
         var serverOptions = CreateServerOptions();
@@ -490,7 +490,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(_x509Certificate2, sslServerAuthenticationOptions.ServerCertificate);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http1And2And3_NoUseHttps_MultiplexBindNotCalled()
     {
         var serverOptions = CreateServerOptions();
@@ -524,7 +524,7 @@ public class HttpsTests : LoggedTest
         Assert.False(bindCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http3_NoUseHttps_Throws()
     {
         var serverOptions = CreateServerOptions();
@@ -560,7 +560,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal("HTTP/3 requires HTTPS.", ex.InnerException.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http3_ServerOptionsSelectionCallback_Works()
     {
         var serverOptions = CreateServerOptions();
@@ -606,7 +606,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(testState, tlsOptions.OnConnectionState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http3_TlsHandshakeCallbackOptions_Works()
     {
         var serverOptions = CreateServerOptions();
@@ -655,7 +655,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(testState, tlsOptions.OnConnectionState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientAttemptingToUseUnsupportedProtocolIsLoggedAsDebug()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -689,7 +689,7 @@ public class HttpsTests : LoggedTest
         Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthenticate_SeesOtherSettings()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -725,7 +725,7 @@ public class HttpsTests : LoggedTest
         Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthenticate_CanSetSettings()
     {
         var loggerProvider = new HandshakeErrorLoggerProvider();

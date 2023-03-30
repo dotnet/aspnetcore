@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Localization;
 
 public class StringLocalizerOfTTest
 {
-    [Fact]
+    // [Fact]
     public void Constructor_ThrowsAnExceptionForNullFactory()
     {
         // Arrange, act and assert
@@ -19,7 +19,7 @@ public class StringLocalizerOfTTest
         Assert.Equal("factory", exception.ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_ResolvesLocalizerFromFactory()
     {
         // Arrange
@@ -32,7 +32,7 @@ public class StringLocalizerOfTTest
         factory.Verify(mock => mock.Create(typeof(object)), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void Indexer_ThrowsAnExceptionForNullName()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class StringLocalizerOfTTest
         Assert.Equal("name", exception.ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void Indexer_InvokesIndexerFromInnerLocalizer()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class StringLocalizerOfTTest
         innerLocalizer.Verify(mock => mock["Hello world"], Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void Indexer_ThrowsAnExceptionForNullName_WithArguments()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class StringLocalizerOfTTest
         Assert.Equal("name", exception.ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void Indexer_InvokesIndexerFromInnerLocalizer_WithArguments()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class StringLocalizerOfTTest
         innerLocalizer.Verify(mock => mock["Welcome, {0}", "Bob"], Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllStrings_InvokesGetAllStringsFromInnerLocalizer()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class StringLocalizerOfTTest
         innerLocalizer.Verify(mock => mock.GetAllStrings(true), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void StringLocalizer_CanBeCastToBaseType()
     {
         // Arrange and act

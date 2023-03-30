@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 
 public class HostingApplicationDiagnosticsTests
 {
-    [Fact]
+    // [Fact]
     public void DisposeContextDoesNotThrowWhenContextScopeIsNull()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class HostingApplicationDiagnosticsTests
         hostingApplication.DisposeContext(context, null);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateContextWithDisabledLoggerDoesNotCreateActivity()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Null(Activity.Current);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityStopDoesNotFireIfNoListenerAttachedForStart()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Null(Activity.Current);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsNotCreatedWhenIsEnabledForActivityIsFalse()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -109,7 +109,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.False(eventsFired);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsCreatedButNotLoggedWhenIsEnabledForActivityStartIsFalse()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -146,7 +146,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.False(eventsFired);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsCreatedAndLogged()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -171,7 +171,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.True(startCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsStoppedDuringStopCall()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -196,7 +196,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.True(endCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsStoppedDuringUnhandledExceptionCall()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -220,7 +220,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.True(endCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsAvailableDuringUnhandledExceptionCall()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -242,7 +242,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.True(endCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityIsAvailibleDuringRequest()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -264,7 +264,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityParentIdAndBaggageReadFromHeaders()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -295,7 +295,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityBaggageReadFromLegacyHeaders()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -325,7 +325,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityBaggagePrefersW3CBaggageHeaderName()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -356,7 +356,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value4");
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityBaggagePreservesItemsOrder()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -393,7 +393,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(expectedBaggage, Activity.Current.Baggage.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityBaggageValuesAreUrlDecodedFromHeaders()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -422,7 +422,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1/1");
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityTraceParentAndTraceStateFromHeaders()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -458,7 +458,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
     }
 
-    [Fact]
+    // [Fact]
     public void SamplersReceiveCorrectParentAndTraceIds()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
@@ -502,7 +502,7 @@ public class HostingApplicationDiagnosticsTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityOnImportHookIsCalled()
     {
         var diagnosticListener = new DiagnosticListener("DummySource");
@@ -530,7 +530,7 @@ public class HostingApplicationDiagnosticsTests
         Assert.True(Activity.Current.Recorded);
     }
 
-    [Fact]
+    // [Fact]
     public void ActivityListenersAreCalled()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());

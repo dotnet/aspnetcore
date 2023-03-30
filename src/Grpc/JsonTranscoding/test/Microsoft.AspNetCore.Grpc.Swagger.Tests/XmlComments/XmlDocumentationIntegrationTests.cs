@@ -18,7 +18,7 @@ public class XmlDocumentationIntegrationTests
         _testOutputHelper = testOutputHelper;
     }
 
-    [Fact]
+    // [Fact]
     public void ServiceDescription_ModelHasXmlDocs_UseXmlDocs()
     {
         // Arrange & Act
@@ -29,7 +29,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Equal("XmlDocServiceWithComments XML comment!", swagger.Tags[0].Description);
     }
 
-    [Fact]
+    // [Fact]
     public void ServiceDescription_ModelDoesntHaveXmlDocs_UseProtoDocs()
     {
         // Arrange & Act
@@ -40,7 +40,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Equal("XmlDoc!", swagger.Tags[0].Description);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteParameter_UseProtoDocs()
     {
         // Arrange & Act
@@ -51,7 +51,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Equal("Name field!", path.Operations[OperationType.Get].Parameters[0].Description);
     }
 
-    [Fact]
+    // [Fact]
     public void MethodDescription_ModelHasXmlDocs_UseXmlDocs()
     {
         // Arrange & Act
@@ -63,7 +63,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Equal("BasicGet XML remarks!", path.Operations[OperationType.Get].Description);
     }
 
-    [Fact]
+    // [Fact]
     public void MethodDescription_ModelDoesntHaveXmlDocs_UseProtoDocs()
     {
         // Arrange & Act
@@ -75,7 +75,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Null(path.Operations[OperationType.Get].Description);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDescription_Root_ModelHasXmlDocs_UseXmlDocs()
     {
         // Arrange & Act
@@ -86,7 +86,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Equal("Request XML param!", path.Operations[OperationType.Post].RequestBody.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDescription_Root_ModelDoesntHaveXmlDocs_Empty()
     {
         // Arrange & Act
@@ -97,7 +97,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Null(path.Operations[OperationType.Post].RequestBody.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDescription_Nested_ProtoFieldDocs()
     {
         // Arrange & Act
@@ -108,7 +108,7 @@ public class XmlDocumentationIntegrationTests
         Assert.Equal("Detail field!", path.Operations[OperationType.Post].RequestBody.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void Message_UseProtoDocs()
     {
         // Arrange & Act

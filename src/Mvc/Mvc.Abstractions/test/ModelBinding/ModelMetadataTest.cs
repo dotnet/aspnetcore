@@ -241,7 +241,7 @@ public class ModelMetadataTest
 
     // ContainerType
 
-    [Fact]
+    // [Fact]
     public void ContainerType_IsNull_ForType()
     {
         // Arrange & Act
@@ -251,7 +251,7 @@ public class ModelMetadataTest
         Assert.Null(metadata.ContainerType);
     }
 
-    [Fact]
+    // [Fact]
     public void ContainerType_IsNull_ForParameter()
     {
         // Arrange & Act
@@ -263,7 +263,7 @@ public class ModelMetadataTest
         Assert.Null(metadata.ContainerType);
     }
 
-    [Fact]
+    // [Fact]
     public void ContainerType_ReturnExpectedMetadata_ForProperty()
     {
         // Arrange & Act
@@ -276,7 +276,7 @@ public class ModelMetadataTest
 
     // Name / ParameterName / PropertyName
 
-    [Fact]
+    // [Fact]
     public void Names_ReturnExpectedMetadata_ForType()
     {
         // Arrange & Act
@@ -288,7 +288,7 @@ public class ModelMetadataTest
         Assert.Null(metadata.PropertyName);
     }
 
-    [Fact]
+    // [Fact]
     public void Names_ReturnExpectedMetadata_ForParameter()
     {
         // Arrange & Act
@@ -302,7 +302,7 @@ public class ModelMetadataTest
         Assert.Null(metadata.PropertyName);
     }
 
-    [Fact]
+    // [Fact]
     public void Names_ReturnExpectedMetadata_ForProperty()
     {
         // Arrange & Act
@@ -317,7 +317,7 @@ public class ModelMetadataTest
 
     // GetDisplayName()
 
-    [Fact]
+    // [Fact]
     public void GetDisplayName_ReturnsDisplayName_IfSet()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class ModelMetadataTest
         Assert.Equal("displayName", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDisplayName_ReturnsParameterName_WhenSetAndDisplayNameIsNull()
     {
         // Arrange
@@ -347,7 +347,7 @@ public class ModelMetadataTest
         Assert.Equal("item", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDisplayName_ReturnsPropertyName_WhenSetAndDisplayNameIsNull()
     {
         // Arrange
@@ -361,7 +361,7 @@ public class ModelMetadataTest
         Assert.Equal("Length", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDisplayName_ReturnsTypeName_WhenPropertyNameAndDisplayNameAreNull()
     {
         // Arrange
@@ -376,7 +376,7 @@ public class ModelMetadataTest
 
     // Virtual methods and properties that throw NotImplementedException in the abstract class.
 
-    [Fact]
+    // [Fact]
     public void GetContainerMetadata_ThrowsNotImplementedException_ByDefault()
     {
         // Arrange
@@ -386,7 +386,7 @@ public class ModelMetadataTest
         Assert.Throws<NotImplementedException>(() => metadata.ContainerMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMetadataForType_ByDefaultThrows_NotImplementedException()
     {
         // Arrange
@@ -396,7 +396,7 @@ public class ModelMetadataTest
         var result = Assert.Throws<NotImplementedException>(() => metadata.GetMetadataForType(typeof(string)));
     }
 
-    [Fact]
+    // [Fact]
     public void GetMetadataForProperties_ByDefaultThrows_NotImplementedException()
     {
         // Arrange

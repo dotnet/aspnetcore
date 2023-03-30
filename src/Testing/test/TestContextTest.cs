@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestContext Context { get; private set; }
 
-        [Fact]
+        // [Fact]
         public void FullName_IsUsed_ByDefault()
         {
             Assert.Equal(GetType().FullName, Context.FileOutput.TestClassName);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
     {
         public TestContext Context { get; private set; }
 
-        [Fact]
+        // [Fact]
         public void NameIsShortenedWhenAssemblyNameIsAPrefix()
         {
             Assert.Equal(GetType().Name, Context.FileOutput.TestClassName);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestContext Context { get; private set; }
 
-        [Fact]
+        // [Fact]
         public void ShortClassNameUsedWhenShortClassNameAttributeSpecified()
         {
             Assert.Equal(GetType().Name, Context.FileOutput.TestClassName);

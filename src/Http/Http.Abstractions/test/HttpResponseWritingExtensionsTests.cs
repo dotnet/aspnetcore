@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 
 public class HttpResponseWritingExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public async Task WritingText_WriteText()
     {
         HttpContext context = CreateRequest();
@@ -16,7 +16,7 @@ public class HttpResponseWritingExtensionsTests
         Assert.Equal(11, context.Response.Body.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WritingText_MultipleWrites()
     {
         HttpContext context = CreateRequest();

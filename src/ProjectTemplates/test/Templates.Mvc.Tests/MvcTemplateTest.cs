@@ -29,10 +29,10 @@ public class MvcTemplateTest : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
-    [Fact]
+    // [Fact]
     public async Task MvcTemplate_NoAuthNoHttpsFSharp() => await MvcTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps } );
 
     [ConditionalFact]

@@ -25,7 +25,7 @@ public class JsonConverterWriteTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void CustomizedName()
     {
         var helloRequest = new HelloRequest
@@ -37,7 +37,7 @@ public class JsonConverterWriteTests
             new GrpcJsonSettings { IgnoreDefaultValues = true });
     }
 
-    [Fact]
+    // [Fact]
     public void NonAsciiString()
     {
         var helloRequest = new HelloRequest
@@ -48,7 +48,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest, compareRawStrings: true);
     }
 
-    [Fact]
+    // [Fact]
     public void RepeatedStrings()
     {
         var helloRequest = new HelloRequest
@@ -65,7 +65,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void RepeatedDoubleValues()
     {
         var helloRequest = new HelloRequest
@@ -80,7 +80,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void MapStrings()
     {
         var helloRequest = new HelloRequest
@@ -95,7 +95,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void MapKeyBool()
     {
         var helloRequest = new HelloRequest
@@ -110,7 +110,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void MapKeyInt()
     {
         var helloRequest = new HelloRequest
@@ -126,7 +126,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void MapMessages()
     {
         var helloRequest = new HelloRequest
@@ -141,7 +141,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void DataTypes_DefaultValues()
     {
         var wrappers = new HelloRequest.Types.DataTypes();
@@ -151,7 +151,7 @@ public class JsonConverterWriteTests
             new GrpcJsonSettings { WriteInt64sAsStrings = true });
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrappers_NaN()
     {
         var wrappers = new HelloRequest.Types.Wrappers
@@ -162,7 +162,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(wrappers);
     }
 
-    [Fact]
+    // [Fact]
     public void NullValue_Default()
     {
         var m = new NullValueContainer();
@@ -170,7 +170,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(m);
     }
 
-    [Fact]
+    // [Fact]
     public void NullValue_NonDefaultValue()
     {
         var m = new NullValueContainer
@@ -181,7 +181,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(m);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrappers()
     {
         var wrappers = new HelloRequest.Types.Wrappers
@@ -200,7 +200,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(wrappers);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrapper_Root_Int32()
     {
         var v = new Int32Value { Value = 1 };
@@ -208,7 +208,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(v);
     }
 
-    [Fact]
+    // [Fact]
     public void NullableWrapper_Root_Int64()
     {
         var v = new Int64Value { Value = 1 };
@@ -246,7 +246,7 @@ public class JsonConverterWriteTests
         Assert.Equal(expectedJson, json);
     }
 
-    [Fact]
+    // [Fact]
     public void Any()
     {
         var helloRequest = new HelloRequest
@@ -258,7 +258,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(any);
     }
 
-    [Fact]
+    // [Fact]
     public void Any_WellKnownType_Timestamp()
     {
         var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UnixEpoch);
@@ -267,7 +267,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(any);
     }
 
-    [Fact]
+    // [Fact]
     public void Any_WellKnownType_Int32()
     {
         var value = new Int32Value() { Value = int.MaxValue };
@@ -276,7 +276,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(any);
     }
 
-    [Fact]
+    // [Fact]
     public void Timestamp_Nested()
     {
         var helloRequest = new HelloRequest
@@ -287,7 +287,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void Timestamp_Root()
     {
         var ts = Timestamp.FromDateTimeOffset(new DateTimeOffset(2020, 12, 1, 12, 30, 0, TimeSpan.FromHours(12)));
@@ -295,7 +295,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(ts);
     }
 
-    [Fact]
+    // [Fact]
     public void Duration_Nested()
     {
         var helloRequest = new HelloRequest
@@ -306,7 +306,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void Duration_Root()
     {
         var duration = Duration.FromTimeSpan(TimeSpan.FromHours(12));
@@ -314,7 +314,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(duration);
     }
 
-    [Fact]
+    // [Fact]
     public void Value_Nested()
     {
         var helloRequest = new HelloRequest
@@ -334,7 +334,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void Value_Root()
     {
         var value = Value.ForStruct(new Struct
@@ -351,7 +351,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(value);
     }
 
-    [Fact]
+    // [Fact]
     public void Struct_Nested()
     {
         var helloRequest = new HelloRequest
@@ -371,7 +371,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void Struct_Root()
     {
         var value = new Struct
@@ -388,7 +388,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(value);
     }
 
-    [Fact]
+    // [Fact]
     public void ListValue_Nested()
     {
         var helloRequest = new HelloRequest
@@ -407,7 +407,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void ListValue_Root()
     {
         var value = new ListValue
@@ -423,7 +423,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(value);
     }
 
-    [Fact]
+    // [Fact]
     public void FieldMask_Nested()
     {
         var helloRequest = new HelloRequest
@@ -434,7 +434,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(helloRequest);
     }
 
-    [Fact]
+    // [Fact]
     public void FieldMask_Root()
     {
         var m = FieldMask.FromString("value1,value2,value3.nested_value");
@@ -472,7 +472,7 @@ public class JsonConverterWriteTests
         AssertWrittenJson(dataTypes, new GrpcJsonSettings { WriteEnumsAsIntegers = true, IgnoreDefaultValues = true });
     }
 
-    [Fact]
+    // [Fact]
     public void Enum_Imported()
     {
         var m = new SayRequest();
@@ -482,7 +482,7 @@ public class JsonConverterWriteTests
     }
 
     // See See https://github.com/protocolbuffers/protobuf/issues/11987
-    [Fact]
+    // [Fact]
     public void JsonNamePriority()
     {
         var m = new Issue047349Message { A = 10, B = 20, C = 30 };

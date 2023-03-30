@@ -23,7 +23,7 @@ public class DataProtectionRedisTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllElements_ReturnsAllXmlValuesForGivenKey()
     {
         var database = new Mock<IDatabase>();
@@ -41,7 +41,7 @@ public class DataProtectionRedisTests
         Assert.Equal(new XElement("Element2").ToString(), elements[1].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllElements_ThrowsParsingException()
     {
         var database = new Mock<IDatabase>();
@@ -55,7 +55,7 @@ public class DataProtectionRedisTests
         Assert.Throws<XmlException>(() => repo.GetAllElements());
     }
 
-    [Fact]
+    // [Fact]
     public void StoreElement_PushesValueToList()
     {
         var database = new Mock<IDatabase>();

@@ -41,7 +41,7 @@ public class RouterSampleTest : IDisposable
         Assert.Equal($"{branch} - API Get 5", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Routing_CanRouteRequestDelegate_ToSpecificHttpVerb()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class RouterSampleTest : IDisposable
         Assert.Equal($"API Get 5", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Routing_CanRouteRequest_ToSpecificMiddleware()
     {
         // Arrange

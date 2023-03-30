@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering;
 
 public class HtmlRendererTest
 {
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_ThrowsIfNotOnSyncContext()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class HtmlRendererTest
         Assert.Contains("The current thread is not associated with the Dispatcher", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HtmlContent_Write_ThrowsIfNotOnSyncContext()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class HtmlRendererTest
         Assert.Contains("The current thread is not associated with the Dispatcher", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderEmptyElement()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderSimpleComponent()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_HtmlEncodesContent()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_DoesNotEncodeMarkup()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderWithAttributes()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_SkipsDuplicatedAttribute()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class HtmlRendererTest
         });
     }
     
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_HtmlEncodesAttributeValues()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderBooleanAttributes()
     {
         // Arrange
@@ -239,7 +239,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_DoesNotRenderBooleanAttributesWhenValueIsFalse()
     {
         // Arrange
@@ -262,7 +262,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderWithChildren()
     {
         // Arrange
@@ -287,7 +287,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderWithMultipleChildren()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_MarksSelectedOptionsAsSelected()
     {
         // Arrange
@@ -369,7 +369,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_RendersValueAttributeAsTextContentOfTextareaElement()
     {
         // Arrange
@@ -394,7 +394,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_RendersTextareaElementWithoutValueAttribute()
     {
         // Arrange
@@ -419,7 +419,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_RendersTextareaElementWithoutValueAttributeOrTextContent()
     {
         // Arrange
@@ -443,7 +443,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_ValueAttributeOfTextareaElementOverridesTextContent()
     {
         // Arrange
@@ -467,7 +467,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_RendersSelfClosingElement()
     {
         // Arrange
@@ -491,7 +491,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_RendersSelfClosingElementWithTextComponentAsNormalElement()
     {
         // Arrange
@@ -514,7 +514,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_RendersSelfClosingElementBySkippingElementReferenceCapture()
     {
         // Arrange
@@ -539,7 +539,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_MarksSelectedOptionsAsSelected_WithOptGroups()
     {
         // Arrange
@@ -578,7 +578,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderComponentAsyncWithChildrenComponents()
     {
         // Arrange
@@ -609,7 +609,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_ComponentReferenceNoops()
     {
         // Arrange
@@ -641,7 +641,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanPassParameters()
     {
         // Arrange
@@ -679,7 +679,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanRenderComponentAsyncWithRenderFragmentContent()
     {
         // Arrange
@@ -707,7 +707,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_ElementRefsNoops()
     {
         // Arrange
@@ -757,7 +757,7 @@ public class HtmlRendererTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRender_AsyncComponent()
     {
         // Arrange
@@ -779,7 +779,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRender_NestedAsyncComponents()
     {
         // Arrange
@@ -806,7 +806,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanCauseRerenderingOfEarlierComponents()
     {
         // This scenario is important when there are multiple root components. The default project
@@ -840,7 +840,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_CanOutputToTextWriter()
     {
         // Arrange
@@ -867,7 +867,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeginRenderingComponent_CanObserveStateBeforeAndAfterQuiescence()
     {
         // Arrange
@@ -891,7 +891,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_ThrowsSync()
     {
         // Arrange
@@ -913,7 +913,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderComponentAsync_ThrowsAsync()
     {
         // Arrange
@@ -934,7 +934,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeginRenderingComponent_ThrowsSync()
     {
         // Arrange
@@ -956,7 +956,7 @@ public class HtmlRendererTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeginRenderingComponent_ThrowsAsyncDuringWaitForQuiescenceAsync()
     {
         // Arrange

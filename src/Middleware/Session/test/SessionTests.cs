@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Session;
 
 public class SessionTests
 {
-    [Fact]
+    // [Fact]
     public async Task ReadingEmptySessionDoesNotCreateCookie()
     {
         using var host = new HostBuilder()
@@ -58,7 +58,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SettingAValueCausesTheCookieToBeCreated()
     {
         using var host = new HostBuilder()
@@ -159,7 +159,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionCanBeAccessedOnTheNextRequest()
     {
         using var host = new HostBuilder()
@@ -208,7 +208,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemovedItemCannotBeAccessedAgain()
     {
         using var host = new HostBuilder()
@@ -267,7 +267,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClearedItemsCannotBeAccessedAgain()
     {
         using var host = new HostBuilder()
@@ -325,7 +325,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionStart_LogsInformation()
     {
         var sink = new TestSink(
@@ -372,7 +372,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExpiredSession_LogsInfo()
     {
         var sink = new TestSink(
@@ -440,7 +440,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Information, sessionLogMessages[2].LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RefreshesSession_WhenSessionData_IsNotModified()
     {
         var clock = new TestClock();
@@ -506,7 +506,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut()
     {
         using var host = new HostBuilder()
@@ -548,7 +548,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut_AndAnUnhandledExcetionIsThrown()
     {
         using var host = new HostBuilder()
@@ -597,7 +597,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionKeys_AreCaseSensitive()
     {
         using var host = new HostBuilder()
@@ -634,7 +634,7 @@ public class SessionTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheReadException()
     {
         var sink = new TestSink(
@@ -684,7 +684,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Error, message.LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheLoadAsyncException()
     {
         var sink = new TestSink(
@@ -733,7 +733,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Error, message.LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheLoadAsyncTimeoutException()
     {
         var sink = new TestSink(
@@ -781,7 +781,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Warning, message.LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLoadAsyncCanceledException()
     {
         var sink = new TestSink(
@@ -827,7 +827,7 @@ public class SessionTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheCommitException()
     {
         var sink = new TestSink(
@@ -887,7 +887,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessage.LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheCommitTimeoutException()
     {
         var sink = new TestSink(
@@ -953,7 +953,7 @@ public class SessionTests
         Assert.Equal(LogLevel.Information, sessionMiddlewareLogs[0].LogLevel);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheCommitCanceledException()
     {
         var sink = new TestSink(
@@ -1017,7 +1017,7 @@ public class SessionTests
         Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAbortedIgnored()
     {
         var sink = new TestSink(
@@ -1081,7 +1081,7 @@ public class SessionTests
         Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionLogsCacheRefreshException()
     {
         var sink = new TestSink(

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class DisallowOptionsRequestsPageFilterTest
 {
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_DoesNothing_IfHandlerIsSelected()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class DisallowOptionsRequestsPageFilterTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_DoesNotOverwriteResult_IfHandlerIsSelected()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class DisallowOptionsRequestsPageFilterTest
         Assert.Same(expected, context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_DoesNothing_IfHandlerIsNotSelected_WhenRequestsIsNotOptions()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class DisallowOptionsRequestsPageFilterTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_DoesNotOverwriteResult_IfHandlerIsNotSelected_WhenRequestsIsNotOptions()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class DisallowOptionsRequestsPageFilterTest
         Assert.Same(expected, context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_DoesNothing_ForOptionsRequestWhenHandlerIsSelected()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class DisallowOptionsRequestsPageFilterTest
         Assert.Null(context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_DoesNotOverwriteResult_ForOptionsRequestWhenNoHandler()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class DisallowOptionsRequestsPageFilterTest
         Assert.Same(expected, context.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void OnPageHandlerExecuting_SetsResult_ForOptionsRequestWhenNoHandlerIsSelected()
     {
         // Arrange

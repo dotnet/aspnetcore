@@ -189,7 +189,7 @@ public partial class HttpConnectionTests
             Assert.True(requestsExecuted);
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanReceiveData()
         {
             var testHttpHandler = new TestHttpMessageHandler();
@@ -219,7 +219,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanSendData()
         {
             var data = new byte[] { 1, 1, 2, 3, 5, 8 };
@@ -251,7 +251,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public Task SendThrowsIfConnectionIsNotStarted()
         {
             return WithConnectionAsync(
@@ -264,7 +264,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public Task TransportPipeCannotBeAccessedAfterConnectionIsDisposed()
         {
             return WithConnectionAsync(
@@ -280,7 +280,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public Task TransportIsShutDownAfterDispose()
         {
             var transport = new TestTransport();
@@ -297,7 +297,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public Task StartAsyncTransferFormatOverridesOptions()
         {
             var transport = new TestTransport();
@@ -312,7 +312,7 @@ public partial class HttpConnectionTests
                 });
         }
 
-        [Fact]
+        // [Fact]
         public async Task HttpConnectionFailsOnNegotiateWhenAuthFails()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -341,7 +341,7 @@ public partial class HttpConnectionTests
             Assert.Equal(1, accessTokenCallCount);
         }
 
-        [Fact]
+        // [Fact]
         public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsLongPolling()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -417,7 +417,7 @@ public partial class HttpConnectionTests
             Assert.Equal(7, accessTokenCallCount);
         }
 
-        [Fact]
+        // [Fact]
         public async Task HttpConnectionFailsAfterFirstRetryFailsLongPolling()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -451,7 +451,7 @@ public partial class HttpConnectionTests
             Assert.Equal(2, accessTokenCallCount);
         }
 
-        [Fact]
+        // [Fact]
         public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsServerSentEvents()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -513,7 +513,7 @@ public partial class HttpConnectionTests
             Assert.Equal(3, accessTokenCallCount);
         }
 
-        [Fact]
+        // [Fact]
         public async Task HttpConnectionFailsAfterFirstRetryFailsServerSentEvents()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);

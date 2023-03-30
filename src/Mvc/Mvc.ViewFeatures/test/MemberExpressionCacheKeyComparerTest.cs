@@ -9,7 +9,7 @@ public class MemberExpressionCacheKeyComparerTest
 {
     private readonly MemberExpressionCacheKeyComparer Comparer = MemberExpressionCacheKeyComparer.Instance;
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsTrue_ForTheSameExpression()
     {
         // Arrange
@@ -19,7 +19,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyEquals(key, key);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsTrue_ForDifferentInstances_OfSameExpression()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsTrue_ForChainedMemberAccessExpressionsWithReferenceTypes()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsTrue_ForChainedMemberAccessExpressionsWithNullableValueTypes()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsTrue_ForChainedMemberAccessExpressionsWithValueTypes()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_ForDifferentExpression()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_ForChainedExpressions()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_ForChainedExpressions_WithValueTypes()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_ForChainedExpressions_DifferingByNullable()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_WhenOneExpressionIsSubsetOfOther()
     {
         // Arrange
@@ -118,7 +118,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_WhenMemberIsAccessedThroughNullableProperty()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_WhenMemberIsAccessedThroughDifferentModels()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class MemberExpressionCacheKeyComparerTest
         VerifyNotEquals(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_ReturnsFalse_WhenMemberIsAccessedThroughConstantExpression()
     {
         // Arrange

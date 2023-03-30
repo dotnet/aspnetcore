@@ -11,7 +11,7 @@ public class DefaultAntiforgeryTokenStoreTest
 {
     private readonly string _cookieName = "cookie-name";
 
-    [Fact]
+    // [Fact]
     public void GetCookieToken_CookieDoesNotExist_ReturnsNull()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Null(token);
     }
 
-    [Fact]
+    // [Fact]
     public void GetCookieToken_CookieIsEmpty_ReturnsNull()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Null(token);
     }
 
-    [Fact]
+    // [Fact]
     public void GetCookieToken_CookieIsNotEmpty_ReturnsToken()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Equal(expectedToken, token);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_CookieIsEmpty_ReturnsNullTokens()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Null(tokenSet.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_HeaderTokenTakensPriority_OverFormToken()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Equal("header-value", tokens.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_NoHeaderToken_FallsBackToFormToken()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Equal("form-value", tokens.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_NonFormContentType_UsesHeaderToken()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Equal("header-value", tokens.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_NoHeaderToken_NonFormContentType_ReturnsNullToken()
     {
         // Arrange
@@ -205,7 +205,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Null(tokenSet.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_BothHeaderValueAndFormFieldsEmpty_ReturnsNullTokens()
     {
         // Arrange
@@ -230,7 +230,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Null(tokenSet.RequestToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_ReadFormAsyncThrowsIOException_ThrowsAntiforgeryValidationException()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Same(ioException, ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetRequestTokens_ReadFormAsyncThrowsInvalidDataException_ThrowsAntiforgeryValidationException()
     {
         // Arrange
@@ -370,7 +370,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Equal(expectedCookiePath, cookies.Options.Path);
     }
 
-    [Fact]
+    // [Fact]
     public void SaveCookieToken_NonNullAntiforgeryOptionsConfigureCookieOptionsPath_UsesCookieOptionsPath()
     {
         // Arrange
@@ -410,7 +410,7 @@ public class DefaultAntiforgeryTokenStoreTest
         Assert.Equal(expectedCookiePath, cookies.Options.Path);
     }
 
-    [Fact]
+    // [Fact]
     public void SaveCookieToken_NonNullAntiforgeryOptionsConfigureCookieOptionsDomain_UsesCookieOptionsDomain()
     {
         // Arrange

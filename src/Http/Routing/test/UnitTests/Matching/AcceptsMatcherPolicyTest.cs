@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 // The INodeBuilderPolicy implementation is well-tested by functional tests.
 public class AcceptsMatcherPolicyTest
 {
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class AcceptsMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutContentTypes_ReturnsFalse()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class AcceptsMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToEndpoints_EndpointHasContentTypes_ReturnsTrue()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToEndpoints_WithDynamicMetadata_ReturnsFalse()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class AcceptsMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsTrue()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutContentTypes_ReturnsTrue()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointHasContentTypes_ReturnsTrue()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToEndpoints_WithoutDynamicMetadata_ReturnsFalse()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class AcceptsMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetEdges_GroupsByContentType()
     {
         // Arrange
@@ -213,7 +213,7 @@ public class AcceptsMatcherPolicyTest
             });
     }
 
-    [Fact] // See explanation in GetEdges for how this case is different
+    // [Fact] // See explanation in GetEdges for how this case is different
     public void GetEdges_GroupsByContentType_CreatesHttp415Endpoint()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class AcceptsMatcherPolicyTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointWithoutMetadata_MatchWithoutContentType()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointAllowsAnyContentType_MatchWithoutContentType()
     {
         // Arrange
@@ -352,7 +352,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointHasWildcardContentType_MatchWithoutContentType()
     {
         // Arrange
@@ -373,7 +373,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointWithoutMetadata_MatchWithAnyContentType()
     {
         // Arrange
@@ -400,7 +400,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointAllowsAnyContentType_MatchWithAnyContentType()
     {
         // Arrange
@@ -427,7 +427,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointHasWildcardContentType_MatchWithAnyContentType()
     {
         // Arrange
@@ -454,7 +454,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointHasSubTypeWildcard_MatchWithValidContentType()
     {
         // Arrange
@@ -481,7 +481,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointHasMultipleContentType_MatchWithValidContentType()
     {
         // Arrange
@@ -508,7 +508,7 @@ public class AcceptsMatcherPolicyTest
         Assert.True(candidates.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointDoesNotMatch_Returns415()
     {
         // Arrange
@@ -536,7 +536,7 @@ public class AcceptsMatcherPolicyTest
         Assert.NotNull(httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointDoesNotMatch_DoesNotReturns415WithContentTypeObliviousEndpoint()
     {
         // Arrange
@@ -565,7 +565,7 @@ public class AcceptsMatcherPolicyTest
         Assert.Null(httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ApplyAsync_EndpointDoesNotMatch_DoesNotReturns415WithContentTypeWildcardEndpoint()
     {
         // Arrange

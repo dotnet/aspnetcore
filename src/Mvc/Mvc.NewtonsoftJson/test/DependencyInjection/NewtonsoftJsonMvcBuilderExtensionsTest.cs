@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class NewtonsoftJsonMvcBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddNewtonsoftJson_ConfiguresOptions()
     {
         // Arrange

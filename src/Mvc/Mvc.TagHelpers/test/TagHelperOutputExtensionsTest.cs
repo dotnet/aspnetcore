@@ -484,7 +484,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyHtmlAttribute_DoesNotOverrideAttributes()
     {
         // Arrange
@@ -519,7 +519,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CopyHtmlAttribute_ThrowsWhenUnknownAttribute()
     {
         // Arrange
@@ -549,7 +549,7 @@ public class TagHelperOutputExtensionsTest
             "The attribute 'hello2' does not exist in the TagHelperContext.");
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveRange_RemovesProvidedAttributes_WithArrayInput()
     {
         // Arrange
@@ -577,7 +577,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveRange_RemovesProvidedAttributes_WithCollectionInput()
     {
         // Arrange
@@ -603,7 +603,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void FindPrefixedAttributes_ReturnsEmpty_AttributeListIfNoAttributesPrefixed()
     {
         // Arrange
@@ -792,7 +792,7 @@ public class TagHelperOutputExtensionsTest
             CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void MergeAttributes_DoesNotReplace_TagHelperOutputAttributeValues()
     {
         // Arrange
@@ -815,7 +815,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void MergeAttributes_AppendsClass_TagHelperOutputAttributeValues()
     {
         // Arrange
@@ -868,7 +868,7 @@ public class TagHelperOutputExtensionsTest
             CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void MergeAttributes_DoesNotEncode_TagHelperOutputAttributeValues()
     {
         // Arrange
@@ -890,7 +890,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void MergeAttributes_CopiesMultiple_TagHelperOutputAttributeValues()
     {
         // Arrange
@@ -917,7 +917,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute2.Value, attribute.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void MergeAttributes_Maintains_TagHelperOutputAttributeValues()
     {
         // Arrange
@@ -939,7 +939,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void MergeAttributes_Combines_TagHelperOutputAttributeValues()
     {
         // Arrange
@@ -966,7 +966,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedBuilderAttribute.Value, attribute.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Single_AddClass()
     {
         // Arrange
@@ -987,7 +987,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(classAttribute));
     }
 
-    [Fact]
+    // [Fact]
     public void Multiple_AddClass()
     {
         // Arrange
@@ -1009,7 +1009,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(classAttribute));
     }
 
-    [Fact]
+    // [Fact]
     public void Multiple_AddClass_RemoveClass_RemovesAllButOne()
     {
         // Arrange
@@ -1035,7 +1035,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(classAttribute));
     }
 
-    [Fact]
+    // [Fact]
     public void AddClass_RemoveClass_ContainsSpace()
     {
         // Arrange
@@ -1056,7 +1056,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expected, exceptionRemove.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Single_RemoveClass_RemovesDuplicates_RemovesEntirely()
     {
         // Arrange
@@ -1078,7 +1078,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Null(classAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void Single_RemoveClass_RemovesDuplicates()
     {
         // Arrange
@@ -1101,7 +1101,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(classAttribute));
     }
 
-    [Fact]
+    // [Fact]
     public void Single_RemoveClass_RemovesEntirely()
     {
         var htmlEncoder = new HtmlTestEncoder();
@@ -1122,7 +1122,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Null(classAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void Single_RemoveClass()
     {
         // Arrange

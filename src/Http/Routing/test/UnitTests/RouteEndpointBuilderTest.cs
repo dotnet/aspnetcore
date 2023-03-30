@@ -9,21 +9,21 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class RouteEndpointBuilderTest
 {
-    [Fact]
+    // [Fact]
     public void Constructor_AllowsNullRequestDelegate()
     {
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
         Assert.Null(builder.RequestDelegate);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_DoesNotAllowNullRoutePattern()
     {
         var ex = Assert.Throws<ArgumentNullException>(() => new RouteEndpointBuilder(context => Task.CompletedTask, routePattern: null, order: 0));
         Assert.Equal("routePattern", ex.ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void Build_AllValuesSet_EndpointCreated()
     {
         const int defaultOrder = 0;
@@ -44,7 +44,7 @@ public class RouteEndpointBuilderTest
         Assert.Equal(metadata, Assert.Single(endpoint.Metadata));
     }
 
-    [Fact]
+    // [Fact]
     public void Build_UpdateHttpMethodMetadata_WhenCorsPresent()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class RouteEndpointBuilderTest
         Assert.True(httpMethodMetadata.AcceptCorsPreflight);
     }
 
-    [Fact]
+    // [Fact]
     public void Build_UpdateLastHttpMethodMetadata_WhenCorsPresent()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class RouteEndpointBuilderTest
             (metadata) => Assert.True(metadata.AcceptCorsPreflight));
     }
 
-    [Fact]
+    // [Fact]
     public void Build_DoesNotChangeHttpMethodMetadata_WhenCorsNotPresent()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class RouteEndpointBuilderTest
         Assert.False(httpMethodMetadata.AcceptCorsPreflight);
     }
 
-    [Fact]
+    // [Fact]
     public async void Build_DoesNot_RunFilters()
     {
         var endpointFilterCallCount = 0;

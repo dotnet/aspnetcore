@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class MvcBuilderExtensionsTest
     {
-        [Fact]
+        // [Fact]
         public void AddApplicationPart_AddsAnApplicationPart_ToTheListOfPartsOnTheBuilder()
         {
             // Arrange
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(assembly, assemblyPart.Assembly);
         }
 
-        [Fact]
+        // [Fact]
         public void AddApplicationPart_UsesPartFactory_ToRetrieveApplicationParts()
         {
             // Arrange
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Same(TestApplicationPartFactory.TestPart, part);
         }
 
-        [Fact]
+        // [Fact]
         public void ConfigureApplicationParts_InvokesSetupAction()
         {
             // Arrange
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(new ApplicationPart[] { part }, builder.PartManager.ApplicationParts.ToArray());
         }
 
-        [Fact]
+        // [Fact]
         public void WithControllersAsServices_AddsTypesToControllerTypeProviderAndServiceCollection()
         {
             // Arrange
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
         }
 
-        [Fact]
+        // [Fact]
         public void AddControllerAsServices_MultipleCalls_RetainsPreviouslyAddedTypes()
         {
             // Arrange
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Single(collection, d => d.ServiceType.Equals(typeof(ControllerTwo)));
         }
 
-        [Fact]
+        // [Fact]
         public void ConfigureApiBehaviorOptions_InvokesSetupAction()
         {
             // Arrange

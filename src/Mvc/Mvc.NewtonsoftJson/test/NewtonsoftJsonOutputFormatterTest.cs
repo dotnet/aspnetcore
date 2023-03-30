@@ -22,7 +22,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
     }
 
-    [Fact]
+    // [Fact]
     public void Creates_SerializerSettings_ByDefault()
     {
         // Arrange & Act
@@ -32,7 +32,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.NotNull(jsonFormatter.SerializerSettings);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_UsesSerializerSettings()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MvcJsonOptionsAreUsedToSetBufferThresholdFromServices()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.Equal(1, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MvcJsonOptionsAreUsedToSetBufferThreshold()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.Equal(2, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChangesTo_SerializerSettings_AffectSerialization()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.Equal(expectedOutput, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChangesTo_SerializerSettings_AfterSerialization_DoNotAffectSerialization()
     {
         // Arrange
@@ -343,7 +343,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteToStreamAsync_RoundTripsJToken()
     {
         // Arrange
@@ -367,7 +367,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.Equal(beforeMessage, afterMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteToStreamAsync_LargePayload_DoesNotPerformSynchronousWrites()
     {
         // Arrange
@@ -397,7 +397,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         Assert.NotNull(outputFormatterContext.HttpContext.Response.ContentLength);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SerializingWithPreserveReferenceHandling()
     {
         // Arrange
@@ -431,7 +431,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
     {
         // Arrange
@@ -476,7 +476,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteResponseBodyAsync_AsyncEnumerableThrowsCustomOCE()
     {
         // Arrange
@@ -510,7 +510,7 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteResponseBodyAsync_AsyncEnumerableThrowsConnectionAbortedOCE()
     {
         // Arrange

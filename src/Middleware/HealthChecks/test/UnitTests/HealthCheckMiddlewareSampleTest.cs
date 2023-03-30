@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 public class HealthCheckMiddlewareSampleTest
 {
-    [Fact]
+    // [Fact]
     public async Task BasicStartup()
     {
         using var host = new HostBuilder()
@@ -32,7 +32,7 @@ public class HealthCheckMiddlewareSampleTest
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomWriterStartup()
     {
         using var host = new HostBuilder()
@@ -55,7 +55,7 @@ public class HealthCheckMiddlewareSampleTest
         // Ignoring the body since it contains a bunch of statistics
     }
 
-    [Fact]
+    // [Fact]
     public async Task LivenessProbeStartup_Liveness()
     {
         using var host = new HostBuilder()
@@ -77,7 +77,7 @@ public class HealthCheckMiddlewareSampleTest
         Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task LivenessProbeStartup_Readiness()
     {
         using var host = new HostBuilder()

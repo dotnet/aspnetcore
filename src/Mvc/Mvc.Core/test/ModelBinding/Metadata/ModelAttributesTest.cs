@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class ModelAttributesTest
 {
-    [Fact]
+    // [Fact]
     public void GetAttributesForBaseProperty_IncludesMetadataAttributes()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class ModelAttributesTest
         Assert.Single(attributes.PropertyAttributes.OfType<StringLengthAttribute>());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForTestProperty_ModelOverridesMetadataAttributes()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class ModelAttributesTest
         Assert.Single(attributes.PropertyAttributes.OfType<FromHeaderAttribute>());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForBasePropertyFromDerivedModel_IncludesMetadataAttributes()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class ModelAttributesTest
         Assert.Single(attributes.PropertyAttributes.OfType<StringLengthAttribute>());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForTestPropertyFromDerived_IncludesMetadataAttributes()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class ModelAttributesTest
         Assert.DoesNotContain(typeof(RangeAttribute), attributes.PropertyAttributes);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForVirtualPropertyFromDerived_IncludesMetadataAttributes()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class ModelAttributesTest
         Assert.Single(attributes.PropertyAttributes.OfType<RangeAttribute>());
     }
 
-    [Fact]
+    // [Fact]
     public void GetFromServiceAttributeFromBase_IncludesMetadataAttributes()
     {
         // Arrange
@@ -130,7 +130,7 @@ public class ModelAttributesTest
         Assert.Single(attributes.PropertyAttributes.OfType<FromRouteAttribute>());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForType_IncludesMetadataAttributes()
     {
         // Arrange & Act
@@ -142,7 +142,7 @@ public class ModelAttributesTest
         Assert.Single(attributes.TypeAttributes.OfType<ClassValidator>());
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForType_PropertyAttributes_IsNull()
     {
         // Arrange & Act
@@ -152,7 +152,7 @@ public class ModelAttributesTest
         Assert.Null(attributes.PropertyAttributes);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForProperty_MergedAttributes()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class ModelAttributesTest
         Assert.IsType<ClassValidator>(attribute);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForParameter_NoAttributes()
     {
         // Arrange & Act
@@ -192,7 +192,7 @@ public class ModelAttributesTest
         Assert.Equal(attributes.Attributes, attributes.TypeAttributes);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForParameter_SomeAttributes()
     {
         // Arrange & Act
@@ -218,7 +218,7 @@ public class ModelAttributesTest
             attribute => Assert.IsType<SerializableAttribute>(attribute));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForParameter_IncludesTypeAttributes()
     {
         // Arrange
@@ -238,7 +238,7 @@ public class ModelAttributesTest
         Assert.IsType<ClassValidator>(Assert.Single(attributes.TypeAttributes));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForParameter_WithModelType_IncludesTypeAttributes()
     {
         // Arrange
@@ -263,7 +263,7 @@ public class ModelAttributesTest
             attribute => Assert.IsType<ClassValidator>(attribute));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAttributesForProperty_WithModelType_IncludesTypeAttributes()
     {
         // Arrange

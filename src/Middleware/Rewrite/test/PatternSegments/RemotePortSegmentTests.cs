@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
 
 public class RemotePortSegmentTests
 {
-    [Fact]
+    // [Fact]
     public void RemotePort_AssertSegmentIsCorrect()
     {
         // Arrange

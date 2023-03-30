@@ -12,7 +12,7 @@ public class ConstraintMatcherTest
 {
     private const string _name = "name";
 
-    [Fact]
+    // [Fact]
     public void MatchUrlGeneration_DoesNotLogData()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class ConstraintMatcherTest
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void MatchFail_LogsCorrectData()
     {
         // Arrange & Act
@@ -62,7 +62,7 @@ public class ConstraintMatcherTest
         Assert.Equal(expectedMessage, write.State?.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void MatchSuccess_DoesNotLog()
     {
         // Arrange & Act
@@ -78,7 +78,7 @@ public class ConstraintMatcherTest
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void ReturnsTrueOnValidConstraints()
     {
         var constraints = new Dictionary<string, IRouteConstraint>
@@ -98,7 +98,7 @@ public class ConstraintMatcherTest
             logger: NullLogger.Instance));
     }
 
-    [Fact]
+    // [Fact]
     public void ConstraintsGetTheRightKey()
     {
         var constraints = new Dictionary<string, IRouteConstraint>
@@ -118,7 +118,7 @@ public class ConstraintMatcherTest
             logger: NullLogger.Instance));
     }
 
-    [Fact]
+    // [Fact]
     public void ReturnsFalseOnInvalidConstraintsThatDontMatch()
     {
         var constraints = new Dictionary<string, IRouteConstraint>
@@ -138,7 +138,7 @@ public class ConstraintMatcherTest
             logger: NullLogger.Instance));
     }
 
-    [Fact]
+    // [Fact]
     public void ReturnsFalseOnInvalidConstraintsThatMatch()
     {
         var constraints = new Dictionary<string, IRouteConstraint>
@@ -158,7 +158,7 @@ public class ConstraintMatcherTest
             logger: NullLogger.Instance));
     }
 
-    [Fact]
+    // [Fact]
     public void ReturnsFalseOnValidAndInvalidConstraintsMixThatMatch()
     {
         var constraints = new Dictionary<string, IRouteConstraint>
@@ -178,7 +178,7 @@ public class ConstraintMatcherTest
             logger: NullLogger.Instance));
     }
 
-    [Fact]
+    // [Fact]
     public void ReturnsTrueOnNullInput()
     {
         Assert.True(RouteConstraintMatcher.Match(

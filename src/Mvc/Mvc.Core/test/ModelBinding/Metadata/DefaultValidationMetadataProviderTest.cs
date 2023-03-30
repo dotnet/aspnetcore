@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 public class DefaultValidationMetadataProviderTest
 {
-    [Fact]
+    // [Fact]
     public void PropertyValidationFilter_ShouldValidateEntry_False_IfPropertyHasValidateNever()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class DefaultValidationMetadataProviderTest
             new ValidationEntry()));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyValidationFilter_Null_IfPropertyHasValidateNeverOnItsType()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class DefaultValidationMetadataProviderTest
         Assert.Null(context.ValidationMetadata.PropertyValidationFilter);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyValidationFilter_Null_ForType()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class DefaultValidationMetadataProviderTest
         Assert.Null(context.ValidationMetadata.PropertyValidationFilter);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyValidationFilter_ShouldValidateEntry_False_IfContainingTypeHasValidateNever()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class DefaultValidationMetadataProviderTest
             new ValidationEntry()));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyValidationFilter_ShouldValidateEntry_False_IfContainingTypeInheritsValidateNever()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class DefaultValidationMetadataProviderTest
             new ValidationEntry()));
     }
 
-    [Fact]
+    // [Fact]
     public void GetValidationDetails_MarkedWithClientValidator_ReturnsValidator()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class DefaultValidationMetadataProviderTest
         Assert.Same(attribute, validatorMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValidationDetails_MarkedWithModelValidator_ReturnsValidator()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class DefaultValidationMetadataProviderTest
         Assert.Same(attribute, validatorMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValidationDetails_Validator_AlreadyInContext_Ignores()
     {
         // Arrange

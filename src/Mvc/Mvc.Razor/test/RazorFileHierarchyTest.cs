@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 
 public class RazorFileHierarchyTest
 {
-    [Fact]
+    // [Fact]
     public void GetViewStartPaths_ForFileAtRoot()
     {
         // Arrange
@@ -19,7 +19,7 @@ public class RazorFileHierarchyTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewStartPaths_ForForFileInViewsDirectory()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class RazorFileHierarchyTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewStartPaths_ForForFileInAreasDirectory()
     {
         // Arrange

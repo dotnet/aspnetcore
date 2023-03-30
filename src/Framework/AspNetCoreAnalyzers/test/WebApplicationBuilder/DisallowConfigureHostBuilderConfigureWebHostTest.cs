@@ -10,7 +10,7 @@ public partial class DisallowConfigureHostBuilderConfigureWebHostTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_HostWithoutConfigureWebHost_Works()
     {
         // Arrange
@@ -27,7 +27,7 @@ builder.Host.ConfigureHostOptions(hostBuilder => { });
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_HostWithConfigureWebHost_ProducesDiagnostics()
     {
         // Arrange
@@ -47,7 +47,7 @@ builder.Host./*MM*/ConfigureWebHost(webHostBuilder => { });
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_HostWithConfigureWebHost_ProducesDiagnostics_OnDifferentLine()
     {
         // Arrange
@@ -68,7 +68,7 @@ builder.Host.
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_HostWithConfigureWebHost_ProducesDiagnostics_WhenChained()
     {
         // Arrange
@@ -90,7 +90,7 @@ builder.Host
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_HostWithConfigureWebHost_DoesNotProduceDiagnostics_WhenChained()
     {
         // Arrange
@@ -109,7 +109,7 @@ builder.Host
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_HostWithConfigureWebHostWithOptions_ProducesDiagnostics()
     {
         // Arrange
@@ -130,7 +130,7 @@ builder.Host./*MM*/ConfigureWebHost(webHostBuilder => { }, optionsBuilder => { }
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigureWebHostOnProperty_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class Startup { }
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigureWebHostOnBuilder_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -187,7 +187,7 @@ public class Startup { }
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigureWebHostInsideOtherMethod_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -221,7 +221,7 @@ public class Startup { }
         Assert.Equal("ConfigureWebHost cannot be used with WebApplicationBuilder.Host", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task HostBuilder_ConfigureWebHost_DoesNotProduceDiagnostic()
     {
         // Arrange

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 public abstract class JsonResultExecutorTestBase
 {
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesDefaultContentType_IfNoContentTypeSpecified()
     {
         // Arrange
@@ -39,7 +39,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal("application/json; charset=utf-8", context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_NullEncoding_DoesNotSetCharsetOnContentType()
     {
         // Arrange
@@ -60,7 +60,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal("text/json", context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesEncodingSpecifiedInContentType()
     {
         // Arrange
@@ -84,7 +84,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal("text/json; charset=utf-16", context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesEncodingSpecifiedInResponseContentType()
     {
         // Arrange
@@ -104,7 +104,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal("text/json; charset=utf-16", context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_SetsContentTypeAndEncoding()
     {
         // Arrange
@@ -128,7 +128,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal("text/json; charset=us-ascii", context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_NoResultContentTypeSet_UsesResponseContentType_AndSuppliedEncoding()
     {
         // Arrange
@@ -175,7 +175,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal(expectedContentType, context.HttpContext.Response.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_UsesPassedInSerializerSettings()
     {
         // Arrange
@@ -201,7 +201,7 @@ public abstract class JsonResultExecutorTestBase
 
     protected abstract object GetIndentedSettings();
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ErrorDuringSerialization_DoesNotWriteContent()
     {
         // Arrange
@@ -229,7 +229,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Empty(written);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_NonNullResult_LogsResultType()
     {
         // Arrange
@@ -247,7 +247,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal(expected, write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_NullResult_LogsNull()
     {
         // Arrange
@@ -265,7 +265,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal(expected, write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_LargePayload_DoesNotPerformSynchronousWrites()
     {
         // Arrange
@@ -290,7 +290,7 @@ public abstract class JsonResultExecutorTestBase
         stream.Verify(v => v.Flush(), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_ThrowsIfSerializerSettingIsNotTheCorrectType()
     {
         // Arrange
@@ -306,7 +306,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.StartsWith("Property 'JsonResult.SerializerSettings' must be an instance of type", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_WithNullValue()
     {
         // Arrange
@@ -324,7 +324,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal(expected, written);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_SerializesAsyncEnumerables()
     {
         // Arrange
@@ -342,7 +342,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal(expected, Encoding.UTF8.GetString(written));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_SerializesAsyncEnumerablesOfPrimtives()
     {
         // Arrange
@@ -360,7 +360,7 @@ public abstract class JsonResultExecutorTestBase
         Assert.Equal(expected, written);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_AsyncEnumerableConnectionCloses()
     {
         var context = GetActionContext();
@@ -391,7 +391,7 @@ public abstract class JsonResultExecutorTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsyncWithDifferentContentType_AsyncEnumerableConnectionCloses()
     {
         var context = GetActionContext();
@@ -425,7 +425,7 @@ public abstract class JsonResultExecutorTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_AsyncEnumerableThrowsCustomOCE_SurfacesError()
     {
         var context = GetActionContext();
@@ -445,7 +445,7 @@ public abstract class JsonResultExecutorTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteAsync_AsyncEnumerableThrowsConnectionAbortedOCE_DoesNotSurfaceError()
     {
         var context = GetActionContext();

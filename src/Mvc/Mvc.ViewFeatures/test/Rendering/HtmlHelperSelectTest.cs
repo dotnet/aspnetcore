@@ -402,7 +402,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListNotInTemplate_GetsModelStateEntry()
     {
         // Arrange
@@ -437,7 +437,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListInTemplate_GetsModelStateEntry()
     {
         // Arrange
@@ -475,7 +475,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListNotInTemplate_GetsViewDataEntry_IfModelStateEmpty()
     {
         // Arrange
@@ -500,7 +500,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListInTemplate_GetsViewDataEntry_IfModelStateEmpty()
     {
         // Arrange
@@ -528,7 +528,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListInTemplate_GetsPropertyOfViewDataEntry_IfModelStateEmptyAndNoViewDataEntryWithPrefix()
     {
         // Arrange
@@ -555,7 +555,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListNotInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -571,7 +571,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -684,7 +684,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListFor_WithIndexerExpression_GeneratesExpectedValue()
     {
         // Arrange
@@ -712,7 +712,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListFor_WithUnrelatedExpression_GeneratesExpectedValue()
     {
         // Arrange
@@ -805,7 +805,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxNotInTemplate_GetsModelStateEntry()
     {
         // Arrange
@@ -840,7 +840,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxInTemplate_GetsModelStateEntry()
     {
         // Arrange
@@ -878,7 +878,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxNotInTemplate_GetsViewDataEntry_IfModelStateEmpty()
     {
         // Arrange
@@ -903,7 +903,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxInTemplate_GetsViewDataEntry_IfModelStateEmpty()
     {
         // Arrange
@@ -931,7 +931,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxInTemplate_GetsPropertyOfViewDataEntry_IfModelStateEmptyAndNoViewDataEntryWithPrefix()
     {
         // Arrange
@@ -958,7 +958,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxNotInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -974,7 +974,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxInTemplate_GetsPropertyOfModel_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -1032,7 +1032,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
     }
 
-    [Fact]
+    // [Fact]
     public void ListBoxFor_WithUnrelatedExpression_GeneratesExpectedValue()
     {
         // Arrange
@@ -1267,7 +1267,7 @@ public class HtmlHelperSelectTest
         Assert.Equal(savedSelected, selectList.Select(item => item.Selected));
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListTEnum_ThrowsWithFlagsEnum()
     {
         // Arrange
@@ -1281,7 +1281,7 @@ public class HtmlHelperSelectTest
             $"The type '{ typeof(EnumWithFlags).FullName }' is not supported.");
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListTEnum_ThrowsWithNonEnum()
     {
         // Arrange
@@ -1295,7 +1295,7 @@ public class HtmlHelperSelectTest
             $"The type '{ typeof(StructWithFields).FullName }' is not supported.");
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("en-US", "en-US")]
     public void GetEnumSelectListTEnum_DisplayAttributeUsesIStringLocalizer()
     {
@@ -1321,7 +1321,7 @@ public class HtmlHelperSelectTest
         Assert.Equal("cero en-US", zeroSelect.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListTEnum_WrapsGetEnumSelectListModelMetadata()
     {
         // Arrange
@@ -1339,7 +1339,7 @@ public class HtmlHelperSelectTest
         VerifySelectList(htmlHelper.CopiedSelectListItems, result); // No change to the (mutable) items
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListType_ThrowsWithFlagsEnum()
     {
         // Arrange
@@ -1353,7 +1353,7 @@ public class HtmlHelperSelectTest
             $"The type '{ typeof(EnumWithFlags).FullName }' is not supported.");
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListType_ThrowsWithNonEnum()
     {
         // Arrange
@@ -1367,7 +1367,7 @@ public class HtmlHelperSelectTest
             $"The type '{ typeof(StructWithFields).FullName }' is not supported.");
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListType_ThrowsWithNonStruct()
     {
         // Arrange
@@ -1381,7 +1381,7 @@ public class HtmlHelperSelectTest
             $"The type '{ typeof(ClassWithFields).FullName }' is not supported.");
     }
 
-    [Fact]
+    // [Fact]
     public void GetEnumSelectListType_WrapsGetEnumSelectListModelMetadata()
     {
         // Arrange

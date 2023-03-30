@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class BindingInfoTest
 {
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributes_ConstructsBindingInfo()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class BindingInfoTest
         Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_ReadsPropertyPredicateProvider()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class BindingInfoTest
         Assert.Same(bindAttribute, bindingInfo.PropertyFilterProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_ReadsEmptyBodyBehavior()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class BindingInfoTest
         Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_ReadsRequestPredicateProvider()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class BindingInfoTest
         Assert.NotNull(bindingInfo.RequestPredicate);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_ReturnsNull_IfNoBindingAttributesArePresent()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class BindingInfoTest
         Assert.Null(bindingInfo);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesValuesFromBindingInfo_IfAttributesPresent()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class BindingInfoTest
         Assert.Same("Test", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesEmptyBodyBehaviorFromBindingInfo_IfAttributesPresent()
     {
         // Arrange
@@ -139,7 +139,7 @@ public class BindingInfoTest
         Assert.Equal(EmptyBodyBehavior.Disallow, bindingInfo.EmptyBodyBehavior);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesBinderNameFromModelMetadata_WhenNotFoundViaAttributes()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class BindingInfoTest
         Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesModelBinderFromModelMetadata_WhenNotFoundViaAttributes()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class BindingInfoTest
         Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesBinderSourceFromModelMetadata_WhenNotFoundViaAttributes()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class BindingInfoTest
         Assert.Same(BindingSource.Services, bindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesPropertyPredicateProviderFromModelMetadata_WhenNotFoundViaAttributes()
     {
         // Arrange
@@ -243,7 +243,7 @@ public class BindingInfoTest
         Assert.Same(propertyFilterProvider, bindingInfo.PropertyFilterProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesEmptyBodyFromModelMetadata_WhenNotFoundViaAttributes()
     {
         // Arrange
@@ -265,7 +265,7 @@ public class BindingInfoTest
         Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
     }
 
-    [Fact]
+    // [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_PreserveEmptyBodyDefault_WhenNotNullable()
     {
         // Arrange

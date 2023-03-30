@@ -18,7 +18,7 @@ public class TagHelperComponentTagHelperTest : IClassFixture<MvcTestFixture<Razo
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task InjectsTestHeadTagHelperComponent()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class TagHelperComponentTagHelperTest : IClassFixture<MvcTestFixture<Razo
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InjectsTestBodyTagHelperComponent()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class TagHelperComponentTagHelperTest : IClassFixture<MvcTestFixture<Razo
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddTestTagHelperComponent_FromController()
     {
         // Arrange

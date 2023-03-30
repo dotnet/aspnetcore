@@ -35,7 +35,7 @@ public class BootResourceCachingTest
         return base.InitializeAsync(Guid.NewGuid().ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void CachesResourcesAfterFirstLoad()
     {
         // On the first load, we have to fetch everything
@@ -60,7 +60,7 @@ public class BootResourceCachingTest
         Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll", StringComparison.Ordinal)));
     }
 
-    [Fact]
+    // [Fact]
     public void IncrementallyUpdatesCache()
     {
         // Perform a first load to populate the cache

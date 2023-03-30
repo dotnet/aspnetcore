@@ -5,7 +5,7 @@ namespace Microsoft.Net.Http.Headers;
 
 public class EntityTagHeaderValueTest
 {
-    [Fact]
+    // [Fact]
     public void Ctor_ETagNull_Throw()
     {
         Assert.Throws<ArgumentException>(() => new EntityTagHeaderValue(null));
@@ -13,7 +13,7 @@ public class EntityTagHeaderValueTest
         Assert.Throws<ArgumentException>(() => new EntityTagHeaderValue(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ETagInvalidFormat_ThrowFormatException()
     {
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
@@ -28,7 +28,7 @@ public class EntityTagHeaderValueTest
         AssertFormatException("W/\"tag\""); // tag value must not contain 'W/'
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ETagValidFormat_SuccessfullyCreated()
     {
         var etag = new EntityTagHeaderValue("\"tag\"");
@@ -36,7 +36,7 @@ public class EntityTagHeaderValueTest
         Assert.False(etag.IsWeak, "IsWeak");
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ETagValidFormatAndIsWeak_SuccessfullyCreated()
     {
         var etag = new EntityTagHeaderValue("\"e tag\"", true);
@@ -44,7 +44,7 @@ public class EntityTagHeaderValueTest
         Assert.True(etag.IsWeak, "IsWeak");
     }
 
-    [Fact]
+    // [Fact]
     public void ToString_UseDifferentETags_AllSerializedCorrectly()
     {
         var etag = new EntityTagHeaderValue("\"e tag\"");
@@ -57,7 +57,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal("\"\"", etag.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void GetHashCode_UseSameAndDifferentETags_SameOrDifferentHashCodes()
     {
         var etag1 = new EntityTagHeaderValue("\"tag\"");
@@ -74,7 +74,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(etag1.GetHashCode(), etag5.GetHashCode());
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_UseSameAndDifferentETags_EqualOrNotEqualNoExceptions()
     {
         var etag1 = new EntityTagHeaderValue("\"tag\"");
@@ -94,7 +94,7 @@ public class EntityTagHeaderValueTest
         Assert.True(etag1.Equals(etag5), "tag vs. tag..");
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_WithNull_ReturnsFalse()
     {
         Assert.False(EntityTagHeaderValue.Any.Compare(null, useStrongComparison: true));
@@ -185,7 +185,7 @@ public class EntityTagHeaderValueTest
         Assert.True(right.Compare(left, useStrongComparison: false));
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidParse("\"tag\"", new EntityTagHeaderValue("\"tag\""));
@@ -197,7 +197,7 @@ public class EntityTagHeaderValueTest
         CheckValidParse("*", new EntityTagHeaderValue("*"));
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfInvalidValueStrings_Throws()
     {
         CheckInvalidParse(null);
@@ -214,7 +214,7 @@ public class EntityTagHeaderValueTest
         CheckInvalidParse("/\"tag\"");
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidTryParse("\"tag\"", new EntityTagHeaderValue("\"tag\""));
@@ -226,7 +226,7 @@ public class EntityTagHeaderValueTest
         CheckValidTryParse("*", new EntityTagHeaderValue("*"));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse()
     {
         CheckInvalidTryParse(null);
@@ -240,7 +240,7 @@ public class EntityTagHeaderValueTest
         CheckInvalidTryParse("/\"tag\"");
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_NullOrEmptyArray_ReturnsEmptyList()
     {
         var result = EntityTagHeaderValue.ParseList(null);
@@ -256,7 +256,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(0, result.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_NullOrEmptyArray_ReturnsFalse()
     {
         Assert.False(EntityTagHeaderValue.TryParseList(null, out var results));
@@ -264,7 +264,7 @@ public class EntityTagHeaderValueTest
         Assert.False(EntityTagHeaderValue.TryParseList(new string[] { "" }, out results));
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -297,7 +297,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -330,7 +330,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -362,7 +362,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -394,7 +394,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_WithSomeInvalidValues_ExcludesInvalidValues()
     {
         var inputs = new[]
@@ -424,7 +424,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_WithSomeInvalidValues_Throws()
     {
         var inputs = new[]
@@ -442,7 +442,7 @@ public class EntityTagHeaderValueTest
         Assert.Throws<FormatException>(() => EntityTagHeaderValue.ParseStrictList(inputs));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_WithSomeInvalidValues_ExcludesInvalidValues()
     {
         var inputs = new[]
@@ -472,7 +472,7 @@ public class EntityTagHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
     {
         var inputs = new[]

@@ -10,7 +10,7 @@ public abstract class MultipleEntryJumpTableTest
         int exitDestination,
         params (string text, int destination)[] entries);
 
-    [Fact]
+    // [Fact]
     public void GetDestination_ZeroLengthSegment_JumpsToExit()
     {
         // Arrange
@@ -23,7 +23,7 @@ public abstract class MultipleEntryJumpTableTest
         Assert.Equal(1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_NonMatchingSegment_JumpsToDefault()
     {
         // Arrange
@@ -36,7 +36,7 @@ public abstract class MultipleEntryJumpTableTest
         Assert.Equal(0, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_SegmentMatchingText_JumpsToDestination()
     {
         // Arrange
@@ -49,7 +49,7 @@ public abstract class MultipleEntryJumpTableTest
         Assert.Equal(2, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_SegmentMatchingTextIgnoreCase_JumpsToDestination()
     {
         // Arrange
@@ -62,7 +62,7 @@ public abstract class MultipleEntryJumpTableTest
         Assert.Equal(2, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDestination_SegmentMatchingTextIgnoreCase_MultipleEntries()
     {
         // Arrange

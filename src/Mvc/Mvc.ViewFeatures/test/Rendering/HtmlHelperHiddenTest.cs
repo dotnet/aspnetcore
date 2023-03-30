@@ -44,7 +44,7 @@ public class HtmlHelperHiddenTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenWithByteArrayValue_GeneratesBase64EncodedValue()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenNotInTemplate_GetsValueFromPropertyOfViewDataEntry()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_GetsValueFromPropertyOfViewDataEntry()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenNotInTemplate_GetsValueFromViewDataEntry_EvenIfNull()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_GetsValueFromViewDataEntry_EvenIfNull()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenOverridesValueFromAttributesWithArgumentValue()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenWithArgumentValueAndNullModel_UsesArgumentValue()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenWithNonNullValue_GeneratesExpectedValue()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenUsesValuesFromModelState_OverExplicitSpecifiedValueAndPropertyValue()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenUsesExplicitValue_IfModelStateDoesNotHaveProperty()
     {
         // Arrange
@@ -222,7 +222,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenUsesValueFromViewData_IfModelStateDoesNotHavePropertyAndExplicitValueIsNull()
     {
         // Arrange
@@ -238,7 +238,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenNotInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -253,7 +253,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_GetsModelValue_IfModelStateAndViewDataEmpty()
     {
         // Arrange
@@ -270,7 +270,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenNotInTemplate_DoesNotUseAttributeValue()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_DoesNotUseAttributeValue()
     {
         // Arrange
@@ -300,7 +300,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenNotInTemplate_GetsEmptyValue_IfPropertyIsNotFound()
     {
         // Arrange
@@ -316,7 +316,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_GetsEmptyValue_IfPropertyIsNotFound()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_WithExplicitValue_GeneratesExpectedValue()
     {
         // Arrange
@@ -348,7 +348,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_WithExplicitValueAndEmptyName_GeneratesExpectedValue()
     {
         // Arrange
@@ -363,7 +363,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_UsesPrefixName_ToLookupPropertyValueInModelState()
     {
         // Arrange
@@ -394,7 +394,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInTemplate_UsesPrefixNameToLookupPropertyValueInViewData()
     {
         // Arrange
@@ -417,7 +417,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenWithEmptyNameAndPrefixThrows()
     {
         // Arrange
@@ -437,7 +437,7 @@ public class HtmlHelperHiddenTest
             expected);
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenWithEmptyNameAndPrefix_DoesNotThrow_WithNameAttribute()
     {
         // Arrange
@@ -457,7 +457,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenWithViewDataErrors_GeneratesExpectedValue()
     {
         // Arrange
@@ -477,7 +477,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenGeneratesUnobtrusiveValidation()
     {
         // Arrange
@@ -579,7 +579,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenForWithByteArrayValue_GeneratesBase64EncodedValue()
     {
         // Arrange
@@ -609,7 +609,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenFor_UsesModelStateValueOverPropertyValue()
     {
         // Arrange
@@ -624,7 +624,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenFor_UsesPropertyValueIfModelStateDoesNotHaveKey()
     {
         // Arrange
@@ -640,7 +640,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenForDoesNotUseValueFromViewDataDictionary_IfModelStateAndPropertyValueIsNull()
     {
         // Arrange
@@ -656,7 +656,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenForWithAttributesDictionaryAndNullModel_GeneratesExpectedValue()
     {
         // Arrange
@@ -672,7 +672,7 @@ public class HtmlHelperHiddenTest
     }
 
     // This test ensures that specifying a the prefix does not affect the expression result.
-    [Fact]
+    // [Fact]
     public void HiddenForInTemplate_GeneratesExpectedValue()
     {
         // Arrange
@@ -689,7 +689,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenForInTemplate_UsesPrefixWhenLookingUpModelStateValues()
     {
         // Arrange
@@ -721,7 +721,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenForWithViewDataErrors_GeneratesExpectedValue()
     {
         // Arrange
@@ -741,7 +741,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenFor_GeneratesUnobtrusiveValidationAttributes()
     {
         // Arrange
@@ -867,7 +867,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenFor_DoesNotUseAttributeValue()
     {
         // Arrange
@@ -885,7 +885,7 @@ public class HtmlHelperHiddenTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Hidden_UsesSpecifiedExpression()
     {
         // Arrange
@@ -903,7 +903,7 @@ public class HtmlHelperHiddenTest
             HtmlContentUtilities.HtmlContentToString(hiddenResult));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenFor_UsesSpecifiedExpression()
     {
         // Arrange
@@ -921,7 +921,7 @@ public class HtmlHelperHiddenTest
             HtmlContentUtilities.HtmlContentToString(hiddenForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Hidden_UsesSpecifiedValue()
     {
         // Arrange

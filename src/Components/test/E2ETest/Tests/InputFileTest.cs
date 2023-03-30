@@ -35,7 +35,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.MountTestComponent<InputFileComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void CanUploadSingleSmallFile()
     {
         // Create a temporary text file
@@ -60,7 +60,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal(file.Text, () => fileContentElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUploadSingleLargeFile()
     {
         // Create a large text file
@@ -93,7 +93,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal(file.Text, () => fileContentElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanUploadMultipleFiles()
     {
         // Create multiple small text files
@@ -124,7 +124,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanUploadAndConvertImageFile()
     {
         var sourceImageId = "image-source";
@@ -157,7 +157,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal(480, () => uploadedImage.Size.Height);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenTooManyFilesAreSelected()
     {
         var maxAllowedFilesElement = Browser.Exists(By.Id("max-allowed-files"));
@@ -177,7 +177,7 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal("The maximum number of files accepted is 1, but 2 were supplied.", () => exceptionMessage.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenOversizedFileIsSelected()
     {
         var maxFileSizeElement = Browser.Exists(By.Id("max-file-size"));

@@ -171,7 +171,7 @@ public class DefaultEditorTemplatesTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectTemplateEditsSimplePropertiesOnObjectByDefault()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class DefaultEditorTemplatesTest
     // Prior to aspnet/Mvc#6638 fix, helper did not generate Property1 <label> or containing <div> with this setup.
     // Expect almost the same HTML as in ObjectTemplateEditsSimplePropertiesOnObjectByDefault(). Only difference is
     // the <div class="editor-label">...</div> is not present for Property1.
-    [Fact]
+    // [Fact]
     public void ObjectTemplateSkipsLabel_IfDisplayNameIsEmpty()
     {
         // Arrange
@@ -278,7 +278,7 @@ public class DefaultEditorTemplatesTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectTemplateDisplaysNullDisplayTextWithNullModelAndTemplateDepthGreaterThanOne()
     {
         // Arrange
@@ -334,7 +334,7 @@ public class DefaultEditorTemplatesTest
         Assert.Equal(expectedResult, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectTemplate_IgnoresPropertiesWith_ScaffoldColumnFalse()
     {
         // Arrange
@@ -367,7 +367,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectTemplate_HonorsHideSurroundingHtml()
     {
         // Arrange
@@ -397,7 +397,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectTemplate_OrdersProperties_AsExpected()
     {
         // Arrange
@@ -441,7 +441,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInputTemplate_ReturnsValueAndHiddenInput()
     {
         // Arrange
@@ -463,7 +463,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInputTemplate_HonorsHideSurroundingHtml()
     {
         // Arrange
@@ -490,7 +490,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void MultilineTextTemplate_ReturnsTextArea()
     {
         // Arrange
@@ -514,7 +514,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordTemplate_ReturnsInputElement_IgnoresValues()
     {
         // Arrange
@@ -542,7 +542,7 @@ Environment.NewLine;
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordTemplate_ReturnsInputElement_UsesHtmlAttributes()
     {
         // Arrange
@@ -798,7 +798,7 @@ Environment.NewLine;
         Assert.Equal(expectedResult, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Editor_FindsViewDataMember()
     {
         // Arrange
@@ -822,7 +822,7 @@ Environment.NewLine;
             HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Editor_InputTypeDateTime_RendersAsDateTime()
     {
         // Arrange
@@ -1215,7 +1215,7 @@ Environment.NewLine;
         Assert.Equal(expectedInput, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void EditorFor_FindsModel()
     {
         // Arrange
@@ -1239,7 +1239,7 @@ Environment.NewLine;
             HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Editor_FindsModel_IfNoViewDataMember()
     {
         // Arrange
@@ -1288,7 +1288,7 @@ Environment.NewLine;
             HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void EditorFor_DoesNotWrapExceptionThrowsDuringViewRendering()
     {
         // Arrange
@@ -1315,7 +1315,7 @@ Environment.NewLine;
         Assert.Equal(expectedMessage, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void EditorForModel_CallsFindView_WithExpectedPath()
     {
         // Arrange

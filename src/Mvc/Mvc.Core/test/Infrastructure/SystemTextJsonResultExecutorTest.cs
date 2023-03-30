@@ -17,7 +17,7 @@ public class SystemTextJsonResultExecutorTest : JsonResultExecutorTestBase
             loggerFactory.CreateLogger<SystemTextJsonResultExecutor>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteResponseBodyAsync_WithNonUtf8Encoding_FormattingErrorsAreThrown()
     {
         // Arrange

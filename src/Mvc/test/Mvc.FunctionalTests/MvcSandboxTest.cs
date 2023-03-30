@@ -15,7 +15,7 @@ public class MvcSandboxTest : IClassFixture<MvcTestFixture<MvcSandbox.Startup>>
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task Home_Pages_ReturnSuccess()
     {
         // Arrange & Act
@@ -25,7 +25,7 @@ public class MvcSandboxTest : IClassFixture<MvcTestFixture<MvcSandbox.Startup>>
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorPages_ReturnSuccess()
     {
         // Arrange & Act

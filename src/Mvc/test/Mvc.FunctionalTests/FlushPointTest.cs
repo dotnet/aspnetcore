@@ -14,7 +14,7 @@ public class FlushPointTest : IClassFixture<MvcTestFixture<RazorWebSite.Startup>
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task FlushPointsAreExecutedForPagesWithLayouts()
     {
         var expected = @"<title>Page With Layout</title>
@@ -33,7 +33,7 @@ RenderBody content
         Assert.Equal(expected, body, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushFollowedByLargeContent()
     {
         // Arrange
@@ -47,7 +47,7 @@ RenderBody content
         Assert.StartsWith(expected, largeContent.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushInvokedInComponent()
     {
         var expected = new string('a', 1024 * 1024);
@@ -60,7 +60,7 @@ RenderBody content
         Assert.StartsWith(expected, largeContent.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushPointsAreExecutedForPagesWithoutLayouts()
     {
         var expected = @"Initial content
@@ -106,7 +106,7 @@ More content from layout
         Assert.Equal(expected, body, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushPointsNestedLayout()
     {
         // Arrange

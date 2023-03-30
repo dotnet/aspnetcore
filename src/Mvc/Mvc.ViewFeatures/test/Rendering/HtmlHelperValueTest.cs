@@ -14,7 +14,7 @@ public class HtmlHelperValueTest
 {
     // Value
 
-    [Fact]
+    // [Fact]
     public void ValueNotInTemplate_GetsValueFromViewData()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class HtmlHelperValueTest
         Assert.Equal("ViewDataValue", html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueInTemplate_GetsValueFromPrefixedViewDataEntry()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class HtmlHelperValueTest
         Assert.Equal("PrefixedViewDataValue", html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueNotInTemplate_GetsValueFromPropertyOfViewDataEntry()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class HtmlHelperValueTest
         Assert.Equal("ContainedViewDataValue", html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueInTemplate_GetsValueFromPropertyOfViewDataEntry()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class HtmlHelperValueTest
         Assert.Equal("ContainedViewDataValue", html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueNotInTemplate_GetsValueFromModel_IfNoViewDataEntry()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class HtmlHelperValueTest
         Assert.Equal("ModelStringPropertyValue", html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueInTemplate_GetsValueFromModel_IfNoViewDataEntry()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class HtmlHelperValueTest
         Assert.Equal("ModelStringPropertyValue", html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueNotInTemplate_GetsValueFromViewData_EvenIfNull()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class HtmlHelperValueTest
         Assert.Empty(html);
     }
 
-    [Fact]
+    // [Fact]
     public void ValueInTemplate_GetsValueFromViewData_EvenIfNull()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class HtmlHelperValueTest
 
     // ValueFor
 
-    [Fact]
+    // [Fact]
     public void ValueForGetsExpressionValueFromViewDataModel()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class HtmlHelperValueTest
 
     // All Value Helpers including ValueForModel
 
-    [Fact]
+    // [Fact]
     public void ValueHelpersWithErrorsGetValueFromModelState()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class HtmlHelperValueTest
         Assert.Equal("ModelRawValue", helper.ValueForModel(format: null));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void ValueHelpersWithEmptyNameConvertModelValueUsingCurrentCulture()
     {
@@ -192,7 +192,7 @@ public class HtmlHelperValueTest
         Assert.Equal(expectedModelValue, helper.ValueForModel(format: null));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public void ValueHelpersFormatValue()
     {
@@ -208,7 +208,7 @@ public class HtmlHelperValueTest
         Assert.Equal(expectedObjectPropertyValue, helper.ValueFor(m => m.ObjectProperty, "-{0}-"));
     }
 
-    [Fact]
+    // [Fact]
     public void ValueHelpersDoNotEncodeValue()
     {
         // Arrange

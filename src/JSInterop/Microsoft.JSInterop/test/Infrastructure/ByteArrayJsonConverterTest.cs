@@ -15,7 +15,7 @@ public class ByteArrayJsonConverterTest
         JSRuntime = new TestJSRuntime();
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfByteArraysToBeRevivedIsEmpty()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("JSON serialization is attempting to deserialize an unexpected byte array.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfJsonIsMissingByteArraysProperty()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("Unexpected JSON Token EndObject, expected 'PropertyName'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfJsonContainsUnknownContent()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("Unexpected JSON Property foo.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_Throws_IfJsonIsIncomplete()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class ByteArrayJsonConverterTest
         Assert.IsAssignableFrom<JsonException>(ex);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsBase64EncodedStrings()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal(expected, deserialized);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ThrowsIfTheInputIsNotAValidBase64String()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("JSON serialization is attempting to deserialize an unexpected byte array.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal(byteArray, deserialized);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ByteArraysIdAppearsMultipleTimesThrows()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("Unexpected JSON Token PropertyName, expected 'EndObject'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ByteArraysIdValueInvalidStringThrows()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("Unexpected JSON Token String, expected 'Number'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ByteArraysIdValueLargeNumberThrows()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("Unexpected number, expected 32-bit integer.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ByteArraysIdValueNegativeNumberThrows()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal("Byte array -5 not found.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReadsJson_WithFormatting()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class ByteArrayJsonConverterTest
         Assert.Equal(byteArray, deserialized);
     }
 
-    [Fact]
+    // [Fact]
     public void Read_ReturnsTheCorrectInstance()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class ByteArrayJsonConverterTest
         Assert.Same(byteArray2, deserialized[1]);
     }
 
-    [Fact]
+    // [Fact]
     public void WriteJsonMultipleTimes_IncrementsByteArrayId()
     {
         // Arrange

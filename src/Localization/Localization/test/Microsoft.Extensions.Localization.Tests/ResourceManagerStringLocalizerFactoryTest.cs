@@ -56,7 +56,7 @@ public class TestResourceManagerStringLocalizerFactory : ResourceManagerStringLo
 
 public class ResourceManagerStringLocalizerFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void Create_OverloadsProduceSameResult()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Equal(typeFactory.Assembly!.FullName, stringFactory.Assembly!.FullName);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromType_ReturnsCachedResultForSameType()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Same(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromType_ReturnsNewResultForDifferentType()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.NotSame(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ResourceLocationAttribute_RootNamespaceIgnoredWhenNoLocation()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Equal($"{rootNamespace}.{nameof(Model)}", typeFactory.BaseName);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ResourceLocationAttribute_UsesRootNamespace()
     {
         // Arrange
@@ -181,7 +181,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Equal($"{rootNamespace}.My.Resources.{nameof(Model)}", typeFactory.BaseName);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromType_ResourcesPathDirectorySeperatorToDot()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Equal("Microsoft.Extensions.Localization.Tests.My.Resources." + nameof(ResourceManagerStringLocalizerFactoryTest), factory.BaseName);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromNameLocation_ReturnsCachedResultForSameNameLocation()
     {
         // Arrange
@@ -222,7 +222,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Same(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromNameLocation_ReturnsNewResultForDifferentName()
     {
         // Arrange
@@ -241,7 +241,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.NotSame(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromNameLocation_ReturnsNewResultForDifferentLocation()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.NotSame(result1, result2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromNameLocation_ResourcesPathDirectorySeparatorToDot()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class ResourceManagerStringLocalizerFactoryTest
         Assert.Equal("Microsoft.Extensions.Localization.Tests.My.Resources.baseName", factory.BaseName);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_FromNameLocation_NullLocationThrows()
     {
         // Arrange

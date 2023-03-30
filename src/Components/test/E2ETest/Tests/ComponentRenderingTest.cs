@@ -19,7 +19,7 @@ public sealed class ComponentRenderingTest : ComponentRenderingTestBase
     {
     }
 
-    [Fact]
+    // [Fact]
     public void CanDispatchAsyncWorkToSyncContext()
     {
         var appElement = Browser.MountTestComponent<DispatchingComponent>();

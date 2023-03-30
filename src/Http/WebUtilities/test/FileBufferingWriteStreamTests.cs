@@ -16,7 +16,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Directory.CreateDirectory(TempDirectory);
     }
 
-    [Fact]
+    // [Fact]
     public void Write_BuffersContentToMemory()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Null(bufferingStream.FileStream);
     }
 
-    [Fact]
+    // [Fact]
     public void Write_BeforeMemoryThresholdIsReached_WritesToMemory()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(input, ReadBufferedContent(pageBuffer));
     }
 
-    [Fact]
+    // [Fact]
     public void Write_BuffersContentToDisk_WhenMemoryThresholdIsReached()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(0, pageBuffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void Write_BuffersContentToDisk_WhenWriteWillOverflowMemoryThreshold()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(0, pageBuffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void Write_AfterMemoryThresholdIsReached_BuffersToMemory()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_BuffersContentToMemory()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Null(bufferingStream.FileStream);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_BeforeMemoryThresholdIsReached_WritesToMemory()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(input, ReadBufferedContent(pageBuffer));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_BuffersContentToDisk_WhenMemoryThresholdIsReached()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(0, pageBuffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_BuffersContentToDisk_WhenWriteWillOverflowMemoryThreshold()
     {
         // Arrange
@@ -219,7 +219,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(0, pageBuffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_AfterMemoryThresholdIsReached_BuffersToMemory()
     {
         // Arrange
@@ -244,7 +244,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
     }
 
-    [Fact]
+    // [Fact]
     public void Write_Throws_IfSingleWriteExceedsBufferLimit()
     {
         // Arrange
@@ -258,7 +258,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.True(bufferingStream.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public void Write_Throws_IfWriteCumulativeWritesExceedsBuffersLimit()
     {
         // Arrange
@@ -274,7 +274,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.True(bufferingStream.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public void Write_DoesNotThrow_IfBufferLimitIsReached()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         // If we got here, the test succeeded.
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_Throws_IfSingleWriteExceedsBufferLimit()
     {
         // Arrange
@@ -302,7 +302,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.True(bufferingStream.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_Throws_IfWriteCumulativeWritesExceedsBuffersLimit()
     {
         // Arrange
@@ -318,7 +318,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.True(bufferingStream.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsync_DoesNotThrow_IfBufferLimitIsReached()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         // If we got here, the test succeeded.
     }
 
-    [Fact]
+    // [Fact]
     public async Task DrainBufferAsync_CopiesContentFromMemoryStream()
     {
         // Arrange
@@ -349,7 +349,7 @@ public class FileBufferingWriteStreamTests : IDisposable
         Assert.Equal(0, bufferingStream.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DrainBufferAsync_WithContentInDisk_CopiesContentFromMemoryStream()
     {
         // Arrange

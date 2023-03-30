@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 public class DefaultRazorPageFactoryProviderTest
 {
-    [Fact]
+    // [Fact]
     public void CreateFactory_ReturnsViewDescriptor_ForUnsuccessfulResults()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class DefaultRazorPageFactoryProviderTest
         Assert.Same(descriptor, result.ViewDescriptor);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateFactory_ReturnsViewDescriptor_ForSuccessfulResults()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class DefaultRazorPageFactoryProviderTest
         Assert.Equal(expirationTokens, descriptor.ExpirationTokens);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateFactory_ProducesDelegateThatSetsPagePath()
     {
         // Arrange

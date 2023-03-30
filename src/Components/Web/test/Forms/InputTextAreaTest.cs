@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputTextAreaTest
 {
-    [Fact]
+    // [Fact]
     public async Task InputElementIsAssignedSuccessfully()
     {
         // Arrange

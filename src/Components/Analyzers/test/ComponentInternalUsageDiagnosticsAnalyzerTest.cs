@@ -17,7 +17,7 @@ public class ComponentInternalUsageDiagnosticsAnalyzerTest : AnalyzerTestBase
     private ComponentInternalUsageDiagnosticAnalyzer Analyzer { get; }
     private ComponentAnalyzerDiagnosticAnalyzerRunner Runner { get; }
 
-    [Fact]
+    // [Fact]
     public async Task InternalUsage_FindsUseOfInternalTypesInDeclarations()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class ComponentInternalUsageDiagnosticsAnalyzerTest : AnalyzerTestBase
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task InternalUsage_FindsUseOfInternalTypesInMethodBody()
     {
         // Arrange

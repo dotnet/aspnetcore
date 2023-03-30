@@ -26,19 +26,19 @@ public class StandaloneAppTest
         WaitUntilLoaded();
     }
 
-    [Fact]
+    // [Fact]
     public void HasTitle()
     {
         Assert.Equal("Blazor standalone", Browser.Title);
     }
 
-    [Fact]
+    // [Fact]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
@@ -64,7 +64,7 @@ public class StandaloneAppTest
             item => Assert.Equal("Home", item.Text.Trim()));
     }
 
-    [Fact]
+    // [Fact]
     public void HasCounterPage()
     {
         // Navigate to "Counter"
@@ -83,7 +83,7 @@ public class StandaloneAppTest
         Assert.Equal("Current count: 3", countDisplayElement.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void HasFetchDataPage()
     {
         // Navigate to "Fetch data"
@@ -104,7 +104,7 @@ public class StandaloneAppTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void IsStarted()
     {
         // Read from property

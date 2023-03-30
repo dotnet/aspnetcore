@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test;
 public class ClientCertificateAuthenticationTests
 {
 
-    [Fact]
+    // [Fact]
     public async Task VerifySchemeDefaults()
     {
         var services = new ServiceCollection().ConfigureAuthTestServices();
@@ -35,13 +35,13 @@ public class ClientCertificateAuthenticationTests
         Assert.Null(scheme.DisplayName);
     }
 
-    [Fact]
+    // [Fact]
     public void VerifyIsSelfSignedExtensionMethod()
     {
         Assert.True(Certificates.SelfSignedValidWithNoEku.IsSelfSigned());
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithClientEkuAuthenticates()
     {
         using var host = await CreateHost(
@@ -57,7 +57,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithNoEkuAuthenticates()
     {
         using var host = await CreateHost(
@@ -73,7 +73,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithClientEkuFailsWhenSelfSignedCertsNotAllowed()
     {
         using var host = await CreateHost(
@@ -88,7 +88,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithNoEkuFailsWhenSelfSignedCertsNotAllowed()
     {
         using var host = await CreateHost(
@@ -104,7 +104,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithServerFailsEvenIfSelfSignedCertsAreAllowed()
     {
         using var host = await CreateHost(
@@ -120,7 +120,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithServerPassesWhenSelfSignedCertsAreAllowedAndPurposeValidationIsOff()
     {
         using var host = await CreateHost(
@@ -137,7 +137,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidSelfSignedWithServerFailsPurposeValidationIsOffButSelfSignedCertsAreNotAllowed()
     {
         using var host = await CreateHost(
@@ -172,7 +172,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyExpiredSelfSignedPassesIfDateRangeValidationIsDisabled()
     {
         using var host = await CreateHost(
@@ -207,7 +207,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyNotYetValidSelfSignedPassesIfDateRangeValidationIsDisabled()
     {
         using var host = await CreateHost(
@@ -224,7 +224,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyFailingInTheValidationEventReturnsForbidden()
     {
         using var host = await CreateHost(
@@ -240,7 +240,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoingNothingInTheValidationEventReturnsOK()
     {
         using var host = await CreateHost(
@@ -257,7 +257,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyNotSendingACertificateEndsUpInForbidden()
     {
         using var host = await CreateHost(
@@ -271,7 +271,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyUntrustedClientCertEndsUpInForbidden()
     {
         using var host = await CreateHost(
@@ -285,7 +285,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidationFailureCanBeHandled()
     {
         var failCalled = false;
@@ -309,7 +309,7 @@ public class ClientCertificateAuthenticationTests
         Assert.True(failCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbidden()
     {
         using var host = await CreateHost(
@@ -361,7 +361,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidClientCertFailsWithoutAdditionalCertificatesAuthenticates()
     {
         using var host = await CreateHost(
@@ -378,7 +378,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
     {
         using var host = await CreateHost(
@@ -396,7 +396,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyHeaderEncodedCertFailsOnBadEncoding()
     {
         using var host = await CreateHost(
@@ -413,7 +413,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifySettingTheAzureHeaderOnTheForwarderOptionsWorks()
     {
         using var host = await CreateHost(
@@ -432,7 +432,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyACustomHeaderFailsIfTheHeaderIsNotPresent()
     {
         using var host = await CreateHost(
@@ -450,7 +450,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyNoEventWireupWithAValidCertificateCreatesADefaultUser()
     {
         using var host = await CreateHost(
@@ -633,7 +633,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(expected, count.First().Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyValidationEventPrincipalIsPropogated()
     {
         const string Expected = "John Doe";

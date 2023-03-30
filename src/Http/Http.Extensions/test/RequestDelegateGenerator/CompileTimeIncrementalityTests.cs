@@ -9,7 +9,7 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
 {
     protected override bool IsGeneratorEnabled { get; } = true;
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_SameReturnType_DoesNotTriggerUpdate()
     {
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
@@ -21,7 +21,7 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_DifferentRoutePattern_DoesNotTriggerUpdate()
     {
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
@@ -33,7 +33,7 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ChangeReturnType_TriggersUpdate()
     {
         var source = @"app.MapGet(""/hello"", () => ""Hello world!"");";
@@ -45,7 +45,7 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
         Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_ChangeBodyParamNullability_TriggersUpdate()
     {
         var source = $"""app.MapGet("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";

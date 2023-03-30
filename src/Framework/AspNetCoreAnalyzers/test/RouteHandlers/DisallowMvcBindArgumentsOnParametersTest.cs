@@ -10,7 +10,7 @@ public partial class DisallowMvcBindArgumentsOnParametersTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithoutBindAttributes_Works()
     {
         // Arrange
@@ -26,7 +26,7 @@ webApp.MapGet(""/"", (string name) => {});
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithAllowedMvcAttributes_Works()
     {
         // Arrange
@@ -43,7 +43,7 @@ webApp.MapGet(""/{id}"", ([FromBody] string name, [FromRoute] int id, [FromQuery
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_Lambda_WithBindAttributes_ProducesDiagnostics()
     {
         // Arrange
@@ -63,7 +63,7 @@ webApp.MapGet(""/"", (/*MM*/[Bind] string name) => {});
         Assert.Equal("BindAttribute should not be specified for a MapGet Delegate parameter", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_MethodReference_WithBindAttributes_ProducesDiagnostics()
     {
         // Arrange

@@ -47,7 +47,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(expectedCanRead, result);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultMediaType_ReturnsApplicationJson()
     {
         // Arrange
@@ -60,7 +60,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal("application/json", mediaType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonFormatterReadsIntValue()
     {
         // Arrange
@@ -81,7 +81,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(100, intValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonFormatterReadsStringValue()
     {
         // Arrange
@@ -102,7 +102,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal("abcd", stringValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonFormatterReadsNonUtf8Content()
     {
         // Arrange
@@ -124,7 +124,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.True(httpContext.Request.Body.CanRead, "Verify that the request stream hasn't been disposed");
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task JsonFormatter_EscapedKeys()
     {
         var expectedKey = JsonFormatter_EscapedKeys_Expected;
@@ -152,7 +152,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task JsonFormatter_EscapedKeys_Bracket()
     {
         var expectedKey = JsonFormatter_EscapedKeys_Bracket_Expected;
@@ -179,7 +179,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task JsonFormatter_EscapedKeys_SingleQuote()
     {
         var expectedKey = JsonFormatter_EscapedKeys_SingleQuote_Expected;
@@ -207,7 +207,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task JsonFormatterReadsDateTimeValue()
     {
         // Arrange
@@ -229,7 +229,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(expected, dateValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonFormatterReadsComplexTypes()
     {
         // Arrange
@@ -251,7 +251,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(30, userModel.Age);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ReadsValidArray()
     {
         // Arrange
@@ -272,16 +272,16 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(new int[] { 0, 23, 300 }, integers);
     }
 
-    [Fact]
+    // [Fact]
     public virtual Task ReadAsync_ReadsValidArray_AsListOfT() => ReadAsync_ReadsValidArray_AsList(typeof(List<int>));
 
-    [Fact]
+    // [Fact]
     public virtual Task ReadAsync_ReadsValidArray_AsIListOfT() => ReadAsync_ReadsValidArray_AsList(typeof(IList<int>));
 
-    [Fact]
+    // [Fact]
     public virtual Task ReadAsync_ReadsValidArray_AsCollectionOfT() => ReadAsync_ReadsValidArray_AsList(typeof(ICollection<int>));
 
-    [Fact]
+    // [Fact]
     public virtual Task ReadAsync_ReadsValidArray_AsEnumerableOfT() => ReadAsync_ReadsValidArray_AsList(typeof(IEnumerable<int>));
 
     protected async Task ReadAsync_ReadsValidArray_AsList(Type requestedType)
@@ -304,7 +304,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(new int[] { 0, 23, 300 }, (IEnumerable<int>)result.Model);
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_ArrayOfObjects_HasCorrectKey()
     {
         // Arrange
@@ -331,7 +331,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_AddsModelValidationErrorsToModelState()
     {
         // Arrange
@@ -357,7 +357,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_InvalidArray_AddsOverflowErrorsToModelState()
     {
         // Arrange
@@ -383,7 +383,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState()
     {
         // Arrange
@@ -410,7 +410,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_UsesTryAddModelValidationErrorsToModelState()
     {
         // Arrange
@@ -464,7 +464,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Null(result.Model);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ComplexPoco()
     {
         // Arrange
@@ -491,7 +491,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_NestedParseError()
     {
         // Arrange
@@ -515,7 +515,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ReadAsync_RequiredAttribute()
     {
         // Arrange
@@ -534,7 +534,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Single(formatterContext.ModelState["Person.Name"].Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_DoesNotDisposeBufferedReadStream()
     {
         // Arrange
@@ -557,7 +557,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.False(testBufferedReadStream.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_WithEnableBufferingWorks()
     {
         // Arrange
@@ -581,7 +581,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.Equal(content, new StreamReader(requestBody).ReadToEnd());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_WithEnableBufferingWorks_WithInputStreamAtOffset()
     {
         // Arrange

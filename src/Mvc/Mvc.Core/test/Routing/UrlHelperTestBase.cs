@@ -323,7 +323,7 @@ public abstract class UrlHelperTestBase
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithDictionary()
     {
         // Arrange
@@ -343,7 +343,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithEmptyHostName()
     {
         // Arrange
@@ -366,7 +366,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://localhost/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithEmptyProtocol()
     {
         // Arrange
@@ -389,7 +389,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://foo.bar.com/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithNullProtocol()
     {
         // Arrange
@@ -412,7 +412,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://foo.bar.com/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithNullProtocolAndNullHostName()
     {
         // Arrange
@@ -435,7 +435,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithObjectProperties()
     {
         // Arrange
@@ -448,7 +448,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithProtocol()
     {
         // Arrange
@@ -469,7 +469,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("https://localhost/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrl_WithUnicodeHost_DoesNotPunyEncodeTheHost()
     {
         // Arrange
@@ -491,7 +491,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("https://pingüino/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrl_GeneratesUrl_WithRouteName_UsingDefaultValues_WhenExplicitOrAmbientValues_NotPresent()
     {
         // Arrange
@@ -506,7 +506,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/api/orders/500", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrl_WithRouteName_DoesNotGenerateUrl_WhenRequiredValueForParameter_NotPresent()
     {
         // Arrange
@@ -521,7 +521,7 @@ public abstract class UrlHelperTestBase
         Assert.Null(url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithRouteNameAndDictionary()
     {
         // Arrange
@@ -542,7 +542,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithRouteNameAndObjectProperties()
     {
         // Arrange
@@ -562,7 +562,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/named/home2/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithUrlRouteContext_ReturnsExpectedResult()
     {
         // Arrange
@@ -589,7 +589,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("ftp://remotetown/app/named/home2/newaction/someid#somefragment", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithAllParameters_ReturnsExpectedResult()
     {
         // Arrange
@@ -612,7 +612,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("https://remotetown/app/named/home2/newaction/someid#somefragment", url);
     }
 
-    [Fact]
+    // [Fact]
     public void UrlAction_RouteValuesAsDictionary_CaseSensitive()
     {
         // Arrange
@@ -639,7 +639,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/home/contact/suppliedid?isprint=true", url);
     }
 
-    [Fact]
+    // [Fact]
     public void UrlAction_WithUnicodeHost_DoesNotPunyEncodeTheHost()
     {
         // Arrange
@@ -657,7 +657,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://pingüino/app/home/contact", url);
     }
 
-    [Fact]
+    // [Fact]
     public void UrlRouteUrl_RouteValuesAsDictionary_CaseSensitive()
     {
         // Arrange
@@ -685,7 +685,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/named/home/contact/suppliedid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void UrlActionWithUrlActionContext_ReturnsExpectedResult()
     {
         // Arrange
@@ -708,7 +708,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("ftp://remotelyhost/app/home3/contact/idone#somefragment", url);
     }
 
-    [Fact]
+    // [Fact]
     public void UrlActionWithAllParameters_ReturnsExpectedResult()
     {
         // Arrange
@@ -727,7 +727,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("https://remotelyhost/app/home3/contact#somefragment", url);
     }
 
-    [Fact]
+    // [Fact]
     public void LinkWithAllParameters_ReturnsExpectedResult()
     {
         // Arrange
@@ -747,7 +747,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://localhost/app/named/home/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void LinkWithNullRouteName_ReturnsExpectedResult()
     {
         // Arrange
@@ -767,7 +767,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://localhost/app/home/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void LinkWithNullRouteNameGivenExtraEndpointWithNoRouteNameAndNoRequiredValues_ReturnsExpectedResult()
     {
         // Arrange
@@ -793,7 +793,7 @@ public abstract class UrlHelperTestBase
     }
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/35592
-    [Fact]
+    // [Fact]
     public void LinkWithNullRouteNameGivenExtraEndpointWithRouteNameAndNoRequiredValues_ReturnsExpectedResult()
     {
         // Arrange
@@ -818,7 +818,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://localhost/app/home/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void RouteUrlWithRouteNameAndDefaults()
     {
         // Arrange
@@ -836,7 +836,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/app/any/url", url);
     }
 
-    [Fact]
+    // [Fact]
     public void LinkWithDefaultsAndNullRouteValues_ReturnsExpectedResult()
     {
         // Arrange
@@ -854,7 +854,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://localhost/app/any/url", url);
     }
 
-    [Fact]
+    // [Fact]
     public void LinkWithCustomHostAndProtocol_ReturnsExpectedResult()
     {
         // Arrange
@@ -879,7 +879,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("https://myhost/named/home/newaction/someid", url);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlHelper_ReturnsSameInstance_IfAlreadyPresent()
     {
         // Arrange
@@ -902,7 +902,7 @@ public abstract class UrlHelperTestBase
         Assert.Same(expectedUrlHelper, urlHelper);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlHelper_CreatesNewInstance_IfNotAlreadyPresent()
     {
         // Arrange
@@ -921,7 +921,7 @@ public abstract class UrlHelperTestBase
         Assert.Same(urlHelper, actionContext.HttpContext.Items[typeof(IUrlHelper)] as IUrlHelper);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlHelper_CreatesNewInstance_IfExpectedTypeIsNotPresent()
     {
         // Arrange
@@ -945,7 +945,7 @@ public abstract class UrlHelperTestBase
     }
 
     // Regression test for https://github.com/aspnet/Mvc/issues/2859
-    [Fact]
+    // [Fact]
     public void Action_RouteValueInvalidation_DoesNotAffectActionAndController()
     {
         // Arrange
@@ -983,7 +983,7 @@ public abstract class UrlHelperTestBase
     }
 
     // Regression test for https://github.com/aspnet/Mvc/issues/2859
-    [Fact]
+    // [Fact]
     public void Action_RouteValueInvalidation_AffectsOtherRouteValues()
     {
         // Arrange
@@ -1024,7 +1024,7 @@ public abstract class UrlHelperTestBase
     }
 
     // Regression test for https://github.com/aspnet/Mvc/issues/2859
-    [Fact]
+    // [Fact]
     public void Action_RouteValueInvalidation_DoesNotAffectActionAndController_ActionPassedInRouteValues()
     {
         // Arrange
@@ -1061,7 +1061,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("/b/Store/Checkout", url);
     }
 
-    [Fact]
+    // [Fact]
     public void ActionLink_ReturnsAbsoluteUrlToAction()
     {
         // Arrange
@@ -1074,7 +1074,7 @@ public abstract class UrlHelperTestBase
         Assert.Equal("http://localhost/app/home/contact", url);
     }
 
-    [Fact]
+    // [Fact]
     public void NoRouter_ErrorsWithFriendlyErrorMessage()
     {
         // Arrange

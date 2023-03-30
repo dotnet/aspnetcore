@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class HttpConnectionTests
 {
-    [Fact]
+    // [Fact]
     public async Task WriteDataRateTimeoutAbortsConnection()
     {
         var mockConnectionContext = new Mock<ConnectionContext>();

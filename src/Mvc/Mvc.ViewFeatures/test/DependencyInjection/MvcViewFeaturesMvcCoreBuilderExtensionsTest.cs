@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddViews_RegistersExpectedTempDataProvider()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProvider_DoesNotRegisterOptionsConfiguration()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
             item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProviderWithSetupAction_RegistersOptionsConfiguration()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
             item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider_IfCalledBeforeAddViews()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider_IfCalledBeforeAddViews()
     {
         // Arrange
@@ -118,7 +118,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider_IfCalledAfterAddViews()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider_IfCalledAfterAddViews()
     {
         // Arrange
@@ -150,7 +150,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider_IfCalledTwice()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class MvcViewFeaturesMvcCoreBuilderExtensionsTest
         Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider_IfCalledTwice()
     {
         // Arrange

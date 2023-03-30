@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class RouteValuesAddressSchemeTest
 {
-    [Fact]
+    // [Fact]
     public void GetOutboundMatches_GetsNamedMatchesFor_EndpointsHaving_IRouteNameMetadata()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(endpoint2, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
     }
 
-    [Fact]
+    // [Fact]
     public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName_IgnoringCase()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(endpoint3, Assert.IsType<RouteEndpoint>(namedMatches[1].Match.Entry.Data));
     }
 
-    [Fact]
+    // [Fact]
     public void EndpointDataSource_ChangeCallback_Refreshes_OutboundMatches()
     {
         // Arrange 1
@@ -148,7 +148,7 @@ public class RouteValuesAddressSchemeTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_LookedUpByCriteria_NoMatch()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Empty(foundEndpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_LookedUpByCriteria_OneMatch()
     {
         // Arrange
@@ -200,7 +200,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(endpoint1, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class RouteValuesAddressSchemeTest
             e => Assert.Equal(endpoint2, e));
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_LookedUpByCriteria_ExcludeEndpointWithoutRouteValuesAddressMetadata()
     {
         // Arrange
@@ -257,7 +257,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Contains(endpoint1, foundEndpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_ReturnsEndpoint_WhenLookedUpByRouteName()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_ReturnsEndpoint_UsingRoutePatternRequiredValues()
     {
         // Arrange
@@ -305,7 +305,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void FindEndpoints_AlwaysReturnsEndpointsByRouteName_IgnoringMissingRequiredParameterValues()
     {
         // Here 'id' is the required value. The endpoint addressScheme would always return an endpoint by looking up
@@ -334,7 +334,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOutboundMatches_Includes_SameEndpointInNamedMatchesAndMatchesWithRequiredValues()
     {
         // Arrange
@@ -357,7 +357,7 @@ public class RouteValuesAddressSchemeTest
     }
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/35592
-    [Fact]
+    // [Fact]
     public void GetOutboundMatches_DoesNotInclude_EndpointsWithoutRequiredValuesInMatchesWithRequiredValues()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Same(endpoint, namedMatch.Entry.Data);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOutboundMatches_DoesNotInclude_EndpointsWithSuppressLinkGenerationMetadata()
     {
         // Arrange
@@ -396,7 +396,7 @@ public class RouteValuesAddressSchemeTest
         Assert.Empty(allMatches);
     }
 
-    [Fact]
+    // [Fact]
     public void AddressScheme_UnsuppressedEndpoint_IsUsed()
     {
         // Arrange

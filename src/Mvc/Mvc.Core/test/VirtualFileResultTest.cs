@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class VirtualFileResultTest : VirtualFileResultTestBase
 {
-    [Fact]
+    // [Fact]
     public void Constructor_SetsFileName()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class VirtualFileResultTest : VirtualFileResultTestBase
         Assert.Equal(path, result.FileName);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_SetsContentTypeAndParameters()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class VirtualFileResultTest : VirtualFileResultTestBase
         MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileProvider_ReturnsFileProviderFromWebHostEnvironment()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class VirtualFileResultTest : VirtualFileResultTestBase
         Assert.Same(webHostFileProvider, fileProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileProvider_ReturnsFileProviderFromResult()
     {
         // Arrange

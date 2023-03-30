@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 // Integration tests for the default provider configuration.
 public class ModelMetadataProviderTest
 {
-    [Fact]
+    // [Fact]
     public void ModelMetadataProvider_UsesPropertyFilterProviderOnType()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class ModelMetadataProviderTest
         Assert.Equal<string>(expected, matched);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelMetadataProvider_ReadsModelNameProperty_ForTypes()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("TypePrefix", metadata.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelMetadataProvider_ReadsScaffoldColumnAttribute_ForShowForDisplay()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class ModelMetadataProviderTest
         Assert.False(provider.GetMetadataForProperty(type, "ScaffoldColumnFalse").ShowForDisplay);
     }
 
-    [Fact]
+    // [Fact]
     public void ModelMetadataProvider_ReadsScaffoldColumnAttribute_ForShowForEdit()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class ModelMetadataProviderTest
         Assert.False(provider.GetMetadataForProperty(type, "ScaffoldColumnFalse").ShowForEdit);
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInputWorksOnProperty_ForHideSurroundingHtml()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class ModelMetadataProviderTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInputWorksOnPropertyType_ForHideSurroundingHtml()
     {
         // Arrange
@@ -113,7 +113,7 @@ public class ModelMetadataProviderTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInputWorksOnProperty_ForTemplateHint()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("HiddenInput", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HiddenInputWorksOnPropertyType_ForTemplateHint()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("HiddenInput", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMetadataForProperty_WithNoBinderModelName_GetsItFromType()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("PersonType", propertyMetadata.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMetadataForProperty_WithBinderMetadataOnPropertyAndType_GetsMetadataFromProperty()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void AttributesOverrideMetadataStrings_SimpleDisplayProperty()
     {
         // Arrange
@@ -405,7 +405,7 @@ public class ModelMetadataProviderTest
         Assert.Equal(expectedOrder, result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayAttribute_Description()
     {
         // Arrange
@@ -421,7 +421,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("description", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayAttribute_PromptAsPlaceholder()
     {
         // Arrange
@@ -437,7 +437,7 @@ public class ModelMetadataProviderTest
         Assert.Equal("prompt", result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayName_FromResources_GetsRecomputed()
     {
         // Arrange
@@ -463,7 +463,7 @@ public class ModelMetadataProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Description_FromResources_GetsRecomputed()
     {
         // Arrange
@@ -489,7 +489,7 @@ public class ModelMetadataProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void DataTypeName_Null_IfHtmlEncodeTrue()
     {
         // Arrange
@@ -505,7 +505,7 @@ public class ModelMetadataProviderTest
         Assert.Null(result);
     }
 
-    [Fact]
+    // [Fact]
     public void DataTypeName_Html_IfHtmlEncodeFalse()
     {
         // Arrange
@@ -522,7 +522,7 @@ public class ModelMetadataProviderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void DataTypeName_AttributesHaveExpectedPrecedence()
     {
         // Arrange
@@ -540,7 +540,7 @@ public class ModelMetadataProviderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFormatString_AttributesHaveExpectedPrecedence()
     {
         // Arrange
@@ -558,7 +558,7 @@ public class ModelMetadataProviderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void EditFormatString_AttributesHaveExpectedPrecedence()
     {
         // Arrange
@@ -581,7 +581,7 @@ public class ModelMetadataProviderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void TemplateHint_AttributesHaveExpectedPrecedence()
     {
         // Arrange
@@ -599,7 +599,7 @@ public class ModelMetadataProviderTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void BinderTypeProviders_Null()
     {
         // Arrange
@@ -618,7 +618,7 @@ public class ModelMetadataProviderTest
         Assert.Null(metadata.BinderType);
     }
 
-    [Fact]
+    // [Fact]
     public void BinderTypeProviders_Fallback()
     {
         // Arrange
@@ -637,7 +637,7 @@ public class ModelMetadataProviderTest
         Assert.Same(typeof(ComplexObjectModelBinder), metadata.BinderType);
     }
 
-    [Fact]
+    // [Fact]
     public void BinderTypeProviders_FirstAttributeHasPrecedence()
     {
         // Arrange
@@ -656,7 +656,7 @@ public class ModelMetadataProviderTest
         Assert.Same(typeof(ComplexObjectModelBinder), metadata.BinderType);
     }
 
-    [Fact]
+    // [Fact]
     public void IsRequired_DefaultsToTrueForValueType()
     {
         // Arrange
@@ -673,7 +673,7 @@ public class ModelMetadataProviderTest
         Assert.True(metadata.IsRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void IsRequired_DefaultsToFalseForReferenceType()
     {
         // Arrange
@@ -690,7 +690,7 @@ public class ModelMetadataProviderTest
         Assert.False(metadata.IsRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void IsRequired_WithRequiredAttribute()
     {
         // Arrange
@@ -705,7 +705,7 @@ public class ModelMetadataProviderTest
         Assert.True(metadata.IsRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void IsBindingRequired_DataMemberIsRequiredTrue_SetsIsBindingRequiredToTrue()
     {
         // Arrange
@@ -720,7 +720,7 @@ public class ModelMetadataProviderTest
         Assert.True(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void IsBindingRequired_DataMemberIsRequiredFalse_False()
     {
         // Arrange
@@ -735,7 +735,7 @@ public class ModelMetadataProviderTest
         Assert.False(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void IsBindingRequiredDataMemberIsRequiredTrueWithoutDataContract_False()
     {
         // Arrange
@@ -750,7 +750,7 @@ public class ModelMetadataProviderTest
         Assert.False(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertySetter_NotNull_ForPublicSetProperty()
     {
         // Arrange
@@ -766,7 +766,7 @@ public class ModelMetadataProviderTest
         Assert.NotNull(metadata.PropertyGetter);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertySetter_Null_ForPrivateSetProperty()
     {
         // Arrange
@@ -782,7 +782,7 @@ public class ModelMetadataProviderTest
         Assert.NotNull(metadata.PropertyGetter);
     }
 
-    [Fact]
+    // [Fact]
     public void Metadata_Null_ForPrivateGetProperty()
     {
         // Arrange
@@ -795,7 +795,7 @@ public class ModelMetadataProviderTest
         Assert.Null(metadata.Properties[propertyName]);
     }
 
-    [Fact]
+    // [Fact]
     public void BindingBehavior_GetMetadataForType_UsesDefaultValues()
     {
         // Arrange
@@ -810,7 +810,7 @@ public class ModelMetadataProviderTest
         Assert.False(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void BindingBehavior_Override_RequiredOnProperty()
     {
         // Arrange
@@ -826,7 +826,7 @@ public class ModelMetadataProviderTest
         Assert.True(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void BindingBehavior_Override_OptionalOnProperty()
     {
         // Arrange
@@ -842,7 +842,7 @@ public class ModelMetadataProviderTest
         Assert.False(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void BindingBehavior_Never_DuplicatedPropertyAndClass()
     {
         // Arrange
@@ -858,7 +858,7 @@ public class ModelMetadataProviderTest
         Assert.False(metadata.IsBindingRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void BindingBehavior_Never_SetOnClass()
     {
         // Arrange

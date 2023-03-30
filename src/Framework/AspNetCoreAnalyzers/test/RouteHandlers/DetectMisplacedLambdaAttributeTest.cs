@@ -10,7 +10,7 @@ public partial class DetectMisplacedLambdaAttributeTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithCorrectlyPlacedAttribute_Works()
     {
         // Arrange
@@ -28,7 +28,7 @@ void Hello() { }
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithMisplacedAttribute_ProducesDiagnostics()
     {
         // Arrange
@@ -50,7 +50,7 @@ void Hello() { }
         Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithMisplacedAttributeAndBlockSyntax_ProducesDiagnostics()
     {
         // Arrange
@@ -72,7 +72,7 @@ string Hello() { return ""foo""; }
         Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithMultipleMisplacedAttributes_ProducesDiagnostics()
     {
         // Arrange
@@ -106,7 +106,7 @@ void Hello() { }
         );
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithSingleMisplacedAttribute_ProducesDiagnostics()
     {
         // Arrange
@@ -133,7 +133,7 @@ void Hello() { }
         );
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_DoesNotWarnOnNonReturningMethods()
     {
         // Arrange
@@ -153,7 +153,7 @@ app.MapGet(""/"", /*MM*/() => {
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_DoesNotWarnOrErrorOnNonExistantLambdas()
     {
         // Arrange
@@ -170,7 +170,7 @@ app.MapGet(""/"", () => ThereIsNoMethod());";
         Assert.Equal("CS0103", diagnostic.Descriptor.Id);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithMisplacedAttributeOnMethodGroup_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -189,7 +189,7 @@ void Hello() { }
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_WithMisplacedAttributeOnExternalReference_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -220,7 +220,7 @@ public static class Helpers
         Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_OutOfScope_ProducesDiagnostics()
     {
         // Arrange

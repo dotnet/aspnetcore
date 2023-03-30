@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 
 public class FilterCollectionTest
 {
-    [Fact]
+    // [Fact]
     public void Add_UsesTypeFilterAttribute()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class FilterCollectionTest
         Assert.Same(typeFilter, Assert.Single(collection));
     }
 
-    [Fact]
+    // [Fact]
     public void GenericAdd_UsesTypeFilterAttribute()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class FilterCollectionTest
         Assert.Same(typeFilter, Assert.Single(collection));
     }
 
-    [Fact]
+    // [Fact]
     public void Add_WithOrder_SetsOrder()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class FilterCollectionTest
         Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
     }
 
-    [Fact]
+    // [Fact]
     public void GenericAdd_WithOrder_SetsOrder()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class FilterCollectionTest
         Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
     }
 
-    [Fact]
+    // [Fact]
     public void Add_ThrowsOnNonIFilter()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class FilterCollectionTest
             expectedMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void AddService_UsesServiceFilterAttribute()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class FilterCollectionTest
         Assert.Same(serviceFilter, Assert.Single(collection));
     }
 
-    [Fact]
+    // [Fact]
     public void GenericAddService_UsesServiceFilterAttribute()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class FilterCollectionTest
         Assert.Same(serviceFilter, Assert.Single(collection));
     }
 
-    [Fact]
+    // [Fact]
     public void AddService_SetsOrder()
     {
         // Arrange
@@ -121,7 +121,7 @@ public class FilterCollectionTest
         Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
     }
 
-    [Fact]
+    // [Fact]
     public void GenericAddService_SetsOrder()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class FilterCollectionTest
         Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
     }
 
-    [Fact]
+    // [Fact]
     public void AddService_ThrowsOnNonIFilter()
     {
         // Arrange

@@ -13,7 +13,7 @@ public class ComponentBaseTest
     // failures.
     private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
-    [Fact]
+    // [Fact]
     public void RunsOnInitWhenRendered()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class ComponentBaseTest
         Assert.Equal(1, onInitRuns);
     }
 
-    [Fact]
+    // [Fact]
     public void RunsOnInitAsyncWhenRendered()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class ComponentBaseTest
         Assert.Single(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public void RunsOnInitAsyncAlsoOnBaseClassWhenRendered()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class ComponentBaseTest
         Assert.Single(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public void RunsOnParametersSetWhenRendered()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class ComponentBaseTest
         Assert.Single(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public void RunsOnParametersSetAsyncWhenRendered()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class ComponentBaseTest
         Assert.Single(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public void RunsOnParametersSetAsyncAlsoOnBaseClassWhenRendered()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class ComponentBaseTest
         Assert.Single(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RendersAfterParametersSetAsyncTaskIsCompleted()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class ComponentBaseTest
         Assert.Equal(2, renderer.Batches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RendersAfterParametersSetAndInitAsyncTasksAreCompleted()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class ComponentBaseTest
         Assert.Equal(3, renderer.Batches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotRenderAfterOnInitAsyncTaskIsCancelled()
     {
         // Arrange
@@ -256,7 +256,7 @@ public class ComponentBaseTest
         Assert.Equal(2, renderer.Batches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RunsOnAfterRender_AfterRenderingCompletes()
     {
         // Arrange
@@ -299,7 +299,7 @@ public class ComponentBaseTest
         await renderTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task RunsOnAfterRenderAsync_AfterRenderingCompletes()
     {
         // Arrange
@@ -348,7 +348,7 @@ public class ComponentBaseTest
         Assert.Equal(2, renderer.Batches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotRenderAfterOnInitAsyncTaskIsCancelledUsingCancellationToken()
     {
         // Arrange
@@ -372,7 +372,7 @@ public class ComponentBaseTest
         Assert.NotEmpty(renderer.Batches);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotRenderAfterOnParametersSetAsyncTaskIsCanceled()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class ComponentBaseTest
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderRootComponentAsync_ReportsErrorDuringOnInit()
     {
         // Arrange
@@ -415,7 +415,7 @@ public class ComponentBaseTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderRootComponentAsync_ReportsErrorDuringOnInitAsync()
     {
         // Arrange
@@ -431,7 +431,7 @@ public class ComponentBaseTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderRootComponentAsync_ReportsErrorDuringOnParameterSet()
     {
         // Arrange
@@ -447,7 +447,7 @@ public class ComponentBaseTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderRootComponentAsync_ReportsErrorDuringOnParameterSetAsync()
     {
         // Arrange

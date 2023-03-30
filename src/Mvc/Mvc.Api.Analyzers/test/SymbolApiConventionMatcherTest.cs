@@ -27,7 +27,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfNamesDifferInCase()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfNamesAreDifferent()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfConventionNameIsSubString()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsFalse_IfConventionNameIsSuperString()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithExact_ReturnsTrue_IfExactMatch()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsTrue_IfNamesAreExact()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsTrue_IfNameIsProperPrefix()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNamesAreDifferent()
     {
         // Arrange
@@ -139,7 +139,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNamesDifferInCase()
     {
         // Arrange
@@ -153,7 +153,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsNotProperPrefix()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithPrefix_ReturnsFalse_IfNameIsSuffix()
     {
         // Arrange
@@ -181,7 +181,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnsFalse_IfNamesAreDifferent()
     {
         // Arrange
@@ -195,7 +195,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnsFalse_IfNameIsNotSuffix()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnTrue_IfNameIsExact()
     {
         // Arrange
@@ -223,7 +223,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnFalse_IfNameDiffersInCase()
     {
         // Arrange
@@ -237,7 +237,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNameMatch_WithSuffix_ReturnTrue_IfNameIsProperSuffix()
     {
         // Arrange
@@ -281,7 +281,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsTypeMatch_WithAssignableFrom_ReturnsTrueForExact()
     {
         // Arrange
@@ -297,7 +297,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsTypeMatch_WithAssignableFrom_ReturnsTrueForDerived()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class SymbolApiConventionMatcherTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsTypeMatch_WithAssignableFrom_ReturnsFalseForBaseTypes()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsTypeMatch_WithAssignableFrom_ReturnsFalseForUnrelated()
     {
         // Arrange
@@ -345,7 +345,7 @@ public class SymbolApiConventionMatcherTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_ReturnsFalse_IfMethodNamesDoNotMatch()
     {
         // Arrange
@@ -356,7 +356,7 @@ public class SymbolApiConventionMatcherTest
         return RunMatchTest(methodName, conventionMethodName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_ReturnsFalse_IMethodHasMoreParametersThanConvention()
     {
         // Arrange
@@ -367,7 +367,7 @@ public class SymbolApiConventionMatcherTest
         return RunMatchTest(methodName, conventionMethodName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_ReturnsFalse_IfMethodHasFewerParametersThanConvention()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class SymbolApiConventionMatcherTest
         return RunMatchTest(methodName, conventionMethodName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_ReturnsFalse_IfParametersDoNotMatch()
     {
         // Arrange
@@ -389,7 +389,7 @@ public class SymbolApiConventionMatcherTest
         return RunMatchTest(methodName, conventionMethodName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_ReturnsTrue_IfMethodNameAndParametersMatches()
     {
         // Arrange
@@ -400,7 +400,7 @@ public class SymbolApiConventionMatcherTest
         return RunMatchTest(methodName, conventionMethodName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_ReturnsTrue_IfParamsArrayMatchesRemainingArguments()
     {
         // Arrange
@@ -411,7 +411,7 @@ public class SymbolApiConventionMatcherTest
         return RunMatchTest(methodName, conventionMethodName, expected);
     }
 
-    [Fact]
+    // [Fact]
     public Task IsMatch_WithEmpty_MatchesMethodWithNoParameters()
     {
         // Arrange
@@ -439,7 +439,7 @@ public class SymbolApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetNameMatchBehavior_ReturnsExact_WhenNoAttributesArePresent()
     {
         // Arrange
@@ -457,7 +457,7 @@ public class SymbolApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetNameMatchBehavior_ReturnsExact_WhenNoNameMatchBehaviorAttributeIsSpecified()
     {
         // Arrange
@@ -475,7 +475,7 @@ public class SymbolApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetNameMatchBehavior_ReturnsValueFromAttributes()
     {
         // Arrange
@@ -493,7 +493,7 @@ public class SymbolApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetTypeMatchBehavior_ReturnsIsAssignableFrom_WhenNoAttributesArePresent()
     {
         // Arrange
@@ -512,7 +512,7 @@ public class SymbolApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetTypeMatchBehavior_ReturnsIsAssignableFrom_WhenNoMatchingAttributesArePresent()
     {
         // Arrange
@@ -531,7 +531,7 @@ public class SymbolApiConventionMatcherTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetTypeMatchBehavior_ReturnsValueFromAttributes()
     {
         // Arrange

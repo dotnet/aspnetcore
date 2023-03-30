@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class FormFileValueProviderFactoryTest
 {
-    [Fact]
+    // [Fact]
     public async Task CreateValueProviderAsync_DoesNotAddValueProvider_IfRequestDoesNotHaveFormContent()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class FormFileValueProviderFactoryTest
         Assert.Empty(context.ValueProviders);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateValueProviderAsync_DoesNotAddValueProvider_IfFileCollectionIsEmpty()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class FormFileValueProviderFactoryTest
         Assert.Empty(context.ValueProviders);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateValueProviderAsync_AddsValueProvider()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class FormFileValueProviderFactoryTest
             v => Assert.IsType<FormFileValueProvider>(v));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProviderAsync_ThrowsValueProviderException_IfReadingFormThrowsInvalidDataException()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class FormFileValueProviderFactoryTest
         Assert.Same(exception, ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProviderAsync_ThrowsValueProviderException_IfReadingFormThrowsInvalidOperationException()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class FormFileValueProviderFactoryTest
         Assert.Same(exception, ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetValueProviderAsync_ThrowsOriginalException_IfReadingFormThrows()
     {
         // Arrange

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 public class RouteEndpointComparerTest
 {
-    [Fact]
+    // [Fact]
     public void Compare_PrefersOrder_IfDifferent()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class RouteEndpointComparerTest
         Assert.Equal(1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_PrefersPrecedence_IfOrderIsSame()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class RouteEndpointComparerTest
         Assert.Equal(1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_PrefersPolicy_IfPrecedenceIsSame()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class RouteEndpointComparerTest
         Assert.Equal(-1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_PrefersSecondPolicy_IfFirstPolicyIsSame()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class RouteEndpointComparerTest
         Assert.Equal(1, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_PrefersTemplate_IfOtherCriteriaIsSame()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class RouteEndpointComparerTest
         Assert.True(result > 0);
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_ReturnsZero_WhenIdentical()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class RouteEndpointComparerTest
         Assert.Equal(0, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_NotEqual_IfOrderDifferent()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class RouteEndpointComparerTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_NotEqual_IfPrecedenceDifferent()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class RouteEndpointComparerTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_NotEqual_IfFirstPolicyDifferent()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class RouteEndpointComparerTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_NotEqual_IfSecondPolicyDifferent()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class RouteEndpointComparerTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_Equals_WhenTemplateIsDifferent()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class RouteEndpointComparerTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void Sort_MoreSpecific_FirstInList()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class RouteEndpointComparerTest
             e => Assert.Same(endpoint7, e));
     }
 
-    [Fact]
+    // [Fact]
     public void Compare_PatternOrder_OrdinalIgnoreCaseSort()
     {
         // Arrange

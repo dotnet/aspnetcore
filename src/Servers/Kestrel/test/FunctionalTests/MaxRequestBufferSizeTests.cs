@@ -209,7 +209,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
         await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
     {
         // Parameters

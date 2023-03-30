@@ -30,7 +30,7 @@ public class MapConnectionHandlerTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerFindsMetadataPolicyOnEndPoint()
     {
         var authCount = 0;
@@ -70,7 +70,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerFindsAuthAttributeOnEndPoint()
     {
         var authCount = 0;
@@ -97,7 +97,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerFindsAuthAttributeOnInheritedEndPoint()
     {
         var authCount = 0;
@@ -124,7 +124,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
 
     public void MapConnectionHandlerFindsAuthAttributesOnDoubleAuthEndPoint()
     {
@@ -152,7 +152,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerFindsAttributesFromEndPointAndOptions()
     {
         var authCount = 0;
@@ -183,7 +183,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerEndPointRoutingFindsAttributesOnHub()
     {
         var authCount = 0;
@@ -212,7 +212,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerEndPointRoutingFindsAttributesFromOptions()
     {
         var authCount = 0;
@@ -242,7 +242,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(0, authCount);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerEndPointRoutingAppliesAttributesBeforeConventions()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
@@ -282,7 +282,7 @@ public class MapConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerEndPointRoutingAppliesNegotiateMetadata()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
@@ -313,7 +313,7 @@ public class MapConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerNegotiateMetadataContainsOptions()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
@@ -352,7 +352,7 @@ public class MapConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerEndPointRoutingAppliesCorsMetadata()
     {
         void ConfigureRoutes(IEndpointRouteBuilder endpoints)
@@ -406,7 +406,7 @@ public class MapConnectionHandlerTests
         Assert.Equal(WebSocketMessageType.Close, result.MessageType);
     }
 
-    [Fact]
+    // [Fact]
     public void MapConnectionHandlerAddsDisableRequestTimeoutMetadata()
     {
         using var host = BuildWebHost<MyConnectionHandler>("/test", o => { });

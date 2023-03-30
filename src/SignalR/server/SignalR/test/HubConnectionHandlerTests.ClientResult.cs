@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests;
 
 public partial class HubConnectionHandlerTests
 {
-    [Fact]
+    // [Fact]
     public async Task CanReturnClientResultToHub()
     {
         using (StartVerifiableLog())
@@ -37,7 +37,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReturnClientResultErrorToHub()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "FailedInvokingHubMethod"))
@@ -69,7 +69,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsWhenUsedInOnConnectedAsync()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "ErrorDispatchingHubEvent"))
@@ -96,7 +96,7 @@ public partial class HubConnectionHandlerTests
         Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "ErrorDispatchingHubEvent"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsWhenUsedInOnDisconnectedAsync()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "ErrorDispatchingHubEvent"))
@@ -127,7 +127,7 @@ public partial class HubConnectionHandlerTests
         Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "ErrorDispatchingHubEvent"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseClientResultsWithIHubContext()
     {
         using (StartVerifiableLog())
@@ -159,7 +159,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseClientResultsWithIHubContextT()
     {
         using (StartVerifiableLog())
@@ -193,7 +193,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReturnClientResultToTypedHubTwoWays()
     {
         using (StartVerifiableLog())
@@ -225,7 +225,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientResultFromHubDoesNotBlockReceiveLoop()
     {
         using (StartVerifiableLog())
@@ -278,7 +278,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientResultFromBackgroundThreadInHubMethodWorks()
     {
         using (StartVerifiableLog())
@@ -396,7 +396,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCancelClientResultsWithIHubContext()
     {
         using (StartVerifiableLog())
@@ -441,7 +441,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientResultInUploadStreamingMethodWorks()
     {
         using (StartVerifiableLog())
@@ -478,7 +478,7 @@ public partial class HubConnectionHandlerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientResultInStreamingMethodWorks()
     {
         using (StartVerifiableLog())

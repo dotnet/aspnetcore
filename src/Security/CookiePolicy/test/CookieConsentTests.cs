@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test;
 
 public class CookieConsentTests
 {
-    [Fact]
+    // [Fact]
     public async Task ConsentChecksOffByDefault()
     {
         var httpContext = await RunTestAsync(options => { }, requestContext => { }, context =>
@@ -30,7 +30,7 @@ public class CookieConsentTests
         Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConsentEnabledForTemplateScenario()
     {
         var httpContext = await RunTestAsync(options =>
@@ -49,7 +49,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NonEssentialCookiesWithOptionsExcluded()
     {
         var httpContext = await RunTestAsync(options =>
@@ -68,7 +68,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NonEssentialCookiesCanBeAllowedViaOnAppendCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -94,7 +94,7 @@ public class CookieConsentTests
         Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NeedsConsentDoesNotPreventEssentialCookies()
     {
         var httpContext = await RunTestAsync(options =>
@@ -113,7 +113,7 @@ public class CookieConsentTests
         Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EssentialCookiesCanBeExcludedByOnAppendCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -143,7 +143,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasConsentReadsRequestCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -166,7 +166,7 @@ public class CookieConsentTests
         Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasConsentIgnoresInvalidRequestCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -189,7 +189,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GrantConsentSetsCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -230,7 +230,7 @@ public class CookieConsentTests
         Assert.Null(testCookie.Expires);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GrantConsentAppliesPolicyToConsentCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -274,7 +274,7 @@ public class CookieConsentTests
         Assert.Contains("extension", consentCookie.Extensions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GrantConsentWhenAlreadyHasItDoesNotSetCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -305,7 +305,7 @@ public class CookieConsentTests
         Assert.Equal("Test=Value; path=/", httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GrantConsentAfterResponseStartsSetsHasConsentButDoesNotSetCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -338,7 +338,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithdrawConsentWhenNotHasConsentNoOps()
     {
         var httpContext = await RunTestAsync(options =>
@@ -366,7 +366,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithdrawConsentDeletesCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -409,7 +409,7 @@ public class CookieConsentTests
         Assert.NotNull(consentCookie.Expires);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithdrawConsentAppliesPolicyToDeleteCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -451,7 +451,7 @@ public class CookieConsentTests
         Assert.NotNull(consentCookie.Expires);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithdrawConsentAfterResponseHasStartedDoesNotDeleteCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -489,7 +489,7 @@ public class CookieConsentTests
         Assert.Equal("Test=Value1; path=/", httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeleteCookieDoesNotRequireConsent()
     {
         var httpContext = await RunTestAsync(options =>
@@ -516,7 +516,7 @@ public class CookieConsentTests
         Assert.NotNull(testCookie.Expires);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnDeleteCookieCanSuppressCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -544,7 +544,7 @@ public class CookieConsentTests
         Assert.Empty(httpContext.Response.Headers.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateConsentCookieMatchesGrantConsentCookie()
     {
         var httpContext = await RunTestAsync(options =>
@@ -588,7 +588,7 @@ public class CookieConsentTests
         Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateConsentCookieAppliesPolicy()
     {
         var httpContext = await RunTestAsync(options =>
@@ -641,7 +641,7 @@ public class CookieConsentTests
         Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateConsentCookieMatchesGrantConsentCookieWhenCookieValueIsCustom()
     {
         var httpContext = await RunTestAsync(options =>

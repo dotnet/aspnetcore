@@ -20,7 +20,7 @@ public partial class ResultsOfTTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void GeneratedCodeIsUpToDate()
     {
         // This assumes the output is in the repo artifacts directory

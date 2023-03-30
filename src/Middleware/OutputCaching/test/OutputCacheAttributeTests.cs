@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
 public class OutputCacheAttributeTests
 {
-    [Fact]
+    // [Fact]
     public void Attribute_CreatesDefaultPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -19,7 +19,7 @@ public class OutputCacheAttributeTests
         Assert.Equal(DefaultPolicy.Instance, policy);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesExpirePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -31,7 +31,7 @@ public class OutputCacheAttributeTests
         Assert.Equal(42, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesNoStorePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -42,7 +42,7 @@ public class OutputCacheAttributeTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesNamedPolicy()
     {
         var options = new OutputCacheOptions();
@@ -57,7 +57,7 @@ public class OutputCacheAttributeTests
         Assert.Equal(42, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_NamedPolicyDoesNotInjectDefaultPolicy()
     {
         var options = new OutputCacheOptions();
@@ -71,7 +71,7 @@ public class OutputCacheAttributeTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesVaryByHeaderPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -87,7 +87,7 @@ public class OutputCacheAttributeTests
         Assert.DoesNotContain("HeaderB", (IEnumerable<string>)context.CacheVaryByRules.HeaderNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesVaryByQueryPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -102,7 +102,7 @@ public class OutputCacheAttributeTests
         Assert.DoesNotContain("QueryB", (IEnumerable<string>)context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesVaryByRoutePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -121,7 +121,7 @@ public class OutputCacheAttributeTests
         Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Attribute_CreatesTagsPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();

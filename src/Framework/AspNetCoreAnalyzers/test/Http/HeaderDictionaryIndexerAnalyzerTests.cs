@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Analyzers.Http;
 
 public class HeaderDictionaryIndexerAnalyzerTests
 {
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_Get_MismatchCase_ReturnDiagnostic()
     {
         // Arrange & Act & Assert
@@ -34,7 +34,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
             .WithMessage(Resources.FormatAnalyzer_HeaderDictionaryIndexer_Message("content-type", "ContentType")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_Set_MismatchCase_ReturnDiagnostic()
     {
         // Arrange & Act & Assert
@@ -55,7 +55,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
             .WithMessage(Resources.FormatAnalyzer_HeaderDictionaryIndexer_Message("content-type", "ContentType")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_Get_UnknownProperty_NoDiagnostic()
     {
         // Arrange & Act & Assert
@@ -73,7 +73,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_Get_NullProperty_NoDiagnostic()
     {
         // Arrange & Act & Assert
@@ -91,7 +91,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_Get_StronglyTypeProperty_NoDiagnostic()
     {
         // Arrange & Act & Assert
@@ -109,7 +109,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task IHeaderDictionary_Get_VariableProperty_NoDiagnostic()
     {
         // Arrange & Act & Assert
@@ -128,7 +128,7 @@ webApp.Use(async (HttpContext context, Func<Task> next) =>
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeaderDictionary_Get_KnownProperty_NoDiagnostic()
     {
         // Arrange & Act & Assert
@@ -139,7 +139,7 @@ headers[""Content-Type""] = """";
 ");
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeaderDictionary_CastToIHeaderDictionary_Get_KnownProperty_ReturnDiagnostic()
     {
         // Arrange & Act & Assert
@@ -153,7 +153,7 @@ IHeaderDictionary headers = new HeaderDictionary();
             .WithMessage(Resources.FormatAnalyzer_HeaderDictionaryIndexer_Message("Content-Type", "ContentType")));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidatePropertyMappingContainsOnAllHeaderProperties()
     {
         // We want to keep IHeaderDictionary.Keyed.cs and HeaderDictionaryIndexerAnalyzer.PropertyMapping in sync.

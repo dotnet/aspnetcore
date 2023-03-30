@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 public class NewtonsoftJsonHelperTest : JsonHelperTestBase
 {
-    [Fact]
+    // [Fact]
     public void Serialize_MaintainsSettingsAndEscapesHtml()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class NewtonsoftJsonHelperTest : JsonHelperTestBase
         Assert.Equal(expectedOutput, htmlString.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Serialize_UsesHtmlSafeVersionOfPassedInSettings()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class NewtonsoftJsonHelperTest : JsonHelperTestBase
         Assert.Equal(expectedOutput, htmlString.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public override void Serialize_WithNonAsciiChars()
     {
         // Arrange

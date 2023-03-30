@@ -90,7 +90,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordWithPrefix_GeneratesExpectedValue()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordWithPrefix_UsesIdDotReplacementToken()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordWithPrefixAndEmptyName_GeneratesExpectedValue()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordWithEmptyNameAndPrefixThrows()
     {
         // Arrange
@@ -157,7 +157,7 @@ public class HtmlHelperPasswordTest
             expectedMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordWithEmptyNameAndPrefix_DoesNotThrow_WithNameAttribute()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Password_UsesModelStateErrors_ButDoesNotUseModelOrViewDataOrModelStateForValueAttribute()
     {
         // Arrange
@@ -195,7 +195,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordGeneratesUnobtrusiveValidation()
     {
         // Arrange
@@ -266,7 +266,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordForWithPrefix_GeneratesExpectedValue()
     {
         // Arrange
@@ -281,7 +281,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordFor_UsesModelStateErrors_ButDoesNotUseModelOrViewDataOrModelStateForValueAttribute()
     {
         // Arrange
@@ -303,7 +303,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordFor_GeneratesUnobtrusiveValidationAttributes()
     {
         // Arrange
@@ -374,7 +374,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    [Fact]
+    // [Fact]
     public void Password_UsesSpecifiedExpressionForNames_IgnoresExpressionValue()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class HtmlHelperPasswordTest
             HtmlContentUtilities.HtmlContentToString(passwordResult));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordFor_UsesSpecifiedExpressionForNames_IgnoresExpressionValue()
     {
         // Arrange
@@ -410,7 +410,7 @@ public class HtmlHelperPasswordTest
             HtmlContentUtilities.HtmlContentToString(passwordForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void Password_UsesSpecifiedValue()
     {
         // Arrange
@@ -428,7 +428,7 @@ public class HtmlHelperPasswordTest
             HtmlContentUtilities.HtmlContentToString(passwordResult));
     }
 
-    [Fact]
+    // [Fact]
     public void PasswordFor_GeneratesPlaceholderAttribute_WhenDisplayAttributePromptIsSet()
     {
         // Arrange

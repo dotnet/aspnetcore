@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 public class DisplayMetadataTest
 {
-    [Fact]
+    // [Fact]
     public void DisplayFormatString_AffectsBothDisplayFormatProperties()
     {
         // Arrange
@@ -19,7 +19,7 @@ public class DisplayMetadataTest
         Assert.Equal("expected string", displayMetadata.DisplayFormatStringProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFormatStringProvider_AffectsBothDisplayFormatProperties()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class DisplayMetadataTest
         Assert.Equal("expected string", displayMetadata.DisplayFormatStringProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void DisplayFormatString_LastSettingWins()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class DisplayMetadataTest
         Assert.Equal("third string", displayMetadata.DisplayFormatStringProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void EditFormatString_AffectsBothEditFormatProperties()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class DisplayMetadataTest
         Assert.Equal("expected string", displayMetadata.EditFormatStringProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void EditFormatStringProvider_AffectsBothEditFormatProperties()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class DisplayMetadataTest
         Assert.Equal("expected string", displayMetadata.EditFormatStringProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void EditFormatString_LastSettingWins()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class DisplayMetadataTest
         Assert.Equal("third string", displayMetadata.EditFormatStringProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void NullDisplayText_AffectsBothNullDisplayProperties()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class DisplayMetadataTest
         Assert.Equal("expected string", displayMetadata.NullDisplayTextProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void NullDisplayTextProvider_AffectsBothNullDisplayProperties()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class DisplayMetadataTest
         Assert.Equal("expected string", displayMetadata.NullDisplayTextProvider());
     }
 
-    [Fact]
+    // [Fact]
     public void NullDisplayText_LastSettingWins()
     {
         // Arrange

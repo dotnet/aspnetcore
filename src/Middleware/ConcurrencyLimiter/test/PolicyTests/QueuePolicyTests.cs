@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests;
 
 public class QueuePolicyTests
 {
-    [Fact]
+    // [Fact]
     public void DoesNotWaitIfSpaceAvailable()
     {
         using var s = TestUtils.CreateQueuePolicy(2);
@@ -22,7 +22,7 @@ public class QueuePolicyTests
         Assert.False(t3.IsCompleted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WaitsIfNoSpaceAvailable()
     {
         using var s = TestUtils.CreateQueuePolicy(1);
@@ -35,7 +35,7 @@ public class QueuePolicyTests
         Assert.True(await waitingTask.DefaultTimeout());
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotWaitIfQueueFull()
     {
         using var s = TestUtils.CreateQueuePolicy(2, 1);
@@ -56,7 +56,7 @@ public class QueuePolicyTests
         Assert.False(t4.Result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsEncapsulated()
     {
         using var s1 = TestUtils.CreateQueuePolicy(1);

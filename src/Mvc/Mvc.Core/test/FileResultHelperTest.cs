@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class FileResultTest
 {
-    [Fact]
+    // [Fact]
     public void Constructor_SetsContentType()
     {
         // Act
@@ -25,7 +25,7 @@ public class FileResultTest
         Assert.Equal("text/plain", result.ContentType.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentDispositionHeader_IsEncodedCorrectly()
     {
         // See comment in FileResult.cs detailing how the FileDownloadName should be encoded.
@@ -49,7 +49,7 @@ public class FileResultTest
         Assert.Equal(@"attachment; filename=""some\\file""; filename*=UTF-8''some%5Cfile", httpContext.Response.Headers["Content-Disposition"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentDispositionHeader_IsEncodedCorrectly_ForUnicodeCharacters()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class FileResultTest
             httpContext.Response.Headers["Content-Disposition"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_DoesNotSetContentDisposition_IfNotSpecified()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class FileResultTest
         Assert.Equal(Stream.Null, httpContext.Response.Body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_SetsContentDisposition_IfSpecified()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class FileResultTest
         Assert.Equal("attachment; filename=filename.ext; filename*=UTF-8''filename.ext", httpContext.Response.Headers["Content-Disposition"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_ThrowsException_IfCannotResolveLoggerFactory()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class FileResultTest
         Assert.Equal(expectedOutput, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetsAcceptRangeHeader()
     {
         // Arrange

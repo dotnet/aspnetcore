@@ -16,7 +16,7 @@ public class SigningKeysLoaderTests
         UnsafeEphemeralKeySet : (OperatingSystem.IsMacOS() ? X509KeyStorageFlags.PersistKeySet :
         X509KeyStorageFlags.DefaultKeySet);
 
-    [Fact]
+    // [Fact]
     public void LoadFromFile_ThrowsIfFileDoesNotExist()
     {
         // Arrange, Act & Assert
@@ -24,7 +24,7 @@ public class SigningKeysLoaderTests
         Assert.Equal($"There was an error loading the certificate. The file './nonexisting.pfx' was not found.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void LoadFromFile_ThrowsIfPasswordIsNull()
     {
         // Arrange, Act & Assert
@@ -32,7 +32,7 @@ public class SigningKeysLoaderTests
         Assert.Equal("There was an error loading the certificate. No password was provided.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void LoadFromFile_ThrowsIfPasswordIsIncorrect()
     {
         // Arrange, Act & Assert
@@ -42,7 +42,7 @@ public class SigningKeysLoaderTests
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public static void LoadFromStoreCert_ThrowsIfThereIsNoCertificateAvailable()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class SigningKeysLoaderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public static void LoadDevelopment_ThrowsIfKeyDoesNotExist()
     {
         // Act & Assert

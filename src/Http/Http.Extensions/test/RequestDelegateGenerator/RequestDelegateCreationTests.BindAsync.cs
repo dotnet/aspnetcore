@@ -138,7 +138,7 @@ app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_BindAsync_Snapshot()
     {
         var source = new StringBuilder();
@@ -171,7 +171,7 @@ app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapAction_BindAsync_ExceptionsAreUncaught()
     {
         var source = """

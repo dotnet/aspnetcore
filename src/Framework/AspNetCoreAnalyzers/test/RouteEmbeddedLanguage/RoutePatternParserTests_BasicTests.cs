@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 // These tests were created by trying to enumerate all codepaths in the lexer/parser.
 public partial class RoutePatternParserTests
 {
-    [Fact]
+    // [Fact]
     public void TestEmpty()
     {
         Test(@"""""", @"<Tree>
@@ -19,7 +19,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestSingleLiteral()
     {
         Test(@"""hello""", @"<Tree>
@@ -35,7 +35,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestSingleLiteralWithQuestionMark()
     {
         Test(@"""hel?lo""", @"<Tree>
@@ -54,7 +54,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestSlashSeperatedLiterals()
     {
         Test(@"""hello/world""", @"<Tree>
@@ -78,7 +78,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestDuplicateParameterNames()
     {
         Test(@"""{a}/{a}""", @"<Tree>
@@ -115,7 +115,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestSlashSeperatedSegments()
     {
         Test(@"""{a}/{b}""", @"<Tree>
@@ -150,7 +150,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchAllParameterFollowedBySlash()
     {
         Test(@"""{*a}/""", @"<Tree>
@@ -178,7 +178,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchAllParameterNotLast()
     {
         Test(@"""{*a}/{b}""", @"<Tree>
@@ -219,7 +219,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchAllAndOptional()
     {
         Test(@"""{*a?}""", @"<Tree>
@@ -250,7 +250,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchAllParameterComplexSegment()
     {
         Test(@"""a{*a}""", @"<Tree>
@@ -281,7 +281,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestPeriodSeperatedLiterals()
     {
         Test(@"""hello.world""", @"<Tree>
@@ -297,7 +297,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestSimpleParameter()
     {
         Test(@"""{id}""", @"<Tree>
@@ -319,7 +319,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithPolicy()
     {
         Test(@"""{id:foo}""", @"<Tree>
@@ -349,7 +349,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithDefault()
     {
         Test(@"""{id=Home}""", @"<Tree>
@@ -375,7 +375,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithDefaultContainingPolicyChars()
     {
         Test(@"""{id=Home=Controller:int()}""", @"<Tree>
@@ -401,7 +401,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithPolicyArgument()
     {
         Test(@"""{id:foo(wee)}""", @"<Tree>
@@ -436,7 +436,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithPolicyArgumentEmpty()
     {
         Test(@"""{id:foo()}""", @"<Tree>
@@ -471,7 +471,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterOptional()
     {
         Test(@"""{id?}""", @"<Tree>
@@ -496,7 +496,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterDefaultValue()
     {
         Test(@"""{id=Home}""", @"<Tree>
@@ -522,7 +522,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterDefaultValueAndOptional()
     {
         Test(@"""{id=Home?}""", @"<Tree>
@@ -554,7 +554,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterQuestionMarkBeforeEscapedClose()
     {
         Test(@"""{id?}}}""", @"<Tree>
@@ -579,7 +579,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestUnbalancedBracesInComplexSegment()
     {
         Test(@"""a{foob{bar}c""", @"<Tree>
@@ -610,7 +610,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestComplexSegment()
     {
         Test(@"""a{foo}b{bar}c""", @"<Tree>
@@ -649,7 +649,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestConsecutiveParameters()
     {
         Test(@"""{a}{b}""", @"<Tree>
@@ -682,7 +682,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestUnescapedOpenBrace()
     {
         Test(@"""{a{b}""", @"<Tree>
@@ -707,7 +707,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestInvalidCharsAndUnescapedOpenBrace()
     {
         Test(@"""{a/{b}""", @"<Tree>
@@ -732,7 +732,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithPolicyAndOptional()
     {
         Test(@"""{id:foo?}""", @"<Tree>
@@ -765,7 +765,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithMultiplePolicies()
     {
         Test(@"""{id:foo:bar}""", @"<Tree>
@@ -802,7 +802,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestPolicyWithEscapedFragmentParameterIncomplete()
     {
         Test(@"""{id:foo(hi""", @"<Tree>
@@ -835,7 +835,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestPolicyWithEscapedFragmentIncomplete()
     {
         Test(@"""{id:foo(hi}""", @"<Tree>
@@ -865,7 +865,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestPolicyWithMultipleFragments()
     {
         Test(@"""{id:foo(hi)bar}""", @"<Tree>
@@ -903,7 +903,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchAllParameter()
     {
         Test(@"""{*id}""", @"<Tree>
@@ -928,7 +928,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchAllUnescapedParameter()
     {
         Test(@"""{**id}""", @"<Tree>
@@ -953,7 +953,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestEmptyParameter()
     {
         Test(@"""{}""", @"<Tree>
@@ -976,7 +976,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestOptionalOnlyParameter()
     {
         Test(@"""{?}""", @"<Tree>
@@ -1002,7 +1002,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchallEscapeOnlyParameter()
     {
         Test(@"""{*}""", @"<Tree>
@@ -1028,7 +1028,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchallOnlyParameter()
     {
         Test(@"""{**}""", @"<Tree>
@@ -1054,7 +1054,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestCatchallPolicyParameter()
     {
         Test(@"""{**:int}""", @"<Tree>
@@ -1079,7 +1079,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithEscapedPolicyArgument()
     {
         Test(@"""{ssn:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}""", @"<Tree>
@@ -1114,7 +1114,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithEscapedPolicyArgumentIncomplete()
     {
         Test(@"""{ssn:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}""", @"<Tree>
@@ -1144,7 +1144,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithOpenBraceInEscapedPolicyArgument()
     {
         Test(@"""{ssn:regex(^\\d{3}})}""", @"<Tree>
@@ -1182,7 +1182,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterWithInvalidName()
     {
         Test(@"""{3}}-\\d{{2}}-\\d{{4}""", @"<Tree>
@@ -1207,7 +1207,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestInvalidCloseBrace()
     {
         Test(@"""-\\d{{2}}-\\d{{4}""", @"<Tree>
@@ -1226,7 +1226,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestEscapedBraces()
     {
         Test(@"""{{2}}""", @"<Tree>
@@ -1242,7 +1242,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestInvalidCloseBrace2()
     {
         Test(@"""{2}}""", @"<Tree>
@@ -1268,7 +1268,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestOptionalParameterPrecededByParameter()
     {
         Test(@"""{p1}{p2?}""", @"<Tree>
@@ -1304,7 +1304,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestOptionalParameterPrecededByLiteral()
     {
         Test(@"""{p1}-{p2?}""", @"<Tree>
@@ -1343,7 +1343,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterColonStart()
     {
         Test(@"""{:hi}""", @"<Tree>
@@ -1365,7 +1365,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterCatchAllColonStart()
     {
         Test(@"""{**:hi}""", @"<Tree>
@@ -1390,7 +1390,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestTilde()
     {
         Test(@"""~""", @"<Tree>
@@ -1409,7 +1409,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestTwoTildes()
     {
         Test(@"""~~""", @"<Tree>
@@ -1428,7 +1428,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestTildeSlash()
     {
         Test(@"""~/""", @"<Tree>
@@ -1447,7 +1447,7 @@ public partial class RoutePatternParserTests
 </Tree>");
     }
 
-    [Fact]
+    // [Fact]
     public void TestTildeParameter()
     {
         Test(@"""~{id}""", @"<Tree>

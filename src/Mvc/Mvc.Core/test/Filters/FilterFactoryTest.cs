@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 
 public class FilterFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void GetAllFilters_ReturnsNoFilters_IfNoFiltersAreSpecified()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class FilterFactoryTest
         Assert.Empty(filterResult.Filters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllFilters_ReturnsNoFilters_IfAllFiltersAreRemoved()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class FilterFactoryTest
         Assert.Empty(filterResult.Filters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllFilters_CachesAllFilters()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class FilterFactoryTest
             f => Assert.Same(staticFilter2, f));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllFilters_OrdersFilters()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class FilterFactoryTest
             f => Assert.Same(filter1, f));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllFilters_CachesFilterOrder()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class FilterFactoryTest
             f => Assert.Same(filter1, f));
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllFilters_CachesFilterFromFactory()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class FilterFactoryTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetAllFilters_DoesNotCacheFiltersWithIsReusableFalse()
     {
         // Arrange

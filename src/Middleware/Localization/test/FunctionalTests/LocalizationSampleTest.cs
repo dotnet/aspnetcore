@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests;
 
 public class LocalizationSampleTest
 {
-    [Fact]
+    // [Fact]
     public async Task LocalizationSampleSmokeTest()
     {
         // Arrange

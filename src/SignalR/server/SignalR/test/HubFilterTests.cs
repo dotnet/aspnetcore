@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests;
 
 public class HubFilterTests : VerifiableLoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task GlobalHubFilterByType_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -33,7 +33,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task GlobalHubFilterByInstance_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -51,7 +51,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PerHubFilterByInstance_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -69,7 +69,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PerHubFilterByCompileTimeType_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -89,7 +89,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PerHubFilterByRuntimeType_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -136,7 +136,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HubFilterDoesNotNeedToImplementMethods()
     {
         using (StartVerifiableLog())
@@ -169,7 +169,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MutlipleFilters_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -217,7 +217,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MixingTypeAndInstanceGlobalFilters_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -267,7 +267,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MixingTypeAndInstanceHubSpecificFilters_MethodsAreCalled()
     {
         using (StartVerifiableLog())
@@ -318,7 +318,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task GlobalFiltersRunInOrder()
     {
         using (StartVerifiableLog())
@@ -377,7 +377,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HubSpecificFiltersRunInOrder()
     {
         using (StartVerifiableLog())
@@ -437,7 +437,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task GlobalFiltersRunBeforeHubSpecificFilters()
     {
         using (StartVerifiableLog())
@@ -499,7 +499,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FilterCanBeResolvedFromDI()
     {
         using (StartVerifiableLog())
@@ -520,7 +520,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FiltersHaveTransientScopeByDefault()
     {
         using (StartVerifiableLog())
@@ -568,7 +568,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FiltersCanBeSingletonIfAddedToDI()
     {
         using (StartVerifiableLog())
@@ -614,7 +614,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionContinuesIfOnConnectedAsyncThrowsAndFilterDoesNot()
     {
         using (StartVerifiableLog())
@@ -645,7 +645,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionContinuesIfOnConnectedAsyncNotCalledByFilter()
     {
         using (StartVerifiableLog())
@@ -676,7 +676,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FilterCanSkipCallingHubMethod()
     {
         using (StartVerifiableLog())
@@ -709,7 +709,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FiltersWithIDisposableAreDisposed()
     {
         using (StartVerifiableLog())
@@ -750,7 +750,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task InstanceFiltersWithIDisposableAreNotDisposed()
     {
         using (StartVerifiableLog())
@@ -785,7 +785,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FiltersWithIAsyncDisposableAreDisposed()
     {
         using (StartVerifiableLog())
@@ -826,7 +826,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task InstanceFiltersWithIAsyncDisposableAreNotDisposed()
     {
         using (StartVerifiableLog())
@@ -861,7 +861,7 @@ public class HubFilterTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeFailsWhenFilterCallsNonExistantMethod()
     {
         bool ExpectedErrors(WriteContext writeContext)

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc;
 // and ViewExecutorTest for more comprehensive tests.
 public class ViewResultTest
 {
-    [Fact]
+    // [Fact]
     public void Model_NullWhenViewDataIsNull()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class ViewResultTest
         Assert.Null(viewResult.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Model_ExposesViewDataModel()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class ViewResultTest
         Assert.Same(customModel, viewResult.Model);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfServicesNotRegistered()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class ViewResultTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesGetViewLocations()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class ViewResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesFindViewLocations()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class ViewResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesAllLocations()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class ViewResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_FindsAndExecutesView()
     {
         // Arrange

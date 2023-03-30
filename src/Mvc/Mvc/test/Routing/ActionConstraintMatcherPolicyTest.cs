@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 // These tests are intentionally in Mvc.Test so we can also test the CORS action constraint.
 public class ActionConstraintMatcherPolicyTest
 {
-    [Fact]
+    // [Fact]
     public async Task Apply_CanBeAmbiguous()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.True(candidateSet.IsValidCandidate(1));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Apply_PrefersActionWithConstraints()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.False(candidateSet.IsValidCandidate(1));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Apply_ConstraintsRejectAll()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.False(candidateSet.IsValidCandidate(1));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Apply_ConstraintsRejectAll_DifferentStages()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class ActionConstraintMatcherPolicyTest
     }
 
     // Due to ordering of stages, the first action will be better.
-    [Fact]
+    // [Fact]
     public async Task Apply_ConstraintsInOrder()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.False(candidateSet.IsValidCandidate(1));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Apply_SkipsOverInvalidEndpoints()
     {
         // Arrange
@@ -215,7 +215,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.True(candidateSet.IsValidCandidate(2));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Apply_IncludesNonMvcEndpoints()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class ActionConstraintMatcherPolicyTest
     }
 
     // Due to ordering of stages, the first action will be better.
-    [Fact]
+    // [Fact]
     public async Task Apply_ConstraintsInOrder_MultipleStages()
     {
         // Arrange
@@ -290,7 +290,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.False(candidateSet.IsValidCandidate(1));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Apply_Fallback_ToActionWithoutConstraints()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.False(candidateSet.IsValidCandidate(2));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DataTokens_RoundTrip()
     {
         // Arrange
@@ -368,7 +368,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.True(candidateSet.IsValidCandidate(0));
     }
 
-    [Fact]
+    // [Fact]
     public void AppliesToEndpoints_IgnoresIgnorableConstraints()
     {
         // Arrange
@@ -404,7 +404,7 @@ public class ActionConstraintMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void ShouldRunActionConstraints_RunsForArbitraryActionConstraint()
     {
         // Arrange

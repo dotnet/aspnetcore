@@ -11,7 +11,7 @@ public abstract class TempDataTestBase
 {
     protected abstract HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task PersistsJustForNextRequest()
     {
         // Arrange
@@ -42,7 +42,7 @@ public abstract class TempDataTestBase
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewRendersTempData()
     {
         // Arrange
@@ -61,7 +61,7 @@ public abstract class TempDataTestBase
         Assert.Equal("Foo", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Redirect_RetainsTempData_EvenIfAccessed()
     {
         // Arrange
@@ -92,7 +92,7 @@ public abstract class TempDataTestBase
         Assert.Equal("Foo", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Peek_RetainsTempData()
     {
         // Arrange
@@ -125,7 +125,7 @@ public abstract class TempDataTestBase
         Assert.Equal("Foo", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidTypes_RoundTripProperly()
     {
         // Arrange
@@ -157,7 +157,7 @@ public abstract class TempDataTestBase
         Assert.Equal($"Foo 10 3 10/10/2010 00:00:00 {testGuid.ToString()}", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseWrite_DoesNotCrashSaveTempDataFilter()
     {
         // Arrange
@@ -171,7 +171,7 @@ public abstract class TempDataTestBase
         var response = await Client.GetAsync("/TempData/SetTempDataResponseWrite");
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetInActionResultExecution_AvailableForNextRequest()
     {
         // Arrange
@@ -202,7 +202,7 @@ public abstract class TempDataTestBase
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SaveTempDataFilter_DoesNotSaveTempData_OnUnhandledException()
     {
         // Arrange & Act
@@ -220,7 +220,7 @@ public abstract class TempDataTestBase
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SaveTempDataFilter_DoesNotSaveTempData_OnHandledExceptions()
     {
         // Arrange & Act

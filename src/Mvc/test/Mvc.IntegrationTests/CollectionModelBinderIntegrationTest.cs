@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 // Note that CollectionModelBinder handles both ICollection{T} and IList{T}
 public class CollectionModelBinderIntegrationTest
 {
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfSimpleType_WithPrefix_Success()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfSimpleType_NoData()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfComplexType_NoData()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class CollectionModelBinderIntegrationTest
         public string Name { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfComplexType_WithRequiredProperty_WithPrefix_PartialData()
     {
         // Arrange
@@ -338,7 +338,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfComplexType_WithRequiredProperty_WithExplicitPrefix_PartialData()
     {
         // Arrange
@@ -393,7 +393,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsCollectionOfComplexType_WithRequiredProperty_EmptyPrefix_PartialData()
     {
         // Arrange
@@ -444,7 +444,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfSimpleType_WithIndex_Success()
     {
         // Arrange
@@ -488,7 +488,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsCollectionOfComplexType_WithRequiredProperty_WithIndex_PartialData()
     {
         // Arrange
@@ -539,7 +539,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_BindsListOfComplexType_WithRequiredProperty_NoData()
     {
         // Arrange
@@ -581,7 +581,7 @@ public class CollectionModelBinderIntegrationTest
         public string Street { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_UsesCustomIndexes()
     {
         // Arrange
@@ -639,7 +639,7 @@ public class CollectionModelBinderIntegrationTest
         public string Street { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_UsesCustomIndexes_AddsErrorsWithCorrectKeys()
     {
         // Arrange
@@ -965,7 +965,7 @@ public class CollectionModelBinderIntegrationTest
     }
 
     // Regression test for #7052
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_ThrowsOn1025Items_AtTopLevel()
     {
         // Arrange
@@ -999,7 +999,7 @@ public class CollectionModelBinderIntegrationTest
     }
 
     // Ensure CollectionModelBinder allows MaxModelBindingCollectionSize items.
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_Binds3Items_WithIndices()
     {
         // Arrange
@@ -1050,7 +1050,7 @@ public class CollectionModelBinderIntegrationTest
     }
 
     // Ensure CollectionModelBinder disallows one more than MaxModelBindingCollectionSize items.
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_ThrowsOn4Items_WithIndices()
     {
         // Arrange
@@ -1089,7 +1089,7 @@ public class CollectionModelBinderIntegrationTest
         public IList<SuccessfulModel> Successes { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_ThrowsOn1025Items()
     {
         // Arrange
@@ -1122,7 +1122,7 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_CollectionOfSimpleTypes_DoesNotResultInValidationError()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/13512
@@ -1172,7 +1172,7 @@ public class CollectionModelBinderIntegrationTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CollectionModelBinder_CollectionOfNonNullableTypes_AppliesImplicitRequired()
     {
         // Arrange

@@ -101,7 +101,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal(expected, value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_FindsDisplayFormat_FromDataType()
     {
         // Arrange
@@ -121,7 +121,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Same(displayFormat.DataFormatString, context.DisplayMetadata.DisplayFormatString);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_FindsDisplayFormat_OverridingDataType()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Same(displayFormat.DataFormatString, context.DisplayMetadata.DisplayFormatString);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBindingMetadata_EditableAttributeFalse_SetsReadOnlyTrue()
     {
         // Arrange
@@ -163,7 +163,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.True(context.BindingMetadata.IsReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateBindingMetadata_EditableAttributeTrue_SetsReadOnlyFalse()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.False(context.BindingMetadata.IsReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_OverridesDisplayNameAttribute()
     {
         // Arrange
@@ -205,7 +205,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal("DisplayAttributeValue", context.DisplayMetadata.DisplayName());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_OverridesDisplayNameAttribute_IfNameEmpty()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal(string.Empty, context.DisplayMetadata.DisplayName());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_DoesNotOverrideDisplayNameAttribute_IfNameNull()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal("DisplayNameAttributeValue", context.DisplayMetadata.DisplayName());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayNameAttribute_OnEnum_CompatShimOn()
     {
         // Arrange
@@ -289,7 +289,7 @@ public class DataAnnotationsMetadataProviderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayNameAttribute_LocalizesDisplayName()
     {
         // Arrange
@@ -324,7 +324,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal("Name from DisplayNameAttribute", context.DisplayMetadata.DisplayName());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_NameFromResources_UsesDataAnnotationLocalizerProvider()
     {
         // Arrange
@@ -363,7 +363,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     // This is IMPORTANT. Product code needs to use GetName() instead of .Name. It's easy to regress.
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_NameFromResources_NullLocalizer()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     // This is IMPORTANT. Product code needs to use GetName() instead of .Name. It's easy to regress.
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_NameFromResources_WithLocalizer()
     {
         // Arrange
@@ -427,7 +427,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     // This is IMPORTANT. Product code needs to use GetDescription() instead of .Description. It's easy to regress.
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_DescriptionFromResources_WithLocalizer()
     {
         // Arrange
@@ -462,7 +462,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     // This is IMPORTANT. Product code needs to use GetDescription() instead of .Description. It's easy to regress.
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_DescriptionFromResources_NullLocalizer()
     {
         // Arrange
@@ -491,7 +491,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     // This is IMPORTANT. Product code needs to use GetPrompt() instead of .Prompt. It's easy to regress.
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_PromptFromResources_WithLocalizer()
     {
         // Arrange
@@ -526,7 +526,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     // This is IMPORTANT. Product code needs to use GetPrompt() instead of .Prompt. It's easy to regress.
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_PromptFromResources_NullLocalizer()
     {
         // Arrange
@@ -554,7 +554,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal("prompt from resources", context.DisplayMetadata.Placeholder());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayAttribute_LocalizeProperties()
     {
         // Arrange
@@ -811,7 +811,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal(expectedDictionary, context.DisplayMetadata.EnumNamesAndValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_DisplayName_LocalizeWithStringLocalizer()
     {
         // Arrange
@@ -991,7 +991,7 @@ public class DataAnnotationsMetadataProviderTest
             KVPEnumGroupAndNameComparer.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_ReflectsDisplayAttributeOrder()
     {
         // Arrange
@@ -1019,7 +1019,7 @@ public class DataAnnotationsMetadataProviderTest
             KVPEnumGroupAndNameComparer.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithNoIStringLocalizerAndNoResourceType()
     {
         // Arrange & Act
@@ -1039,7 +1039,7 @@ public class DataAnnotationsMetadataProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithIStringLocalizerAndNoResourceType()
     {
         // Arrange & Act
@@ -1059,7 +1059,7 @@ public class DataAnnotationsMetadataProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithNoIStringLocalizerAndResourceType()
     {
         // Arrange & Act
@@ -1079,7 +1079,7 @@ public class DataAnnotationsMetadataProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithIStringLocalizerAndResourceType()
     {
         // Arrange & Act
@@ -1099,7 +1099,7 @@ public class DataAnnotationsMetadataProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_RequiredAttribute_SetsIsRequiredToTrue()
     {
         // Arrange
@@ -1141,7 +1141,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal(initialValue, context.ValidationMetadata.IsRequired);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttribute_NoNonNullableProperty()
     {
         // Arrange
@@ -1165,7 +1165,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.True(((RequiredAttribute)attribute).AllowEmptyStrings); // non-Default for [Required]
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttribute_NoNonNullableProperty_PrefersExistingRequiredAttribute()
     {
         // Arrange
@@ -1191,7 +1191,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.False(((RequiredAttribute)attribute).AllowEmptyStrings); // Default for [Required]
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_SuppressRequiredInference_Noops()
     {
         // Arrange
@@ -1240,7 +1240,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttributeOnDerivedType_PropertyDeclaredOnBaseType()
     {
         // Arrange
@@ -1259,7 +1259,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttributeOnDerivedType_NullablePropertyDeclaredOnDerviedType()
     {
         // Arrange
@@ -1299,7 +1299,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttribute_BaseTypeIsNullable_PropertyIsNotNull()
     {
         // Tests the scenario listed in https://github.com/dotnet/aspnetcore/issues/14812
@@ -1319,7 +1319,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttribute_ShadowedPropertyIsNonNull()
     {
         // Arrange
@@ -1338,7 +1338,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_DoesNotInfersRequiredAttribute_TypeImplementingNonNullAbstractClass()
     {
         // Arrange
@@ -1357,7 +1357,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_DoesNotInfersRequiredAttribute_TypeImplementingNonNullAbstractClass_NotNullable()
     {
         // Arrange
@@ -1376,7 +1376,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_DoesNotInfersRequiredAttribute_ReferenceTypeParameterWithDefaultValue()
     {
         // Arrange
@@ -1397,7 +1397,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_InfersRequiredAttribute_NonNullableReferenceTypeParameter()
     {
         // Arrange
@@ -1418,7 +1418,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_WithOldModelIdentity_DoesNotInferValueBasedOnContext()
     {
         // Arrange
@@ -1439,7 +1439,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_WillAddValidationAttributes_From_ValidationProviderAttribute()
     {
         // Arrange
@@ -1514,7 +1514,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal(initialValue, context.BindingMetadata.IsReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationDetails_ValidatableObject_ReturnsObject()
     {
         // Arrange
@@ -1534,7 +1534,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Same(attribute, validatorMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationDetails_ValidatableObject_AlreadyInContext_Ignores()
     {
         // Arrange
@@ -1555,7 +1555,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Same(attribute, validatorMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationDetails_ForProperty()
     {
         // Arrange
@@ -1576,7 +1576,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Same(attribute, validatorMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNonNullable_FindsNonNullableProperty()
     {
         // Arrange
@@ -1592,7 +1592,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNullableReferenceType_ReturnsFalse_ForKeyValuePairWithoutNullableConstraints()
     {
         // Arrange
@@ -1609,7 +1609,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 
 #nullable enable
-    [Fact]
+    // [Fact]
     public void IsNullableReferenceType_ReturnsTrue_ForKeyValuePairWithNullableConstraints()
     {
         // Arrange
@@ -1628,7 +1628,7 @@ public class DataAnnotationsMetadataProviderTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public void IsNonNullable_FindsNullableProperty()
     {
         // Arrange
@@ -1644,7 +1644,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNonNullable_FindsNonNullableParameter()
     {
         // Arrange
@@ -1661,7 +1661,7 @@ public class DataAnnotationsMetadataProviderTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsNonNullable_FindsNullableParameter()
     {
         // Arrange

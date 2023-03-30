@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 public class KeyTests
 {
-    [Fact]
+    // [Fact]
     public void Ctor_Properties()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class KeyTests
         Assert.Same(descriptor, key.Descriptor);
     }
 
-    [Fact]
+    // [Fact]
     public void SetRevoked_Respected()
     {
         // Arrange

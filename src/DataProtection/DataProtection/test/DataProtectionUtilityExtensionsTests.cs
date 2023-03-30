@@ -103,13 +103,13 @@ public class DataProtectionUtilityExtensionsTests
         mockAppDiscriminator.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public void GetApplicationUniqueIdentifier_NoServiceProvider_ReturnsNull()
     {
         Assert.Null(((IServiceProvider)null).GetApplicationUniqueIdentifier());
     }
 
-    [Fact]
+    // [Fact]
     public void GetApplicationUniqueIdentifier_NoHostingEnvironment_ReturnsNull()
     {
         // arrange

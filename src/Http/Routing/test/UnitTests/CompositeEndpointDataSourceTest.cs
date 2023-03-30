@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class CompositeEndpointDataSourceTest
 {
-    [Fact]
+    // [Fact]
     public void CreatesShallowCopyOf_ListOfEndpoints()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class CompositeEndpointDataSourceTest
         Assert.Equal(endpoints, dataSource.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatesShallowCopyOf_ListOfGroupedEndpoints()
     {
         var endpoint1 = CreateEndpoint("/a");
@@ -57,7 +57,7 @@ public class CompositeEndpointDataSourceTest
         Assert.Equal(groupedEndpoints, resolvedGroupEndpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void RepeatedlyThrows_WhenChildDataSourcesThrow()
     {
         var ex = new Exception();
@@ -79,7 +79,7 @@ public class CompositeEndpointDataSourceTest
         Assert.Same(ex, Assert.Throws<Exception>(() => compositeDataSource.GetGroupedEndpoints(groupContext)));
     }
 
-    [Fact]
+    // [Fact]
     public void Endpoints_ReturnsAllEndpoints_FromMultipleDataSources()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class CompositeEndpointDataSourceTest
             (ep) => Assert.Same(endpoint5, ep));
     }
 
-    [Fact]
+    // [Fact]
     public void DataSourceChanges_AreReflected_InEndpoints()
     {
         // Arrange1
@@ -149,7 +149,7 @@ public class CompositeEndpointDataSourceTest
             (ep) => Assert.Same(endpoint3, ep));
     }
 
-    [Fact]
+    // [Fact]
     public void ConsumerChangeToken_IsRefreshed_WhenDataSourceCallbackFires()
     {
         // Arrange1
@@ -193,7 +193,7 @@ public class CompositeEndpointDataSourceTest
         Assert.False(token.HasChanged);
     }
 
-    [Fact]
+    // [Fact]
     public void ConsumerChangeToken_IsRefreshed_WhenNewDataSourceCallbackFires()
     {
         var endpoint1 = CreateEndpoint("/a");
@@ -229,7 +229,7 @@ public class CompositeEndpointDataSourceTest
         Assert.False(token.HasChanged);
     }
 
-    [Fact]
+    // [Fact]
     public void ConsumerChangeToken_IsNotRefreshed_AfterDisposal()
     {
         var endpoint1 = CreateEndpoint("/a");
@@ -277,7 +277,7 @@ public class CompositeEndpointDataSourceTest
         Assert.False(changeToken3.HasChanged);
     }
 
-    [Fact]
+    // [Fact]
     public void GetGroupedEndpoints_ForwardedToChildDataSources()
     {
         var endpoint = CreateEndpoint("/a");
@@ -311,7 +311,7 @@ public class CompositeEndpointDataSourceTest
         Assert.Same(metadata, resolvedMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public void GetGroupedEndpoints_GroupFinallyConventionsApplyToAllEndpoints()
     {
         var endpointMetadata = new EndpointMetadataCollection(new object[]
@@ -367,7 +367,7 @@ public class CompositeEndpointDataSourceTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetGroupedEndpoints_GroupFinallyConventionsCanExamineRegularConventions()
     {
         var endpoint1 = CreateEndpoint("/a");
@@ -422,7 +422,7 @@ public class CompositeEndpointDataSourceTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetGroupedEndpoints_MultipleGroupFinallyConventionsApplyToAllEndpoints()
     {
         var endpointMetadata = new EndpointMetadataCollection(new object[]

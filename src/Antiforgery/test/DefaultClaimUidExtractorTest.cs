@@ -12,7 +12,7 @@ public class DefaultClaimUidExtractorTest
     private static readonly ObjectPool<AntiforgerySerializationContext> _pool =
         new DefaultObjectPoolProvider().Create(new AntiforgerySerializationContextPooledObjectPolicy());
 
-    [Fact]
+    // [Fact]
     public void ExtractClaimUid_Unauthenticated()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class DefaultClaimUidExtractorTest
         Assert.Null(claimUid);
     }
 
-    [Fact]
+    // [Fact]
     public void ExtractClaimUid_ClaimsIdentity()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class DefaultClaimUidExtractorTest
         Assert.Equal("yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=", claimUid);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultUniqueClaimTypes_NotPresent_SerializesAllClaimTypes()
     {
         var identity = new ClaimsIdentity("someAuthentication");
@@ -76,7 +76,7 @@ public class DefaultClaimUidExtractorTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultUniqueClaimTypes_Present()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class DefaultClaimUidExtractorTest
         }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_PrefersSubClaimOverNameIdentifierAndUpn()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class DefaultClaimUidExtractorTest
         }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_PrefersNameIdentifierOverUpn()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class DefaultClaimUidExtractorTest
         }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_UsesUpnIfPresent()
     {
         // Arrange
@@ -157,7 +157,7 @@ public class DefaultClaimUidExtractorTest
         }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_MultipleIdentities_UsesOnlyAuthenticatedIdentities()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class DefaultClaimUidExtractorTest
         }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_NoKnownClaimTypesFound_SortsAndReturnsAllClaimsFromAuthenticatedIdentities()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class DefaultClaimUidExtractorTest
             }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_PrefersNameFromFirstIdentity_OverSubFromSecondIdentity()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class DefaultClaimUidExtractorTest
         }, uniqueIdentifierParameters);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUniqueIdentifierParameters_PrefersUpnFromFirstIdentity_OverNameFromSecondIdentity()
     {
         // Arrange

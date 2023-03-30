@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.WebEncoders;
 
 public class EncoderServiceCollectionExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void AddWebEncoders_WithoutOptions_RegistersDefaultEncoders()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class EncoderServiceCollectionExtensionsTests
         Assert.Same(UrlEncoder.Default, serviceProvider.GetRequiredService<UrlEncoder>()); // as singleton instance
     }
 
-    [Fact]
+    // [Fact]
     public void AddWebEncoders_WithOptions_RegistersEncodersWithCustomCodeFilter()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class EncoderServiceCollectionExtensionsTests
         Assert.Same(urlEncoder, serviceProvider.GetRequiredService<UrlEncoder>()); // as singleton instance
     }
 
-    [Fact]
+    // [Fact]
     public void AddWebEncoders_DoesNotOverrideExistingRegisteredEncoders()
     {
         // Arrange

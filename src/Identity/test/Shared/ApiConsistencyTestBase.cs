@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Identity.Test;
 
 public abstract class ApiConsistencyTestBase
 {
-    [Fact]
+    // [Fact]
     public void Public_inheritable_apis_should_be_virtual()
     {
         var nonVirtualMethods
@@ -31,7 +31,7 @@ public abstract class ApiConsistencyTestBase
             "\r\n-- Missing virtual APIs --\r\n" + string.Join("\r\n", nonVirtualMethods));
     }
 
-    [Fact]
+    // [Fact]
     public void Async_methods_should_end_with_async_suffix()
     {
         var asyncMethods

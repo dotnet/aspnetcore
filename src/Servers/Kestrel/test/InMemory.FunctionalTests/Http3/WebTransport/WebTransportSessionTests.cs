@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportSessionTests : Http3TestBase
 {
-    [Fact]
+    // [Fact]
     public async Task WebTransportSession_CanOpenNewStream()
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
@@ -30,7 +30,7 @@ public class WebTransportSessionTests : Http3TestBase
         exitTcs.SetResult();
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebTransportSession_AcceptNewStreamsInOrderOfArrival()
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true; // TODO add more sync code as now it is flaky

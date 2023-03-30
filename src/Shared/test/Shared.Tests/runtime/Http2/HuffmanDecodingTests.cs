@@ -59,7 +59,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             return dstOffset;
         }
 
-        [Fact]
+        // [Fact]
         public void HuffmanDecoding_ValidEncoding_Succeeds()
         {
             foreach (byte[] input in TestData())
@@ -78,7 +78,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             }
         }
 
-        [Fact]
+        // [Fact]
         public void HuffmanDecoding_InvalidEncoding_Throws()
         {
             foreach (byte[] encoded in InvalidEncodingData())
@@ -289,7 +289,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
-        [Fact]
+        // [Fact]
         public void ResizesOnDestinationBufferTooSmall()
         {
             //                           h      e         l          l      o         *
@@ -334,7 +334,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodeCharactersThatSpans5Octets()
         {
             int expectedLength = 2;

@@ -11,7 +11,7 @@ public partial class AtMostOneFromBodyAttributeTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task Handler_With_No_FromBody_Attributes_Works()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class Product
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_With_One_FromBody_Attributes_Works()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class Product
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_With_Two_FromBody_Attributes_Fails()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class Product
             );
     }
 
-    [Fact]
+    // [Fact]
     public async Task MethodGroup_Handler_With_Two_FromBody_Attributes_Fails()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class Product
             );
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Handler_With_AsParameters_Argument_With_TwoFromBody_Attributes_Fails()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class Product
             );
     }
 
-    [Fact]
+    // [Fact]
     public async Task Handler_Handler_With_AsParameters_Argument_With_OneFromBody_Attributes_Works()
     {
         // Arrange

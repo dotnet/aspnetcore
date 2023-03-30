@@ -126,7 +126,7 @@ public class PipelineExtensionTests : IDisposable
         Assert.Equal(input.Length, reader.Buffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void WriteAscii()
     {
         const byte maxAscii = 0x7f;

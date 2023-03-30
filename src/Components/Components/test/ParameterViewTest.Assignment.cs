@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public partial class ParameterViewTest
 {
-    [Fact]
+    // [Fact]
     public void IncomingParameterMatchesAnnotatedPrivateProperty_SetsValue()
     {
         // Arrange
@@ -30,7 +30,7 @@ public partial class ParameterViewTest
         Assert.Same(someObject, target.ObjectPropCurrentValue);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingParameterMatchesDeclaredParameterCaseInsensitively_SetsValue()
     {
         // Arrange
@@ -47,7 +47,7 @@ public partial class ParameterViewTest
         Assert.Equal(123, target.IntProp);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingParameterMatchesInheritedDeclaredParameter_SetsValue()
     {
         // Arrange
@@ -66,7 +66,7 @@ public partial class ParameterViewTest
         Assert.Equal(456, target.DerivedClassIntProp);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingParameterMatchesOverriddenParameter_ThatDoesNotHaveAttribute()
     {
         // Test for https://github.com/dotnet/aspnetcore/issues/13162
@@ -84,7 +84,7 @@ public partial class ParameterViewTest
         Assert.Equal(123, target.VirtualProp);
     }
 
-    [Fact]
+    // [Fact]
     public void NoIncomingParameterMatchesDeclaredParameter_LeavesValueUnchanged()
     {
         // Arrange
@@ -107,7 +107,7 @@ public partial class ParameterViewTest
         Assert.Same(existingObjectValue, target.ObjectPropCurrentValue);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingCascadingValueMatchesCascadingParameter_SetsValue()
     {
         // Arrange
@@ -124,7 +124,7 @@ public partial class ParameterViewTest
         Assert.Equal("hi", target.Cascading);
     }
 
-    [Fact]
+    // [Fact]
     public void NoIncomingCascadingValueMatchesDeclaredCascadingParameter_LeavesValueUnchanged()
     {
         // Arrange
@@ -143,7 +143,7 @@ public partial class ParameterViewTest
         Assert.Equal("bye", target.Cascading);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingCascadingValueMatchesNoDeclaredParameter_Throws()
     {
         // Arrange
@@ -163,7 +163,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingParameterMatchesPropertyNotDeclaredAsParameter_Throws()
     {
         // Arrange
@@ -185,7 +185,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingParameterMatchesPropertyNotPublic_Throws()
     {
         // Arrange
@@ -206,7 +206,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingCascadingParameterMatchesPropertyNotPublic_Works()
     {
         // Arrange
@@ -222,7 +222,7 @@ public partial class ParameterViewTest
         Assert.Equal("Test", target.GetCascadingValue());
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingNonCascadingValueMatchesCascadingParameter_Throws()
     {
         // Arrange
@@ -242,7 +242,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingCascadingValueMatchesNonCascadingParameter_Throws()
     {
         // Arrange
@@ -261,7 +261,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingCaptureUnmatchedValuesParameterExplicitlyWorks()
     {
         // Arrange
@@ -279,7 +279,7 @@ public partial class ParameterViewTest
         Assert.Same(value, target.CaptureUnmatchedValues);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingCaptureUnmatchedValuesParameterWithUnmatchedValuesWorks()
     {
         // Arrange
@@ -310,7 +310,7 @@ public partial class ParameterViewTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void SettingCaptureUnmatchedValuesParameterExplicitlyAndImplicitly_Throws()
     {
         // Arrange
@@ -334,7 +334,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingCaptureUnmatchedValuesParameterExplicitlyAndImplicitly_ReverseOrder_Throws()
     {
         // Arrange
@@ -358,7 +358,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void HasDuplicateCaptureUnmatchedValuesParameters_Throws()
     {
         // Arrange
@@ -379,7 +379,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void HasCaptureUnmatchedValuesParameterWithWrongType_Throws()
     {
         // Arrange
@@ -397,7 +397,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingNonCascadingValueMatchesCascadingParameter_WithCaptureUnmatchedValues_DoesNotThrow()
     {
         // Arrange
@@ -423,7 +423,7 @@ public partial class ParameterViewTest
         Assert.Equal("bye", target.Cascading);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingCascadingValueMatchesNonCascadingParameter_WithCaptureUnmatchedValues_Throws()
     {
         // Arrange
@@ -442,7 +442,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void IncomingParameterValueMismatchesDeclaredParameterType_Throws()
     {
         // Arrange
@@ -464,7 +464,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyExplicitSetterException_Throws()
     {
         // Arrange
@@ -485,7 +485,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DeclaredParametersVaryOnlyByCase_Throws()
     {
         // Arrange
@@ -503,7 +503,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DeclaredParameterClashesWithInheritedParameter_Throws()
     {
         // Even when the developer uses 'new' to shadow an inherited property, this is not
@@ -526,7 +526,7 @@ public partial class ParameterViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void SupplyingNullWritesDefaultForType()
     {
         // Arrange

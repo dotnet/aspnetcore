@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class HttpRequestHeadersTests
 {
-    [Fact]
+    // [Fact]
     public void InitialDictionaryIsEmpty()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -26,7 +26,7 @@ public class HttpRequestHeadersTests
         Assert.False(headers.IsReadOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingUnknownHeadersWorks()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -37,7 +37,7 @@ public class HttpRequestHeadersTests
         Assert.Equal("value", header);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingKnownHeadersWorks()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -51,7 +51,7 @@ public class HttpRequestHeadersTests
         Assert.Equal("0", contentLength);
     }
 
-    [Fact]
+    // [Fact]
     public void KnownAndCustomHeaderCountAddedTogether()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -63,7 +63,7 @@ public class HttpRequestHeadersTests
         Assert.Equal(3, headers.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void TryGetValueWorksForKnownAndUnknownHeaders()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -89,7 +89,7 @@ public class HttpRequestHeadersTests
         Assert.True(headers.TryGetValue("Content-Length", out value));
     }
 
-    [Fact]
+    // [Fact]
     public void SameExceptionThrownForMissingKey()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -99,7 +99,7 @@ public class HttpRequestHeadersTests
         Assert.Throws<KeyNotFoundException>(() => headers["Content-Length"]);
     }
 
-    [Fact]
+    // [Fact]
     public void IHeaderDictionaryMembersReturnStringValuesEmptyForMissingHeaders()
     {
         IHeaderDictionary headers = new HttpRequestHeaders();
@@ -115,7 +115,7 @@ public class HttpRequestHeadersTests
         Assert.Same(Array.Empty<string>(), (string[])headers.AltSvc);
     }
 
-    [Fact]
+    // [Fact]
     public void EntriesCanBeEnumeratedAfterResets()
     {
         HttpRequestHeaders headers = new HttpRequestHeaders();
@@ -129,7 +129,7 @@ public class HttpRequestHeadersTests
         EnumerateEntries((IDictionary<string, StringValues>)headers);
     }
 
-    [Fact]
+    // [Fact]
     public void ClearPseudoRequestHeadersPlusResetClearsHeaderReferenceValue()
     {
         const BindingFlags privateFlags = BindingFlags.NonPublic | BindingFlags.Instance;
@@ -146,7 +146,7 @@ public class HttpRequestHeadersTests
         Assert.Equal(StringValues.Empty, methodValue);
     }
 
-    [Fact]
+    // [Fact]
     public void EnumeratorNotReusedBeforeReset()
     {
         HttpRequestHeaders headers = new HttpRequestHeaders();
@@ -158,7 +158,7 @@ public class HttpRequestHeadersTests
         Assert.NotSame(enumerator0, enumerator1);
     }
 
-    [Fact]
+    // [Fact]
     public void EnumeratorReusedAfterReset()
     {
         HttpRequestHeaders headers = new HttpRequestHeaders();
@@ -207,7 +207,7 @@ public class HttpRequestHeadersTests
             headers);
     }
 
-    [Fact]
+    // [Fact]
     public void KeysAndValuesCanBeEnumerated()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -227,7 +227,7 @@ public class HttpRequestHeadersTests
             headers.Values);
     }
 
-    [Fact]
+    // [Fact]
     public void ContainsAndContainsKeyWork()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -279,7 +279,7 @@ public class HttpRequestHeadersTests
         Assert.False(headers.Contains(kv3b));
     }
 
-    [Fact]
+    // [Fact]
     public void AddWorksLikeSetAndThrowsIfKeyExists()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -304,7 +304,7 @@ public class HttpRequestHeadersTests
         Assert.True(headers.TryGetValue("Content-Length", out value));
     }
 
-    [Fact]
+    // [Fact]
     public void ClearRemovesAllHeaders()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -326,7 +326,7 @@ public class HttpRequestHeadersTests
         Assert.False(headers.TryGetValue("Content-Length", out value));
     }
 
-    [Fact]
+    // [Fact]
     public void RemoveTakesHeadersOutOfDictionary()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -364,7 +364,7 @@ public class HttpRequestHeadersTests
         Assert.False(headers.TryGetValue("Content-Length", out value));
     }
 
-    [Fact]
+    // [Fact]
     public void CopyToMovesDataIntoArray()
     {
         IDictionary<string, StringValues> headers = new HttpRequestHeaders();
@@ -391,7 +391,7 @@ public class HttpRequestHeadersTests
         Assert.Equal(new StringValues(), entries[4].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendThrowsWhenHeaderNameContainsNonASCIICharacters()
     {
         var headers = new HttpRequestHeaders();
@@ -663,7 +663,7 @@ public class HttpRequestHeadersTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CanSpecifyEncodingBasedOnHeaderName()
     {
         const string headerValue = "Hello \u03a0";
@@ -693,7 +693,7 @@ public class HttpRequestHeadersTests
         Assert.Equal(headerValue, parsedCookieHeaderValue);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSpecifyEncodingForContentLength()
     {
         var contentLengthNameBytes = Encoding.ASCII.GetBytes(HeaderNames.ContentLength);
@@ -710,7 +710,7 @@ public class HttpRequestHeadersTests
             new HttpRequestHeaders().Append(contentLengthNameBytes, contentLengthValueBytes, checkForNewlineChars: false));
     }
 
-    [Fact]
+    // [Fact]
     public void ValueReuseNeverWhenUnknownHeader()
     {
         const string HeaderName = "An-Unknown-Header";

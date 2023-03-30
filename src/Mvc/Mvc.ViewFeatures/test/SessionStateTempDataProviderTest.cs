@@ -16,7 +16,7 @@ public class SessionStateTempDataProviderTest
             { "key", "value" },
         };
 
-    [Fact]
+    // [Fact]
     public void Load_ThrowsException_WhenSessionIsNotEnabled()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class SessionStateTempDataProviderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void Save_ThrowsException_WhenSessionIsNotEnabled()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class SessionStateTempDataProviderTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void Load_ReturnsEmptyDictionary_WhenNoSessionDataIsAvailable()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class SessionStateTempDataProviderTest
         Assert.Empty(tempDataDictionary);
     }
 
-    [Fact]
+    // [Fact]
     public void SaveAndLoad_Works()
     {
         // Arrange

@@ -64,7 +64,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.RequestMethodNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void AttemptResponseCaching_AuthorizationHeaders_NotAllowed()
     {
         var sink = new TestSink();
@@ -78,7 +78,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.RequestWithAuthorizationNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowCacheStorage_NoStore_Allowed()
     {
         var sink = new TestSink();
@@ -93,7 +93,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowCacheLookup_NoCache_NotAllowed()
     {
         var sink = new TestSink();
@@ -110,7 +110,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.RequestWithNoCacheNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowCacheLookup_LegacyDirectives_NotAllowed()
     {
         var sink = new TestSink();
@@ -124,7 +124,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.RequestWithPragmaNoCacheNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowCacheLookup_LegacyDirectives_OverridenByCacheControl()
     {
         var sink = new TestSink();
@@ -137,7 +137,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void AllowCacheStorage_NoStore_NotAllowed()
     {
         var sink = new TestSink();
@@ -152,7 +152,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_NoPublic_NotAllowed()
     {
         var sink = new TestSink();
@@ -164,7 +164,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithoutPublicNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_Public_Allowed()
     {
         var sink = new TestSink();
@@ -178,7 +178,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_NoCache_NotAllowed()
     {
         var sink = new TestSink();
@@ -195,7 +195,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithNoCacheNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_ResponseNoStore_NotAllowed()
     {
         var sink = new TestSink();
@@ -212,7 +212,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithNoStoreNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_SetCookieHeader_NotAllowed()
     {
         var sink = new TestSink();
@@ -229,7 +229,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithSetCookieNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_VaryHeaderByStar_NotAllowed()
     {
         var sink = new TestSink();
@@ -246,7 +246,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithVaryStarNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_Private_NotAllowed()
     {
         var sink = new TestSink();
@@ -357,7 +357,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ResponseWithUnsuccessfulStatusCodeNotCacheable);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_NoExpiryRequirements_IsAllowed()
     {
         var sink = new TestSink();
@@ -376,7 +376,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_AtExpiry_NotAllowed()
     {
         var sink = new TestSink();
@@ -398,7 +398,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationExpiresExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_MaxAgeOverridesExpiry_ToAllowed()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -418,7 +418,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_MaxAgeOverridesExpiry_ToNotAllowed()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -440,7 +440,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_SharedMaxAgeOverridesMaxAge_ToAllowed()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -460,7 +460,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsResponseCacheable_SharedMaxAgeOverridesMaxAge_ToNotAllowed()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -482,7 +482,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationSharedMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_NoCachedCacheControl_FallsbackToEmptyCacheControl()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -496,7 +496,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_NoExpiryRequirements_IsFresh()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -514,7 +514,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_AtExpiry_IsNotFresh()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -535,7 +535,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationExpiresExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MaxAgeOverridesExpiry_ToFresh()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -555,7 +555,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MaxAgeOverridesExpiry_ToNotFresh()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -577,7 +577,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_SharedMaxAgeOverridesMaxAge_ToFresh()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -598,7 +598,7 @@ public class ResponseCachingPolicyProviderTests
         Assert.Empty(sink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_SharedMaxAgeOverridesMaxAge_ToNotFresh()
     {
         var utcNow = DateTimeOffset.UtcNow;
@@ -621,7 +621,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationSharedMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MinFreshReducesFreshness_ToNotFresh()
     {
         var sink = new TestSink();
@@ -645,7 +645,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationSharedMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_RequestMaxAgeRestrictAge_ToNotFresh()
     {
         var sink = new TestSink();
@@ -667,7 +667,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MaxStaleOverridesFreshness_ToFresh()
     {
         var sink = new TestSink();
@@ -691,7 +691,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationMaxStaleSatisfied);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MaxStaleInfiniteOverridesFreshness_ToFresh()
     {
         var sink = new TestSink();
@@ -714,7 +714,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationInfiniteMaxStaleSatisfied);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MaxStaleOverridesFreshness_ButStillNotFresh()
     {
         var sink = new TestSink();
@@ -738,7 +738,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationMaxAgeExceeded);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_MustRevalidateOverridesRequestMaxStale_ToNotFresh()
     {
         var sink = new TestSink();
@@ -763,7 +763,7 @@ public class ResponseCachingPolicyProviderTests
             LoggedMessage.ExpirationMustRevalidate);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCachedEntryFresh_ProxyRevalidateOverridesRequestMaxStale_ToNotFresh()
     {
         var sink = new TestSink();

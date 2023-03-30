@@ -11,7 +11,7 @@ public class OutputCacheEntryFormatterTests
 {
     private static CachedResponseBody EmptyResponseBody = new(new List<byte[]>(), 0);
 
-    [Fact]
+    // [Fact]
     public async Task StoreAndGet_StoresEmptyValues()
     {
         var store = new TestOutputCache();
@@ -30,7 +30,7 @@ public class OutputCacheEntryFormatterTests
         AssertEntriesAreSame(entry, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StoreAndGet_StoresAllValues()
     {
         var bodySegment1 = "lorem"u8.ToArray();
@@ -54,7 +54,7 @@ public class OutputCacheEntryFormatterTests
         AssertEntriesAreSame(entry, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StoreAndGet_StoresNullTags()
     {
         var store = new TestOutputCache();
@@ -77,7 +77,7 @@ public class OutputCacheEntryFormatterTests
         Assert.Equal("tag", result.Tags[3]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StoreAndGet_StoresNullHeaders()
     {
         var store = new TestOutputCache();

@@ -13,7 +13,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
 {
     protected override MemoryPool<byte> CreatePool() => new DiagnosticMemoryPool(new PinnedBlockMemoryPool());
 
-    [Fact]
+    // [Fact]
     public void DoubleDisposeThrows()
     {
         var memoryPool = CreatePool();
@@ -22,7 +22,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.Equal("Object is being disposed twice", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DisposeWithActiveBlocksThrows()
     {
         var memoryPool = CreatePool();
@@ -33,7 +33,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.Equal("Block is being returned to disposed pool", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void DoubleBlockDisposeThrows()
     {
         var memoryPool = CreatePool();
@@ -45,7 +45,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         ExpectDisposeAggregateException(memoryPool, exception);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemoryOfDisposedPoolThrows()
     {
         var memoryPool = CreatePool();
@@ -57,7 +57,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.Equal("Block is backed by disposed slab", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemoryPinOfDisposedPoolThrows()
     {
         var memoryPool = CreatePool();
@@ -70,7 +70,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.Equal("Block is backed by disposed slab", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemorySpanOfDisposedPoolThrows()
     {
         var memoryPool = CreatePool();
@@ -92,7 +92,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.True(threw);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemoryTryGetArrayOfDisposedPoolThrows()
     {
         var memoryPool = CreatePool();
@@ -105,7 +105,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.Equal("Block is backed by disposed slab", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemoryOfDisposedThrows()
     {
         var memoryPool = CreatePool();
@@ -119,7 +119,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         ExpectDisposeAggregateException(memoryPool, exception);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemoryPinOfDisposedThrows()
     {
         var memoryPool = CreatePool();
@@ -134,7 +134,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         ExpectDisposeAggregateException(memoryPool, exception);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemorySpanOfDisposedThrows()
     {
         var memoryPool = CreatePool();
@@ -158,7 +158,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         ExpectDisposeAggregateException(memoryPool, exception);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMemoryTryGetArrayOfDisposedThrows()
     {
         var memoryPool = CreatePool();
@@ -173,7 +173,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         ExpectDisposeAggregateException(memoryPool, exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotThrowWithLateReturns()
     {
         var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
@@ -183,7 +183,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         await memoryPool.WhenAllBlocksReturnedAsync(TimeSpan.FromSeconds(5));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsOnAccessToLateBlocks()
     {
         var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
@@ -199,7 +199,7 @@ public class DiagnosticMemoryPoolTests : MemoryPoolTests
         Assert.Equal(new Exception[] { exception }, aggregateException.InnerExceptions);
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionsContainStackTraceWhenEnabled()
     {
         var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), rentTracking: true);

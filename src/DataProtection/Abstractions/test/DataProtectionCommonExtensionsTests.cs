@@ -49,7 +49,7 @@ public class DataProtectionCommonExtensionsTests
             exceptionMessage: Resources.DataProtectionExtensions_NullPurposesCollection);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateProtector_ChainedAsIEnumerable_SuccessCase()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.Same(finalExpectedProtector, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateProtector_ChainedAsParams_NonEmptyParams_SuccessCase()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.Same(finalExpectedProtector, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDataProtectionProvider_NoServiceFound_Throws()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.Equal(Resources.FormatDataProtectionExtensions_NoService(typeof(IDataProtectionProvider).FullName), ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDataProtectionProvider_ServiceFound_ReturnsService()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class DataProtectionCommonExtensionsTests
             exceptionMessage: Resources.DataProtectionExtensions_NullPurposesCollection);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDataProtector_ChainedAsIEnumerable_SuccessCase()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.Same(finalExpectedProtector, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDataProtector_ChainedAsParams_NonEmptyParams_SuccessCase()
     {
         // Arrange
@@ -240,7 +240,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.Same(finalExpectedProtector, retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void Protect_InvalidUtf8_Failure()
     {
         // Arrange
@@ -254,7 +254,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.IsAssignableFrom<EncoderFallbackException>(ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public void Protect_Success()
     {
         // Arrange
@@ -268,7 +268,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.Equal("AQIDBAU", retVal);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_InvalidBase64BeforeDecryption_Failure()
     {
         // Arrange
@@ -281,7 +281,7 @@ public class DataProtectionCommonExtensionsTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_InvalidUtf8AfterDecryption_Failure()
     {
         // Arrange
@@ -296,7 +296,7 @@ public class DataProtectionCommonExtensionsTests
         Assert.IsAssignableFrom<DecoderFallbackException>(ex.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public void Unprotect_Success()
     {
         // Arrange

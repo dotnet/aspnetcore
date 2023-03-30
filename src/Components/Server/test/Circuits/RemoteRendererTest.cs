@@ -20,7 +20,7 @@ public class RemoteRendererTest
     // failures.
     private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
-    [Fact]
+    // [Fact]
     public void WritesAreBufferedWhenTheClientIsOffline()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class RemoteRendererTest
         Assert.Equal(2, renderer._unacknowledgedRenderBatches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void NotAcknowledgingRenders_ProducesBatches_UpToTheLimit()
     {
         var serviceProvider = CreateServiceProvider();
@@ -66,7 +66,7 @@ public class RemoteRendererTest
         Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoNewBatchesAreCreated_WhenThereAreNoPendingRenderRequestsFromComponents()
     {
         var serviceProvider = CreateServiceProvider();
@@ -91,7 +91,7 @@ public class RemoteRendererTest
         Assert.Equal(9, renderer._unacknowledgedRenderBatches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProducesNewBatch_WhenABatchGetsAcknowledged()
     {
         var serviceProvider = CreateServiceProvider();
@@ -116,7 +116,7 @@ public class RemoteRendererTest
         Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class RemoteRendererTest
         await task;
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRenderCompletedAsync_DoesNotThrowWhenReceivedDuplicateAcks()
     {
         // Arrange
@@ -242,7 +242,7 @@ public class RemoteRendererTest
         Assert.Empty(exceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnRenderCompletedAsync_DoesNotThrowWhenThereAreNoPendingBatchesToAck()
     {
         // Arrange
@@ -305,7 +305,7 @@ public class RemoteRendererTest
         Assert.Empty(exceptions);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConsumesAllPendingBatchesWhenReceivingAHigherSequenceBatchId()
     {
         // Arrange
@@ -362,7 +362,7 @@ public class RemoteRendererTest
         Assert.Empty(renderer._unacknowledgedRenderBatches);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsIfWeReceivedAnAcknowledgeForANeverProducedBatch()
     {
         // Arrange

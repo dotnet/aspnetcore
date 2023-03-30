@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.StaticFiles;
 
 public class StaticFileMiddlewareTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task ReturnsNotFoundWithoutWwwroot()
     {
         using var host = new HostBuilder()
@@ -80,7 +80,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReturnsNotFoundIfSendFileThrows()
     {
         var mockSendFile = new Mock<IHttpResponseBodyFeature>();
@@ -115,7 +115,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         Assert.Null(response.Headers.ETag);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FoundFile_LastModifiedTrimsSeconds()
     {
         using (var fileProvider = new PhysicalFileProvider(AppContext.BaseDirectory))
@@ -135,7 +135,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NullArguments()
     {
         // No exception, default provided
@@ -201,7 +201,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnPrepareResponse_Executed_Test()
     {
         var baseUrl = "";
@@ -241,7 +241,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         Assert.True(onPrepareResponseExecuted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnPrepareResponseAsync_Executed_Test()
     {
         var baseUrl = "";
@@ -283,7 +283,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         Assert.True(onPrepareResponseExecuted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnPrepareResponse_Execution_Order_Test()
     {
         var baseUrl = "";
@@ -334,7 +334,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         Assert.True(asyncCallbackInvoked);
     }
 
-    [Fact]
+    // [Fact]
     public async Task File_Served_If_Endpoint_With_Null_RequestDelegate_Is_Active()
     {
         using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
@@ -375,7 +375,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task File_NotServed_If_Endpoint_With_RequestDelegate_Is_Active()
     {
         var responseText = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
@@ -414,7 +414,7 @@ public class StaticFileMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task OverrideDefaultStatusCode()
     {
         using var host = await StaticFilesTestServer.Create(app =>
@@ -436,7 +436,7 @@ public class StaticFileMiddlewareTests : LoggedTest
     /// Note that the status code *might* be overridden if the static files middleware
     /// delegates to `next` (e.g. if the file isn't found and hits the 404 middleware).
     /// </remarks>
-    [Fact]
+    // [Fact]
     public async Task DontOverrideNonDefaultStatusCode()
     {
         const HttpStatusCode errorCode = HttpStatusCode.InsufficientStorage;

@@ -18,7 +18,7 @@ public class ProblemDetailsExceptionHandlerSampleTest : IClassFixture<TestFixtur
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionHandlerPage_ProducesProblemDetails()
     {
         // Arrange

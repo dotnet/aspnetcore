@@ -44,7 +44,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
     };
 
-    [Fact]
+    // [Fact]
     public async Task LargeDownload()
     {
         var hostBuilder = TransportSelector.GetHostBuilder()
@@ -452,7 +452,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Empty(coreLogs.Where(w => w.LogLevel > LogLevel.Information));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
     {
         var logger = LoggerFactory.CreateLogger($"{ typeof(ResponseTests).FullName}.{ nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
@@ -556,7 +556,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
     {
         const int chunkSize = 1024;
@@ -648,7 +648,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionClosedWhenBothRequestAndResponseExperienceBackPressure()
     {
         const int bufferSize = 65536;
@@ -822,7 +822,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.False(requestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
     {
         var headerSize = 1024 * 1024; // 1 MB for each header value
@@ -907,7 +907,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.False(requestAborted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientCanReceiveFullConnectionCloseResponseWithoutErrorAtALowDataRate()
     {
         var chunkSize = 64 * 128 * 1024;

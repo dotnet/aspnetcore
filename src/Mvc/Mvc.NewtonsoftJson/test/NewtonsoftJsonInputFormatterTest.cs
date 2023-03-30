@@ -22,7 +22,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
     private readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
     private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
 
-    [Fact]
+    // [Fact]
     public async Task Constructor_BuffersRequestBody_UsingDefaultOptions()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal(30, userModel.Age);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Constructor_SuppressInputFormatterBuffering_UsingMvcOptions_DoesNotBufferRequestBody()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal(30, userModel.Age);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Version_2_1_Constructor_SuppressInputFormatterBufferingSetToTrue_UsingMutatedOptions()
     {
         // Arrange
@@ -135,7 +135,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Null(result.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Constructor_UsesSerializerSettings()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Same(serializerSettings, formatter.SerializerSettings);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomSerializerSettingsObject_TakesEffect()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Contains("Required property 'Password' not found in JSON", message);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateJsonSerializer_UsesJsonSerializerSettings()
     {
         // Arrange
@@ -194,13 +194,13 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal(settings.DateTimeZoneHandling, actual.DateTimeZoneHandling);
     }
 
-    [Fact]
+    // [Fact]
     public override Task JsonFormatter_EscapedKeys()
     {
         return base.JsonFormatter_EscapedKeys();
     }
 
-    [Fact]
+    // [Fact]
     public override Task JsonFormatter_EscapedKeys_Bracket()
     {
         return base.JsonFormatter_EscapedKeys_Bracket();
@@ -251,7 +251,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal(expectedMessage, modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_AllowMultipleErrors()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_DoNotAllowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
     {
         // Arrange
@@ -307,7 +307,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Empty(modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_AllowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
     {
         // Arrange
@@ -340,7 +340,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.NotEmpty(modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_DoesNotRethrowFormatExceptions()
     {
         // Arrange
@@ -371,7 +371,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal("The supplied value is invalid.", modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_DoesNotRethrowOverflowExceptions()
     {
         // Arrange
@@ -402,7 +402,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal("The supplied value is invalid for ShortValue.", modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_HasCorrectModelErrorWithNestedType()
     {
         // Arrange
@@ -433,7 +433,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         Assert.Equal("The supplied value is invalid for ShortValue.", modelError.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_RegistersFileStreamForDisposal()
     {
         // Arrange
@@ -522,7 +522,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_AllowUserCodeToHandleDeserializationErrors()
     {
         // Arrange

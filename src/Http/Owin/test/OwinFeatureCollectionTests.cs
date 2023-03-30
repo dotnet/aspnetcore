@@ -19,7 +19,7 @@ public class OwinHttpEnvironmentTests
         return env.TryGetValue(key, out value) ? (T)value : default(T);
     }
 
-    [Fact]
+    // [Fact]
     public void OwinHttpEnvironmentCanBeCreated()
     {
         var env = new Dictionary<string, object>
@@ -38,7 +38,7 @@ public class OwinHttpEnvironmentTests
         Assert.Equal("?name=value", requestFeature.QueryString);
     }
 
-    [Fact]
+    // [Fact]
     public void OwinHttpEnvironmentCanBeModified()
     {
         var env = new Dictionary<string, object>

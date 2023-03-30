@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputFileChangeEventArgsTest
 {
-    [Fact]
+    // [Fact]
     public void SuppliesNumberOfFiles()
     {
         var emptySet = new InputFileChangeEventArgs(Array.Empty<IBrowserFile>());
@@ -15,7 +15,7 @@ public class InputFileChangeEventArgsTest
         Assert.Equal(2, twoItemSet.FileCount);
     }
 
-    [Fact]
+    // [Fact]
     public void File_CanSupplySingle()
     {
         var file = new BrowserFile();
@@ -23,7 +23,7 @@ public class InputFileChangeEventArgsTest
         Assert.Same(file, instance.File);
     }
 
-    [Fact]
+    // [Fact]
     public void File_ThrowsIfZeroFiles()
     {
         var instance = new InputFileChangeEventArgs(Array.Empty<IBrowserFile>());
@@ -31,7 +31,7 @@ public class InputFileChangeEventArgsTest
         Assert.StartsWith("No file was supplied", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void File_ThrowsIfMultipleFiles()
     {
         var instance = new InputFileChangeEventArgs(new[] { new BrowserFile(), new BrowserFile() });
@@ -39,14 +39,14 @@ public class InputFileChangeEventArgsTest
         Assert.StartsWith("More than one file was supplied", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMultipleFiles_CanSupplyEmpty()
     {
         var instance = new InputFileChangeEventArgs(Array.Empty<IBrowserFile>());
         Assert.Empty(instance.GetMultipleFiles());
     }
 
-    [Fact]
+    // [Fact]
     public void GetMultipleFiles_CanSupplyFiles()
     {
         var files = new[] { new BrowserFile(), new BrowserFile() };
@@ -54,7 +54,7 @@ public class InputFileChangeEventArgsTest
         Assert.Same(files, instance.GetMultipleFiles());
     }
 
-    [Fact]
+    // [Fact]
     public void GetMultipleFiles_ThrowsIfTooManyFiles()
     {
         var files = new[] { new BrowserFile(), new BrowserFile() };

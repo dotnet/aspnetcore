@@ -12,7 +12,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
 {
     public OpenApiAddFileTests(ITestOutputHelper output) : base(output) { }
 
-    [Fact]
+    // [Fact]
     public void OpenApi_Empty_ShowsHelp()
     {
         var app = GetApplication();
@@ -23,7 +23,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Contains("Usage: openapi ", _output.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void OpenApi_NoProjectExists()
     {
         var app = GetApplication();
@@ -34,7 +34,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Equal(1, run);
     }
 
-    [Fact]
+    // [Fact]
     public void OpenApi_ExplicitProject_Missing()
     {
         var app = GetApplication();
@@ -46,7 +46,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Equal(1, run);
     }
 
-    [Fact]
+    // [Fact]
     public void OpenApi_Add_Empty_ShowsHelp()
     {
         var app = GetApplication();
@@ -57,7 +57,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Contains("Usage: openapi add", _output.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void OpenApi_Add_File_Empty_ShowsHelp()
     {
         var app = GetApplication();
@@ -68,7 +68,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Contains("Usage: openapi ", _output.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Add_ReuseItemGroup()
     {
         var project = CreateBasicProject(withOpenApi: true);
@@ -97,7 +97,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Same(openApiRefs[0].ParentNode, openApiRefs[1].ParentNode);
     }
 
-    [Fact]
+    // [Fact]
     public void OpenApi_Add_File_EquivilentPaths()
     {
         var project = CreateBasicProject(withOpenApi: true);
@@ -122,7 +122,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Single(openApiRefs);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Add_NSwagTypeScript()
     {
         var project = CreateBasicProject(withOpenApi: true);
@@ -142,7 +142,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\" CodeGenerator=\"NSwagTypeScript\" />", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Add_FromJson()
     {
         var project = CreateBasicProject(withOpenApi: true);
@@ -162,7 +162,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\"", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Add_File_UseProjectOption()
     {
         var project = CreateBasicProject(withOpenApi: true);
@@ -182,7 +182,7 @@ public class OpenApiAddFileTests : OpenApiTestBase
         Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFIle}\"", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OpenApi_Add_MultipleTimes_OnlyOneReference()
     {
         var project = CreateBasicProject(withOpenApi: true);

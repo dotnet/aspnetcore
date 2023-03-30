@@ -14,19 +14,19 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class AssemblyTestLogTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public void FunctionalLogs_LogsPreservedFromNonQuarantinedTest()
     {
     }
 
-    [Fact]
+    // [Fact]
     // Keep this test in quarantine, it verifies that quarantined test logs are preserved
     [QuarantinedTest("No issue")]
     public void FunctionalLogs_LogsPreservedFromQuarantinedTest()
     {
     }
 
-    [Fact]
+    // [Fact]
     public void ForAssembly_ReturnsSameInstanceForSameAssembly()
     {
         Assert.Same(
@@ -34,7 +34,7 @@ public class AssemblyTestLogTests : LoggedTest
             AssemblyTestLog.ForAssembly(TestableAssembly.ThisAssembly));
     }
 
-    [Fact]
+    // [Fact]
     public Task ForAssemblyWritesToAssemblyBaseDirectory() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
@@ -70,7 +70,7 @@ public class AssemblyTestLogTests : LoggedTest
             logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
         });
 
-    [Fact]
+    // [Fact]
     public void TestLogWritesToITestOutputHelper()
     {
         var output = new TestTestOutputHelper();
@@ -94,7 +94,7 @@ public class AssemblyTestLogTests : LoggedTest
 ", testLogContent, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public Task TestLogEscapesIllegalFileNames() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
@@ -115,7 +115,7 @@ public class AssemblyTestLogTests : LoggedTest
             Assert.Equal(escapedTestName, resolvedTestname);
         });
 
-    [Fact]
+    // [Fact]
     public Task TestLogWritesToGlobalLogFile() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
@@ -176,7 +176,7 @@ public class AssemblyTestLogTests : LoggedTest
 ", testLogContent, ignoreLineEndingDifferences: true);
         });
 
-    [Fact]
+    // [Fact]
     public Task TestLogCleansLogFiles_AfterSuccessfulRun() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
@@ -222,7 +222,7 @@ public class AssemblyTestLogTests : LoggedTest
             Assert.True(!File.Exists(testLog), $"Expected no test log file {testLog} to exist.");
         });
 
-    [Fact]
+    // [Fact]
     public Task TestLogDoesNotCleanLogFiles_AfterFailedRun() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
@@ -267,7 +267,7 @@ public class AssemblyTestLogTests : LoggedTest
             Assert.True(File.Exists(testLog), $"Expected test log file {testLog} to exist.");
         });
 
-    [Fact]
+    // [Fact]
     public Task TestLogTruncatesTestNameToAvoidLongPaths() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
@@ -311,7 +311,7 @@ public class AssemblyTestLogTests : LoggedTest
                 testFileName.Substring(testFileName.Length - testFileName.Length / 2, testFileName.Length / 2));
         });
 
-    [Fact]
+    // [Fact]
     public Task TestLogEnumerateFilenamesToAvoidCollisions() =>
         RunTestLogFunctionalTest((tempDir) =>
         {

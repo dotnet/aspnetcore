@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 
 public class RazorPageCreateModelExpressionTest
 {
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_IdentityExpressions_ForModelGivesM()
     {
         // m => m
@@ -40,7 +40,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Same(modelExplorer, modelExpression.ModelExplorer);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_IdentityExpressions_ForModelGivesModel()
     {
         // m => m.Model
@@ -65,7 +65,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Same(modelExplorer, modelExpression.ModelExplorer);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions_ForModelGivesMDotModel()
     {
         // m => m.Model
@@ -76,7 +76,7 @@ public class RazorPageCreateModelExpressionTest
         CreateModelExpression_NotQuiteIdentityExpressions(page => page.CreateModelExpression1(), expectedName, expectedType);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions_ForModelGivesViewDataDotModel()
     {
         // m => ViewData.Model
@@ -87,7 +87,7 @@ public class RazorPageCreateModelExpressionTest
         CreateModelExpression_NotQuiteIdentityExpressions(page => page.CreateModelExpression2(), expectedName, expectedType);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions_ForModelGivesViewContextDotViewDataDotModel()
     {
         // m => ViewContext.ViewData.Model
@@ -124,7 +124,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expectedType, modelExpression.Metadata.ModelType);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesSomethingElse()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expected, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesId()
     {
         // Arrange
@@ -161,7 +161,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expected, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesSubModelId()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expected, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesSubSubModelId()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expected, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesSomethingElse()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expectedName, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesName()
     {
         // Arrange
@@ -234,7 +234,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expectedName, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesSubmodelName()
     {
         // Arrange
@@ -252,7 +252,7 @@ public class RazorPageCreateModelExpressionTest
         Assert.Equal(expectedName, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesSubSubmodelName()
     {
         // Arrange

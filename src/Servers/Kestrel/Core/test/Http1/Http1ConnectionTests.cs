@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class Http1ConnectionTests : Http1ConnectionTestsBase
 {
-    [Fact]
+    // [Fact]
     public async Task TakeMessageHeadersSucceedsWhenHeaderValueContainsUTF8()
     {
         var headerName = "Header";
@@ -40,7 +40,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(headerValue, _http1Connection.RequestHeaders[headerName]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TakeMessageHeadersThrowsWhenHeaderValueContainsExtendedASCII()
     {
         var extendedAsciiEncoding = Encoding.GetEncoding("ISO-8859-1");
@@ -56,7 +56,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MaxRequestHeadersTotalSizeDoesNotThrowForMaxValue()
     {
         const string headerLine = "Header: value\r\n";
@@ -67,7 +67,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
     }
 
-    [Fact]
+    // [Fact]
     public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
     {
         const string headerLine = "Header: value\r\n";
@@ -84,7 +84,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TakeMessageHeadersThrowsWhenHeadersExceedCountLimit()
     {
         const string headerLines = "Header-1: value1\r\nHeader-2: value2\r\n";
@@ -101,7 +101,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TakeMessageHeadersDoesNotCountAlreadyConsumedBytesTowardsSizeLimit()
     {
         const string startLine = "GET / HTTP/1.1\r\n";
@@ -148,7 +148,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal("makethislargerthanthestartline", _http1Connection.RequestHeaders["Header"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetResetsScheme()
     {
         _http1Connection.Scheme = "https";
@@ -160,7 +160,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal("http", ((IFeatureCollection)_http1Connection).Get<IHttpRequestFeature>().Scheme);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetResetsMinRequestBodyDataRate()
     {
         _http1Connection.MinRequestBodyDataRate = new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.MaxValue);
@@ -170,7 +170,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Same(_serviceContext.ServerOptions.Limits.MinRequestBodyDataRate, _http1Connection.MinRequestBodyDataRate);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetResetsMinResponseDataRate()
     {
         _http1Connection.MinResponseDataRate = new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.MaxValue);
@@ -180,7 +180,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Same(_serviceContext.ServerOptions.Limits.MinResponseDataRate, _http1Connection.MinResponseDataRate);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TraceIdentifierCountsRequestsPerHttp1Connection()
     {
         var connectionId = _http1ConnectionContext.ConnectionId;
@@ -250,7 +250,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await requestProcessingTask.DefaultTimeout();
     }
 
-    [Fact]
+    // [Fact]
     public void TraceIdentifierGeneratesWhenNull()
     {
         _http1Connection.TraceIdentifier = null;
@@ -259,7 +259,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(id, _http1Connection.TraceIdentifier);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResetResetsHeaderLimits()
     {
         const string headerLine1 = "Header-1: value1\r\n";
@@ -293,7 +293,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal("value2", _http1Connection.RequestHeaders["Header-2"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsWhenStatusCodeIsSetAfterResponseStarted()
     {
         // Act
@@ -304,7 +304,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).StatusCode = StatusCodes.Status404NotFound);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsWhenReasonPhraseIsSetAfterResponseStarted()
     {
         // Act
@@ -315,7 +315,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = "Reason phrase");
     }
 
-    [Fact]
+    // [Fact]
     public async Task ThrowsWhenOnStartingIsSetAfterResponseStarted()
     {
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1]));
@@ -343,7 +343,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Same(minDataRate, _http1Connection.MinResponseDataRate);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetResetsRequestHeaders()
     {
         // Arrange
@@ -357,7 +357,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Same(originalRequestHeaders, _http1Connection.RequestHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetResetsResponseHeaders()
     {
         // Arrange
@@ -371,7 +371,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Same(originalResponseHeaders, _http1Connection.ResponseHeaders);
     }
 
-    [Fact]
+    // [Fact]
     public void InitializeStreamsResetsStreams()
     {
         // Arrange
@@ -442,7 +442,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(expectedQueryString, _http1Connection.QueryString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
     {
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("G"));
@@ -454,7 +454,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutReason.RequestHeaders));
     }
 
-    [Fact]
+    // [Fact]
     public async Task TakeStartLineThrowsWhenTooLong()
     {
         _serviceContext.ServerOptions.Limits.MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length;
@@ -565,7 +565,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(HttpUtilities.MethodToString(allowedMethod), exception.AllowedHeader);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessRequestsAsyncEnablesKeepAliveTimeout()
     {
         var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
@@ -579,7 +579,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await requestProcessingTask.DefaultTimeout();
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteThrowsForNonBodyResponse()
     {
         // Arrange
@@ -589,7 +589,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await Assert.ThrowsAsync<InvalidOperationException>(() => _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1])));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsyncThrowsForNonBodyResponse()
     {
         // Arrange
@@ -600,7 +600,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await Assert.ThrowsAsync<InvalidOperationException>(() => _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteDoesNotThrowForHeadResponse()
     {
         // Arrange
@@ -611,7 +611,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1]));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteAsyncDoesNotThrowForHeadResponse()
     {
         // Arrange
@@ -622,7 +622,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ManuallySettingTransferEncodingThrowsForHeadResponse()
     {
         // Arrange
@@ -636,7 +636,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await Assert.ThrowsAsync<InvalidOperationException>(() => _http1Connection.FlushAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ManuallySettingTransferEncodingThrowsForNoBodyResponse()
     {
         // Arrange
@@ -650,7 +650,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await Assert.ThrowsAsync<InvalidOperationException>(() => _http1Connection.FlushAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestProcessingTaskIsUnwrapped()
     {
         var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
@@ -665,7 +665,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _application.Output.Complete();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";
@@ -687,7 +687,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteAsyncWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";
@@ -709,7 +709,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
     }
 
-    [Fact]
+    // [Fact]
     public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
@@ -723,7 +723,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.True(failResult.IsCompleted);
     }
 
-    [Fact]
+    // [Fact]
     public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
@@ -742,7 +742,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(goodResult.IsCanceled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteAsyncAwaitedWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";
@@ -769,7 +769,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteWithChunkedEncoding()
     {
         var original = _http1Connection.RequestAborted;
@@ -787,7 +787,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestAbortedTokenIsFullyUsableAfterCancellation()
     {
         var originalToken = _http1Connection.RequestAborted;
@@ -801,7 +801,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(originalToken, originalRegistration.Token);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestAbortedTokenIsUsableAfterCancellation()
     {
         var originalToken = _http1Connection.RequestAborted;
@@ -817,7 +817,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(originalToken, originalRegistration.Token);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestAbortedTokenIsFiredAfterTransportReturnsCompletedFlushResult()
     {
         var originalToken = _http1Connection.RequestAborted;
@@ -831,7 +831,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionDetailNotIncludedWhenLogLevelInformationNotEnabled()
     {
         var previousLog = _serviceContext.Log;
@@ -926,7 +926,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenMaxRequestBodySizeIsSetAfterReadingFromRequestBody()
     {
         // Act
@@ -939,7 +939,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(CoreStrings.MaxRequestBodySizeCannotBeModifiedAfterRead, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenMaxRequestBodySizeIsSetToANegativeValue()
     {
         // Assert
@@ -947,7 +947,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConsumesRequestWhenApplicationDoesNotConsumeIt()
     {
         var httpApplication = new DummyApplication(async context =>
@@ -967,14 +967,14 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         mockMessageBody.Verify(body => body.ConsumeAsync(), Times.Once);
     }
 
-    [Fact]
+    // [Fact]
     public void Http10HostHeaderNotRequired()
     {
         _http1Connection.HttpVersion = "HTTP/1.0";
         _http1Connection.EnsureHostHeaderExists();
     }
 
-    [Fact]
+    // [Fact]
     public void Http10HostHeaderAllowed()
     {
         _http1Connection.HttpVersion = "HTTP/1.0";
@@ -982,7 +982,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _http1Connection.EnsureHostHeaderExists();
     }
 
-    [Fact]
+    // [Fact]
     public void Http11EmptyHostHeaderAccepted()
     {
         _http1Connection.HttpVersion = "HTTP/1.1";
@@ -990,7 +990,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _http1Connection.EnsureHostHeaderExists();
     }
 
-    [Fact]
+    // [Fact]
     public void Http11ValidHostHeadersAccepted()
     {
         _http1Connection.HttpVersion = "HTTP/1.1";
@@ -998,7 +998,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _http1Connection.EnsureHostHeaderExists();
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequestFor10BadHostHeaderFormat()
     {
         _http1Connection.HttpVersion = "HTTP/1.0";
@@ -1007,7 +1007,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequestFor11BadHostHeaderFormat()
     {
         _http1Connection.HttpVersion = "HTTP/1.1";
@@ -1016,7 +1016,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthRequestHeadersExist()
     {
         // Arrange

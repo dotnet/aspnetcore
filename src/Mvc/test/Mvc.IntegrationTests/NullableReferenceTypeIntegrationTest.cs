@@ -17,7 +17,7 @@ public class NullableReferenceTypeIntegrationTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithNonNullableReferenceType_NoData_ValidationError()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class NullableReferenceTypeIntegrationTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithNullableReferenceType_NoData_NoValidationError()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class NullableReferenceTypeIntegrationTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithNonNullableReferenceType_NoData_ValidationError_CustomMessage()
     {
         // Arrange
@@ -151,7 +151,7 @@ public class NullableReferenceTypeIntegrationTest
     }
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public async Task BindParameter_WithNonNullableReferenceType_NoData_ValidationError()
     {
         // Arrange

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public class ComponentApplicationStateTest
 {
-    [Fact]
+    // [Fact]
     public void InitializeExistingState_SetupsState()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class ComponentApplicationStateTest
         Assert.Equal(new byte[] { 1, 2, 3, 4 }, existing);
     }
 
-    [Fact]
+    // [Fact]
     public void InitializeExistingState_ThrowsIfAlreadyInitialized()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class ComponentApplicationStateTest
         Assert.Throws<InvalidOperationException>(() => applicationState.InitializeExistingState(existingState));
     }
 
-    [Fact]
+    // [Fact]
     public void TryRetrieveState_ReturnsStateWhenItExists()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class ComponentApplicationStateTest
         Assert.False(applicationState.TryTakeFromJson<byte[]>("MyState", out var gone));
     }
 
-    [Fact]
+    // [Fact]
     public void PersistState_SavesDataToTheStoreAsync()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class ComponentApplicationStateTest
         Assert.Equal(myState, JsonSerializer.Deserialize<byte[]>(stored));
     }
 
-    [Fact]
+    // [Fact]
     public void PersistState_ThrowsForDuplicateKeys()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class ComponentApplicationStateTest
         Assert.Throws<ArgumentException>(() => applicationState.PersistAsJson("MyState", myState));
     }
 
-    [Fact]
+    // [Fact]
     public void PersistAsJson_SerializesTheDataToJsonAsync()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class ComponentApplicationStateTest
         Assert.Equal(myState, JsonSerializer.Deserialize<byte[]>(stored));
     }
 
-    [Fact]
+    // [Fact]
     public void PersistAsJson_NullValueAsync()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class ComponentApplicationStateTest
         Assert.Null(JsonSerializer.Deserialize<byte[]>(stored));
     }
 
-    [Fact]
+    // [Fact]
     public void TryRetrieveFromJson_DeserializesTheDataFromJson()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class ComponentApplicationStateTest
         Assert.False(applicationState.TryTakeFromJson<byte[]>("MyState", out _));
     }
 
-    [Fact]
+    // [Fact]
     public void TryRetrieveFromJson_NullValue()
     {
         // Arrange

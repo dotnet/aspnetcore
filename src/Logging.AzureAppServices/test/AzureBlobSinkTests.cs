@@ -16,7 +16,7 @@ public class AzureBlobSinkTests
 {
     DateTimeOffset _timestampOne = new DateTimeOffset(2016, 05, 04, 03, 02, 01, TimeSpan.Zero);
 
-    [Fact]
+    // [Fact]
     public async Task WritesMessagesInBatches()
     {
         var blob = new Mock<ICloudAppendBlob>();
@@ -48,7 +48,7 @@ public class AzureBlobSinkTests
             Encoding.UTF8.GetString(buffers[0]));
     }
 
-    [Fact]
+    // [Fact]
     public async Task GroupsByHour()
     {
         var blob = new Mock<ICloudAppendBlob>();

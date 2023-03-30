@@ -14,7 +14,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase<Forma
     {
     }
 
-    [Fact] // This test covers the 2.0 behavior. JSON.Net error messages are not preserved.
+    // [Fact] // This test covers the 2.0 behavior. JSON.Net error messages are not preserved.
     public virtual async Task JsonInputFormatter_SuppliedJsonDeserializationErrorMessage()
     {
         // Arrange

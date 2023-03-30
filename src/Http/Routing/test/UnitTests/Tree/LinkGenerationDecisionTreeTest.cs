@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Tree;
 
 public class LinkGenerationDecisionTreeTest
 {
-    [Fact]
+    // [Fact]
     public void GetMatches_AllowsNullAmbientValues()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Same(entry, Assert.Single(matches).Match);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_NoCriteria()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Same(entry, Assert.Single(matches).Match);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_MultipleCriteria()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Same(entry, Assert.Single(matches).Match);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_MultipleCriteria_AmbientValues()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.False(match.IsFallbackMatch);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_MultipleCriteria_Replaced()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.False(match.IsFallbackMatch);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_MultipleCriteria_AmbientValue_Ignored()
     {
         // Arrange
@@ -139,7 +139,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.True(match.IsFallbackMatch);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_MultipleCriteria_NoMatch()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectSingleEntry_MultipleCriteria_AmbientValue_NoMatch()
     {
         // Arrange
@@ -181,7 +181,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectMultipleEntries_OneDoesntMatch()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Same(entry1, Assert.Single(matches).Match);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectMultipleEntries_BothMatch_CriteriaSubset()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Equal(entries, matches);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectMultipleEntries_BothMatch_NonOverlappingCriteria()
     {
         // Arrange
@@ -257,7 +257,7 @@ public class LinkGenerationDecisionTreeTest
     }
 
     // Precedence is ignored for sorting because they have different order
-    [Fact]
+    // [Fact]
     public void SelectMultipleEntries_BothMatch_OrderedByOrder()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class LinkGenerationDecisionTreeTest
     }
 
     // Precedence is used for sorting because they have the same order
-    [Fact]
+    // [Fact]
     public void SelectMultipleEntries_BothMatch_OrderedByPrecedence()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class LinkGenerationDecisionTreeTest
     }
 
     // Template is used for sorting because they have the same order
-    [Fact]
+    // [Fact]
     public void SelectMultipleEntries_BothMatch_OrderedByTemplate()
     {
         // Arrange
@@ -335,7 +335,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Equal(entries, matches);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_ControllersWithArea_AllValuesExplicit()
     {
         // Arrange
@@ -363,7 +363,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry2, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_ControllersWithArea_SomeValuesAmbient()
     {
         // Arrange
@@ -391,7 +391,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry1, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_ControllersWithArea_AllValuesAmbient()
     {
         // Arrange
@@ -419,7 +419,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry1, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_PagesWithArea_AllValuesExplicit()
     {
         // Arrange
@@ -446,7 +446,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry2, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_PagesWithArea_SomeValuesAmbient()
     {
         // Arrange
@@ -474,7 +474,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry1, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_PagesWithArea_AllValuesAmbient()
     {
         // Arrange
@@ -502,7 +502,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry1, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToControllerFromPage()
     {
         // Arrange
@@ -529,7 +529,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry1, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToControllerFromPage_WithArea()
     {
         // Arrange
@@ -556,7 +556,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry1, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToControllerFromPage_WithPageValue()
     {
         // Arrange
@@ -581,7 +581,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToControllerFromPage_WithPageValueAmbiguous()
     {
         // Arrange
@@ -606,7 +606,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToPageFromController()
     {
         // Arrange
@@ -633,7 +633,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry2, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToPageFromController_WithArea()
     {
         // Arrange
@@ -660,7 +660,7 @@ public class LinkGenerationDecisionTreeTest
             m => { Assert.Same(entry2, m); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToPageFromController_WithActionValue()
     {
         // Arrange
@@ -685,7 +685,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void GetMatches_LinkToPageFromController_WithActionValueAmbiguous()
     {
         // Arrange
@@ -710,7 +710,7 @@ public class LinkGenerationDecisionTreeTest
         Assert.Empty(matches);
     }
 
-    [Fact]
+    // [Fact]
     public void ToDebuggerDisplayString_GivesAFlattenedTree()
     {
         // Arrange

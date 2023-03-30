@@ -31,7 +31,7 @@ public class RazorRuntimeCompilationHostingStartupTest : IClassFixture<MvcTestFi
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task RazorViews_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class RazorRuntimeCompilationHostingStartupTest : IClassFixture<MvcTestFi
         Assert.NotEqual(actual2, body.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorPages_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange

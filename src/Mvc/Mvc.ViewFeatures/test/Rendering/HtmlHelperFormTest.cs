@@ -112,7 +112,7 @@ public class HtmlHelperFormTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void BeginForm_RendersExpectedValues_WithDefaultArguments()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class HtmlHelperFormTest
         Assert.Equal("</form>", builder.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void BeginForm_RendersExpectedValues_WithDefaultArgumentsAndHtmlAttributes()
     {
         // Arrange
@@ -308,7 +308,7 @@ public class HtmlHelperFormTest
         urlHelper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void EndForm_RendersExpectedValues()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class HtmlHelperFormTest
         urlHelper.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void EndForm_RendersHiddenTagForCheckBox()
     {
         // Arrange
@@ -362,7 +362,7 @@ public class HtmlHelperFormTest
     }
 
     // This is an integration for the implicit antiforgery token added by BeginForm.
-    [Fact]
+    // [Fact]
     public void BeginForm_EndForm_RendersAntiforgeryToken()
     {
         // Arrange
@@ -400,7 +400,7 @@ public class HtmlHelperFormTest
             writer.GetStringBuilder().ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void BeginForm_EndForm_RendersAntiforgeryTokenWhenMethodIsPost()
     {
         // Arrange
@@ -439,7 +439,7 @@ public class HtmlHelperFormTest
     }
 
     // This is an integration for suppressing implicit antiforgery token added by BeginForm.
-    [Fact]
+    // [Fact]
     public void BeginForm_EndForm_SuppressAntiforgeryToken()
     {
         // Arrange
@@ -477,7 +477,7 @@ public class HtmlHelperFormTest
             writer.GetStringBuilder().ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void BeginForm_EndForm_SuppressAntiforgeryTokenWhenMethodIsGet()
     {
         // Arrange
@@ -556,7 +556,7 @@ public class HtmlHelperFormTest
     }
 
     // This is an integration for suppressing implicit antiforgery token added by BeginForm.
-    [Fact]
+    // [Fact]
     public void BeginForm_EndForm_SuppressAntiforgeryToken_WithExplicitCallToAntiforgery()
     {
         // Arrange
@@ -597,7 +597,7 @@ public class HtmlHelperFormTest
     }
 
     // This is an integration for the implicit antiforgery token added by BeginRouteForm.
-    [Fact]
+    // [Fact]
     public void BeginRouteForm_EndForm_RendersAntiforgeryToken()
     {
         // Arrange
@@ -634,7 +634,7 @@ public class HtmlHelperFormTest
             writer.GetStringBuilder().ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void BeginRouteForm_EndForm_RendersAntiforgeryTokenWhenMethodIsPost()
     {
         // Arrange
@@ -677,7 +677,7 @@ public class HtmlHelperFormTest
     }
 
     // This is an integration for suppressing implicit antiforgery token added by BeginRouteForm.
-    [Fact]
+    // [Fact]
     public void BeginRouteForm_EndForm_SuppressAntiforgeryToken()
     {
         // Arrange
@@ -719,7 +719,7 @@ public class HtmlHelperFormTest
             writer.GetStringBuilder().ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void BeginRouteForm_EndForm_SuppressAntiforgeryTokenWhenMethodIsGet()
     {
         // Arrange

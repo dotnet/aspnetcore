@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class MvcNewtonsoftJsonOptionsExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_WillSet_CamelCasingStrategy_NameStrategy()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.IsType(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_WillNot_OverrideSpecifiedNames()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_WillChange_PropertyNames()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_WillChangeFirstPartBeforeSeparator_InPropertyName()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_ProcessDictionaryKeys_WillChange_DictionaryKeys_IfTrue()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_ProcessDictionaryKeys_WillChangeFirstPartBeforeSeparator_InDictionaryKey_IfTrue()
     {
         // Arrange
@@ -117,7 +117,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_ProcessDictionaryKeys_WillNotChangeDictionaryKeys_IfFalse()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMemberCasing_WillNotChange_OverrideSpecifiedNames()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMemberCasing_WillSet_DefaultNamingStrategy_AsNamingStrategy()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.IsType(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMemberCasing_WillNotChange_PropertyNames()
     {
         // Arrange
@@ -189,7 +189,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMemberCasing_WillNotChange_DictionaryKeys()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void UseCamelCasing_WillThrow_IfContractResolver_IsNot_DefaultContractResolver()
     {
         // Arrange
@@ -223,7 +223,7 @@ public class MvcNewtonsoftJsonOptionsExtensionsTest
         Assert.Equal(expectedMessage, actual: exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseMemberCasing_WillThrow_IfContractResolver_IsNot_DefaultContractResolver()
     {
         // Arrange

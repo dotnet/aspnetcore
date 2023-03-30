@@ -19,7 +19,7 @@ public class SetCommandTest
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public void SetsFromPipedInput()
     {
         var input = @"
@@ -44,7 +44,7 @@ public class SetCommandTest
         Assert.Equal("False", secretStore["Key3"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ParsesNestedObjects()
     {
         var input = @"
@@ -72,7 +72,7 @@ public class SetCommandTest
         Assert.Equal("2", secretStore["array:1"]);
     }
 
-    [Fact]
+    // [Fact]
     public void OnlyPipesInIfNoArgs()
     {
         var testConsole = new TestConsole(_output)

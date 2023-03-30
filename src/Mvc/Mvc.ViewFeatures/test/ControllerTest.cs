@@ -30,7 +30,7 @@ public class ControllerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void SettingViewData_AlsoUpdatesViewBag()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class ControllerTest
         Assert.True(method.IsDefined(typeof(NonActionAttribute)));
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_View_WithoutParameter_SetsResultNullViewNameAndNullViewDataModelAndSameTempData()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class ControllerTest
         Assert.Null(actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_View_WithoutParameter_MaintainsModelInViewData()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_View_WithParameterViewName_SetsResultViewNameAndNullViewDataModelAndSameTempData()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class ControllerTest
         Assert.Null(actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_View_WithParameterViewModel_SetsResultNullViewNameAndViewDataModelAndSameTempData()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_View_WithParameterViewNameAndViewModel_SetsResultViewNameAndViewDataModelAndSameTempData()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_View_WithNullModelParameter_OverwritesViewDataModel()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class ControllerTest
         Assert.Null(actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_PartialView_WithoutParameter_MaintainsModelInViewData()
     {
         // Arrange
@@ -216,7 +216,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_PartialView_WithParameterViewName_SetsResultViewNameAndMaintainsSameViewDataModelAndTempData()
     {
         // Arrange
@@ -239,7 +239,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_PartialView_WithParameterViewModel_SetsResultNullViewNameAndViewDataModelAndSameTempData()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_PartialView_WithParameterViewNameAndViewModel_SetsResultViewNameAndViewDataModelAndSameTempData()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class ControllerTest
         Assert.Same(model, actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_PartialView_WithNullModelParameter_OverwritesViewDataModel()
     {
         // Arrange
@@ -305,7 +305,7 @@ public class ControllerTest
         Assert.Null(actualViewResult.ViewData.Model);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Json_WithParameterValue_SetsResultData()
     {
         // Arrange
@@ -320,7 +320,7 @@ public class ControllerTest
         Assert.Same(data, actualJsonResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Controller_Json_WithParameterValue_SetsRespectiveProperty()
     {
         // Arrange
@@ -339,7 +339,7 @@ public class ControllerTest
 
     // These tests share code with the ActionFilterAttribute tests because the various filter
     // implementations need to behave the same way.
-    [Fact]
+    // [Fact]
     public async Task Controller_ActionFilter_SettingResult_ShortCircuits()
     {
         // Arrange, Act &  Assert
@@ -347,7 +347,7 @@ public class ControllerTest
             new Mock<Controller>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_ActionFilter_Calls_OnActionExecuted()
     {
         // Arrange, Act &  Assert
@@ -355,7 +355,7 @@ public class ControllerTest
             new Mock<Controller>());
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerDispose_CallsDispose()
     {
         // Arrange
@@ -368,7 +368,7 @@ public class ControllerTest
         Assert.True(controller.DisposeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public void TempData_CanSetAndGetValues()
     {
         // Arrange

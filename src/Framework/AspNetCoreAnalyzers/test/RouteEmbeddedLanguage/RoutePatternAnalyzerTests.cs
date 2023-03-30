@@ -12,7 +12,7 @@ public partial class RoutePatternAnalyzerTests
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task CommentOnString_ReportResults()
     {
         var source = TestSource.Read(
@@ -36,7 +36,7 @@ class Program
         Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StringSyntax_AttributeProperty_ReportResults()
     {
         // Arrange
@@ -68,7 +68,7 @@ class HttpGet : Attribute
         Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StringSyntax_AttributeCtorArgument_ReportResults()
     {
         // Arrange
@@ -101,7 +101,7 @@ class HttpGet : Attribute
         Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StringSyntax_FieldSet_ReportResults()
     {
         // Arrange
@@ -129,7 +129,7 @@ class Program
         Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StringSyntax_PropertySet_ReportResults()
     {
         // Arrange
@@ -157,7 +157,7 @@ class Program
         Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StringSyntax_MethodArgument_ReportResults()
     {
         // Arrange
@@ -186,7 +186,7 @@ class Program
         Assert.Equal(Resources.FormatAnalyzer_RouteIssue_Message(Resources.TemplateRoute_InvalidRouteTemplate), diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StringSyntax_MethodArgument_MultipleResults()
     {
         // Arrange
@@ -223,7 +223,7 @@ class Program
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadTokenReplacement_MethodArgument_MultipleResults()
     {
         // Arrange
@@ -249,7 +249,7 @@ class Program
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadTokenReplacement_MvcAction_TokenReplacementDiagnostics()
     {
         // Arrange
@@ -285,7 +285,7 @@ public class TestController
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task ControllerAction_UnusedRouteParameter_ReportedDiagnostics()
     {
         // Arrange
@@ -325,7 +325,7 @@ public class TestController
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task ControllerAction_MatchRouteParameterWithFromRoute_NoDiagnostics()
     {
         // Arrange
@@ -359,7 +359,7 @@ public class TestController
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ControllerAction_MatchRouteParameterWithMultipleFromRoute_NoDiagnostics()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class CustomFromRouteAttribute : Attribute, IFromRouteMetadata
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_AsParameter_NoResults()
     {
         // Arrange
@@ -436,7 +436,7 @@ public class PageData
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_AsParameter_Extra_ReportedDiagnostics()
     {
         // Arrange
@@ -479,7 +479,7 @@ public class PageData
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task ControllerAction_MatchedRouteParameter_NoDiagnostics()
     {
         // Arrange

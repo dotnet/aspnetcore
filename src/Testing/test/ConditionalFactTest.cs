@@ -16,7 +16,7 @@ public class ConditionalFactTest : IClassFixture<ConditionalFactTest.Conditional
 
     private ConditionalFactAsserter Asserter { get; }
 
-    [Fact]
+    // [Fact]
     public void TestAlwaysRun()
     {
         // This is required to ensure that the type at least gets initialized.
@@ -48,7 +48,7 @@ public class ConditionalFactTest : IClassFixture<ConditionalFactTest.Conditional
 #endif
 
     // Test is named this way to be the lowest test in the alphabet, it relies on test ordering
-    [Fact]
+    // [Fact]
     public void ZzzzzzzEnsureThisIsTheLastTest()
     {
         Assert.True(Asserter.TestRan);

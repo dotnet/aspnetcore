@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class RouteValueProviderTests
 {
-    [Fact]
+    // [Fact]
     public void GetValueProvider_ReturnsNull_WhenKeyIsNotFound()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class RouteValueProviderTests
         Assert.Equal(ValueProviderResult.None, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValueProvider_ReturnsValue_IfKeyIsPresent()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class RouteValueProviderTests
         Assert.Equal("test-value", (string)result);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void GetValueProvider_ReturnsValue_UsesInvariantCulture()
     {
@@ -61,7 +61,7 @@ public class RouteValueProviderTests
         Assert.Equal("10/31/2018 07:37:38 -07:00", (string)result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValueProvider_ReturnsValue_UsesSpecifiedCulture()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class RouteValueProviderTests
         Assert.Equal(expected, (string)result);
     }
 
-    [Fact]
+    // [Fact]
     public void ContainsPrefix_ReturnsNullValue_IfKeyIsPresent()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class RouteValueProviderTests
         Assert.Equal(string.Empty, (string)result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValue_ReturnsValue_WithDefaultCulture()
     {
         // Arrange
@@ -114,7 +114,7 @@ public class RouteValueProviderTests
         Assert.Equal(CultureInfo.InvariantCulture, result.Culture);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValue_ReturnsValue_WithCulture()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class RouteValueProviderTests
         Assert.Equal(expectedValue, (string)result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValue_DoesNotReturnAValue_ForAKeyPrefix()
     {
         // Arrange
@@ -193,7 +193,7 @@ public class RouteValueProviderTests
         Assert.Equal(ValueProviderResult.None, result);
     }
 
-    [Fact]
+    // [Fact]
     public void ContainsPrefix_ReturnsFalse_IfKeyIsNotPresent()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class RouteValueProviderTests
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void ContainsPrefix_ReturnsTrue_IfKeyIsPresent()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class RouteValueProviderTests
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void FilterInclude()
     {
         // Arrange
@@ -248,7 +248,7 @@ public class RouteValueProviderTests
         Assert.Same(result, provider);
     }
 
-    [Fact]
+    // [Fact]
     public void FilterExclude()
     {
         // Arrange

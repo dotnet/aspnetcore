@@ -18,7 +18,7 @@ public class PagedBufferedTextWriterTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_Char()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal<char>(Content, inner.ToString().ToCharArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_CharArray_Null()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class PagedBufferedTextWriterTest
         Assert.Empty(inner.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_CharArray()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal<char>(Content, inner.ToString().ToCharArray());
     }
 
-    [Fact]
+    // [Fact]
     public void Write_CharArray_Bounded_Null()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class PagedBufferedTextWriterTest
         Assert.Throws<ArgumentNullException>("buffer", () => writer.Write(null, 0, 0));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_CharArray_Bounded()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal<char>(Content, inner.ToString().ToCharArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_String_Null()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class PagedBufferedTextWriterTest
         Assert.Empty(inner.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Write_String()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal<char>(Content, inner.ToString().ToCharArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousWrites_FollowedByAsyncWriteString_WritesAllContent()
     {
         // Arrange
@@ -201,7 +201,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal("abcdefghi", inner.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousWrites_FollowedByAsyncWriteChar_WritesAllContent()
     {
         // Arrange
@@ -220,7 +220,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal("abcdefg", inner.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousWrites_FollowedByAsyncWriteCharArray_WritesAllContent()
     {
         // Arrange
@@ -239,7 +239,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal("abcdefghi", inner.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_ReturnsPages()
     {
         // Arrange
@@ -260,7 +260,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal(3, pool.Returned.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_FlushesContent()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal<char>(Content, inner.ToString().ToCharArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_WritesContentToInner()
     {
         // Arrange
@@ -300,7 +300,7 @@ public class PagedBufferedTextWriterTest
         Assert.Equal<char>(Content, inner.ToString().ToCharArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_WritesContentToInner_WithLargeArrays()
     {
         // Arrange

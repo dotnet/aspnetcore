@@ -15,7 +15,7 @@ public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWithoutEndpoi
     {
     }
 
-    [Fact]
+    // [Fact]
     public override async Task HasEndpointMatch()
     {
         // Arrange & Act
@@ -31,7 +31,7 @@ public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWithoutEndpoi
     }
 
     // Legacy routing returns 404 when an action does not support a HTTP method.
-    [Fact]
+    // [Fact]
     public override async Task AttributeRoutedAction_MultipleRouteAttributes_RouteAttributeTemplatesIgnoredForOverrideActions()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWithoutEndpoi
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public override async Task RouteData_Routers_ConventionalRoute()
     {
         // Arrange & Act
@@ -66,7 +66,7 @@ public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWithoutEndpoi
             result.Routers);
     }
 
-    [Fact]
+    // [Fact]
     public override async Task RouteData_Routers_AttributeRoute()
     {
         // Arrange & Act

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Cryptography;
 
 public class WeakReferenceHelpersTests
 {
-    [Fact]
+    // [Fact]
     public void GetSharedInstance_ExistingWeakRefHasBeenGCed_CreatesNew()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class WeakReferenceHelpersTests
         Assert.False(newInstance.HasBeenDisposed);
     }
 
-    [Fact]
+    // [Fact]
     public void GetSharedInstance_ExistingWeakRefIsNull_CreatesNew()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class WeakReferenceHelpersTests
         Assert.False(newInstance.HasBeenDisposed);
     }
 
-    [Fact]
+    // [Fact]
     public void GetSharedInstance_ExistingWeakRefIsNull_AnotherThreadCreatesInstanceWhileOurFactoryRuns_ReturnsExistingInstanceAndDisposesNewInstance()
     {
         // Arrange

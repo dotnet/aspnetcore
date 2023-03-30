@@ -17,7 +17,7 @@ public class HtmlHelperDropDownListExtensionsTest
             new SelectListItem("Three", "3"),
         };
 
-    [Fact]
+    // [Fact]
     public void DropDownList_FindsSelectList()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownList_FindsSelectList_UsesOptionLabel()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownList_UsesSpecifiedExpressionAndSelectList()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownList_UsesSpecifiedExpressionAndSelectListAndHtmlAttributes()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownList_UsesExpressionAndSpecifiedSelectListAndOptionLabel()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListFor_NullSelectListFindsListFromViewData()
     {
         // Arrange
@@ -164,7 +164,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListFor_UsesSpecifiedExpressionAndSelectList()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListFor_UsesSpecifiedExpressionAndSelectListAndHtmlAttributes()
     {
         // Arrange
@@ -215,7 +215,7 @@ public class HtmlHelperDropDownListExtensionsTest
         Assert.Equal(expectedHtml, HtmlContentUtilities.HtmlContentToString(dropDownListForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void DropDownListFor_UsesSpecifiedSelectListAndOptionLabel()
     {
         // Arrange

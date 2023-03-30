@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class TaskExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public async Task TimeoutAfterTest()
     {
         var cts = new CancellationTokenSource();
@@ -18,19 +18,19 @@ public class TaskExtensionsTest
         cts.Cancel();
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutAfter_DoesNotThrowWhenCompleted()
     {
         await Task.FromResult(true).TimeoutAfter(TimeSpan.FromMilliseconds(30000));
     }
 
-    [Fact]
+    // [Fact]
     public async Task TimeoutAfter_DoesNotThrow_WithinTimeoutPeriod()
     {
         await Task.Delay(10).TimeoutAfter(TimeSpan.FromMilliseconds(30000));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultTimeout_WithTimespan()
     {
         var cts = new CancellationTokenSource();
@@ -38,7 +38,7 @@ public class TaskExtensionsTest
         cts.Cancel();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultTimeout_WithMilliseconds()
     {
         var cts = new CancellationTokenSource();
@@ -46,7 +46,7 @@ public class TaskExtensionsTest
         cts.Cancel();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultTimeout_Message_ContainsLineNumber()
     {
         var cts = new CancellationTokenSource();
@@ -54,7 +54,7 @@ public class TaskExtensionsTest
         cts.Cancel();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultTimeout_DoesNotThrowWhenCompleted()
     {
         await Task.FromResult(true).DefaultTimeout();

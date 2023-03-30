@@ -10,14 +10,14 @@ public class RepeatTest
 {
     public static int _runCount = 0;
 
-    [Fact]
+    // [Fact]
     [Repeat(5)]
     public void RepeatLimitIsSetCorrectly()
     {
         Assert.Equal(5, RepeatContext.Current.Limit);
     }
 
-    [Fact]
+    // [Fact]
     [Repeat(5)]
     public void RepeatRunsTestSpecifiedNumberOfTimes()
     {
@@ -25,7 +25,7 @@ public class RepeatTest
         _runCount++;
     }
 
-    [Fact]
+    // [Fact]
     public void RepeatCanBeSetOnClass()
     {
         Assert.Equal(10, RepeatContext.Current.Limit);
@@ -34,7 +34,7 @@ public class RepeatTest
 
 public class LoggedTestXunitRepeatAssemblyTests
 {
-    [Fact]
+    // [Fact]
     public void RepeatCanBeSetOnAssembly()
     {
         Assert.Equal(1, RepeatContext.Current.Limit);

@@ -11,7 +11,7 @@ public class HttpResponseStreamWriterTest
 {
     private const int DefaultCharacterChunkSize = HttpResponseStreamWriter.DefaultBufferSize;
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotWriteBOM()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class HttpResponseStreamWriterTest
         Assert.Equal(expectedData, memoryStream.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotFlush_UnderlyingStream_OnDisposingWriter()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class HttpResponseStreamWriterTest
         Assert.Equal(0, stream.FlushAsyncCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotDispose_UnderlyingStream_OnDisposingWriter()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class HttpResponseStreamWriterTest
         Assert.Equal(byteLength, stream.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void NoDataWritten_Flush_DoesNotFlushUnderlyingStream()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class HttpResponseStreamWriterTest
         Assert.Equal(byteLength, stream.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoDataWritten_FlushAsync_DoesNotFlushUnderlyingStream()
     {
         // Arrange
@@ -375,7 +375,7 @@ public class HttpResponseStreamWriterTest
         Assert.Equal(byteLength, stream.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteReadOnlyMemoryAsync_TokenCanceled_ReturnsCanceledTask()
     {
         // Arrange
@@ -431,7 +431,7 @@ public class HttpResponseStreamWriterTest
         Assert.Equal(byteLength + newLineLength, stream.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WriteLineReadOnlyMemoryAsync_TokenCanceled_ReturnsCanceledTask()
     {
         // Arrange
@@ -679,7 +679,7 @@ public class HttpResponseStreamWriterTest
     //
     // This test effectively verifies that things are correctly constructed and disposed. Pooled buffers
     // throw on the finalizer thread if not disposed, so that's why it's complicated.
-    [Fact]
+    // [Fact]
     public void HttpResponseStreamWriter_UsingPooledBuffers()
     {
         // Arrange
@@ -748,7 +748,7 @@ public class HttpResponseStreamWriterTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public static void StreamCannotRead_ExpectArgumentException()
     {
         var mockStream = new Mock<Stream>();

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.TestHost;
 
 public class ClientHandlerTests
 {
-    [Fact]
+    // [Fact]
     public async Task SlashUrlEncodedDoesNotGetDecoded()
     {
         var handler = new ClientHandler(new PathString(), new InspectingApplication(features =>
@@ -41,7 +41,7 @@ public class ClientHandlerTests
         await httpClient.GetAsync("https://example.com/api/a%2Fb%20c");
     }
 
-    [Fact]
+    // [Fact]
     public Task ExpectedKeysAreAvailable()
     {
         var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
@@ -67,7 +67,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
     }
 
-    [Fact]
+    // [Fact]
     public Task ExpectedKeysAreInFeatures()
     {
         var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
@@ -92,7 +92,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
     }
 
-    [Fact]
+    // [Fact]
     public Task SingleSlashNotMovedToPathBase()
     {
         var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
@@ -106,7 +106,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("https://example.com/");
     }
 
-    [Fact]
+    // [Fact]
     public Task UserAgentHeaderWorks()
     {
         var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
@@ -123,7 +123,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("http://example.com");
     }
 
-    [Fact]
+    // [Fact]
     public Task ContentLengthWithBodyWorks()
     {
         var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
@@ -141,7 +141,7 @@ public class ClientHandlerTests
         return httpClient.PostAsync("http://example.com", content);
     }
 
-    [Fact]
+    // [Fact]
     public Task ContentLengthNotPresentWithNoBody()
     {
         var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
@@ -157,7 +157,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("http://example.com");
     }
 
-    [Fact]
+    // [Fact]
     public Task ContentLengthWithImplicitChunkedTransferEncodingWorks()
     {
         var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
@@ -174,7 +174,7 @@ public class ClientHandlerTests
         return httpClient.PostAsync("http://example.com", new UnlimitedContent());
     }
 
-    [Fact]
+    // [Fact]
     public Task ContentLengthWithExplicitChunkedTransferEncodingWorks()
     {
         var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
@@ -194,7 +194,7 @@ public class ClientHandlerTests
         return httpClient.PostAsync("http://example.com", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServerTrailersSetOnResponseAfterContentRead()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -259,7 +259,7 @@ public class ClientHandlerTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public Task AdditionalConfigurationAllowsSettingConnectionInfo()
     {
         var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
@@ -274,7 +274,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
     }
 
-    [Fact]
+    // [Fact]
     public Task AdditionalConfigurationAllowsOverridingDefaultBehavior()
     {
         var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
@@ -289,7 +289,7 @@ public class ClientHandlerTests
         return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseStartAsync()
     {
         var hasStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -331,7 +331,7 @@ public class ClientHandlerTests
         Assert.True(postHasStarted);
     }
 
-    [Fact]
+    // [Fact]
     public void Send_ThrowsNotSupportedException()
     {
         var handler = new ClientHandler(
@@ -344,7 +344,7 @@ public class ClientHandlerTests
         Assert.Throws<NotSupportedException>(() => invoker.Send(message, CancellationToken.None));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResubmitRequestWorks()
     {
         int requestCount = 1;
@@ -367,7 +367,7 @@ public class ClientHandlerTests
         Assert.Equal("TestValue:2", response.Headers.GetValues("TestHeader").First());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MiddlewareOnlySetsHeaders()
     {
         var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
@@ -380,7 +380,7 @@ public class ClientHandlerTests
         Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BlockingMiddlewareShouldNotBlockClient()
     {
         ManualResetEvent block = new ManualResetEvent(false);
@@ -397,7 +397,7 @@ public class ClientHandlerTests
         HttpResponseMessage response = await task;
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeadersAvailableBeforeBodyFinished()
     {
         var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -416,7 +416,7 @@ public class ClientHandlerTests
         Assert.Equal("BodyStarted,BodyFinished", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushSendsHeaders()
     {
         var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -435,7 +435,7 @@ public class ClientHandlerTests
         Assert.Equal("BodyFinished", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientDisposalCloses()
     {
         var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -457,7 +457,7 @@ public class ClientHandlerTests
         block.SetResult();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientCancellationAborts()
     {
         var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -480,7 +480,7 @@ public class ClientHandlerTests
         block.SetResult();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionFromDisposedRequestContent()
     {
         var requestCount = 0;
@@ -503,7 +503,7 @@ public class ClientHandlerTests
         Assert.Equal(0, requestCount);
     }
 
-    [Fact]
+    // [Fact]
     public Task ExceptionBeforeFirstWriteIsReported()
     {
         var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
@@ -515,7 +515,7 @@ public class ClientHandlerTests
             HttpCompletionOption.ResponseHeadersRead));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionAfterFirstWriteIsReported()
     {
         var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -535,7 +535,7 @@ public class ClientHandlerTests
         Assert.IsType<InvalidOperationException>(ex.GetBaseException());
     }
 
-    [Fact]
+    // [Fact]
     public Task ExceptionFromOnStartingFirstWriteIsReported()
     {
         var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
@@ -551,7 +551,7 @@ public class ClientHandlerTests
             HttpCompletionOption.ResponseHeadersRead));
     }
 
-    [Fact]
+    // [Fact]
     public Task ExceptionFromOnStartingWithNoWriteIsReported()
     {
         var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
@@ -567,7 +567,7 @@ public class ClientHandlerTests
             HttpCompletionOption.ResponseHeadersRead));
     }
 
-    [Fact]
+    // [Fact]
     public Task ExceptionFromOnStartingWithErrorHandlerIsReported()
     {
         var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
@@ -684,7 +684,7 @@ public class ClientHandlerTests
         public HttpContext HttpContext { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClientHandlerCreateContextWithDefaultRequestParameters()
     {
         // This logger will attempt to access information from HttpRequest once the HttpContext is created

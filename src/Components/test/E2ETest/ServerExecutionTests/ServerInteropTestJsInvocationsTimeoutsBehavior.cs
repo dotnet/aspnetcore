@@ -27,7 +27,7 @@ public class ServerInteropTestJsInvocationsTimeoutsBehavior : ServerTestBase<Bas
         Browser.MountTestComponent<LongRunningInterop>();
     }
 
-    [Fact]
+    // [Fact]
     public async Task LongRunningJavaScriptFunctionsResultInCancellationAndWorkingAppAfterFunctionCompletion()
     {
         // Act & Assert

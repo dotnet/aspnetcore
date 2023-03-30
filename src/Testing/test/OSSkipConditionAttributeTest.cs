@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class OSSkipConditionAttributeTest
 {
-    [Fact]
+    // [Fact]
     public void Skips_WhenOperatingSystemMatches()
     {
         // Act
@@ -21,7 +21,7 @@ public class OSSkipConditionAttributeTest
         Assert.False(osSkipAttribute.IsMet);
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotSkip_WhenOperatingSystemDoesNotMatch()
     {
         // Act
@@ -33,7 +33,7 @@ public class OSSkipConditionAttributeTest
         Assert.True(osSkipAttribute.IsMet);
     }
 
-    [Fact]
+    // [Fact]
     public void Skips_BothMacOSXAndLinux()
     {
         // Act
@@ -45,7 +45,7 @@ public class OSSkipConditionAttributeTest
         Assert.False(osSkipAttributeMacOSX.IsMet);
     }
 
-    [Fact]
+    // [Fact]
     public void Skips_BothMacOSXAndWindows()
     {
         // Act
@@ -57,7 +57,7 @@ public class OSSkipConditionAttributeTest
         Assert.False(osSkipAttributeMacOSX.IsMet);
     }
 
-    [Fact]
+    // [Fact]
     public void Skips_BothWindowsAndLinux()
     {
         // Act

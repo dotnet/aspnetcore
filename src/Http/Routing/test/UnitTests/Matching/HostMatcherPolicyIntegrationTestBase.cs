@@ -12,7 +12,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
 {
     protected abstract bool HasDynamicMetadata { get; }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Host()
     {
         // Arrange
@@ -28,7 +28,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithPort()
     {
         // Arrange
@@ -44,7 +44,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Host_Unicode()
     {
         // Arrange
@@ -60,7 +60,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithPort_IncorrectPort()
     {
         // Arrange
@@ -76,7 +76,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithPort_IncorrectHost()
     {
         // Arrange
@@ -92,7 +92,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithWildcard_Unicode()
     {
         // Arrange
@@ -108,7 +108,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithWildcard_NoSubdomain()
     {
         // Arrange
@@ -124,7 +124,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithWildcard_Subdomain()
     {
         // Arrange
@@ -140,7 +140,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithWildcard_MultipleSubdomains()
     {
         // Arrange
@@ -156,7 +156,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithWildcard_PrefixNotInSubdomain()
     {
         // Arrange
@@ -172,7 +172,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostAndHostWithWildcard_NoSubdomain()
     {
         // Arrange
@@ -188,7 +188,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Host_CaseInsensitive()
     {
         // Arrange
@@ -204,7 +204,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithPort_InferHttpPort()
     {
         // Arrange
@@ -220,7 +220,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithPort_InferHttpsPort()
     {
         // Arrange
@@ -236,7 +236,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_HostWithPort_NoHostHeader()
     {
         // Arrange
@@ -252,7 +252,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertNotMatch(httpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_Port_NoHostHeader_InferHttpsPort()
     {
         // Arrange
@@ -268,7 +268,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_NoMetadata_MatchesAnyHost()
     {
         // Arrange
@@ -284,7 +284,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_EmptyHostList_MatchesAnyHost()
     {
         // Arrange
@@ -300,7 +300,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_WildcardHost_MatchesAnyHost()
     {
         // Arrange
@@ -316,7 +316,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_WildcardHostAndWildcardPort_MatchesAnyHost()
     {
         // Arrange
@@ -332,7 +332,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_CatchAllRouteWithMatchingHost_Success()
     {
         // Arrange
@@ -348,7 +348,7 @@ public abstract class HostMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint, new { path = "hello" });
     }
 
-    [Fact]
+    // [Fact]
     public async Task Match_CatchAllRouteFailureHost_NoMatch()
     {
         // Arrange

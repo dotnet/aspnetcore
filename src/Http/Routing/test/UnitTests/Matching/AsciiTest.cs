@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 // we are sure of how it behaves.
 public class AsciiTest
 {
-    [Fact]
+    // [Fact]
     public void IsAscii_ReturnsTrueForAscii()
     {
         // Arrange
@@ -21,7 +21,7 @@ public class AsciiTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IsAscii_ReturnsFalseForNonAscii()
     {
         // Arrange

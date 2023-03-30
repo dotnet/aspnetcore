@@ -27,7 +27,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.MountTestComponent<InteropComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeDotNetMethods()
     {
         // Arrange

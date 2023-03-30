@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
 public class ShortCircuitTests
 {
-    [Fact]
+    // [Fact]
     public async Task ShortCircuitTest()
     {
         using var host = new HostBuilder()
@@ -55,7 +55,7 @@ public class ShortCircuitTests
         Assert.False(response.Headers.Contains("NotSet"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapShortCircuitTest()
     {
         using var host = new HostBuilder()

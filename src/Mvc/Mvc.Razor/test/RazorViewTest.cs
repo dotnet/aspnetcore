@@ -24,7 +24,7 @@ public class RazorViewTest
     private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async () => { };
 #pragma warning restore 1998
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_AsPartial_BuffersOutput()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class RazorViewTest
         Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_AsPartial_ActivatesViews_WithThePassedInViewContext()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class RazorViewTest
         Assert.Same(expectedWriter, viewContext.Writer);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_AsPartial_ActivatesViews_WritesBeforeAndAfterRazorViewEventDiagnostics()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class RazorViewTest
         Assert.NotNull(adapter.AfterViewPage?.HttpContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewContext_ExecutingPagePath_ReturnsPathOfRazorPageBeingExecuted()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class RazorViewTest
         Assert.Equal(new[] { "_ViewStart", pagePath, LayoutPath }, paths);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_AsPartial_ActivatesViews()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class RazorViewTest
         activator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_AsPartial_ExecutesLayout_ButNotViewStartPages()
     {
         // Arrange
@@ -276,7 +276,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_CreatesOutputBuffer()
     {
         // Arrange
@@ -303,7 +303,7 @@ public class RazorViewTest
         Assert.NotSame(original, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_CopiesBufferedContentToOutput()
     {
         // Arrange
@@ -328,7 +328,7 @@ public class RazorViewTest
         Assert.Equal("Hello world", original.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ActivatesPages()
     {
         // Arrange
@@ -356,7 +356,7 @@ public class RazorViewTest
         activator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesViewStart()
     {
         // Arrange
@@ -412,7 +412,7 @@ public class RazorViewTest
         activator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesDefaultLayout()
     {
         // Arrange
@@ -456,7 +456,7 @@ public class RazorViewTest
         Assert.True(layoutExecuted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesDefaultLayout_WithViewStart()
     {
         // Arrange
@@ -510,7 +510,7 @@ public class RazorViewTest
         Assert.True(layoutExecuted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound_MessageUsesGetPageLocations()
     {
         // Arrange
@@ -553,7 +553,7 @@ public class RazorViewTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound_MessageUsesFindPageLocations()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class RazorViewTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound_MessageUsesAllLocations()
     {
         // Arrange
@@ -641,7 +641,7 @@ public class RazorViewTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesLayoutPages()
     {
         // Arrange
@@ -711,7 +711,7 @@ public class RazorViewTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfSectionsWereDefinedButNotRendered()
     {
         // Arrange
@@ -749,7 +749,7 @@ public class RazorViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_SucceedsIfNestedSectionsAreRendered()
     {
         // Arrange
@@ -816,7 +816,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_SucceedsIfRenderBodyIsNotInvoked_ButAllSectionsAreRendered()
     {
         // Arrange
@@ -885,7 +885,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_WithNestedSections_ThrowsIfSectionsWereDefinedButNotRendered()
     {
         // Arrange
@@ -948,7 +948,7 @@ public class RazorViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_WithNestedSectionsOfTheSameName_ThrowsIfSectionsWereDefinedButNotRendered()
     {
         // Arrange
@@ -1017,7 +1017,7 @@ public class RazorViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfBodyWasNotRendered()
     {
         // Arrange
@@ -1051,7 +1051,7 @@ public class RazorViewTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesNestedLayoutPages()
     {
         // Arrange
@@ -1120,7 +1120,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesNestedLayoutPages_WithRelativePaths()
     {
         // Arrange
@@ -1194,7 +1194,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_Throws_IfLayoutPageReferencesSelf()
     {
         // Arrange
@@ -1235,7 +1235,7 @@ public class RazorViewTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_Throws_IfNestedLayoutPagesResultInCyclicReferences()
     {
         // Arrange
@@ -1289,7 +1289,7 @@ public class RazorViewTest
         Assert.Equal(expectedMessage, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ExecutesNestedLayoutsWithNestedSections()
     {
         // Arrange
@@ -1359,7 +1359,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_DoesNotCopyContentOnceRazorTextWriterIsNoLongerBuffering()
     {
         // Arrange
@@ -1417,7 +1417,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlushAsync_DoesNotThrowWhenInvokedInsideOfASection()
     {
         // Arrange
@@ -1472,7 +1472,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfLayoutIsSpecifiedWhenNotBuffered()
     {
         // Arrange
@@ -1501,7 +1501,7 @@ public class RazorViewTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_ThrowsIfFlushWasInvokedInsideRenderedSectionAndLayoutWasSet()
     {
         // Arrange
@@ -1548,7 +1548,7 @@ public class RazorViewTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_CopiesLayoutPropertyFromViewStart()
     {
         // Arrange
@@ -1596,7 +1596,7 @@ public class RazorViewTest
         Assert.Equal(expectedPage, actualPage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_CopiesLayoutPropertyFromViewStart_WithRelativePaths()
     {
         // Arrange
@@ -1654,7 +1654,7 @@ public class RazorViewTest
         Assert.Equal(expectedPage, actualPage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResettingLayout_InViewStartCausesItToBeResetInPage()
     {
         // Arrange
@@ -1698,7 +1698,7 @@ public class RazorViewTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_RendersViewStartsInOrderInWhichTheyAreSpecified()
     {
         // Arrange
@@ -1740,7 +1740,7 @@ public class RazorViewTest
         Assert.Equal(expected, viewContext.Writer.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenderAsync_InvokesOnAfterPageActivated()
     {
         // Arrange

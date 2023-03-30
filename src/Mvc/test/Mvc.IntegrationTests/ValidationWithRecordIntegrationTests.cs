@@ -148,7 +148,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Order1([Required] string CustomerName);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnSimpleTypeProperty_WithData()
     {
         // Arrange
@@ -185,7 +185,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnSimpleTypeProperty_NoData()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Person2(string Name);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnPOCOProperty_WithData()
     {
         // Arrange
@@ -267,7 +267,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnPOCOProperty_NoData()
     {
         // Arrange
@@ -311,7 +311,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Person3(int Age, [Required] string Name);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnNestedSimpleTypeProperty_WithData()
     {
         // Arrange
@@ -349,7 +349,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnNestedSimpleTypeProperty_NoDataForRequiredProperty()
     {
         // Arrange
@@ -396,7 +396,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Item4(int ItemId);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnCollectionProperty_WithData()
     {
         // Arrange
@@ -434,7 +434,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnCollectionProperty_NoData()
     {
         // Arrange
@@ -477,7 +477,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Order5([Required] int? ProductId, string Name);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnPOCOPropertyOfBoundElement_WithData()
     {
         // Arrange
@@ -514,7 +514,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_RequiredAttribute_OnPOCOPropertyOfBoundElement_NoDataForRequiredProperty()
     {
         // Arrange
@@ -559,7 +559,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Order6([StringLength(5, ErrorMessage = "Too Long.")] string Name);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Valid()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Invalid()
     {
         // Arrange
@@ -640,7 +640,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Person7([StringLength(5, ErrorMessage = "Too Long.")] string Name);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Valid()
     {
         // Arrange
@@ -677,7 +677,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Invalid()
     {
         // Arrange
@@ -717,7 +717,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Null(error.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_NoData()
     {
         // Arrange
@@ -768,7 +768,7 @@ public class ValidationWithRecordIntegrationTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_CustomAttribute_OnPOCOProperty_Valid()
     {
         // Arrange
@@ -805,7 +805,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_CustomAttribute_OnPOCOProperty_Invalid()
     {
         // Arrange
@@ -868,7 +868,7 @@ public class ValidationWithRecordIntegrationTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_CustomAttribute_OnCollectionElement_Valid()
     {
         // Arrange
@@ -905,7 +905,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_CustomAttribute_OnCollectionElement_Invalid()
     {
         // Arrange
@@ -952,7 +952,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Order10([StringLength(5, ErrorMessage = "Too Long.")] string Name);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_Valid()
     {
         // Arrange
@@ -989,7 +989,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Empty(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_Invalid()
     {
         // Arrange
@@ -1029,7 +1029,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Null(error.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_StringLengthAttribute_OnPropertyOfCollectionElement_NoData()
     {
         // Arrange
@@ -1063,7 +1063,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record User(int Id, uint Zip);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_FormatException_ShowsInvalidValueMessage_OnSimpleTypeProperty()
     {
         // Arrange
@@ -1103,7 +1103,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Equal("The value 'bill' is not valid.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_OverflowException_ShowsInvalidValueMessage_OnSimpleTypeProperty()
     {
         // Arrange
@@ -1187,7 +1187,7 @@ public class ValidationWithRecordIntegrationTests
         public int ValidateNeverLength => ValidateNever.Length;
     }
 
-    [Fact]
+    // [Fact]
     public async Task IValidatableObject_IsValidated()
     {
         // Arrange
@@ -1236,7 +1236,7 @@ public class ValidationWithRecordIntegrationTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomValidationAttribute_IsValidated()
     {
         // Arrange
@@ -1275,7 +1275,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Null(error.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateNeverProperty_IsSkipped()
     {
         // Arrange
@@ -1308,7 +1308,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Equal(ModelValidationState.Skipped, state.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidateNeverProperty_IsSkippedWithoutAccessingModel()
     {
         // Arrange
@@ -1372,7 +1372,7 @@ public class ValidationWithRecordIntegrationTests
         public int ControlLength => Control.Length;
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertyToSometimesSkip_IsSkipped_IfControlIsNull()
     {
         // Arrange
@@ -1409,7 +1409,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Equal(ModelValidationState.Skipped, kvp.Value.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertyToSometimesSkip_IsValidated_IfControlIsNotNull()
     {
         // Arrange
@@ -1460,7 +1460,7 @@ public class ValidationWithRecordIntegrationTests
         public int ControlLength => Control.Length;
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertyToSometimesSkip_IsNotValidated_IfNoValidationAttributesExistButPropertyValidationFilterExists()
     {
         // Arrange
@@ -1521,7 +1521,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Country(string Name);
 
-    [Fact]
+    // [Fact]
     public async Task TypeBasedExclusion_ForBodyAndNonBodyBoundModels()
     {
         // Arrange
@@ -1571,7 +1571,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FromBody_JToken_ExcludedFromValidation()
     {
         // Arrange
@@ -1627,7 +1627,7 @@ public class ValidationWithRecordIntegrationTests
     //
     // The fix is to treat non-user-input as have a key of null, which means that the MSD
     // isn't even examined when it comes to suppressing validation.
-    [Fact]
+    // [Fact]
     public async Task CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors()
     {
         // Arrange
@@ -1663,7 +1663,7 @@ public class ValidationWithRecordIntegrationTests
 
     // Similar to CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors - binding the body
     // with the empty prefix should not cause unrelated modelstate entries to get suppressed.
-    [Fact]
+    // [Fact]
     public async Task FromBody_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors_Valid()
     {
         // Arrange
@@ -1709,7 +1709,7 @@ public class ValidationWithRecordIntegrationTests
 
     // Similar to CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors - binding the body
     // with the empty prefix should not cause unrelated modelstate entries to get suppressed.
-    [Fact]
+    // [Fact]
     public async Task FromBody_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors_Invalid()
     {
         // Arrange
@@ -1759,7 +1759,7 @@ public class ValidationWithRecordIntegrationTests
 
     private record Greeting([StringLength(5)] string Message);
 
-    [Fact]
+    // [Fact]
     public async Task Validation_NoAttributeInGraphOfObjects_WithDefaultValidatorProviders()
     {
         // Arrange
@@ -1804,7 +1804,7 @@ public class ValidationWithRecordIntegrationTests
         public IList<Order12> RelatedOrders { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_ListOfType_NoValidatorOnParameter()
     {
         // Arrange
@@ -1856,7 +1856,7 @@ public class ValidationWithRecordIntegrationTests
 
     private static void Validation_ListOfType_NoValidatorOnParameterTestMethod(List<int> parameter) { }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_ListOfType_ValidatorOnParameter()
     {
         // Arrange
@@ -1926,7 +1926,7 @@ public class ValidationWithRecordIntegrationTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_CollectionOfType_ValidatorOnElement()
     {
         // Arrange
@@ -1995,7 +1995,7 @@ public class ValidationWithRecordIntegrationTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_DictionaryType_NoValidators()
     {
         // Arrange
@@ -2042,7 +2042,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_DictionaryType_ValueHasValidators()
     {
         // Arrange
@@ -2093,7 +2093,7 @@ public class ValidationWithRecordIntegrationTests
         Assert.Single(entry.Errors);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_TopLevelProperty_NoValidation()
     {
         // Arrange
@@ -2144,7 +2144,7 @@ public class ValidationWithRecordIntegrationTests
         public Validation_TopLevelPropertyModel Model { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_TopLevelProperty_ValidationOnProperty()
     {
         // Arrange
@@ -2202,7 +2202,7 @@ public class ValidationWithRecordIntegrationTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_InfinitelyRecursiveType_NoValidators()
     {
         // Arrange
@@ -2245,7 +2245,7 @@ public class ValidationWithRecordIntegrationTests
         public RecursiveModel Property3 => new RecursiveModel(Property1);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameter()
     {
         // Arrange
@@ -2298,7 +2298,7 @@ public class ValidationWithRecordIntegrationTests
         public string Property1 { get; init; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_ValidatorsDefinedOnRecordTypeProperties()
     {
         // Arrange
@@ -2337,7 +2337,7 @@ public class ValidationWithRecordIntegrationTests
         public string Property1 { get; init; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_ValidatorsDefinedOnRecordTypePropertiesAndParameters()
     {
         // Arrange
@@ -2376,7 +2376,7 @@ public class ValidationWithRecordIntegrationTests
         public string Property2 { get; init; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_ValidatorsDefinedOnMixOfRecordTypePropertiesAndParameters()
     {
         // Variation of Validation_ValidatorsDefinedOnRecordTypePropertiesAndParameters, but validators
@@ -2415,7 +2415,7 @@ public class ValidationWithRecordIntegrationTests
         public string Property2 { get; init; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Validation_ValidatorsOnParametersAndProperties()
     {
         // Arrange

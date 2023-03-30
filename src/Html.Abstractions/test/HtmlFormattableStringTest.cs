@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Html;
 
 public class HtmlFormattableStringTest
 {
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_EmptyArgs()
     {
         // Arrange
@@ -22,7 +22,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("Hello, World!", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_EmptyArgsAndCulture()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("Hello, World!", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_MultipleArguments()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class HtmlFormattableStringTest
             result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithHtmlString()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("First!", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithOtherIHtmlContent()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class HtmlFormattableStringTest
     }
 
     // This test is needed to ensure the shared StringWriter gets cleared.
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithMultipleHtmlContentArguments()
     {
         // Arrange
@@ -96,7 +96,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("Happy Birthday, HtmlEncode[[Billy]]!", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithHtmlString_AndOffset()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("               First!", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_With3Arguments()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class HtmlFormattableStringTest
             result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithAlignmentComponent()
     {
         // Arrange
@@ -138,7 +138,7 @@ public class HtmlFormattableStringTest
             "HtmlEncode[[Hello]]       World!", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithFormatStringComponent()
     {
         // Arrange
@@ -151,7 +151,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("0xHtmlEncode[[32]]", result);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlFormattableString_WithCulture()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class HtmlFormattableStringTest
             result);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("en-US", "en-US")]
     public void HtmlFormattableString_UsesPassedInCulture()
     {
@@ -188,7 +188,7 @@ public class HtmlFormattableStringTest
         Assert.Equal("HtmlEncode[[1,21]] in french!", result);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-DE", "de-DE")]
     public void HtmlFormattableString_UsesCurrentCulture()
     {

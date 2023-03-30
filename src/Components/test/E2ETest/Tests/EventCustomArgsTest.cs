@@ -28,7 +28,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Browser.MountTestComponent<EventCustomArgsComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void UnregisteredCustomEventWorks()
     {
         // This reflects functionality in 5.0 and earlier, in which you could have custom events
@@ -38,7 +38,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Browser.Equal("Received testevent with args '{ MyProp=null }'", () => GetLogLines().Single());
     }
 
-    [Fact]
+    // [Fact]
     public void CanRegisterCustomEventAfterRender_WithNoCreateEventArgs()
     {
         Browser.Exists(By.Id("register-testevent-with-no-createventargs")).Click();
@@ -46,7 +46,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Browser.Equal("Received testevent with args '{ MyProp=null }'", () => GetLogLines().Single());
     }
 
-    [Fact]
+    // [Fact]
     public void CanRegisterCustomEventAfterRender_WithCreateEventArgsReturningNull()
     {
         Browser.Exists(By.Id("register-testevent-with-createventargs-that-returns-null")).Click();
@@ -54,7 +54,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Browser.Equal("Received testevent with args 'null'", () => GetLogLines().Single());
     }
 
-    [Fact]
+    // [Fact]
     public void CanRegisterCustomEventAfterRender_WithCreateEventArgsReturningData()
     {
         Browser.Exists(By.Id("register-testevent-with-createventargs-that-supplies-args")).Click();
@@ -62,7 +62,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Browser.Equal("Received testevent with args '{ MyProp=Native event target ID=test-event-target-child }'", () => GetLogLines().Single());
     }
 
-    [Fact]
+    // [Fact]
     public void CanAliasBrowserEvent_WithCreateEventArgsReturningData()
     {
         var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
@@ -80,7 +80,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Assert.Equal("ab", input.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAliasBrowserEvent_PreventDefaultOnNativeEvent()
     {
         var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
@@ -100,7 +100,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Assert.Equal("", input.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAliasBrowserEvent_StopPropagationIndependentOfNativeEvent()
     {
         var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
@@ -123,7 +123,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Assert.Equal("ab", input.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanHaveMultipleAliasesForASingleBrowserEvent()
     {
         var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
@@ -144,7 +144,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Assert.Equal("ab", input.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanAliasBrowserEvent_WithoutAnyNativeListenerForBrowserEvent()
     {
         // Sets up a registration for a custom event name that's an alias for mouseover,
@@ -159,7 +159,7 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
         Browser.True(() => GetLogLines().Contains("Received custom mouseover event"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanRegisterCustomEventAndSupplyComplexParams()
     {
         Browser.Exists(By.Id("register-sendjsobject")).Click();

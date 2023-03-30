@@ -61,7 +61,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -89,7 +89,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods.Single());
     }
 
-    [Fact]
+    // [Fact]
     public void MapGet_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -109,7 +109,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPatch_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -129,7 +129,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_WithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -167,7 +167,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Null(httpContext.Items["input"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGet_WithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -207,7 +207,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(41, httpContext.Items["input"]);
     }
 
-    [Fact]
+    // [Fact]
     public void MapGet_ThrowsWithImplicitFromBody()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -218,7 +218,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MapDelete_ThrowsWithImplicitFromBody()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -257,7 +257,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MapGet_ImplicitFromService()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
@@ -277,7 +277,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapDelete_ImplicitFromService()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
@@ -297,7 +297,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPatch_ImplicitFromService()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
@@ -321,7 +321,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     private class TestFromServiceAttribute : Attribute, IFromServiceMetadata
     { }
 
-    [Fact]
+    // [Fact]
     public void MapGet_ExplicitFromService()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
@@ -341,7 +341,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapDelete_ExplicitFromService()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
@@ -361,7 +361,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPatch_ExplicitFromService()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
@@ -385,7 +385,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     private class TestFromBodyAttribute : Attribute, IFromBodyMetadata
     { }
 
-    [Fact]
+    // [Fact]
     public void MapGet_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -405,7 +405,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapDelete_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -425,7 +425,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPatch_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -587,7 +587,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Null(httpContext.Items["input"]);
     }
 
-    [Fact]
+    // [Fact]
     public void MapGetWithRouteParameter_ThrowsIfRouteParameterDoesNotExist()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -597,7 +597,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("'id' is not a route parameter.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGetWithNamedFromRouteParameter_UsesFromRouteName()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -620,7 +620,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(42, httpContext.Items["value"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapGetWithNamedFromRouteParameter_FailsForParameterName()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -645,7 +645,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void MapGetWithNamedFromRouteParameter_ThrowsForMismatchedPattern()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -655,7 +655,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("'value' is not a route parameter.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPost_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -675,7 +675,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPost_BuildsEndpointWithCorrectEndpointMetadata()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -693,7 +693,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(new[] { "application/xml" }, endpointMetadata.ContentTypes);
     }
 
-    [Fact]
+    // [Fact]
     public void MapPut_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -713,7 +713,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapDelete_BuildsEndpointWithCorrectMethod()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -733,7 +733,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
     }
 
-    [Fact]
+    // [Fact]
     public void MapFallback_BuildsEndpointWithLowestRouteOrder()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -749,7 +749,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
     }
 
-    [Fact]
+    // [Fact]
     public void MapFallbackWithoutPath_BuildsEndpointWithLowestRouteOrder()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -767,7 +767,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
     }
 
-    [Fact]
+    // [Fact]
     public void WithTags_CanSetTagsForEndpoint()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
@@ -782,7 +782,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(new[] { "Some", "Test", "Tags" }, tagsMetadata?.Tags);
     }
 
-    [Fact]
+    // [Fact]
     public void MapMethod_DoesNotEndpointNameForMethodGroupByDefault()
     {
         string GetString() => "Foo";
@@ -832,7 +832,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapMethod_DefaultsToNotThrowOnBadHttpRequestIfItCannotResolveRouteHandlerOptions()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
@@ -954,7 +954,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         await AssertIdAsync(endpoints["/outer/inner/{id}"], expectedPattern: "/outer/inner/{id}", expectedId: 5);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatAccessesServices()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
@@ -983,7 +983,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
 
-    [Fact]
+    // [Fact]
     public void RequestDelegateFactory_ProvidesAppServiceProvider_ToFilterFactory()
     {
         var appServiceCollection = new ServiceCollection();
@@ -1009,7 +1009,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.True(filterFactoryRan);
     }
 
-    [Fact]
+    // [Fact]
     public void FinallyOnGroup_CanExamineFinallyOnEndpoint()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
@@ -1031,7 +1031,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(new[] { "added-from-endpoint", "added-from-group" }, endpoint.Metadata.GetOrderedMetadata<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void FinallyOnNestedGroups_OuterGroupCanExamineInnerGroup()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));

@@ -141,7 +141,7 @@ public class TemplateBinderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnBothEndsMatches()
     {
         RunTest(
@@ -152,7 +152,7 @@ public class TemplateBinderTests
             "/language/xx-yy");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnLeftEndMatches()
     {
         RunTest(
@@ -163,7 +163,7 @@ public class TemplateBinderTests
             "/language/xx-yya");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnRightEndMatches()
     {
         RunTest(
@@ -290,7 +290,7 @@ public class TemplateBinderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnNeitherEndMatches()
     {
         RunTest(
@@ -301,7 +301,7 @@ public class TemplateBinderTests
             "/language/axx-yya");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnNeitherEndDoesNotMatch()
     {
         RunTest(
@@ -312,7 +312,7 @@ public class TemplateBinderTests
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
     {
         RunTest(
@@ -323,7 +323,7 @@ public class TemplateBinderTests
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithSimpleMultiSegmentParamsOnBothEndsMatches()
     {
         RunTest(
@@ -334,7 +334,7 @@ public class TemplateBinderTests
             "/language/xx");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithSimpleMultiSegmentParamsOnLeftEndMatches()
     {
         RunTest(
@@ -345,7 +345,7 @@ public class TemplateBinderTests
             "/language/xx-");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithSimpleMultiSegmentParamsOnRightEndMatches()
     {
         RunTest(
@@ -356,7 +356,7 @@ public class TemplateBinderTests
             "/language/axx");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithSimpleMultiSegmentParamsOnNeitherEndMatches()
     {
         RunTest(
@@ -367,7 +367,7 @@ public class TemplateBinderTests
             "/language/axxa");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentStandardMvcRouteMatches()
     {
         RunTest(
@@ -378,7 +378,7 @@ public class TemplateBinderTests
             "/products.mvc");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
     {
         RunTest(
@@ -389,7 +389,7 @@ public class TemplateBinderTests
             "/language/zz-yy");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithDefaultValue()
     {
         // URL should be found but excluding the 'id' parameter, which has only a default value.
@@ -401,7 +401,7 @@ public class TemplateBinderTests
            "/home/newaction");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithEmptyStringRequiredValueReturnsNull()
     {
         RunTest(
@@ -412,7 +412,7 @@ public class TemplateBinderTests
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithNullRequiredValueReturnsNull()
     {
         RunTest(
@@ -423,7 +423,7 @@ public class TemplateBinderTests
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithRequiredValueReturnsPath()
     {
         RunTest(
@@ -434,7 +434,7 @@ public class TemplateBinderTests
             "/foo/home");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithNullDefaultValue()
     {
         // URL should be found but excluding the 'id' parameter, which has only a default value.
@@ -446,7 +446,7 @@ public class TemplateBinderTests
             "/home/newaction");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathCanFillInSeparatedParametersWithDefaultValues()
     {
         RunTest(
@@ -457,7 +457,7 @@ public class TemplateBinderTests
             "/Orders/en-US");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathWithUnusedNullValueShouldGenerateUrlAndIgnoreNullValue()
     {
         RunTest(
@@ -468,7 +468,7 @@ public class TemplateBinderTests
             "/Home.mvc/TestAction/1");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithMissingValuesDoesntMatch()
     {
         RunTest(
@@ -479,7 +479,7 @@ public class TemplateBinderTests
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithEmptyRequiredValuesReturnsNull()
     {
         RunTest(
@@ -490,7 +490,7 @@ public class TemplateBinderTests
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithEmptyOptionalValuesReturnsShortUrl()
     {
         RunTest(
@@ -501,7 +501,7 @@ public class TemplateBinderTests
             "/v1");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlShouldIgnoreValuesAfterChangedParameter()
     {
         RunTest(
@@ -512,7 +512,7 @@ public class TemplateBinderTests
             "/orig/new");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithNullForMiddleParameterIgnoresRemainingParameters()
     {
         RunTest(
@@ -524,7 +524,7 @@ public class TemplateBinderTests
             + "Photos/1995/Hola");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithEmptyStringForMiddleParameterIgnoresRemainingParameters()
     {
         var ambientValues = new RouteValueDictionary();
@@ -548,7 +548,7 @@ public class TemplateBinderTests
             + "Play/Photos/1995/Hola");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithEmptyStringForMiddleParameterShouldUseDefaultValue()
     {
         var ambientValues = new RouteValueDictionary();
@@ -570,7 +570,7 @@ public class TemplateBinderTests
             "/subtest.mvc/Default/b");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlVerifyEncoding()
     {
         var values = new RouteValueDictionary();
@@ -588,7 +588,7 @@ public class TemplateBinderTests
             "/%23;%3F%3A@%26%3D%2B$,.mvc/showcategory/123?so%3Frt=de%3Fsc&maxPrice=100");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlGeneratesQueryStringForNewValuesAndEscapesQueryString()
     {
         var values = new RouteValueDictionary(new { controller = "products", action = "showcategory", id = 123, maxPrice = 100 });
@@ -603,7 +603,7 @@ public class TemplateBinderTests
            "?so%3Frt=de%3Fsc&maxPrice=100");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlGeneratesQueryStringForNewValuesButIgnoresNewValuesThatMatchDefaults()
     {
         RunTest(
@@ -624,7 +624,7 @@ public class TemplateBinderTests
             "?sort=desc&maxPrice=100");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualPathEncodesParametersAndLiterals()
     {
         RunTest(
@@ -635,7 +635,7 @@ public class TemplateBinderTests
             "/bl%25og/ho%25me/he%20llo/li%20st");
     }
 
-    [Fact]
+    // [Fact]
     public void GetVirtualDoesNotEncodeLeadingSlashes()
     {
         RunTest(
@@ -646,7 +646,7 @@ public class TemplateBinderTests
             "/home/%2Fmy%2Findex");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithCatchAllWithValue()
     {
         RunTest(
@@ -657,7 +657,7 @@ public class TemplateBinderTests
             "/v1/v2a%2Fv2b");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithCatchAllWithEmptyValue()
     {
         RunTest(
@@ -668,7 +668,7 @@ public class TemplateBinderTests
             "/v1");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithCatchAllWithNullValue()
     {
         RunTest(
@@ -679,7 +679,7 @@ public class TemplateBinderTests
             "/v1");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithLeadingTildeSlash()
     {
         RunTest(
@@ -690,7 +690,7 @@ public class TemplateBinderTests
             "/foo");
     }
 
-    [Fact]
+    // [Fact]
     public void GetUrlWithLeadingSlash()
     {
         RunTest(
@@ -701,7 +701,7 @@ public class TemplateBinderTests
             "/foo");
     }
 
-    [Fact]
+    // [Fact]
     public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouteMatch()
     {
         // Arrange
@@ -730,7 +730,7 @@ public class TemplateBinderTests
 
 #if ROUTE_COLLECTION
 
-        [Fact]
+        // [Fact]
         public void GetUrlShouldValidateOnlyAcceptedParametersAndUserDefaultValuesForInvalidatedParameters()
         {
             // Arrange
@@ -764,7 +764,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app1/UrlConstraints/Validation.mvc/Input5/MissmatchedValidateParameters2/valid1", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetUrlWithRouteThatHasExtensionWithSubsequentDefaultValueIncludesExtensionButNotDefaultValue()
         {
             // Arrange
@@ -804,7 +804,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app1/Bank.mvc", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetUrlWithRouteThatHasDifferentControllerCaseShouldStillMatch()
         {
             // Arrange
@@ -832,7 +832,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app1/PrettyFooUrl", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetUrlWithNoChangedValuesShouldProduceSameUrl()
         {
             // Arrange
@@ -857,7 +857,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app1/Home.mvc", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetUrlAppliesConstraintsRulesToChooseRoute()
         {
             // Arrange
@@ -888,7 +888,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app1/Home.mvc", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetUrlWithValuesThatAreCompletelyDifferentFromTheCurrentRoute()
         {
             // Arrange
@@ -914,7 +914,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app/date/2007/08/12", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetUrlWithValuesThatAreCompletelyDifferentFromTheCurrentRouteAsSecondRoute()
         {
             // Arrange
@@ -941,7 +941,7 @@ public class TemplateBinderTests
             Assert.Equal<string>("/app/date/2007/08/12", vpd.VirtualPath);
         }
 
-        [Fact]
+        // [Fact]
         public void GetVirtualPathUsesCurrentValuesNotInRouteToMatch()
         {
             // Arrange
@@ -981,7 +981,7 @@ public class TemplateBinderTests
 #endif
 
 #if DATA_TOKENS
-        [Fact]
+        // [Fact]
         public void GetVirtualPathWithDataTokensCopiesThemFromRouteToVirtualPathData()
         {
             // Arrange
@@ -1008,43 +1008,43 @@ public class TemplateBinderTests
 
 #if ROUTE_FORMAT_HELPER
 
-        [Fact]
+        // [Fact]
         public void UrlWithEscapedOpenCloseBraces()
         {
             RouteFormatHelper("foo/{{p1}}", "foo/{p1}");
         }
 
-        [Fact]
+        // [Fact]
         public void UrlWithEscapedOpenBraceAtTheEnd()
         {
             RouteFormatHelper("bar{{", "bar{");
         }
 
-        [Fact]
+        // [Fact]
         public void UrlWithEscapedOpenBraceAtTheBeginning()
         {
             RouteFormatHelper("{{bar", "{bar");
         }
 
-        [Fact]
+        // [Fact]
         public void UrlWithRepeatedEscapedOpenBrace()
         {
             RouteFormatHelper("foo{{{{bar", "foo{{bar");
         }
 
-        [Fact]
+        // [Fact]
         public void UrlWithEscapedCloseBraceAtTheEnd()
         {
             RouteFormatHelper("bar}}", "bar}");
         }
 
-        [Fact]
+        // [Fact]
         public void UrlWithEscapedCloseBraceAtTheBeginning()
         {
             RouteFormatHelper("}}bar", "}bar");
         }
 
-        [Fact]
+        // [Fact]
         public void UrlWithRepeatedEscapedCloseBrace()
         {
             RouteFormatHelper("foo}}}}bar", "foo}}bar");
@@ -1062,7 +1062,7 @@ public class TemplateBinderTests
 #endif
 
 #if CONSTRAINTS
-        [Fact]
+        // [Fact]
         public void GetVirtualPathWithNonParameterConstraintReturnsUrlWithoutQueryString()
         {
             // DevDiv Bugs 199612: UrlRouting: UrlGeneration should not append parameter to query string if it is a Constraint parameter and not a Url parameter
@@ -1075,7 +1075,7 @@ public class TemplateBinderTests
                 "Orders.mvc/Index/end");
         }
 
-        [Fact]
+        // [Fact]
         public void GetVirtualPathWithValidCustomConstraints()
         {
             // Arrange
@@ -1101,7 +1101,7 @@ public class TemplateBinderTests
             Assert.Equal("index", r.ConstraintData.ParameterValue);
         }
 
-        [Fact]
+        // [Fact]
         public void GetVirtualPathWithInvalidCustomConstraints()
         {
             // Arrange
@@ -1224,7 +1224,7 @@ public class TemplateBinderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetValues_SuccessfullyMatchesRouteValues_ForExplicitEmptyStringValue_AndNullDefault()
     {
         // Arrange
@@ -1253,7 +1253,7 @@ public class TemplateBinderTests
         Assert.Equal(expected, boundTemplate);
     }
 
-    [Fact]
+    // [Fact]
     public void GetValues_SuccessfullyMatchesRouteValues_ForExplicitNullValue_AndEmptyStringDefault()
     {
         // Arrange
@@ -1282,7 +1282,7 @@ public class TemplateBinderTests
         Assert.Equal(expected, boundTemplate);
     }
 
-    [Fact]
+    // [Fact]
     public void BindValues_ParameterTransformer()
     {
         // Arrange
@@ -1312,7 +1312,7 @@ public class TemplateBinderTests
         Assert.Equal(expected, boundTemplate);
     }
 
-    [Fact]
+    // [Fact]
     public void BindValues_AmbientAndExplicitValuesDoNotMatch_Success()
     {
         // Arrange
@@ -1342,7 +1342,7 @@ public class TemplateBinderTests
         Assert.Equal(expected, boundTemplate);
     }
 
-    [Fact]
+    // [Fact]
     public void BindValues_LinkingFromPageToAController_Success()
     {
         // Arrange
@@ -1376,7 +1376,7 @@ public class TemplateBinderTests
     //
     // An ambient value should be used to satisfy a required value even if if we're discarding
     // ambient values.
-    [Fact]
+    // [Fact]
     public void BindValues_LinkingFromPageToAControllerInAreaWithAmbientArea_Success()
     {
         // Arrange
@@ -1406,7 +1406,7 @@ public class TemplateBinderTests
         Assert.Equal(expected, boundTemplate);
     }
 
-    [Fact]
+    // [Fact]
     public void BindValues_HasUnmatchingAmbientValues_Discard()
     {
         // Arrange

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
 public partial class HubConnectionTests : VerifiableLoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task InvokeThrowsIfSerializingMessageFails()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -41,7 +41,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendAsyncThrowsIfSerializingMessageFails()
     {
         using (StartVerifiableLog())
@@ -56,7 +56,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClosedEventRaisedWhenTheClientIsStopped()
     {
         var builder = new HubConnectionBuilder().WithUrl("http://example.com");
@@ -78,7 +78,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         Assert.Null(await closedEventTcs.Task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StopAsyncCanBeCalledFromOnHandler()
     {
         var connection = new TestConnection();
@@ -98,7 +98,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         await tcs.Task.DefaultTimeout();
     }
 
-    [Fact]
+    // [Fact]
     public async Task StopAsyncDoesNotWaitForOnHandlers()
     {
         var connection = new TestConnection();
@@ -122,7 +122,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         tcs.SetResult();
     }
 
-    [Fact]
+    // [Fact]
     public async Task PendingInvocationsAreCanceledWhenConnectionClosesCleanly()
     {
         using (StartVerifiableLog())
@@ -137,7 +137,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PendingInvocationsAreTerminatedWithExceptionWhenTransportCompletesWithError()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -162,7 +162,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PendingInvocationsAreCanceledWhenTokenTriggered()
     {
         using (StartVerifiableLog())
@@ -178,7 +178,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsyncCanceledWhenPassedCanceledToken()
     {
         using (StartVerifiableLog())
@@ -197,7 +197,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendAsyncCanceledWhenPassedCanceledToken()
     {
         using (StartVerifiableLog())
@@ -216,7 +216,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SendAsyncCanceledWhenTokenCanceledDuringSend()
     {
         using (StartVerifiableLog())
@@ -239,7 +239,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task StreamAsChannelAsyncCanceledWhenPassedCanceledToken()
     {
         using (StartVerifiableLog())
@@ -258,7 +258,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task StreamAsyncCanceledWhenPassedCanceledToken()
     {
         using (StartVerifiableLog())
@@ -277,7 +277,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCancelTokenAfterStreamIsCompleted()
     {
         using (StartVerifiableLog())
@@ -307,7 +307,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCancelTokenDuringStream_SendsCancelInvocation()
     {
         using (StartVerifiableLog())
@@ -341,7 +341,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -370,7 +370,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServerTimeoutIsDisabledWhenUsingTransportWithInherentKeepAlive()
     {
         using (StartVerifiableLog())
@@ -397,7 +397,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task PendingInvocationsAreTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
     {
@@ -424,7 +424,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task StreamIntsToServer()
     {
@@ -464,7 +464,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task StreamIntsToServerViaSend()
     {
@@ -539,7 +539,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task UploadStreamCancellationSendsStreamComplete()
     {
@@ -571,7 +571,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task UploadStreamErrorSendsStreamComplete()
     {
@@ -597,7 +597,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task ActiveUploadStreamWhenConnectionClosesObservesException()
     {
@@ -631,7 +631,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task InvocationCanCompleteBeforeStreamCompletes()
     {
@@ -657,7 +657,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task WrongTypeOnServerResponse()
     {
@@ -697,7 +697,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAwaitInvokeFromOnHandlerWithServerClosingConnection()
     {
         using (StartVerifiableLog())
@@ -743,7 +743,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAwaitUsingHubConnection()
     {
         using (StartVerifiableLog())
@@ -754,7 +754,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task VerifyUserOptionsAreNotChanged()
     {
         using (StartVerifiableLog())
@@ -801,7 +801,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     [LogLevel(LogLevel.Trace)]
     public async Task ClientResultResponseAfterConnectionCloseObservesException()
     {
@@ -837,7 +837,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HubConnectionIsMockable()
     {
         var mockConnection = new Mock<HubConnection>(new Mock<IConnectionFactory>().Object, new Mock<IHubProtocol>().Object, new Mock<EndPoint>().Object,

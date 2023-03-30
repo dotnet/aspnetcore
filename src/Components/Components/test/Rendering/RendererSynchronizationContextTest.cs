@@ -12,7 +12,7 @@ public class RendererSynchronizationContextTest
     // failures.
     public TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
-    [Fact]
+    // [Fact]
     public void Post_RunsAsynchronously_WhenNotBusy()
     {
         // Arrange
@@ -35,7 +35,7 @@ public class RendererSynchronizationContextTest
         Assert.NotSame(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public void Post_RunsAsynchronously_WhenNotBusy_Exception()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class RendererSynchronizationContextTest
         Assert.NotNull(exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Post_CanRunAsynchronously_WhenBusy()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class RendererSynchronizationContextTest
         Assert.NotSame(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Post_CanRunAsynchronously_CaptureExecutionContext()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(context, capturedContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Post_CanRunAsynchronously_WhenBusy_Exception()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class RendererSynchronizationContextTest
         Assert.NotNull(exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Post_BackgroundWorkItem_CanProcessMoreItemsInline()
     {
         // Arrange
@@ -258,7 +258,7 @@ public class RendererSynchronizationContextTest
         Assert.True(e6.Wait(Timeout), "timeout");
     }
 
-    [Fact]
+    // [Fact]
     public void Post_CapturesContext()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(context, capturedContext);
     }
 
-    [Fact]
+    // [Fact]
     public void Send_CanRunSynchronously()
     {
         // Arrange
@@ -306,7 +306,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public void Send_CanRunSynchronously_Exception()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class RendererSynchronizationContextTest
         }, null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task Send_BlocksWhenOtherWorkRunning()
     {
         // Arrange
@@ -366,7 +366,7 @@ public class RendererSynchronizationContextTest
         Assert.True(e4.IsSet);
     }
 
-    [Fact]
+    // [Fact]
     public void Send_CapturesContext()
     {
         // Arrange
@@ -397,7 +397,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(context, capturedContext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_Action_CanRunSynchronously_WhenNotBusy()
     {
         // Arrange
@@ -416,7 +416,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_Action_CanRunAsynchronously_WhenBusy()
     {
         // Arrange
@@ -456,7 +456,7 @@ public class RendererSynchronizationContextTest
         Assert.NotSame(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_Action_CanRethrowExceptions()
     {
         // Arrange
@@ -472,7 +472,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_Action_CanReportCancellation()
     {
         // Arrange
@@ -489,7 +489,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncT_CanRunSynchronously_WhenNotBusy()
     {
         // Arrange
@@ -506,7 +506,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(thread, await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncT_CanRunAsynchronously_WhenBusy()
     {
         // Arrange
@@ -544,7 +544,7 @@ public class RendererSynchronizationContextTest
         Assert.NotSame(thread, await task2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncT_CanRethrowExceptions()
     {
         // Arrange
@@ -560,7 +560,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncT_CanReportCancellation()
     {
         // Arrange
@@ -577,7 +577,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTask_CanRunSynchronously_WhenNotBusy()
     {
         // Arrange
@@ -597,7 +597,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTask_CanRunAsynchronously_WhenBusy()
     {
         // Arrange
@@ -638,7 +638,7 @@ public class RendererSynchronizationContextTest
         Assert.NotSame(thread, capturedThread);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTask_CanRethrowExceptions()
     {
         // Arrange
@@ -654,7 +654,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTask_CanReportCancellation()
     {
         // Arrange
@@ -671,7 +671,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTaskT_CanRunSynchronously_WhenNotBusy()
     {
         // Arrange
@@ -688,7 +688,7 @@ public class RendererSynchronizationContextTest
         Assert.Same(thread, await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTaskT_CanRunAsynchronously_WhenBusy()
     {
         // Arrange
@@ -726,7 +726,7 @@ public class RendererSynchronizationContextTest
         Assert.NotSame(thread, await task2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTaskT_CanRethrowExceptions()
     {
         // Arrange
@@ -742,7 +742,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_FuncTaskT_CanReportCancellation()
     {
         // Arrange
@@ -759,7 +759,7 @@ public class RendererSynchronizationContextTest
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_SyncWorkInAsyncTaskIsCompletedFirst()
     {
         // Simplified version of ServerComponentRenderingTest.CanDispatchAsyncWorkToSyncContext

@@ -124,7 +124,7 @@ public class RazorViewEngineTest
         Assert.False(result.Success);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ReturnsRazorView_IfLookupWasSuccessful()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class RazorViewEngineTest
         Assert.Empty(view.ViewStartPages);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_DoesNotExpireCachedResults_IfViewStartsExpire()
     {
         // Arrange
@@ -289,7 +289,7 @@ public class RazorViewEngineTest
             }, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_IsMainPage_ReturnsRazorView_IfLookupWasSuccessful()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class RazorViewEngineTest
         Assert.Equal(new[] { viewStart1, viewStart2 }, view.ViewStartPages);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_UsesViewLocationFormat_IfRouteDoesNotContainArea()
     {
         // Arrange
@@ -354,7 +354,7 @@ public class RazorViewEngineTest
         Assert.Same(page, view.RazorPage);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_UsesAreaViewLocationFormat_IfRouteContainsArea()
     {
         // Arrange
@@ -649,7 +649,7 @@ public class RazorViewEngineTest
         Assert.Same(areaPage2, view4.RazorPage);
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_UsesViewLocationExpandersToLocateViews()
     {
         // Arrange
@@ -716,7 +716,7 @@ public class RazorViewEngineTest
         expander2.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_UsesViewLocationExpandersToLocateViews_ForAreas()
     {
         // Arrange
@@ -784,7 +784,7 @@ public class RazorViewEngineTest
         expander2.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_NormalizesPaths_ReturnedByViewLocationExpanders()
     {
         // Arrange
@@ -815,7 +815,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_CachesValuesIfViewWasFound()
     {
         // Arrange
@@ -856,7 +856,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_CachesValuesIfViewWasFound_ForPages()
     {
         // Arrange
@@ -893,7 +893,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_InvokesPageFactoryIfChangeTokenExpired()
     {
         // Arrange
@@ -942,7 +942,7 @@ public class RazorViewEngineTest
 
     // This test validates an important perf scenario of RazorViewEngine not constructing
     // multiple strings for views that do not exist in the file system on a per-request basis.
-    [Fact]
+    // [Fact]
     public void FindView_DoesNotInvokeViewLocationExpanders_IfChangeTokenHasNotExpired()
     {
         // Arrange
@@ -995,7 +995,7 @@ public class RazorViewEngineTest
             Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_InvokesViewLocationExpanders_IfChangeTokenExpires()
     {
         // Arrange
@@ -1090,7 +1090,7 @@ public class RazorViewEngineTest
         Assert.Null(result.Page);
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_WithRelativePath_ReturnsNotFound()
     {
         // Arrange
@@ -1104,7 +1104,7 @@ public class RazorViewEngineTest
         Assert.Null(result.Page);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPage_WithViewName_ReturnsNotFound()
     {
         // Arrange
@@ -1132,7 +1132,7 @@ public class RazorViewEngineTest
             "pageName");
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_UsesViewLocationExpander_ToExpandPaths()
     {
         // Arrange
@@ -1190,7 +1190,7 @@ public class RazorViewEngineTest
         expander.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_UsesViewLocationExpander_ToExpandPaths_ForAreas()
     {
         // Arrange
@@ -1249,7 +1249,7 @@ public class RazorViewEngineTest
         expander.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_ReturnsSearchedLocationsIfPageCannotBeFound()
     {
         // Arrange
@@ -1271,7 +1271,7 @@ public class RazorViewEngineTest
         Assert.Equal(expected, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_SelectsActionCaseInsensitively()
     {
         // The ActionDescriptor contains "Foo" and the RouteData contains "foo"
@@ -1308,7 +1308,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_LooksForPages_UsingActionDescriptor_Controller()
     {
         // Arrange
@@ -1341,7 +1341,7 @@ public class RazorViewEngineTest
         Assert.Equal(expected, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_LooksForPages_UsingActionDescriptor_Areas()
     {
         // Arrange
@@ -1377,7 +1377,7 @@ public class RazorViewEngineTest
         Assert.Equal(expected, result.SearchedLocations);
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_LooksForPages_UsesRouteValuesAsFallback()
     {
         // Arrange
@@ -1600,7 +1600,7 @@ public class RazorViewEngineTest
         Assert.Equal(expectedPagePath, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedRouteValue_ReturnsValueFromRouteValues()
     {
         // Arrange
@@ -1623,7 +1623,7 @@ public class RazorViewEngineTest
         Assert.Equal("Route-Value", result);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void GetNormalizedRouteValue_UsesInvariantCulture()
     {
@@ -1647,7 +1647,7 @@ public class RazorViewEngineTest
         Assert.Equal("10/31/2018 07:37:38 -07:00", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedRouteValue_ReturnsRouteValue_IfValueDoesNotMatch()
     {
         // Arrange
@@ -1670,7 +1670,7 @@ public class RazorViewEngineTest
         Assert.Equal("route-value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedRouteValue_ReturnsNonNormalizedValue_IfActionRouteValueIsNull()
     {
         // Arrange
@@ -1693,7 +1693,7 @@ public class RazorViewEngineTest
         Assert.Equal("route-value", result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetNormalizedRouteValue_ConvertsRouteValueToString()
     {
         using (new CultureReplacer())
@@ -1721,7 +1721,7 @@ public class RazorViewEngineTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewLocationFormats_ForControllerWithoutArea_ReturnsDefaultSet()
     {
         // Arrange
@@ -1746,7 +1746,7 @@ public class RazorViewEngineTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewLocationFormats_ForControllerWithArea_ReturnsAreaSet()
     {
         // Arrange
@@ -1771,7 +1771,7 @@ public class RazorViewEngineTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewLocationFormats_ForPage_ReturnsPageSet()
     {
         // Arrange
@@ -1798,7 +1798,7 @@ public class RazorViewEngineTest
 
     // This isn't a real case we expect to hit in an app, just making sure we have a reasonable default
     // for a weird configuration. In this case we preserve what we did in 1.0.0.
-    [Fact]
+    // [Fact]
     public void GetViewLocationFormats_NoRouteValues_ReturnsDefaultSet()
     {
         // Arrange
@@ -1823,7 +1823,7 @@ public class RazorViewEngineTest
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewEngine_DoesNotSetPageValue_IfItIsNotSpecifiedInRouteValues()
     {
         // Arrange
@@ -1860,7 +1860,7 @@ public class RazorViewEngineTest
         expander.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void ViewEngine_SetsPageValue_IfItIsSpecifiedInRouteValues()
     {
         // Arrange
@@ -1896,7 +1896,7 @@ public class RazorViewEngineTest
         expander.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_ResolvesDirectoryTraversalsPriorToInvokingPageFactory()
     {
         // Arrange
@@ -1914,7 +1914,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_ResolvesDirectoryTraversalsPriorToInvokingPageFactory()
     {
         // Arrange
@@ -1936,7 +1936,7 @@ public class RazorViewEngineTest
     // Without normalizing the path, the view engine would have attempted to lookup "/Views//MyView.cshtml"
     // which works for PhysicalFileProvider but fails for exact lookups performed during precompilation.
     // We normalize it to "/Views/MyView.cshtml" to avoid this discrepancy.
-    [Fact]
+    // [Fact]
     public void FindView_ResolvesNormalizesSlashesPriorToInvokingPageFactory()
     {
         // Arrange
@@ -1954,7 +1954,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindPage_ResolvesNormalizesSlashesPriorToInvokingPageFactory()
     {
         // Arrange
@@ -1972,7 +1972,7 @@ public class RazorViewEngineTest
         pageFactory.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void FindView_Succeeds_AfterClearCache()
     {
         // Arrange

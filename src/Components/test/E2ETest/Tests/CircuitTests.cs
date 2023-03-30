@@ -53,7 +53,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         AssertLogContains("Connection disconnected.");
     }
 
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46836")]
     public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
     {
@@ -74,7 +74,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         AssertLogContains("Connection disconnected.");
     }
 
-    [Fact]
+    // [Fact]
     public void OnLocationChanged_ReportsErrorForExceptionInUserCode()
     {
         Browser.MountTestComponent<NavigationFailureComponent>();

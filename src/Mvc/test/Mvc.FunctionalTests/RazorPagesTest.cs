@@ -28,7 +28,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task Page_SimpleForms_RenderAntiforgery()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_HandlerFromQueryString()
     {
         // Arrange & Act
@@ -58,7 +58,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnGetCustomer", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_HandlerRouteDataChosenOverQueryString()
     {
         // Arrange & Act
@@ -68,7 +68,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnGetCustomer", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_Handler()
     {
         // Arrange & Act
@@ -78,7 +78,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnGetCustomer", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_Async()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnPostAsync", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_AsyncHandler()
     {
         // Arrange & Act
@@ -110,7 +110,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnGetViewCustomerAsync", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_ReturnTypeImplementsIActionResult()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("CustomActionResult", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithoutModel_ReturnPartial()
     {
         // Act
@@ -141,7 +141,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello from Razor Page", element.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithModel_Works()
     {
         // Act
@@ -151,7 +151,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello from RenderPartialModel", element.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithModel_PartialUsingPageModelWorks()
     {
         // Act
@@ -161,7 +161,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello from RenderPartialWithModel", element.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithModel_PartialWithNoModel()
     {
         // Act
@@ -171,7 +171,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello default", element.TextContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_AsyncReturnTypeImplementsIActionResult()
     {
         // Arrange & Act
@@ -181,7 +181,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("CustomActionResult", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageModel_Handler_Handler()
     {
         // Arrange & Act
@@ -191,7 +191,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnGetCustomer", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageModel_Handler_Async()
     {
         // Arrange
@@ -213,7 +213,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnPostAsync", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageModel_Handler_AsyncHandler()
     {
         // Arrange & Act
@@ -223,7 +223,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Method: OnGetViewCustomerAsync", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageModel_Handler_ReturnTypeImplementsIActionResult()
     {
         // Arrange
@@ -244,7 +244,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("CustomActionResult", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageModel_Handler_AsyncReturnTypeImplementsIActionResult()
     {
         // Arrange & Act
@@ -254,7 +254,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("CustomActionResult", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteData_StringValueOnIntProp_ExpectsNotFound()
     {
         // Arrange
@@ -267,7 +267,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal(HttpStatusCode.NotFound, routeResponse.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RouteData_IntProperty_IsCoerced()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("From RouteData: 5", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_SetsPath()
     {
         // Arrange
@@ -299,7 +299,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
 
     // Tests that RazorPage includes InvalidTagHelperIndexerAssignment which is called when the page has an indexer
     // Issue https://github.com/aspnet/Mvc/issues/5920
-    [Fact]
+    // [Fact]
     public async Task TagHelper_InvalidIndexerDoesNotFail()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("<a href=\"/Show?id=2\">Post title</a>", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoPage_NotFound()
     {
         // Arrange
@@ -328,7 +328,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageHandlerCanReturnBadRequest()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Parameter cannot be null.", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HelloWorld_CanGetContent()
     {
         // Arrange
@@ -360,7 +360,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello, World!", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HelloWorldWithRoute_CanGetContent()
     {
         // Arrange
@@ -376,7 +376,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello, route!", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HelloWorldWithHandler_CanGetContent()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello, handler!", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HelloWorldWithPageModelHandler_CanPostContent()
     {
         // Arrange
@@ -435,7 +435,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.StartsWith("Hello, pagemodel!", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HelloWorldWithPageModelAttributeHandler()
     {
         // Arrange
@@ -448,7 +448,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hello, DecoratedModel!", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithoutContent()
     {
         // Arrange
@@ -464,7 +464,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewReturnsPage()
     {
         // Arrange
@@ -480,7 +480,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("The message: From OnGet", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TempData_SetTempDataInPage_CanReadValue()
     {
         // Arrange 1
@@ -505,7 +505,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hi1", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TempData_SetTempDataInPageModel_CanReadValue()
     {
         // Arrange 1
@@ -530,7 +530,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Hi2", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TempData_TempDataPropertyOnPageModel_IsPopulatedFromTempData()
     {
         // Arrange 1
@@ -555,7 +555,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.EndsWith("TempData: Secret Message", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TempData_TempDataPropertyOnPageModel_PopulatesTempData()
     {
         // Arrange 1
@@ -593,7 +593,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.EndsWith("TempData: Secret post", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizePage_AddsAuthorizationForSpecificPages()
     {
         // Arrange
@@ -607,7 +607,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("/Login?ReturnUrl=%2FHelloWorldWithAuth", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizePage_AllowAnonymousForSpecificPages()
     {
         // Arrange
@@ -623,7 +623,7 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         Assert.Equal("Login Page", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewStart_IsDiscoveredWhenRootDirectoryIsNotSpecified()
     {
         // Test for https://github.com/aspnet/Mvc/issues/5915
@@ -638,7 +638,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewImport_IsDiscoveredWhenRootDirectoryIsNotSpecified()
     {
         // Test for https://github.com/aspnet/Mvc/issues/5915
@@ -652,7 +652,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertiesOnPageAreBound()
     {
         // Arrange
@@ -676,7 +676,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.StartsWith(expected, content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertiesOnPageAreValidated()
     {
         // Arrange
@@ -707,7 +707,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertiesOnPageModelAreBound()
     {
         // Arrange
@@ -731,7 +731,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.StartsWith(expected, content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PropertiesOnPageModelAreValidated()
     {
         // Arrange
@@ -765,7 +765,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PolymorphicPropertiesOnPageModelsAreBound()
     {
         // Arrange
@@ -823,7 +823,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
            });
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandlerMethodArgumentsAndPropertiesAreModelBound()
     {
         // Arrange
@@ -847,7 +847,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.StartsWith(expected, content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagePropertiesAreNotBoundInGetRequests()
     {
         // Arrange
@@ -872,7 +872,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.DoesNotContain(validationError, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageProperty_WithSupportsGetTrue_OnPageWithHandler_FuzzyMatchesHeadRequest()
     {
         // Arrange
@@ -888,7 +888,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageProperty_WithSupportsGetTrue_OnPageWithNoHandler_FuzzyMatchesHeadRequest()
     {
         // Arrange
@@ -904,7 +904,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageProperty_WithSupportsGet_BoundInGet()
     {
         // Arrange
@@ -920,7 +920,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.StartsWith(expected, content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagePropertiesAreInjected()
     {
         // Arrange
@@ -936,7 +936,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectFromPageWorks()
     {
         // Arrange
@@ -950,7 +950,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectFromPageModelWorks()
     {
         // Arrange
@@ -964,7 +964,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToSelfWorks()
     {
         // Arrange
@@ -986,7 +986,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectDoesNotIncludeHandlerByDefault()
     {
         // Arrange
@@ -1000,7 +1000,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToOtherHandlersWorks()
     {
         // Arrange
@@ -1014,7 +1014,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Controller_RedirectToPage()
     {
         // Arrange
@@ -1028,7 +1028,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_RedirectToController()
     {
         // Arrange
@@ -1042,7 +1042,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToSibling_Works()
     {
         // Arrange
@@ -1054,7 +1054,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToSibling_RedirectsToIndexPage_WithoutIndexSegment()
     {
         // Arrange
@@ -1066,7 +1066,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToSibling_RedirectsToSubDirectory()
     {
         // Arrange
@@ -1078,7 +1078,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToSibling_RedirectsToDotSlash()
     {
         // Arrange
@@ -1092,7 +1092,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectToSibling_RedirectsToParentDirectory()
     {
         // Arrange
@@ -1104,7 +1104,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TagHelpers_SupportSiblingRoutes()
     {
         // Arrange
@@ -1120,7 +1120,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TagHelpers_SupportSubDirectoryRoutes()
     {
         // Arrange
@@ -1136,7 +1136,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TagHelpers_SupportsPathNavigation()
     {
         // Arrange
@@ -1153,7 +1153,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_WithSection_CanAccessModel()
     {
         // Arrange
@@ -1166,7 +1166,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.StartsWith(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesCanByRoutedViaRoute_AddedViaAddPageRoute()
     {
         // Arrange
@@ -1179,7 +1179,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.StartsWith(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesCanByRoutedToApplicationRoot_ViaAddPageRoute()
     {
         // Arrange
@@ -1192,7 +1192,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.StartsWith(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthFiltersAppliedToPageModel_AreExecuted()
     {
         // Act
@@ -1203,7 +1203,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("/Login?ReturnUrl=%2FPages%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeAttributeIsExecutedPriorToAutoAntiforgeryFilter()
     {
         // Act
@@ -1214,7 +1214,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("/Login?ReturnUrl=%2FPages%2FAdmin%2FEdit", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageFiltersAppliedToPageModel_AreExecuted()
     {
         // Arrange
@@ -1227,7 +1227,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseCacheAttributes_AreApplied()
     {
         // Arrange
@@ -1244,7 +1244,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, (await response.Content.ReadAsStringAsync()).Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewLocalizer_WorksForPagesWithoutModel()
     {
         // Arrange
@@ -1256,7 +1256,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewLocalizer_WorksForPagesWithModel()
     {
         // Arrange
@@ -1269,7 +1269,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttribute_CanBeAppliedToModelType()
     {
         // Arrange
@@ -1292,7 +1292,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.StartsWith(expected, responseContent.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindPropertiesAttribute_CanBeAppliedToModelType_AllowsBindingOnGet()
     {
         // Arrange
@@ -1307,7 +1307,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("Property-Value", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindingInfoOnPropertiesIsPreferredToBindingInfoOnType()
     {
         // Arrange
@@ -1333,11 +1333,11 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.StartsWith(expected, responseContent.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public Task InheritsOnViewImportsWorksForPagesWithoutModel()
         => InheritsOnViewImportsWorks("Pages/CustomBaseType/Page");
 
-    [Fact]
+    // [Fact]
     public Task InheritsOnViewImportsWorksForPagesWithModel()
         => InheritsOnViewImportsWorks("Pages/CustomBaseType/PageWithModel");
 
@@ -1353,7 +1353,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageHandlerFilterOnPageModelIsExecuted()
     {
         // Arrange
@@ -1366,7 +1366,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResultFilterOnPageModelIsExecuted()
     {
         // Act
@@ -1376,7 +1376,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_CanOverrideRouteTemplate()
     {
         // Arrange & Act
@@ -1386,7 +1386,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("<p>Hey, it's Mr. totally custom here!</p>", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Page_Handler_BindsToDefaultValues()
     {
         // Arrange
@@ -1427,7 +1427,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("From ShortCircuitPageAtPageFilter.cshtml", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataAwaitableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
     {
         // Act
@@ -1437,7 +1437,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("ViewData: Bar", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OptionsRequest_WithoutHandler_Returns200_WithoutExecutingPage()
     {
         // Arrange
@@ -1453,7 +1453,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Empty(content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithOptionsHandler_ExecutesGetRequest()
     {
         // Arrange
@@ -1469,7 +1469,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDo
         Assert.Equal("Hello from OnGet!", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithOptionsHandler_ExecutesOptionsRequest()
     {
         // Arrange

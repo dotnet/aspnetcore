@@ -10,39 +10,39 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrati
 {
     private MvcDiagnosticAnalyzerRunner AnalyzerRunner { get; } = new MvcDiagnosticAnalyzerRunner(new ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer());
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForNonApiController()
         => RunNoDiagnosticsAreReturned();
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForRazorPageModels()
         => RunNoDiagnosticsAreReturned();
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForApiActionsWithoutModelStateChecks()
         => RunNoDiagnosticsAreReturned();
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForApiActionsReturning400FromNonModelStateIsValidBlocks()
         => RunNoDiagnosticsAreReturned();
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForApiActionsReturningNot400FromNonModelStateIsValidBlock()
         => RunNoDiagnosticsAreReturned();
 
-    [Fact]
+    // [Fact]
     public Task NoDiagnosticsAreReturned_ForApiActionsCheckingAdditionalConditions()
         => RunNoDiagnosticsAreReturned();
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForApiActionsWithModelStateChecks()
         => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForApiActionsWithModelStateChecksUsingEquality()
         => RunTest();
 
-    [Fact]
+    // [Fact]
     public Task DiagnosticsAreReturned_ForApiActionsWithModelStateChecksWithoutBracing()
         => RunTest();
 

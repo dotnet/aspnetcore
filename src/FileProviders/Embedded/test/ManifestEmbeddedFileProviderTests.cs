@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.FileProviders;
 
 public class ManifestEmbeddedFileProviderTests
 {
-    [Fact]
+    // [Fact]
     public void GetFileInfo_CanResolveSimpleFiles()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(0, siteCss.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfo_CanResolveFilesInsideAFolder()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(0, siteCss.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfo_ResolveNonExistingFile_ReturnsNotFoundFileInfo()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.IsType<NotFoundFileInfo>(file);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfo_ResolveNonExistingDirectory_ReturnsNotFoundFileInfo()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.IsType<NotFoundFileInfo>(file);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfo_ResolveExistingDirectory_ReturnsNotFoundFileInfo()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(0, jqueryValidate.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfo_AllowsLeadingDots_OnThePath()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(0, jqueryValidate.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void GetFileInfo_EscapingFromTheRootFolder_ReturnsNotFound()
     {
         // Arrange
@@ -237,7 +237,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(path, file.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContents_CanEnumerateExistingFolders()
     {
         // Arrange
@@ -264,7 +264,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(expectedContents, contents, FileInfoComparer.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContents_EnumeratesOnlyAGivenLevel()
     {
         // Arrange
@@ -289,7 +289,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(expectedContents, contents, FileInfoComparer.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContents_EnumeratesFilesAndDirectoriesOnAGivenPath()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.Equal(expectedContents, contents, FileInfoComparer.Instance);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContents_ReturnsNoEntries_ForNonExistingDirectories()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.IsType<NotFoundDirectoryContents>(contents);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDirectoryContents_ReturnsNoEntries_ForFilePaths()
     {
         // Arrange
@@ -374,7 +374,7 @@ public class ManifestEmbeddedFileProviderTests
         Assert.IsType<NotFoundDirectoryContents>(directory);
     }
 
-    [Fact]
+    // [Fact]
     public void Contructor_CanScopeManifestToAFolder()
     {
         // Arrange

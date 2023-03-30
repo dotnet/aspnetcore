@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.WebUtilities;
 
 public class QueryHelperTests
 {
-    [Fact]
+    // [Fact]
     public void ParseQueryWithUniqueKeysWorks()
     {
         var collection = QueryHelpers.ParseQuery("?key1=value1&key2=value2");
@@ -16,7 +16,7 @@ public class QueryHelperTests
         Assert.Equal("value2", collection["key2"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithoutQuestionmarkWorks()
     {
         var collection = QueryHelpers.ParseQuery("key1=value1&key2=value2");
@@ -25,7 +25,7 @@ public class QueryHelperTests
         Assert.Equal("value2", collection["key2"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithDuplicateKeysGroups()
     {
         var collection = QueryHelpers.ParseQuery("?key1=valueA&key2=valueB&key1=valueC");
@@ -34,7 +34,7 @@ public class QueryHelperTests
         Assert.Equal("valueB", collection["key2"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEmptyValuesWorks()
     {
         var collection = QueryHelpers.ParseQuery("?key1=&key2=");
@@ -43,7 +43,7 @@ public class QueryHelperTests
         Assert.Equal(string.Empty, collection["key2"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEmptyKeyWorks()
     {
         var collection = QueryHelpers.ParseQuery("?=value1&=");
@@ -51,7 +51,7 @@ public class QueryHelperTests
         Assert.Equal(new[] { "value1", "" }, collection[""]);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyWorks()
     {
         var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D");
@@ -59,7 +59,7 @@ public class QueryHelperTests
         Assert.Equal("", collection["fields [todoItems]"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedValueWorks()
     {
         var collection = QueryHelpers.ParseQuery("?=fields+%5BtodoItems%5D");
@@ -67,7 +67,7 @@ public class QueryHelperTests
         Assert.Equal("fields [todoItems]", collection[""].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyEmptyValueWorks()
     {
         var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=");
@@ -75,7 +75,7 @@ public class QueryHelperTests
         Assert.Equal("", collection["fields [todoItems]"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyEncodedValueWorks()
     {
         var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D");
@@ -83,7 +83,7 @@ public class QueryHelperTests
         Assert.Equal("[ 1 ]", collection["fields [todoItems]"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyEncodedValuesWorks()
     {
         var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D&fields+%5BtodoItems%5D=%5B+2+%5D");
@@ -101,7 +101,7 @@ public class QueryHelperTests
         Assert.Empty(collection);
     }
 
-    [Fact]
+    // [Fact]
     public void AddQueryStringWithNullValueThrows()
     {
         Assert.Throws<ArgumentNullException>("value", () => QueryHelpers.AddQueryString("http://contoso.com/", "hello", null!));

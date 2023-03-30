@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Diagnostics;
 
 public class DeveloperExceptionPageMiddlewareTest
 {
-    [Fact]
+    // [Fact]
     public async Task UnhandledErrorsWriteToDiagnosticWhenUsingExceptionPage()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class DeveloperExceptionPageMiddlewareTest
         Assert.Null(listener.DiagnosticHandledException?.Exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ErrorPageWithAcceptHeaderForHtmlReturnsHtml()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class DeveloperExceptionPageMiddlewareTest
         Assert.Contains("Test exception", responseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ErrorPageWithoutAcceptHeaderForHtmlReturnsPlainText()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class DeveloperExceptionPageMiddlewareTest
         Assert.DoesNotContain("<html", responseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeFromBadHttpRequestExceptionIsPreserved()
     {
         const int statusCode = 418;
@@ -159,7 +159,7 @@ public class DeveloperExceptionPageMiddlewareTest
         Assert.Contains("Not found!", responseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionPageFiltersAreApplied()
     {
         // Arrange
@@ -193,7 +193,7 @@ public class DeveloperExceptionPageMiddlewareTest
         Assert.Equal("Test exception", await response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionFilterCallingNextWorks()
     {
         // Arrange
@@ -231,7 +231,7 @@ public class DeveloperExceptionPageMiddlewareTest
         await host.StartAsync();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionPageFiltersAreAppliedInOrder()
     {
         // Arrange

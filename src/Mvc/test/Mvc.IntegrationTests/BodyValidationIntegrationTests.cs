@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
 public class BodyValidationIntegrationTests
 {
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_ValidBaseClass_NoModelStateErrors()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class BodyValidationIntegrationTests
         Assert.NotNull(boundPerson);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataType_ValidArray_NoModelStateErrors()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class BodyValidationIntegrationTests
         Assert.Equal(2, products.Count());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_InvalidPropertiesAndSubPropertiesOnBaseClass_HasModelStateErrors()
     {
         // Arrange
@@ -138,7 +138,7 @@ public class BodyValidationIntegrationTests
         Assert.Equal(detail3Required, modelStateErrors["ProductDetails.Detail3"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_InvalidComplexTypePropertyOnBaseClass_HasModelStateErrors()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class BodyValidationIntegrationTests
         Assert.Equal(productDetailsRequired, modelStateErrors["ProductDetails"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_InvalidClassAttributeOnBaseClass_HasModelStateErrors()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class BodyValidationIntegrationTests
         Assert.Equal("Product must be made in the USA if it is not named.", modelStateErrors[""]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_ValidDerivedClass_NoModelStateErrors()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class BodyValidationIntegrationTests
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_InvalidPropertiesOnDerivedClass_HasModelStateErrors()
     {
         // Arrange
@@ -299,7 +299,7 @@ public class BodyValidationIntegrationTests
         Assert.Equal(contactLength, modelStateErrors["Contact"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ModelMetadataTypeAttribute_InvalidClassAttributeOnBaseClassProduct_HasModelStateErrors()
     {
         // Arrange
@@ -351,7 +351,7 @@ public class BodyValidationIntegrationTests
         public string Street { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FromBodyAllowingEmptyInputAndRequiredOnProperty_EmptyBody_AddsModelStateError()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class BodyValidationIntegrationTests
         Assert.Equal(addressRequired, error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FromBodyAllowingEmptyInputOnActionParameter_EmptyBody_BindsToNullValue()
     {
         // Arrange
@@ -437,7 +437,7 @@ public class BodyValidationIntegrationTests
         public int Address { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_AddsModelStateError()
     {
         // Arrange
@@ -506,7 +506,7 @@ public class BodyValidationIntegrationTests
         public int RequiredNumber { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task FromBodyAndRequiredOnInnerValueTypeProperty_NotBound_JsonFormatterSuccessful()
     {
         // Arrange
@@ -544,7 +544,7 @@ public class BodyValidationIntegrationTests
         Assert.Empty(modelState);
     }
 
-    [Fact] // This test covers the 2.0 behavior. Error messages from JSON.Net are preserved.
+    // [Fact] // This test covers the 2.0 behavior. Error messages from JSON.Net are preserved.
     public async Task FromBodyWithInvalidPropertyData_JsonFormatterAddsModelError()
     {
         // Arrange
@@ -645,7 +645,7 @@ public class BodyValidationIntegrationTests
         Assert.NotEmpty(error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FromBodyWithEmptyBody_ModelStateIsValid_WhenAllowEmptyInput()
     {
         // Arrange

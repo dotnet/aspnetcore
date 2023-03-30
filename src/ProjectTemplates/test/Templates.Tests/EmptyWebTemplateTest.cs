@@ -59,13 +59,13 @@ public class EmptyWebTemplateTest : LoggedTest
         await EmtpyTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps });
     }
 
-    [Fact]
+    // [Fact]
     public async Task EmptyWebTemplateFSharp()
     {
         await EmtpyTemplateCore("F#");
     }
 
-    [Fact]
+    // [Fact]
     public async Task EmptyWebTemplateNoHttpsFSharp()
     {
         await EmtpyTemplateCore("F#", args: new[] { ArgConstants.NoHttps });

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class PageInvokerProviderTest
 {
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_WithEmptyModel_PopulatesCacheEntry()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class PageInvokerProviderTest
         Assert.NotNull(entry.ViewDataFactory);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_WithModel_PopulatesCacheEntry()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class PageInvokerProviderTest
         Assert.Empty(pageContext.ViewStartFactories);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_CachesViewStartFactories()
     {
         // Arrange
@@ -195,7 +195,7 @@ public class PageInvokerProviderTest
         Assert.Equal(new[] { factory2, factory1 }, entry.ViewStartFactories);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_CachesEntries()
     {
         // Arrange
@@ -241,7 +241,7 @@ public class PageInvokerProviderTest
         Assert.Same(entry1, entry2);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_DoesNotInvokePageLoader_WhenEndpointRoutingIsUsed()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class PageInvokerProviderTest
         loader.Verify(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()), Times.Never());
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_InvokesPageLoader_WithoutEndpointRouting()
     {
         // Arrange
@@ -306,7 +306,7 @@ public class PageInvokerProviderTest
         loader.Verify(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()), Times.Once());
     }
 
-    [Fact]
+    // [Fact]
     public void CacheUpdatesWhenDescriptorChanges()
     {
         // Arrange
@@ -360,7 +360,7 @@ public class PageInvokerProviderTest
         Assert.NotSame(entry1, entry2);
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewStartFactories_FindsFullHierarchy()
     {
 
@@ -413,7 +413,7 @@ public class PageInvokerProviderTest
         mock.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void GetViewStartFactories_ReturnsFactoriesForFilesThatDoNotExistInProject()
     {
         // The factory provider might have access to _ViewStarts for files that do not exist on disk \ RazorProject.

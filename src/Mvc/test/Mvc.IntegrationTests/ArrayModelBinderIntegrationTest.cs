@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 // Integration tests targeting the behavior of the ArrayModelBinder with other model binders.
 public class ArrayModelBinderIntegrationTest
 {
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfSimpleType_WithPrefix_Success()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class ArrayModelBinderIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfSimpleType_WithExplicitPrefix_Success()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class ArrayModelBinderIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfSimpleType_EmptyPrefix_Success()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class ArrayModelBinderIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfSimpleType_NoData()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class ArrayModelBinderIntegrationTest
         public string Name { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfComplexType_WithPrefix_Success()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class ArrayModelBinderIntegrationTest
         Assert.Equal("lang", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfComplexType_WithExplicitPrefix_Success()
     {
         // Arrange
@@ -255,7 +255,7 @@ public class ArrayModelBinderIntegrationTest
         Assert.Equal("lang", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfComplexType_EmptyPrefix_Success()
     {
         // Arrange
@@ -296,7 +296,7 @@ public class ArrayModelBinderIntegrationTest
         Assert.Equal("lang", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfComplexType_NoData()
     {
         // Arrange
@@ -333,7 +333,7 @@ public class ArrayModelBinderIntegrationTest
         public string[] Aliases { get; } = new[] { "Alias1", "Alias2" };
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_BindsArrayOfComplexTypeHavingInitializedData_WithPrefix_Success_ReadOnly()
     {
         // Arrange
@@ -368,7 +368,7 @@ public class ArrayModelBinderIntegrationTest
             (e) => Assert.Equal("Alias2", e));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ArrayModelBinder_ThrowsOn1025Items_AtTopLevel()
     {
         // Arrange

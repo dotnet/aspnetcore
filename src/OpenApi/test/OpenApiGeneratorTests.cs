@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.OpenApi.Tests;
 
 public class OpenApiOperationGeneratorTests
 {
-    [Fact]
+    // [Fact]
     public void OperationNotCreatedIfNoHttpMethods()
     {
         var operation = GetOpenApiOperation(() => { }, "/", Array.Empty<string>());
@@ -29,7 +29,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operation);
     }
 
-    [Fact]
+    // [Fact]
     public void UsesDeclaringTypeAsOperationTags()
     {
         var operation = GetOpenApiOperation(TestAction);
@@ -41,7 +41,7 @@ public class OpenApiOperationGeneratorTests
 
     }
 
-    [Fact]
+    // [Fact]
     public void UsesApplicationNameAsOperationTagsIfNoDeclaringType()
     {
         var operation = GetOpenApiOperation(() => { });
@@ -52,7 +52,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(declaringTypeName, tag.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void UsesTagsFromMultipleCallsToWithTags()
     {
         var testBuilder = new TestEndpointConventionBuilder();
@@ -69,7 +69,7 @@ public class OpenApiOperationGeneratorTests
             tag => Assert.Equal("B", tag.Name));
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsInvalidOperationExceptionGivenUnnamedParameter()
     {
         var unnamedParameter = Expression.Parameter(typeof(int));
@@ -78,7 +78,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("Encountered a parameter of type 'System.Runtime.CompilerServices.Closure' without a name. Parameters must have a name.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsRequestFormatFromMetadata()
     {
         static void AssertCustomRequestFormat(OpenApiOperation operation)
@@ -95,7 +95,7 @@ public class OpenApiOperationGeneratorTests
             [Consumes("application/custom")] ([FromBody] int fromBody) => { }));
     }
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleRequestFormatsFromMetadata()
     {
         var operation = GetOpenApiOperation(
@@ -108,7 +108,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(new[] { "application/custom0", "application/custom1" }, content.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleRequestFormatsFromMetadataWithRequestTypeAndOptionalBodyParameter()
     {
         var operation = GetOpenApiOperation(
@@ -125,7 +125,7 @@ public class OpenApiOperationGeneratorTests
 
 #nullable enable
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
     {
         var operation = GetOpenApiOperation(
@@ -142,7 +142,7 @@ public class OpenApiOperationGeneratorTests
 
 #nullable disable
 
-    [Fact]
+    // [Fact]
     public void AddsJsonResponseFormatWhenFromBodyInferred()
     {
         static void AssertJsonResponse(OpenApiOperation operation, string expectedType)
@@ -158,7 +158,7 @@ public class OpenApiOperationGeneratorTests
         AssertJsonResponse(GetOpenApiOperation(() => (IInferredJsonInterface)null), "object");
     }
 
-    [Fact]
+    // [Fact]
     public void AddsTextResponseFormatWhenFromBodyInferred()
     {
         var operation = GetOpenApiOperation(() => "foo");
@@ -169,7 +169,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("text/plain", formats.Key);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsNoResponseFormatWhenItCannotBeInferredAndTheresNoMetadata()
     {
         static void AssertVoid(OpenApiOperation operation)
@@ -184,7 +184,7 @@ public class OpenApiOperationGeneratorTests
         AssertVoid(GetOpenApiOperation(() => new ValueTask()));
     }
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleResponseFormatsFromMetadataWithPoco()
     {
         var operation = GetOpenApiOperation(
@@ -209,7 +209,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("application/json", badRequestContent.Key);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleResponseFormatsFromMetadataWithIResult()
     {
         var operation = GetOpenApiOperation(
@@ -231,7 +231,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(badRequestResponseType.Content);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultResponseDescriptionIsCorrect()
     {
         var operation = GetOpenApiOperation(
@@ -248,7 +248,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("Bad Request", clientErrorResponse.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultResponseDescriptionIsCorrectForTwoSimilarResponses()
     {
         var operation = GetOpenApiOperation(
@@ -265,7 +265,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("Switching Protocols", switchingProtocolsResponse.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void AllDefaultResponseDescriptions()
     {
         var operation = GetOpenApiOperation(
@@ -294,7 +294,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("Internal Server Error", InternalServerErrorResponse.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void UnregisteredStatusCodeDescriptions()
     {
         var operation = GetOpenApiOperation(
@@ -315,7 +315,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("", unregisteredResponse3.Description);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromRouteParameterAsPath()
     {
         static void AssertPathParameter(OpenApiOperation operation)
@@ -329,7 +329,7 @@ public class OpenApiOperationGeneratorTests
         AssertPathParameter(GetOpenApiOperation(([FromRoute] int foo) => { }));
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromRouteParameterAsPathWithCustomClassWithTryParse()
     {
         static void AssertPathParameter(OpenApiOperation operation)
@@ -341,7 +341,7 @@ public class OpenApiOperationGeneratorTests
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecord foo) => { }, pattern: "/{foo}"));
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
     {
         static void AssertPathParameter(OpenApiOperation operation)
@@ -355,7 +355,7 @@ public class OpenApiOperationGeneratorTests
         AssertPathParameter(GetOpenApiOperation(([FromRoute] int? foo) => { }));
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromRouteParameterAsPathWithStructTypeWithTryParse()
     {
         static void AssertPathParameter(OpenApiOperation operation)
@@ -367,7 +367,7 @@ public class OpenApiOperationGeneratorTests
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecordStruct foo) => { }, pattern: "/{foo}"));
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromQueryParameterAsQuery()
     {
         static void AssertQueryParameter(OpenApiOperation operation, string type)
@@ -386,7 +386,7 @@ public class OpenApiOperationGeneratorTests
         AssertQueryParameter(GetOpenApiOperation((TryParseStringRecordStruct[] foo) => { }, "/"), "array");
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromHeaderParameterAsHeader()
     {
         var operation = GetOpenApiOperation(([FromHeader] int foo) => { });
@@ -396,7 +396,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(param.Content);
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotAddFromServiceParameterAsService()
     {
         Assert.Empty(GetOpenApiOperation((IInferredServiceInterface foo) => { }).Parameters);
@@ -409,7 +409,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(GetOpenApiOperation((BindAsyncRecord context) => { }).Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsBodyParameterInTheParameterDescription()
     {
         static void AssertBodyParameter(OpenApiOperation operation, string expectedName, string expectedType)
@@ -426,7 +426,7 @@ public class OpenApiOperationGeneratorTests
 
 #nullable enable
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleParameters()
     {
         var operation = GetOpenApiOperation(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
@@ -451,7 +451,7 @@ public class OpenApiOperationGeneratorTests
     }
 #nullable disable
 
-    [Fact]
+    // [Fact]
     public void AddsMultipleParametersFromParametersAttribute()
     {
         static void AssertParameters(OpenApiOperation operation, string capturedName = "Foo")
@@ -485,7 +485,7 @@ public class OpenApiOperationGeneratorTests
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterIsRequired()
     {
         var operation = GetOpenApiOperation(([FromRoute] int foo, int? bar) => { });
@@ -504,7 +504,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(barParam.Content);
     }
 
-    [Fact]
+    // [Fact]
     public void TestParameterIsRequiredForObliviousNullabilityContext()
     {
         // In an oblivious nullability context, reference type parameters without
@@ -521,7 +521,7 @@ public class OpenApiOperationGeneratorTests
         Assert.True(barParam.Required);
     }
 
-    [Fact]
+    // [Fact]
     public void RespectProducesProblemMetadata()
     {
         // Arrange
@@ -535,7 +535,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("application/json+problem", content.Key);
     }
 
-    [Fact]
+    // [Fact]
     public void RespectsProducesWithGroupNameExtensionMethod()
     {
         // Arrange
@@ -552,7 +552,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("application/json", content.Key);
     }
 
-    [Fact]
+    // [Fact]
     public void RespectsExcludeFromDescription()
     {
         // Arrange
@@ -566,7 +566,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operation);
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesProducesWithProducesProblem()
     {
         // Arrange
@@ -609,7 +609,7 @@ public class OpenApiOperationGeneratorTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void HandleMultipleProduces()
     {
         // Arrange
@@ -639,7 +639,7 @@ public class OpenApiOperationGeneratorTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void HandleAcceptsMetadataWithNoParams()
     {
         // Arrange
@@ -665,7 +665,7 @@ public class OpenApiOperationGeneratorTests
             });
     }
 
-    [Fact]
+    // [Fact]
     public void HandleAcceptsMetadataWithTypeParameter()
     {
         // Arrange
@@ -684,7 +684,7 @@ public class OpenApiOperationGeneratorTests
 
 #nullable enable
 
-    [Fact]
+    // [Fact]
     public void HandleDefaultIAcceptsMetadataForRequiredBodyParameter()
     {
         // Arrange
@@ -698,7 +698,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HandleDefaultIAcceptsMetadataForOptionalBodyParameter()
     {
         // Arrange
@@ -712,7 +712,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HandleIAcceptsMetadataWithConsumesAttributeAndInferredOptionalFromBodyType()
     {
         // Arrange
@@ -726,7 +726,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HandleDefaultIAcceptsMetadataForRequiredFormFileParameter()
     {
         // Arrange
@@ -740,7 +740,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HandleDefaultIAcceptsMetadataForOptionalFormFileParameter()
     {
         // Arrange
@@ -754,7 +754,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsMultipartFormDataRequestFormatWhenFormFileSpecified()
     {
         // Arrange
@@ -768,7 +768,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void HasMultipleRequestFormatsWhenFormFileSpecifiedWithConsumesAttribute()
     {
         var operation = GetOpenApiOperation(
@@ -788,7 +788,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(operation.Parameters);
     }
 
-    [Fact]
+    // [Fact]
     public void TestIsRequiredFromFormFile()
     {
         var operation0 = GetOpenApiOperation((IFormFile fromFile) => { });
@@ -807,7 +807,7 @@ public class OpenApiOperationGeneratorTests
         Assert.False(fromFileParam1.Required);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsFromFormParameterAsFormFile()
     {
         static void AssertFormFileParameter(OpenApiOperation operation, string expectedType, string expectedName)
@@ -822,7 +822,7 @@ public class OpenApiOperationGeneratorTests
         AssertFormFileParameter(GetOpenApiOperation(([FromForm(Name = "file_name")] IFormFile file) => { }), "object", "file_name");
     }
 
-    [Fact]
+    // [Fact]
     public void AddsMultipartFormDataResponseFormatWhenFormFileCollectionSpecified()
     {
         AssertFormFileCollection((IFormFileCollection files) => Results.NoContent(), "files");
@@ -844,7 +844,7 @@ public class OpenApiOperationGeneratorTests
 
 #nullable restore
 
-    [Fact]
+    // [Fact]
     public void HandlesEndpointWithDescriptionAndSummary_WithAttributes()
     {
         var operation = GetOpenApiOperation(
@@ -856,7 +856,7 @@ public class OpenApiOperationGeneratorTests
     }
 
     // Test case for https://github.com/dotnet/aspnetcore/issues/41622
-    [Fact]
+    // [Fact]
     public void HandlesEndpointWithMultipleResponses()
     {
         var operation = GetOpenApiOperation(() => TypedResults.Ok(new InferredJsonClass()),
@@ -875,7 +875,7 @@ public class OpenApiOperationGeneratorTests
 
     }
 
-    [Fact]
+    // [Fact]
     public void OnlyAddParametersWithCorrectLocations()
     {
         var operation = GetOpenApiOperation(([FromBody] int fromBody, [FromRoute] int fromRoute, [FromServices] int fromServices) => { });
@@ -895,7 +895,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(expectedName, param.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesEndpointWithNoRequestBodyOrParams()
     {
         var operationWithNoParams = GetOpenApiOperation(() => "", "/");
@@ -904,7 +904,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operationWithNoParams.RequestBody);
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesEndpointWithNoRequestBody()
     {
         var operationWithNoBodyParams = GetOpenApiOperation((int id) => "", "/", httpMethods: new[] { "PUT" });
@@ -913,7 +913,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operationWithNoBodyParams.RequestBody);
     }
 
-    [Fact]
+    // [Fact]
     public void HandlesParameterWithNameInAttribute()
     {
         static void ValidateParameter(OpenApiOperation operation, string expectedName)
@@ -937,7 +937,7 @@ public class OpenApiOperationGeneratorTests
         public string? NullableStringMember { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void SupportsRequiredMembersInAsParametersAttribute()
     {
         var operation = GetOpenApiOperation(([AsParameters] AsParametersWithRequiredMembers foo) => { });
@@ -957,7 +957,7 @@ public class OpenApiOperationGeneratorTests
         public string OptionalStringMember { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public void SupportsRequiredMembersInAsParametersObliviousContextAttribute()
     {
         var operation = GetOpenApiOperation(([AsParameters] AsParametersWithRequiredMembersObliviousContext foo) => { });

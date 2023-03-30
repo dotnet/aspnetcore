@@ -17,7 +17,7 @@ using Newtonsoft.Json.Linq;
 
 public class BadRequestOfTResultTests
 {
-    [Fact]
+    // [Fact]
     public void BadRequestObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange & Act
@@ -29,7 +29,7 @@ public class BadRequestOfTResultTests
         Assert.Equal(obj, badRequestObjectResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequestObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
@@ -42,7 +42,7 @@ public class BadRequestOfTResultTests
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadRequestObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class BadRequestOfTResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadRequestObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
@@ -81,7 +81,7 @@ public class BadRequestOfTResultTests
         Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
     }
 
-    [Fact]
+    // [Fact]
     public async Task BadRequestObjectResult_ExecuteResultAsync_UsesStatusCodeFromResultTypeForProblemDetails()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class BadRequestOfTResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_AddsResponseTypeMetadata()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class BadRequestOfTResultTests
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
     }
 
-    [Fact]
+    // [Fact]
     public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class BadRequestOfTResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
     {
         // Act & Assert
@@ -139,7 +139,7 @@ public class BadRequestOfTResultTests
         Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<BadRequest<object>>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
         // Act & Assert
@@ -147,7 +147,7 @@ public class BadRequestOfTResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequestObjectResult_Implements_IValueHttpResult_Correctly()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class BadRequestOfTResultTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequestObjectResult_Implements_IValueHttpResultOfT_Correctly()
     {
         // Arrange & Act

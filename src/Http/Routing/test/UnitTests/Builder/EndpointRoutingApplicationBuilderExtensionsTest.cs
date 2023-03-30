@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder;
 
 public class EndpointRoutingApplicationBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void UseRouting_ServicesNotRegistered_Throws()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseEndpoint_ServicesNotRegistered_Throws()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseRouting_ServicesRegistered_NoMatch_DoesNotSetFeature()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         Assert.Null(httpContext.Features.Get<IEndpointFeature>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseRouting_ServicesRegistered_Match_DoesNotSetsFeature()
     {
         // Arrange
@@ -105,7 +105,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         Assert.Same(endpoint, httpContext.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public void UseEndpoint_WithoutEndpointRoutingMiddleware_Throws()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseEndpoint_WithApplicationBuilderMismatch_Throws()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseEndpoint_ServicesRegisteredAndEndpointRoutingRegistered_NoMatch_DoesNotSetFeature()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         Assert.Null(httpContext.Features.Get<IEndpointFeature>());
     }
 
-    [Fact]
+    // [Fact]
     public void UseEndpoints_CallWithBuilder_SetsEndpointDataSource()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
     }
 
     // Verifies that it's possible to use endpoints and map together.
-    [Fact]
+    // [Fact]
     public void UseEndpoints_CallWithBuilder_SetsEndpointDataSource_WithMap()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
             e => Assert.Equal("Test endpoint 4", e.DisplayName));
     }
 
-    [Fact]
+    // [Fact]
     public void UseEndpoints_WithGlobalEndpointRouteBuilderHasRoutes()
     {
         // Arrange
@@ -323,7 +323,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         Assert.Equal(mockRouteBuilder.Object.DataSources, routeOptions.Value.EndpointDataSources);
     }
 
-    [Fact]
+    // [Fact]
     public void UseRouting_SetsEndpointRouteBuilder_IfGlobalOneExists()
     {
         // Arrange

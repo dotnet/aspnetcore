@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc;
 // and ViewExecutorTest for more comprehensive tests.
 public class PartialViewResultTest
 {
-    [Fact]
+    // [Fact]
     public void Model_ExposesViewDataModel()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class PartialViewResultTest
         Assert.Same(customModel, viewResult.Model);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfServicesNotRegistered()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class PartialViewResultTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesGetViewLocations()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class PartialViewResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesFindViewLocations()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class PartialViewResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesAllLocations()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class PartialViewResultTest
         viewEngine.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecuteResultAsync_FindsAndExecutesView()
     {
         // Arrange

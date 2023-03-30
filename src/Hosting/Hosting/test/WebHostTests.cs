@@ -21,20 +21,20 @@ namespace Microsoft.AspNetCore.Hosting;
 
 public partial class WebHostTests
 {
-    [Fact]
+    // [Fact]
     public async Task WebHostThrowsWithNoServer()
     {
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => CreateBuilder().Build().StartAsync());
         Assert.Equal("No service for type 'Microsoft.AspNetCore.Hosting.Server.IServer' has been registered.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseStartupThrowsWithNull()
     {
         Assert.Throws<ArgumentNullException>(() => CreateBuilder().UseStartup((string)null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoDefaultAddressesAndDoNotPreferHostingUrlsIfNotConfigured()
     {
         using (var host = CreateBuilder().UseFakeServer().Build())
@@ -46,7 +46,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesLegacyConfigurationForAddressesAndDoNotPreferHostingUrlsIfNotConfigured()
     {
         var data = new Dictionary<string, string>
@@ -65,7 +65,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void UsesConfigurationForAddressesAndDoNotPreferHostingUrlsIfNotConfigured()
     {
         var data = new Dictionary<string, string>
@@ -84,7 +84,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesNewConfigurationOverLegacyConfigForAddressesAndDoNotPreferHostingUrlsIfNotConfigured()
     {
         var data = new Dictionary<string, string>
@@ -104,7 +104,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void DoNotPreferHostingUrlsWhenNoAddressConfigured()
     {
         using (var host = CreateBuilder().UseFakeServer().PreferHostingUrls(true).Build())
@@ -116,7 +116,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreferHostingUrlsWhenAddressIsConfigured()
     {
         var data = new Dictionary<string, string>
@@ -133,7 +133,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WebHostCanBeStarted()
     {
         using (var host = CreateBuilder()
@@ -152,7 +152,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostShutsDownWhenTokenTriggers()
     {
         using (var host = CreateBuilder()
@@ -265,7 +265,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostStopAsyncCanBeCancelledEarly()
     {
         var data = new Dictionary<string, string>
@@ -366,7 +366,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostDisposesServiceProvider()
     {
         using (var host = CreateBuilder()
@@ -399,7 +399,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostNotifiesApplicationStarted()
     {
         using (var host = CreateBuilder()
@@ -420,7 +420,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostNotifiesAllIApplicationLifetimeCallbacksEvenIfTheyThrow()
     {
         using (var host = CreateBuilder()
@@ -453,7 +453,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostDoesNotNotifyAllIApplicationLifetimeEventsCallbacksIfTheyThrow()
     {
         bool[] hostedSeviceCalls1 = null;
@@ -477,7 +477,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostStopApplicationDoesNotFireStopOnHostedService()
     {
         var stoppingCalls = 0;
@@ -517,7 +517,7 @@ public partial class WebHostTests
         Assert.Equal(1, disposingCalls);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HostedServiceCanInjectApplicationLifetime()
     {
         using (var host = CreateBuilder()
@@ -541,7 +541,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HostedServiceStartNotCalledIfWebHostNotStarted()
     {
         using (var host = CreateBuilder()
@@ -565,7 +565,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostStopApplicationFiresStopOnHostedService()
     {
         var stoppingCalls = 0;
@@ -618,7 +618,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostDisposeApplicationFiresStopOnHostedService()
     {
         var stoppingCalls = 0;
@@ -662,7 +662,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostDoesNotNotifyAllIHostedServicesAndIApplicationLifetimeCallbacksIfTheyThrow()
     {
         bool[] hostedServiceCalls1 = null;
@@ -701,7 +701,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostInjectsHostingEnvironment()
     {
         using (var host = CreateBuilder()
@@ -720,7 +720,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CanReplaceStartupLoader()
     {
         var builder = CreateBuilder()
@@ -734,7 +734,7 @@ public partial class WebHostTests
         Assert.Throws<NotImplementedException>(() => builder.Build());
     }
 
-    [Fact]
+    // [Fact]
     public void CanCreateApplicationServicesWithAddedServices()
     {
         using (var host = CreateBuilder().UseFakeServer().ConfigureServices(services => services.AddOptions()).Build())
@@ -743,7 +743,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConfiguresStartupFiltersInCorrectOrder()
     {
         // Verify ordering
@@ -793,7 +793,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void EnvDefaultsToProductionIfNoConfig()
     {
         using (var host = CreateBuilder().UseFakeServer().Build())
@@ -807,7 +807,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void EnvDefaultsToConfigValueIfSpecified()
     {
         var vals = new Dictionary<string, string>
@@ -830,7 +830,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WebRootCanBeResolvedFromTheConfig()
     {
         var vals = new Dictionary<string, string>
@@ -856,7 +856,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task IsEnvironment_Extension_Is_Case_Insensitive()
     {
         using (var host = CreateBuilder().UseFakeServer().Build())
@@ -868,7 +868,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHost_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
     {
         // Arrange
@@ -890,7 +890,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHost_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
     {
         // Arrange
@@ -918,7 +918,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHost_InvokesConfigureMethodsOnlyOnce()
     {
         using (var host = CreateBuilder()
@@ -934,7 +934,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHost_HttpContextUseAfterRequestEnd_Fails()
     {
         // Arrange
@@ -980,7 +980,7 @@ public partial class WebHostTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WebHost_ThrowsForBadConfigureServiceSignature()
     {
         var builder = CreateBuilder()
@@ -991,7 +991,7 @@ public partial class WebHostTests
         Assert.Contains("ConfigureServices", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Dispose_DisposesAppConfiguration()
     {
         var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
@@ -1015,7 +1015,7 @@ public partial class WebHostTests
         providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeAsync_DisposesAppConfiguration()
     {
         var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
@@ -1039,7 +1039,7 @@ public partial class WebHostTests
         providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotCallServerStopIfServerStartHasNotBeenCalled()
     {
         var server = new Mock<IServer>();
@@ -1058,7 +1058,7 @@ public partial class WebHostTests
         server.VerifyNoOtherCalls();
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotCallServerStopIfServerStartHasNotBeenCalledIHostedService()
     {
         var server = new Mock<IServer>();

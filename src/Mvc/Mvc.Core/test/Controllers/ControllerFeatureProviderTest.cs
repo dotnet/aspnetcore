@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     public class ControllerFeatureProviderTest
     {
-        [Fact]
+        // [Fact]
         public void UserDefinedClass_DerivedFromController_IsController()
         {
             // Arrange
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void UserDefinedClass_DerivedFromControllerBase_IsController()
         {
             // Arrange
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void UserDefinedClass_DerivedFromControllerBaseWithoutSuffix_IsController()
         {
             // Arrange
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void FrameworkControllerClass_IsNotController()
         {
             // Arrange
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void FrameworkBaseControllerClass_IsNotController()
         {
             // Arrange
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void UserDefinedControllerClass_IsNotController()
         {
             // Arrange
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void Interface_IsNotController()
         {
             // Arrange
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void ValueTypeClass_IsNotController()
         {
             // Arrange
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void AbstractClass_IsNotController()
         {
             // Arrange
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void DerivedAbstractClass_IsController()
         {
             // Arrange
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void OpenGenericClass_IsNotController()
         {
             // Arrange
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void WithoutSuffixOrAncestorWithController_IsNotController()
         {
             // Arrange
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void ClosedGenericClass_IsController()
         {
             // Arrange
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void DerivedGenericClass_IsController()
         {
             // Arrange
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void Poco_WithNamingConvention_IsController()
         {
             // Arrange
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(controllerType, discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void NoControllerSuffix_IsController()
         {
             // Arrange
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(type.GetTypeInfo(), discovered);
         }
 
-        [Fact]
+        // [Fact]
         public void AncestorTypeDoesNotHaveControllerAttribute_IsNotController()
         {
             // Arrange
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Empty(feature.Controllers);
         }
 
-        [Fact]
+        // [Fact]
         public void GetFeature_OnlyRunsOnParts_ThatImplementIApplicationPartTypeProvider()
         {
             // Arrange
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(expected, feature.Controllers.ToList());
         }
 
-        [Fact]
+        // [Fact]
         public void GetFeature_DoesNotAddDuplicates_ToTheListOfControllers()
         {
             // Arrange

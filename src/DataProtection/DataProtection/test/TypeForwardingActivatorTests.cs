@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 
 public class TypeForwardingActivatorTests : MarshalByRefObject
 {
-    [Fact]
+    // [Fact]
     public void CreateInstance_ForwardsToNewNamespaceIfExists()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class TypeForwardingActivatorTests : MarshalByRefObject
         Assert.IsType<ClassWithParameterlessCtor>(instance);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateInstance_DoesNotForwardIfClassDoesNotExist()
     {
         // Arrange

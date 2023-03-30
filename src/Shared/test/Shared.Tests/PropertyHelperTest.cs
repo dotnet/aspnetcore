@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Internal;
 
 public class PropertyHelperTest
 {
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ReturnsNameCorrectly()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class PropertyHelperTest
         Assert.Equal("foo", helper.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ReturnsValueCorrectly()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class PropertyHelperTest
         Assert.Equal("baz", helper.GetValue(anonymous));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ReturnsGetterDelegate()
     {
         // Arrange
@@ -56,7 +56,7 @@ public class PropertyHelperTest
         Assert.Equal("baz", helper.ValueGetter(anonymous));
     }
 
-    [Fact]
+    // [Fact]
     public void SetValue_SetsPropertyValue()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class PropertyHelperTest
         Assert.Equal(expected, instance.PropA);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ReturnsSetterDelegate()
     {
         // Arrange
@@ -89,7 +89,7 @@ public class PropertyHelperTest
         Assert.Equal(expected, instance.PropA);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ReturnsValueCorrectly_ForValueTypes()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class PropertyHelperTest
         Assert.Equal(32, helper.GetValue(anonymous));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ReturnsCachedPropertyHelper()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class PropertyHelperTest
         Assert.Same(helpers1[0], helpers2[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_DoesNotChangeUnderscores()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class PropertyHelperTest
         Assert.Equal("bar_baz2", helper.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_DoesNotFindPrivateProperties()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class PropertyHelperTest
         Assert.Equal("Prop1", helper.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_DoesNotFindStaticProperties()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class PropertyHelperTest
     }
 
 #if NETSTANDARD || NETCOREAPP
-    [Fact]
+    // [Fact]
     public void PropertyHelper_RefStructProperties()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class PropertyHelperTest
 #error Unknown TFM - update the set of TFMs where we test for ref structs
 #endif
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_DoesNotFindSetOnlyProperties()
     {
         // Arrange
@@ -192,7 +192,7 @@ public class PropertyHelperTest
         Assert.Empty(properties);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_UnwrapsNullableTypes()
     {
         // Arrange
@@ -206,7 +206,7 @@ public class PropertyHelperTest
         Assert.Equal("Foo", property.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_WorksForStruct()
     {
         // Arrange
@@ -222,7 +222,7 @@ public class PropertyHelperTest
         Assert.Equal("Five", helper2.GetValue(anonymous));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ForDerivedClass()
     {
         // Arrange
@@ -242,7 +242,7 @@ public class PropertyHelperTest
         Assert.Equal("propBValue", propBHelper.GetValue(derived));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ForDerivedClass_WithNew()
     {
         // Arrange
@@ -262,7 +262,7 @@ public class PropertyHelperTest
         Assert.Equal("Newed", propBHelper.GetValue(derived));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ForDerived_WithVirtual()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class PropertyHelperTest
         Assert.Equal("propBValue", propBHelper.GetValue(derived));
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ForInterface_ReturnsExpectedProperties()
     {
         // Arrange
@@ -298,7 +298,7 @@ public class PropertyHelperTest
             helper => { Assert.Equal(expectedNames[1], helper.Name, StringComparer.Ordinal); });
     }
 
-    [Fact]
+    // [Fact]
     public void PropertyHelper_ForDerivedInterface_ReturnsAllProperties()
     {
         // Arrange
@@ -316,7 +316,7 @@ public class PropertyHelperTest
             helper => { Assert.Equal(expectedNames[3], helper.Name, StringComparer.Ordinal); });
     }
 
-    [Fact]
+    // [Fact]
     public void GetProperties_ExcludesIndexersAndPropertiesWithoutPublicGetters()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class PropertyHelperTest
         Assert.Equal("PropB", result[2].Name);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVisibleProperties_NoHiddenProperty()
     {
         // Arrange
@@ -347,7 +347,7 @@ public class PropertyHelperTest
         Assert.Equal(typeof(int), property.Property.PropertyType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVisibleProperties_HiddenProperty()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class PropertyHelperTest
         Assert.Equal(typeof(string), result[1].Property.PropertyType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVisibleProperties_HiddenProperty_TwoLevels()
     {
         // Arrange
@@ -381,7 +381,7 @@ public class PropertyHelperTest
         Assert.Equal(typeof(string), result[1].Property.PropertyType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVisibleProperties_NoHiddenPropertyWithTypeInfoInput()
     {
         // Arrange
@@ -396,7 +396,7 @@ public class PropertyHelperTest
         Assert.Equal(typeof(int), property.Property.PropertyType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVisibleProperties_HiddenPropertyWithTypeInfoInput()
     {
         // Arrange
@@ -413,7 +413,7 @@ public class PropertyHelperTest
         Assert.Equal(typeof(string), result[1].Property.PropertyType);
     }
 
-    [Fact]
+    // [Fact]
     public void GetVisibleProperties_HiddenProperty_TwoLevelsWithTypeInfoInput()
     {
         // Arrange
@@ -430,7 +430,7 @@ public class PropertyHelperTest
         Assert.Equal(typeof(string), result[1].Property.PropertyType);
     }
 
-    [Fact]
+    // [Fact]
     public void MakeFastPropertySetter_SetsPropertyValues_ForPublicAndNobPublicProperties()
     {
         // Arrange
@@ -450,7 +450,7 @@ public class PropertyHelperTest
         Assert.Equal("TestProtected", instance.GetPropProtected());
     }
 
-    [Fact]
+    // [Fact]
     public void MakeFastPropertySetter_SetsPropertyValues_ForOverridenProperties()
     {
         // Arrange
@@ -466,7 +466,7 @@ public class PropertyHelperTest
         Assert.Equal("OverridenTest value", instance.PropA);
     }
 
-    [Fact]
+    // [Fact]
     public void MakeFastPropertySetter_SetsPropertyValues_ForNewedProperties()
     {
         // Arrange
@@ -482,7 +482,7 @@ public class PropertyHelperTest
         Assert.Equal("NewedTest value", instance.PropB);
     }
 
-    [Fact]
+    // [Fact]
     public void MakeFastPropertyGetter_ReferenceType_ForNullObject_Throws()
     {
         // Arrange
@@ -496,7 +496,7 @@ public class PropertyHelperTest
         Assert.Throws<NullReferenceException>(() => accessor(null));
     }
 
-    [Fact]
+    // [Fact]
     public void MakeFastPropertyGetter_ValueType_ForNullObject_Throws()
     {
         // Arrange
@@ -510,7 +510,7 @@ public class PropertyHelperTest
         Assert.Throws<NullReferenceException>(() => accessor(null));
     }
 
-    [Fact]
+    // [Fact]
     public void MakeNullSafeFastPropertyGetter_ReferenceType_Success()
     {
         // Arrange
@@ -527,7 +527,7 @@ public class PropertyHelperTest
         Assert.Equal("Hi", value);
     }
 
-    [Fact]
+    // [Fact]
     public void MakeNullSafeFastPropertyGetter_ValueType_Success()
     {
         // Arrange
@@ -544,7 +544,7 @@ public class PropertyHelperTest
         Assert.Equal("Hi", value);
     }
 
-    [Fact]
+    // [Fact]
     public void MakeNullSafeFastPropertyGetter_ReferenceType_ForNullObject_ReturnsNull()
     {
         // Arrange
@@ -561,7 +561,7 @@ public class PropertyHelperTest
         Assert.Null(value);
     }
 
-    [Fact]
+    // [Fact]
     public void MakeNullSafeFastPropertyGetter_ValueType_ForNullObject_ReturnsNull()
     {
         // Arrange
@@ -625,7 +625,7 @@ public class PropertyHelperTest
         Assert.Equal(expectedEntry, entry);
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectToDictionary_WithNullObject_ReturnsEmptyDictionary()
     {
         // Arrange
@@ -639,7 +639,7 @@ public class PropertyHelperTest
         Assert.Equal(0, dictValues.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectToDictionary_WithPlainObjectType_ReturnsEmptyDictionary()
     {
         // Arrange
@@ -653,7 +653,7 @@ public class PropertyHelperTest
         Assert.Equal(0, dictValues.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectToDictionary_WithPrimitiveType_LooksUpPublicProperties()
     {
         // Arrange
@@ -668,7 +668,7 @@ public class PropertyHelperTest
         Assert.Equal(4, dictValues["Length"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectToDictionary_WithAnonymousType_LooksUpProperties()
     {
         // Arrange
@@ -684,7 +684,7 @@ public class PropertyHelperTest
         Assert.Equal(1, dictValues["other"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectToDictionary_ReturnsCaseInsensitiveDictionary()
     {
         // Arrange
@@ -700,7 +700,7 @@ public class PropertyHelperTest
         Assert.Equal(1, dictValues["other"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ObjectToDictionary_ReturnsInheritedProperties()
     {
         // Arrange

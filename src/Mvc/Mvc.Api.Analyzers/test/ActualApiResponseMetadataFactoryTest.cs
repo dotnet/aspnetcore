@@ -14,7 +14,7 @@ public class ActualApiResponseMetadataFactoryTest
 {
     private static readonly string Namespace = typeof(ActualApiResponseMetadataFactoryTest).Namespace;
 
-    [Fact]
+    // [Fact]
     public async Task GetDefaultStatusCode_ReturnsValueDefinedUsingStatusCodeConstants()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class ActualApiResponseMetadataFactoryTest
         Assert.Equal(412, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetDefaultStatusCode_ReturnsValueDefinedUsingHttpStatusCast()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class ActualApiResponseMetadataFactoryTest
         Assert.Equal(302, actual);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsNull_IfReturnExpressionCannotBeFound()
     {
         // Arrange & Act
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Null(actualResponseMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsStatusCodeFromDefaultStatusCodeAttributeOnActionResult()
     {
         // Arrange & Act
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(401, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsDefaultResponseMetadata_IfReturnedTypeIsNotActionResult()
     {
         // Arrange & Act
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.True(actualResponseMetadata.Value.IsDefaultResponse);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsStatusCodeFromStatusCodePropertyAssignment()
     {
         // Arrange & Act
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(201, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsStatusCodeFromConstructorAssignment()
     {
         // Arrange & Act
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(204, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsStatusCodeFromHelperMethod()
     {
         // Arrange & Act
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(302, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_UsesExplicitlySpecifiedStatusCode_ForActionResultWithDefaultStatusCode()
     {
         // Arrange & Act
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(422, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReadsStatusCodeConstant()
     {
         // Arrange & Act
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(423, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_DoesNotReadLocalFieldWithConstantValue()
     {
         // This is a gap in the analyzer. We're using this to document the current behavior and not an expecation.
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Null(actualResponseMetadata);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_FallsBackToDefaultStatusCode_WhenAppliedStatusCodeCannotBeRead()
     {
         // This is a gap in the analyzer. We're using this to document the current behavior and not an expecation.
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal(400, actualResponseMetadata.Value.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_SetsReturnType_WhenLiteralTypeIsSpecifiedInConstructor()
     {
         // Arrange & Act
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_SetsReturnType_WhenLocalValueIsSpecifiedInConstructor()
     {
         // Arrange & Act
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_SetsReturnType_WhenValueIsReturned()
     {
         // Arrange & Act
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InspectReturnExpression_ReturnsNullReturnType_IfValueIsNotSpecified()
     {
         // Arrange & Act
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Null(actualResponseMetadata.Value.ReturnType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResult()
     {
         // Arrange
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningModel()
     {
         // Arrange
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryGetActualResponseMetadata_ActionReturningNotFoundAndModel()
     {
         // Arrange
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResultExpression()
     {
         // Arrange

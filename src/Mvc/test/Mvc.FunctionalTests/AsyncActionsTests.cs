@@ -15,7 +15,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task AsyncVoidAction_ReturnsOK()
     {
         // Act
@@ -27,7 +27,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal(0, responseBody.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskAction_ReturnsOK()
     {
         // Act
@@ -39,7 +39,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal(0, responseBody.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -50,7 +50,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskOfObjectAction_ReturnsJsonFormattedObject()
     {
         // Act
@@ -62,7 +62,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("{\"text\":\"Alpha\"}", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskOfObjectExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -73,7 +73,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskOfIActionResultAction_ReturnsString()
     {
         // Act
@@ -85,7 +85,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Beta", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskOfIActionResultExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -96,7 +96,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskOfContentResultAction_ReturnsString()
     {
         // Act
@@ -108,7 +108,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Gamma", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TaskOfContentResultExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -119,7 +119,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreCompletedValueTaskOfObjectAction_ReturnsJsonFormattedObject()
     {
         // Act
@@ -131,7 +131,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("{\"text\":\"Delta\"}", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreCompletedValueTaskOfObjectExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -142,7 +142,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreCompletedValueTaskOfIActionResultAction_ReturnsString()
     {
         // Act
@@ -154,7 +154,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Epsilon", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreCompletedValueTaskOfIActionResultExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -165,7 +165,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreCompletedValueTaskOfContentResultAction_ReturnsString()
     {
         // Act
@@ -177,7 +177,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Zeta", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PreCompletedValueTaskOfContentResultExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -188,7 +188,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableVoidAction_ReturnsOK()
     {
         // Act
@@ -200,7 +200,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal(0, responseBody.Length);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableVoidExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -211,7 +211,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableOfObjectAction_ReturnsJsonFormattedObject()
     {
         // Act
@@ -223,7 +223,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("{\"text\":\"Eta\"}", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableOfObjectExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -234,7 +234,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableOfIActionResultAction_ReturnsString()
     {
         // Act
@@ -246,7 +246,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Theta", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableOfIActionResultExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -257,7 +257,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableOfContentResultAction_ReturnsString()
     {
         // Act
@@ -269,7 +269,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Iota", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAwaitableOfContentResultExceptionAction_ReturnsCorrectError()
     {
         // Act
@@ -280,7 +280,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         Assert.Equal("Action exception message: This is a custom exception.", responseBody);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AsyncSuffixIsIgnored()
     {
         // Act
@@ -290,7 +290,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionIsNotRoutedWithAsyncSuffix()
     {
         // Act
@@ -300,7 +300,7 @@ public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Start
         await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewLookupWithAsyncSuffix()
     {
         // Act

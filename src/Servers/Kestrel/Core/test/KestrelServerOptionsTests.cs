@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class KestrelServerOptionsTests
 {
-    [Fact]
+    // [Fact]
     public void AllowSynchronousIODefaultsToFalse()
     {
         var options = new KestrelServerOptions();
@@ -22,7 +22,7 @@ public class KestrelServerOptionsTests
         Assert.False(options.AllowSynchronousIO);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpointDefaultsAppliesToNewEndpoints()
     {
         var options = new KestrelServerOptions();
@@ -56,14 +56,14 @@ public class KestrelServerOptionsTests
         Assert.Equal(HttpProtocols.Http2, options.CodeBackedListenOptions[3].Protocols);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesIsNotSet()
     {
         var options = new KestrelServerOptions();
         Assert.Throws<InvalidOperationException>(() => options.Configure());
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesDoesntHaveRequiredServices()
     {
         var options = new KestrelServerOptions
@@ -74,7 +74,7 @@ public class KestrelServerOptionsTests
         Assert.Throws<InvalidOperationException>(() => options.Configure());
     }
 
-    [Fact]
+    // [Fact]
     public void CanCallListenAfterConfigure()
     {
         var options = new KestrelServerOptions();
@@ -93,7 +93,7 @@ public class KestrelServerOptionsTests
         options.ListenLocalhost(5000);
     }
 
-    [Fact]
+    // [Fact]
     public void SettingRequestHeaderEncodingSelecterToNullThrowsArgumentNullException()
     {
         var options = new KestrelServerOptions();

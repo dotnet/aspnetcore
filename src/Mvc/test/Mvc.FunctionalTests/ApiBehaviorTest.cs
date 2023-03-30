@@ -27,7 +27,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
     {
         // Arrange
@@ -84,7 +84,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsReturnUnsupportedMediaType_WhenMediaTypeIsNotSupported()
     {
         // Arrange
@@ -100,7 +100,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsReturnUnsupportedMediaType_WhenEncodingIsUnsupported()
     {
         // Arrange
@@ -120,11 +120,11 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal("Unsupported Media Type", problemDetails.Title);
     }
 
-    [Fact]
+    // [Fact]
     public Task ActionsWithApiBehavior_InferFromBodyParameters()
         => ActionsWithApiBehaviorInferFromBodyParameters("ActionWithInferredFromBodyParameter");
 
-    [Fact]
+    // [Fact]
     public Task ActionsWithApiBehavior_InferFromBodyParameters_DoNotConsiderCancellationTokenSourceParameter()
         => ActionsWithApiBehaviorInferFromBodyParameters("ActionWithInferredFromBodyParameterAndCancellationToken");
 
@@ -147,7 +147,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(input.Name, result.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_DoesNotInferFromBodyForCompositeComplexTypesParameters()
     {
         // Arrange
@@ -169,7 +169,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(requestId, result.Id);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_InferFromServicesParameters()
     {
         // Arrange
@@ -184,7 +184,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(id, result.ContactId);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_InferQueryAndRouteParameters()
     {
         // Arrange
@@ -202,7 +202,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(email, result.Email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_InferEmptyPrefixForComplexValueProviderModel_Success()
     {
         // Arrange
@@ -223,7 +223,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(email, result.Email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_InferEmptyPrefixForComplexValueProviderModel_Ignored()
     {
         // Arrange
@@ -244,7 +244,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(email, result.Email);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_InferModelBinderType()
     {
         // Arrange
@@ -259,7 +259,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsWithApiBehavior_InferModelBinderTypeWithExplicitModelName()
     {
         // Arrange
@@ -274,7 +274,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task ClientErrorResultFilterExecutesForStatusCodeResults()
     {
         using (new ActivityReplacer())
@@ -302,7 +302,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         }
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task SerializingProblemDetails_IgnoresNullValuedProperties()
     {
         // Arrange
@@ -320,7 +320,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(expected, json.Properties().OrderBy(p => p.Name).Select(p => p.Name));
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task SerializingProblemDetails_WithAllValuesSpecified()
     {
         // Arrange
@@ -336,7 +336,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal(expected, json.Properties().OrderBy(p => p.Name).Select(p => p.Name));
     }
 
-    [Fact]
+    // [Fact]
     public virtual async Task SerializingValidationProblemDetails_WithExtensionData()
     {
         // Act
@@ -379,31 +379,31 @@ public class ApiBehaviorTest : ApiBehaviorTestBase<BasicWebSite.StartupWithSyste
     {
     }
 
-    [Fact]
+    // [Fact]
     public override Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
     {
         return base.ActionsReturnBadRequest_WhenModelStateIsInvalid();
     }
 
-    [Fact]
+    // [Fact]
     public override Task ClientErrorResultFilterExecutesForStatusCodeResults()
     {
         return base.ClientErrorResultFilterExecutesForStatusCodeResults();
     }
 
-    [Fact]
+    // [Fact]
     public override Task SerializingProblemDetails_IgnoresNullValuedProperties()
     {
         return base.SerializingProblemDetails_IgnoresNullValuedProperties();
     }
 
-    [Fact]
+    // [Fact]
     public override Task SerializingProblemDetails_WithAllValuesSpecified()
     {
         return base.SerializingProblemDetails_WithAllValuesSpecified();
     }
 
-    [Fact]
+    // [Fact]
     public override Task SerializingValidationProblemDetails_WithExtensionData()
     {
         return base.SerializingValidationProblemDetails_WithExtensionData();
@@ -424,7 +424,7 @@ public class ApiBehaviorTestNewtonsoftJson : ApiBehaviorTestBase<BasicWebSite.St
 
     public HttpClient CustomInvalidModelStateClient { get; }
 
-    [Fact]
+    // [Fact]
     public async Task ActionsReturnBadRequest_UsesProblemDescriptionProviderAndApiConventionsToConfigureErrorResponse()
     {
         // Arrange

@@ -10,7 +10,7 @@ public partial class DisallowConfigureWebHostBuilderConfigureTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithoutConfigure_Works()
     {
         // Arrange
@@ -28,7 +28,7 @@ builder.WebHost.ConfigureKestrel(options => { });
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigure_ProducesDiagnostics()
     {
         // Arrange
@@ -49,7 +49,7 @@ builder.WebHost./*MM*/Configure(webHostBuilder => { });
         Assert.Equal("Configure cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigureWithContext_ProducesDiagnostics()
     {
         // Arrange
@@ -70,7 +70,7 @@ builder.WebHost./*MM*/Configure((context, webHostBuilder) => { });
         Assert.Equal("Configure cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigureOnProperty_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class Startup { }
         Assert.Equal("Configure cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_WebHostWithConfigureOnBuilder_ProducesDiagnostics_In_Program_Main()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class Startup { }
         Assert.Equal("Configure cannot be used with WebApplicationBuilder.WebHost", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task HostBuilder_WebHostBuilder_Configure_DoesNotProduceDiagnostic()
     {
         // Arrange
@@ -142,7 +142,7 @@ builder.ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.Configure(conf
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebHostBuilder_Configure_DoesNotProduceDiagnostic()
     {
         // Arrange

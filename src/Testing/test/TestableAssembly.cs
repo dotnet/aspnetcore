@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Testing;
  * {
  *     public MyTestClass() { }
  *
- *     [Fact]
+ *     // [Fact]
  *     public MyTestMethod()
  *     {
  *         if (failTestCase) // Not exactly; condition checked during generation.

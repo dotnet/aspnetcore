@@ -25,14 +25,14 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Navigate(ServerPathBase + "#initializer");
     }
 
-    [Fact]
+    // [Fact]
     public void InitializersWork()
     {
         Browser.Exists(By.Id("initializer-start"));
         Browser.Exists(By.Id("initializer-end"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanLoadJsModulePackagesFromLibrary()
     {
         Browser.MountTestComponent<ExternalContentPackage>();

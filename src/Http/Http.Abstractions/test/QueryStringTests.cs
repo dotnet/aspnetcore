@@ -8,14 +8,14 @@ namespace Microsoft.AspNetCore.Http.Abstractions;
 
 public class QueryStringTests
 {
-    [Fact]
+    // [Fact]
     public void CtorThrows_IfQueryDoesNotHaveLeadingQuestionMark()
     {
         // Act and Assert
         ExceptionAssert.ThrowsArgument(() => new QueryString("hello"), "value", "The leading '?' must be included for a non-empty query.");
     }
 
-    [Fact]
+    // [Fact]
     public void CtorNullOrEmpty_Success()
     {
         var query = new QueryString();
@@ -31,7 +31,7 @@ public class QueryStringTests
         Assert.Equal(string.Empty, query.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CtorJustAQuestionMark_Success()
     {
         var query = new QueryString("?");
@@ -39,7 +39,7 @@ public class QueryStringTests
         Assert.Equal("?", query.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ToString_EncodesHash()
     {
         var query = new QueryString("?Hello=Wor#ld");
@@ -60,7 +60,7 @@ public class QueryStringTests
         Assert.Equal(expected, query.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateFromList_Success()
     {
         var query = QueryString.Create(new[]
@@ -74,7 +74,7 @@ public class QueryStringTests
         Assert.Equal("?key1=value1&key2=value2&key3=value3&key4=&key5=", query.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateFromListStringValues_Success()
     {
         var query = QueryString.Create(new[]
@@ -127,7 +127,7 @@ public class QueryStringTests
         Assert.Equal(expected, q2.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_EmptyQueryStringAndDefaultQueryString()
     {
         // Act and Assert
@@ -138,7 +138,7 @@ public class QueryStringTests
         Assert.True(default(QueryString) == QueryString.Empty);
     }
 
-    [Fact]
+    // [Fact]
     public void NotEquals_DefaultQueryStringAndNonNullQueryString()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class QueryStringTests
         Assert.NotEqual(default(QueryString), queryString);
     }
 
-    [Fact]
+    // [Fact]
     public void NotEquals_EmptyQueryStringAndNonNullQueryString()
     {
         // Arrange

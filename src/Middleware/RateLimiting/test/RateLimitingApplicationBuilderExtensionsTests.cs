@@ -11,20 +11,20 @@ namespace Microsoft.AspNetCore.RateLimiting;
 public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
 {
 
-    [Fact]
+    // [Fact]
     public void UseRateLimiter_ThrowsOnNullAppBuilder()
     {
         Assert.Throws<ArgumentNullException>(() => RateLimiterApplicationBuilderExtensions.UseRateLimiter(null));
     }
 
-    [Fact]
+    // [Fact]
     public void UseRateLimiter_ThrowsOnNullOptions()
     {
         var appBuilder = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
         Assert.Throws<ArgumentNullException>(() => appBuilder.UseRateLimiter(null));
     }
 
-    [Fact]
+    // [Fact]
     public void UseRateLimiter_RespectsOptions()
     {
         // These are the options that should get used

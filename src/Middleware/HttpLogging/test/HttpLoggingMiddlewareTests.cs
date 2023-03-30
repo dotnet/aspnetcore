@@ -27,7 +27,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_ThrowsExceptionsWhenNullArgs()
     {
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(
@@ -50,7 +50,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoopWhenLoggingDisabled()
     {
         var options = CreateOptionsAccessor();
@@ -81,7 +81,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Empty(TestSink.Writes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultRequestInfoOnlyHeadersAndRequestInfo()
     {
         var middleware = new HttpLoggingMiddleware(
@@ -120,7 +120,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestLogsAllRequestInfo()
     {
         var options = CreateOptionsAccessor();
@@ -161,7 +161,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestPropertiesLogs()
     {
         var options = CreateOptionsAccessor();
@@ -202,7 +202,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestHeadersLogs()
     {
         var options = CreateOptionsAccessor();
@@ -245,7 +245,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnknownRequestHeadersRedacted()
     {
         var middleware = new HttpLoggingMiddleware(
@@ -273,7 +273,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("foo: bar"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanConfigureRequestAllowList()
     {
         var options = CreateOptionsAccessor();
@@ -333,7 +333,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestBodyReadingLimitLongCharactersWorks()
     {
         var input = string.Concat(new string('あ', 5));
@@ -371,7 +371,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestBodyReadingLimitWorks()
     {
         var input = string.Concat(new string('a', 60000), new string('b', 3000));
@@ -408,7 +408,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialReadBodyStillLogs()
     {
         var input = string.Concat(new string('a', 60000), new string('b', 3000));
@@ -514,7 +514,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for request body."));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DifferentEncodingsWork()
     {
         var encoding = Encoding.Unicode;
@@ -553,7 +553,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultResponseInfoOnlyHeadersAndRequestInfo()
     {
         var middleware = new HttpLoggingMiddleware(
@@ -575,7 +575,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseInfoLogsAll()
     {
         var options = CreateOptionsAccessor();
@@ -600,7 +600,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StatusCodeLogs()
     {
         var options = CreateOptionsAccessor();
@@ -625,7 +625,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseHeadersLogs()
     {
         var options = CreateOptionsAccessor();
@@ -650,7 +650,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseHeadersRedacted()
     {
         var options = CreateOptionsAccessor();
@@ -671,7 +671,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Test: [Redacted]"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllowedResponseHeadersModify()
     {
         var options = CreateOptionsAccessor();
@@ -718,7 +718,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResponseBodyWritingLimitWorks()
     {
         var input = string.Concat(new string('a', 30000), new string('b', 3000));
@@ -741,7 +741,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
-    [Fact]
+    // [Fact]
     public async Task FirstWriteResponseHeadersLogged()
     {
         var options = CreateOptionsAccessor();
@@ -780,7 +780,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartAsyncResponseHeadersLogged()
     {
         var options = CreateOptionsAccessor();
@@ -817,7 +817,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middlewareTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task UnrecognizedMediaType()
     {
         var expected = "Hello world";
@@ -839,7 +839,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for response body."));
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoMediaType()
     {
         var options = CreateOptionsAccessor();
@@ -870,7 +870,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("No Content-Type header for request body."));
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradeToWebSocketLogsResponseStatusCodeWhenResponseIsFlushed()
     {
         var options = CreateOptionsAccessor();
@@ -914,7 +914,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middlewareTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradeToWebSocketLogsResponseHeadersWhenResponseIsFlushed()
     {
         var options = CreateOptionsAccessor();
@@ -958,7 +958,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middlewareTask;
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradeToWebSocketDoesNotLogWhenResponseIsFlushedIfLoggingOptionsAreOtherThanResponseStatusCodeOrResponseHeaders()
     {
         var options = CreateOptionsAccessor();

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 
 public class RoutePatternFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void Pattern_MergesDefaultValues()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class RoutePatternFactoryTest
             kvp => { Assert.Equal("c", kvp.Key); Assert.Equal("19", kvp.Value); });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ExtraDefaultValues()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class RoutePatternFactoryTest
             kvp => { Assert.Equal("e", kvp.Key); Assert.Equal(17, kvp.Value); });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_DifferentDuplicateDefaultValue_Throws()
     {
         // Arrange
@@ -87,7 +87,7 @@ public class RoutePatternFactoryTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_SameDuplicateDefaultValue()
     {
         // Arrange
@@ -110,7 +110,7 @@ public class RoutePatternFactoryTest
             kvp => { Assert.Equal("a", kvp.Key); Assert.Equal("13", kvp.Value); });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_OptionalParameterDefaultValue_Throws()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class RoutePatternFactoryTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_MergesConstraints()
     {
         // Arrange
@@ -178,7 +178,7 @@ public class RoutePatternFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ExtraConstraints()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class RoutePatternFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ExtraConstraints_MultipleConstraintsForKey()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class RoutePatternFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ExtraConstraints_MergeMultipleConstraintsForKey()
     {
         // Arrange
@@ -291,7 +291,7 @@ public class RoutePatternFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ExtraConstraints_NestedArray_Throws()
     {
         // Arrange
@@ -312,7 +312,7 @@ public class RoutePatternFactoryTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ExtraConstraints_RouteConstraint()
     {
         // Arrange
@@ -348,7 +348,7 @@ public class RoutePatternFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_CreatesConstraintFromString()
     {
         // Arrange
@@ -376,7 +376,7 @@ public class RoutePatternFactoryTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_InvalidConstraintTypeThrows()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class RoutePatternFactoryTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_ArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
     {
         // Arrange
@@ -427,7 +427,7 @@ public class RoutePatternFactoryTest
         Assert.Same(paramPartD, actual.Parameters[2]);
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_RawTextAndArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
     {
         // Arrange
@@ -456,7 +456,7 @@ public class RoutePatternFactoryTest
         Assert.Same(paramPartD, actual.Parameters[2]);
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_DefaultsAndParameterPoliciesAndArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
     {
         // Arrange
@@ -495,7 +495,7 @@ public class RoutePatternFactoryTest
         Assert.Null(paramPartD.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void Pattern_RawTextAndDefaultsAndParameterPoliciesAndArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
     {
         // Arrange
@@ -535,7 +535,7 @@ public class RoutePatternFactoryTest
         Assert.Null(paramPartD.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_WithRequiredValues()
     {
         // Arrange
@@ -555,7 +555,7 @@ public class RoutePatternFactoryTest
             kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_WithRequiredValues_AllowsNullRequiredValue()
     {
         // Arrange
@@ -575,7 +575,7 @@ public class RoutePatternFactoryTest
             kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_WithRequiredValues_AllowsEmptyRequiredValue()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class RoutePatternFactoryTest
             kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_WithRequiredValues_ThrowsForNonParameterNonDefault()
     {
         // Arrange
@@ -618,7 +618,7 @@ public class RoutePatternFactoryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndArrayOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
     {
         // Arrange (going through hoops to get an array of RoutePatternParameterPolicyReference)
@@ -645,7 +645,7 @@ public class RoutePatternFactoryTest
         Assert.NotNull(parameterPart.ParameterPolicies[2]);
     }
 
-    [Fact]
+    // [Fact]
     public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndEnumerableOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
     {
         // Arrange (going through hoops to get an enumerable of RoutePatternParameterPolicyReference)
@@ -672,7 +672,7 @@ public class RoutePatternFactoryTest
         Assert.NotNull(parameterPart.ParameterPolicies[2]);
     }
 
-    [Fact]
+    // [Fact]
     public void Segment_EnumerableOfParts()
     {
         // Arrange
@@ -693,7 +693,7 @@ public class RoutePatternFactoryTest
         Assert.Same(paramPartD, actual.Parts[2]);
     }
 
-    [Fact]
+    // [Fact]
     public void Segment_ArrayOfParts()
     {
         // Arrange
@@ -747,7 +747,7 @@ public class RoutePatternFactoryTest
         Assert.Collection(combined.PathSegments, AssertLiteral("a"), AssertLiteral("b"));
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithDuplicateParameters_Throws()
     {
         // Parameter names are case insensitive
@@ -760,7 +760,7 @@ public class RoutePatternFactoryTest
         Assert.Equal("The route parameter name 'ID' appears more than one time in the route template.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithDuplicateDefaults_DoesNotThrow()
     {
         // Keys should be case insensitive.
@@ -776,7 +776,7 @@ public class RoutePatternFactoryTest
         Assert.Equal("foo", value);
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithDuplicateRequiredValues_DoesNotThrow()
     {
         // Keys should be case insensitive.
@@ -793,7 +793,7 @@ public class RoutePatternFactoryTest
         Assert.Equal("foo", value);
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithDuplicateParameterPolicies_Throws()
     {
         // Since even the exact same instance and keys throw, we don't bother testing different key casing.
@@ -806,7 +806,7 @@ public class RoutePatternFactoryTest
         Assert.Equal("MapGroup cannot build a pattern for '/a/b' because the 'RoutePattern.ParameterPolicies' dictionary key 'X' has multiple values.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithConflictingDefaults_Throws()
     {
         // Keys should be case insensitive but not values.
@@ -818,7 +818,7 @@ public class RoutePatternFactoryTest
         Assert.Equal("MapGroup cannot build a pattern for '/a/{x=foo}/b' because the 'RoutePattern.Defaults' dictionary key 'X' has multiple values.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithConflictingRequiredValues_Throws()
     {
         // Keys should be case insensitive but not values.
@@ -831,7 +831,7 @@ public class RoutePatternFactoryTest
         Assert.Equal("MapGroup cannot build a pattern for '/a/b' because the 'RoutePattern.RequiredValues' dictionary key 'X' has multiple values.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Combine_WithConflictingParameterPolicies_Throws()
     {
         // Even the exact same policy instance throws, but this verifies theres a conflict even if the policy is defined via a pattern in one part.

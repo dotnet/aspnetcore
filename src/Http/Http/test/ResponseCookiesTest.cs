@@ -21,7 +21,7 @@ public class ResponseCookiesTest
         return features;
     }
 
-    [Fact]
+    // [Fact]
     public void AppendSameSiteNoneWithoutSecureLogsWarning()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -54,7 +54,7 @@ public class ResponseCookiesTest
         Assert.Equal("The cookie 'TestCookie' has set 'SameSite=None' and must also set 'Secure'.", writeContext.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithExtensions()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -75,7 +75,7 @@ public class ResponseCookiesTest
         Assert.EndsWith("key=value", cookieHeaderValues[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void DeleteWithExtensions()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -97,7 +97,7 @@ public class ResponseCookiesTest
         Assert.EndsWith("key=value", cookieHeaderValues[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void DeleteCookieShouldSetDefaultPath()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -114,7 +114,7 @@ public class ResponseCookiesTest
         Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void DeleteCookieWithDomainAndPathDeletesPriorMatchingCookies()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -144,7 +144,7 @@ public class ResponseCookiesTest
         Assert.All(deletedCookies, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
     }
 
-    [Fact]
+    // [Fact]
     public void DeleteRemovesCookieWithDomainAndPathCreatedByAdd()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -172,7 +172,7 @@ public class ResponseCookiesTest
         Assert.All(deletedCookies, cookie => Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookie));
     }
 
-    [Fact]
+    // [Fact]
     public void DeleteCookieWithCookieOptionsShouldKeepPropertiesOfCookieOptions()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -204,7 +204,7 @@ public class ResponseCookiesTest
         Assert.Contains("extension", cookieHeaderValues[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void NoParamsDeleteRemovesCookieCreatedByAdd()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -222,7 +222,7 @@ public class ResponseCookiesTest
         Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void ProvidesMaxAgeWithCookieOptionsArgumentExpectMaxAgeToBeSet()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();

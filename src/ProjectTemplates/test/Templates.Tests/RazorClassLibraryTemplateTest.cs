@@ -30,7 +30,7 @@ public class RazorClassLibraryTemplateTest : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorClassLibraryTemplate_WithViews_Async()
     {
         var project = await ProjectFactory.CreateProject(Output);

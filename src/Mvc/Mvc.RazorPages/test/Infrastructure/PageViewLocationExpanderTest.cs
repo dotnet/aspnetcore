@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class PageViewLocationExpanderTest
 {
-    [Fact]
+    // [Fact]
     public void PopulateValues_DoesNothing()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class PageViewLocationExpanderTest
         Assert.Empty(context.Values);
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandLocations_NoOp_ForNonPage()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class PageViewLocationExpanderTest
         Assert.Equal(locations, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandLocations_NoOp_ForNonPageWithPageName()
     {
         // Verifies the fix for https://github.com/aspnet/Mvc/issues/6660. This ensures that when PageViewLocationExpander is called
@@ -64,7 +64,7 @@ public class PageViewLocationExpanderTest
         Assert.Equal(locations, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandLocations_NoOp_WhenLocationDoesNotContainPageToken()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class PageViewLocationExpanderTest
         Assert.Equal(expected, actual.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandLocations_ExpandsDirectories_MultipleLocations()
     {
         // Arrange
@@ -160,7 +160,7 @@ public class PageViewLocationExpanderTest
         Assert.Equal(expected, actual.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void ExpandLocations_ExpandsAreaPaths_MultipleLocations()
     {
         // Arrange

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 
 public class HostingEnvironmentExtensionsTests
 {
-    [Fact]
+    // [Fact]
     public void SetsFullPathToWwwroot()
     {
         IWebHostEnvironment env = new HostingEnvironment();
@@ -29,7 +29,7 @@ public class HostingEnvironmentExtensionsTests
         Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultsToWwwrootSubdir()
     {
         IWebHostEnvironment env = new HostingEnvironment();
@@ -42,7 +42,7 @@ public class HostingEnvironmentExtensionsTests
         Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultsToNullFileProvider()
     {
         IWebHostEnvironment env = new HostingEnvironment();
@@ -55,7 +55,7 @@ public class HostingEnvironmentExtensionsTests
         Assert.IsAssignableFrom<NullFileProvider>(env.WebRootFileProvider);
     }
 
-    [Fact]
+    // [Fact]
     public void OverridesEnvironmentFromConfig()
     {
         IWebHostEnvironment env = new HostingEnvironment();

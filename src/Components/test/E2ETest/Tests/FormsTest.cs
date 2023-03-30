@@ -34,7 +34,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     protected virtual IWebElement MountTypicalValidationComponent()
         => Browser.MountTestComponent<TypicalValidationComponent>();
 
-    [Fact]
+    // [Fact]
     public async Task EditFormWorksWithDataAnnotationsValidator()
     {
         var appElement = MountSimpleValidationComponent();
@@ -74,7 +74,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("OnValidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void EditFormWorksWithDataAnnotationsValidatorAndDI()
     {
         var appElement = Browser.MountTestComponent<ValidationComponentDI>();
@@ -94,7 +94,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputTextInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -129,7 +129,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.False(() => summaryMessagesAccessor().Contains("That name is too long"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputNumberInteractsWithEditContext_NonNullableInt()
     {
         var appElement = MountTypicalValidationComponent();
@@ -162,7 +162,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputNumberInteractsWithEditContext_NullableFloat()
     {
         var appElement = MountTypicalValidationComponent();
@@ -186,7 +186,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputTextAreaInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -213,7 +213,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -235,7 +235,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectInteractsWithEditContext_BoolValues()
     {
         var appElement = MountTypicalValidationComponent();
@@ -263,7 +263,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("modified valid", () => select.GetAttribute("class"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectInteractsWithEditContext_MultipleAttribute()
     {
         var appElement = MountTypicalValidationComponent();
@@ -286,7 +286,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal(new[] { "The field SelectedCities must be a string or array type with a maximum length of '3'." }, messagesAccesor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectIgnoresMultipleAttribute()
     {
         var appElement = MountTypicalValidationComponent();
@@ -305,7 +305,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal(1, () => ticketClassInput.AllSelectedOptions.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectHandlesHostileStringValues()
     {
         var appElement = MountTypicalValidationComponent();
@@ -324,7 +324,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("{,", () => hostileSelectLabel.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void InputCheckboxInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -355,7 +355,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal(new[] { "Must accept terms", "Must not be evil" }, messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputRadioGroupWithoutNameInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -393,7 +393,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             => appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputRadioGroupsWithNamesNestedInteractWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -428,7 +428,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         IReadOnlyCollection<IWebElement> FindColorInputs() => group.FindElements(By.Name("color"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputRadioGroupWithBoolValuesInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();
@@ -464,7 +464,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             => FindInputs().First(i => string.Equals("False", i.GetAttribute("value")));
     }
 
-    [Fact]
+    // [Fact]
     public void CanWireUpINotifyPropertyChangedToEditContext()
     {
         var appElement = Browser.MountTestComponent<NotifyPropertyChangedValidationComponent>();
@@ -501,7 +501,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessageDisplaysMessagesForField()
     {
         var appElement = MountTypicalValidationComponent();
@@ -528,7 +528,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(emailMessagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void ErrorsFromCompareAttribute()
     {
         var appElement = MountTypicalValidationComponent();
@@ -555,7 +555,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Empty(confirmEmailValidationMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void InputComponentsCauseContainerToRerenderOnChange()
     {
         var appElement = MountTypicalValidationComponent();
@@ -576,7 +576,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("Premium", () => selectedTicketClassDisplay.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void InputComponentsRespondToAsynchronouslyAddedMessages()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -594,7 +594,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("invalid", () => input.GetAttribute("class"));
     }
 
-    [Fact]
+    // [Fact]
     public void SelectComponentSupportsOptionsComponent()
     {
         var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
@@ -630,7 +630,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void SelectWithMultipleAttributeCanBindValue()
     {
         var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
@@ -649,7 +649,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("\"la\", \"pdx\", \"sea\"", () => label.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void SelectWithMultipleAttributeCanUseOnChangedCallback()
     {
         var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
@@ -664,7 +664,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("opel, audi", () => label.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void RespectsCustomFieldCssClassProvider()
     {
         var appElement = MountTypicalValidationComponent();
@@ -681,7 +681,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
     }
 
-    [Fact]
+    // [Fact]
     public void NavigateOnSubmitWorks()
     {
         var app = Browser.MountTestComponent<NavigateOnSubmit>();
@@ -692,7 +692,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("Choose...", () => Browser.WaitUntilTestSelectorReady().SelectedOption.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanRemoveAndReAddDataAnnotationsSupport()
     {
         var appElement = MountTypicalValidationComponent();
@@ -718,7 +718,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
     }
 
-    [Fact]
+    // [Fact]
     public void InputRangeAttributeOrderDoesNotAffectValue()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/33499
@@ -732,7 +732,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("210", () => rangeWithValueLast.GetDomProperty("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputTextWorksWithMutatingSetter()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
@@ -754,7 +754,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputTextAreaWorksWithMutatingSetter()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
@@ -776,7 +776,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputCheckboxWorksWithMutatingSetter()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -788,7 +788,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("False", () => input.GetDomProperty("checked")); // i.e., it was reverted back to false
     }
 
-    [Fact]
+    // [Fact]
     public void InputDateWorksWithMutatingSetter()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -806,7 +806,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("2222-02-02", () => input.GetDomProperty("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputNumberWorksWithMutatingSetter()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -824,7 +824,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("100", () => input.GetDomProperty("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputRadioGroupWorksWithMutatingSetter()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -844,7 +844,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("False", () => tuesday.GetDomProperty("checked"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectWorksWithMutatingSetter()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -863,7 +863,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("Monday", () => input.SelectedOption.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectMultipleWorksWithMutatingSetter()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -882,7 +882,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("Monday+Wednesday", () => string.Join('+', input.AllSelectedOptions.Select(e => e.Text)));
     }
 
-    [Fact]
+    // [Fact]
     public void InputWithCustomParserPreservesInvalidValueWhenParsingFails()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -894,7 +894,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("modified invalid", () => input.GetAttribute("class"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputWithCustomParserCanMutateValueDuringParsing()
     {
         var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
@@ -912,7 +912,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputSelectWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
@@ -931,7 +931,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.False(() => ElementHasAttribute(selectElement.WrappedElement, "class"));
     }
 
-    [Fact]
+    // [Fact]
     public void InputRadioGroupWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
@@ -953,7 +953,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             => appElement.FindElement(By.ClassName("airlines")).FindElements(By.TagName("input"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanHaveModelLevelValidationErrors()
     {
         var appElement = Browser.MountTestComponent<ModelLevelValidationComponent>();

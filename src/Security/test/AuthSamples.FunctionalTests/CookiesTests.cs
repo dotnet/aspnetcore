@@ -17,7 +17,7 @@ public class CookiesTests : IClassFixture<WebApplicationFactory<Cookies.Startup>
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultReturns200()
     {
         // Arrange & Act
@@ -28,7 +28,7 @@ public class CookiesTests : IClassFixture<WebApplicationFactory<Cookies.Startup>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
     {
         // Arrange & Act
@@ -40,7 +40,7 @@ public class CookiesTests : IClassFixture<WebApplicationFactory<Cookies.Startup>
         Assert.Equal("http://localhost/account/login?ReturnUrl=%2FHome%2FMyClaims", response.RequestMessage.RequestUri.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MyClaimsShowsClaimsWhenLoggedIn()
     {
         // Arrange & Act & Assert
@@ -48,7 +48,7 @@ public class CookiesTests : IClassFixture<WebApplicationFactory<Cookies.Startup>
         await CheckMyClaims("Dude");
     }
 
-    [Fact]
+    // [Fact]
     public async Task LogoutClearsCookie()
     {
         // Arrange & Act

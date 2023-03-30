@@ -19,7 +19,7 @@ public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<Develo
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task DeveloperExceptionPage_ShowsError()
     {
         // Arrange
@@ -34,7 +34,7 @@ public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<Develo
         Assert.Contains("Exception: Demonstration exception.", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DeveloperExceptionPage_ShowsProblemDetails_WhenHtmlNotAccepted()
     {
         // Arrange

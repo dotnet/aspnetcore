@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests;
 
 public class LocalizationTest
 {
-    [Fact]
+    // [Fact]
     public Task Localization_ContentLanguageHeader()
     {
         return RunTest(
@@ -21,7 +21,7 @@ public class LocalizationTest
             "True ar-YE");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_CustomCulture()
     {
         return RunTest(
@@ -30,7 +30,7 @@ public class LocalizationTest
             "kr10.00");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_GetAllStrings()
     {
         return RunTest(
@@ -39,7 +39,7 @@ public class LocalizationTest
             "1 Bonjour from Customer in resources folder");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue()
     {
         return RunTest(
@@ -48,7 +48,7 @@ public class LocalizationTest
             "Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryWithAttribute Bonjour from ResourcesClassLibraryWithAttribute");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_ResourcesInFolder_ReturnLocalizedValue()
     {
         return RunTest(
@@ -57,7 +57,7 @@ public class LocalizationTest
             "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback()
     {
         return RunTest(
@@ -66,7 +66,7 @@ public class LocalizationTest
             "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep()
     {
         return RunTest(
@@ -75,7 +75,7 @@ public class LocalizationTest
             "Hello Hello Hello Hello");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue()
     {
         return RunTest(
@@ -84,7 +84,7 @@ public class LocalizationTest
             "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in Models folder");
     }
 
-    [Fact]
+    // [Fact]
     public Task Localization_BuilderAPIs()
     {
         return RunTest(

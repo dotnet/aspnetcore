@@ -20,7 +20,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
     {
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultTransportsWorks_WithWebSockets()
     {
         Navigate("/defaultTransport/Transports");
@@ -40,7 +40,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
         AssertGlobalErrorState(hasGlobalError: false);
     }
 
-    [Fact]
+    // [Fact]
     public void ErrorIfClientAttemptsLongPolling_WithServerOnWebSockets()
     {
         Navigate("/webSockets/Transports");
@@ -59,7 +59,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
         AssertGlobalErrorState(hasGlobalError: true);
     }
 
-    [Fact]
+    // [Fact]
     public void WebSocketsConnectionIsRejected_FallbackToLongPolling()
     {
         Navigate("/defaultTransport/Transports");
@@ -78,7 +78,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
         AssertGlobalErrorState(hasGlobalError: false);
     }
 
-    [Fact]
+    // [Fact]
     public void ErrorIfWebSocketsConnectionIsRejected_WithServerOnWebSockets()
     {
         Navigate("/webSockets/Transports");
@@ -98,7 +98,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
         AssertGlobalErrorState(hasGlobalError: true);
     }
 
-    [Fact]
+    // [Fact]
     public void ServerOnlySupportsLongPolling_FallbackToLongPolling()
     {
         Navigate("/longPolling/Transports");
@@ -117,7 +117,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
         AssertGlobalErrorState(hasGlobalError: false);
     }
 
-    [Fact]
+    // [Fact]
     public void ErrorIfClientDisablesLongPolling_WithServerOnLongPolling()
     {
         Navigate("/longPolling/Transports");

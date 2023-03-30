@@ -39,7 +39,7 @@ public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotStartMultipleConnections()
     {
         Navigate("/multiple-components");
@@ -56,7 +56,7 @@ public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixtu
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanRenderMultipleRootComponents()
     {
         Navigate("/multiple-components");

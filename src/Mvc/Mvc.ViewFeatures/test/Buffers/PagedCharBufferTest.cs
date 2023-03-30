@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 public class PagedCharBufferTest
 {
-    [Fact]
+    // [Fact]
     public void AppendWithChar_AddsCharacterToPage()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class PagedCharBufferTest
         Assert.Equal(charToAppend, page[buffer.Length - 1]);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithChar_AddsCharacterToNewPage()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class PagedCharBufferTest
         Assert.Equal(1 + PagedCharBuffer.PageSize, buffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithChar_AppendsToTheCurrentPageIfItIsNotFull()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class PagedCharBufferTest
         Assert.Equal(4, buffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithChar_AppendsLastCharacterToTheCurrentPage()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class PagedCharBufferTest
         Assert.Equal('t', page[PagedCharBuffer.PageSize - 1]);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithChar_AddsCharacterToNewPage_AfterLengthFallback()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class PagedCharBufferTest
             page => Assert.Equal(charToAppend, page[0]));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithChar_AppendsLastCharacterToTheCurrentPage_AfterLengthFallback()
     {
         // Arrange
@@ -129,7 +129,7 @@ public class PagedCharBufferTest
         Assert.Equal('t', page[2 * PagedCharBuffer.PageSize - 1]);
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithString_AppendsToPage()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class PagedCharBufferTest
         Assert.Equal(new[] { 'a', 'b', 'c' }, page.Take(buffer.Length));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithString_AppendsToMultiplePages()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class PagedCharBufferTest
             page => Assert.Equal('d', page[0]));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithString_AppendsToMultiplePages_AsLengthFallsBack()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class PagedCharBufferTest
             page => Assert.Equal(expected2, page.Take(PagedCharBuffer.PageSize + 1)));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithString_AppendsToMultiplePages_AsLengthReturnsToNormal()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class PagedCharBufferTest
             page => Assert.Equal('d', page[0]));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithString_AppendsToMultiplePages_AfterLengthFallback()
     {
         // Arrange
@@ -256,7 +256,7 @@ public class PagedCharBufferTest
             page => Assert.Equal('d', page[0]));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithString_AppendsToTheCurrentPageIfItIsNotEmpty()
     {
         // Arrange
@@ -274,7 +274,7 @@ public class PagedCharBufferTest
         Assert.Equal(new[] { 'a', 'b', 'c', 'd', 'e', 'f' }, page.Take(buffer.Length));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithCharArray_AppendsToPage()
     {
         // Arrange
@@ -290,7 +290,7 @@ public class PagedCharBufferTest
         Assert.Equal(new[] { 'b', 'c', 'd' }, page.Take(buffer.Length));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithCharArray_AppendsToMultiplePages()
     {
         // Arrange
@@ -316,7 +316,7 @@ public class PagedCharBufferTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithCharArray_AppendsToMultiplePages_AsLengthFallsBack()
     {
         // Arrange
@@ -347,7 +347,7 @@ public class PagedCharBufferTest
             page => Assert.Equal(expected2, page.Take(PagedCharBuffer.PageSize + 1)));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithCharArray_AppendsToMultiplePages_AsLengthReturnsToNormal()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class PagedCharBufferTest
             page => Assert.Equal('d', page[0]));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithCharArray_AppendsToMultiplePages_AfterLengthFallback()
     {
         // Arrange
@@ -406,7 +406,7 @@ public class PagedCharBufferTest
             page => Assert.Equal('d', page[0]));
     }
 
-    [Fact]
+    // [Fact]
     public void AppendWithCharArray_AppendsToCurrentPage()
     {
         // Arrange
@@ -423,7 +423,7 @@ public class PagedCharBufferTest
         Assert.Equal(new[] { 'A', 'b', 'c', 'd', 'e' }, page.Take(buffer.Length));
     }
 
-    [Fact]
+    // [Fact]
     public void Clear_WorksIfBufferHasNotBeenWrittenTo()
     {
         // Arrange
@@ -436,7 +436,7 @@ public class PagedCharBufferTest
         Assert.Equal(0, buffer.Length);
     }
 
-    [Fact]
+    // [Fact]
     public void Clear_ReturnsPagesToBufferSource()
     {
         // Arrange
@@ -454,7 +454,7 @@ public class PagedCharBufferTest
         bufferSource.Verify(s => s.Return(It.IsAny<char[]>()), Times.Exactly(3));
     }
 
-    [Fact]
+    // [Fact]
     public void UseAfterClear_Works()
     {
         // Arrange

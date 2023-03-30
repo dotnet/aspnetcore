@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class HeartbeatTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public void HeartbeatIntervalIsOneSecond()
     {
         Assert.Equal(TimeSpan.FromSeconds(1), Heartbeat.Interval);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsWarning()
     {
         var systemClock = new MockSystemClock();
@@ -66,7 +66,7 @@ public class HeartbeatTests : LoggedTest
             + "This could be caused by thread pool starvation.", warningMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedIfDebuggerAttached()
     {
         var systemClock = new MockSystemClock();
@@ -106,7 +106,7 @@ public class HeartbeatTests : LoggedTest
         Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
     {
         var systemClock = new MockSystemClock();

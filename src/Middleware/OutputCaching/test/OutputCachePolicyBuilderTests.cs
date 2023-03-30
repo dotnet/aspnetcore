@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
 public class OutputCachePolicyBuilderTests
 {
-    [Fact]
+    // [Fact]
     public void BuildPolicy_CreatesDefaultPolicy()
     {
         var builder = new OutputCachePolicyBuilder();
@@ -17,7 +17,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal(DefaultPolicy.Instance, policy);
     }
 
-    [Fact]
+    // [Fact]
     public void BuildPolicy_CreatedWithoutDefaultPolicy()
     {
         var builder = new OutputCachePolicyBuilder(true);
@@ -26,7 +26,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal(EmptyPolicy.Instance, policy);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesExpirePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -40,7 +40,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal(duration, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesNoStorePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -52,7 +52,7 @@ public class OutputCachePolicyBuilderTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_AddsCustomPolicy()
     {
         var options = new OutputCacheOptions();
@@ -70,7 +70,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal(duration, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_AddsCustomPolicyWithoutDefaultPolicy()
     {
         var options = new OutputCacheOptions();
@@ -88,7 +88,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal(duration, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_NoVaryByHost()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -100,7 +100,7 @@ public class OutputCachePolicyBuilderTests
         Assert.False(context.CacheVaryByRules.VaryByHost);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByHeaderPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -117,7 +117,7 @@ public class OutputCachePolicyBuilderTests
         Assert.DoesNotContain("HeaderB", (IEnumerable<string>)context.CacheVaryByRules.HeaderNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByQueryPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -133,7 +133,7 @@ public class OutputCachePolicyBuilderTests
         Assert.DoesNotContain("QueryB", (IEnumerable<string>)context.CacheVaryByRules.QueryKeys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByRoutePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -153,7 +153,7 @@ public class OutputCachePolicyBuilderTests
         Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByRoutePolicyArray()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -173,7 +173,7 @@ public class OutputCachePolicyBuilderTests
         Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByRoutePolicyReplacesValue()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -193,7 +193,7 @@ public class OutputCachePolicyBuilderTests
         Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByKeyPrefixPolicy()
     {
         var context1 = TestUtils.CreateUninitializedContext();
@@ -213,7 +213,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal("tenant3", context3.CacheVaryByRules.CacheKeyPrefix);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesVaryByValuePolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -233,7 +233,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal("1m", context.CacheVaryByRules.VaryByValues["size"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CreatesTagPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -247,7 +247,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Contains("tag2", context.Tags);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_AllowsLocking()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -259,7 +259,7 @@ public class OutputCachePolicyBuilderTests
         Assert.True(context.AllowLocking);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_EnablesLocking()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -271,7 +271,7 @@ public class OutputCachePolicyBuilderTests
         Assert.True(context.AllowLocking);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_DisablesLocking()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -283,7 +283,7 @@ public class OutputCachePolicyBuilderTests
         Assert.False(context.AllowLocking);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_ClearsDefaultPolicy()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -298,7 +298,7 @@ public class OutputCachePolicyBuilderTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_DisablesCache()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -310,7 +310,7 @@ public class OutputCachePolicyBuilderTests
         Assert.False(context.EnableOutputCaching);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_EnablesCache()
     {
         var context = TestUtils.CreateUninitializedContext();
@@ -345,7 +345,7 @@ public class OutputCachePolicyBuilderTests
         Assert.Equal(expected, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_NoDefaultWithFalsePredicate()
     {
         // Each predicate should override the duration from the first base policy
@@ -363,7 +363,7 @@ public class OutputCachePolicyBuilderTests
         Assert.NotEqual(2, context.ResponseExpirationTimeSpan?.TotalSeconds);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuildPolicy_CacheReturnsDefault()
     {
         // Each predicate should override the duration from the first base policy

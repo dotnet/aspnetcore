@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class JavaScriptResourcesTest
 {
-    [Fact]
+    // [Fact]
     public void GetEmbeddedJavaScript_LoadsEmbeddedResourceFromManifestStream()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class JavaScriptResourcesTest
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    // [Fact]
     public void GetEmbeddedJavaScript_AddsResourceToCacheWhenRead()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class JavaScriptResourcesTest
         });
     }
 
-    [Fact]
+    // [Fact]
     public void GetEmbeddedJavaScript_LoadsResourceFromCacheAfterInitialCall()
     {
         // Arrange

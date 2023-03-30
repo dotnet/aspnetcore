@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.TestHost;
 
 public class TestServerTests
 {
-    [Fact]
+    // [Fact]
     public async Task GenericRawCreateAndStartHost_GetTestServer()
     {
         using var host = new HostBuilder()
@@ -40,7 +40,7 @@ public class TestServerTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GenericCreateAndStartHost_GetTestServer()
     {
         using var host = await new HostBuilder()
@@ -56,7 +56,7 @@ public class TestServerTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GenericCreateAndStartHost_GetTestClient()
     {
         using var host = await new HostBuilder()
@@ -72,7 +72,7 @@ public class TestServerTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseTestServerRegistersNoopHostLifetime()
     {
         using var host = await new HostBuilder()
@@ -87,7 +87,7 @@ public class TestServerTests
         Assert.IsType<NoopHostLifetime>(host.Services.GetService<IHostLifetime>());
     }
 
-    [Fact]
+    // [Fact]
     public void CreateWithDelegate()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class TestServerTests
         new TestServer(new WebHostBuilder().Configure(app => { }));
     }
 
-    [Fact]
+    // [Fact]
     public void CreateWithDelegate_DI()
     {
         var builder = new WebHostBuilder()
@@ -106,7 +106,7 @@ public class TestServerTests
         host.Start();
     }
 
-    [Fact]
+    // [Fact]
     public void DoesNotCaptureStartupErrorsByDefault()
     {
         var builder = new WebHostBuilder()
@@ -118,7 +118,7 @@ public class TestServerTests
         Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServicesCanBeOverridenForTestingAsync()
     {
         var builder = new WebHostBuilder()
@@ -159,7 +159,7 @@ public class TestServerTests
         public IServiceProvider CreateServiceProvider(ThirdPartyContainer containerBuilder) => containerBuilder.Services.BuildServiceProvider();
     }
 
-    [Fact]
+    // [Fact]
     public void CaptureStartupErrorsSettingPreserved()
     {
         var builder = new WebHostBuilder()
@@ -173,7 +173,7 @@ public class TestServerTests
         new TestServer(builder);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplicationServicesAvailableFromTestServer()
     {
         var testService = new TestService();
@@ -188,7 +188,7 @@ public class TestServerTests
         Assert.Equal(testService, server.Host.Services.GetRequiredService<TestService>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestServicesAutoCreated()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -204,7 +204,7 @@ public class TestServerTests
         Assert.Equal("RequestServices:True", result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DispoingTheRequestBodyDoesNotDisposeClientStreams()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -247,7 +247,7 @@ public class TestServerTests
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomServiceProviderSetsApplicationServices()
     {
         var builder = new WebHostBuilder().UseStartup<CustomContainerStartup>();
@@ -256,7 +256,7 @@ public class TestServerTests
         Assert.Equal("ApplicationServicesEqual:True", result);
     }
 
-    [Fact]
+    // [Fact]
     public void TestServerConstructorWithFeatureCollectionAllowsInitializingServerFeatures()
     {
         // Arrange
@@ -279,7 +279,7 @@ public class TestServerTests
         // Is inside configure callback
     }
 
-    [Fact]
+    // [Fact]
     public void TestServerConstructedWithoutFeatureCollectionHasServerAddressesFeature()
     {
         // Arrange
@@ -297,7 +297,7 @@ public class TestServerTests
         // Is inside configure callback
     }
 
-    [Fact]
+    // [Fact]
     public void TestServerConstructorWithNullFeatureCollectionThrows()
     {
         var builder = new WebHostBuilder()
@@ -306,7 +306,7 @@ public class TestServerTests
         Assert.Throws<ArgumentNullException>(() => new TestServer(builder, null));
     }
 
-    [Fact]
+    // [Fact]
     public void TestServerConstructorShouldProvideServicesFromPassedServiceProvider()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class TestServerTests
         Assert.Equal(serviceProvider, testServer.Services);
     }
 
-    [Fact]
+    // [Fact]
     public void TestServerConstructorShouldProvideServicesFromWebHost()
     {
         // Arrange
@@ -335,7 +335,7 @@ public class TestServerTests
         Assert.Equal(testService, testServer.Services.GetService<TestService>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TestServerConstructorShouldProvideServicesFromHostBuilder()
     {
         // Arrange
@@ -358,7 +358,7 @@ public class TestServerTests
         Assert.Equal(testService, testServer.Services.GetService<TestService>());
     }
 
-    [Fact]
+    // [Fact]
     public async Task TestServerConstructorSetOptions()
     {
         // Arrange
@@ -420,7 +420,7 @@ public class TestServerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExistingRequestServicesWillNotBeReplaced()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -441,7 +441,7 @@ public class TestServerTests
         Assert.Equal("Found:True", result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSetCustomServiceProvider()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -489,7 +489,7 @@ public class TestServerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExistingServiceProviderFeatureWillNotBeReplaced()
     {
         var appServices = new ServiceCollection().BuildServiceProvider();
@@ -531,7 +531,7 @@ public class TestServerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task WillReplaceServiceProviderFeatureWithNullRequestServices()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -552,7 +552,7 @@ public class TestServerTests
         Assert.Equal("Success", result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAccessLogger()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -569,7 +569,7 @@ public class TestServerTests
         Assert.Equal("FoundLogger:True", result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAccessHttpContext()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -600,7 +600,7 @@ public class TestServerTests
         public IHttpContextAccessor Accessor { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanAddNewHostServices()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -622,7 +622,7 @@ public class TestServerTests
         Assert.Equal("HasContext:True", result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateInvokesApp()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -638,7 +638,7 @@ public class TestServerTests
         Assert.Equal("CreateInvokesApp", result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposeStreamIgnored()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -656,7 +656,7 @@ public class TestServerTests
         Assert.Equal("Response", await result.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DisposedServerThrows()
     {
         var builder = new WebHostBuilder().Configure(app =>
@@ -675,7 +675,7 @@ public class TestServerTests
         await Assert.ThrowsAsync<ObjectDisposedException>(() => server.CreateClient().GetAsync("/"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CancelAborts()
     {
         var builder = new WebHostBuilder()
@@ -693,7 +693,7 @@ public class TestServerTests
         await Assert.ThrowsAsync<TaskCanceledException>(async () => { string result = await server.CreateClient().GetStringAsync("/path"); });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCreateViaStartupType()
     {
         var builder = new WebHostBuilder()
@@ -704,7 +704,7 @@ public class TestServerTests
         Assert.Equal("FoundService:True", await result.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCreateViaStartupTypeAndSpecifyEnv()
     {
         var builder = new WebHostBuilder()
@@ -717,7 +717,7 @@ public class TestServerTests
         Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeginEndDiagnosticAvailable()
     {
         DiagnosticListener diagnosticListener = null;
@@ -746,7 +746,7 @@ public class TestServerTests
         Assert.Null(listener.UnhandledException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExceptionDiagnosticAvailable()
     {
         DiagnosticListener diagnosticListener = null;

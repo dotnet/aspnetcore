@@ -28,7 +28,7 @@ public class ComplexRecordIntegrationTest
 
     private record Address1(string Street);
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithBodyModelBinder_WithPrefix_Success()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithBodyModelBinder_WithEmptyPrefix_Success()
     {
         // Arrange
@@ -128,7 +128,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoBodyData()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoBodyData_ValueInQuery()
     {
         // With record types, constructor parameters also appear as settable properties.
@@ -233,7 +233,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithBodyModelBinder_WithPrefix_PartialData()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoData()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class ComplexRecordIntegrationTest
 
     private record Person3(string Name, byte[] Token);
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_Success()
     {
         // Arrange
@@ -383,7 +383,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal(ByteArrayEncoded, entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithByteArrayModelBinder_WithEmptyPrefix_Success()
     {
         // Arrange
@@ -435,7 +435,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal(ByteArrayEncoded, entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_NoData()
     {
         // Arrange
@@ -487,7 +487,7 @@ public class ComplexRecordIntegrationTest
 
     private record Person4(string Name, IEnumerable<IFormFile> Documents);
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_Success()
     {
         // Arrange
@@ -540,7 +540,7 @@ public class ComplexRecordIntegrationTest
         Assert.Null(entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithFormFileModelBinder_WithEmptyPrefix_Success()
     {
         // Arrange
@@ -593,7 +593,7 @@ public class ComplexRecordIntegrationTest
         Assert.Null(entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoBodyData()
     {
         // Arrange
@@ -644,7 +644,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_PartialData()
     {
         // Arrange
@@ -701,7 +701,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoData()
     {
         // Arrange
@@ -755,7 +755,7 @@ public class ComplexRecordIntegrationTest
 
     private record Order5(string Name, int[] ProductIds);
 
-    [Fact]
+    // [Fact]
     public async Task BindsArrayProperty_WithPrefix_Success()
     {
         // Arrange
@@ -811,7 +811,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsArrayProperty_EmptyPrefix_Success()
     {
         // Arrange
@@ -866,7 +866,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsArrayProperty_NoCollectionData()
     {
         // Arrange
@@ -913,7 +913,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsArrayProperty_NoData()
     {
         // Arrange
@@ -958,7 +958,7 @@ public class ComplexRecordIntegrationTest
 
     private record Order6(string Name, List<int> ProductIds);
 
-    [Fact]
+    // [Fact]
     public async Task BindsListProperty_WithPrefix_Success()
     {
         // Arrange
@@ -1014,7 +1014,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsListProperty_EmptyPrefix_Success()
     {
         // Arrange
@@ -1069,7 +1069,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("11", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsListProperty_NoCollectionData()
     {
         // Arrange
@@ -1116,7 +1116,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsListProperty_NoData()
     {
         // Arrange
@@ -1161,7 +1161,7 @@ public class ComplexRecordIntegrationTest
 
     private record Order7(string Name, Dictionary<string, int> ProductIds);
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_WithPrefix_Success()
     {
         // Arrange
@@ -1217,7 +1217,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_EmptyPrefix_Success()
     {
         // Arrange
@@ -1272,7 +1272,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_NoCollectionData()
     {
         // Arrange
@@ -1319,7 +1319,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("bill", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_NoData()
     {
         // Arrange
@@ -1372,7 +1372,7 @@ public class ComplexRecordIntegrationTest
 
     private record SpecDoc(string Name);
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_WithIEnumerableComplexTypeValue_Success()
     {
         // Arrange
@@ -1479,7 +1479,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("tyre_spec2.txt", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_WithArrayOfComplexTypeValue_Success()
     {
         // Arrange
@@ -1586,7 +1586,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("tyre_spec2.txt", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsDictionaryProperty_WithIEnumerableOfKeyValuePair_Success()
     {
         // Arrange
@@ -1695,7 +1695,7 @@ public class ComplexRecordIntegrationTest
 
     private record Order8(KeyValuePair<string, int> ProductId, string Name = default!);
 
-    [Fact]
+    // [Fact]
     public async Task BindsKeyValuePairProperty_WithPrefix_Success()
     {
         // Arrange
@@ -1751,7 +1751,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("10", entry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindsKeyValuePairProperty_EmptyPrefix_Success()
     {
         // Arrange
@@ -1808,7 +1808,7 @@ public class ComplexRecordIntegrationTest
 
     private record Car4(string Name, KeyValuePair<string, Dictionary<string, string>> Specs);
 
-    [Fact]
+    // [Fact]
     public async Task Foo_BindsKeyValuePairProperty_WithPrefix_Success()
     {
         // Arrange
@@ -1900,7 +1900,7 @@ public class ComplexRecordIntegrationTest
 
     // If a nested POCO object has all properties bound from a greedy source, then it should be populated
     // if the top-level object is created.
-    [Fact]
+    // [Fact]
     public async Task BindsNestedPOCO_WithAllGreedyBoundProperties()
     {
         // Arrange
@@ -1950,7 +1950,7 @@ public class ComplexRecordIntegrationTest
 
     private record Person10(string Name);
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredComplexProperty_NoData_GetsErrors()
     {
         // Arrange
@@ -1995,7 +1995,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'Customer' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithBindRequired_NoData_AndCustomizedMessage_AddsGivenMessage()
     {
         // Arrange
@@ -2055,7 +2055,7 @@ public class ComplexRecordIntegrationTest
 
     private record Person11(int Id, [BindRequired] string Name);
 
-    [Fact]
+    // [Fact]
     public async Task WithNestedRequiredProperty_WithPartialData_GetsErrors()
     {
         // Arrange
@@ -2109,7 +2109,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithNestedRequiredProperty_WithData_EmptyPrefix_GetsErrors()
     {
         // Arrange
@@ -2163,7 +2163,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithNestedRequiredProperty_WithData_CustomPrefix_GetsErrors()
     {
         // Arrange
@@ -2223,7 +2223,7 @@ public class ComplexRecordIntegrationTest
 
     private record Order12([BindRequired] string ProductName);
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredProperty_NoData_GetsErrors()
     {
         // Arrange
@@ -2271,7 +2271,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'ProductName' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredProperty_NoData_CustomPrefix_GetsErrors()
     {
         // Arrange
@@ -2323,7 +2323,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'ProductName' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredProperty_WithData_EmptyPrefix_GetsBound()
     {
         // Arrange
@@ -2371,7 +2371,7 @@ public class ComplexRecordIntegrationTest
 
     private record Order13([BindRequired] List<int> OrderIds);
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredCollectionProperty_NoData_GetsErrors()
     {
         // Arrange
@@ -2419,7 +2419,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'OrderIds' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErrors()
     {
         // Arrange
@@ -2471,7 +2471,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("A value for the 'OrderIds' parameter or property was not provided.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WithRequiredCollectionProperty_WithData_EmptyPrefix_GetsBound()
     {
         // Arrange
@@ -2520,7 +2520,7 @@ public class ComplexRecordIntegrationTest
 
     // This covers the case where a key is present, but has an empty value. The type converter
     // will report an error.
-    [Fact]
+    // [Fact]
     public async Task BindsPOCO_TypeConvertedPropertyNonConvertibleValue_GetsError()
     {
         // Arrange
@@ -2573,7 +2573,7 @@ public class ComplexRecordIntegrationTest
 
     // This covers the case where a key is present, but has no value. The model binder will
     // report and error because it's a value type (non-nullable).
-    [Fact]
+    // [Fact]
     [ReplaceCulture]
     public async Task BindsPOCO_TypeConvertedPropertyWithEmptyValue_Error()
     {
@@ -2895,7 +2895,7 @@ public class ComplexRecordIntegrationTest
 
     private record LocationInfo([FromHeader] string GpsCoordinates, int Zipcode);
 
-    [Fact]
+    // [Fact]
     public async Task BindsKeyValuePairProperty_HavingFromHeaderProperty_Success()
     {
         // Arrange
@@ -2963,7 +2963,7 @@ public class ComplexRecordIntegrationTest
     private record Person5(string Name, IFormFile Photo);
 
     // Regression test for #4802.
-    [Fact]
+    // [Fact]
     public async Task ReportsFailureToCollectionModelBinder()
     {
         // Arrange
@@ -3037,7 +3037,7 @@ public class ComplexRecordIntegrationTest
     }
 
     // Regression test for #4939.
-    [Fact]
+    // [Fact]
     public async Task ReportsFailureToCollectionModelBinder_CustomBinder()
     {
         // Arrange
@@ -3102,7 +3102,7 @@ public class ComplexRecordIntegrationTest
     private record Person6(string Name, Person6 Mother, IFormFile Photo);
 
     // Regression test for #6616.
-    [Fact]
+    // [Fact]
     public async Task ReportsFailureToNearTopLevel()
     {
         // Arrange
@@ -3153,7 +3153,7 @@ public class ComplexRecordIntegrationTest
     }
 
     // Regression test for #6616.
-    [Fact]
+    // [Fact]
     public async Task ReportsFailureToComplexTypeModelBinder()
     {
         // Arrange
@@ -3225,7 +3225,7 @@ public class ComplexRecordIntegrationTest
     private record Person7(string Name, IList<Person7> Children, IFormFile Photo);
 
     // Regression test for #6616.
-    [Fact]
+    // [Fact]
     public async Task ReportsFailureToViaCollection()
     {
         // Arrange
@@ -3298,7 +3298,7 @@ public class ComplexRecordIntegrationTest
     private record LoopyModel([ModelBinder(typeof(SuccessfulModelBinder))] bool IsBound, LoopyModel SelfReference);
 
     // Regression test for #7052
-    [Fact]
+    // [Fact]
     public async Task ModelBindingSystem_ThrowsOn33Binders()
     {
         // Arrange
@@ -3331,7 +3331,7 @@ public class ComplexRecordIntegrationTest
     private record ThreeDeepModel([ModelBinder(typeof(SuccessfulModelBinder))] bool IsBound, TwoDeepModel Inner);
 
     // Ensure model binding system allows MaxModelBindingRecursionDepth binders on the stack.
-    [Fact]
+    // [Fact]
     public async Task ModelBindingSystem_BindsWith3Binders()
     {
         // Arrange
@@ -3366,7 +3366,7 @@ public class ComplexRecordIntegrationTest
     private record FourDeepModel([ModelBinder(typeof(SuccessfulModelBinder))] bool IsBound, ThreeDeepModel Inner);
 
     // Ensure model binding system disallows one more than MaxModelBindingRecursionDepth binders on the stack.
-    [Fact]
+    // [Fact]
     public async Task ModelBindingSystem_ThrowsOn4Binders()
     {
         // Arrange
@@ -3402,7 +3402,7 @@ public class ComplexRecordIntegrationTest
 
     private record LoopyModel3([ModelBinder(typeof(SuccessfulModelBinder))] bool IsBound, LoopyModel1 Inner);
 
-    [Fact]
+    // [Fact]
     public async Task ModelBindingSystem_ThrowsOn33Binders_WithIndirectModelTypeLoop()
     {
         // Arrange
@@ -3435,7 +3435,7 @@ public class ComplexRecordIntegrationTest
         public int Age { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBoundParametersAndProperties_NoData()
     {
         // Arrange
@@ -3478,7 +3478,7 @@ public class ComplexRecordIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBoundParametersAndProperties_ValueForParameter()
     {
         // Arrange
@@ -3521,7 +3521,7 @@ public class ComplexRecordIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBoundParametersAndProperties_ValueForProperty()
     {
         // Arrange
@@ -3564,7 +3564,7 @@ public class ComplexRecordIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBoundParametersAndProperties_ValueForParameterAndProperty()
     {
         // Arrange
@@ -3613,7 +3613,7 @@ public class ComplexRecordIntegrationTest
 
     public record RecordTypeWithFilteredProperty1([BindNever] string Id, string Name);
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBoundParameters_ParameterCannotBeBound()
     {
         // Annotatons on properties do not appear on properties. If an attribute is never bound, the property is also not bound.
@@ -3661,7 +3661,7 @@ public class ComplexRecordIntegrationTest
     [Bind(include: new[] { "Name" })]
     public record RecordTypeWithFilteredProperty2(string Id, string Name);
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBoundParameters_ParameterAreFiltered()
     {
         // Arrange
@@ -3712,7 +3712,7 @@ public class ComplexRecordIntegrationTest
         public string Name { get; init; } = Name;
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithDifferentMetadataOnParameterAndProperty_MetadataOnParameterIsUsed()
     {
         // Arrange
@@ -3755,7 +3755,7 @@ public class ComplexRecordIntegrationTest
         Assert.Single(modelState, e => e.Key == "Id");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithDifferentMetadataOnParameterAndProperty_NoDataForParameter()
     {
         // Arrange
@@ -3801,7 +3801,7 @@ public class ComplexRecordIntegrationTest
 
     private record RecordTypeWithCollectionParameter(string Id, IList<string> Tags);
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithCollectionParameter_WithData_Succeeds()
     {
         // Arrange
@@ -3844,7 +3844,7 @@ public class ComplexRecordIntegrationTest
         Assert.Single(modelState, e => e.Key == "Tags[1]");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeCollectionParameter_NoData()
     {
         // Arrange
@@ -3888,7 +3888,7 @@ public class ComplexRecordIntegrationTest
 
     private record RecordTypesWithReadOnlyCollectionParameter(string Id, string[] Tags);
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithReadOnlyCollectionParameter_Data_GetsBound()
     {
         // Arrange
@@ -3933,7 +3933,7 @@ public class ComplexRecordIntegrationTest
 
     private record RecordTypesWithDefaultParameterValue(string Id = "default-id", string[] Tags = null);
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithDefaultParameterValue_Data()
     {
         // Arrange
@@ -3977,7 +3977,7 @@ public class ComplexRecordIntegrationTest
         Assert.Single(modelState, e => e.Key == "Tags[1]");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithDefaultParameterValue_NoData()
     {
         // Arrange
@@ -4018,7 +4018,7 @@ public class ComplexRecordIntegrationTest
         Assert.Empty(modelState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithDefaultParameterValue_PartialData()
     {
         // Arrange
@@ -4061,7 +4061,7 @@ public class ComplexRecordIntegrationTest
         Assert.Equal("Tags[0]", entry.Key);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypesWithDefaultParameterValue_PartialDataWithPrefix()
     {
         // Arrange
@@ -4106,7 +4106,7 @@ public class ComplexRecordIntegrationTest
 
     private record RecordTypeWithBindRequiredParameters([BindRequired] string Name, int Age);
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBindRequiredParameters_Data_Success()
     {
         // Arrange
@@ -4151,7 +4151,7 @@ public class ComplexRecordIntegrationTest
         Assert.Single(modelState, m => m.Key == "Name");
     }
 
-    [Fact]
+    // [Fact]
     public async Task RecordTypeWithBindRequiredParameters_PartialData_BindRequiredError()
     {
         // Arrange

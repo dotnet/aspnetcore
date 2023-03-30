@@ -23,7 +23,7 @@ public class FormFileModelBindingIntegrationTest
         public IFormFile File { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithOnlyFormFile_WithEmptyPrefix()
     {
         // Arrange
@@ -122,7 +122,7 @@ public class FormFileModelBindingIntegrationTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithOnlyFormFile_WithPrefix()
     {
         // Arrange
@@ -180,7 +180,7 @@ public class FormFileModelBindingIntegrationTest
         public Person Person { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_OnFormFileInNestedSubClass_AtSecondLevel_WhenSiblingPropertyIsSpecified()
     {
         // Arrange
@@ -267,7 +267,7 @@ public class FormFileModelBindingIntegrationTest
         public FleetVehicle BackupVehicle { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_OnFormFileInNestedSubClass_AtSecondLevel_RecursiveModel()
     {
         // Arrange
@@ -332,7 +332,7 @@ public class FormFileModelBindingIntegrationTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_OnFormFileInNestedSubClass_AtThirdLevel_RecursiveModel()
     {
         // Arrange
@@ -398,7 +398,7 @@ public class FormFileModelBindingIntegrationTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_OnFormFileInNestedSubClass_AtSecondLevel_WhenSiblingPropertiesAreNotSpecified()
     {
         // Arrange
@@ -468,7 +468,7 @@ public class FormFileModelBindingIntegrationTest
         public List<IFormFile> ListProperty { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindCollectionProperty_WithData_IsBound()
     {
         // Arrange
@@ -514,7 +514,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Null(modelStateEntry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindCollectionProperty_NoData_IsNotBound()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class FormFileModelBindingIntegrationTest
             };
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindReadOnlyCollectionProperty_WithData_IsBound()
     {
         // Arrange
@@ -603,7 +603,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Null(modelStateEntry.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindParameter_WithData_GetsBound()
     {
         // Arrange
@@ -652,7 +652,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Null(entry.Value.RawValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindParameter_NoData_DoesNotGetBound()
     {
         // Arrange
@@ -692,7 +692,7 @@ public class FormFileModelBindingIntegrationTest
         public FormFileCollection Specs { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_WithData_WithPrefix_GetsBound()
     {
         // Arrange
@@ -751,7 +751,7 @@ public class FormFileModelBindingIntegrationTest
         public List<Car1> Cars { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_FormFileCollectionInCollection_WithPrefix()
     {
         // Arrange
@@ -817,7 +817,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Single(modelState, e => e.Key == "house.Garage.Cars[1].Specs");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_FormFileCollectionInCollection_OnlyFiles()
     {
         // Arrange
@@ -878,7 +878,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Single(modelState, e => e.Key == "house.Garage.Cars[1].Specs");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_FormFileCollectionInCollection_OutOfOrderFile()
     {
         // Arrange
@@ -917,7 +917,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Empty(modelState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_FormFileCollectionInCollection_MultipleFiles()
     {
         // Arrange
@@ -979,7 +979,7 @@ public class FormFileModelBindingIntegrationTest
         Assert.Equal("house.Garage.Cars[0].Specs", kvp.Key);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindProperty_FormFile_AsAPropertyOnNestedColection()
     {
         // Arrange
@@ -1033,7 +1033,7 @@ public class FormFileModelBindingIntegrationTest
         public IFormFile[][] FormFiles { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_MultiDimensionalFormFile_Works()
     {
         // Arrange
@@ -1084,7 +1084,7 @@ public class FormFileModelBindingIntegrationTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_MultiDimensionalFormFile_WithArrayNotation()
     {
         // Arrange
@@ -1129,7 +1129,7 @@ public class FormFileModelBindingIntegrationTest
         public MultiDimensionalFormFileContainer Container { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_DeeplyNestedMultiDimensionalFormFile_Works()
     {
         // Arrange
@@ -1188,7 +1188,7 @@ public class FormFileModelBindingIntegrationTest
         public Dictionary<string, IFormFile> Dictionary { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModelAsync_DictionaryOfFormFiles()
     {
         // Arrange

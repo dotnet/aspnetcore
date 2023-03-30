@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class RoutePatternMatcherTest
 {
-    [Fact]
+    // [Fact]
     public void TryMatch_Success()
     {
         // Arrange
@@ -26,7 +26,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("123", values["id"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_Fails()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class RoutePatternMatcherTest
         Assert.False(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithDefaults_Success()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("default id", values["id"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithDefaults_Fails()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class RoutePatternMatcherTest
         Assert.False(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithLiterals_Success()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("222", values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithLiteralsAndDefaults_Success()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class RoutePatternMatcherTest
         Assert.False(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithOnlyLiterals_Success()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class RoutePatternMatcherTest
         Assert.Empty(values);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithOnlyLiterals_Fails()
     {
         // Arrange
@@ -266,7 +266,7 @@ public class RoutePatternMatcherTest
         Assert.False(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithExtraSeparators_Success()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class RoutePatternMatcherTest
         Assert.Empty(values);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_UrlWithExtraSeparators_Success()
     {
         // Arrange
@@ -298,7 +298,7 @@ public class RoutePatternMatcherTest
         Assert.Empty(values);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithParametersAndExtraSeparators_Success()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("bar", values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithDifferentLiterals_Fails()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class RoutePatternMatcherTest
         Assert.False(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_LongerUrl_Fails()
     {
         // Arrange
@@ -345,7 +345,7 @@ public class RoutePatternMatcherTest
         Assert.False(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_SimpleFilename_Success()
     {
         // Arrange
@@ -382,7 +382,7 @@ public class RoutePatternMatcherTest
         Assert.True(match);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithExtraDefaultValues_Success()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("bar", values["foo"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_PrettyRouteWithExtraDefaultValues_Success()
     {
         // Arrange
@@ -424,7 +424,7 @@ public class RoutePatternMatcherTest
         Assert.Null(values["d"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnBothEndsMatches()
     {
         RunTest(
@@ -434,7 +434,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en", region = "US" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnLeftEndMatches()
     {
         RunTest(
@@ -444,7 +444,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en", region = "US" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnRightEndMatches()
     {
         RunTest(
@@ -454,7 +454,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en", region = "US" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnNeitherEndMatches()
     {
         RunTest(
@@ -464,7 +464,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en", region = "US" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnNeitherEndDoesNotMatch()
     {
         RunTest(
@@ -474,7 +474,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
     {
         RunTest(
@@ -484,7 +484,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsMatches()
     {
         RunTest(
@@ -494,7 +494,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsTrailingSlashDoesNotMatch()
     {
         RunTest(
@@ -504,7 +504,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsDoesNotMatch()
     {
         RunTest(
@@ -514,7 +514,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithSimpleMultiSegmentParamsOnLeftEndMatches()
     {
         RunTest(
@@ -524,7 +524,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithSimpleMultiSegmentParamsOnRightEndMatches()
     {
         RunTest(
@@ -534,7 +534,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithSimpleMultiSegmentParamsOnNeitherEndMatches()
     {
         RunTest(
@@ -544,7 +544,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { lang = "en" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentStandamatchMvcRouteMatches()
     {
         RunTest(
@@ -554,7 +554,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { controller = "home", action = "index", id = (string)null }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
     {
         RunTest(
@@ -564,7 +564,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithMultiSegmentWithRepeatedDots()
     {
         RunTest(
@@ -574,7 +574,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home", id = "123", Param1 = "p1" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithTwoRepeatedDots()
     {
         RunTest(
@@ -584,7 +584,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home", action = "index" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithThreeRepeatedDots()
     {
         RunTest(
@@ -594,7 +594,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home", action = "index" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithManyRepeatedDots()
     {
         RunTest(
@@ -604,7 +604,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home", action = "index" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithExclamationPoint()
     {
         RunTest(
@@ -614,7 +614,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home", action = "index" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithStartingDotDotSlash()
     {
         RunTest(
@@ -624,7 +624,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithStartingBackslash()
     {
         RunTest(
@@ -634,7 +634,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithBackslashSeparators()
     {
         RunTest(
@@ -644,7 +644,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { Controller = "Home", id = "123", Param1 = "p1" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithParenthesesLiterals()
     {
         RunTest(
@@ -654,7 +654,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary());
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithTrailingSlashSpace()
     {
         RunTest(
@@ -664,7 +664,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary());
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithUrlWithTrailingSpace()
     {
         RunTest(
@@ -674,7 +674,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary());
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithCatchAllCapturesDots()
     {
         // DevDiv Bugs 189892: UrlRouting: Catch all parameter cannot capture url segments that contain the "."
@@ -691,7 +691,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary(new { controller = "Home", action = "ShowPilot", missionId = "777", name = "12345./foobar" }));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithCatchAll_MatchesMultiplePathSegments()
     {
         // Arrange
@@ -709,7 +709,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("v2/v3", values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithCatchAll_MatchesTrailingSlash()
     {
         // Arrange
@@ -727,7 +727,7 @@ public class RoutePatternMatcherTest
         Assert.Null(values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithCatchAll_MatchesEmptyContent()
     {
         // Arrange
@@ -745,7 +745,7 @@ public class RoutePatternMatcherTest
         Assert.Null(values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithCatchAll_MatchesEmptyContent_DoesNotReplaceExistingRouteValue()
     {
         // Arrange
@@ -763,7 +763,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("hello", values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithCatchAll_UsesDefaultValueForEmptyContent()
     {
         // Arrange
@@ -781,7 +781,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("catchall", values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_RouteWithCatchAll_IgnoresDefaultValueForNonEmptyContent()
     {
         // Arrange
@@ -799,7 +799,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("hello/whatever", values["p2"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotMatchOnlyLeftLiteralMatch()
     {
         // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
@@ -810,7 +810,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotMatchOnlyRightLiteralMatch()
     {
         // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
@@ -821,7 +821,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotMatchMiddleLiteralMatch()
     {
         // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
@@ -832,7 +832,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesMatchesExactLiteralMatch()
     {
         // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
@@ -843,7 +843,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary());
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_WithWeimatchParameterNames()
     {
         RunTest(
@@ -853,7 +853,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary() { { " ", "space" }, { ".!$%", "weimatch" }, { "dynamic.data", "omatcherid" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } });
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotMatchRouteWithLiteralSeparatomatchefaultsButNoValue()
     {
         RunTest(
@@ -863,7 +863,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndLeftValue()
     {
         RunTest(
@@ -873,7 +873,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndRightValue()
     {
         RunTest(
@@ -883,7 +883,7 @@ public class RoutePatternMatcherTest
             null);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_MatchesRouteWithLiteralSeparatomatchefaultsAndValue()
     {
         RunTest(
@@ -893,7 +893,7 @@ public class RoutePatternMatcherTest
             new RouteValueDictionary { { "language", "xx" }, { "locale", "yy" }, { "controller", "foo" } });
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_SetsOptionalParameter()
     {
         // Arrange
@@ -912,7 +912,7 @@ public class RoutePatternMatcherTest
         Assert.Equal("Index", values["action"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotSetOptionalParameter()
     {
         // Arrange
@@ -931,7 +931,7 @@ public class RoutePatternMatcherTest
         Assert.False(values.ContainsKey("action"));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_DoesNotSetOptionalParameter_EmptyString()
     {
         // Arrange
@@ -949,7 +949,7 @@ public class RoutePatternMatcherTest
         Assert.False(values.ContainsKey("controller"));
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch__EmptyRouteWith_EmptyString()
     {
         // Arrange
@@ -966,7 +966,7 @@ public class RoutePatternMatcherTest
         Assert.Empty(values);
     }
 
-    [Fact]
+    // [Fact]
     public void TryMatch_MultipleOptionalParameters()
     {
         // Arrange

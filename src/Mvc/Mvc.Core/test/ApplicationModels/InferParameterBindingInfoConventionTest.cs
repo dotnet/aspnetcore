@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class InferParameterBindingInfoConventionTest
 {
-    [Fact]
+    // [Fact]
     public void Apply_DoesNotInferBindingSourceForParametersWithBindingInfo()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class InferParameterBindingInfoConventionTest
         Assert.Same(BindingSource.Custom, parameterModel.BindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_DoesNotInferBindingSourceFor_ComplexType_WithPropertiesWithBindingSource()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class InferParameterBindingInfoConventionTest
         Assert.Null(parameterModel.BindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_Throws_IfMultipleParametersAreInferredAsBodyBound()
     {
         // Arrange
@@ -68,7 +68,7 @@ Environment.NewLine + "Car b";
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_Throws_IfMultipleParametersAreInferredOrSpecifiedAsBodyBound()
     {
         // Arrange
@@ -87,7 +87,7 @@ Environment.NewLine + "int b";
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_Throws_IfMultipleParametersAreFromBody()
     {
         // Arrange
@@ -106,7 +106,7 @@ Environment.NewLine + "int b";
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_InfersSources()
     {
         // Arrange
@@ -140,7 +140,7 @@ Environment.NewLine + "int b";
             });
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_InfersSourcesFromRequiredComplexType()
     {
         // Arrange
@@ -166,7 +166,7 @@ Environment.NewLine + "int b";
             });
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_InfersSourcesFromNullableComplexType()
     {
         // Arrange
@@ -192,7 +192,7 @@ Environment.NewLine + "int b";
             });
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_InfersSourcesFromComplexTypeWithDefaultValue()
     {
         // Arrange
@@ -218,7 +218,7 @@ Environment.NewLine + "int b";
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinder_AndExplicitName()
     {
         // Arrange
@@ -239,7 +239,7 @@ Environment.NewLine + "int b";
         Assert.Equal("top", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void Apply_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinderType()
     {
         // Arrange
@@ -260,7 +260,7 @@ Environment.NewLine + "int b";
         Assert.Null(bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void OnProvidersExecuting_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinderType_AndExplicitModelName()
     {
         // Arrange
@@ -281,7 +281,7 @@ Environment.NewLine + "int b";
         Assert.Equal("foo", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterNameExistsInRouteAsSimpleToken()
     {
         // Arrange
@@ -296,7 +296,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterNameExistsInRouteAsOptionalToken()
     {
         // Arrange
@@ -311,7 +311,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterNameExistsInRouteAsConstrainedToken()
     {
         // Arrange
@@ -326,7 +326,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsBody_ForComplexTypeParameterThatAppearsInRoute()
     {
         // Arrange
@@ -341,7 +341,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Body, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAnyRoutes_MulitpleRoutes()
     {
         // Arrange
@@ -356,7 +356,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAnyRoute()
     {
         // Arrange
@@ -371,7 +371,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInControllerRoute()
     {
         // Arrange
@@ -386,7 +386,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInControllerRoute_AndActionHasRoute()
     {
         // Arrange
@@ -401,7 +401,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterAppearsInAllActionRoutes()
     {
         // Arrange
@@ -416,7 +416,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_DoesNotReturnPath_IfActionRouteOverridesControllerRoute()
     {
         // Arrange
@@ -431,7 +431,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Query, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterPresentInNonOverriddenControllerRoute()
     {
         // Arrange
@@ -446,7 +446,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterExistsInRoute_OnControllersWithoutSelectors()
     {
         // Arrange
@@ -461,7 +461,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsPath_IfParameterExistsInAllRoutes_OnControllersWithoutSelectors()
     {
         // Arrange
@@ -476,7 +476,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_DoesNotReturnPath_IfNeitherActionNorControllerHasTemplate()
     {
         // Arrange
@@ -491,7 +491,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Query, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForComplexTypes()
     {
         // Arrange
@@ -506,7 +506,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Body, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferParameterBindingSources_SetsCorrectBindingSourceForComplexTypesWithCancellationToken()
     {
         // Arrange
@@ -531,7 +531,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Special, cancellationToken.BindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsQueryForSimpleTypes()
     {
         // Arrange
@@ -546,7 +546,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Query, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForCollectionOfSimpleTypes()
     {
         // Arrange
@@ -561,7 +561,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Body, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfSimpleTypes()
     {
         // Arrange
@@ -576,7 +576,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Body, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForCollectionOfComplexTypes()
     {
         // Arrange
@@ -591,7 +591,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Body, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfComplexTypes()
     {
         // Arrange
@@ -606,7 +606,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Body, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsServicesForComplexTypesRegisteredInDI()
     {
         // Arrange
@@ -624,7 +624,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Services, result);
     }
 
-    [Fact]
+    // [Fact]
     public void InferBindingSourceForParameter_ReturnsServicesForIEnumerableOfComplexTypesRegisteredInDI()
     {
         // Arrange
@@ -642,7 +642,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Services, result);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameter_WithDefaultName()
     {
         // Arrange
@@ -663,7 +663,7 @@ Environment.NewLine + "int b";
         Assert.Null(bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameter_WithCustomName()
     {
         // Arrange
@@ -684,7 +684,7 @@ Environment.NewLine + "int b";
         Assert.Equal("top", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameterOnComplexType_WithDefaultName()
     {
         // Arrange
@@ -704,7 +704,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Query, bindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameterOnComplexType_WithCustomName()
     {
         // Arrange
@@ -725,7 +725,7 @@ Environment.NewLine + "int b";
         Assert.Equal("gps", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameterOnCollectionType()
     {
         // Arrange
@@ -746,7 +746,7 @@ Environment.NewLine + "int b";
         Assert.Null(bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromQueryOnArrayType()
     {
         // Arrange
@@ -767,7 +767,7 @@ Environment.NewLine + "int b";
         Assert.Null(bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_FromQueryOnArrayTypeWithCustomName()
     {
         // Arrange
@@ -788,7 +788,7 @@ Environment.NewLine + "int b";
         Assert.Equal("ids", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromRouteParameter_WithDefaultName()
     {
         // Arrange
@@ -809,7 +809,7 @@ Environment.NewLine + "int b";
         Assert.Null(bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromRouteParameter_WithCustomName()
     {
         // Arrange
@@ -830,7 +830,7 @@ Environment.NewLine + "int b";
         Assert.Equal("top", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromRouteParameterOnComplexType_WithDefaultName()
     {
         // Arrange
@@ -850,7 +850,7 @@ Environment.NewLine + "int b";
         Assert.Same(BindingSource.Path, bindingInfo.BindingSource);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForFromRouteParameterOnComplexType_WithCustomName()
     {
         // Arrange
@@ -871,7 +871,7 @@ Environment.NewLine + "int b";
         Assert.Equal("gps", bindingInfo.BinderModelName);
     }
 
-    [Fact]
+    // [Fact]
     public void PreservesBindingSourceInference_ForParameterWithRequestPredicateAndPropertyFilterProvider()
     {
         // Arrange

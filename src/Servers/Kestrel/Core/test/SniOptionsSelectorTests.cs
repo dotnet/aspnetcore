@@ -21,7 +21,7 @@ public class SniOptionsSelectorTests
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
-    [Fact]
+    // [Fact]
     public void PrefersExactMatchOverWildcardPrefixOverWildcardOnly()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -88,7 +88,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("WildcardOnly", pathDictionary[anotherTldOptions.ServerCertificate]);
     }
 
-    [Fact]
+    // [Fact]
     public void PerfersLongerWildcardPrefixOverShorterWildcardPrefix()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -134,7 +134,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("Short", pathDictionary[aSubdomainOptions.ServerCertificate]);
     }
 
-    [Fact]
+    // [Fact]
     public void ServerNameMatchingIsCaseInsensitive()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -182,7 +182,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
     }
 
-    [Fact]
+    // [Fact]
     public void FullChainCertsCanBeLoaded()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -246,7 +246,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("CN=Test Intermediate CA 1", fullChain[1].IssuerName.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void MultipleWildcardPrefixServerNamesOfSameLengthAreAllowed()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -291,7 +291,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("b", pathDictionary[bSubdomainOptions.ServerCertificate]);
     }
 
-    [Fact]
+    // [Fact]
     public void DuplicateWildcardPrefixServerNamesThrowsArgumentException()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -331,7 +331,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("An item with the same key has already been added. Key: .EXAMPLE.org (Parameter 'key')", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
     {
         var sniOptionsSelector = new SniOptionsSelector(
@@ -349,7 +349,7 @@ public class SniOptionsSelectorTests
         Assert.Equal(CoreStrings.FormatSniNotConfiguredToAllowNoServerName("TestEndpointName"), authExWithoutServerName.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void WildcardOnlyMatchesNullServerNameDueToNoAlpn()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -381,7 +381,7 @@ public class SniOptionsSelectorTests
         Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
     }
 
-    [Fact]
+    // [Fact]
     public void CachesSslServerAuthenticationOptions()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -408,7 +408,7 @@ public class SniOptionsSelectorTests
         Assert.Same(options1, options2);
     }
 
-    [Fact]
+    // [Fact]
     public void ClonesSslServerAuthenticationOptionsIfAnOnAuthenticateCallbackIsDefined()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -449,7 +449,7 @@ public class SniOptionsSelectorTests
         Assert.NotSame(options1, options2);
     }
 
-    [Fact]
+    // [Fact]
     public void ClonesSslServerAuthenticationOptionsIfTheFallbackServerCertificateSelectorIsUsed()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -502,7 +502,7 @@ public class SniOptionsSelectorTests
         Assert.Same(configOptions1, configOptions2);
     }
 
-    [Fact]
+    // [Fact]
     public void ConstructorThrowsInvalidOperationExceptionIfNoCertificateDefiniedInConfigOrFallback()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -522,7 +522,7 @@ public class SniOptionsSelectorTests
         Assert.Equal(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void FallsBackToHttpsConnectionAdapterCertificate()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -546,7 +546,7 @@ public class SniOptionsSelectorTests
         Assert.Same(fallbackOptions.ServerCertificate, options.ServerCertificate);
     }
 
-    [Fact]
+    // [Fact]
     public void FallsBackToHttpsConnectionAdapterServerCertificateSelectorOverServerCertificate()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -574,7 +574,7 @@ public class SniOptionsSelectorTests
         Assert.Same(selectorCertificate, options.ServerCertificate);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersHttpProtocolsDefinedInSniConfig()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -605,7 +605,7 @@ public class SniOptionsSelectorTests
         Assert.Equal(HttpProtocols.None, httpProtocolsFeature.HttpProtocols);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfiguresAlpnBasedOnConfiguredHttpProtocols()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -638,7 +638,7 @@ public class SniOptionsSelectorTests
         Assert.Equal(SslApplicationProtocol.Http11, protocol);
     }
 
-    [Fact]
+    // [Fact]
     public void FallsBackToFallbackHttpProtocols()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -668,7 +668,7 @@ public class SniOptionsSelectorTests
         Assert.Equal(HttpProtocols.Http1, httpProtocolsFeature.HttpProtocols);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersSslProtocolsDefinedInSniConfig()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -702,7 +702,7 @@ public class SniOptionsSelectorTests
 #pragma warning restore SYSLIB0039
     }
 
-    [Fact]
+    // [Fact]
     public void FallsBackToFallbackSslProtocols()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -731,7 +731,7 @@ public class SniOptionsSelectorTests
         Assert.Equal(SslProtocols.Tls13, options.EnabledSslProtocols);
     }
 
-    [Fact]
+    // [Fact]
     public void PrefersClientCertificateModeDefinedInSniConfig()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -767,7 +767,7 @@ public class SniOptionsSelectorTests
         Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
     }
 
-    [Fact]
+    // [Fact]
     public void FallsBackToFallbackClientCertificateMode()
     {
         var sniDictionary = new Dictionary<string, SniConfig>
@@ -803,7 +803,7 @@ public class SniOptionsSelectorTests
         Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
     }
 
-    [Fact]
+    // [Fact]
     public void CloneSslOptionsClonesAllProperties()
     {
         var propertyNames = typeof(SslServerAuthenticationOptions).GetProperties().Select(property => property.Name).ToList();

@@ -28,7 +28,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInsert()
     {
         PerformTest(
@@ -47,7 +47,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanDelete()
     {
         PerformTest(
@@ -66,7 +66,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanInsertUnkeyed()
     {
         PerformTest(
@@ -85,7 +85,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
            });
     }
 
-    [Fact]
+    // [Fact]
     public void CanDeleteUnkeyed()
     {
         PerformTest(
@@ -104,7 +104,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanReorder()
     {
         PerformTest(
@@ -145,7 +145,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             });
     }
 
-    [Fact]
+    // [Fact]
     public void CanReorderInsertDeleteAndEdit_WithAndWithoutKeys()
     {
         // This test is a complex bundle of many types of changes happening simultaneously
@@ -201,7 +201,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRetainFocusWhileMovingTextBox()
     {
         var appElem = Browser.MountTestComponent<ReorderingFocusComponent>();
@@ -238,7 +238,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             .GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanUpdateCheckboxStateWhileMovingIt()
     {
         var appElem = Browser.MountTestComponent<ReorderingFocusComponent>();

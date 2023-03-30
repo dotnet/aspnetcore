@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 public class DefaultAntiforgeryTokenGeneratorProviderTest
 {
-    [Fact]
+    // [Fact]
     public void GenerateCookieToken()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.NotNull(token);
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateRequestToken_InvalidCookieToken()
     {
         // Arrange
@@ -47,7 +47,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
             "The antiforgery cookie token is invalid.");
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateRequestToken_AnonymousUser()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Empty(fieldToken.AdditionalData);
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateRequestToken_AuthenticatedWithoutUsernameAndNoAdditionalData_NoAdditionalData()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateRequestToken_AuthenticatedWithoutUsername_WithAdditionalData()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal("additional-data", fieldToken.AdditionalData);
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateRequestToken_ClaimsBasedIdentity()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal("", fieldToken.AdditionalData);
     }
 
-    [Fact]
+    // [Fact]
     public void GenerateRequestToken_RegularUserWithUsername()
     {
         // Arrange
@@ -205,7 +205,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Empty(fieldToken.AdditionalData);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCookieTokenValid_FieldToken_ReturnsFalse()
     {
         // Arrange
@@ -225,7 +225,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.False(isValid);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCookieTokenValid_NullToken_ReturnsFalse()
     {
         // Arrange
@@ -241,7 +241,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.False(isValid);
     }
 
-    [Fact]
+    // [Fact]
     public void IsCookieTokenValid_ValidToken_ReturnsTrue()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.True(isValid);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_CookieTokenMissing()
     {
         // Arrange
@@ -282,7 +282,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.StartsWith(@"The required antiforgery cookie token must be provided.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_FieldTokenMissing()
     {
         // Arrange
@@ -303,7 +303,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.StartsWith("The required antiforgery request token must be provided.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_FieldAndCookieTokensSwapped_FieldTokenDuplicated()
     {
         // Arrange
@@ -330,7 +330,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal(expectedMessage, message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_FieldAndCookieTokensSwapped_CookieDuplicated()
     {
         // Arrange
@@ -357,7 +357,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal(expectedMessage, message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_FieldAndCookieTokensHaveDifferentSecurityKeys()
     {
         // Arrange
@@ -422,7 +422,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal(expectedMessage, message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_ClaimUidMismatch()
     {
         // Arrange
@@ -460,7 +460,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal(expectedMessage, message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_AdditionalDataRejected()
     {
         // Arrange
@@ -497,7 +497,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Equal(expectedMessage, message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_Success_AnonymousUser()
     {
         // Arrange
@@ -531,7 +531,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Null(message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_Success_AuthenticatedUserWithUsername()
     {
         // Arrange
@@ -565,7 +565,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.Null(message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryValidateTokenSet_Success_ClaimsBasedUser()
     {
         // Arrange

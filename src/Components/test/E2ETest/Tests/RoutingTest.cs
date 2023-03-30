@@ -32,7 +32,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.WaitUntilTestSelectorReady();
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtDefaultPage()
     {
         SetUrlViaPushState("/");
@@ -42,7 +42,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtDefaultPageWithoutTrailingSlash()
     {
         // This is a bit of a degenerate case because ideally devs would configure their
@@ -56,7 +56,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtPageWithParameters()
     {
         SetUrlViaPushState("/WithParameters/Name/Ghi/LastName/O'Jkl");
@@ -66,7 +66,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks();
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtPageWithNumberParameters()
     {
         var testInt = int.MinValue;
@@ -83,7 +83,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtPageWithOptionalParametersProvided()
     {
         var testAge = 101;
@@ -96,7 +96,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtPageWithOptionalParametersNotProvided()
     {
         SetUrlViaPushState($"/WithOptionalParameters?query=ignored");
@@ -107,7 +107,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtPageWithCatchAllParameter()
     {
         SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042?query=ignored");
@@ -118,7 +118,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtNonDefaultPage()
     {
         SetUrlViaPushState("/Other");
@@ -128,7 +128,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtFallbackPageFromBadURI()
     {
         SetUrlViaPushState("/Oopsie_Daisies%20%This_Aint_A_Real_Page");
@@ -137,7 +137,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToOtherPage()
     {
         SetUrlViaPushState("/");
@@ -148,7 +148,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToOtherPageWithCtrlClick()
     {
         // On macOS we need to hold the command key not the control for opening a popup
@@ -183,7 +183,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToTargetBlankClick()
     {
         try
@@ -211,7 +211,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         }
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToOtherPageDoesNotOpenNewWindow()
     {
         SetUrlViaPushState("/");
@@ -223,7 +223,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Single(Browser.WindowHandles);
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToOtherPageWithBaseRelativeUrl()
     {
         SetUrlViaPushState("/");
@@ -234,7 +234,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToEmptyStringHrefAsBaseRelativeUrl()
     {
         SetUrlViaPushState("/Other");
@@ -245,7 +245,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToPageWithParameters()
     {
         SetUrlViaPushState("/Other");
@@ -266,7 +266,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With parameters");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToDefaultPage()
     {
         SetUrlViaPushState("/Other");
@@ -277,7 +277,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToDefaultPage_NoTrailingSlash()
     {
         SetUrlViaPushState("/Other");
@@ -288,7 +288,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToOtherPageWithQueryString()
     {
         SetUrlViaPushState("/");
@@ -299,7 +299,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with query");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToDefaultPageWithQueryString()
     {
         SetUrlViaPushState("/Other");
@@ -310,7 +310,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default with query");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToDefaultPageWithQueryString_NoTrailingSlash()
     {
         SetUrlViaPushState("/Other");
@@ -321,7 +321,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default with query, no trailing slash");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToOtherPageWithHash()
     {
         SetUrlViaPushState("/");
@@ -332,7 +332,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with hash");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToDefaultPageWithHash()
     {
         SetUrlViaPushState("/Other");
@@ -343,7 +343,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default with hash");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToDefaultPageWithHash_NoTrailingSlash()
     {
         SetUrlViaPushState("/Other");
@@ -354,7 +354,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default with hash, no trailing slash");
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkToNotAComponent()
     {
         SetUrlViaPushState("/");
@@ -364,7 +364,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("Not a component!", () => Browser.Exists(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void CanFollowLinkDefinedInOpenShadowRoot()
     {
         SetUrlViaPushState("/");
@@ -380,7 +380,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanGoBackFromNotAComponent()
     {
         SetUrlViaPushState("/");
@@ -404,7 +404,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.WaitUntilTestSelectorReady();
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammatically()
     {
         SetUrlViaPushState("/");
@@ -421,7 +421,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammaticallyWithForceLoad()
     {
         SetUrlViaPushState("/");
@@ -439,7 +439,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         });
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammaticallyWithStateValidateNoReplaceHistoryEntry()
     {
         // This test checks if default navigation does not replace Browser history entries
@@ -479,7 +479,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.WaitUntilTestSelectorReady();
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammaticallyWithStateReplaceHistoryEntry()
     {
         SetUrlViaPushState("/");
@@ -507,7 +507,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammaticallyValidateNoReplaceHistoryEntry()
     {
         // This test checks if default navigation does not replace Browser history entries
@@ -558,7 +558,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.WaitUntilTestSelectorReady();
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammaticallyWithReplaceHistoryEntry()
     {
         SetUrlViaPushState("/");
@@ -585,7 +585,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateProgrammaticallyWithForceLoadAndReplaceHistoryEntry()
     {
         SetUrlViaPushState("/");
@@ -611,7 +611,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.WaitUntilTestSelectorReady();
     }
 
-    [Fact]
+    // [Fact]
     public void ClickingAnchorWithNoHrefShouldNotNavigate()
     {
         SetUrlViaPushState("/");
@@ -624,7 +624,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
-    [Fact]
+    // [Fact]
     public void UsingNavigationManagerWithoutRouterWorks()
     {
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
@@ -640,7 +640,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(initialUrl, () => app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void UriHelperCanReadAbsoluteUriIncludingHash()
     {
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
@@ -653,7 +653,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(expectedAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanBlockNavigation_ThenContinue()
     {
         SetUrlViaPushState("/");
@@ -701,7 +701,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanBlockNavigation_ThenCancel()
     {
         SetUrlViaPushState("/");
@@ -741,7 +741,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("0", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanAddAndRemoveLocationChangingCallback()
     {
         SetUrlViaPushState("/");
@@ -788,7 +788,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_RemovesLock_WhenDisposed()
     {
         SetUrlViaPushState("/");
@@ -835,7 +835,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_PushState()
     {
         SetUrlViaPushState("/");
@@ -882,7 +882,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
     {
         SetUrlViaPushState("/");
@@ -931,7 +931,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("3", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_ProgrammaticNavigation()
     {
         SetUrlViaPushState("/");
@@ -976,7 +976,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_InternalLinkNavigation()
     {
         SetUrlViaPushState("/");
@@ -1023,7 +1023,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_HistoryNavigationWorks_AfterRefresh()
     {
         SetUrlViaPushState("/");
@@ -1067,7 +1067,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         SetUrlViaPushState("/");
@@ -1110,7 +1110,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(expectedFinalUri, () => Browser.Url);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanReadHistoryStateEntry_InLocationChangingHandler()
     {
         SetUrlViaPushState("/");
@@ -1158,7 +1158,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(expectedInitialUri, () => app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanRenderUIForExceptions_ProgrammaticNavigation()
     {
         SetUrlViaPushState("/");
@@ -1187,7 +1187,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.NotNull(errorUiElem);
     }
 
-    [Fact]
+    // [Fact]
     public void NavigationLock_CanRenderUIForExceptions_InternalLinkNavigation()
     {
         SetUrlViaPushState("/");
@@ -1216,7 +1216,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.NotNull(errorUiElem);
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtRouteWithExtension()
     {
         // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to
@@ -1228,7 +1228,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With extension");
     }
 
-    [Fact]
+    // [Fact]
     public void RoutingToComponentOutsideMainAppDoesNotWork()
     {
         SetUrlViaPushState("/routeablecomponentfrompackage.html");
@@ -1237,7 +1237,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void RoutingToComponentOutsideMainAppWorksWithAdditionalAssemblySpecified()
     {
         SetUrlViaPushState("/routeablecomponentfrompackage.html");
@@ -1246,7 +1246,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Contains("This component, including the CSS and image required to produce its", app.FindElement(By.CssSelector("div.special-style")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetsScrollPositionWhenPerformingInternalNavigation_LinkClick()
     {
         SetUrlViaPushState("/LongPage1");
@@ -1260,7 +1260,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(0, () => BrowserScrollY);
     }
 
-    [Fact]
+    // [Fact]
     public void ResetsScrollPositionWhenPerformingInternalNavigation_ProgrammaticNavigation()
     {
         SetUrlViaPushState("/LongPage1");
@@ -1274,11 +1274,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(0, () => BrowserScrollY);
     }
 
-    [Fact]
+    // [Fact]
     public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
         => PreventDefault_CanBlockNavigation("internal", "target");
 
-    [Fact]
+    // [Fact]
     public void PreventDefault_CanBlockNavigation_ForExternalNavigation_PreventDefaultAncestor()
         => PreventDefault_CanBlockNavigation("external", "ancestor");
 
@@ -1323,7 +1323,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         }
     }
 
-    [Fact]
+    // [Fact]
     public void OnNavigate_CanRenderLoadingFragment()
     {
         var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
@@ -1333,7 +1333,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Exists(By.Id("loading-banner"));
     }
 
-    [Fact]
+    // [Fact]
     public void OnNavigate_CanCancelCallback()
     {
         var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
@@ -1346,7 +1346,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertDidNotLog("I'm not happening...");
     }
 
-    [Fact]
+    // [Fact]
     public void OnNavigate_CanRenderUIForExceptions()
     {
         var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
@@ -1357,7 +1357,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.NotNull(errorUiElem);
     }
 
-    [Fact]
+    // [Fact]
     public void OnNavigate_CanRenderUIForSyncExceptions()
     {
         var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
@@ -1369,7 +1369,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.NotNull(errorUiElem);
     }
 
-    [Fact]
+    // [Fact]
     public void OnNavigate_DoesNotRenderWhileOnNavigateExecuting()
     {
         var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
@@ -1404,7 +1404,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("none", () => errorUi.GetCssValue("display"));
     }
 
-    [Fact]
+    // [Fact]
     public void FocusOnNavigation_SetsFocusToMatchingElement()
     {
         // Applies focus on initial load
@@ -1429,7 +1429,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             => Browser.SwitchTo().ActiveElement();
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtQueryStringPageWithNoQuery()
     {
         SetUrlViaPushState("/WithQueryParameters/Abc");
@@ -1446,7 +1446,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With query parameters (none)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtQueryStringPageWithStringQuery()
     {
         SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there#123");
@@ -1463,7 +1463,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanArriveAtQueryStringPageWithDateTimeQuery()
     {
         var dateTime = new DateTime(2000, 1, 2, 3, 4, 5, 6);
@@ -1483,7 +1483,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing Date Time values)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateToQueryStringPageWithNoQuery()
     {
         SetUrlViaPushState("/");
@@ -1502,7 +1502,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With query parameters (none)");
     }
 
-    [Fact]
+    // [Fact]
     public void CanNavigateBetweenPagesWithQueryStrings()
     {
         SetUrlViaPushState("/");

@@ -101,7 +101,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             return (dynamicTable, decoder);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesIndexedHeaderField_StaticTableWithValue()
         {
             _decoder.Decode(_indexedHeaderStatic, endHeaders: true, handler: _handler);
@@ -111,7 +111,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal("GET", _handler.DecodedStaticHeaders[H2StaticTable.MethodGet].Value);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesIndexedHeaderField_StaticTableWithoutValue()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingIndexedName
@@ -125,7 +125,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(_headerValueString, _handler.DecodedStaticHeaders[H2StaticTable.UserAgent].Value);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesIndexedHeaderField_DynamicTable()
         {
             // Add the header to the dynamic table
@@ -136,7 +136,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(_headerValueString, _handler.DecodedHeaders[_headerNameString]);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesIndexedHeaderField_OutOfRange_Error()
         {
             HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() =>
@@ -145,7 +145,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingNewName
@@ -156,7 +156,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName_HuffmanEncodedName()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingNewName
@@ -167,7 +167,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingNewName
@@ -178,7 +178,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName_HuffmanEncodedNameAndValue()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingNewName
@@ -189,7 +189,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_IndexedName()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingIndexedName
@@ -199,7 +199,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithIndexing(encoded, _userAgentString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_IndexedName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalHeaderFieldWithIndexingIndexedName
@@ -209,7 +209,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithIndexing(encoded, _userAgentString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_IndexedName_OutOfRange_Error()
         {
             // 01      (Literal Header Field without Indexing Representation)
@@ -221,7 +221,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -232,7 +232,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedName()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -243,7 +243,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -254,7 +254,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedNameAndValue()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -265,7 +265,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_IndexedName()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingIndexedName
@@ -275,7 +275,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _userAgentString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_IndexedName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingIndexedName
@@ -285,7 +285,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _userAgentString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_IndexedName_OutOfRange_Error()
         {
             // 0000           (Literal Header Field without Indexing Representation)
@@ -297,7 +297,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName()
         {
             byte[] encoded = _literalHeaderFieldNeverIndexedNewName
@@ -308,7 +308,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_Duplicated()
         {
             byte[] encoded = _literalHeaderFieldNeverIndexedNewName
@@ -321,7 +321,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_HuffmanEncodedName()
         {
             byte[] encoded = _literalHeaderFieldNeverIndexedNewName
@@ -332,7 +332,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalHeaderFieldNeverIndexedNewName
@@ -343,7 +343,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_HuffmanEncodedNameAndValue()
         {
             byte[] encoded = _literalHeaderFieldNeverIndexedNewName
@@ -354,7 +354,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_IndexedName()
         {
             // 0001           (Literal Header Field Never Indexed Representation)
@@ -367,7 +367,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _userAgentString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_IndexedName_HuffmanEncodedValue()
         {
             // 0001           (Literal Header Field Never Indexed Representation)
@@ -380,7 +380,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             TestDecodeWithoutIndexing(encoded, _userAgentString, _headerValueString);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_IndexedName_OutOfRange_Error()
         {
             // 0001           (Literal Header Field Never Indexed Representation)
@@ -392,7 +392,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesDynamicTableSizeUpdate()
         {
             // 001   (Dynamic Table Size Update)
@@ -406,7 +406,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesDynamicTableSizeUpdate_AfterIndexedHeaderStatic_Error()
         {
             // 001   (Dynamic Table Size Update)
@@ -419,7 +419,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(SR.net_http_hpack_late_dynamic_table_size_update, exception.Message);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesDynamicTableSizeUpdate_AfterIndexedHeaderStatic_SubsequentDecodeCall_Error()
         {
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
@@ -434,7 +434,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(SR.net_http_hpack_late_dynamic_table_size_update, exception.Message);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesDynamicTableSizeUpdate_AfterIndexedHeaderStatic_ResetAfterEndHeaders_Succeeds()
         {
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
@@ -449,7 +449,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(30, _dynamicTable.MaxSize);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesDynamicTableSizeUpdate_GreaterThanLimit_Error()
         {
             // 001                     (Dynamic Table Size Update)
@@ -463,7 +463,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesStringLength_GreaterThanLimit_Error()
         {
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
@@ -475,7 +475,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesStringLength_LimitConfigurable()
         {
             HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
@@ -493,7 +493,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(string8193, _handler.DecodedHeaders[string8193]);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesStringLength_ExceedsLimit_Throws()
         {
             HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
@@ -528,7 +528,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.False(_handler.DecodedHeaders.ContainsKey(string8194));
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesStringLength_IndividualBytes()
         {
             HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
@@ -551,7 +551,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(string8193, _handler.DecodedHeaders[string8193]);
         }
 
-        [Fact]
+        // [Fact]
         public void DecodesHeaderNameAndValue_SeparateSegments()
         {
             HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);

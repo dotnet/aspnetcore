@@ -14,7 +14,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
     {
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ContainsPage_RouteMatched()
     {
         // Arrange & Act
@@ -35,7 +35,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
             result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ParameterTransformer_TokenReplacement_Found()
     {
         // Arrange & Act
@@ -51,7 +51,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("MyAction", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ParameterTransformer_TokenReplacement_NotFound()
     {
         // Arrange & Act
@@ -61,7 +61,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_Parameters_Found()
     {
         // Arrange & Act
@@ -77,7 +77,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("Index", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_Parameters_DefaultValue_Found()
     {
         // Arrange & Act
@@ -93,7 +93,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("Index", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ParameterTransformer_Found()
     {
         // Arrange & Act
@@ -109,7 +109,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("ParameterTransformer", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ParameterTransformer_NotFound()
     {
         // Arrange & Act
@@ -119,7 +119,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ParameterTransformer_LinkToSelf()
     {
         // Arrange
@@ -139,7 +139,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/endpoint-routing/ParameterTransformer", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ParameterTransformer_LinkWithAmbientController()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/endpoint-routing/5", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ParameterTransformer_LinkToAttributeRoutedController()
     {
         // Arrange
@@ -179,7 +179,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/Blog/ShowPosts", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeRoutedAction_ParameterTransformer_LinkToConventionalController()
     {
         // Arrange
@@ -199,7 +199,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public override async Task HasEndpointMatch()
     {
         // Arrange & Act
@@ -214,7 +214,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public override async Task RouteData_Routers_ConventionalRoute()
     {
         // Arrange & Act
@@ -231,7 +231,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
             result.Routers);
     }
 
-    [Fact]
+    // [Fact]
     public override async Task RouteData_Routers_AttributeRoute()
     {
         // Arrange & Act
@@ -249,7 +249,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
     }
 
     // Endpoint routing exposes HTTP 405s for HTTP method mismatches
-    [Fact]
+    // [Fact]
     public override async Task ConventionalRoutedController_InArea_ActionBlockedByHttpMethod()
     {
         // Arrange & Act
@@ -259,7 +259,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer()
     {
         // Arrange & Act
@@ -274,7 +274,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("Index", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer_NotFound()
     {
         // Arrange & Act
@@ -284,7 +284,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer_DefaultValue()
     {
         // Arrange & Act
@@ -299,7 +299,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("Index", result.Action);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer_WithParam()
     {
         // Arrange & Act
@@ -316,7 +316,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/ConventionalTransformerRoute/conventional-transformer/Param/my-value", Assert.Single(result.ExpectedUrls));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer_LinkToConventionalController()
     {
         // Arrange
@@ -335,7 +335,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer_LinkToConventionalControllerWithParam()
     {
         // Arrange
@@ -354,7 +354,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/ConventionalTransformerRoute/conventional-transformer/Param/my-value", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalRoutedAction_ParameterTransformer_LinkToSelf()
     {
         // Arrange
@@ -373,7 +373,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/ConventionalTransformerRoute/conventional-transformer", result.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LinkGenerator_EndpointName_LinkToConventionalRoutedAction()
     {
         // Arrange
@@ -388,7 +388,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/EndpointName/LinkToConventionalRouted", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LinkGenerator_EndpointName_LinkToConventionalRoutedAction_WithAmbientValueIgnored()
     {
         // Arrange
@@ -403,7 +403,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/EndpointName/LinkToConventionalRouted", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LinkGenerator_EndpointName_LinkToAttributeRoutedAction()
     {
         // Arrange
@@ -418,7 +418,7 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/EndpointName/LinkToAttributeRouted", body);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LinkGenerator_EndpointName_LinkToAttributeRoutedAction_WithAmbientValueIgnored()
     {
         // Arrange

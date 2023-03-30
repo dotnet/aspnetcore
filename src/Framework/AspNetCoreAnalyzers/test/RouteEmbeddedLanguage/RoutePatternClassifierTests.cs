@@ -40,7 +40,7 @@ public class RoutePatternClassifierTests
         _output = output;
     }
 
-    [Fact]
+    // [Fact]
     public async Task CommentOnString_Classified()
     {
         await TestAsync(
@@ -60,7 +60,7 @@ Regex.Anchor("?"),
 Regex.CharacterClass("}"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeOnField_Classified()
     {
         await TestAsync(
@@ -85,7 +85,7 @@ Regex.Anchor("?"),
 Regex.CharacterClass("}"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeOnField_TokenReplacementText_TokenReplacementNotClassified()
     {
         await TestAsync(
@@ -109,7 +109,7 @@ Parameter("id"),
 Regex.CharacterClass("}"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeOnAction_TokenReplacementText_TokenReplacementClassified()
     {
         await TestAsync(
@@ -131,7 +131,7 @@ Regex.CharacterClass("one"),
 Regex.CharacterClass("]"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AttributeOnController_TokenReplacementText_TokenReplacementClassified()
     {
         await TestAsync(

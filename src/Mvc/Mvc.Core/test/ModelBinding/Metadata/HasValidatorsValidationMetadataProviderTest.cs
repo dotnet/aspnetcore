@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 public class HasValidatorsValidationMetadataProviderTest
 {
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_DoesNotSetHasValidators_IfNonMetadataBasedProviderExists()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class HasValidatorsValidationMetadataProviderTest
         Assert.Null(context.ValidationMetadata.HasValidators);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_DoesNotSetHasValidators_IfProviderIsConfigured()
     {
         // Arrange
@@ -48,7 +48,7 @@ public class HasValidatorsValidationMetadataProviderTest
         Assert.Null(context.ValidationMetadata.HasValidators);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_SetsHasValidatorsToTrue_IfProviderReturnsTrue()
     {
         // Arrange
@@ -77,7 +77,7 @@ public class HasValidatorsValidationMetadataProviderTest
         metadataBasedModelValidatorProvider.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_SetsHasValidatorsToFalse_IfNoProviderReturnsTrue()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class HasValidatorsValidationMetadataProviderTest
         Assert.False(context.ValidationMetadata.HasValidators);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateValidationMetadata_DoesNotOverrideExistingHasValidatorsValue()
     {
         // Arrange

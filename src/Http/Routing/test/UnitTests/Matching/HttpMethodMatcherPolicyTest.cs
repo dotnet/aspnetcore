@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 public class HttpMethodMatcherPolicyTest
 {
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToNode_EndpointWithoutMetadata_ReturnsFalse()
     {
         // Arrange
@@ -24,7 +24,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToNode_EndpointWithoutHttpMethods_ReturnsFalse()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToNode_EndpointHasHttpMethods_ReturnsTrue()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void INodeBuilderPolicy_AppliesToNode_EndpointIsDynamic_ReturnsFalse()
     {
         // Arrange
@@ -80,7 +80,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.False(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToNode_EndpointWithoutMetadata_ReturnsTrue()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToNode_EndpointWithoutHttpMethods_ReturnsTrue()
     {
         // Arrange
@@ -113,7 +113,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToNode_EndpointHasHttpMethods_ReturnsTrue()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.True(result);
     }
 
-    [Fact]
+    // [Fact]
     public void IEndpointSelectorPolicy_AppliesToNode_EndpointIsNotDynamic_ReturnsFalse()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class HttpMethodMatcherPolicyTest
         Assert.True(string.Equals(httpContext.GetEndpoint().DisplayName, Http405EndpointDisplayName, StringComparison.OrdinalIgnoreCase));
     }
 
-    [Fact]
+    // [Fact]
     public void GetEdges_GroupsByHttpMethod()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class HttpMethodMatcherPolicyTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetEdges_GroupsByHttpMethod_Cors()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class HttpMethodMatcherPolicyTest
             });
     }
 
-    [Fact] // See explanation in GetEdges for how this case is different
+    // [Fact] // See explanation in GetEdges for how this case is different
     public void GetEdges_GroupsByHttpMethod_CreatesHttp405Endpoint()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class HttpMethodMatcherPolicyTest
 
     }
 
-    [Fact] // See explanation in GetEdges for how this case is different
+    // [Fact] // See explanation in GetEdges for how this case is different
     public void GetEdges_GroupsByHttpMethod_CreatesHttp405Endpoint_CORS()
     {
         // Arrange

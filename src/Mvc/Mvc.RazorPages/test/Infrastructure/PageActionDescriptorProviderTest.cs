@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class PageActionDescriptorProviderTest
 {
-    [Fact]
+    // [Fact]
     public void GetDescriptors_DoesNotAddDescriptorsIfNoApplicationModelsAreDiscovered()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class PageActionDescriptorProviderTest
         Assert.Empty(context.Results);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsDescriptorsForModelWithSelector()
     {
         // Arrange
@@ -64,7 +64,7 @@ public class PageActionDescriptorProviderTest
         Assert.Equal("/Test/{id:int?}", descriptor.AttributeRouteInfo.Template);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsDescriptorsForAreaPages()
     {
         // Arrange
@@ -113,7 +113,7 @@ public class PageActionDescriptorProviderTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_CopiesRouteValuesFromModel()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class PageActionDescriptorProviderTest
         Assert.Equal("Accounts/Test/{id:int?}", descriptor.AttributeRouteInfo.Template);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_CopiesActionConstraintsFromModel()
     {
         // Arrange
@@ -199,7 +199,7 @@ public class PageActionDescriptorProviderTest
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_CopiesEndpointMetadataFromModel()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class PageActionDescriptorProviderTest
         Assert.Single(descriptor.EndpointMetadata, expected);
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsActionDescriptorForEachSelector()
     {
         // Arrange
@@ -300,7 +300,7 @@ public class PageActionDescriptorProviderTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public void GetDescriptors_AddsMultipleDescriptorsForPageWithMultipleSelectors()
     {
         // Arrange

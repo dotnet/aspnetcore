@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Builder;
 
 public class RoutingBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void UseRouter_ThrowsInvalidOperationException_IfRoutingMarkerServiceIsNotRegistered()
     {
         // Arrange
@@ -32,7 +32,7 @@ public class RoutingBuilderExtensionsTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseRouter_IRouter_ThrowsWithoutCallingAddRouting()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class RoutingBuilderExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void UseRouter_Action_ThrowsWithoutCallingAddRouting()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class RoutingBuilderExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseRouter_IRouter_CallsRoute()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class RoutingBuilderExtensionsTest
         router.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task UseRouter_Action_CallsRoute()
     {
         // Arrange

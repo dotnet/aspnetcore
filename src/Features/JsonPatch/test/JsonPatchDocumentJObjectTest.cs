@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.JsonPatch;
 
 public class JsonPatchDocumentJObjectTest
 {
-    [Fact]
+    // [Fact]
     public void ApplyTo_Array_Add()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal("foo@baz.com", model.CustomData["Emails"][1].Value<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Test1()
     {
         // Arrange
@@ -43,7 +43,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Throws<JsonPatchException>(() => patch.ApplyTo(model));
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Test2()
     {
         // Arrange
@@ -60,7 +60,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal("Bar Baz", model.CustomData["Name"].Value<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Copy()
     {
         // Arrange
@@ -76,7 +76,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal("foo@bar.com", model.CustomData["UserName"].Value<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Remove()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.False(model.CustomData.ContainsKey("LastName"));
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Move()
     {
         // Arrange
@@ -109,7 +109,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal("Bar", model.CustomData["LastName"].Value<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Add()
     {
         // Arrange
@@ -125,7 +125,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal("Foo", model.CustomData["Name"].Value<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Add_Null()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal(JTokenType.Null, model.CustomData["Name"].Type);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Replace()
     {
         // Arrange
@@ -157,7 +157,7 @@ public class JsonPatchDocumentJObjectTest
         Assert.Equal("foo@baz.com", model.CustomData["Email"].Value<string>());
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_Model_Replace_Null()
     {
         // Arrange

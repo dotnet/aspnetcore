@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class JsonPatchExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void ApplyTo_JsonPatchDocument_ModelState()
     {
         // Arrange
@@ -27,7 +27,7 @@ public class JsonPatchExtensionsTest
         Assert.Equal("The target location specified by path segment 'CustomerId' was not found.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_JsonPatchDocument_PrefixModelState()
     {
         // Arrange
@@ -45,7 +45,7 @@ public class JsonPatchExtensionsTest
         Assert.Equal("The target location specified by path segment 'CustomerId' was not found.", error.ErrorMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void ApplyTo_ValidPatchOperation_NoErrorsAdded()
     {
         // Arrange

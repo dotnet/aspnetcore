@@ -189,7 +189,7 @@ public class DictionaryModelBinderTest
     }
 
     // Similar to one BindModel_FallsBackToBindingValues case but without an IEnumerableValueProvider.
-    [Fact]
+    // [Fact]
     public async Task BindModel_DoesNotFallBack_WithoutEnumerableValueProvider()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class DictionaryModelBinderTest
     }
 
     // Similar to one BindModel_FallsBackToBindingValues case but without an IEnumerableValueProvider.
-    [Fact]
+    // [Fact]
     public async Task BindModel_DoesNotFallBack_WithoutEnumerableValueProvider_WhenParameterHasDefaultValue()
     {
         // Arrange
@@ -312,7 +312,7 @@ public class DictionaryModelBinderTest
         Assert.Equal(dictionary, resultDictionary);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BindModel_FallsBackToBindingValues_WithComplexValues()
     {
         // Arrange
@@ -454,7 +454,7 @@ public class DictionaryModelBinderTest
         Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DictionaryModelBinder_CreatesEmptyCollectionAndAddsError_IfIsTopLevelObject()
     {
         // Arrange

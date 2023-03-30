@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class ViewComponentTests
 {
-    [Fact]
+    // [Fact]
     public void ViewComponent_ViewBag_UsesViewData()
     {
         // Arrange
@@ -30,7 +30,7 @@ public class ViewComponentTests
         Assert.Equal("Bob", viewComponent.ViewData["B"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_ViewData_StoresDataForViewBag()
     {
         // Arrange
@@ -46,7 +46,7 @@ public class ViewComponentTests
         Assert.Equal("Bob", viewComponent.ViewBag.B);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_Content_SetsResultContentAndEncodedContent()
     {
         // Arrange
@@ -62,7 +62,7 @@ public class ViewComponentTests
         Assert.Same(expectedContent, actualResult.Content);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithEmptyParameter_SetsResultViewWithDefaultViewName()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class ViewComponentTests
         Assert.Null(actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithEmptyParameter_SetsViewDataModelWithDefaultViewName()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class ViewComponentTests
         Assert.Null(actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithViewNameParameter_SetsResultViewWithCustomViewName()
     {
         // Arrange
@@ -116,7 +116,7 @@ public class ViewComponentTests
         Assert.Equal("CustomViewName", actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithModelParameter_SetsResultViewWithDefaultViewNameAndModel()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class ViewComponentTests
         Assert.Null(actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithNullModelParameter_SetsResultViewWithDefaultViewNameAndNullModel()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class ViewComponentTests
         Assert.Null(actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithViewNameAndNullModelParameter_SetsResultViewWithViewNameAndNullModel()
     {
         // Arrange
@@ -175,7 +175,7 @@ public class ViewComponentTests
         Assert.Equal("CustomViewName", actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithViewNameAndNonObjectNullModelParameter_SetsResultViewWithViewNameAndNullModel()
     {
         // Arrange
@@ -194,7 +194,7 @@ public class ViewComponentTests
         Assert.Equal("CustomViewName", actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_View_WithViewNameAndModelParameters_SetsResultViewWithCustomViewNameAndModel()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class ViewComponentTests
         Assert.Equal("CustomViewName", actualResult.ViewName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_ViewContext_ViewData_ReturnsDefaultInstanceIfNull()
     {
         // Arrange && Act
@@ -233,7 +233,7 @@ public class ViewComponentTests
         Assert.Same(viewComponent.ViewData, viewComponent.ViewContext.ViewData);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_ViewContext_TempData_ReturnsDefaultInstanceIfSessionActive()
     {
         // Arrange

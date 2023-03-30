@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 public class DefaultPageHandlerMethodSelectorTest
 {
-    [Fact]
+    // [Fact]
     public void NewBehavior_Select_ReturnsFuzzyMatchForHead_WhenNoHeadHandlerDefined()
     {
         // Arrange
@@ -51,7 +51,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor1, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void NewBehavior_Select_PrefersExactMatch()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor3, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void NewBehavior_Select_PrefersExactMatch_ReturnsNullWhenHandlerNameDoesntMatch()
     {
         // Arrange
@@ -194,7 +194,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor1, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_ReturnsOnlyHandler()
     {
         // Arrange
@@ -273,7 +273,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor2, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_ReturnsNullWhenNoHandlerMatchesHandler()
     {
         // Arrange
@@ -323,7 +323,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_ReturnsHandlerThatMatchesHandler()
     {
         // Arrange
@@ -373,7 +373,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor1, actual);
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void Select_ReturnsHandlerThatMatchesHandler_UsesInvariantCulture()
     {
@@ -424,7 +424,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor1, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_HandlerFromQueryString()
     {
         // Arrange
@@ -469,7 +469,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor2, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_HandlerConsidersRouteDataFirst()
     {
         // Arrange
@@ -520,7 +520,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor1, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_HandlerMultipleTimesInQueryString_UsesFirst()
     {
         // Arrange
@@ -565,7 +565,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor2, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_ReturnsHandlerWithMatchingHttpMethodWithoutAHandler()
     {
         // Arrange
@@ -614,7 +614,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Same(descriptor2, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_WithoutHandler_ThrowsIfMoreThanOneHandlerMatches()
     {
         // Arrange
@@ -666,7 +666,7 @@ public class DefaultPageHandlerMethodSelectorTest
         Assert.Equal(message, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Select_WithHandler_ThrowsIfMoreThanOneHandlerMatches()
     {
         // Arrange

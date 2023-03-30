@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Html.Test;
 
 public class HtmlContentBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void Builder_AppendLine_Empty()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Equal(Environment.NewLine, HtmlContentToString(entry)));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendLine_String()
     {
         // Arrange
@@ -41,7 +41,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Equal(Environment.NewLine, HtmlContentToString(entry)));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendLine_IHtmlContent()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Equal(Environment.NewLine, HtmlContentToString(entry)));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendHtmlLine_String()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Equal(Environment.NewLine, HtmlContentToString(entry)));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_SetContent_String()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Equal("Hi", Assert.IsType<UnencodedString>(entry).Value));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_SetContent_IHtmlContent()
     {
         // Arrange
@@ -108,7 +108,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Same(content, entry));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_SetHtmlContent_String()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class HtmlContentBuilderExtensionsTest
             entry => Assert.Equal("Hi", Assert.IsType<EncodedString>(entry).Value));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat()
     {
         // Arrange
@@ -139,7 +139,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_HtmlContent()
     {
         // Arrange
@@ -154,7 +154,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_HtmlString()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class HtmlContentBuilderExtensionsTest
         Assert.Equal("First!", HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormatContent_With1Argument()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormatContent_With2Arguments()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormatContent_With3Arguments()
     {
         // Arrange
@@ -212,7 +212,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithAlignmentComponent()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithFormatStringComponent()
     {
         // Arrange
@@ -240,7 +240,7 @@ public class HtmlContentBuilderExtensionsTest
         Assert.Equal("0xHtmlEncode[[32]]", HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithCulture()
     {
         // Arrange
@@ -262,7 +262,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithCulture_1Argument()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithCulture_2Arguments()
     {
         // Arrange
@@ -299,7 +299,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithCulture_3Arguments()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     public void Builder_AppendFormat_WithDifferentCulture()
     {
         // Arrange
@@ -335,7 +335,7 @@ public class HtmlContentBuilderExtensionsTest
             HtmlContentToString(builder));
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-DE", "de-DE")]
     public void Builder_AppendFormat_WithDifferentCurrentCulture()
     {

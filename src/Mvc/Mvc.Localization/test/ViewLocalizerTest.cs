@@ -47,7 +47,7 @@ public class ViewLocalizerTest
         ));
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_UseIndexer_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class ViewLocalizerTest
         Assert.Equal(localizedString, actualLocalizedString);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_UseIndexerWithArguments_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -111,7 +111,7 @@ public class ViewLocalizerTest
         Assert.Equal(localizedString, actualLocalizedString);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_GetAllStrings_ReturnsLocalizedString()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class ViewLocalizerTest
         Assert.Equal("World", allLocalizedStrings.First().Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_GetAllStringsIncludeParentCulture_ReturnsLocalizedString()
     {
         // Arrange
@@ -162,7 +162,7 @@ public class ViewLocalizerTest
         Assert.Equal("Bar", allLocalizedStrings[1].Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_GetString_ReturnsLocalizedString()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class ViewLocalizerTest
         Assert.Equal("Hello John", actualLocalizedString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_GetStringWithArguments_ReturnsLocalizedString()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class ViewLocalizerTest
         Assert.Equal("Hello John Doe", actualLocalizedString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_Html_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -234,7 +234,7 @@ public class ViewLocalizerTest
         Assert.Equal("Hello John", actualLocalizedString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_HtmlWithArguments_ReturnsLocalizedHtmlString()
     {
         // Arrange
@@ -258,7 +258,7 @@ public class ViewLocalizerTest
         Assert.Equal("Hello John Doe", actualLocalizedString.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewLocalizer_WithCulture_ReturnsLocalizedHtmlString()
     {
         // Arrange

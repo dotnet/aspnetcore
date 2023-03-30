@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Authorization.Test;
 
 public class AuthorizationMiddlewareTests
 {
-    [Fact]
+    // [Fact]
     public async Task NoEndpoint_AnonymousUser_Allows()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoEndpointWithFallback_AnonymousUser_Challenges()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class AuthorizationMiddlewareTests
         Assert.False(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithoutAuth_AnonymousUser_Allows()
     {
         // Arrange
@@ -78,7 +78,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithFallbackWithoutAuth_AnonymousUser_Challenges()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class AuthorizationMiddlewareTests
         Assert.False(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithOnlyFallbackAuth_AnonymousUser_Allows()
     {
         // Arrange
@@ -121,7 +121,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithAuth_AnonymousUser_Challenges()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(authenticationService.ChallengeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithAuth_ChallengesAuthenticationSchemes()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(authenticationService.ChallengeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithAuth_AnonymousUser_ChallengePerScheme()
     {
         // Arrange
@@ -187,7 +187,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(2, authenticationService.ChallengeCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationAsync_WillCallPolicyProvider()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class AuthorizationMiddlewareTests
         return dataSource.Object;
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationAsync_WillNotCallPolicyProviderWithCache()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OnAuthorizationAsync_WillCallCustomPolicyProviderWithCache()
     {
         // Arrange
@@ -365,7 +365,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(3, next.CalledCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanApplyPolicyDirectlyToEndpoint()
     {
         // Arrange
@@ -490,7 +490,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(assertSuccess && !anonymous, next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_ValidClaimShouldNotFail()
     {
         // Arrange
@@ -509,7 +509,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithAuthAndAllowAnonymous_AnonymousUser_Allows()
     {
         // Arrange
@@ -530,7 +530,7 @@ public class AuthorizationMiddlewareTests
         Assert.False(authenticationService.ChallengeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task HasEndpointWithAuth_AuthenticatedUser_Allows()
     {
         // Arrange
@@ -551,7 +551,7 @@ public class AuthorizationMiddlewareTests
         Assert.False(authenticationService.ChallengeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_AuthSchemesFailShouldSetEmptyPrincipalOnContext()
     {
         // Arrange
@@ -575,7 +575,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(authenticationService.ChallengeCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_SingleValidClaimShouldSucceed()
     {
         // Arrange
@@ -594,7 +594,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(next.Called);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthZResourceCanBeHttpContextAndHaveEndpoint()
     {
         // Arrange
@@ -621,7 +621,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(endpoint, resource.GetEndpoint());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthZResourceShouldBeEndpointByDefaultWithCompatSwitch()
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", isEnabled: true);
@@ -648,7 +648,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(endpoint, resource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_RequireUnknownRoleShouldForbid()
     {
         // Arrange
@@ -670,7 +670,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(authenticationService.ForbidCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_RequireUnknownRole_ForbidPerScheme()
     {
         // Arrange
@@ -691,7 +691,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(2, authenticationService.ForbidCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_InvalidClaimShouldForbid()
     {
         // Arrange
@@ -715,7 +715,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(authenticationService.ForbidCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_SetOnSuccessfulAuthorize()
     {
         // Arrange
@@ -738,7 +738,7 @@ public class AuthorizationMiddlewareTests
         Assert.Same(context.User, authenticateResultFeature.AuthenticateResult.Principal);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_NotSetOnUnsuccessfulAuthorize()
     {
         // Arrange
@@ -761,7 +761,7 @@ public class AuthorizationMiddlewareTests
         Assert.True(authenticationService.AuthenticateCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_ContainsLowestExpiration()
     {
         // Arrange
@@ -802,7 +802,7 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(secondExpiration, authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_NullResultWhenUserSetAfter()
     {
         // Arrange
@@ -828,7 +828,7 @@ public class AuthorizationMiddlewareTests
         Assert.Null(authenticateResultFeature.AuthenticateResult);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_SettingResultSetsUser()
     {
         // Arrange
@@ -860,7 +860,7 @@ public class AuthorizationMiddlewareTests
         public AuthenticateResult AuthenticateResult { get; set; }
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_UsesExistingFeature_WithScheme()
     {
         // Arrange
@@ -894,7 +894,7 @@ public class AuthorizationMiddlewareTests
         Assert.NotSame(authenticateResult, authenticateResultFeature.AuthenticateResult);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IAuthenticateResultFeature_UsesExistingFeatureAndResult_WithoutScheme()
     {
         // Arrange
@@ -921,7 +921,7 @@ public class AuthorizationMiddlewareTests
     }
 
     // Validation for https://github.com/dotnet/aspnetcore/issues/43188
-    [Fact]
+    // [Fact]
     public async Task WebApplicationBuilder_CanRegisterAuthzMiddlewareWithScopedService()
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions()

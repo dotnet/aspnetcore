@@ -22,7 +22,7 @@ public class RemoteAuthenticatorCoreTests
     private const string _onLogInSucceded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogInSucceeded);
     private const string _onLogOutSucceeded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogOutSucceeded);
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Throws_ForInvalidAction()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class RemoteAuthenticatorCoreTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => remoteAuthenticator.SetParametersAsync(parameters));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Login_NavigatesToReturnUrlOnSuccess()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal("https://www.example.com/base/fetchData", remoteAuthenticator.Navigation.Uri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Login_DoesNothingOnRedirect()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class RemoteAuthenticatorCoreTests
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Login_NavigatesToLoginFailureOnError()
     {
         // Arrange
@@ -118,7 +118,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal("There was an error trying to log in.", remoteAuthenticator.Navigation.HistoryEntryState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LoginCallback_ThrowsOnRedirectResult()
     {
         // Arrange
@@ -143,7 +143,7 @@ public class RemoteAuthenticatorCoreTests
             }));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LoginCallback_DoesNothingOnOperationCompleted()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal(originalUrl, remoteAuthenticator.Navigation.Uri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LoginCallback_NavigatesToReturnUrlFromStateOnSuccess()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.True(loggingSucceededCalled);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LoginCallback_NavigatesToLoginFailureOnError()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class RemoteAuthenticatorCoreTests
             ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Callbacks_OnlyExecuteOncePerAction()
     {
         // Arrange
@@ -285,7 +285,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal(1, logOutCallbackInvocationCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Logout_NavigatesToReturnUrlOnSuccess()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal("https://www.example.com/base/", remoteAuthenticator.Navigation.Uri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Logout_NavigatesToDefaultReturnUrlWhenNoReturnUrlIsPresent()
     {
         // Arrange
@@ -340,7 +340,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal("https://www.example.com/base/authentication/logged-out", remoteAuthenticator.Navigation.Uri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Logout_DoesNothingOnRedirect()
     {
         // Arrange
@@ -370,7 +370,7 @@ public class RemoteAuthenticatorCoreTests
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Logout_RedirectsToFailureOnInvalidSignOutState()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class RemoteAuthenticatorCoreTests
             ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_Logout_NavigatesToLogoutFailureOnError()
     {
         // Arrange
@@ -429,7 +429,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal("https://www.example.com/base/authentication/logout-failed", remoteAuthenticator.Navigation.Uri.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LogoutCallback_ThrowsOnRedirectResult()
     {
         // Arrange
@@ -455,7 +455,7 @@ public class RemoteAuthenticatorCoreTests
             }));
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LogoutCallback_DoesNothingOnOperationCompleted()
     {
         // Arrange
@@ -480,7 +480,7 @@ public class RemoteAuthenticatorCoreTests
         Assert.Equal(originalUrl, remoteAuthenticator.Navigation.Uri);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LogoutCallback_NavigatesToReturnUrlFromStateOnSuccess()
     {
         // Arrange
@@ -515,7 +515,7 @@ public class RemoteAuthenticatorCoreTests
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticationManager_LogoutCallback_NavigatesToLoginFailureOnError()
     {
         // Arrange

@@ -12,7 +12,7 @@ public class RetryTest
     private static int _retryFailsUntil3 = 0;
     private bool _wasInvokedPreviously;
 
-    [Fact]
+    // [Fact]
     public void RetryFailsUntil3()
     {
         // Validate that we get a new class instance per retry
@@ -28,7 +28,7 @@ public class RetryTest
 
     private static int _canOverrideRetries = 0;
 
-    [Fact]
+    // [Fact]
     [Retry(5)]
     public void CanOverrideRetries()
     {

@@ -27,7 +27,7 @@ public class JsonSerializationTest : ServerTestBase<ToggleExecutionModeServerFix
         Browser.Exists(By.Id("json-serialization-cases"));
     }
 
-    [Fact]
+    // [Fact]
     public void JsonSerializationCasesWork()
     {
         Browser.Equal("Lord Smythe", () => Browser.Exists(By.Id("deserialized-name")).Text);

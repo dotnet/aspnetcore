@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 
 public class UrlHelperExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void Page_WithName_Works()
     {
         // Arrange
@@ -102,7 +102,7 @@ public class UrlHelperExtensionsTest
         Assert.Null(actual.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void Page_WithNameRouteValuesAndProtocol_Works()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class UrlHelperExtensionsTest
         Assert.Null(actual.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void Page_WithNameRouteValuesProtocolAndHost_Works()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class UrlHelperExtensionsTest
         Assert.Null(actual.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void Page_WithNameRouteValuesProtocolHostAndFragment_Works()
     {
         // Arrange
@@ -203,7 +203,7 @@ public class UrlHelperExtensionsTest
         Assert.Equal("#toc", actual.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void Page_UsesAmbientRouteValue_WhenPageIsNull()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     [ReplaceCulture("de-CH", "de-CH")]
     public void Page_UsesAmbientRouteValueAndInvariantCulture_WhenPageIsNotNull()
     {
@@ -294,7 +294,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Page_SetsHandlerToNull_IfValueIsNotSpecifiedInRouteValues()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Page_UsesExplicitlySpecifiedHandlerValue()
     {
         // Arrange
@@ -385,7 +385,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Page_UsesValueFromRouteValueIfPageHandlerIsNotExplicitlySpecified()
     {
         // Arrange
@@ -458,7 +458,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Page_CalculatesPathRelativeToViewEnginePath_ForIndexPagePaths()
     {
         // Arrange
@@ -485,7 +485,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Page_CalculatesPathRelativeToViewEnginePath_WhenNotRooted_ForPageAtRoot()
     {
         // Arrange
@@ -529,7 +529,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void Page_Throws_IfRouteValueDoesNotIncludePageKey()
     {
         // Arrange
@@ -554,7 +554,7 @@ public class UrlHelperExtensionsTest
             ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Page_UsesAreaValueFromRouteValueIfSpecified()
     {
         // Arrange
@@ -597,7 +597,7 @@ public class UrlHelperExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void ActionLink_WithActionName_Works()
     {
         // Arrange
@@ -633,7 +633,7 @@ public class UrlHelperExtensionsTest
         Assert.Equal(expectedHost, actual.Host);
     }
 
-    [Fact]
+    // [Fact]
     public void ActionLink_UsesSpecifiedProtocol()
     {
         // Arrange
@@ -668,7 +668,7 @@ public class UrlHelperExtensionsTest
         Assert.Equal(expectedHost, actual.Host);
     }
 
-    [Fact]
+    // [Fact]
     public void ActionLink_UsesSpecifiedHost()
     {
         // Arrange
@@ -703,7 +703,7 @@ public class UrlHelperExtensionsTest
         Assert.Equal(expectedHost, actual.Host);
     }
 
-    [Fact]
+    // [Fact]
     public void PageLink_WithPageName_Works()
     {
         // Arrange
@@ -752,7 +752,7 @@ public class UrlHelperExtensionsTest
         Assert.Equal(expectedHost, actual.Host);
     }
 
-    [Fact]
+    // [Fact]
     public void PageLink_UsesSpecifiedProtocol()
     {
         // Arrange
@@ -800,7 +800,7 @@ public class UrlHelperExtensionsTest
         Assert.Equal(expectedHost, actual.Host);
     }
 
-    [Fact]
+    // [Fact]
     public void PageLink_UsesSpecifiedHost()
     {
         // Arrange

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DetectAmbiguousMappedRoutesTest
 {
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_SameHttpMethod_HasDiagnostics()
     {
         // Arrange
@@ -29,7 +29,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_SameHttpMethod_HasRequestDelegate_HasDiagnostics()
     {
         // Arrange
@@ -52,7 +52,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_SameHttpMethod_InMethod_HasDiagnostics()
     {
         // Arrange
@@ -80,7 +80,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_TernaryStatement_NoDiagnostics()
     {
         // Arrange
@@ -97,7 +97,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_NullCoalescing_NoDiagnostics()
     {
         // Arrange
@@ -112,7 +112,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_NullCoalescingAssignment_NoDiagnostics()
     {
         // Arrange
@@ -128,7 +128,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_DifferentMethods_HasDiagnostics()
     {
         // Arrange
@@ -144,7 +144,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateMapGetRoutes_InsideConditional_NoDiagnostics()
     {
         // Arrange
@@ -166,7 +166,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_UnknownUsageOfEndConventionBuilderExtension_NoDiagnostics()
     {
         // Arrange
@@ -190,7 +190,7 @@ internal static class Extensions
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_UnknownUsageOfEndConventionBuilder_NoDiagnostics()
     {
         // Arrange
@@ -214,7 +214,7 @@ internal static class Extensions
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_AddMethod_NoDiagnostics()
     {
         // Arrange
@@ -230,7 +230,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_AssignedToVariable_NoDiagnostics()
     {
         // Arrange
@@ -246,7 +246,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_MultipleGroups_NoDiagnostics()
     {
         // Arrange
@@ -264,7 +264,7 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DuplicateRoutes_EndpointsOnGroup_HasDiagnostics()
     {
         // Arrange

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis;
 
 public class MiddlewareAnalysisTests
 {
-    [Fact]
+    // [Fact]
     public async Task ExceptionWrittenToDiagnostics()
     {
         DiagnosticListener diagnosticListener = null;

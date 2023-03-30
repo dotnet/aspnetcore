@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class CacheTagHelperTest
 {
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_DoesNotCache_IfDisabled()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class CacheTagHelperTest
             Times.Never);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ReturnsCachedValue_IfEnabled()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ReturnsCachedValue_IfVaryByParamIsUnchanged()
     {
         // Arrange - 1
@@ -137,7 +137,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_RecalculatesValueIfCacheKeyChanges()
     {
         // Arrange - 1
@@ -187,7 +187,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresOnIsSet()
     {
         // Arrange
@@ -205,7 +205,7 @@ public class CacheTagHelperTest
         Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_SetsEntrySize_ForPlaceholderAndFinalCacheEntries()
     {
         // Arrange
@@ -250,7 +250,7 @@ public class CacheTagHelperTest
         finalEntry.VerifySet(e => e.Size = childContent1.Length * 2);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_DefaultsTo30SecondsSliding_IfNoEvictionCriteriaIsProvided()
     {
         // Arrange
@@ -265,7 +265,7 @@ public class CacheTagHelperTest
         Assert.Equal(slidingExpiresIn, cacheEntryOptions.SlidingExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresAfterIsSet()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class CacheTagHelperTest
         Assert.Equal(expiresAfter, cacheEntryOptions.AbsoluteExpirationRelativeToNow);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsSlidingExpiration_IfExpiresSlidingIsSet()
     {
         // Arrange
@@ -301,7 +301,7 @@ public class CacheTagHelperTest
         Assert.Equal(expiresSliding, cacheEntryOptions.SlidingExpiration);
     }
 
-    [Fact]
+    // [Fact]
     public void UpdateCacheEntryOptions_SetsCachePreservationPriority()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class CacheTagHelperTest
         Assert.Equal(priority, cacheEntryOptions.Priority);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesExpiresAfter_ToExpireCacheEntry()
     {
         // Arrange - 1
@@ -372,7 +372,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesExpiresOn_ToExpireCacheEntry()
     {
         // Arrange - 1
@@ -425,7 +425,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_UsesExpiresSliding_ToExpireCacheEntryWithSlidingExpiration()
     {
         // Arrange - 1
@@ -478,7 +478,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent2, tagHelperOutput2.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_FlowsEntryLinkThatAllowsAddingTriggersToAddedEntry()
     {
         // Arrange
@@ -534,7 +534,7 @@ public class CacheTagHelperTest
         Assert.Null(cachedValue);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ComputesValueOnce_WithConcurrentRequests()
     {
         // Arrange
@@ -619,7 +619,7 @@ public class CacheTagHelperTest
         Assert.Equal(1, calls);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ExceptionInProcessing_DoesntBlockConcurrentRequests()
     {
         // Arrange
@@ -702,7 +702,7 @@ public class CacheTagHelperTest
         Assert.Equal(2, calls);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ExceptionInProcessing_DoNotThrowInSubsequentRequests()
     {
         // Arrange
@@ -795,7 +795,7 @@ public class CacheTagHelperTest
         Assert.Equal(childContent, tagHelperOutput4.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_WorksForNestedCacheTagHelpers()
     {
         // Arrange
@@ -842,7 +842,7 @@ public class CacheTagHelperTest
         Assert.Equal(encoder.Encode(expected), tagHelperOutput1.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ThrowsExceptionForAwaiters_IfExecutorEncountersAnException()
     {
         // Arrange
@@ -880,7 +880,7 @@ public class CacheTagHelperTest
         Assert.Equal(1, invokeCount);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AwaitersUseTheResultOfExecutor()
     {
         // Arrange

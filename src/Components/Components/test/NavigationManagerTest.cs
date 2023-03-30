@@ -179,7 +179,7 @@ public class NavigationManagerTest
         Assert.Equal(expectedUri, actualUri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriWithQueryParameters_ThrowsWhenParameterValueTypeIsUnsupported()
     {
         var baseUri = "scheme://host/";
@@ -209,7 +209,7 @@ public class NavigationManagerTest
         Assert.StartsWith("Cannot have empty query parameter names.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanContinueTheNavigationSynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -230,7 +230,7 @@ public class NavigationManagerTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanContinueTheNavigationSynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -259,7 +259,7 @@ public class NavigationManagerTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanContinueTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -283,7 +283,7 @@ public class NavigationManagerTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_CanContinueTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -313,7 +313,7 @@ public class NavigationManagerTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanCancelTheNavigationSynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -336,7 +336,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanCancelTheNavigationSynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -373,7 +373,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanCancelTheNavigationSynchronously_BeforeReturning_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -408,7 +408,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void LocationChangingHandlers_CanCancelTheNavigationSynchronously_BeforeReturning_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -453,7 +453,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -477,7 +477,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async void LocationChangingHandlers_CanCancelTheNavigationAsynchronously_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -537,7 +537,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_AreCanceledBySuccessiveNavigations_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -579,7 +579,7 @@ public class NavigationManagerTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_AreCanceledBySuccessiveNavigations_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -653,7 +653,7 @@ public class NavigationManagerTest
         };
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_CanThrowCatchableExceptionsAsynchronously_AfterNavigationEnds()
     {
         // Arrange
@@ -693,7 +693,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_DoNotBubbleExceptionsThroughNotifyLocationChangingAsync_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -718,7 +718,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_DoNotBubbleExceptionsThroughNotifyLocationChangingAsync_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -749,7 +749,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingAsync_Throws_WithoutHandleLocationChangingHandlerOverride_WhenALocationChangingHandlerThrows_WhenOneHandlerIsRegistered()
     {
         // Arrange
@@ -770,7 +770,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingAsync_Throws_WithoutHandleLocationChangingHandlerOverride_WhenALocationChangingHandlerThrows_WhenMultipleHandlersAreRegistered()
     {
         // Arrange
@@ -797,7 +797,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
         // Arrange

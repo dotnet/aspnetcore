@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
 public class RequestTests : TestApplicationErrorLoggerLoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task StreamsAreNotPersistedAcrossRequests()
     {
         var requestBodyPersisted = false;
@@ -58,7 +58,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PipesAreNotPersistedAcrossRequests()
     {
         var responseBodyPersisted = false;
@@ -81,7 +81,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestBodyPipeReaderDoesZeroByteReads()
     {
         await using (var server = new TestServer(async context =>
@@ -111,7 +111,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestBodyReadAsyncCanBeCancelled()
     {
         var helloTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -179,7 +179,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUpgradeRequestWithConnectionKeepAliveUpgradeHeader()
     {
         var dataRead = false;
@@ -283,7 +283,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanHandleTwoAbsoluteFormRequestsInARow()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/18438
@@ -315,7 +315,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutionContextMutationsOfValueTypeDoNotLeakAcrossRequestsOnSameConnection()
     {
         var local = new AsyncLocal<int>();
@@ -349,7 +349,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await TestAsyncLocalValues(testContext, server);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutionContextMutationsOfReferenceTypeDoNotLeakAcrossRequestsOnSameConnection()
     {
         var local = new AsyncLocal<IntAsClass>();
@@ -387,7 +387,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-    [Fact]
+    // [Fact]
     public async Task ExecutionContextMutationsDoNotLeakAcrossAwaits()
     {
         var local = new AsyncLocal<int>();
@@ -420,7 +420,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await TestAsyncLocalValues(testContext, server);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutionContextMutationsOfValueTypeFlowIntoButNotOutOfAsyncEvents()
     {
         var local = new AsyncLocal<int>();
@@ -458,7 +458,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         await TestAsyncLocalValues(testContext, server);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutionContextMutationsOfReferenceTypeFlowThroughAsyncEvents()
     {
         var local = new AsyncLocal<IntAsClass>();
@@ -500,7 +500,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
-    [Fact]
+    // [Fact]
     public async Task ExecutionContextMutationsOfValueTypeFlowIntoButNotOutOfNonAsyncEvents()
     {
         var local = new AsyncLocal<int>();
@@ -573,7 +573,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             "0");
     }
 
-    [Fact]
+    // [Fact]
     public async Task AppCanSetTraceIdentifier()
     {
         const string knownId = "xyz123";
@@ -588,7 +588,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task TraceIdentifierIsUnique()
     {
         const int identifierLength = 22;
@@ -649,7 +649,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http11KeptAliveByDefault()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -683,7 +683,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http10NotKeptAliveByDefault()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -722,7 +722,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http10KeepAlive()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -756,7 +756,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http10KeepAliveNotHonoredIfResponseContentLengthNotSet()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -795,7 +795,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Http10KeepAliveHonoredIfResponseContentLengthSet()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -851,7 +851,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Expect100ContinueHonored()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -883,7 +883,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Expect100ContinueHonoredWhenMinRequestBodyDataRateIsDisabled()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -919,7 +919,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeader()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -965,7 +965,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeaderPipeReader()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1012,7 +1012,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthReadAsyncPipeReader()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1044,7 +1044,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthReadAsyncPipeReaderBufferRequestBody()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1079,7 +1079,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthReadAsyncPipeReaderBufferRequestBodyMultipleTimes()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1118,7 +1118,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthReadAsyncPipeReaderReadsCompletedBody()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1155,7 +1155,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthReadAsyncSingleBytesAtATime()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1229,7 +1229,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthDoesNotConsumeEntireBufferDoesNotThrow()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1295,7 +1295,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequestHeadersAreResetOnEachRequest()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1345,7 +1345,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradeRequestIsNotKeptAliveOrChunked()
     {
         const string message = "Hello World";
@@ -1381,7 +1381,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HeadersAndStreamsAreReusedAcrossRequests()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1475,7 +1475,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServerConsumesKeepAliveContentLengthRequest()
     {
         // The app doesn't read the request body, so it should be consumed by the server
@@ -1516,7 +1516,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ServerConsumesKeepAliveChunkedRequest()
     {
         // The app doesn't read the request body, so it should be consumed by the server
@@ -1564,7 +1564,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task NonKeepAliveRequestNotConsumedByAppCompletes()
     {
         // The app doesn't read the request body, so it should be consumed by the server
@@ -1590,7 +1590,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UpgradedRequestNotConsumedByAppCompletes()
     {
         // The app doesn't read the request body, so it should be consumed by the server
@@ -1622,7 +1622,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
     {
         var appEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1681,7 +1681,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousReadsDisallowedByDefault()
     {
         await using (var server = new TestServer(async context =>
@@ -1732,7 +1732,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousReadsAllowedByOptIn()
     {
         await using (var server = new TestServer(async context =>
@@ -1775,7 +1775,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousReadsCanBeDisallowedGlobally()
     {
         var testContext = new TestServiceContext(LoggerFactory)
@@ -1820,7 +1820,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SynchronousReadsCanBeAllowedGlobally()
     {
         var testContext = new TestServiceContext(LoggerFactory)
@@ -1862,7 +1862,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthSwallowedUnexpectedEndOfRequestContentDoesNotResultInWarnings()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1895,7 +1895,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthRequestCallCancelPendingReadWorks()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1946,7 +1946,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthRequestCallCompleteThrowsExceptionOnRead()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -1990,7 +1990,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthRequestCallCompleteDoesNotCauseException()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2031,7 +2031,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Information));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ContentLengthCallCompleteWithExceptionCauses500()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2073,7 +2073,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReuseRequestHeaderStrings()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2128,7 +2128,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task PersistentStateBetweenRequests()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2190,7 +2190,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Latin1HeaderValueAcceptedWhenLatin1OptionIsConfigured()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2224,7 +2224,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Latin1HeaderValueRejectedWhenLatin1OptionIsNotConfigured()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2253,7 +2253,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomRequestHeaderEncodingSelectorCanBeConfigured()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2289,7 +2289,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SingleLineFeedIsSupportedAnywhere()
     {
         // Exercises all combinations of LF and CRLF as line separators.

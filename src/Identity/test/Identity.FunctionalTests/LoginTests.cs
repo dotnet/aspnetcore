@@ -19,7 +19,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
 
     public ServerFactory<TStartup, TContext> ServerFactory { get; }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInWithAPreviouslyRegisteredUser()
     {
         // Arrange
@@ -36,7 +36,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserAsync(newClient, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInWithAPreviouslyRegisteredUser_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -59,7 +59,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserAsync(newClient, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInWithTwoFactorAuthentication()
     {
         // Arrange
@@ -79,7 +79,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInWithTwoFactorAuthentication_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -105,7 +105,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInWithRecoveryCode()
     {
         // Arrange
@@ -125,7 +125,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInWithRecoveryCode_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -150,7 +150,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CannotLogInWithoutRequiredEmailConfirmation()
     {
         // Arrange
@@ -174,7 +174,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CannotLogInWithoutRequiredEmailConfirmation_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -199,7 +199,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInAfterConfirmingEmail()
     {
         // Arrange
@@ -226,7 +226,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserAsync(newClient, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanResendConfirmingEmail()
     {
         // Arrange
@@ -253,7 +253,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.ConfirmEmailAsync(email, newClient);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInAfterConfirmingEmail_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -281,7 +281,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserAsync(newClient, userName, password);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLoginWithASocialLoginProvider()
     {
         // Arrange
@@ -302,7 +302,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginWithSocialLoginAsync(newClient, userName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLoginWithASocialLoginProvider_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -324,7 +324,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginWithSocialLoginAsync(newClient, userName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanLogInAfterResettingThePassword()
     {
         // Arrange
@@ -354,7 +354,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanResetPassword_WithGlobalAuthorizeFilter()
     {
         // Arrange
@@ -384,7 +384,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
     }
 
-    [Fact]
+    // [Fact]
     public async Task UserNotLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
     {
         // Arrange

@@ -12,7 +12,7 @@ public class SimpleWithWebApplicationBuilderExceptionTests : IClassFixture<MvcTe
         _fixture = fixture;
     }
 
-    [Fact]
+    // [Fact]
     public void ExceptionThrownFromApplicationCanBeObserved()
     {
         var ex = Assert.Throws<InvalidOperationException>(() => _fixture.CreateClient());

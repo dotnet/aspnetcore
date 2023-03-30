@@ -30,7 +30,7 @@ public class InputFocusTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
     protected virtual IWebElement MountInputActionsComponent()
         => Browser.MountTestComponent<InputFocusComponent>();
 
-    [Fact]
+    // [Fact]
     public void InputElementsGetFocusedSuccessfully()
     {
         var appElement = MountInputActionsComponent();

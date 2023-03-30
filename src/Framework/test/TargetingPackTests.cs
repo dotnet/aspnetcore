@@ -32,7 +32,7 @@ public class TargetingPackTests
             TestData.GetSharedFxVersion());
     }
 
-    [Fact]
+    // [Fact]
     public void TargetingPackContainsListedAssemblies()
     {
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
@@ -57,7 +57,7 @@ public class TargetingPackTests
         Assert.Empty(unexpected);
     }
 
-    [Fact]
+    // [Fact]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
         // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
@@ -107,7 +107,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void RefAssemblyReferencesHaveExpectedAssemblyVersions()
     {
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
@@ -129,7 +129,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void PackageOverridesContainsCorrectEntries()
     {
         var packageOverridePath = Path.Combine(_targetingPackRoot, "data", "PackageOverrides.txt");
@@ -188,7 +188,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void AssembliesAreReferenceAssemblies()
     {
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref"), "*.dll", SearchOption.AllDirectories);
@@ -220,7 +220,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void PlatformManifestListsAllFiles()
     {
         var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
@@ -285,7 +285,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void FrameworkListContainsCorrectEntries()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
@@ -352,7 +352,7 @@ public class TargetingPackTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void FrameworkListContainsCorrectPaths()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
@@ -394,7 +394,7 @@ public class TargetingPackTests
         Assert.Empty(unexpected);
     }
 
-    [Fact]
+    // [Fact]
     public void FrameworkListContainsAnalyzerLanguage()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");

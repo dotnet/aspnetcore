@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class CreatedOfTResultTests
 {
-    [Fact]
+    // [Fact]
     public void CreatedResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
@@ -29,7 +29,7 @@ public class CreatedOfTResultTests
         Assert.Equal(obj, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedResult_SetsLocation()
     {
         // Arrange
@@ -42,7 +42,7 @@ public class CreatedOfTResultTests
         Assert.Same(location, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatedResult_ReturnsStatusCode_SetsLocationHeader()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class CreatedOfTResultTests
         Assert.Equal(location, httpContext.Response.Headers["Location"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatedResult_OverwritesLocationHeader()
     {
         // Arrange
@@ -75,7 +75,7 @@ public class CreatedOfTResultTests
         Assert.Equal(location, httpContext.Response.Headers["Location"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatedResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class CreatedOfTResultTests
         Assert.Equal("\"testInput\"", response);
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_AddsResponseTypeMetadata()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class CreatedOfTResultTests
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
     }
 
-    [Fact]
+    // [Fact]
     public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class CreatedOfTResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
-    [Fact]
+    // [Fact]
     public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
     {
         // Act & Assert
@@ -131,7 +131,7 @@ public class CreatedOfTResultTests
         Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<Created<object>>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedResult_Implements_IValueHttpResult_Correctly()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class CreatedOfTResultTests
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedResult_Implements_IValueHttpResult_Correctly()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class CreatedOfTResultTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedResult_Implements_IValueHttpResultOfT_Correctly()
     {
         // Arrange

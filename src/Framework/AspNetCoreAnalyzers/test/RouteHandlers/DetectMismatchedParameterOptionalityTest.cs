@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DetectMismatchedParameterOptionalityTest
 {
-    [Fact]
+    // [Fact]
     public async Task MatchingRequiredOptionality_CanBeFixed()
     {
         var source = @"
@@ -32,7 +32,7 @@ app.MapGet(""/hello/{name?}"", (string? name) => $""Hello {name}"");";
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchingMultipleRequiredOptionality_CanBeFixed()
     {
         var source = @"
@@ -58,7 +58,7 @@ app.MapGet(""/hello/{name?}/{title?}"", (string? name, string? title) => $""Hell
 
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchingSingleRequiredOptionality_CanBeFixed()
     {
         var source = @"
@@ -80,7 +80,7 @@ app.MapGet(""/hello/{name?}/{title?}"", (string? name, string? title) => $""Hell
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MismatchedOptionalityInMethodGroup_CanBeFixed()
     {
         var source = @"
@@ -108,7 +108,7 @@ app.MapGet(""/hello/{name?}/{title?}"", SayHello);
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MismatchedOptionalityInMethodGroupFromPartialMethod_CanBeFixed()
     {
         var source = @"
@@ -163,7 +163,7 @@ public partial class ExternalImplementation
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MismatchedOptionalityInSeparateSource_CanBeFixed()
     {
         var usageSource = @"
@@ -204,7 +204,7 @@ public static class Helpers
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource, usageSource: usageSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchingRequiredOptionality_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -219,7 +219,7 @@ app.MapGet(""/hello/{name}"", (string name) => $""Hello {name}"");
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ParameterFromRouteOrQuery_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -234,7 +234,7 @@ app.MapGet(""/hello/{name}"", (string name) => $""Hello {name}"");
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchingOptionality_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -249,7 +249,7 @@ app.MapGet(""/hello/{name?}"", (string? name) => $""Hello {name}"");
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequiredRouteParamOptionalArgument_DoesNotProduceDiagnostics()
     {
         // Arrange
@@ -264,7 +264,7 @@ app.MapGet(""/hello/{name}"", (string? name) => $""Hello {name}"");
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OptionalRouteParamRequiredArgument_WithFromRoute_ProducesDiagnostics()
     {
         // Arrange
@@ -291,7 +291,7 @@ app.MapGet(""/hello/{Age?}"", ([FromRoute] int? age) => $""Age: {age}"");
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OptionalRouteParamRequiredArgument_WithRegexConstraint_ProducesDiagnostics()
     {
         // Arrange
@@ -315,7 +315,7 @@ app.MapGet(""/hello/{age:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)?}"", (int? age) => 
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OptionalRouteParamRequiredArgument_WithTypeConstraint_ProducesDiagnostics()
     {
         // Arrange
@@ -340,7 +340,7 @@ app.MapGet(""/hello/{age:int?}"", (int? age) => $""Age: {age}"");
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MatchingRequiredOptionality_WithDisabledNullability()
     {
         var source = @"

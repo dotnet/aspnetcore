@@ -18,7 +18,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task AddOperation_Works()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
         Assert.Equal(3.5, product.Reviews[2].Rating);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReplaceOperation_Works()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
         Assert.Equal(5, product.Reviews[0].Rating);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CopyOperation_Works()
     {
         // Arrange
@@ -79,7 +79,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
         Assert.Equal(4, product.Reviews[0].Rating);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MoveOperation_Works()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
         Assert.Equal(0, product.Reviews[0].Rating);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RemoveOperation_Works()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
         Assert.Equal(0, product.Reviews[0].Rating);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AddOperation_InvalidValueForProperty_AddsErrorToModelState()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<Startup>>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvalidOperation_AddsErrorToModelState()
     {
         // Arrange

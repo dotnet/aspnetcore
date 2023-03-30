@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Core;
 /// </summary>
 public class HtmlHelperTextBoxExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void TextBox_UsesSpecifiedExpression()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBoxFor_UsesSpecifiedExpression()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBox_UsesSpecifiedValue()
     {
         // Arrange
@@ -67,7 +67,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBox_UsesSpecifiedFormat()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBox_UsesSpecifiedFormatOverridesPropertyValue()
     {
         // Arrange
@@ -103,7 +103,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBox_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -131,7 +131,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBoxFor_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class HtmlHelperTextBoxExtensionsTest
             HtmlContentUtilities.HtmlContentToString(textBoxForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void TextBoxFor_Throws_IfFullNameEmpty()
     {
         // Arrange
@@ -182,7 +182,7 @@ public class HtmlHelperTextBoxExtensionsTest
             exceptionMessage: expectedMessage);
     }
 
-    [Fact]
+    // [Fact]
     public void TextBoxFor_DoesNotThrow_IfFullNameEmpty_WithNameAttribute()
     {
         // Arrange

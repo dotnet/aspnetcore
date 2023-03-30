@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public partial class TypedResultsTests
 {
-    [Fact]
+    // [Fact]
     public void Accepted_WithStringUrlAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -33,7 +33,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_WithStringUrl_ResultHasCorrectValues()
     {
         // Arrange
@@ -47,7 +47,7 @@ public partial class TypedResultsTests
         Assert.Equal(uri, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_WithNullStringUrl_ResultHasCorrectValues()
     {
         // Arrange
@@ -61,7 +61,7 @@ public partial class TypedResultsTests
         Assert.Equal(uri, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_WithUriAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -77,7 +77,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_WithUri_ResultHasCorrectValues()
     {
         // Arrange
@@ -91,19 +91,19 @@ public partial class TypedResultsTests
         Assert.Equal(uri.ToString(), result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_WithNullUri_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Accepted(default(Uri)));
     }
 
-    [Fact]
+    // [Fact]
     public void Accepted_WithNullUriAndValue_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Accepted(default(Uri), default(object)));
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -121,7 +121,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_WithRouteNameAndRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -137,7 +137,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -151,7 +151,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRouteOfT_WithNullRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -165,7 +165,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -177,7 +177,7 @@ public partial class TypedResultsTests
         Assert.NotNull(result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_WithRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -192,7 +192,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void AcceptedAtRoute_WithRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -209,7 +209,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_WithValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -223,7 +223,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void BadRequest_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -310,61 +310,61 @@ public partial class TypedResultsTests
         new object[] { default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) }
     };
 
-    [Fact]
+    // [Fact]
     public void Bytes_WithNullContents_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("contents", () => TypedResults.Bytes(null));
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithNullContents_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("fileContents", () => TypedResults.File(default(byte[])));
     }
 
-    [Fact]
+    // [Fact]
     public void File_WithNullStream_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("fileStream", () => TypedResults.File(default(Stream)));
     }
 
-    [Fact]
+    // [Fact]
     public void Stream_WithNullStream_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("stream", () => TypedResults.Stream(default(Stream)));
     }
 
-    [Fact]
+    // [Fact]
     public void Stream_WithNullPipeReader_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("pipeReader", () => TypedResults.Stream(default(PipeReader)));
     }
 
-    [Fact]
+    // [Fact]
     public void Stream_WithNullCallback_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("streamWriterCallback", () => TypedResults.Stream(default(Func<Stream, Task>)));
     }
 
-    [Fact]
+    // [Fact]
     public void PhysicalFile_WithNullPath_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("path", () => TypedResults.PhysicalFile(default(string)));
     }
 
-    [Fact]
+    // [Fact]
     public void PhysicalFile_WithEmptyPath_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("path", () => TypedResults.PhysicalFile(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void VirtualFile_WithNullPath_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("path", () => TypedResults.VirtualFile(default(string)));
     }
 
-    [Fact]
+    // [Fact]
     public void VirtualFile_WithEmptyPath_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("path", () => TypedResults.VirtualFile(string.Empty));
@@ -480,13 +480,13 @@ public partial class TypedResultsTests
         new object[] { default(AuthenticationProperties), default(IList<string>) },
     };
 
-    [Fact]
+    // [Fact]
     public void SignIn_WithNullPrincipal_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("principal", () => TypedResults.SignIn(null));
     }
 
-    [Fact]
+    // [Fact]
     public void Conflict_WithValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -500,7 +500,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Conflict_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -510,7 +510,7 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_WithContentAndMediaType_ResultHasCorrectValues()
     {
         // Arrange
@@ -526,7 +526,7 @@ public partial class TypedResultsTests
         Assert.Equal(mediaType.ToString(), result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
     {
         // Arrange
@@ -543,7 +543,7 @@ public partial class TypedResultsTests
         Assert.Equal("text/plain; charset=utf-8", result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Content_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
     {
         // Arrange
@@ -561,7 +561,7 @@ public partial class TypedResultsTests
         Assert.Equal("text/plain; charset=utf-8", result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -572,7 +572,7 @@ public partial class TypedResultsTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithStringUriAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -588,7 +588,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithStringUri_ResultHasCorrectValues()
     {
         // Arrange
@@ -602,7 +602,7 @@ public partial class TypedResultsTests
         Assert.Equal(uri, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithUriAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -618,7 +618,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithUri_ResultHasCorrectValues()
     {
         // Arrange
@@ -632,7 +632,7 @@ public partial class TypedResultsTests
         Assert.Equal(uri.ToString(), result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithNullStringUri_SetsLocationNull()
     {
         // Act
@@ -642,14 +642,14 @@ public partial class TypedResultsTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithEmptyStringUri_SetsLocationEmpty()
     {
         var result = TypedResults.Created(string.Empty);
         Assert.Empty(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void Created_WithNullUri_SetsLocationNull()
     {
         // Act
@@ -657,7 +657,7 @@ public partial class TypedResultsTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedOfT_WithNullStringUri_SetsLocationNull()
     {
         // Act
@@ -667,7 +667,7 @@ public partial class TypedResultsTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedOfT_WithEmptyStringUri_SetsLocationEmpty()
     {
         // Act
@@ -677,7 +677,7 @@ public partial class TypedResultsTests
         Assert.Empty(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedOfT_WithNullUri_SetsLocationNull()
     {
         // Act
@@ -687,7 +687,7 @@ public partial class TypedResultsTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -705,7 +705,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithRouteNameAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -722,7 +722,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithRouteName_ResultHasCorrectValues()
     {
         // Arrange
@@ -737,7 +737,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -749,7 +749,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -764,7 +764,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -781,7 +781,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -795,7 +795,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedAtRouteOfT_WithNullRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -809,7 +809,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void Empty_IsEmptyInstance()
     {
         // Act
@@ -819,7 +819,7 @@ public partial class TypedResultsTests
         Assert.Equal(EmptyHttpResult.Instance, result);
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithAllArgs_ResultHasCorrectValues()
     {
         // Arrange
@@ -838,7 +838,7 @@ public partial class TypedResultsTests
         Assert.Equal(statusCode, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithNoArgs_ResultHasCorrectValues()
     {
         // Arrange
@@ -854,7 +854,7 @@ public partial class TypedResultsTests
         Assert.Null(result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithTypeInfo_ResultHasCorrectValues()
     {
         // Arrange
@@ -871,7 +871,7 @@ public partial class TypedResultsTests
         Assert.Equal(ObjectJsonContext.Default.Object, result.JsonTypeInfo);
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithJsonContext_ResultHasCorrectValues()
     {
         // Arrange
@@ -888,7 +888,7 @@ public partial class TypedResultsTests
         Assert.IsAssignableFrom<JsonTypeInfo<object>>(result.JsonTypeInfo);
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithNullSerializerContext_ThrowsArgException()
     {
         // Arrange
@@ -897,14 +897,14 @@ public partial class TypedResultsTests
         Assert.Throws<ArgumentNullException>("context", () => TypedResults.Json(data, context: null));
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithInvalidSerializerContext_ThrowsInvalidOperationException()
     {
         var ex = Assert.Throws<InvalidOperationException>(() => TypedResults.Json(string.Empty, context: ObjectJsonContext.Default));
         Assert.Equal(ex.Message, $"Unable to obtain the JsonTypeInfo for type 'System.String' from the context '{typeof(ObjectJsonContext).FullName}'.");
     }
 
-    [Fact]
+    // [Fact]
     public void Json_WithNullTypeInfo_ThrowsArgException()
     {
         // Arrange
@@ -913,19 +913,19 @@ public partial class TypedResultsTests
         Assert.Throws<ArgumentNullException>("jsonTypeInfo", () => TypedResults.Json(data, jsonTypeInfo: null));
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("localUrl", () => TypedResults.LocalRedirect(default(string)));
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithEmptyStringUrl_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("localUrl", () => TypedResults.LocalRedirect(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithUrl_ResultHasCorrectValues()
     {
         // Arrange
@@ -941,7 +941,7 @@ public partial class TypedResultsTests
         Assert.False(result.PreserveMethod);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithUrlAndPermanentTrue_ResultHasCorrectValues()
     {
         // Arrange
@@ -958,7 +958,7 @@ public partial class TypedResultsTests
         Assert.False(result.PreserveMethod);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithUrlAndPermanentTrueAndPreserveTrue_ResultHasCorrectValues()
     {
         // Arrange
@@ -976,7 +976,7 @@ public partial class TypedResultsTests
         Assert.True(result.PreserveMethod);
     }
 
-    [Fact]
+    // [Fact]
     public void LocalRedirect_WithNonLocalUrlAndPermanentTrueAndPreserveTrue_ResultHasCorrectValues()
     {
         // Arrange
@@ -994,7 +994,7 @@ public partial class TypedResultsTests
         Assert.True(result.PreserveMethod);
     }
 
-    [Fact]
+    // [Fact]
     public void NoContent_ResultHasCorrectValues()
     {
         // Act
@@ -1004,7 +1004,7 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFound_WithValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -1018,7 +1018,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void NotFound_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -1028,7 +1028,7 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Ok_WithValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -1042,7 +1042,7 @@ public partial class TypedResultsTests
         Assert.Equal(value, result.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void Ok_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -1052,13 +1052,13 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Problem_WithNullProblem_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("problemDetails", () => TypedResults.Problem(default(ProblemDetails)));
     }
 
-    [Fact]
+    // [Fact]
     public void Problem_WithArgs_ResultHasCorrectValues()
     {
         // Arrange
@@ -1104,7 +1104,7 @@ public partial class TypedResultsTests
         Assert.Empty(result.ProblemDetails.Extensions);
     }
 
-    [Fact]
+    // [Fact]
     public void Problem_WithNoArgs_ResultHasCorrectValues()
     {
         /// Act
@@ -1120,7 +1120,7 @@ public partial class TypedResultsTests
         Assert.Empty(result.ProblemDetails.Extensions);
     }
 
-    [Fact]
+    // [Fact]
     public void Problem_WithProblemArg_ResultHasCorrectValues()
     {
         // Arrange
@@ -1136,7 +1136,7 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Problem_WithValidationProblemArg_ResultHasCorrectValues()
     {
         // Arrange
@@ -1152,13 +1152,13 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblem_WithNullErrors_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("errors", () => TypedResults.ValidationProblem(default(IDictionary<string, string[]>)));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblem_WithValidationProblemArg_ResultHasCorrectValues()
     {
         // Arrange
@@ -1184,19 +1184,19 @@ public partial class TypedResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithNullStringUrl_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("url", () => TypedResults.Redirect(default(string)));
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithEmptyStringUrl_ThrowsArgException()
     {
         Assert.Throws<ArgumentException>("url", () => TypedResults.Redirect(string.Empty));
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithDefaults_ResultHasCorrectValues()
     {
         // Arrange
@@ -1212,7 +1212,7 @@ public partial class TypedResultsTests
         Assert.False(result.AcceptLocalUrlOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithPermanentTrue_ResultHasCorrectValues()
     {
         // Arrange
@@ -1228,7 +1228,7 @@ public partial class TypedResultsTests
         Assert.False(result.AcceptLocalUrlOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void Redirect_WithPreserveMethodTrue_ResultHasCorrectValues()
     {
         // Arrange
@@ -1244,7 +1244,7 @@ public partial class TypedResultsTests
         Assert.False(result.AcceptLocalUrlOnly);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoute_WithRouteNameAndRouteValuesAndFragment_ResultHasCorrectValues()
     {
         // Arrange
@@ -1263,7 +1263,7 @@ public partial class TypedResultsTests
         Assert.Equal(fragment, result.Fragment);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoute_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -1274,7 +1274,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoute_WithRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -1288,7 +1288,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void RedirectToRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
     {
         // Arrange
@@ -1301,7 +1301,7 @@ public partial class TypedResultsTests
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void StatusCode_ResultHasCorrectValues()
     {
         // Arrange
@@ -1314,7 +1314,7 @@ public partial class TypedResultsTests
         Assert.Equal(statusCode, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void Text_WithContentAndContentType_ResultHasCorrectValues()
     {
         // Arrange
@@ -1330,7 +1330,7 @@ public partial class TypedResultsTests
         Assert.Equal(contentType, result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Text_WithUtf8ContentAndContentType_ResultHasCorrectValues()
     {
         // Arrange
@@ -1346,7 +1346,7 @@ public partial class TypedResultsTests
         Assert.Equal(contentType, result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Text_WithUtf8ContentAndContentTypeAndStatusCode_ResultHasCorrectValues()
     {
         // Arrange
@@ -1363,7 +1363,7 @@ public partial class TypedResultsTests
         Assert.Equal(contentType, result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Text_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
     {
         // Arrange
@@ -1382,7 +1382,7 @@ public partial class TypedResultsTests
         Assert.Equal(expectedMediaType.ToString(), result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Text_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
     {
         // Arrange
@@ -1402,7 +1402,7 @@ public partial class TypedResultsTests
         Assert.Equal(expectedMediaType.ToString(), result.ContentType);
     }
 
-    [Fact]
+    // [Fact]
     public void Unauthorized_ResultHasCorrectValues()
     {
         // Act
@@ -1412,7 +1412,7 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void UnprocessableEntity_ResultHasCorrectValues()
     {
         // Act

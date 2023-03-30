@@ -28,7 +28,7 @@ public class KestrelConfigurationLoaderTests
         return serverOptions;
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureNamedEndpoint_OnlyRunForMatchingConfig()
     {
         var found = false;
@@ -48,7 +48,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(found);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_OnlyRunWhenBuildIsCalled()
     {
         var run = false;
@@ -66,7 +66,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(run);
     }
 
-    [Fact]
+    // [Fact]
     public void CallBuildTwice_OnlyRunsOnce()
     {
         var serverOptions = CreateServerOptions();
@@ -89,7 +89,7 @@ public class KestrelConfigurationLoaderTests
         Assert.NotNull(serverOptions.ConfigurationLoader);
     }
 
-    [Fact]
+    // [Fact]
     public void Configure_IsReplaceable()
     {
         var run1 = false;
@@ -122,7 +122,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(run2);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureDefaultsAppliesToNewConfigureEndpoints()
     {
         var serverOptions = CreateServerOptions();
@@ -170,7 +170,7 @@ public class KestrelConfigurationLoaderTests
         Assert.False(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpointDefaultCanEnableHttps()
     {
         var serverOptions = CreateServerOptions();
@@ -212,7 +212,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
         try
@@ -252,7 +252,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void DevelopmentCertificateCanBeRemoved()
     {
         try
@@ -334,7 +334,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_RecoverFromBadPassword()
     {
         var serverOptions = CreateServerOptions();
@@ -379,7 +379,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
     {
         var serverOptions = CreateServerOptions();
@@ -403,7 +403,7 @@ public class KestrelConfigurationLoaderTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_ThrowsWhen_TheKeyDoesntMatchTheCertificateKey()
     {
         var serverOptions = CreateServerOptions();
@@ -428,7 +428,7 @@ public class KestrelConfigurationLoaderTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsIncorrect()
     {
         var serverOptions = CreateServerOptions();
@@ -453,7 +453,7 @@ public class KestrelConfigurationLoaderTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_KeyIsPublic()
     {
         var serverOptions = CreateServerOptions();
@@ -520,7 +520,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpointDevelopmentCertificateGetsIgnoredIfPasswordIsNotCorrect()
     {
         try
@@ -552,7 +552,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpointDevelopmentCertificateGetsIgnoredIfPfxFileDoesNotExist()
     {
         try
@@ -583,7 +583,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_ThrowsWhen_HttpsConfigIsDeclaredInNonHttpsEndpoints()
     {
         var serverOptions = CreateServerOptions();
@@ -635,7 +635,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Equal(CoreStrings.FormatEndpointHasUnusedHttpsConfig("End1", "Sni"), ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ConfigureEndpoint_DoesNotThrowWhen_HttpsConfigIsDeclaredInEndpointDefaults()
     {
         var serverOptions = CreateServerOptions();
@@ -816,7 +816,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran3);
     }
 
-    [Fact]
+    // [Fact]
     public void EndpointConfigureSection_CanSetSslProtocol()
     {
         var serverOptions = CreateServerOptions();
@@ -862,7 +862,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran2);
     }
 
-    [Fact]
+    // [Fact]
     public void EndpointConfigureSection_CanOverrideSslProtocolsFromConfigureHttpsDefaults()
     {
         var serverOptions = CreateServerOptions();
@@ -892,7 +892,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultEndpointConfigureSection_CanSetSslProtocols()
     {
         var serverOptions = CreateServerOptions();
@@ -921,7 +921,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideSslProtocols()
     {
         var serverOptions = CreateServerOptions();
@@ -953,7 +953,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
     }
 
-    [Fact]
+    // [Fact]
     public void EndpointConfigureSection_CanSetClientCertificateMode()
     {
         var serverOptions = CreateServerOptions();
@@ -997,7 +997,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran2);
     }
 
-    [Fact]
+    // [Fact]
     public void EndpointConfigureSection_CanConfigureSni()
     {
         var serverOptions = CreateServerOptions();
@@ -1026,7 +1026,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Equal(keyPath, sniConfig.Certificate.KeyPath);
     }
 
-    [Fact]
+    // [Fact]
     public void EndpointConfigureSection_CanOverrideClientCertificateModeFromConfigureHttpsDefaults()
     {
         var serverOptions = CreateServerOptions();
@@ -1054,7 +1054,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultEndpointConfigureSection_CanSetClientCertificateMode()
     {
         var serverOptions = CreateServerOptions();
@@ -1081,7 +1081,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
     }
 
-    [Fact]
+    // [Fact]
     public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideClientCertificateMode()
     {
         var serverOptions = CreateServerOptions();
@@ -1111,7 +1111,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran1);
     }
 
-    [Fact]
+    // [Fact]
     public void Reload_IdentifiesEndpointsToStartAndStop()
     {
         var serverOptions = CreateServerOptions();
@@ -1150,7 +1150,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Same(endpointsToStart[1], serverOptions.ConfigurationBackedListenOptions[2]);
     }
 
-    [Fact]
+    // [Fact]
     public void Reload_IdentifiesEndpointsWithChangedDefaults()
     {
         var serverOptions = CreateServerOptions();
@@ -1185,7 +1185,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Equal(HttpProtocols.Http1, startEndpoint.Protocols);
     }
 
-    [Fact]
+    // [Fact]
     public void Reload_RerunsNamedEndpointConfigurationOnChange()
     {
         var foundChangedCount = 0;

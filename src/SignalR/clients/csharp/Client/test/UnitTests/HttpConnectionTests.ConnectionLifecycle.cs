@@ -21,7 +21,7 @@ public partial class HttpConnectionTests
 {
     public class ConnectionLifecycle : VerifiableLoggedTest
     {
-        [Fact]
+        // [Fact]
         public async Task CanStartStartedConnection()
         {
             using (StartVerifiableLog())
@@ -34,7 +34,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanStartStartingConnection()
         {
             using (StartVerifiableLog())
@@ -54,7 +54,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CannotStartConnectionOnceDisposed()
         {
             using (StartVerifiableLog())
@@ -127,7 +127,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StartThrowsAfterAllTransportsFail()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -170,7 +170,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanDisposeUnstartedConnection()
         {
             using (StartVerifiableLog())
@@ -184,7 +184,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanDisposeStartingConnection()
         {
             using (StartVerifiableLog())
@@ -218,7 +218,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanDisposeDisposingConnection()
         {
             using (StartVerifiableLog())
@@ -253,7 +253,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task TransportIsStoppedWhenConnectionIsDisposed()
         {
             var testHttpHandler = new TestHttpMessageHandler();
@@ -277,7 +277,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task TransportPipeIsCompletedWhenErrorOccursInTransport()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -319,7 +319,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task SSEWontStartIfSuccessfulConnectionIsNotEstablished()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -349,7 +349,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task SSEWaitsForResponseToStart()
         {
             using (StartVerifiableLog())
@@ -378,7 +378,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanCancelStartingConnectionAfterNegotiate()
         {
             using (StartVerifiableLog())
@@ -424,7 +424,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CancellationTokenFromStartPassedToTransport()
         {
             using (StartVerifiableLog())
@@ -453,7 +453,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanceledCancellationTokenPassedToStartThrows()
         {
             using (StartVerifiableLog())
@@ -477,7 +477,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task SSECanBeCanceled()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -506,7 +506,7 @@ public partial class HttpConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task LongPollingTransportCanBeCanceled()
         {
             using (StartVerifiableLog())

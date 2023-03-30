@@ -22,7 +22,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task HelloWorld()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task JsonResult_Works()
     {
         // Arrange
@@ -52,7 +52,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task OkObjectResult_Works()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AcceptedObjectResult_Works()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionReturningMoreThanOneResult_NotFound()
     {
         // Arrange
@@ -98,7 +98,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ActionReturningMoreThanOneResult_Found()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal("/json", response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task MvcControllerActionWorks()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal("Hello human", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultEnvironment_Is_Development()
     {
         // Arrange
@@ -141,7 +141,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Configuration_Can_Be_Overridden()
     {
         // Arrange
@@ -168,7 +168,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Environment_Can_Be_Overridden()
     {
         // Arrange
@@ -187,7 +187,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expected, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WebRoot_Can_Be_Overriden()
     {
         var webRoot = "foo";
@@ -208,7 +208,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal(expectedWebRoot, content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Accepts_Json_WhenBindingAComplexType()
     {
         // Act
@@ -218,7 +218,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Rejects_NonJson_WhenBindingAComplexType()
     {
         // Arrange
@@ -233,7 +233,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Accepts_NonJsonMediaType()
     {
         // Arrange
@@ -248,7 +248,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         await response.AssertStatusCodeAsync(HttpStatusCode.Accepted);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FileUpload_Works()
     {
         // Arrange

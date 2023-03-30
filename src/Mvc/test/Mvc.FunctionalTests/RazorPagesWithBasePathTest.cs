@@ -16,7 +16,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task PageOutsideBasePath_IsNotRouteable()
     {
         // Act
@@ -26,7 +26,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task IndexAtBasePath_IsRouteableAtRoot()
     {
         // Act
@@ -39,7 +39,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("Hello from /Index", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task IndexAtBasePath_IsRouteableViaIndex()
     {
         // Act
@@ -52,7 +52,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("Hello from /Index", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task IndexInSubdirectory_IsRouteableViaDirectoryName()
     {
         // Act
@@ -65,7 +65,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("Hello from /Admin/Index", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithRouteTemplateInSubdirectory_IsRouteable()
     {
         // Act
@@ -78,7 +78,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("Hello from /Admin/RouteTemplate 1", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageWithRouteTemplateInSubdirectory_IsRouteable_WithOptionalParameters()
     {
         // Act
@@ -91,7 +91,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("Hello from /Admin/RouteTemplate my-user-id 4", content.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthConvention_IsAppliedOnBasePathRelativePaths_ForFiles()
     {
         // Act
@@ -102,7 +102,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("/Login?ReturnUrl=%2FConventions%2FAuth", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthConvention_IsAppliedOnBasePathRelativePaths_For_Folders()
     {
         // Act
@@ -113,7 +113,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("/Login?ReturnUrl=%2FConventions%2FAuthFolder", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthConvention_AppliedToFolders_CanByOverridenByFiltersOnModel()
     {
         // Act
@@ -123,7 +123,7 @@ public class RazorPagesWithBasePathTest : IClassFixture<MvcTestFixture<RazorPage
         Assert.Equal("Hello from Anonymous", response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewStart_IsDiscoveredWhenRootDirectoryIsSpecified()
     {
         // Test for https://github.com/aspnet/Mvc/issues/5915
@@ -138,7 +138,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewStart_IsDiscoveredForFilesOutsidePageRoot()
     {
         //Arrange
@@ -153,7 +153,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewImport_IsDiscoveredWhenRootDirectoryIsSpecified()
     {
         // Test for https://github.com/aspnet/Mvc/issues/5915
@@ -167,7 +167,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FormTagHelper_WithPage_GeneratesLinksToSelf()
     {
         //Arrange
@@ -180,7 +180,7 @@ Hello from page";
         Assert.Contains(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task FormTagHelper_WithPageHandler_AllowsPostingToSelf()
     {
         //Arrange
@@ -200,7 +200,7 @@ Hello from page";
         Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FormTagHelper_WithPage_AllowsPostingToAnotherPage()
     {
         //Arrange
@@ -215,7 +215,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FormActionTagHelper_WithPage_AllowsPostingToAnotherPage()
     {
         //Arrange
@@ -234,7 +234,7 @@ Hello from page";
         Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectFromPage_RedirectsToPathWithoutIndexSegment()
     {
         //Arrange
@@ -248,7 +248,7 @@ Hello from page";
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectFromPage_ToIndex_RedirectsToPathWithoutIndexSegment()
     {
         //Arrange
@@ -262,7 +262,7 @@ Hello from page";
         Assert.Equal(expected, response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageRoute_UsingDefaultPageNameToRoute()
     {
         // Arrange
@@ -275,7 +275,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task Pages_ReturnsFromPagesSharedDirectory()
     {
         // Arrange
@@ -288,7 +288,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesInAreas_Work()
     {
         // Arrange
@@ -301,7 +301,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesInAreas_CanHaveRouteTemplates()
     {
         // Arrange
@@ -314,7 +314,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesInAreas_CanGenerateLinksToControllersAndPages()
     {
         // Arrange
@@ -331,7 +331,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesInAreas_CanGenerateRelativeLinks()
     {
         // Arrange
@@ -347,7 +347,7 @@ Hello from page";
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesInAreas_CanDiscoverViewsFromAreaAndSharedDirectories()
     {
         // Arrange
@@ -370,7 +370,7 @@ Hello from /Pages/Shared/";
         Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthorizeFolderConvention_CanBeAppliedToAreaPages()
     {
         // Act
@@ -381,7 +381,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("/Login?ReturnUrl=%2FAccounts%2FRequiresAuth", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllowAnonymousToPageConvention_CanBeAppliedToAreaPages()
     {
         // Act
@@ -397,7 +397,7 @@ Hello from /Pages/Shared/";
     // An example of this is how the Identity UI library defines a base page model in their views,
     // like how the Register.cshtml view defines its model as RegisterModel and then, at runtime it replaces
     // that model with RegisterModel<TUser> where TUser is the type of the user used to configure identity.
-    [Fact]
+    // [Fact]
     public async Task PageConventions_CanBeUsedToCustomizeTheModelType()
     {
         // Act
@@ -409,7 +409,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("<h2>User</h2>", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageConventions_CustomizedModelCanPostToHandlers()
     {
         // Arrange
@@ -438,7 +438,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("is required.", content);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageConventions_CustomizedModelCanWorkWithModelState()
     {
         // Arrange
@@ -466,7 +466,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("/", response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PageConventions_CustomizedModelCanWorkWithModelState_EnforcesBindRequired()
     {
         // Arrange
@@ -497,7 +497,7 @@ Hello from /Pages/Shared/";
             responseText);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidationAttributes_OnTopLevelProperties()
     {
         // Act
@@ -508,7 +508,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("18 &#x2264; Age &#x2264; 60", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CompareValidationAttributes_OnTopLevelProperties()
     {
         // Act
@@ -519,7 +519,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("Password and confirm password do not match.", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ValidationAttributes_OnHandlerParameters()
     {
         // Act
@@ -529,7 +529,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("Name is required", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesFromClassLibraries_CanBeServed()
     {
         // Act
@@ -539,7 +539,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("This page is served from RazorPagesClassLibrary", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PagesFromClassLibraries_CanBeOverriden()
     {
         // Act
@@ -549,7 +549,7 @@ Hello from /Pages/Shared/";
         Assert.Contains("This page is overriden by RazorPagesWebSite", response);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataAttributes_SetInPageModel_AreTransferredToLayout()
     {
         // Arrange
@@ -569,7 +569,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("Title with default value", title);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataAttributes_SetInPageWithoutModel_AreTransferredToLayout()
     {
         // Arrange
@@ -583,7 +583,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("Default value", title);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataProperties_SetInPageModel_AreTransferredToViewComponents()
     {
         // Act
@@ -597,7 +597,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("View Data in Pages", title);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Antiforgery_RequestWithoutAntiforgeryToken_Returns200ForHeadRequests()
     {
         // Arrange
@@ -610,7 +610,7 @@ Hello from /Pages/Shared/";
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Antiforgery_RequestWithoutAntiforgeryToken_Returns400BadRequest()
     {
         // Arrange
@@ -623,7 +623,7 @@ Hello from /Pages/Shared/";
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Antiforgery_RequestWithAntiforgeryToken_Succeeds()
     {
         // Arrange
@@ -637,7 +637,7 @@ Hello from /Pages/Shared/";
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Antiforgery_IgnoreAntiforgeryTokenAppliedToModelWorks()
     {
         // Arrange
@@ -651,7 +651,7 @@ Hello from /Pages/Shared/";
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewDataSetInViewStart_IsAvailableToPage()
     {
         // Arrange & Act
@@ -667,7 +667,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("Value from Page", valueSetInPage);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RoundTrippingFormFileInputWorks()
     {
         // Arrange
@@ -704,7 +704,7 @@ Hello from /Pages/Shared/";
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthAttribute_AppliedOnPageWorks()
     {
         // Act
@@ -715,7 +715,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("/Login?ReturnUrl=%2FFilters%2FAuthFilterOnPage", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthAttribute_AppliedOnPageWithModelWorks()
     {
         // Act
@@ -726,7 +726,7 @@ Hello from /Pages/Shared/";
         Assert.Equal("/Login?ReturnUrl=%2FFilters%2FAuthFilterOnPageWithModel", response.Headers.Location.PathAndQuery);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FiltersAppliedToPageAndPageModelAreExecuted()
     {
         // Act

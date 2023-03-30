@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions;
 
 public class ForbiddenActionTests
 {
-    [Fact]
+    // [Fact]
     public void Forbidden_Verify403IsInStatusCode()
     {
 

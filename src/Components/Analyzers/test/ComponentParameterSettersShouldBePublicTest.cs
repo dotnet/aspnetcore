@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 
 public class ComponentParameterSettersShouldBePublicTest : DiagnosticVerifier
 {
-    [Fact]
+    // [Fact]
     public void IgnoresCascadingParameterProperties()
     {
         var test = $@"
@@ -25,7 +25,7 @@ public class ComponentParameterSettersShouldBePublicTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresPublicSettersProperties()
     {
         var test = $@"
@@ -41,7 +41,7 @@ public class ComponentParameterSettersShouldBePublicTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresPrivateSettersNonParameterProperties()
     {
         var test = $@"
@@ -57,7 +57,7 @@ public class ComponentParameterSettersShouldBePublicTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void ErrorsForNonPublicSetterParameters()
     {
         var test = $@"

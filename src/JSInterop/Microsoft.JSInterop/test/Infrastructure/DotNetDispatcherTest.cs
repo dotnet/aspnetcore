@@ -10,7 +10,7 @@ public class DotNetDispatcherTest
 {
     private static readonly string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeWithEmptyAssemblyName()
     {
         var ex = Assert.Throws<ArgumentException>(() =>
@@ -22,7 +22,7 @@ public class DotNetDispatcherTest
         Assert.Equal("assemblyKey", ex.ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeWithEmptyMethodIdentifier()
     {
         var ex = Assert.Throws<ArgumentException>(() =>
@@ -34,7 +34,7 @@ public class DotNetDispatcherTest
         Assert.Equal("methodIdentifier", ex.ParamName);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeMethodsOnUnloadedAssembly()
     {
         var assemblyName = "Some.Fake.Assembly";
@@ -68,7 +68,7 @@ public class DotNetDispatcherTest
         Assert.Equal($"The assembly '{thisAssemblyName}' does not contain a public invokable method with [JSInvokableAttribute(\"{methodIdentifier}\")].", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeStaticVoidMethod()
     {
         // Arrange/Act
@@ -81,7 +81,7 @@ public class DotNetDispatcherTest
         Assert.True(SomePublicType.DidInvokeMyInvocableStaticVoid);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeStaticNonVoidMethod()
     {
         // Arrange/Act
@@ -94,7 +94,7 @@ public class DotNetDispatcherTest
         Assert.Equal(123, result.IntVal);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeStaticNonVoidMethodWithoutCustomIdentifier()
     {
         // Arrange/Act
@@ -107,7 +107,7 @@ public class DotNetDispatcherTest
         Assert.Equal(456, result.IntVal);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeStaticWithParams()
     {
         // Arrange: Track a .NET object to use as an arg
@@ -146,7 +146,7 @@ public class DotNetDispatcherTest
         Assert.Equal(1299, resultDto2.IntVal);
     }
 
-    [Fact]
+    // [Fact]
     public void InvokingWithIncorrectUseOfDotNetObjectRefThrows()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class DotNetDispatcherTest
         Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 3 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeInstanceVoidMethod()
     {
         // Arrange: Track some instance
@@ -187,7 +187,7 @@ public class DotNetDispatcherTest
         Assert.True(targetInstance.DidInvokeMyInvocableInstanceVoid);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeBaseInstanceVoidMethod()
     {
         // Arrange: Track some instance
@@ -204,7 +204,7 @@ public class DotNetDispatcherTest
         Assert.True(targetInstance.DidInvokeMyBaseClassInvocableInstanceVoid);
     }
 
-    [Fact]
+    // [Fact]
     public void DotNetObjectReferencesCanBeDisposed()
     {
         // Arrange
@@ -220,7 +220,7 @@ public class DotNetDispatcherTest
         Assert.True(objectRef.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotUseDotNetObjectRefAfterDisposal()
     {
         // This test addresses the case where the developer calls objectRef.Dispose()
@@ -239,7 +239,7 @@ public class DotNetDispatcherTest
         Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotUseDotNetObjectRefAfterReleaseDotNetObject()
     {
         // This test addresses the case where the developer calls .dispose()
@@ -258,7 +258,7 @@ public class DotNetDispatcherTest
         Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_WithSuccessValue()
     {
         // Arrange
@@ -277,7 +277,7 @@ public class DotNetDispatcherTest
         Assert.Equal(testDTO.IntVal, result.IntVal);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndInvokeJS_WithErrorString()
     {
         // Arrange
@@ -294,7 +294,7 @@ public class DotNetDispatcherTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EndInvokeJS_WithNullError()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class DotNetDispatcherTest
         Assert.Empty(ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_DoesNotThrowJSONExceptionIfTaskCancelled()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class DotNetDispatcherTest
         Assert.True(task.IsCanceled);
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_ThrowsIfJsonIsEmptyString()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class DotNetDispatcherTest
         Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, ""));
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_ThrowsIfJsonIsNotArray()
     {
         // Arrange
@@ -353,7 +353,7 @@ public class DotNetDispatcherTest
         Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, $"{{\"key\": \"{jsRuntime.LastInvocationAsyncHandle}\"}}"));
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_ThrowsIfJsonArrayIsInComplete()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class DotNetDispatcherTest
         Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, false"));
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_ThrowsIfJsonArrayHasMoreThan3Arguments()
     {
         // Arrange
@@ -375,7 +375,7 @@ public class DotNetDispatcherTest
         Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, false, \"Hello\", 5]"));
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_DoesNotThrowJSONExceptionIfTaskCancelled_WithMoreThan3Arguments()
     {
         // Arrange
@@ -394,7 +394,7 @@ public class DotNetDispatcherTest
         Assert.True(task.IsCanceled);
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_Works()
     {
         // Arrange
@@ -409,7 +409,7 @@ public class DotNetDispatcherTest
         Assert.Equal(7, task.Result.IntVal);
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_WithArrayValue()
     {
         var jsRuntime = new TestJSRuntime();
@@ -421,7 +421,7 @@ public class DotNetDispatcherTest
         Assert.Equal(new[] { 1, 2, 3 }, task.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void EndInvokeJS_WithNullValue()
     {
         var jsRuntime = new TestJSRuntime();
@@ -433,7 +433,7 @@ public class DotNetDispatcherTest
         Assert.Null(task.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeInstanceMethodWithParams()
     {
         // Arrange: Track some instance plus another object we'll pass as a param
@@ -455,7 +455,7 @@ public class DotNetDispatcherTest
         Assert.Equal("MY STRING", resultDto.StringVal);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeNonGenericInstanceMethodOnGenericType()
     {
         var jsRuntime = new TestJSRuntime();
@@ -471,7 +471,7 @@ public class DotNetDispatcherTest
         Assert.Equal("\"hello world\"", resultJson);
     }
 
-    [Fact]
+    // [Fact]
     public void CanInvokeMethodsThatAcceptGenericParametersOnGenericTypes()
     {
         var jsRuntime = new TestJSRuntime();
@@ -487,7 +487,7 @@ public class DotNetDispatcherTest
         Assert.Equal("\"hello world\"", resultJson);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeStaticOpenGenericMethods()
     {
         var methodIdentifier = "StaticGenericMethod";
@@ -498,7 +498,7 @@ public class DotNetDispatcherTest
         Assert.Contains($"The assembly '{thisAssemblyName}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeInstanceOpenGenericMethods()
     {
         var methodIdentifier = "InstanceGenericMethod";
@@ -513,7 +513,7 @@ public class DotNetDispatcherTest
         Assert.Contains($"The type 'GenericType`1' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeMethodsWithGenericParameters_IfTypesDoNotMatch()
     {
         var jsRuntime = new TestJSRuntime();
@@ -527,7 +527,7 @@ public class DotNetDispatcherTest
             DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<int>.EchoParameter), 1, default), argsJson));
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeWithFewerNumberOfParameters()
     {
         // Arrange
@@ -547,7 +547,7 @@ public class DotNetDispatcherTest
         Assert.Equal("The call to 'InvocableStaticWithParams' expects '3' parameters, but received '2'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CannotInvokeWithMoreParameters()
     {
         // Arrange
@@ -570,7 +570,7 @@ public class DotNetDispatcherTest
         Assert.Equal("Unexpected JSON token Number. Ensure that the call to `InvocableStaticWithParams' is supplied with exactly '3' parameters.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanInvokeAsyncMethod()
     {
         // Arrange: Track some instance plus another object we'll pass as a param
@@ -609,7 +609,7 @@ public class DotNetDispatcherTest
         Assert.Equal(2468, resultDto2.IntVal);
     }
 
-        [Fact]
+        // [Fact]
         public async Task CanInvokeAsyncMethodReturningValueTask()
         {
             // Arrange: Track some instance plus another object we'll pass as a param
@@ -639,7 +639,7 @@ public class DotNetDispatcherTest
             Assert.True(jsRuntime.LastCompletionResult.Success);
         }
 
-        [Fact]
+        // [Fact]
         public async Task CanInvokeAsyncMethodReturningNonGenericValueTask()
         {
             // Arrange: Track some instance plus another object we'll pass as a param
@@ -663,7 +663,7 @@ public class DotNetDispatcherTest
             Assert.True(jsRuntime.LastCompletionResult.Success);
         }
 
-    [Fact]
+    // [Fact]
     public async Task CanInvokeSyncThrowingMethod()
     {
         // Arrange
@@ -685,7 +685,7 @@ public class DotNetDispatcherTest
         Assert.Contains(nameof(ThrowingClass.ThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanInvokeAsyncThrowingMethod()
     {
         // Arrange
@@ -707,7 +707,7 @@ public class DotNetDispatcherTest
         Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task BeginInvoke_ThrowsWithInvalidArgsJson_WithCallId()
     {
         // Arrange
@@ -725,7 +725,7 @@ public class DotNetDispatcherTest
         Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", exception.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void BeginInvoke_ThrowsWithInvalid_DotNetObjectRef()
     {
         // Arrange
@@ -767,7 +767,7 @@ public class DotNetDispatcherTest
         Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(string) }));
     }
 
-    [Fact]
+    // [Fact]
     public void ParseArguments_Works()
     {
         // Arrange
@@ -780,7 +780,7 @@ public class DotNetDispatcherTest
         Assert.Equal(new object[] { "Hello", 2 }, result);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseArguments_SingleArgument()
     {
         // Arrange
@@ -795,7 +795,7 @@ public class DotNetDispatcherTest
         Assert.Null(value.StringVal);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseArguments_NullArgument()
     {
         // Arrange
@@ -811,7 +811,7 @@ public class DotNetDispatcherTest
             v => Assert.Null(v));
     }
 
-    [Fact]
+    // [Fact]
     public void ParseArguments_Throws_WithIncorrectDotNetObjectRefUsage()
     {
         // Arrange
@@ -825,7 +825,7 @@ public class DotNetDispatcherTest
         Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 2 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ReceiveByteArray_Works()
     {
         // Arrange

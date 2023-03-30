@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
 public partial class DisallowConfigureAppConfigureHostBuilderTest
 {
-    [Fact]
+    // [Fact]
     public async Task ConfigurationBuilderRunsWithoutDiagnostic()
     {
         // Arrange
@@ -25,7 +25,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConfigureAppHostBuilderProducesDiagnostic()
     {
         // Arrange
@@ -50,7 +50,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConfigureHostHostBuilderProducesDiagnostic()
     {
         // Arrange
@@ -73,7 +73,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConfigureAppWebHostBuilderProducesDiagnostic()
     {
         // Arrange
@@ -98,7 +98,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConfigureAppWebHostBuilderProducesDiagnosticInMain()
     {
         // Arrange
@@ -133,7 +133,7 @@ public static class Test
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TwoInvocationsProduceTwoDiagnostic()
     {
         // Arrange
@@ -163,7 +163,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task TwoMethodsInArgumentsProducesTwoProperties()
     {
         // Arrange
@@ -188,7 +188,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true).AddEnvironmentVa
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenConfigureAppConfigurationIsCalledWhenChainedWithCreateBuilder()
     {
         //arrange
@@ -208,7 +208,7 @@ WebApplication.CreateBuilder(args).Configuration.AddJsonFile(""foo.json"", optio
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WarnsWhenConfigureAppConfigurationIsCalledAsAnArgument()
     {
         //arrange

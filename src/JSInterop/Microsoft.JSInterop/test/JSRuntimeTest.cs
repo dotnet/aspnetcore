@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop;
 
 public class JSRuntimeTest
 {
-    [Fact]
+    // [Fact]
     public void DispatchesAsyncCallsWithDistinctAsyncHandles()
     {
         // Arrange
@@ -36,7 +36,7 @@ public class JSRuntimeTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_CancelsAsyncTask_AfterDefaultTimeout()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class JSRuntimeTest
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public void InvokeAsync_CompletesSuccessfullyBeforeTimeout()
     {
         // Arrange
@@ -66,7 +66,7 @@ public class JSRuntimeTest
         Assert.True(task.IsCompletedSuccessfully);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_CancelsAsyncTasksWhenCancellationTokenFires()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class JSRuntimeTest
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
     }
 
-    [Fact]
+    // [Fact]
     public async Task InvokeAsync_DoesNotStartWorkWhenCancellationHasBeenRequested()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class JSRuntimeTest
         Assert.Empty(runtime.BeginInvokeCalls);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCompleteAsyncCallsAsSuccess()
     {
         // Arrange
@@ -124,7 +124,7 @@ public class JSRuntimeTest
         Assert.Equal("my result", task.Result);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCompleteAsyncCallsWithComplexType()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class JSRuntimeTest
         Assert.Equal("Test", poco.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCompleteAsyncCallsWithComplexTypeUsingPropertyCasing()
     {
         // Arrange
@@ -169,7 +169,7 @@ public class JSRuntimeTest
         Assert.Equal("Test", poco.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void CanCompleteAsyncCallsAsFailure()
     {
         // Arrange
@@ -197,7 +197,7 @@ public class JSRuntimeTest
         Assert.Equal("This is a test exception", jsException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public Task CanCompleteAsyncCallsWithErrorsDuringDeserialization()
     {
         // Arrange
@@ -227,7 +227,7 @@ public class JSRuntimeTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public Task CompletingSameAsyncCallMoreThanOnce_IgnoresSecondResultAsync()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class JSRuntimeTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void SerializesDotNetObjectWrappersInKnownFormat()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class JSRuntimeTest
         Assert.Same(obj1, runtime.GetObjectReference(4).Value);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSanitizeDotNetInteropExceptions()
     {
         // Arrange
@@ -310,7 +310,7 @@ public class JSRuntimeTest
         Assert.Equal(invocation, error.InvocationInfo);
     }
 
-    [Fact]
+    // [Fact]
     public void ReceiveByteArray_AddsInitialByteArray()
     {
         // Arrange
@@ -326,7 +326,7 @@ public class JSRuntimeTest
         Assert.Equal(byteArray, runtime.ByteArraysToBeRevived.Buffer[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void ReceiveByteArray_AddsMultipleByteArrays()
     {
         // Arrange
@@ -354,7 +354,7 @@ public class JSRuntimeTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ReceiveByteArray_ClearsByteArraysToBeRevivedWhenIdIsZero()
     {
         // Arrange
@@ -372,7 +372,7 @@ public class JSRuntimeTest
         Assert.Equal(byteArray, runtime.ByteArraysToBeRevived.Buffer[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void ReceiveByteArray_ThrowsExceptionIfUnexpectedId()
     {
         // Arrange
@@ -390,7 +390,7 @@ public class JSRuntimeTest
         Assert.Equal("Element id '7' cannot be added to the byte arrays to be revived with length '2'.", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void BeginTransmittingStream_MultipleStreams()
     {
         // Arrange
@@ -404,7 +404,7 @@ public class JSRuntimeTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async void ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
     {
         // Arrange

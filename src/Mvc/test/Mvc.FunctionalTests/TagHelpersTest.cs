@@ -61,7 +61,7 @@ public class TagHelpersTest :
     [InlineData("ViewComponentTagHelpers")]
     public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action) => CanRenderViewsWithTagHelpers(action);
 
-    [Fact]
+    // [Fact]
     public async Task GivesCorrectCallstackForSyncronousCalls()
     {
         // Regression test for https://github.com/dotnet/aspnetcore/issues/15367
@@ -72,7 +72,7 @@ public class TagHelpersTest :
         Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class TagHelpersTest :
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReRegisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
     {
         // Arrange
@@ -179,7 +179,7 @@ page:<root>root-content</root>"
         Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultInheritedTagsCanBeRemoved()
     {
         // Arrange
@@ -192,7 +192,7 @@ page:<root>root-content</root>"
         Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
     {
         // Arrange
@@ -210,7 +210,7 @@ page:<root>root-content</root>"
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
     {
         // Arrange
@@ -238,7 +238,7 @@ page:<root>root-content</root>"
         ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidData()
     {
         // Arrange

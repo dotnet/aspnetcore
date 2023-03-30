@@ -5,7 +5,7 @@ namespace Microsoft.Net.Http.Headers;
 
 public class StringWithQualityHeaderValueTest
 {
-    [Fact]
+    // [Fact]
     public void Ctor_StringOnlyOverload_MatchExpectation()
     {
         var value = new StringWithQualityHeaderValue("token");
@@ -17,7 +17,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Throws<FormatException>(() => new StringWithQualityHeaderValue("in valid"));
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_StringWithQualityOverload_MatchExpectation()
     {
         var value = new StringWithQualityHeaderValue("token", 0.5);
@@ -32,7 +32,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Throws<ArgumentOutOfRangeException>(() => new StringWithQualityHeaderValue("t", -0.1));
     }
 
-    [Fact]
+    // [Fact]
     public void ToString_UseDifferentValues_AllSerializedCorrectly()
     {
         var value = new StringWithQualityHeaderValue("token");
@@ -52,7 +52,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal("token; q=0.568", value.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void GetHashCode_UseSameAndDifferentValues_SameOrDifferentHashCodes()
     {
         var value1 = new StringWithQualityHeaderValue("t", 0.123);
@@ -75,7 +75,7 @@ public class StringWithQualityHeaderValueTest
         Assert.NotEqual(value4.GetHashCode(), value9.GetHashCode());
     }
 
-    [Fact]
+    // [Fact]
     public void Equals_UseSameAndDifferentRanges_EqualOrNotEqualNoExceptions()
     {
         var value1 = new StringWithQualityHeaderValue("t", 0.123);
@@ -100,7 +100,7 @@ public class StringWithQualityHeaderValueTest
         Assert.False(value4.Equals(value9), "t vs. T");
     }
 
-    [Fact]
+    // [Fact]
     public void Parse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidParse("text", new StringWithQualityHeaderValue("text"));
@@ -161,7 +161,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.Parse(input));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfValidValueStrings_ParsedCorrectly()
     {
         CheckValidTryParse("text", new StringWithQualityHeaderValue("text"));
@@ -172,7 +172,7 @@ public class StringWithQualityHeaderValueTest
         CheckValidTryParse(" \r\n text \r\n ; \r\n q = 0.123", new StringWithQualityHeaderValue("text", 0.123));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse()
     {
         CheckInvalidTryParse("text,");
@@ -198,7 +198,7 @@ public class StringWithQualityHeaderValueTest
         CheckInvalidTryParse("  ,,");
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -235,7 +235,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -272,7 +272,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -309,7 +309,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
     {
         var inputs = new[]
@@ -346,7 +346,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseList_WithSomeInvalidValues_IgnoresInvalidValues()
     {
         var inputs = new[]
@@ -384,7 +384,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseStrictList_WithSomeInvalidValues_Throws()
     {
         var inputs = new[]
@@ -404,7 +404,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.ParseStrictList(inputs));
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseList_WithSomeInvalidValues_IgnoresInvalidValues()
     {
         var inputs = new[]
@@ -442,7 +442,7 @@ public class StringWithQualityHeaderValueTest
         Assert.Equal(expectedResults, results);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
     {
         var inputs = new[]

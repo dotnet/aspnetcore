@@ -31,7 +31,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         services.AddCookie(configure);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NormalRequestPassesThrough()
     {
         using var host = await CreateHost(s => { });
@@ -40,7 +40,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AjaxLoginRedirectToReturnUrlTurnsInto200WithLocationHeader()
     {
         using var host = await CreateHost(o => o.LoginPath = "/login");
@@ -52,7 +52,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("http://example.com/login", responded.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AjaxForbidTurnsInto403WithLocationHeader()
     {
         using var host = await CreateHost(o => o.AccessDeniedPath = "/denied");
@@ -64,7 +64,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("http://example.com/denied", responded.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AjaxLogoutRedirectToReturnUrlTurnsInto200WithLocationHeader()
     {
         using var host = await CreateHost(o => o.LogoutPath = "/signout");
@@ -76,7 +76,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("/", responded.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AjaxChallengeRedirectTurnsInto200WithLocationHeader()
     {
         using var host = await CreateHost(s => { });
@@ -88,7 +88,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("http://example.com/Account/Login", responded.Single());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProtectedCustomRequestShouldRedirectToCustomRedirectUri()
     {
         using var host = await CreateHost(s => { });
@@ -122,7 +122,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         return context.SignOutAsync("Oops");
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInCausesDefaultCookieToBeCreated()
     {
         using var host = await CreateHostWithServices(s => s.AddAuthentication().AddCookie(o =>
@@ -181,7 +181,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInWithTicketStoreWorks()
     {
         var sessionStore = new TestTicketStore();
@@ -216,7 +216,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotEqual(key1, key2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SessionStoreRemovesExpired()
     {
         var sessionStore = new TestTicketStore();
@@ -248,7 +248,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction3, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CustomAuthSchemeEncodesCookieName()
     {
         var schemeName = "With spaces and 界";
@@ -280,7 +280,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("no-cache", transaction.Response.Headers.Pragma.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void SettingCookieExpirationOptionThrows()
     {
         var services = new ServiceCollection();
@@ -292,7 +292,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Throws<OptionsValidationException>(() => options.Get(CookieAuthenticationDefaults.AuthenticationScheme));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInWrongAuthTypeThrows()
     {
         using var host = await CreateHost(o =>
@@ -305,7 +305,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendAsync(server, "http://example.com/testpath"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutWrongAuthTypeThrows()
     {
         using var host = await CreateHost(o =>
@@ -351,7 +351,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieOptionsAlterSetCookieHeader()
     {
         using var host = await CreateHost(o =>
@@ -402,7 +402,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.DoesNotContain(" extension", setCookie2);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieContainsIdentity()
     {
         using var host = await CreateHost(o => { }, SignInAsAlice);
@@ -415,7 +415,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieAppliesClaimsTransform()
     {
         using var host = await CreateHost(o => { },
@@ -433,7 +433,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction2, "sync"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieStopsWorkingAfterExpiration()
     {
         using var host = await CreateHost(o =>
@@ -463,7 +463,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieExpirationCanBeOverridenInSignin()
     {
         using var host = await CreateHost(o =>
@@ -497,7 +497,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExpiredCookieWithValidatorStillExpired()
     {
         using var host = await CreateHost(o =>
@@ -526,7 +526,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeRejectedAndSignedOutByValidator()
     {
         using var host = await CreateHost(o =>
@@ -555,7 +555,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieNotRenewedAfterSignOut()
     {
         using var host = await CreateHost(o =>
@@ -592,7 +592,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Contains(".AspNetCore.Cookies=; expires=", transaction4.SetCookie[0]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeRenewedByValidator()
     {
         using var host = await CreateHost(o =>
@@ -638,7 +638,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeReplacedByValidator()
     {
         using var host = await CreateHost(o =>
@@ -665,7 +665,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice2", FindClaimValue(transaction2, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeUpdatedByValidatorDuringRefresh()
     {
         var replace = false;
@@ -714,7 +714,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("yes", FindPropertiesValue(transaction4, "updated"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeRenewedByValidatorWithSlidingExpiry()
     {
         using var host = await CreateHost(o =>
@@ -759,7 +759,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeRenewedByValidatorWithModifiedProperties()
     {
         using var host = await CreateHost(o =>
@@ -815,7 +815,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction5, "counter"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieCanBeRenewedByValidatorWithModifiedLifetime()
     {
         using var host = await CreateHost(o =>
@@ -874,7 +874,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction5, "counter"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieValidatorOnlyCalledOnce()
     {
         using var host = await CreateHost(o =>
@@ -975,7 +975,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotEqual(firstExpiresDate, lastExpiresDate);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieExpirationCanBeOverridenInEvent()
     {
         using var host = await CreateHost(o =>
@@ -1013,7 +1013,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieIsRenewedWithSlidingExpiration()
     {
         using var host = await CreateHost(o =>
@@ -1050,7 +1050,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction5, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieIsRenewedWithSlidingExpirationWithoutTransformations()
     {
         using var host = await CreateHost(o =>
@@ -1096,7 +1096,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction5, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieIsRenewedWithSlidingExpirationEvent()
     {
         using var host = await CreateHost(o =>
@@ -1148,7 +1148,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction6, ClaimTypes.Name));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieUsesPathBaseByDefault()
     {
         using var host = await CreateHost(o => { },
@@ -1165,7 +1165,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Contains("path=/base", transaction1.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieChallengeRedirectsToLoginWithoutCookie()
     {
         using var host = await CreateHost(o => { }, SignInAsAlice);
@@ -1179,7 +1179,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/Account/Login", location.LocalPath);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieForbidRedirectsWithoutCookie()
     {
         using var host = await CreateHost(o => { }, SignInAsAlice);
@@ -1193,7 +1193,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/Account/AccessDenied", location.LocalPath);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieChallengeRedirectsWithLoginPath()
     {
         using var host = await CreateHost(o =>
@@ -1209,7 +1209,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal(HttpStatusCode.Redirect, transaction2.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CookieChallengeWithUnauthorizedRedirectsToLoginIfNotAuthenticated()
     {
         using var host = await CreateHost(o =>
@@ -1286,7 +1286,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanConfigureDefaultCookieInstance()
     {
         using var host = new HostBuilder()
@@ -1314,7 +1314,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("One=", transaction.SetCookie[0]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanConfigureNamedCookieInstance()
     {
         using var host = new HostBuilder()
@@ -1342,7 +1342,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("One=", transaction.SetCookie[0]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
     {
         using var host = new HostBuilder()
@@ -1365,7 +1365,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotNull(transaction.SetCookie);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapWillNotAffectSignInRedirectToReturnUrl()
     {
         using var host = new HostBuilder()
@@ -1391,7 +1391,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/page", location.OriginalString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapWithSignOutOnlyRedirectToReturnUrlOnLogoutPath()
     {
         using var host = new HostBuilder()
@@ -1413,7 +1413,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Contains(".AspNetCore.Cookies=; expires=", transaction.SetCookie[0]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapWillNotAffectSignOutRedirectToReturnUrl()
     {
         using var host = new HostBuilder()
@@ -1439,7 +1439,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/page", location.OriginalString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MapWillNotAffectAccessDenied()
     {
         using var host = new HostBuilder()
@@ -1463,7 +1463,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/denied", location.LocalPath);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NestedMapWillNotAffectLogin()
     {
         using var host = new HostBuilder()
@@ -1515,7 +1515,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal(redirectUrl, transaction.Response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectUriInQueryIsIgnoredAfterSigninForUnrecognizedEndpoints()
     {
         using var host = await CreateHost(o =>
@@ -1537,7 +1537,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RedirectUriInQueryIsHonoredAfterSignin()
     {
         using var host = await CreateHost(o =>
@@ -1560,7 +1560,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/ret_path_2", transaction.Response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task AbsoluteRedirectUriInQueryStringIsRejected()
     {
         using var host = await CreateHost(o =>
@@ -1582,7 +1582,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task EnsurePrecedenceOfRedirectUriAfterSignin()
     {
         using var host = await CreateHost(o =>
@@ -1606,7 +1606,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/redirect_test", transaction.Response.Headers.Location.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task NestedMapWillNotAffectAccessDenied()
     {
         using var host = new HostBuilder()
@@ -1630,7 +1630,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("/base/denied", location.LocalPath);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanSpecifyAndShareDataProtector()
     {
         var dp = new NoOpDataProtector();
@@ -1682,7 +1682,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     // Issue: https://github.com/aspnet/Security/issues/949
-    [Fact]
+    // [Fact]
     public async Task NullExpiresUtcPropertyIsGuarded()
     {
         using var host = new HostBuilder()

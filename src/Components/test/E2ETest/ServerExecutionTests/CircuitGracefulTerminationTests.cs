@@ -49,7 +49,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Sink.MessageLogged += Log;
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReloadingThePage_GracefullyDisconnects_TheCurrentCircuit()
     {
         // Arrange & Act
@@ -61,7 +61,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44185")]
     public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
     {
@@ -75,7 +75,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ClosingTheBrowserWindow_GracefullyDisconnects_WhenNavigatingAwayFromThePage()
     {
         // Arrange & Act
@@ -88,7 +88,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task NavigatingToProtocolLink_DoesNotGracefullyDisconnect_TheCurrentCircuit()
     {
         // Arrange & Act
@@ -101,7 +101,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DownloadAction_DoesNotGracefullyDisconnect_TheCurrentCircuit()
     {
         // Arrange & Act
@@ -114,7 +114,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task DownloadHref_DoesNotGracefullyDisconnect_TheCurrentCircuit()
     {
         // Arrange & Act

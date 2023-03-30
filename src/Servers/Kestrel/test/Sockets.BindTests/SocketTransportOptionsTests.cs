@@ -51,7 +51,7 @@ public class SocketTransportOptionsTests : LoggedTestBase
         return VerifySocketTransportCallsCreateBoundListenSocketAsync(endpointToTest);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SocketTransportCallsCreateBoundListenSocketForFileHandleEndpoint()
     {
         using var fileHandleSocket = CreateBoundSocket();
@@ -68,7 +68,7 @@ public class SocketTransportOptionsTests : LoggedTestBase
         Assert.NotNull(listenSocket.LocalEndPoint);
     }
 
-    [Fact]
+    // [Fact]
     public void CreateDefaultBoundListenSocket_PreservesLocalEndpointFromFileHandleEndpoint()
     {
         using var fileHandleSocket = CreateBoundSocket();

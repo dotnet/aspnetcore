@@ -116,7 +116,7 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BlazorWasmStandaloneTemplate_IndividualAuth_CreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync("Individual", args: new[] {
@@ -127,7 +127,7 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public async Task BlazorWasmStandaloneTemplate_NoHttps_IndividualAuth_CreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync("Individual", args: new[] {

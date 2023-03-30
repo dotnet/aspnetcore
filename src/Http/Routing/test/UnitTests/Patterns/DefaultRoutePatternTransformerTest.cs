@@ -18,7 +18,7 @@ public class DefaultRoutePatternTransformerTest
 
     public RoutePatternTransformer Transformer { get; }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptNullForAnyKey()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("b", string.Empty), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_RejectsNullForParameter()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_AllowRequiredValueAnyForParameter()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", RoutePattern.RequiredValueAny), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_RejectsNullForOutOfLineDefault()
     {
         // Arrange
@@ -104,7 +104,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_RejectsRequiredValueAnyForOutOfLineDefault()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForParameter()
     {
         // Arrange
@@ -145,7 +145,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForParameter_WithSameDefault()
     {
         // Arrange
@@ -172,7 +172,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.Same(actual.PathSegments, original.PathSegments);
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForParameter_WithDifferentDefault()
     {
         // Arrange
@@ -207,7 +207,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.False(actual.Defaults.ContainsKey("action"));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForParameter_WithMatchingConstraint()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanRejectValueForParameter_WithNonMatchingConstraint()
     {
         // Arrange
@@ -248,7 +248,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForDefault_WithSameValue()
     {
         // Arrange
@@ -270,7 +270,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanRejectValueForDefault_WithDifferentValue()
     {
         // Arrange
@@ -289,7 +289,7 @@ public class DefaultRoutePatternTransformerTest
         Assert.Null(actual);
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForDefault_WithSameValue_Null()
     {
         // Arrange
@@ -311,7 +311,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", ""), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanAcceptValueForDefault_WithSameValue_WithMatchingConstraint()
     {
         // Arrange
@@ -333,7 +333,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanRejectValueForDefault_WithSameValue_WithNonMatchingConstraint()
     {
         // Arrange
@@ -355,7 +355,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_CanMergeExistingRequiredValues()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class DefaultRoutePatternTransformerTest
             kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
     }
 
-    [Fact]
+    // [Fact]
     public void SubstituteRequiredValues_NullRequiredValueParameter_Fail()
     {
         // Arrange

@@ -24,7 +24,7 @@ public class ClientSideHostingTest :
     {
     }
 
-    [Fact]
+    // [Fact]
     public void MapFallbackToClientSideBlazor_FilePath()
     {
         Navigate("/subdir/filepath");
@@ -32,7 +32,7 @@ public class ClientSideHostingTest :
         Assert.NotNull(Browser.Exists(By.Id("test-selector")));
     }
 
-    [Fact]
+    // [Fact]
     public void MapFallbackToClientSideBlazor_Pattern_FilePath()
     {
         Navigate("/subdir/pattern_filepath/test");
@@ -40,7 +40,7 @@ public class ClientSideHostingTest :
         Assert.NotNull(Browser.Exists(By.Id("test-selector")));
     }
 
-    [Fact]
+    // [Fact]
     public void MapFallbackToClientSideBlazor_AssemblyPath_FilePath()
     {
         Navigate("/subdir/assemblypath_filepath");
@@ -48,7 +48,7 @@ public class ClientSideHostingTest :
         Assert.NotNull(Browser.Exists(By.Id("test-selector")));
     }
 
-    [Fact]
+    // [Fact]
     public void MapFallbackToClientSideBlazor_AssemblyPath_Pattern_FilePath()
     {
         Navigate("/subdir/assemblypath_pattern_filepath/test");

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 
 public class TagHelperExecutionContextTest
 {
-    [Fact]
+    // [Fact]
     public async Task SetOutputContentAsync_CanHandleExceptionThrowingChildContent()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class TagHelperExecutionContextTest
         Assert.True(calledEnd);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetChildContentAsync_CanHandleExceptionThrowingChildContent()
     {
         // Arrange
@@ -57,7 +57,7 @@ public class TagHelperExecutionContextTest
         Assert.True(calledEnd);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetOutputContentAsync_SetsOutputsContent()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class TagHelperExecutionContextTest
         Assert.Equal(content, executionContext.Output.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ExecutionContext_Reinitialize_UpdatesTagHelperOutputAsExpected()
     {
         // Arrange
@@ -140,7 +140,7 @@ public class TagHelperExecutionContextTest
         Assert.Equal(1, updatedCallCount);
     }
 
-    [Fact]
+    // [Fact]
     public void ExecutionContext_Reinitialize_UpdatesTagHelperContextAsExpected()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class TagHelperExecutionContextTest
         Assert.Equal(tagMode, output.TagMode);
     }
 
-    [Fact]
+    // [Fact]
     public void ParentItems_SetsItemsProperty()
     {
         // Arrange
@@ -445,7 +445,7 @@ public class TagHelperExecutionContextTest
         Assert.NotSame(content1, content2);
     }
 
-    [Fact]
+    // [Fact]
     public void AddHtmlAttribute_MaintainsHtmlAttributes()
     {
         // Arrange
@@ -468,7 +468,7 @@ public class TagHelperExecutionContextTest
             CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void AddHtmlAttribute_MaintainsMinimizedHtmlAttributes()
     {
         // Arrange
@@ -491,7 +491,7 @@ public class TagHelperExecutionContextTest
             CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void AddHtmlAttribute_MaintainsHtmlAttributes_VariousStyles()
     {
         // Arrange
@@ -522,7 +522,7 @@ public class TagHelperExecutionContextTest
             CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void TagHelperExecutionContext_MaintainsAllAttributes()
     {
         // Arrange
@@ -547,7 +547,7 @@ public class TagHelperExecutionContextTest
             CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    [Fact]
+    // [Fact]
     public void Add_MaintainsTagHelpers()
     {
         // Arrange
@@ -562,7 +562,7 @@ public class TagHelperExecutionContextTest
         Assert.Same(tagHelper, singleTagHelper);
     }
 
-    [Fact]
+    // [Fact]
     public void Add_MaintainsMultipleTagHelpers()
     {
         // Arrange

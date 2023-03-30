@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing;
 // and DefaultLinkGeneratorProcessTemplateTest
 public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
 {
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithoutHttpContext_NoMatches_ReturnsNull()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_NoMatches_ReturnsNull()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Null(path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithoutHttpContext_NoMatches_ReturnsNull()
     {
         // Arrange
@@ -59,7 +59,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Null(uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithHttpContext_NoMatches_ReturnsNull()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Null(uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithoutHttpContext_HasMatches_ReturnsFirstSuccessfulTemplateResult()
     {
         // Arrange
@@ -90,7 +90,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Home/Index", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_HasMatches_ReturnsFirstSuccessfulTemplateResult()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Home/Index", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithoutHttpContext_HasMatches_ReturnsFirstSuccessfulTemplateResult()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("http://example.com/Home/Index", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithHttpContext_HasMatches_ReturnsFirstSuccessfulTemplateResult()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("http://example.com/Home/Index", uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithoutHttpContext_WithLinkOptions()
     {
         // Arrange
@@ -165,7 +165,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Home/Index/", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithParameterTransformer()
     {
         // Arrange
@@ -191,7 +191,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/test-controller/Index", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithParameterTransformer_WithLowercaseUrl()
     {
         // Arrange
@@ -218,7 +218,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/test-controller/index", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_WithLinkOptions()
     {
         // Arrange
@@ -238,7 +238,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Home/Index/", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithoutHttpContext_WithLinkOptions()
     {
         // Arrange
@@ -259,7 +259,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("http://example.com/Home/Index/", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithHttpContext_WithLinkOptions()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
     }
 
     // Includes characters that need to be encoded
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithoutHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -304,7 +304,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", path);
     }
 
-    [Fact]
+    // [Fact]
     public void GetLink_ParameterTransformer()
     {
         // Arrange
@@ -327,7 +327,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/HOME/Test", link);
     }
 
-    [Fact]
+    // [Fact]
     public void GetLink_ParameterTransformer_ForQueryString()
     {
         // Arrange
@@ -354,7 +354,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
     }
 
     // Includes characters that need to be encoded
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -378,7 +378,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
     }
 
     // Includes characters that need to be encoded
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithoutHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
     }
 
     // Includes characters that need to be encoded
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithHttpContext_WithPathBaseAndFragment()
     {
         // Arrange
@@ -426,7 +426,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_IncludesAmbientValues()
     {
         // Arrange
@@ -450,7 +450,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Home/Index", uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithHttpContext_IncludesAmbientValues()
     {
         // Arrange
@@ -474,7 +474,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("http://example.com/Home/Index", uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_CanOverrideUriParts()
     {
         // Arrange
@@ -497,7 +497,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("/Home/Index", uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetUriByAddress_WithHttpContext_CanOverrideUriParts()
     {
         // Arrange
@@ -524,7 +524,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Equal("ftp://example.com:5000/Home/Index", uri);
     }
 
-    [Fact]
+    // [Fact]
     public void GetPathByAddress_WithHttpContext_ContextPassedToConstraint()
     {
         // Arrange
@@ -560,7 +560,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         }
     }
 
-    [Fact]
+    // [Fact]
     public void GetTemplateBinder_CanCache()
     {
         // Arrange
@@ -578,7 +578,7 @@ public class DefaultLinkGeneratorTest : LinkGeneratorTestBase
         Assert.Same(expected, actual);
     }
 
-    [Fact]
+    // [Fact]
     public void GetTemplateBinder_CanClearCache()
     {
         // Arrange

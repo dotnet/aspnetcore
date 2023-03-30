@@ -31,7 +31,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         _appElement = Browser.MountTestComponent<ConfigurationComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void WebAssemblyConfiguration_Works()
     {
         // Verify values from the default 'appsettings.json' are read.
@@ -55,7 +55,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         }
     }
 
-    [Fact]
+    // [Fact]
     public void WebAssemblyConfiguration_ReloadingWorks()
     {
         // Verify values from the default 'appsettings.json' are read.

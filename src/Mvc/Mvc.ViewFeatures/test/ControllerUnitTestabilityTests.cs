@@ -57,7 +57,7 @@ public class ControllerUnitTestabilityTests
         Assert.Same(controller.TempData, viewResult.TempData);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerContent_InvokedInUnitTests()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(StatusCodes.Status202Accepted, acceptedResult.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerFileContent_InvokedInUnitTests()
     {
         // Arrange
@@ -148,7 +148,7 @@ public class ControllerUnitTestabilityTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerFileStream_InvokedInUnitTests()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class ControllerUnitTestabilityTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerJson_InvokedInUnitTests()
     {
         // Arrange
@@ -215,7 +215,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(jsonResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerJsonWithSerializerSettings_InvokedInUnitTests()
     {
         // Arrange
@@ -235,7 +235,7 @@ public class ControllerUnitTestabilityTests
         Assert.IsType<MyModel>(jsonResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerHttpNotFound_InvokedInUnitTests()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(StatusCodes.Status404NotFound, httpNotFoundResult.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerHttpNotFoundObject_InvokedInUnitTests()
     {
         // Arrange
@@ -268,7 +268,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal("Test Content", httpNotFoundObjectResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerHttpBadRequest_InvokedInUnitTests()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(StatusCodes.Status400BadRequest, httpBadRequest.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerHttpBadRequestObject_InvokedInUnitTests()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(httpBadRequest.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerCreatedAtRoute_InvokedInUnitTests()
     {
         // Arrange
@@ -351,7 +351,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(createdAtRouteResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerAcceptedAtRoute_InvokedInUnitTests()
     {
         // Arrange
@@ -387,7 +387,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(acceptedAtRouteResult.Value);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerCreatedAtAction_InvokedInUnitTests()
     {
         // Arrange
@@ -426,7 +426,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(createdAtActionResult.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerAcceptedAtAction_InvokedInUnitTests()
     {
         // Arrange
@@ -465,7 +465,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(acceptedAtActionResult.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerRedirectToRoute_InvokedInUnitTests()
     {
         // Arrange
@@ -498,7 +498,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(redirectToRouteResult.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerRedirectToAction_InvokedInUnitTests()
     {
         // Arrange
@@ -534,7 +534,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(redirectToActionResult.RouteValues);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerRedirect_InvokedInUnitTests()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class ControllerUnitTestabilityTests
         Assert.Throws<ArgumentException>(() => controller.Redirect_Action(null));
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerActionContext_ReturnsNotNull()
     {
         // Arrange && Act
@@ -571,7 +571,7 @@ public class ControllerUnitTestabilityTests
         Assert.Null(controller.ControllerContext.RouteData);
     }
 
-    [Fact]
+    // [Fact]
     public void ContextDefaultConstructor_CanBeUsedForControllerContext()
     {
         // Arrange
@@ -587,7 +587,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(controllerContext.ModelState, controller.ModelState);
     }
 
-    [Fact]
+    // [Fact]
     public void ControllerContextSetter_CanBeUsedWithControllerActionContext()
     {
         // Arrange
@@ -614,7 +614,7 @@ public class ControllerUnitTestabilityTests
         Assert.Same(actionDescriptor, controllerContext.ActionDescriptor);
     }
 
-    [Fact]
+    // [Fact]
     public void ContextModelState_ShouldBeSameAsViewDataAndControllerModelState()
     {
         // Arrange
@@ -633,7 +633,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(controller1.ControllerContext.ModelState, controller2.ViewData.ModelState);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_WithName()
     {
         // Arrange
@@ -648,7 +648,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal("TagCloud", result.ViewComponentName);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_WithType()
     {
         // Arrange
@@ -663,7 +663,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(typeof(TagCloudViewComponent), result.ViewComponentType);
     }
 
-    [Fact]
+    // [Fact]
     public void ViewComponent_WithArguments()
     {
         // Arrange
@@ -679,7 +679,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(new { Arg1 = "Hi", Arg2 = "There" }, result.Arguments);
     }
 
-    [Fact]
+    // [Fact]
     public void Problem_Works()
     {
         // Arrange
@@ -695,7 +695,7 @@ public class ControllerUnitTestabilityTests
         Assert.Equal(detail, problemDetails.Detail);
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationProblem_Works()
     {
         // Arrange

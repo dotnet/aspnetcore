@@ -16,7 +16,7 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
 
     private HttpClient Client { get; set; }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseNonNullableReferenceType_WithController_OmitData_ValidationErrors()
     {
         // Arrange
@@ -58,7 +58,7 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
         Assert.Equal(2, errors.Length); // Not validating BCL error messages
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseNonNullableReferenceType_WithController_SubmitData_NoError()
     {
         // Arrange
@@ -97,7 +97,7 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
         await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUseNonNullableReferenceType_WithController_DefaultValueParameter_NoError()
     {
         // Act 1

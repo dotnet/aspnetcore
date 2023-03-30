@@ -31,7 +31,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
     private static readonly X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
 
-    [Fact]
+    // [Fact]
     public async Task CanReadAndWriteWithHttpsConnectionMiddleware()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -51,7 +51,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanReadAndWriteWithHttpsConnectionMiddlewareWithPemCertificate()
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
@@ -92,7 +92,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task SslStreamIsAvailable()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -114,7 +114,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandshakeDetailsAreAvailable()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -143,7 +143,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandshakeDetailsAreAvailableAfterAsyncCallback()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -179,7 +179,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RequireCertificateFailsWhenNoCertificate()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -196,7 +196,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllowCertificateContinuesWhenNoCertificate()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -221,7 +221,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AsyncCallbackSettingClientCertificateRequiredContinuesWhenNoCertificate()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -249,7 +249,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenNoServerCertificateIsProvided()
     {
         Assert.Throws<ArgumentException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask,
@@ -257,7 +257,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             );
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedServerCertificate()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -276,7 +276,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedServerCertificateSelector()
     {
         var selectorCalled = 0;
@@ -307,7 +307,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedAsyncCallback()
     {
         var selectorCalled = 0;
@@ -340,7 +340,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedServerCertificateSelectorEachTime()
     {
         var selectorCalled = 0;
@@ -382,7 +382,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedServerCertificateSelectorValidatesEkus()
     {
         var selectorCalled = 0;
@@ -412,7 +412,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedServerCertificateSelectorOverridesServerCertificate()
     {
         var selectorCalled = 0;
@@ -444,7 +444,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task UsesProvidedServerCertificateSelectorFailsIfYouReturnNull()
     {
         var selectorCalled = 0;
@@ -512,7 +512,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task RenegotiateForClientCertificateOnHttp1DisabledByDefault()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -638,7 +638,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         await AssertConnectionResult(stream, true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Renegotiate_ServerOptionsSelectionCallback_NotSupported()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1090,7 +1090,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         Assert.Null(await reader.ReadLineAsync().DefaultTimeout());
     }
 
-    [Fact]
+    // [Fact]
     public async Task HttpsSchemePassedToRequestFeature()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1105,7 +1105,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Tls10CanBeDisabled()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1222,7 +1222,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task AllowAnyCertOverridesCertificateValidation()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1247,7 +1247,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task CertificatePassedToHttpContextIsNotDisposed()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)

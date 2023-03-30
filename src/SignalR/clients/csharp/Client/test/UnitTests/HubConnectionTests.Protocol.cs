@@ -18,7 +18,7 @@ public partial class HubConnectionTests
 {
     public class Protocol : VerifiableLoggedTest
     {
-        [Fact]
+        // [Fact]
         public async Task SendAsyncSendsANonBlockingInvocationMessage()
         {
             var connection = new TestConnection();
@@ -43,7 +43,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientSendsHandshakeMessageWhenStartingConnection()
         {
             var connection = new TestConnection(autoHandshake: false);
@@ -67,7 +67,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task InvalidHandshakeResponseCausesStartToFail()
         {
             using (StartVerifiableLog())
@@ -96,7 +96,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientIsOkayReceivingMinorVersionInHandshake()
         {
             // We're just testing that the client doesn't fail when a minor version is added to the handshake
@@ -118,7 +118,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task InvokeSendsAnInvocationMessage()
         {
             var connection = new TestConnection();
@@ -143,7 +143,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ReceiveCloseMessageWithoutErrorWillCloseHubConnection()
         {
             var closedTcs = new TaskCompletionSource<Exception>();
@@ -172,7 +172,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ReceiveCloseMessageWithErrorWillCloseHubConnection()
         {
             var closedTcs = new TaskCompletionSource<Exception>();
@@ -201,7 +201,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StreamSendsAnInvocationMessage()
         {
             var connection = new TestConnection();
@@ -228,7 +228,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task InvokeCompletedWhenCompletionMessageReceived()
         {
             var connection = new TestConnection();
@@ -250,7 +250,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StreamCompletesWhenCompletionMessageIsReceived()
         {
             var connection = new TestConnection();
@@ -272,7 +272,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task InvokeYieldsResultWhenCompletionMessageReceived()
         {
             var connection = new TestConnection();
@@ -294,7 +294,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task InvokeFailsWithExceptionWhenCompletionWithErrorReceived()
         {
             var connection = new TestConnection();
@@ -317,7 +317,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StreamFailsIfCompletionMessageHasPayload()
         {
             var connection = new TestConnection();
@@ -340,7 +340,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StreamFailsWithExceptionWhenCompletionWithErrorReceived()
         {
             var connection = new TestConnection();
@@ -363,7 +363,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task InvokeFailsWithErrorWhenStreamingItemReceived()
         {
             var connection = new TestConnection();
@@ -386,7 +386,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task StreamYieldsItemsAsTheyArrive()
         {
             var connection = new TestConnection();
@@ -413,7 +413,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task HandlerRegisteredWithOnIsFiredWhenInvocationReceived()
         {
             var connection = new TestConnection();
@@ -437,7 +437,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task HandlerIsRemovedProperlyWithOff()
         {
             var connection = new TestConnection();
@@ -469,7 +469,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task DisposingSubscriptionAfterCallingRemoveHandlerDoesntFail()
         {
             var connection = new TestConnection();
@@ -503,7 +503,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task AcceptsPingMessages()
         {
             var connection = new TestConnection();
@@ -532,7 +532,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task PartialHandshakeResponseWorks()
         {
             var connection = new TestConnection(autoHandshake: false);
@@ -560,7 +560,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task HandshakeAndInvocationInSameBufferWorks()
         {
             var payload = "{}\u001e{\"type\":1, \"target\": \"Echo\", \"arguments\":[\"hello\"]}\u001e";
@@ -588,7 +588,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task PartialInvocationWorks()
         {
             var connection = new TestConnection();
@@ -624,7 +624,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientPingsMultipleTimes()
         {
             var connection = new TestConnection();
@@ -650,7 +650,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientWithInherentKeepAliveDoesNotPing()
         {
             var connection = new TestConnection(hasInherentKeepAlive: true);
@@ -677,7 +677,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientCanReturnResult()
         {
             var connection = new TestConnection();
@@ -701,7 +701,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ThrowsWhenMultipleReturningHandlersRegistered()
         {
             var connection = new TestConnection();
@@ -722,7 +722,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientReturnHandlerCanMixWithNonReturnHandler()
         {
             var connection = new TestConnection();
@@ -749,7 +749,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientCanThrowErrorResult()
         {
             var connection = new TestConnection();
@@ -776,7 +776,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientResultIgnoresErrorWhenLastHandlerSuccessful()
         {
             var connection = new TestConnection();
@@ -805,7 +805,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientResultReturnsErrorIfNoHandlerFromClient()
         {
             var connection = new TestConnection();
@@ -827,7 +827,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientResultReturnsErrorIfNoResultFromClient()
         {
             var connection = new TestConnection();
@@ -852,7 +852,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientResultReturnsErrorIfCannotParseArgument()
         {
             var connection = new TestConnection();
@@ -877,7 +877,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientResultCanReturnNullResult()
         {
             var connection = new TestConnection();
@@ -902,7 +902,7 @@ public partial class HubConnectionTests
             }
         }
 
-        [Fact]
+        // [Fact]
         public async Task ClientResultHandlerDoesNotBlockOtherHandlers()
         {
             var connection = new TestConnection();

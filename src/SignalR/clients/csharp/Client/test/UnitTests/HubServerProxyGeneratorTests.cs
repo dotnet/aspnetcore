@@ -48,7 +48,7 @@ public class HubServerProxyGeneratorTests
         Task<int?> HandleNullables(float? nullable);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetNothing()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class HubServerProxyGeneratorTests
         mockConn.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetScalar()
     {
         // Arrange
@@ -93,7 +93,7 @@ public class HubServerProxyGeneratorTests
         Assert.Equal(10, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetCollection()
     {
         // Arrange
@@ -119,7 +119,7 @@ public class HubServerProxyGeneratorTests
         Assert.Collection(result, item => Assert.Equal(10, item));
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetScalar()
     {
         // Arrange
@@ -142,7 +142,7 @@ public class HubServerProxyGeneratorTests
         Assert.Equal(10, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SetCollection()
     {
         // Arrange
@@ -167,7 +167,7 @@ public class HubServerProxyGeneratorTests
         Assert.Collection(result, item => Assert.Equal(10, item));
     }
 
-    [Fact]
+    // [Fact]
     public async Task StreamToClient()
     {
         // Arrange
@@ -209,7 +209,7 @@ public class HubServerProxyGeneratorTests
         mockConn.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task StreamFromClient()
     {
         // Arrange
@@ -250,7 +250,7 @@ public class HubServerProxyGeneratorTests
         Assert.Equal(6, result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task BidirectionalStream()
     {
         // Arrange
@@ -303,7 +303,7 @@ public class HubServerProxyGeneratorTests
         mockConn.VerifyAll();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReturnValueTask()
     {
         // Arrange

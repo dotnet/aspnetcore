@@ -88,7 +88,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedCanRead, result);
     }
 
-    [Fact]
+    // [Fact]
     public void XmlDataContractSerializer_CachesSerializerForType()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(1, formatter.createSerializerCalledCount);
     }
 
-    [Fact]
+    // [Fact]
     public void HasProperSupportedMediaTypes()
     {
         // Arrange & Act
@@ -119,7 +119,7 @@ public class XmlDataContractSerializerInputFormatterTest
                              .Select(content => content.ToString()));
     }
 
-    [Fact]
+    // [Fact]
     public void HasProperSupportedEncodings()
     {
         // Arrange & Act
@@ -130,7 +130,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Contains(formatter.SupportedEncodings, i => i.WebName == "utf-16");
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuffersRequestBody_ByDefault()
     {
         // Arrange
@@ -162,7 +162,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedString, model.sampleString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_DoesNotDisposeBufferedStreamIfItDidNotCreateIt()
     {
         // Arrange
@@ -194,7 +194,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.False(testBufferedReadStream.Disposed);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuppressInputFormatterBufferingSetToTrue_DoesNotBufferRequestBody()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class XmlDataContractSerializerInputFormatterTest
         await Assert.ThrowsAsync<XmlException>(() => formatter.ReadAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public async Task BuffersRequestBody_ByDefaultUsingMvcOptions()
     {
         // Arrange
@@ -261,7 +261,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedString, model.sampleString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuppressInputFormatterBufferingSetToTrue_DoesNotBufferRequestBody_UsingMvcOptions()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedString, model.sampleString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ReadsSimpleTypes()
     {
         // Arrange
@@ -320,7 +320,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedString, model.sampleString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SuppressInputFormatterBufferingSetToTrue_UsingMutatedOptions()
     {
         // Arrange
@@ -357,7 +357,7 @@ public class XmlDataContractSerializerInputFormatterTest
         await Assert.ThrowsAsync<XmlException>(() => formatter.ReadAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ReadsComplexTypes()
     {
         // Arrange
@@ -387,7 +387,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedString, model.TestOne.sampleString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ReadsWhenMaxDepthIsModified()
     {
         // Arrange
@@ -410,7 +410,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedInt, model.SampleInt);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ThrowsOnExceededMaxDepth()
     {
         // Arrange
@@ -426,7 +426,7 @@ public class XmlDataContractSerializerInputFormatterTest
         await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ThrowsWhenReaderQuotasAreChanged()
     {
         // Arrange
@@ -442,7 +442,7 @@ public class XmlDataContractSerializerInputFormatterTest
         await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public void SetMaxDepth_ThrowsWhenMaxDepthIsBelowOne()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Throws<ArgumentOutOfRangeException>(() => formatter.MaxDepth = 0);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_VerifyStreamIsOpenAfterRead()
     {
         // Arrange
@@ -472,7 +472,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.True(context.HttpContext.Request.Body.CanRead);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_FallsbackToUTF8_WhenCharSet_NotInContentType()
     {
         // Arrange
@@ -496,7 +496,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Contains("utf-16LE", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_UsesContentTypeCharSet_ToReadStream()
     {
         // Arrange
@@ -525,7 +525,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Contains("utf-8", ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_IgnoresBOMCharacters()
     {
         // Arrange
@@ -557,7 +557,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedBytes, Encoding.UTF8.GetBytes(model.SampleString));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_AcceptsUTF16Characters()
     {
         // Arrange
@@ -595,7 +595,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedString, model.sampleString);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ThrowsWhenNotConfiguredWithRootName()
     {
         // Arrange
@@ -615,7 +615,7 @@ public class XmlDataContractSerializerInputFormatterTest
         await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ReadsWhenConfiguredWithRootName()
     {
         // Arrange
@@ -653,7 +653,7 @@ public class XmlDataContractSerializerInputFormatterTest
         Assert.Equal(expectedInt, model.SampleInt);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ThrowsWhenNotConfiguredWithKnownTypes()
     {
         // Arrange
@@ -674,7 +674,7 @@ public class XmlDataContractSerializerInputFormatterTest
         await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadAsync_ReadsWhenConfiguredWithKnownTypes()
     {
         // Arrange

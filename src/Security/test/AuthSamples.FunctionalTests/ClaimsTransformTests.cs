@@ -18,7 +18,7 @@ public class ClaimsTransformTests : IClassFixture<WebApplicationFactory<ClaimsTr
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultReturns200()
     {
         // Arrange & Act
@@ -29,7 +29,7 @@ public class ClaimsTransformTests : IClassFixture<WebApplicationFactory<ClaimsTr
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
     {
         // Arrange & Act

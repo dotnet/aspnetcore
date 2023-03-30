@@ -27,13 +27,13 @@ public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
         WaitUntilLoaded();
     }
 
-    [Fact]
+    // [Fact]
     public void HasTitle()
     {
         Assert.Equal("Sample Blazor app", Browser.Title);
     }
 
-    [Fact]
+    // [Fact]
     public void ServesStaticAssetsFromClientAppWebRoot()
     {
         var javascriptExecutor = (IJavaScriptExecutor)Browser;

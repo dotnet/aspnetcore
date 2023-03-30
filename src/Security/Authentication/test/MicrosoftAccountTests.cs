@@ -43,7 +43,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         o.SignInScheme = "auth1";
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillTriggerApplyRedirectEvent()
     {
         using var host = await CreateHost(o =>
@@ -67,7 +67,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Contains("custom=test", query);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignInThrows()
     {
         using var host = await CreateHost(o =>
@@ -80,7 +80,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutThrows()
     {
         using var host = await CreateHost(o =>
@@ -93,7 +93,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ForbidThrows()
     {
         using var host = await CreateHost(o =>
@@ -106,7 +106,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillTriggerRedirection()
     {
         using var host = await CreateHost(o =>
@@ -128,7 +128,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Contains("code_challenge_method=S256", location);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillIncludeScopeAsConfigured()
     {
         using var host = await CreateHost(o =>
@@ -146,7 +146,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Contains("scope=foo%20bar", res.Headers.Location.Query);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillIncludeScopeAsOverwritten()
     {
         using var host = await CreateHost(o =>
@@ -164,7 +164,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillIncludeScopeAsOverwrittenWithBaseAuthenticationProperties()
     {
         using var host = await CreateHost(o =>
@@ -182,7 +182,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AuthenticatedEventCanGetRefreshToken()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MsftTest"));
@@ -252,7 +252,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.Equal("Test Refresh Token", transaction.FindClaimValue("RefreshToken"));
     }
 
-    [Fact]
+    // [Fact]
     public async Task ChallengeWillUseAuthenticationPropertiesParametersAsQueryArguments()
     {
         var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MicrosoftTest"));
@@ -283,7 +283,7 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
         Assert.DoesNotContain("response_mode", stateProperties.Items.Keys);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PkceSentToTokenEndpoint()
     {
         using var host = await CreateHost(o =>

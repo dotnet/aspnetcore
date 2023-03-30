@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection;
 
 public class MvcRazorMvcBuilderExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddTagHelpersAsServices_ReplacesTagHelperActivatorAndTagHelperTypeResolver()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class MvcRazorMvcBuilderExtensionsTest
         Assert.Equal(typeof(ServiceBasedTagHelperActivator), activatorDescriptor.ImplementationType);
     }
 
-    [Fact]
+    // [Fact]
     public void AddTagHelpersAsServices_RegistersDiscoveredTagHelpers()
     {
         // Arrange

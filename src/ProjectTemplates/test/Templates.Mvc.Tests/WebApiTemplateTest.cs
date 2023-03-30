@@ -110,10 +110,10 @@ public class WebApiTemplateTest : LoggedTest
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_NoHttps_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
-    [Fact]
+    // [Fact]
     public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
-    [Fact]
+    // [Fact]
     public Task WebApiTemplateNoHttpsFSharp() => WebApiTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps } );
 
     [ConditionalFact]

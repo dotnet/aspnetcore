@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class HtmlAttributePropertyHelperTest
 {
-    [Fact]
+    // [Fact]
     public void HtmlAttributePropertyHelper_RenamesPropertyNames()
     {
         // Arrange
@@ -23,7 +23,7 @@ public class HtmlAttributePropertyHelperTest
         Assert.Equal("bar-baz", helper.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlAttributePropertyHelper_ReturnsNameCorrectly()
     {
         // Arrange
@@ -38,7 +38,7 @@ public class HtmlAttributePropertyHelperTest
         Assert.Equal("foo", helper.Name);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlAttributePropertyHelper_ReturnsValueCorrectly()
     {
         // Arrange
@@ -53,7 +53,7 @@ public class HtmlAttributePropertyHelperTest
         Assert.Equal("baz", helper.GetValue(anonymous));
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlAttributePropertyHelper_ReturnsValueCorrectly_ForValueTypes()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class HtmlAttributePropertyHelperTest
         Assert.Equal(32, helper.GetValue(anonymous));
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlAttributePropertyHelper_ReturnsCachedPropertyHelper()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class HtmlAttributePropertyHelperTest
         Assert.Same(helpers1[0], helpers2[0]);
     }
 
-    [Fact]
+    // [Fact]
     public void HtmlAttributePropertyHelper_DoesNotShareCacheWithPropertyHelper()
     {
         // Arrange

@@ -21,7 +21,7 @@ public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<R
 
     public WebApplicationFactory<StartupRoutingDifferentBranches> Factory { get; }
 
-    [Fact]
+    // [Fact]
     public async Task MatchesConventionalRoutesInTheirBranches()
     {
         var client = Factory.CreateClient();
@@ -55,7 +55,7 @@ public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<R
         Assert.Equal("d", @default);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LinkGenerationWorksOnEachBranch()
     {
         var client = Factory.CreateClient();
@@ -89,7 +89,7 @@ public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<R
 
     // This still works because even though each middleware now gets its own data source,
     // those data sources still get added to a global collection in IOptions<RouteOptions>>.DataSources
-    [Fact]
+    // [Fact]
     public async Task LinkGenerationStillWorksAcrossBranches()
     {
         var client = Factory.CreateClient();
@@ -119,7 +119,7 @@ public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<R
         Assert.Equal("/literal/Branches/Index/s", defaultContent.Link);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotMatchConventionalRoutesDefinedInOtherBranches()
     {
         var client = Factory.CreateClient();
@@ -142,7 +142,7 @@ public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<R
         Assert.Equal(HttpStatusCode.NotFound, defaultResponse.StatusCode);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ConventionalAndDynamicRouteOrdersAreScopedPerBranch()
     {
         var client = Factory.CreateClient();

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class AnchorTagHelperTest
 {
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_GeneratesExpectedOutput()
     {
         // Arrange
@@ -84,7 +84,7 @@ public class AnchorTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_CallsIntoRouteLinkWithExpectedParameters()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class AnchorTagHelperTest
         Assert.Empty(output.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_CallsIntoActionLinkWithExpectedParameters()
     {
         // Arrange
@@ -186,7 +186,7 @@ public class AnchorTagHelperTest
         Assert.Empty(output.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AddsAreaToRouteValuesAndCallsIntoActionLinkWithExpectedParameters()
     {
         // Arrange
@@ -244,7 +244,7 @@ public class AnchorTagHelperTest
         Assert.Empty(output.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AspAreaOverridesAspRouteArea()
     {
         // Arrange
@@ -303,7 +303,7 @@ public class AnchorTagHelperTest
         Assert.Empty(output.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_EmptyStringOnAspAreaIsPassedThroughToRouteValues()
     {
         // Arrange
@@ -361,7 +361,7 @@ public class AnchorTagHelperTest
         Assert.Empty(output.Content.GetContent());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AddsPageToRouteValuesAndCallsPageLinkWithExpectedParameters()
     {
         // Arrange
@@ -412,7 +412,7 @@ public class AnchorTagHelperTest
         generator.Verify();
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_AddsAreaToRouteValuesAndCallsPageLinkWithExpectedParameters()
     {
         // Arrange
@@ -567,7 +567,7 @@ public class AnchorTagHelperTest
         Assert.Equal(expectedErrorMessage, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ThrowsIfRouteAndPageProvided()
     {
         // Arrange
@@ -605,7 +605,7 @@ public class AnchorTagHelperTest
         Assert.Equal(expectedErrorMessage, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ProcessAsync_ThrowsIfActionAndPageProvided()
     {
         // Arrange

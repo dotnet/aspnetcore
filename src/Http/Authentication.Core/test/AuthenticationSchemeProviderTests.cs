@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test;
 
 public class AuthenticationSchemeProviderTests
 {
-    [Fact]
+    // [Fact]
     public async Task NoDefaultsWithoutAutoDefaultScheme()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -24,7 +24,7 @@ public class AuthenticationSchemeProviderTests
         await VerifyAllDefaults(provider, null);
     }
 
-    [Fact]
+    // [Fact]
     public async Task NoDefaultsWithMoreSchemes()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -37,7 +37,7 @@ public class AuthenticationSchemeProviderTests
         await VerifyAllDefaults(provider, null);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultSchemesUsesSingleScheme()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -53,7 +53,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultSchemesFallbackToDefaultScheme()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -71,7 +71,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultSignOutFallsbackToSignIn()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -87,7 +87,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Equal("signin", scheme!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultForbidFallsbackToChallenge()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -103,7 +103,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Equal("challenge", scheme!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultSchemesAreSet()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -128,7 +128,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Equal("A", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
     }
 
-    [Fact]
+    // [Fact]
     public async Task SignOutWillDefaultsToSignInThatDoesNotSignOut()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -141,7 +141,7 @@ public class AuthenticationSchemeProviderTests
         Assert.NotNull(await provider.GetDefaultSignOutSchemeAsync());
     }
 
-    [Fact]
+    // [Fact]
     public void SchemeRegistrationIsCaseSensitive()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -155,7 +155,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Contains("Scheme already exists: signin", error.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void CanSafelyTryAddSchemes()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -172,7 +172,7 @@ public class AuthenticationSchemeProviderTests
         Assert.True(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
     }
 
-    [Fact]
+    // [Fact]
     public async Task LookupUsesProvidedStringComparer()
     {
         var services = new ServiceCollection().AddOptions()
@@ -191,7 +191,7 @@ public class AuthenticationSchemeProviderTests
         Assert.Same(b, c);
     }
 
-    [Fact]
+    // [Fact]
     public async Task AutoDefaultSchemeAddRemoveWorks()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>

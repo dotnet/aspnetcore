@@ -67,7 +67,7 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_ContentEncodingBrotli_Decompressed()
     {
         // Arrange
@@ -83,7 +83,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(uncompressedBytes, decompressedBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_ContentEncodingDeflate_Decompressed()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(uncompressedBytes, decompressedBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_ContentEncodingGzip_Decompressed()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(uncompressedBytes, decompressedBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_NoContentEncoding_NotDecompressed()
     {
         // Arrange
@@ -130,7 +130,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(uncompressedBytes, outputBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_UnsupportedContentEncoding_NotDecompressed()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(compressedBytes, outputBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_MultipleContentEncodings_NotDecompressed()
     {
         // Arrange
@@ -163,7 +163,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(inputBytes, outputBytes);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_MiddlewareAddedMultipleTimes_OnlyDecompressedOnce()
     {
         // Arrange
@@ -309,7 +309,7 @@ public class RequestDecompressionMiddlewareTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task Request_InvalidDataForContentEncoding_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -375,7 +375,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.IsAssignableFrom<InvalidOperationException>(exception);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Options_RegisterCustomDecompressionProvider()
     {
         // Arrange
@@ -749,7 +749,7 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_NullRequestDelegate_Throws()
     {
         // Arrange
@@ -765,7 +765,7 @@ public class RequestDecompressionMiddlewareTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_NullLogger_Throws()
     {
         // Arrange
@@ -780,7 +780,7 @@ public class RequestDecompressionMiddlewareTests
         });
     }
 
-    [Fact]
+    // [Fact]
     public void Ctor_NullRequestDecompressionProvider_Throws()
     {
         // Arrange

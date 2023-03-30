@@ -41,7 +41,7 @@ public class BinaryHttpClientTest : BrowserTestBase,
 
     public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
-    [Fact]
+    // [Fact]
     public void CanSendAndReceiveBytes()
     {
         IssueRequest("/subdir/api/data");

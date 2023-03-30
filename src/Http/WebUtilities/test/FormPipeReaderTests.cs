@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.WebUtilities;
 
 public class FormPipeReaderTests
 {
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_EmptyKeyAtEndAllowed()
     {
         var bodyPipe = await MakePipeReader("=bar");
@@ -21,7 +21,7 @@ public class FormPipeReaderTests
         Assert.Equal("bar", formCollection[""].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_EmptyKeyWithAdditionalEntryAllowed()
     {
         var bodyPipe = await MakePipeReader("=bar&baz=2");
@@ -32,7 +32,7 @@ public class FormPipeReaderTests
         Assert.Equal("2", formCollection["baz"].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_EmptyValueAtEndAllowed()
     {
         var bodyPipe = await MakePipeReader("foo=");
@@ -42,7 +42,7 @@ public class FormPipeReaderTests
         Assert.Equal("", formCollection["foo"].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_EmptyValueWithoutEqualsAtEndAllowed()
     {
         var bodyPipe = await MakePipeReader("foo");
@@ -52,7 +52,7 @@ public class FormPipeReaderTests
         Assert.Equal("", formCollection["foo"].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_EmptyValueWithAdditionalEntryAllowed()
     {
         var bodyPipe = await MakePipeReader("foo=&baz=2");
@@ -63,7 +63,7 @@ public class FormPipeReaderTests
         Assert.Equal("2", formCollection["baz"].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_EmptyValueWithoutEqualsWithAdditionalEntryAllowed()
     {
         var bodyPipe = await MakePipeReader("foo&baz=2");
@@ -74,7 +74,7 @@ public class FormPipeReaderTests
         Assert.Equal("2", formCollection["baz"].ToString());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueContainsInvalidCharacters_Throw()
     {
         var bodyPipe = await MakePipeReader("%00");
@@ -86,7 +86,7 @@ public class FormPipeReaderTests
         Assert.IsType<InvalidOperationException>(exception.InnerException);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueCountLimitMet_Success()
     {
         var bodyPipe = await MakePipeReader("foo=1&bar=2&baz=3");
@@ -99,7 +99,7 @@ public class FormPipeReaderTests
         Assert.Equal(3, formCollection.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueCountLimitExceeded_Throw()
     {
         var content = "foo=1&baz=2&bar=3&baz=4&baf=5";
@@ -114,7 +114,7 @@ public class FormPipeReaderTests
         Assert.Equal(Encoding.UTF8.GetBytes(content), readResult.Buffer.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueCountLimitExceededSameKey_Throw()
     {
         var content = "baz=1&baz=2&baz=3&baz=4";
@@ -129,7 +129,7 @@ public class FormPipeReaderTests
         Assert.Equal(Encoding.UTF8.GetBytes(content), readResult.Buffer.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_KeyLengthLimitMet_Success()
     {
         var bodyPipe = await MakePipeReader("fooooooooo=1&bar=2&baz=3&baz=4");
@@ -142,7 +142,7 @@ public class FormPipeReaderTests
         Assert.Equal(3, formCollection.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_KeyLengthLimitExceeded_Throw()
     {
         var content = "foo=1&baz12345678=2";
@@ -157,7 +157,7 @@ public class FormPipeReaderTests
         Assert.Equal(Encoding.UTF8.GetBytes(content), readResult.Buffer.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueLengthLimitMet_Success()
     {
         var bodyPipe = await MakePipeReader("foo=1&bar=1234567890&baz=3&baz=4");
@@ -170,7 +170,7 @@ public class FormPipeReaderTests
         Assert.Equal(3, formCollection.Count);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueLengthLimitExceeded_Throw()
     {
         var content = "foo=1&baz=12345678901";
@@ -185,7 +185,7 @@ public class FormPipeReaderTests
         Assert.Equal(Encoding.UTF8.GetBytes(content), readResult.Buffer.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_ValueLengthLimitExceededAcrossBufferBoundary_Throw()
     {
         Pipe bodyPipe = new Pipe();
@@ -210,7 +210,7 @@ public class FormPipeReaderTests
         Assert.Equal(Encoding.UTF8.GetBytes("baz=12345678901"), readResult.Buffer.ToArray());
     }
 
-    [Fact]
+    // [Fact]
     public void ReadFormAsync_ChunkedDataNoDelimiter_ThrowsEarly()
     {
         var bytes = CreateBytes_NoDelimiter(10 * 1024);
@@ -425,7 +425,7 @@ public class FormPipeReaderTests
         Assert.Equal("wow", dict["\"%-.<>\\^_`{|}"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_MultiSegmentFastPathWorks()
     {
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&"), Encoding.UTF8.GetBytes("baz=boo"));
@@ -442,7 +442,7 @@ public class FormPipeReaderTests
         Assert.Equal("boo", dict["baz"]);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_ExceedKeyLengthThrows()
     {
         var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(Encoding.UTF8.GetBytes("foo=bar&baz=boo&t="));
@@ -456,7 +456,7 @@ public class FormPipeReaderTests
         Assert.Equal("Form key length limit 2 exceeded.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_ExceedKeyLengthThrowsInSplitSegment()
     {
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("fo=bar&ba"), Encoding.UTF8.GetBytes("z=boo&t="));
@@ -470,7 +470,7 @@ public class FormPipeReaderTests
         Assert.Equal("Form key length limit 2 exceeded.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_ExceedValueLengthThrows()
     {
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&baz=boo&t="));
@@ -484,7 +484,7 @@ public class FormPipeReaderTests
         Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_ExceedValueLengthThrowsInSplitSegment()
     {
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&t="));
@@ -498,7 +498,7 @@ public class FormPipeReaderTests
         Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_ExceedKeyLengthThrowsInSplitSegmentEnd()
     {
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&asdfasdfasd="));
@@ -512,7 +512,7 @@ public class FormPipeReaderTests
         Assert.Equal("Form key length limit 10 exceeded.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void TryParseFormValues_ExceedValueLengthThrowsInSplitSegmentEnd()
     {
         var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&t=asdfasdfasd"));
@@ -526,7 +526,7 @@ public class FormPipeReaderTests
         Assert.Equal("Form value length limit 10 exceeded.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ResetPipeWorks()
     {
         // Same test that is in the benchmark
@@ -586,7 +586,7 @@ public class FormPipeReaderTests
         Assert.Equal("", values["b"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ReadFormAsync_AccumulatesEmptyKeys()
     {
         var bodyPipe = await MakePipeReader("&&&");

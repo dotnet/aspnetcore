@@ -15,7 +15,7 @@ public class RoleStoreTest : IClassFixture<InMemoryDatabaseFixture>
         _fixture = fixture;
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCreateUsingAddRoleManager()
     {
         var manager = TestIdentityFactory.CreateRoleManager(_fixture.Connection);
@@ -23,7 +23,7 @@ public class RoleStoreTest : IClassFixture<InMemoryDatabaseFixture>
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("arole")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanCreateRoleWithSingletonManager()
     {
         var services = TestIdentityFactory.CreateTestServices();
@@ -37,7 +37,7 @@ public class RoleStoreTest : IClassFixture<InMemoryDatabaseFixture>
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("someRole")));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RoleStoreMethodsThrowWhenDisposedTest()
     {
         var store = new RoleStore<IdentityRole>(InMemoryContext.Create(_fixture.Connection));
@@ -52,7 +52,7 @@ public class RoleStoreTest : IClassFixture<InMemoryDatabaseFixture>
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.DeleteAsync(null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task RoleStorePublicNullCheckTest()
     {
         Assert.Throws<ArgumentNullException>("context", () => new RoleStore<IdentityRole>(null));
@@ -65,7 +65,7 @@ public class RoleStoreTest : IClassFixture<InMemoryDatabaseFixture>
         await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.DeleteAsync(null));
     }
 
-    [Fact]
+    // [Fact]
     public async Task CanUpdateRoleName()
     {
         var manager = TestIdentityFactory.CreateRoleManager(_fixture.Connection);

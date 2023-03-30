@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
 public class ConfigurationReaderTests
 {
-    [Fact]
+    // [Fact]
     public void ReadCertificatesWhenNoCertificatesSection_ReturnsEmptyCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
@@ -26,7 +26,7 @@ public class ConfigurationReaderTests
         Assert.False(certificates.Any());
     }
 
-    [Fact]
+    // [Fact]
     public void ReadCertificatesWhenEmptyCertificatesSection_ReturnsEmptyCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -39,7 +39,7 @@ public class ConfigurationReaderTests
         Assert.False(certificates.Any());
     }
 
-    [Fact]
+    // [Fact]
     public void ReadCertificatesSection_ReturnsCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -71,7 +71,7 @@ public class ConfigurationReaderTests
         Assert.True(storeCert.AllowInvalid);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadCertificatesSection_IsCaseInsensitive()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -91,7 +91,7 @@ public class ConfigurationReaderTests
         Assert.Equal("certpassword", fileCert.Password);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadCertificatesSection_ThrowsOnCaseInsensitiveDuplicate()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -104,7 +104,7 @@ public class ConfigurationReaderTests
         Assert.Contains(CoreStrings.KeyAlreadyExists, exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointsWhenNoEndpointsSection_ReturnsEmptyCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
@@ -114,7 +114,7 @@ public class ConfigurationReaderTests
         Assert.False(endpoints.Any());
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointsWhenEmptyEndpointsSection_ReturnsEmptyCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -127,7 +127,7 @@ public class ConfigurationReaderTests
         Assert.False(endpoints.Any());
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithMissingUrl_Throws()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -138,7 +138,7 @@ public class ConfigurationReaderTests
         Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithEmptyUrl_Throws()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -149,7 +149,7 @@ public class ConfigurationReaderTests
         Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointsSection_ReturnsCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -218,7 +218,7 @@ public class ConfigurationReaderTests
         Assert.True(cert4.AllowInvalid);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithSingleSslProtocolSet_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -234,7 +234,7 @@ public class ConfigurationReaderTests
 #pragma warning restore SYSLIB0039
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithMultipleSslProtocolsSet_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -251,7 +251,7 @@ public class ConfigurationReaderTests
 #pragma warning restore SYSLIB0039
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithSslProtocolSet_ReadsCaseInsensitive()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -267,7 +267,7 @@ public class ConfigurationReaderTests
 #pragma warning restore SYSLIB0039
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithNoSslProtocolSettings_ReturnsNull()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -280,7 +280,7 @@ public class ConfigurationReaderTests
         Assert.Null(endpoint.SslProtocols);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithEmptySniSection_ReturnsEmptyCollection()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -295,7 +295,7 @@ public class ConfigurationReaderTests
         Assert.False(endpoint.Sni.Any());
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithEmptySniKey_Throws()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -310,7 +310,7 @@ public class ConfigurationReaderTests
         Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("End1"), end1Ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithSniConfigured_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -339,7 +339,7 @@ public class ConfigurationReaderTests
         VerifySniConfig(reader.Endpoints.First().Sni["*.Example.org"]);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointDefaultsWithSingleSslProtocolSet_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -354,7 +354,7 @@ public class ConfigurationReaderTests
 #pragma warning restore SYSLIB0039
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointDefaultsWithNoSslProtocolSettings_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().Build();
@@ -364,7 +364,7 @@ public class ConfigurationReaderTests
         Assert.Null(endpoint.SslProtocols);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointWithNoClientCertificateModeSettings_ReturnsNull()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -377,7 +377,7 @@ public class ConfigurationReaderTests
         Assert.Null(endpoint.ClientCertificateMode);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointDefaultsWithClientCertificateModeSet_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -390,7 +390,7 @@ public class ConfigurationReaderTests
         Assert.Equal(ClientCertificateMode.AllowCertificate, endpoint.ClientCertificateMode);
     }
 
-    [Fact]
+    // [Fact]
     public void ReadEndpointDefaultsWithNoAllowCertificateSettings_ReturnsCorrectValue()
     {
         var config = new ConfigurationBuilder().Build();

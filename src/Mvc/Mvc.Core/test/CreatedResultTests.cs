@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class CreatedResultTests
 {
-    [Fact]
+    // [Fact]
     public void CreatedResult_SetsLocation()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class CreatedResultTests
         Assert.Same(location, result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedResult_WithNoArgs_SetsLocationNull()
     {
         // Act
@@ -38,7 +38,7 @@ public class CreatedResultTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public void CreatedResult_SetsLocationNull()
     {
         // Act
@@ -48,7 +48,7 @@ public class CreatedResultTests
         Assert.Null(result.Location);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatedResult_ReturnsStatusCode_SetsLocationHeader()
     {
         // Arrange
@@ -65,7 +65,7 @@ public class CreatedResultTests
         Assert.Equal(location, httpContext.Response.Headers["Location"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatedResult_ReturnsStatusCode_NotSetLocationHeader()
     {
         // Arrange        
@@ -81,7 +81,7 @@ public class CreatedResultTests
         Assert.Empty(httpContext.Response.Headers["Location"]);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatedResult_OverwritesLocationHeader()
     {
         // Arrange

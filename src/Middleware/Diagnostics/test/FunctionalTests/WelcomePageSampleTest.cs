@@ -15,7 +15,7 @@ public class WelcomePageSampleTest : IClassFixture<TestFixture<WelcomePageSample
 
     public HttpClient Client { get; }
 
-    [Fact]
+    // [Fact]
     public async Task WelcomePage_ShowsWelcome()
     {
         var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");

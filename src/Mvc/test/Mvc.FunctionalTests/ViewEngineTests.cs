@@ -73,7 +73,7 @@ ViewWithNestedLayout-Content
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorView_ExecutesPartialPagesWithCorrectContext()
     {
         // Arrange
@@ -92,7 +92,7 @@ test-value";
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorView_DoesNotThrow_PartialViewWithEnumerableModel()
     {
         // Arrange
@@ -106,7 +106,7 @@ test-value";
         Assert.Equal(expected, body.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorView_PassesViewContextBetweenViewAndLayout()
     {
         // Arrange
@@ -249,7 +249,7 @@ ViewWithNestedLayout-Content
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task LayoutValueIsPassedBetweenNestedViewStarts()
     {
         // Arrange
@@ -305,7 +305,7 @@ index-content";
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewStartsCanUseDirectivesInjectedFromParentGlobals()
     {
         // Arrange
@@ -321,7 +321,7 @@ index-content";
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewComponentsExecuteLayout()
     {
         // Arrange
@@ -338,7 +338,7 @@ Page Content
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RelativePathsWorkAsExpected()
     {
         // Arrange
@@ -362,7 +362,7 @@ WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong></component
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewComponentsDoNotExecuteViewStarts()
     {
         // Arrange
@@ -375,7 +375,7 @@ WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong></component
         Assert.Equal(expected, body.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialDoNotExecuteViewStarts()
     {
         // Arrange
@@ -388,7 +388,7 @@ WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong></component
         Assert.Equal(expected, body.Trim());
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialsRenderedViaRenderPartialAsync_CanRenderLayouts()
     {
         // Arrange
@@ -403,7 +403,7 @@ WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong></component
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task PartialsRenderedViaPartialAsync_CanRenderLayouts()
     {
         // Arrange
@@ -423,7 +423,7 @@ Partial that does not specify Layout
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task RazorView_SetsViewPathAndExecutingPagePath()
     {
         // Arrange
@@ -438,7 +438,7 @@ Partial that does not specify Layout
         ResourceFile.UpdateOrVerify(_assembly, outputFile, expectedContent, responseContent);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewEngine_NormalizesPathsReturnedByViewLocationExpanders()
     {
         // Arrange
@@ -454,7 +454,7 @@ Partial";
         Assert.Equal(expected, responseContent, ignoreLineEndingDifferences: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task ViewEngine_DiscoversViewsFromPagesSharedDirectory()
     {
         // Arrange

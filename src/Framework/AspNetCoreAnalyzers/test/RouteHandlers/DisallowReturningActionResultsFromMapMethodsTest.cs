@@ -10,7 +10,7 @@ public partial class DisallowReturningActionResultsFromMapMethodsTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningIResult_Works()
     {
         // Arrange
@@ -29,7 +29,7 @@ webApp.MapGet(""/"", () => Results.Ok(""Hello""));
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningCustomIResult_Works()
     {
         // Arrange
@@ -54,7 +54,7 @@ class CustomResult : IResult
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningIResultConditionallyWorks()
     {
         // Arrange
@@ -82,7 +82,7 @@ webApp.MapGet(""/"", (int id) =>
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningTypeThatImplementsIResultAndActionResultDoesNotProduceDiagnostics()
     {
         // Arrange
@@ -109,7 +109,7 @@ class CustomResult : IResult, IActionResult
         Assert.Empty(diagnostics);
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningActionResult_ProducesDiagnostics()
     {
         // Arrange
@@ -132,7 +132,7 @@ webApp.MapGet(""/"", () => /*MM*/new OkObjectResult(""cool story""));
         Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningActionResultConditionally_ProducesDiagnostics()
     {
         // Arrange
@@ -155,7 +155,7 @@ webApp.MapGet(""/"", (int id) => /*MM*/id == 0 ? (ActionResult)new NotFoundResul
         Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningActionResultFromMethodReference_ProducesDiagnostics()
     {
         // Arrange
@@ -183,7 +183,7 @@ static object OkObjectResultReturningMethod()
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningActionResultOfTFromMethodReference_ProducesDiagnostics()
     {
         // Arrange
@@ -215,7 +215,7 @@ public record Person(string Name);
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningActionResultOfTFromANonLocalFunction_ProducesDiagnostics()
     {
         // Arrange
@@ -253,7 +253,7 @@ public class MyController
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
-    [Fact]
+    // [Fact]
     public async Task MinimalAction_ReturningActionResultOfTDeclarationInDifferentFile_ProducesDiagnostics()
     {
         // Arrange

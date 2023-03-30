@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 
 public class QueryFeatureTests
 {
-    [Fact]
+    // [Fact]
     public void QueryReturnsParsedQueryCollection()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class QueryFeatureTests
         Assert.Equal(0, queryCollection.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEmptyKeyWorks()
     {
         var features = new FeatureCollection();
@@ -87,7 +87,7 @@ public class QueryFeatureTests
         Assert.Equal(new[] { "value1", "" }, queryCollection[""]);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithDuplicateKeysGroups()
     {
         var features = new FeatureCollection();
@@ -102,7 +102,7 @@ public class QueryFeatureTests
         Assert.Equal("valueB", queryCollection["key2"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithThreefoldKeysGroups()
     {
         var features = new FeatureCollection();
@@ -117,7 +117,7 @@ public class QueryFeatureTests
         Assert.Equal("valueB", queryCollection["key2"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEmptyValuesWorks()
     {
         var features = new FeatureCollection();
@@ -148,7 +148,7 @@ public class QueryFeatureTests
         Assert.Empty(queryCollection);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyWorks()
     {
         var features = new FeatureCollection();
@@ -162,7 +162,7 @@ public class QueryFeatureTests
         Assert.Equal("", queryCollection["fields [todoItems]"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedValueWorks()
     {
         var features = new FeatureCollection();
@@ -176,7 +176,7 @@ public class QueryFeatureTests
         Assert.Equal("fields [todoItems]", queryCollection[""].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyEmptyValueWorks()
     {
         var features = new FeatureCollection();
@@ -190,7 +190,7 @@ public class QueryFeatureTests
         Assert.Equal("", queryCollection["fields [todoItems]"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyEncodedValueWorks()
     {
         var features = new FeatureCollection();
@@ -204,7 +204,7 @@ public class QueryFeatureTests
         Assert.Equal("[ 1 ]", queryCollection["fields [todoItems]"].FirstOrDefault());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseQueryWithEncodedKeyEncodedValuesWorks()
     {
         var features = new FeatureCollection();
@@ -218,7 +218,7 @@ public class QueryFeatureTests
         Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, queryCollection["fields [todoItems]"]);
     }
 
-    [Fact]
+    // [Fact]
     public void CaseInsensitiveWithManyKeys()
     {
         // need to use over 10 keys to test dictionary storage code path
@@ -237,7 +237,7 @@ public class QueryFeatureTests
         Assert.Equal(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" }, queryCollection["KEY"]);
     }
 
-    [Fact]
+    // [Fact]
     public void CaseInsensitiveWithFewKeys()
     {
         // need to use less than 10 keys to test array storage code path

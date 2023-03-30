@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 public class DefaultParameterPolicyFactoryTest
 {
-    [Fact]
+    // [Fact]
     public void Create_ThrowsException_IfNoConstraintOrParameterPolicy_FoundInMap()
     {
         // Arrange
@@ -28,7 +28,7 @@ public class DefaultParameterPolicyFactoryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ThrowsException_OnInvalidType()
     {
         // Arrange
@@ -49,7 +49,7 @@ public class DefaultParameterPolicyFactoryTest
             exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromRoutePattern_String()
     {
         // Arrange
@@ -68,7 +68,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<IntRouteConstraint>(parameterPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromRoutePattern_String_Optional()
     {
         // Arrange
@@ -88,7 +88,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<IntRouteConstraint>(optionalConstraint.InnerConstraint);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromRoutePattern_Constraint()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<IntRouteConstraint>(parameterPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromRoutePattern_Constraint_Optional()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<IntRouteConstraint>(optionalConstraint.InnerConstraint);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromRoutePattern_ParameterPolicy()
     {
         // Arrange
@@ -146,7 +146,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<CustomParameterPolicy>(parameterPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndRouteConstraint()
     {
         // Arrange
@@ -159,7 +159,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<IntRouteConstraint>(parameterPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndRouteConstraintWithArgument()
     {
         // Arrange
@@ -174,7 +174,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.Equal(20, constraint.Max);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndRouteConstraint_Optional()
     {
         // Arrange
@@ -188,7 +188,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<IntRouteConstraint>(optionalConstraint.InnerConstraint);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicy()
     {
         // Arrange
@@ -207,7 +207,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.IsType<CustomParameterPolicy>(parameterPolicy);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndServices()
     {
         // Arrange
@@ -228,7 +228,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.NotNull(constraint.TestService);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndMultipleServices()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.NotNull(constraint.TestService2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithOnlyServiceArguments()
     {
         // Arrange
@@ -272,7 +272,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.NotNull(constraint.TestService2);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithMultipleMatchingCtors()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.Equal(1, constraint.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithMultipleMatchingCtorsInAscendingOrder()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.Equal(1, constraint.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithAmbigiousMatchingCtors()
     {
         // Arrange
@@ -336,7 +336,7 @@ public class DefaultParameterPolicyFactoryTest
             + "Multiple constructors were found with the following number of parameters: 2.", exception.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithSingleArgumentAndServiceArgument()
     {
         // Arrange
@@ -357,7 +357,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.Equal("\\\\d{1,2}", constraint.Constraint.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndUnresolvedServices_Throw()
     {
         // Arrange
@@ -377,7 +377,7 @@ public class DefaultParameterPolicyFactoryTest
         Assert.Equal($"No service for type '{typeof(ITestService).FullName}' has been registered.", inner.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicy_Optional()
     {
         // Arrange

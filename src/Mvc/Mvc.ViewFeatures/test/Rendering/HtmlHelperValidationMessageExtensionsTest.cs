@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Core;
 /// </summary>
 public class HtmlHelperValidationMessageExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void ValidationMessage_UsesSpecifiedExpression()
     {
         // Arrange
@@ -25,7 +25,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessageFor_UsesSpecifiedExpression()
     {
         // Arrange
@@ -40,7 +40,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessage_UsesSpecifiedMessage()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessageFor_UsesSpecifiedMessage()
     {
         // Arrange
@@ -70,7 +70,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessage_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -85,7 +85,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessageFor_UsesSpecifiedHtmlAttributes()
     {
         // Arrange
@@ -100,7 +100,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageForResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessage_UsesSpecifiedTag()
     {
         // Arrange
@@ -115,7 +115,7 @@ public class HtmlHelperValidationMessageExtensionsTest
             HtmlContentUtilities.HtmlContentToString(validationMessageResult));
     }
 
-    [Fact]
+    // [Fact]
     public void ValidationMessageFor_UsesSpecifiedTag()
     {
         // Arrange

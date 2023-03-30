@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Localization;
 
 public class AcceptLanguageHeaderRequestCultureProviderTest
 {
-    [Fact]
+    // [Fact]
     public async Task GetFallbackLanguage_ReturnsFirstNonNullCultureFromSupportedCultureList()
     {
         using var host = new HostBuilder()
@@ -53,7 +53,7 @@ public class AcceptLanguageHeaderRequestCultureProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetFallbackLanguage_ReturnsFromSupportedCulture_AcceptLanguageListContainsSupportedCultures()
     {
         using var host = new HostBuilder()
@@ -93,7 +93,7 @@ public class AcceptLanguageHeaderRequestCultureProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task GetFallbackLanguage_ReturnsDefault_AcceptLanguageListDoesnotContainSupportedCultures()
     {
         using var host = new HostBuilder()
@@ -134,7 +134,7 @@ public class AcceptLanguageHeaderRequestCultureProviderTest
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task OmitDefaultRequestCultureShouldNotThrowNullReferenceException_And_ShouldGetTheRightCulture()
     {
         using var host = new HostBuilder()

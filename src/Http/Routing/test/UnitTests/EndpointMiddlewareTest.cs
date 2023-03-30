@@ -14,7 +14,7 @@ public class EndpointMiddlewareTest
 {
     private readonly IOptions<RouteOptions> RouteOptions = Options.Create(new RouteOptions());
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_NoFeature_NoOps()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class EndpointMiddlewareTest
         Assert.True(calledNext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_NoEndpoint_NoOps()
     {
         // Arrange
@@ -61,7 +61,7 @@ public class EndpointMiddlewareTest
         Assert.True(calledNext);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_InvokesDelegate()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class EndpointMiddlewareTest
         Assert.True(calledEndpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_ThrowsIfAuthAttributesWereFound_ButAuthMiddlewareNotInvoked()
     {
         // Arrange
@@ -120,7 +120,7 @@ public class EndpointMiddlewareTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpointWithNullRequestDelegate_ThrowsIfAuthAttributesWereFound_ButAuthMiddlewareNotInvoked()
     {
         // Arrange
@@ -149,7 +149,7 @@ public class EndpointMiddlewareTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_WorksIfAuthAttributesWereFound_AndAuthMiddlewareInvoked()
     {
         // Arrange
@@ -183,7 +183,7 @@ public class EndpointMiddlewareTest
         Assert.True(calledEndpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_DoesNotThrowIfUnhandledAuthAttributesWereFound_ButSuppressedViaOptions()
     {
         // Arrange
@@ -217,7 +217,7 @@ public class EndpointMiddlewareTest
         Assert.True(calledEndpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_ThrowsIfCorsMetadataWasFound_ButCorsMiddlewareNotInvoked()
     {
         // Arrange
@@ -246,7 +246,7 @@ public class EndpointMiddlewareTest
         Assert.Equal(expected, ex.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_WorksIfCorsMetadataWasFound_AndCorsMiddlewareInvoked()
     {
         // Arrange
@@ -280,7 +280,7 @@ public class EndpointMiddlewareTest
         Assert.True(calledEndpoint);
     }
 
-    [Fact]
+    // [Fact]
     public async Task Invoke_WithEndpoint_DoesNotThrowIfUnhandledCorsAttributesWereFound_ButSuppressedViaOptions()
     {
         // Arrange

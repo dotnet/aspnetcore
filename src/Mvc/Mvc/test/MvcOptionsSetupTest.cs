@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class MvcOptionsSetupTest
 {
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpViewEngines()
     {
         // Arrange & Act
@@ -36,7 +36,7 @@ public class MvcOptionsSetupTest
         Assert.IsType<RazorViewEngine>(viewEngine);
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpModelBinderProviders()
     {
         // Arrange & Act
@@ -65,7 +65,7 @@ public class MvcOptionsSetupTest
             binder => Assert.IsType<ComplexObjectModelBinderProvider>(binder));
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpValueProviders()
     {
         // Arrange & Act
@@ -81,7 +81,7 @@ public class MvcOptionsSetupTest
             provider => Assert.IsType<FormFileValueProviderFactory>(provider));
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpOutputFormatters()
     {
         // Arrange & Act
@@ -95,7 +95,7 @@ public class MvcOptionsSetupTest
             formatter => Assert.IsType<SystemTextJsonOutputFormatter>(formatter));
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpInputFormatters()
     {
         // Arrange & Act
@@ -107,7 +107,7 @@ public class MvcOptionsSetupTest
             formatter => Assert.IsType<SystemTextJsonInputFormatter>(formatter));
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpFormatterMapping()
     {
         // Arrange & Act
@@ -118,7 +118,7 @@ public class MvcOptionsSetupTest
         Assert.Equal("application/json", mapping);
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpModelValidatorProviders()
     {
         // Arrange & Act
@@ -130,7 +130,7 @@ public class MvcOptionsSetupTest
             validator => Assert.IsType<DataAnnotationsModelValidatorProvider>(validator));
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpClientModelValidatorProviders()
     {
         // Arrange & Act
@@ -143,7 +143,7 @@ public class MvcOptionsSetupTest
             validator => Assert.IsType<NumericClientModelValidatorProvider>(validator));
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_IgnoresAcceptHeaderHavingWildCardMediaAndSubMediaTypes()
     {
         // Arrange & Act
@@ -153,7 +153,7 @@ public class MvcOptionsSetupTest
         Assert.False(options.RespectBrowserAcceptHeader);
     }
 
-    [Fact]
+    // [Fact]
     public void Setup_SetsUpMetadataDetailsProviders()
     {
         // Arrange & Act

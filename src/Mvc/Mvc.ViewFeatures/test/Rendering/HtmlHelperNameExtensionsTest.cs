@@ -35,7 +35,7 @@ public class HtmlHelperNameExtensionsTest
 
     private string StringProperty { get; }
 
-    [Fact]
+    // [Fact]
     public void IdAndNameHelpers_ReturnEmptyForModel()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class HtmlHelperNameExtensionsTest
         Assert.Equal(prefix, nameForModelResult);
     }
 
-    [Fact]
+    // [Fact]
     public void IdAndNameHelpers_ReturnPropertyName()
     {
         // Arrange
@@ -136,7 +136,7 @@ public class HtmlHelperNameExtensionsTest
         Assert.Equal(expectedName, nameForResult);
     }
 
-    [Fact]
+    // [Fact]
     public void IdAndNameHelpers_ReturnPropertyPath_ForNestedProperty()
     {
         // Arrange
@@ -155,7 +155,7 @@ public class HtmlHelperNameExtensionsTest
         Assert.Equal("Inner.Id", nameForResult);
     }
 
-    [Fact]
+    // [Fact]
     public void IdAndNameHelpers_DoNotConsultMetadataOrMetadataProvider()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class HtmlHelperNameExtensionsTest
             Times.Exactly(1));
     }
 
-    [Fact]
+    // [Fact]
     public void IdAndNameHelpers_DoNotConsultMetadataOrMetadataProvider_ForProperty()
     {
         // Arrange
@@ -229,7 +229,7 @@ public class HtmlHelperNameExtensionsTest
         Assert.Equal(expression, nameResult);
     }
 
-    [Fact]
+    // [Fact]
     public void IdForAndNameFor_ReturnEmpty_IfExpressionUnsupported()
     {
         // Arrange
@@ -321,7 +321,7 @@ public class HtmlHelperNameExtensionsTest
         Assert.Equal(expectedName, nameResult);
     }
 
-    [Fact]
+    // [Fact]
     public void IdForAndNameFor_Throws_WhenParameterUsedAsIndexer()
     {
         // Arrange

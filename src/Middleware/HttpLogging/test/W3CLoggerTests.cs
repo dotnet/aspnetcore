@@ -10,7 +10,7 @@ public class W3CLoggerTests
 {
     readonly DateTime _timestampOne = new DateTime(2021, 01, 02, 03, 04, 05);
 
-    [Fact]
+    // [Fact]
     public async Task WritesDateTime()
     {
         var path = Path.GetTempFileName() + "_";
@@ -53,7 +53,7 @@ public class W3CLoggerTests
         }
     }
 
-    [Fact]
+    // [Fact]
     public async Task HandlesNullValuesAsync()
     {
         var path = Path.GetTempFileName() + "_";

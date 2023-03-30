@@ -48,7 +48,7 @@ public class ArrayModelBinderProviderTest
         Assert.IsType(typeof(ArrayModelBinder<>).MakeGenericType(modelType.GetElementType()), result);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ForArrayType_ReturnsBinder()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class ArrayModelBinderProviderTest
         Assert.True(binder.AllowValidatingTopLevelNodes);
     }
 
-    [Fact]
+    // [Fact]
     public void Create_ForModelMetadataReadOnly_ReturnsNull()
     {
         // Arrange

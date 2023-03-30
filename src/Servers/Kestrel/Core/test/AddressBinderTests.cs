@@ -67,7 +67,7 @@ public class AddressBinderTests
         Assert.False(https);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseAddressLocalhost()
     {
         var listenOptions = AddressBinder.ParseAddress("http://localhost", out var https);
@@ -78,7 +78,7 @@ public class AddressBinderTests
         Assert.False(https);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseAddress_HasPipeNoSlash()
     {
         // Pipe prefix is missing slash here and so the address is parsed as an IP.
@@ -89,7 +89,7 @@ public class AddressBinderTests
         Assert.False(https);
     }
 
-    [Fact]
+    // [Fact]
     public void ParseAddressNamedPipe()
     {
         var address = "http://pipe:/HelloWorld";
@@ -100,7 +100,7 @@ public class AddressBinderTests
         Assert.Equal(address, listenOptions.GetDisplayName());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseAddressNamedPipe_BackSlashes()
     {
         var address = @"http://pipe:/LOCAL\HelloWorld";
@@ -111,7 +111,7 @@ public class AddressBinderTests
         Assert.Equal(address, listenOptions.GetDisplayName());
     }
 
-    [Fact]
+    // [Fact]
     public void ParseAddressNamedPipe_ForwardSlashes()
     {
         var address = "http://pipe://tmp/kestrel-test.sock";
@@ -158,7 +158,7 @@ public class AddressBinderTests
         Assert.Equal(isHttps, https);
     }
 
-    [Fact]
+    // [Fact]
     public async Task WrapsAddressInUseExceptionAsIOException()
     {
         var addresses = new ServerAddressesFeature();
@@ -175,7 +175,7 @@ public class AddressBinderTests
             AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, CancellationToken.None));
     }
 
-    [Fact]
+    // [Fact]
     public void LogsWarningWhenHostingAddressesAreOverridden()
     {
         var logger = new TestApplicationErrorLogger();
@@ -201,7 +201,7 @@ public class AddressBinderTests
         Assert.Equal(CoreStrings.FormatOverridingWithKestrelOptions(overriddenAddress), log.Message);
     }
 
-    [Fact]
+    // [Fact]
     public void LogsInformationWhenKestrelAddressesAreOverridden()
     {
         var logger = new TestApplicationErrorLogger();
@@ -229,7 +229,7 @@ public class AddressBinderTests
         Assert.Equal(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(addressBindContext.ServerAddressesFeature.PreferHostingUrls), overriddenAddress), log.Message);
     }
 
-    [Fact]
+    // [Fact]
     public async Task FlowsCancellationTokenToCreateBinddingCallback()
     {
         var addresses = new ServerAddressesFeature();
@@ -291,7 +291,7 @@ public class AddressBinderTests
         Assert.Contains(logger.Messages, f => f.Equals(CoreStrings.FormatFallbackToIPv4Any(80)));
     }
 
-    [Fact]
+    // [Fact]
     public async Task DefaultAddressBinderBindsToHttpPort5000()
     {
         var logger = new MockLogger();

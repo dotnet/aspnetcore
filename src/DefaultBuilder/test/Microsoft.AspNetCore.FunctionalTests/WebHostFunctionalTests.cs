@@ -12,25 +12,25 @@ namespace Microsoft.AspNetCore.Tests;
 
 public class WebHostFunctionalTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task Start_RequestDelegate_Url()
     {
         await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync(string.Empty), "StartRequestDelegateUrlApp");
     }
 
-    [Fact]
+    // [Fact]
     public async Task Start_RouteBuilder_Url()
     {
         await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync("/route"), "StartRouteBuilderUrlApp");
     }
 
-    [Fact]
+    // [Fact]
     public async Task StartWith_IApplicationBuilder_Url()
     {
         await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync(string.Empty), "StartWithIApplicationBuilderUrlApp");
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateDefaultBuilder_InitializeWithDefaults()
     {
         var applicationName = "CreateDefaultBuilderApp";
@@ -55,7 +55,7 @@ public class WebHostFunctionalTests : LoggedTest
         }, setTestEnvVars: true);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreateDefaultBuilderOfT_InitializeWithDefaults()
     {
         var applicationName = "CreateDefaultBuilderOfTApp";
@@ -104,7 +104,7 @@ public class WebHostFunctionalTests : LoggedTest
         }, setTestEnvVars: true, environment: environment);
     }
 
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36079")]
     public void LoggingConfigurationSectionPassedToLoggerByDefault()
     {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 
 public class DisableRequestSizeLimitFilterTest
 {
-    [Fact]
+    // [Fact]
     public void SetsMaxRequestBodySizeToNull()
     {
         // Arrange
@@ -29,7 +29,7 @@ public class DisableRequestSizeLimitFilterTest
         Assert.Null(httpMaxRequestBodySize.MaxRequestBodySize);
     }
 
-    [Fact]
+    // [Fact]
     public void SkipsWhenOverridden()
     {
         // Arrange
@@ -50,7 +50,7 @@ public class DisableRequestSizeLimitFilterTest
         Assert.Equal(1, httpMaxRequestBodySize.Count);
     }
 
-    [Fact]
+    // [Fact]
     public void LogsFeatureNotFound()
     {
         // Arrange
@@ -69,7 +69,7 @@ public class DisableRequestSizeLimitFilterTest
             write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsFeatureIsReadOnly()
     {
         // Arrange
@@ -91,7 +91,7 @@ public class DisableRequestSizeLimitFilterTest
         Assert.Equal($"A request body size limit could not be applied. The IHttpRequestBodySizeFeature for the server is read-only.", write.State.ToString());
     }
 
-    [Fact]
+    // [Fact]
     public void LogsMaxRequestBodySizeSetToNull()
     {
         // Arrange

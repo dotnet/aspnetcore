@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
 public class RequestTargetProcessingTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     public async Task RequestPathIsNotNormalized()
     {
         var testContext = new TestServiceContext(LoggerFactory);

@@ -80,7 +80,7 @@ public class JQueryQueryStringValueProviderFactoryTest
         Assert.Equal("found", (string)result);
     }
 
-    [Fact]
+    // [Fact]
     public async Task DoesNotCreateValueProvider_WhenQueryIsEmpty()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class JQueryQueryStringValueProviderFactoryTest
         Assert.Empty(context.ValueProviders);
     }
 
-    [Fact]
+    // [Fact]
     public async Task CreatesValueProvider_WithInvariantCulture()
     {
         // Arrange

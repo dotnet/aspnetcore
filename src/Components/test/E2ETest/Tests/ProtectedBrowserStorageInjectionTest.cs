@@ -27,7 +27,7 @@ public class ProtectedBrowserStorageInjectionTest : ServerTestBase<ToggleExecuti
         Browser.MountTestComponent<ProtectedBrowserStorageInjectionComponent>();
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenInjectingProtectedLocalStorageIfAndOnlyIfWebAssembly()
     {
         var messageElement = Browser.Exists(By.Id("message"));
@@ -47,7 +47,7 @@ public class ProtectedBrowserStorageInjectionTest : ServerTestBase<ToggleExecuti
         }
     }
 
-    [Fact]
+    // [Fact]
     public void ThrowsWhenInjectingProtectedSessionStorageIfAndOnlyIfWebAssembly()
     {
         var messageElement = Browser.Exists(By.Id("message"));

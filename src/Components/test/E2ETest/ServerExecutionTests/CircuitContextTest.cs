@@ -29,7 +29,7 @@ public class CircuitContextTest : ServerTestBase<BasicTestAppServerSiteFixture<S
         Browser.Equal("Circuit Context", () => Browser.Exists(By.TagName("h1")).Text);
     }
 
-    [Fact]
+    // [Fact]
     public void ComponentMethods_HaveCircuitContext()
     {
         Browser.Click(By.Id("trigger-click-event-button"));

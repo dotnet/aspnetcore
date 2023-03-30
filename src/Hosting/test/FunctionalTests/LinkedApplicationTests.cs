@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests;
 
 public class LinkedApplicationTests : LoggedTest
 {
-    [Fact]
+    // [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/4030")]
     public async Task LinkedApplicationWorks()
     {

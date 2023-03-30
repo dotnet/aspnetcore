@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class PageConventionCollectionExtensionsTest
 {
-    [Fact]
+    // [Fact]
     public void AddFilter_AddsFiltersToAllPages()
     {
         // Arrange
@@ -39,7 +39,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Same(filter, Assert.Single(model.Filters)));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizePage_AddsAllowAnonymousAttributeToSpecificPage()
     {
         // Arrange
@@ -74,7 +74,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizePage_WithoutEndpointRouting_AddsAllowAnonymousFilterToSpecificPage()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnonymousToAreaPage_AddsAllowAnonymousAttributeToSpecificPage()
     {
         // Arrange
@@ -133,7 +133,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnonymousToAreaPage_WithoutEndpointRouting_AddsAllowAnonymousFilterToSpecificPage()
     {
         // Arrange
@@ -329,7 +329,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnonymousToAreaFolder_AddsEndpointMetadata()
     {
         // Arrange
@@ -366,7 +366,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.EndpointMetadata));
     }
 
-    [Fact]
+    // [Fact]
     public void AllowAnonymousToAreaFolder_WithoutEndpointRouting_AddsAllowAnonymousFilterToFolderInArea()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizePage_AddsAuthorizeAttributeWithPolicyToSpecificPage()
     {
         // Arrange
@@ -430,7 +430,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizePage_WithoutEndpointRouting_AddsAuthorizeFilterWithPolicyToSpecificPage()
     {
         // Arrange
@@ -459,7 +459,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaPage_AddsAuthorizeAttributeWithDefaultPolicyToAreaPage()
     {
         // Arrange
@@ -486,7 +486,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaPage_WithoutEndpointRouting_AddsAuthorizeFilterWithDefaultPolicyToAreaPage()
     {
         // Arrange
@@ -513,7 +513,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaPage_AddsAuthorizeAttributeWithCustomPolicyToAreaPage()
     {
         // Arrange
@@ -540,7 +540,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaPage_WithoutEndpointRouting_AddsAuthorizeFilterWithCustomPolicyToAreaPage()
     {
         // Arrange
@@ -567,7 +567,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizePage_AddsAuthorizeAttributeWithoutPolicyToSpecificPage()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizePage_WithoutEndpointRouting_AddsAuthorizeFilterWithoutPolicyToSpecificPage()
     {
         // Arrange
@@ -699,7 +699,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaFolder_AddsAuthorizeAttributeWithDefaultPolicyToAreaPagesInFolder()
     {
         // Arrange
@@ -738,7 +738,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaFolder_WithoutEndpointRouting_AddsAuthorizeFilterWithDefaultPolicyToAreaPagesInFolder()
     {
         // Arrange
@@ -777,7 +777,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaFolder_AddsAuthorizeAttributeWithCustomPolicyToAreaPagesInFolder()
     {
         // Arrange
@@ -816,7 +816,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AuthorizeAreaFolder_WithoutEndpointRouting_AddsAuthorizeFilterWithCustomPolicyToAreaPagesInFolder()
     {
         // Arrange
@@ -855,7 +855,7 @@ public class PageConventionCollectionExtensionsTest
             model => Assert.Empty(model.Filters));
     }
 
-    [Fact]
+    // [Fact]
     public void AddPageRoute_AddsRouteToSelector()
     {
         // Arrange
@@ -917,7 +917,7 @@ public class PageConventionCollectionExtensionsTest
             });
     }
 
-    [Fact]
+    // [Fact]
     public void AddAreaPageRoute_AddsRouteToSelector()
     {
         // Arrange

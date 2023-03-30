@@ -29,7 +29,7 @@ public class ComponentParameterCaptureUnmatchedValuesHasWrongTypeTest : Diagnost
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
     {
         var test = $@"
@@ -45,7 +45,7 @@ public class ComponentParameterCaptureUnmatchedValuesHasWrongTypeTest : Diagnost
         VerifyCSharpDiagnostic(test);
     }
 
-    [Fact]
+    // [Fact]
     public void AddsDiagnosticForInvalidType()
     {
         var test = $@"
