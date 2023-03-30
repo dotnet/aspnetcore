@@ -166,6 +166,7 @@ public class ContentRangeHeaderValueTest
 
     [Theory]
     [MemberData(nameof(InvalidContentRangeValueStrings))]
+    [InlineData(null)]
     public void Parse_SetOfInvalidValueStrings_Throws(string? input)
     {
         Assert.Throws<FormatException>(() => ContentRangeHeaderValue.Parse(input));
@@ -196,6 +197,7 @@ public class ContentRangeHeaderValueTest
 
     [Theory]
     [MemberData(nameof(InvalidContentRangeValueStrings))]
+    [InlineData(null)]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse(string? input)
     {
         Assert.False(ContentRangeHeaderValue.TryParse(input, out var result));
@@ -220,7 +222,6 @@ public class ContentRangeHeaderValueTest
             {"bytes 1-2/3,"}, // no character after 'length' allowed
             {"x bytes 1-2/3"},
             {"bytes 1-2/3.4"},
-            {null},
             {""},
             {"bytes 3-2/5"},
             {"bytes 6-6/5"},
