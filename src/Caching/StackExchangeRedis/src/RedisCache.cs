@@ -400,7 +400,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
             Refresh(cache, key, absExpr, sldExpr);
         }
 
-        if (results.Length >= 3 && results[2].HasValue)
+        if (results.Length >= 3 && !results[2].IsNull)
         {
             return results[2];
         }
@@ -436,7 +436,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
             await RefreshAsync(cache, key, absExpr, sldExpr, token).ConfigureAwait(false);
         }
 
-        if (results.Length >= 3 && results[2].HasValue)
+        if (results.Length >= 3 && !results[2].IsNull)
         {
             return results[2];
         }
