@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Xunit;
 
@@ -95,4 +97,34 @@ public class RedisCacheSetAndRemoveTests
 
         Assert.Throws<ArgumentNullException>(() => cache.Set(key, value));
     }
+
+    [Fact(Skip = SkipReason)]
+    public void GetSetEmptyNonNullBuffer()
+    {
+        var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
+        var key = Me();
+        cache.Remove(key); // known state
+        Assert.Null(cache.Get(key)); // expect null
+
+        cache.Set(key, Array.Empty<byte>());
+        var arr = cache.Get(key);
+        Assert.NotNull(arr);
+        Assert.Empty(arr);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task GetSetEmptyNonNullBufferAsync()
+    {
+        var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
+        var key = Me();
+        await cache.RemoveAsync(key); // known state
+        Assert.Null(await cache.GetAsync(key)); // expect null
+
+        cache.Set(key, Array.Empty<byte>());
+        var arr = await cache.GetAsync(key);
+        Assert.NotNull(arr);
+        Assert.Empty(arr);
+    }
+
+    private static string Me([CallerMemberName] string caller = "") => caller;
 }
