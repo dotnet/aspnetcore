@@ -26,7 +26,6 @@ public class BodyTests
         // Assert
         var path = swagger.Paths["/v1/body1"];
         Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
-        Assert.Equal(0, operation.Parameters.Count);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
         Assert.Null(bodySchema.Reference);
@@ -46,11 +45,24 @@ public class BodyTests
         // Assert
         var path = swagger.Paths["/v1/body2"];
         Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
-        Assert.Equal(0, operation.Parameters.Count);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
         Assert.Null(bodySchema.Reference);
         Assert.Equal("object", bodySchema.Type);
         Assert.Equal("integer", bodySchema.AdditionalProperties.Type);
+    }
+
+    [Fact]
+    public void PostMessage()
+    {
+        // Arrange & Act
+        var swagger = OpenApiTestHelpers.GetOpenApiDocument<BodyService>(_testOutputHelper);
+
+        // Assert
+        var path = swagger.Paths["/v1/body3"];
+        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+
+        var bodySchema = operation.RequestBody.Content["application/json"].Schema;
+        Assert.Equal("RequestBody", bodySchema.Reference.Id);
     }
 }

@@ -25,11 +25,18 @@ service Body {
       body: "parameter_two"
     };
   }
+  rpc DemoBodyThree (RequestOne) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/body3",
+      body: "parameter_three"
+    };
+  }
 }
 
 message RequestOne {
   repeated RequestBody parameter_one = 1;
   map<int32, int32> parameter_two = 2;
+  RequestBody parameter_three = 3;
 }
 
 message RequestBody {
