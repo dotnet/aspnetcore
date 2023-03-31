@@ -28,6 +28,11 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public Expression<Func<TValue>>? For { get; set; }
 
+    /// <summary>
+    /// Specifies the class name to apply to the rendered <div> tag.
+    /// </summary>
+    [Parameter] public string ClassName { get; set; } = "validation-message";
+
     /// <summary>`
     /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
     /// </summary>
@@ -71,7 +76,10 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
         foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", "validation-message");
+
+            if (!String.IsNullOrEmpty(ClassName))
+                builder.AddAttribute(1, "class", ClassName);
+
             builder.AddMultipleAttributes(2, AdditionalAttributes);
             builder.AddContent(3, message);
             builder.CloseElement();
