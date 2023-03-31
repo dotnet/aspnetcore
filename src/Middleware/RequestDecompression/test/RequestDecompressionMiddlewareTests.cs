@@ -59,6 +59,14 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
+    private static async Task<byte[]> GetZlibCompressedContent(byte[] uncompressedBytes)
+    {
+        static Stream compressorDelegate(Stream compressedContent) =>
+            new ZLibStream(compressedContent, CompressionMode.Compress);
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
     private static async Task<byte[]> GetGZipCompressedContent(byte[] uncompressedBytes)
     {
         static Stream compressorDelegate(Stream compressedContent) =>
@@ -84,8 +92,32 @@ public class RequestDecompressionMiddlewareTests
     }
 
     [Fact]
-    public async Task Request_ContentEncodingDeflate_Decompressed()
+    public async Task Request_ContentEncodingDeflate_ZlibCompressed_Decompressed()
     {
+        // This tests the "correct" version of deflate usage.
+        // As described in RFC 2616, the deflate content-coding is the "zlib" format (RFC 1950)
+        // in combination with the "deflate" compression algorithm (RFC 1951).
+
+        // Arrange
+        var contentEncoding = "deflate";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetZlibCompressedContent(uncompressedBytes);
+
+        // Act
+        var (logMessages, decompressedBytes) = await InvokeMiddleware(compressedBytes, new[] { contentEncoding });
+
+        // Assert
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
+        Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingDeflate_DeflateCompressed_Decompressed()
+    {
+        // This tests a technically incorrect version of deflate usage where the 'deflate'
+        // content-encoding is used with raw, unwrapped deflate compression. We want to
+        // support this usage as well for compatibility reasons.
+
         // Arrange
         var contentEncoding = "deflate";
         var uncompressedBytes = GetUncompressedContent();

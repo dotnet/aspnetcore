@@ -16,8 +16,8 @@ public class DefaultRequestDecompressionProviderTests
     [Theory]
     [InlineData("br", typeof(BrotliStream))]
     [InlineData("BR", typeof(BrotliStream))]
-    [InlineData("deflate", typeof(DeflateStream))]
-    [InlineData("DEFLATE", typeof(DeflateStream))]
+    [InlineData("deflate", typeof(DeflateDecompressionProvider.ZLibOrDeflateStream))]
+    [InlineData("DEFLATE", typeof(DeflateDecompressionProvider.ZLibOrDeflateStream))]
     [InlineData("gzip", typeof(GZipStream))]
     [InlineData("GZIP", typeof(GZipStream))]
     public void GetDecompressionProvider_SupportedContentEncoding_ReturnsProvider(
