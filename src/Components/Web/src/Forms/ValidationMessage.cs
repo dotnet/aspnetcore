@@ -31,7 +31,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <summary>
     /// Specifies the class name to apply to the rendered <c>div</c> tag.
     /// </summary>
-    [Parameter] public string ClassName { get; set; } = "validation-message";
+    [Parameter] public string? ClassName { get; set; } = "validation-message";
 
     /// <summary>`
     /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
@@ -78,7 +78,9 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
             builder.OpenElement(0, "div");
 
             if (!String.IsNullOrEmpty(ClassName))
+            {
                 builder.AddAttribute(1, "class", ClassName);
+            }
 
             builder.AddMultipleAttributes(2, AdditionalAttributes);
             builder.AddContent(3, message);

@@ -3,6 +3,8 @@
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlComponent!
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.ClassName.get -> string?
+Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.ClassName.set -> void
 Microsoft.AspNetCore.Components.Web.HtmlComponent
 Microsoft.AspNetCore.Components.Web.HtmlComponent.ToHtmlString() -> string!
 Microsoft.AspNetCore.Components.Web.HtmlComponent.WaitForQuiescenceAsync() -> System.Threading.Tasks.Task!
