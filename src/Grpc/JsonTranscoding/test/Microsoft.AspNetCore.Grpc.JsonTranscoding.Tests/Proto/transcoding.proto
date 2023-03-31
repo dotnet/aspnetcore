@@ -216,6 +216,8 @@ message HelloRequest {
   string field_name = 22 [json_name="json_customized_name"];
   google.protobuf.FloatValue float_value = 23;
   string hiding_field_name = 24 [json_name="field_name"];
+  repeated SubMessage repeated_messages = 25;
+  map<int32, int32> map_keyint_valueint = 26;
 }
 
 message HelloReply {
