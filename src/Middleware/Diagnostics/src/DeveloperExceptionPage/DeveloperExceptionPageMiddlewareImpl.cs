@@ -88,6 +88,22 @@ internal class DeveloperExceptionPageMiddlewareImpl
         return new ExtensionsExceptionJsonContext(new JsonSerializerOptions(jsonOptions.SerializerOptions));
     }
 
+    private static void SetExceptionHandlerFeatures(ErrorContext errorContext)
+    {
+        var httpContext = errorContext.HttpContext;
+
+        ExceptionHandlerFeature exceptionHandlerFeature = new()
+        {
+            Error = errorContext.Exception,
+            Path = httpContext.Request.Path.ToString(),
+            Endpoint = httpContext.GetEndpoint(),
+            RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues
+        };
+
+        httpContext.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
+        httpContext.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
+    }
+
     /// <summary>
     /// Process an individual request.
     /// </summary>
@@ -183,6 +199,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
     private async Task DisplayExceptionContent(ErrorContext errorContext)
     {
         var httpContext = errorContext.HttpContext;
+
+        if (_problemDetailsService is not null)
+        {
+            SetExceptionHandlerFeatures(errorContext);
+        }
 
         if (_problemDetailsService == null ||
             !await _problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = CreateProblemDetails(errorContext, httpContext) }))
