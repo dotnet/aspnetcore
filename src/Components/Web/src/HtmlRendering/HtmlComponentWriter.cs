@@ -6,7 +6,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Components.Web;
+namespace Microsoft.AspNetCore.Components.Web.HtmlRendering;
 
 // This is OK to be a struct because it never gets passed around anywhere. Other code can't even get an instance
 // of it. It just keeps track of some contextual information during a single synchronous HTML output operation.

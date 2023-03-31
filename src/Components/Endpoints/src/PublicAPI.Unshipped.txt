@@ -20,6 +20,8 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ContentType.get -
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ContentType.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.PreventStreamingRendering.get -> bool
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.PreventStreamingRendering.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.RazorComponentResult(System.Type! componentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.RazorComponentResult(System.Type! componentType, object? parameters) -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.RazorComponentResult(System.Type! componentType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters) -> void

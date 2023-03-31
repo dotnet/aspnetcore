@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Web;
@@ -42,7 +43,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
     /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
-    /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
+    /// any asynchronous operations such as loading, await <see cref="HtmlComponent.QuiescenceTask"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
@@ -53,7 +54,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
     /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
-    /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
+    /// any asynchronous operations such as loading, await <see cref="HtmlComponent.QuiescenceTask"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <typeparam name="TComponent">The component type.</typeparam>
@@ -66,7 +67,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
     /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
-    /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
+    /// any asynchronous operations such as loading, await <see cref="HtmlComponent.QuiescenceTask"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <param name="componentType">The component type. This must implement <see cref="IComponent"/>.</param>
@@ -78,7 +79,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
     /// initial synchronous rendering output, which may later change. To wait for the component hierarchy to complete
-    /// any asynchronous operations such as loading, use <see cref="HtmlComponent.WaitForQuiescenceAsync"/> before
+    /// any asynchronous operations such as loading, await <see cref="HtmlComponent.QuiescenceTask"/> before
     /// reading content from the <see cref="HtmlComponent"/>.
     /// </summary>
     /// <param name="componentType">The component type. This must implement <see cref="IComponent"/>.</param>
@@ -131,7 +132,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
         ParameterView parameters)
     {
         var content = BeginRenderingComponent(componentType, parameters);
-        await content.WaitForQuiescenceAsync();
+        await content.QuiescenceTask;
         return content;
     }
 }

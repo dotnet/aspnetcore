@@ -34,6 +34,7 @@ public class RazorComponentResultExecutor
             httpContext,
             result.RenderMode,
             result.ComponentType,
-            result.Parameters);
+            result.Parameters,
+            result.PreventStreamingRendering);
     }
 }

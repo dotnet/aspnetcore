@@ -80,6 +80,15 @@ public class RazorComponentResult : IResult
     public RenderMode RenderMode { get; set; } = RenderMode.Static;
 
     /// <summary>
+    /// Gets or sets a flag to indicate whether streaming rendering should be prevented. If true, the renderer will
+    /// wait for the component hierarchy to complete asynchronous tasks such as loading before supplying the HTML response.
+    /// If false, streaming rendering will be determined by the components being rendered.
+    ///
+    /// The default value is false.
+    /// </summary>
+    public bool PreventStreamingRendering { get; set; }
+
+    /// <summary>
     /// Requests the service of
     /// <see cref="RazorComponentResultExecutor.ExecuteAsync(HttpContext, RazorComponentResult)" />
     /// to process itself in the given <paramref name="httpContext" />.

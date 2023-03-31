@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -36,13 +37,15 @@ public static class RazorComponentsServiceCollectionExtensions
         // Common services required for components server side rendering
         services.TryAddSingleton<ServerComponentSerializer>(services => new ServerComponentSerializer(services.GetRequiredService<IDataProtectionProvider>()));
         services.TryAddSingleton<WebAssemblyComponentSerializer>();
-        services.TryAddScoped<IComponentPrerenderer, EndpointHtmlRenderer>();
+        services.TryAddScoped<EndpointHtmlRenderer>();
+        services.TryAddScoped<IComponentPrerenderer>(services => services.GetRequiredService<EndpointHtmlRenderer>());
         services.TryAddScoped<NavigationManager, HttpNavigationManager>();
         services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
 
         return new DefaultRazorComponentsBuilder(services);
     }
