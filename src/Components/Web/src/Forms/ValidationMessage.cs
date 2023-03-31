@@ -29,7 +29,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     [Parameter] public Expression<Func<TValue>>? For { get; set; }
 
     /// <summary>
-    /// Specifies the class name to apply to the rendered <div> tag.
+    /// Specifies the class name to apply to the rendered <c>div</c> tag.
     /// </summary>
     [Parameter] public string ClassName { get; set; } = "validation-message";
 
