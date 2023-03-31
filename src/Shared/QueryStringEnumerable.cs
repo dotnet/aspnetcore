@@ -101,7 +101,7 @@ internal
             ReadOnlySpan<char> span = chars.Span;
             return Uri.UnescapeDataString(
                 string.Create(span.Length,
-                    (IntPtr)(&span), (dest, ptr) => ((ReadOnlySpan<char>*)ptr)->Replace(dest, '+', ' '))).AsMemory();
+                    (IntPtr)(&span), static (dest, ptr) => ((ReadOnlySpan<char>*)ptr)->Replace(dest, '+', ' '))).AsMemory();
 #pragma warning restore CS8500
         }
     }
