@@ -24,7 +24,7 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
 }
 
 function focusOnNavigate(selector: string): void {
-  if (location.hash.length > 1 && !elementExists(location.hash.slice(1))) {
+  if ( !(location.hash.length > 1 && elementExists(location.hash.slice(1))) ) {
     focusBySelector(selector);
   }
 }
