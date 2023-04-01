@@ -42,6 +42,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
+$NUGET_PACKAGES = $env:NUGET_PACKAGES
+if ($NUGET_PACKAGES -eq $null) {
+    $NUGET_PACKAGES = "$env:HOMEPATH/.nuget/packages/"
+}
+
 Set-StrictMode -Version 1
 
 $env:BUILD_REASON="PullRequest"
@@ -54,7 +59,8 @@ Write-Host -ForegroundColor Yellow "If everything is up-to-date, add '/p:NoBuild
 Write-Host -ForegroundColor Yellow "Or, if only the test project is out-of-date, add '/p:BuildProjectReferences=false'."
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
+
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" `
     /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log `
-    /p:DoNotRequireSharedFxHelix=true /p:NUGET_PACKAGES=$env:HOMEPATH/.nuget/packages/ @MSBuildArguments
+    /p:DoNotRequireSharedFxHelix=true /p:NUGET_PACKAGES=$NUGET_PACKAGES @MSBuildArguments
