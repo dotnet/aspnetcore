@@ -59,7 +59,6 @@ Write-Host -ForegroundColor Yellow "If everything is up-to-date, add '/p:NoBuild
 Write-Host -ForegroundColor Yellow "Or, if only the test project is out-of-date, add '/p:BuildProjectReferences=false'."
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
-
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" `
     /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log `
