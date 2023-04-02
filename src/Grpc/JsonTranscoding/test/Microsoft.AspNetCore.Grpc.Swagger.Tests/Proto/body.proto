@@ -31,6 +31,12 @@ service Body {
       body: "parameter_three"
     };
   }
+  rpc DemoBodyFour (RequestOne) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/body4",
+      body: "*"
+    };
+  }
 }
 
 message RequestOne {

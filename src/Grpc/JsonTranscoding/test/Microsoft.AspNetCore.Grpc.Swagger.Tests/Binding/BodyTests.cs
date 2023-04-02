@@ -65,4 +65,18 @@ public class BodyTests
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
         Assert.Equal("RequestBody", bodySchema.Reference.Id);
     }
+
+    [Fact]
+    public void PostRoot()
+    {
+        // Arrange & Act
+        var swagger = OpenApiTestHelpers.GetOpenApiDocument<BodyService>(_testOutputHelper);
+
+        // Assert
+        var path = swagger.Paths["/v1/body4"];
+        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+
+        var bodySchema = operation.RequestBody.Content["application/json"].Schema;
+        Assert.Equal("RequestOne", bodySchema.Reference.Id);
+    }
 }
