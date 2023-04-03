@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -58,10 +59,9 @@ public class DeveloperExceptionPageMiddlewareTest
         await server.CreateClient().GetAsync("/path");
         var response = await server.CreateClient().SendAsync(request);
 
-
         // Assert
         var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        var originalExceptionMessage = (string)body.Extensions["originalExceptionMessage"];
+        var originalExceptionMessage = ((JsonElement)body.Extensions["originalExceptionMessage"]).GetString();
         Assert.Equal("Test exception", originalExceptionMessage);
     }
 
