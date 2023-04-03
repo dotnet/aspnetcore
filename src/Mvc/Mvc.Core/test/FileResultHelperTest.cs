@@ -198,7 +198,7 @@ public class FileResultTest
                 data.Add(char.ConvertFromUtf32(i), $"attachment; filename=_; filename*=UTF-8''%{i:X2}");
             }
 
-            data.Add(char.ConvertFromUtf32(127), $"attachment; filename=\"{char.ConvertFromUtf32(127)}\"; filename*=UTF-8''%7F");
+            data.Add(char.ConvertFromUtf32(127), $"attachment; filename=_; filename*=UTF-8''%7F");
 
             return data;
         }
