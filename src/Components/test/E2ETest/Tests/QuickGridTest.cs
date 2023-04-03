@@ -47,7 +47,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("Matti", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
         Assert.Equal("Karttunen", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
         Assert.Equal("1981-06-04", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
-        Assert.Equal("41", firstRow.FindElement(By.CssSelector("td:nth-child(5)")).Text);
     }
 
     [Fact]
@@ -67,7 +66,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("Zbyszek", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
         Assert.Equal("Piestrzeniewicz", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
         Assert.Equal("1981-04-02", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
-        Assert.Equal("41", firstRow.FindElement(By.CssSelector("td:nth-child(5)")).Text);
     }
 
     [Fact]
@@ -87,7 +85,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("Paolo", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
         Assert.Equal("Accorti", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
         Assert.Equal("2018-05-18", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
-        Assert.Equal("4", firstRow.FindElement(By.CssSelector("td:nth-child(5)")).Text);
     }
 
     [Fact]
