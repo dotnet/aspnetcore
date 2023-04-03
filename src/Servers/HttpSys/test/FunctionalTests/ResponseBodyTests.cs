@@ -133,6 +133,41 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [ConditionalTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ResponseBody_WriteNoHeaders_SetsChunked_LargeBody(bool enableKernelBuffering)
+        {
+            const int WriteSize = 1024 * 1024;
+            const int NumWrites = 32;
+
+            string address;
+            using (Utilities.CreateHttpServer(
+                baseAddress: out address,
+                configureOptions: options => { options.EnableKernelResponseBuffering = enableKernelBuffering; },
+                app: async httpContext =>
+                {
+                    httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+                    for (int i = 0; i < NumWrites - 1; i++)
+                    {
+                        httpContext.Response.Body.Write(new byte[WriteSize], 0, WriteSize);
+                    }
+                    await httpContext.Response.Body.WriteAsync(new byte[WriteSize], 0, WriteSize);
+                }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                Assert.Equal(WriteSize * NumWrites, bytes.Length);
+                Assert.True(bytes.All(b => b == 0));
+            }
+        }
+
         [ConditionalFact]
         public async Task ResponseBody_WriteNoHeadersAndFlush_DefaultsToChunked()
         {
