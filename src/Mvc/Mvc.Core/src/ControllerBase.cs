@@ -1859,7 +1859,8 @@ public abstract class ControllerBase
         string? instance = null,
         int? statusCode = null,
         string? title = null,
-        string? type = null)
+        string? type = null,
+        IDictionary<string, object?>? extensions = null)
     {
         ProblemDetails problemDetails;
         if (ProblemDetailsFactory == null)
@@ -1883,6 +1884,15 @@ public abstract class ControllerBase
                 type: type,
                 detail: detail,
                 instance: instance);
+        }
+
+        // add to extensions if extensions is not null
+        if (extensions != null)
+        {
+            foreach (var (key, value) in extensions)
+            {
+                problemDetails.Extensions.Add(key, value);
+            }
         }
 
         return new ObjectResult(problemDetails)

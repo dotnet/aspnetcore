@@ -2494,6 +2494,31 @@ public class ControllerBaseTest
         Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
     }
 
+    [Fact]
+    public void ProblemDetails_UsesPassedInExtensions()
+    {
+        // Arrange
+        var options = GetApiBehaviorOptions();
+        var balance = 30;
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+        };
+
+        // Act
+        var actionResult = controller.Problem(extensions: new Dictionary<string, object?>() { { "balance", 30 } });
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+        Assert.Equal(422, actionResult.StatusCode);
+        Assert.Equal(422, problemDetails.Status);
+        Assert.Equal("Unprocessable entity.", problemDetails.Title);
+        Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
+        Assert.Equal(balance, problemDetails.Extensions["balance"]);
+    }
+
     private static ApiBehaviorOptions GetApiBehaviorOptions()
     {
         return new ApiBehaviorOptions
