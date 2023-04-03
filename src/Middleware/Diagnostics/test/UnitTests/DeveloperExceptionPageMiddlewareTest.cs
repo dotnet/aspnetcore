@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +17,54 @@ namespace Microsoft.AspNetCore.Diagnostics;
 
 public class DeveloperExceptionPageMiddlewareTest
 {
+    [Fact]
+    public async Task ExceptionHandlerFeatureIsAvailableInCustomizeProblemDetailsWhenUsingExceptionPage()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddProblemDetails(configure =>
+                {
+                    configure.CustomizeProblemDetails = (context) =>
+                    {
+                        var feature = context.HttpContext.Features.Get<IExceptionHandlerFeature>();
+                        context.ProblemDetails.Extensions.Add("originalExceptionMessage", feature?.Error.Message);
+                    };
+
+                });
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Act
+        await server.CreateClient().GetAsync("/path");
+        var response = await server.CreateClient().SendAsync(request);
+
+
+        // Assert
+        var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var originalExceptionMessage = (string)body.Extensions["originalExceptionMessage"];
+        Assert.Equal("Test exception", originalExceptionMessage);
+    }
+
     [Fact]
     public async Task UnhandledErrorsWriteToDiagnosticWhenUsingExceptionPage()
     {
