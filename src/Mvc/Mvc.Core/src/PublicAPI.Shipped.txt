@@ -2338,7 +2338,7 @@ virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPat
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPath, string! contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag, bool enableRangeProcessing) -> Microsoft.AspNetCore.Mvc.PhysicalFileResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPath, string! contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag) -> Microsoft.AspNetCore.Mvc.PhysicalFileResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPath, string! contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag, bool enableRangeProcessing) -> Microsoft.AspNetCore.Mvc.PhysicalFileResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, IDictionary<string, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Redirect(string! url) -> Microsoft.AspNetCore.Mvc.RedirectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectPermanent(string! url) -> Microsoft.AspNetCore.Mvc.RedirectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectPermanentPreserveMethod(string! url) -> Microsoft.AspNetCore.Mvc.RedirectResult!
