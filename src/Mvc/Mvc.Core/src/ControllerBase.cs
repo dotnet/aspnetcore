@@ -1852,6 +1852,7 @@ public abstract class ControllerBase
     /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
     /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
     [NonAction]
     public virtual ObjectResult Problem(
