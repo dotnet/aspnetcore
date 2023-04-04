@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
@@ -70,6 +71,9 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 
         _onContentUpdatedCallback = callback;
     }
+
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+        => new EndpointComponentState(this, componentId, component, parentComponentState);
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
