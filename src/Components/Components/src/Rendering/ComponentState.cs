@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// within the context of a <see cref="Renderer"/>. This is an internal implementation
 /// detail of <see cref="Renderer"/>.
 /// </summary>
-internal sealed class ComponentState : IDisposable
+public sealed class ComponentState : IDisposable
 {
     private readonly Renderer _renderer;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
@@ -45,13 +45,24 @@ internal sealed class ComponentState : IDisposable
         }
     }
 
-    // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
+    /// <summary>
+    /// Gets the component ID.
+    /// </summary>
     public int ComponentId { get; }
-    public IComponent Component { get; }
-    public ComponentState ParentComponentState { get; }
-    public RenderTreeBuilder CurrentRenderTree { get; private set; }
 
-    public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
+    /// <summary>
+    /// Gets the component instance.
+    /// </summary>
+    public IComponent Component { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> of the parent component, or null if this is a root component.
+    /// </summary>
+    public ComponentState? ParentComponentState { get; }
+
+    internal RenderTreeBuilder CurrentRenderTree { get; set; }
+
+    internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
         renderFragmentException = null;
 
@@ -93,7 +104,7 @@ internal sealed class ComponentState : IDisposable
         batchBuilder.InvalidateParameterViews();
     }
 
-    public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
+    internal bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
     {
         _componentWasDisposed = true;
         exception = null;
@@ -129,7 +140,7 @@ internal sealed class ComponentState : IDisposable
     }
 
     // Callers expect this method to always return a faulted task.
-    public Task NotifyRenderCompletedAsync()
+    internal Task NotifyRenderCompletedAsync()
     {
         if (Component is IHandleAfterRender handlerAfterRender)
         {
@@ -150,7 +161,7 @@ internal sealed class ComponentState : IDisposable
         return Task.CompletedTask;
     }
 
-    public void SetDirectParameters(ParameterView parameters)
+    internal void SetDirectParameters(ParameterView parameters)
     {
         // Note: We should be careful to ensure that the framework never calls
         // IComponent.SetParametersAsync directly elsewhere. We should only call it
@@ -179,7 +190,7 @@ internal sealed class ComponentState : IDisposable
         SupplyCombinedParameters(parameters);
     }
 
-    public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
+    internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
     {
         var directParams = _latestDirectParametersSnapshot != null
             ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
@@ -238,6 +249,9 @@ internal sealed class ComponentState : IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes this instance.
+    /// </summary>
     public void Dispose()
     {
         DisposeBuffers();
@@ -255,7 +269,7 @@ internal sealed class ComponentState : IDisposable
         _latestDirectParametersSnapshot?.Dispose();
     }
 
-    public Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+    internal Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
         _componentWasDisposed = true;
 

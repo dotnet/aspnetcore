@@ -326,13 +326,25 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         var componentId = _nextComponentId++;
         var parentComponentState = GetOptionalComponentState(parentComponentId);
-        var componentState = new ComponentState(this, componentId, component, parentComponentState);
+        var componentState = CreateComponentState(componentId, component, parentComponentState);
         Log.InitializingComponent(_logger, componentState, parentComponentState);
         _componentStateById.Add(componentId, componentState);
         _componentStateByComponent.Add(component, componentState);
         component.Attach(new RenderHandle(this, componentId));
         return componentState;
     }
+
+    /// <summary>
+    /// Creates a <see cref="ComponentState"/> instance to track state associated with a newly-instantiated component.
+    /// This is called before the component is initialized and tracked within the <see cref="Renderer"/>. Subclasses
+    /// may override this method to use their own subclasses of <see cref="ComponentState"/>.
+    /// </summary>
+    /// <param name="componentId">The ID of the newly-created component.</param>
+    /// <param name="component">The component instance.</param>
+    /// <param name="parentComponentState">The <see cref="ComponentState"/> associated with the parent component, or null if this is a root component.</param>
+    /// <returns>A <see cref="ComponentState"/> for the new component.</returns>
+    protected virtual ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+        => new ComponentState(this, componentId, component, parentComponentState);
 
     /// <summary>
     /// Updates the visible UI.
@@ -560,7 +572,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             ? componentState
             : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
 
-    private ComponentState GetOptionalComponentState(int componentId)
+    private ComponentState? GetOptionalComponentState(int componentId)
         => _componentStateById.TryGetValue(componentId, out var componentState)
             ? componentState
             : null;

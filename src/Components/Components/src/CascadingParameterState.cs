@@ -60,16 +60,17 @@ internal readonly struct CascadingParameterState
 
     private static ICascadingValueComponent? GetMatchingCascadingValueSupplier(in ReflectedCascadingParameterInfo info, ComponentState componentState)
     {
+        var candidate = componentState;
         do
         {
-            if (componentState.Component is ICascadingValueComponent candidateSupplier
+            if (candidate.Component is ICascadingValueComponent candidateSupplier
                 && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName))
             {
                 return candidateSupplier;
             }
 
-            componentState = componentState.ParentComponentState;
-        } while (componentState != null);
+            candidate = candidate.ParentComponentState;
+        } while (candidate != null);
 
         // No match
         return null;

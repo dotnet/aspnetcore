@@ -4,6 +4,12 @@ Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.Rendering.ComponentState
+Microsoft.AspNetCore.Components.Rendering.ComponentState.Component.get -> Microsoft.AspNetCore.Components.IComponent!
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentId.get -> int
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentState(Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer, int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState! parentComponentState) -> void
+Microsoft.AspNetCore.Components.Rendering.ComponentState.Dispose() -> void
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
 Microsoft.AspNetCore.Components.Sections.SectionContent
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void
@@ -25,3 +31,4 @@ override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
