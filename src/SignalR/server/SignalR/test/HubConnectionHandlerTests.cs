@@ -4891,6 +4891,39 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             () => serviceProvider.GetService<HubConnectionHandler<TooManyParamsHub>>());
     }
 
+    [Fact]
+    public async Task SendToAnotherClientFromOnConnectedAsync()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnConnectedSendToClientHub>>();
+
+        using (var client1 = new TestClient())
+        using (var client2 = new TestClient())
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.QueryString = new QueryString($"?client={client1.Connection.ConnectionId}");
+            var feature = new TestHttpContextFeature
+            {
+                HttpContext = httpContext
+            };
+            client2.Connection.Features.Set<IHttpContextFeature>(feature);
+
+            var connectionHandlerTask = await client1.ConnectAsync(connectionHandler).DefaultTimeout();
+            _ = await client2.ConnectAsync(connectionHandler).DefaultTimeout();
+
+            var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+            Assert.Single(message.Arguments);
+            Assert.Equal(1L, message.Arguments[0]);
+            Assert.Equal("Test", message.Target);
+        }
+    }
+
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
     {
         public int ReleaseCount;
