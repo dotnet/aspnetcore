@@ -160,4 +160,27 @@ public class ParametersTests
         Assert.Equal("integer", operation.Parameters[2].Schema.Type);
         Assert.Equal("int32", operation.Parameters[2].Schema.Format);
     }
+
+    [Fact]
+    public void Verb()
+    {
+        // Arrange & Act
+        var swagger = OpenApiTestHelpers.GetOpenApiDocument<ParametersService>(_testOutputHelper);
+
+        // Assert
+        var path1 = swagger.Paths["/v1/parameters10/{parameterInt}:one"];
+        AssertParams(path1);
+        var path2 = swagger.Paths["/v1/parameters10/{parameterInt}:two"];
+        AssertParams(path2);
+
+        static void AssertParams(OpenApiPathItem path)
+        {
+            Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
+            Assert.Equal(2, operation.Parameters.Count);
+            Assert.Equal(ParameterLocation.Path, operation.Parameters[0].In);
+            Assert.Equal("parameterInt", operation.Parameters[0].Name);
+            Assert.Equal(ParameterLocation.Query, operation.Parameters[1].In);
+            Assert.Equal("parameterString", operation.Parameters[1].Name);
+        }
+    }
 }
