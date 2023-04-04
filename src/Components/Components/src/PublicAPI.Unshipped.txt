@@ -31,4 +31,5 @@ override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AddPendingTask(Microsoft.AspNetCore.Components.Rendering.ComponentState? componentState, System.Threading.Tasks.Task! task) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!

@@ -451,7 +451,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         frame.ComponentIdField = newComponentState.ComponentId;
     }
 
-    internal void AddToPendingTasks(Task task, ComponentState? owningComponentState)
+    internal void AddToPendingTasksWithErrorHandling(Task task, ComponentState? owningComponentState)
     {
         switch (task == null ? TaskStatus.RanToCompletion : task.Status)
         {
@@ -474,13 +474,22 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // It's important to evaluate the following even if we're not going to use
                 // handledErrorTask below, because it has the side-effect of calling HandleException.
                 var handledErrorTask = GetErrorHandledTask(task, owningComponentState);
-
-                // The pendingTasks collection is only used during prerendering to track quiescence,
-                // so will be null at other times.
-                _pendingTasks?.Add(handledErrorTask);
-
+                AddPendingTask(owningComponentState, handledErrorTask);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Notifies the renderer that there is a pending task associated with a component. The
+    /// renderer is regarded as quiescent when all such tasks have completed.
+    /// </summary>
+    /// <param name="componentState">The <see cref="ComponentState"/> for the component associated with this pending task, if any.</param>
+    /// <param name="task">The <see cref="Task"/>.</param>
+    protected virtual void AddPendingTask(ComponentState? componentState, Task task)
+    {
+        // The pendingTasks collection is only used during prerendering to track quiescence,
+        // so will be null at other times.
+        _pendingTasks?.Add(task);
     }
 
     internal void AssignEventHandlerId(ref RenderTreeFrame frame)
@@ -831,7 +840,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 else
                 {
                     // We set owningComponentState to null because we don't want exceptions during disposal to be recoverable
-                    AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
+                    AddToPendingTasksWithErrorHandling(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
 
                     async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
                     {

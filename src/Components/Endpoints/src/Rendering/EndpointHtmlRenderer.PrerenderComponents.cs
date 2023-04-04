@@ -56,7 +56,13 @@ internal sealed partial class EndpointHtmlRenderer
 
             if (waitForQuiescence)
             {
+                // Full quiescence, i.e., all tasks completed regardless of streaming SSR
                 await result.QuiescenceTask;
+            }
+            else
+            {
+                // Just wait for quiescence of the non-streaming subtrees
+                await Task.WhenAll(_nonStreamingPendingTasks);
             }
 
             return result;

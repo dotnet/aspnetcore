@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Moq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -51,7 +52,7 @@ public class RazorComponentEndpointTest
         var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
-            typeof(AsyncLoadingComponent),
+            typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
         Assert.Equal("Loading task status: WaitingForActivation", GetStringContent(responseBody));
@@ -80,7 +81,7 @@ public class RazorComponentEndpointTest
         var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
-            typeof(AsyncLoadingComponent),
+            typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: true);
         await Task.Yield();
@@ -136,7 +137,7 @@ public class RazorComponentEndpointTest
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: true));
 
         // Assert
@@ -153,7 +154,7 @@ public class RazorComponentEndpointTest
 
         // Act
         await RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: false);
 
         // Assert
@@ -185,7 +186,7 @@ public class RazorComponentEndpointTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatThrowsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: true));
 
         // Assert
@@ -208,7 +209,7 @@ public class RazorComponentEndpointTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatThrowsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: false));
 
         // Assert
@@ -224,7 +225,8 @@ public class RazorComponentEndpointTest
         return new StreamReader(stream).ReadToEnd();
     }
 
-    class AsyncLoadingComponent : ComponentBase
+    [StreamRendering(true)]
+    class StreamingAsyncLoadingComponent : ComponentBase
     {
         [Parameter] public Task LoadingTask { get; set; }
 
@@ -274,7 +276,8 @@ public class RazorComponentEndpointTest
             => Nav.NavigateTo("/somewhere/else");
     }
 
-    class ComponentThatRedirectsAsynchronously : ComponentBase
+    [StreamRendering(true)]
+    class StreamingComponentThatRedirectsAsynchronously : ComponentBase
     {
         [Inject] private NavigationManager Nav { get; set; }
 
@@ -294,7 +297,8 @@ public class RazorComponentEndpointTest
             => throw new InvalidTimeZoneException("Test message");
     }
 
-    class ComponentThatThrowsAsynchronously : ComponentBase
+    [StreamRendering(true)]
+    class StreamingComponentThatThrowsAsynchronously : ComponentBase
     {
         protected override async Task OnInitializedAsync()
         {

@@ -215,7 +215,7 @@ public class ComponentState : IDisposable
             setParametersAsyncTask = Task.FromException(ex);
         }
 
-        _renderer.AddToPendingTasks(setParametersAsyncTask, owningComponentState: this);
+        _renderer.AddToPendingTasksWithErrorHandling(setParametersAsyncTask, owningComponentState: this);
     }
 
     private bool AddCascadingParameterSubscriptions()

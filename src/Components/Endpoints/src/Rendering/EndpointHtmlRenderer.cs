@@ -37,6 +37,12 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
     private Task? _servicesInitializedTask;
     private Action<IEnumerable<HtmlComponentBase>>? _onContentUpdatedCallback;
 
+    // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
+    // when everything (regardless of streaming SSR) is fully complete. In this subclass as also track
+    // the subset of those that are from the non-streaming subtrees, since we want the response to
+    // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
+    private readonly List<Task> _nonStreamingPendingTasks = new();
+
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
@@ -74,6 +80,21 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new EndpointComponentState(this, componentId, component, parentComponentState);
+
+    protected override void AddPendingTask(ComponentState? componentState, Task task)
+    {
+        var streamRendering = componentState is null
+            ? false
+            : ((EndpointComponentState)componentState).StreamRendering;
+
+        if (!streamRendering)
+        {
+            _nonStreamingPendingTasks.Add(task);
+        }
+
+        // We still need to determine full quiescence, so always let the base renderer track this task too
+        base.AddPendingTask(componentState, task);
+    }
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
