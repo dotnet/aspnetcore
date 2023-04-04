@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
@@ -244,7 +245,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Same(textWriter1, textWriter2);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("Dummy", Queues = "All.OSX")]
         public void WriteMultiByteCharactersToSmallBuffers()
         {
             // Test string breakdown (char => UTF-8 hex values):
@@ -306,7 +308,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix("Dummy", Queues = "All.OSX")]
         [MemberData(nameof(CharAndSegmentSizes))]
         public void WriteUnicodeStringAndCharsWithVaryingSegmentSizes(char singleChar, int segmentSize)
         {
