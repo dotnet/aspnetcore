@@ -96,6 +96,9 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         base.AddPendingTask(componentState, task);
     }
 
+    // For tests only
+    internal List<Task> NonStreamingPendingTasks => _nonStreamingPendingTasks;
+
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         var count = renderBatch.UpdatedComponents.Count;

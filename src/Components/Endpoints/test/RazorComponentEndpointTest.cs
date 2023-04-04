@@ -13,6 +13,7 @@ using Moq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -217,6 +218,100 @@ public class RazorComponentEndpointTest
             $"Some output{Environment.NewLine}<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
             GetStringContent(responseBody));
     }
+
+    [Fact]
+    public async Task StreamingRendering_IsOffByDefault_AndCanBeEnabledForSubtree()
+    {
+        // Arrange
+        var testContext = PrepareVaryStreamingScenariosTests();
+        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+
+        // Act/Assert: Even if all other blocking tasks complete, we don't produce output until the top-level
+        // nonstreaming component completes
+        testContext.WithinNestedNonstreamingRegionTask.SetResult();
+        await Task.Yield(); // Just to show it's still not completed after
+        Assert.False(initialOutputTask.IsCompleted);
+
+        // Act/Assert: Produce initial output
+        testContext.TopLevelComponentTask.SetResult();
+        await initialOutputTask;
+        var html = GetStringContent(testContext.ResponseBody);
+        Assert.Contains("[Top level component: Loaded]", html);
+        Assert.Contains("[Within streaming region: Loading...]", html);
+        Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
+        Assert.DoesNotContain("blazor-ssr", html);
+
+        // Act/Assert: Complete the streaming
+        testContext.WithinStreamingRegionTask.SetResult();
+        await testContext.Quiescence;
+        html = GetStringContent(testContext.ResponseBody);
+        Assert.EndsWith("<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>", MaskComponentIds(html));
+    }
+
+    [Fact]
+    public async Task StreamingRendering_CanBeDisabledForSubtree()
+    {
+        // Arrange
+        var testContext = PrepareVaryStreamingScenariosTests();
+        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+
+        // Act/Assert: Even if all other nonblocking tasks complete, we don't produce output until
+        // the component in the nonstreaming subtree is quiescent
+        testContext.TopLevelComponentTask.SetResult();
+        await Task.Yield(); // Just to show it's still not completed after
+        Assert.False(initialOutputTask.IsCompleted);
+
+        // Act/Assert: Does produce output when nonstreaming subtree is quiescent
+        testContext.WithinNestedNonstreamingRegionTask.SetResult();
+        await initialOutputTask;
+        var html = GetStringContent(testContext.ResponseBody);
+        Assert.Contains("[Top level component: Loaded]", html);
+        Assert.Contains("[Within streaming region: Loading...]", html);
+        Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
+        Assert.DoesNotContain("blazor-ssr", html);
+
+        // Act/Assert: Complete the streaming
+        testContext.WithinStreamingRegionTask.SetResult();
+        await testContext.Quiescence;
+        html = GetStringContent(testContext.ResponseBody);
+        Assert.EndsWith("<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>", MaskComponentIds(html));
+    }
+
+    // We don't want these tests to be hardcoded for specific component ID numbers, so replace them all with X for assertions
+    private static string MaskComponentIds(string html)
+        => new Regex("blazor-component-id=\"\\d+\"").Replace(html, "blazor-component-id=\"X\"");
+
+    private VaryStreamingScenariosContext PrepareVaryStreamingScenariosTests()
+    {
+        var httpContext = GetTestHttpContext();
+        var renderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        var topLevelComponentTask = new TaskCompletionSource();
+        var withinStreamingRegionTask = new TaskCompletionSource();
+        var withinNestedNonstreamingRegionTask = new TaskCompletionSource();
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(VaryStreamingScenarios.TopLevelComponentTask), topLevelComponentTask.Task },
+            { nameof(VaryStreamingScenarios.WithinStreamingRegionTask), withinStreamingRegionTask.Task },
+            { nameof(VaryStreamingScenarios.WithinNestedNonstreamingRegionTask), withinNestedNonstreamingRegionTask.Task },
+        };
+
+        var quiescence = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(VaryStreamingScenarios),
+            parameters, preventStreamingRendering: false);
+
+        return new(renderer, quiescence, responseBody, topLevelComponentTask, withinStreamingRegionTask, withinNestedNonstreamingRegionTask);
+    }
+
+    private record struct VaryStreamingScenariosContext(
+        EndpointHtmlRenderer Renderer,
+        Task Quiescence,
+        MemoryStream ResponseBody,
+        TaskCompletionSource TopLevelComponentTask,
+        TaskCompletionSource WithinStreamingRegionTask,
+        TaskCompletionSource WithinNestedNonstreamingRegionTask);
 
     private static string GetStringContent(MemoryStream stream)
     {
