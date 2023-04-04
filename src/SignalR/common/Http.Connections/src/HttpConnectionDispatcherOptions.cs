@@ -108,7 +108,10 @@ public class HttpConnectionDispatcherOptions
         get => _transportSendTimeout;
         set
         {
-            ArgumentOutOfRangeException.ThrowIfEqual(value, TimeSpan.Zero, nameof(value));
+            if (value == TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value));
+            }
 
             _transportSendTimeout = value;
             TransportSendTimeoutTicks = value.Ticks;
