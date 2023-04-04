@@ -801,33 +801,13 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var expectedContent = @"<table><thead><tr><th>Date</th>
-<th>Summary</th>
-<th>F</th>
-<th>C</th></tr></thead>
-<tbody><tr><td>06/05/2018</td>
-<td>Freezing</td>
-<td>33</td>
-<td>1</td></tr><tr><td>07/05/2018</td>
-<td>Bracing</td>
-<td>57</td>
-<td>14</td></tr><tr><td>08/05/2018</td>
-<td>Freezing</td>
-<td>9</td>
-<td>-13</td></tr><tr><td>09/05/2018</td>
-<td>Balmy</td>
-<td>4</td>
-<td>-16</td></tr><tr><td>10/05/2018</td>
-<td>Chilly</td>
-<td>29</td>
-<td>2</td></tr></tbody></table>";
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(AsyncComponent), RenderMode.Static, ParameterView.Empty);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
 
         // Assert
-        Assert.Equal(expectedContent, content.Replace(" ", string.Empty));
+        Assert.Equal("Loaded", content);
     }
 
     private static string HtmlContentToString(IHtmlAsyncContent result)
