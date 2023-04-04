@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Dummy", Queues = "All.OSX")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47566", Queues = "All.OSX")]
         public void WriteMultiByteCharactersToSmallBuffers()
         {
             // Test string breakdown (char => UTF-8 hex values):
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("Dummy", Queues = "All.OSX")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47566", Queues = "All.OSX")]
         [MemberData(nameof(CharAndSegmentSizes))]
         public void WriteUnicodeStringAndCharsWithVaryingSegmentSizes(char singleChar, int segmentSize)
         {
