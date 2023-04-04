@@ -471,13 +471,15 @@ public static class TypedResults
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
+    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="PushStreamHttpResult"/> for the response.</returns>
     public static PushStreamHttpResult Stream(
         Func<Stream, Task> streamWriterCallback,
         string? contentType = null,
         string? fileDownloadName = null,
         DateTimeOffset? lastModified = null,
-        EntityTagHeaderValue? entityTag = null)
+        EntityTagHeaderValue? entityTag = null,
+        bool enableRangeProcessing = false)
     {
         ArgumentNullException.ThrowIfNull(streamWriterCallback);
 
@@ -486,6 +488,7 @@ public static class TypedResults
             LastModified = lastModified,
             EntityTag = entityTag,
             FileDownloadName = fileDownloadName,
+            EnableRangeProcessing = enableRangeProcessing,
         };
     }
 
@@ -837,7 +840,7 @@ public static class TypedResults
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
     public static Created Created()
     {
