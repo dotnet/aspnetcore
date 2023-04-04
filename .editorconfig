@@ -99,7 +99,7 @@ dotnet_diagnostic.CA1510.severity = warning
 dotnet_diagnostic.CA1511.severity = warning
 
 # CA1512: Use ArgumentOutOfRangeException throw helper
-dotnet_diagnostic.CA1512.severity = none
+dotnet_diagnostic.CA1512.severity = warning
 
 # CA1513: Use ObjectDisposedException throw helper
 dotnet_diagnostic.CA1513.severity = warning
@@ -324,7 +324,7 @@ dotnet_diagnostic.CA1510.severity = suggestion
 # CA1511: Use ArgumentException throw helper
 dotnet_diagnostic.CA1511.severity = suggestion
 # CA1512: Use ArgumentOutOfRangeException throw helper
-dotnet_diagnostic.CA1512.severity = none
+dotnet_diagnostic.CA1512.severity = suggestion
 # CA1513: Use ObjectDisposedException throw helper
 dotnet_diagnostic.CA1513.severity = suggestion
 # CA1802: Use literals where appropriate
