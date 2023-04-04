@@ -123,7 +123,9 @@ public class RemoteWindowsDeployer : ApplicationDeployer
             }
             catch (Exception ex)
             {
+#pragma warning disable CA2017 // Parameter count mismatch
                 Logger.LogWarning(0, "Failed to stop the server.", ex);
+#pragma warning restore CA2017 // Parameter count mismatch
             }
 
             try

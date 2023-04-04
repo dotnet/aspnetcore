@@ -108,12 +108,10 @@ public class HttpConnectionDispatcherOptions
         get => _transportSendTimeout;
         set
         {
-#pragma warning disable CA1512 // Use ArgumentOutOfRangeException throw helper
             if (value == TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(nameof(value));
             }
-#pragma warning restore CA1512 // Use ArgumentOutOfRangeException throw helper
 
             _transportSendTimeout = value;
             TransportSendTimeoutTicks = value.Ticks;
