@@ -23,8 +23,8 @@
                         Vital="yes"
                         InstallCondition="VersionNT64 AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
-                        RepairCommand="/quiet /repair"
-                        UninstallCommand="/quiet /uninstall"
+                        RepairCommand="/quiet /norestart /repair"
+                        UninstallCommand="/quiet /norestart /uninstall"
                         DetectCondition="DotNetRedistLtsProductVersion_x64 = v$(var.DotNetRedistLtsInstallerProductVersionx64)">
             </ExePackage>
 
@@ -35,8 +35,8 @@
                         Vital="yes"
                         InstallCondition="(NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
-                        RepairCommand="/quiet /repair"
-                        UninstallCommand="/quiet /uninstall"
+                        RepairCommand="/quiet /norestart /repair"
+                        UninstallCommand="/quiet /norestart /uninstall"
                         DetectCondition="DotNetRedistLtsProductVersion_x86 = v$(var.DotNetRedistLtsInstallerProductVersionx86)">
             </ExePackage>
         </PackageGroup>
