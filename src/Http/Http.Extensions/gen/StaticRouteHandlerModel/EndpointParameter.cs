@@ -3,11 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
@@ -22,6 +24,7 @@ internal class EndpointParameter
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
         IsOptional = parameter.IsOptional();
+        DefaultValue = parameter.GetDefaultValueString();
         IsArray = TryGetArrayElementType(parameter, out var elementType);
         ElementType = elementType;
 
@@ -137,6 +140,7 @@ internal class EndpointParameter
     public int Ordinal { get; }
     public bool IsOptional { get; }
     public bool IsArray { get; set; }
+    public string DefaultValue { get; set; }
 
     public EndpointParameterSource Source { get; }
 
@@ -236,7 +240,7 @@ internal class EndpointParameter
                 writer.EndBlock();
                 writer.WriteLine($$"""else if (string.IsNullOrEmpty({{inputArgument}}))""");
                 writer.StartBlock();
-                writer.WriteLine($$"""{{outputArgument}} = null;""");
+                writer.WriteLine($$"""{{outputArgument}} = {{DefaultValue}};""");
                 writer.EndBlock();
                 writer.WriteLine("else");
                 writer.StartBlock();
@@ -255,6 +259,8 @@ internal class EndpointParameter
                     writer.WriteLine($$"""if (!string.IsNullOrEmpty({{inputArgument}}))""");
                     writer.StartBlock();
                     writer.WriteLine("wasParamCheckFailure = true;");
+                    var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, Type, SymbolName, this.ToMessageString());
+                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(message, true)}, null);");
                     writer.EndBlock();
                     writer.EndBlock();
                 }
@@ -262,7 +268,12 @@ internal class EndpointParameter
                 {
                     writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
                     writer.StartBlock();
+                    writer.WriteLine($"if (!string.IsNullOrEmpty({inputArgument}))");
+                    writer.StartBlock();
+                    var message = $@"string.Format(CultureInfo.InvariantCulture, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedExceptionMessage, true)}, ""{Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}"", ""{SymbolName}"", {inputArgument})";
+                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.ParameterBindingFailedEventId}, {message}, null);");
                     writer.WriteLine("wasParamCheckFailure = true;");
+                    writer.EndBlock();
                     writer.EndBlock();
                 }
             };

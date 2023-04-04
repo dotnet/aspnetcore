@@ -1,71 +1,83 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-using System.Xml.Linq;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
-using Microsoft.AspNetCore.Mvc;
 
+using System.Text;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
 {
-    public static object[][] MapAction_ExplicitQueryParam_StringReturn_Data
+    public static IEnumerable<object[]> QueryParamOptionalityData
     {
         get
         {
-            var expectedBody = "TestQueryValue";
-            var fromQueryRequiredSource = """app.MapGet("/", ([FromQuery] string queryValue) => queryValue);""";
-            var fromQueryWithNameRequiredSource = """app.MapGet("/", ([FromQuery(Name = "queryValue")] string parameterName) => parameterName);""";
-            var fromQueryWithNullNameRequiredSource = """app.MapGet("/", ([FromQuery(Name = null)] string queryValue) => queryValue);""";
-            var fromQueryNullableSource = """app.MapGet("/", ([FromQuery] string? queryValue) => queryValue ?? string.Empty);""";
-            var fromQueryDefaultValueSource = """
-#nullable disable
-string getQueryWithDefault([FromQuery] string queryValue = null) => queryValue ?? string.Empty;
-app.MapGet("/", getQueryWithDefault);
-#nullable restore
-""";
+            return new List<object[]>
+                {
+                    new object[] { @"(string name) => $""Hello {name}!""", "name", null, true, null},
+                    new object[] { @"(string name) => $""Hello {name}!""", "name", "TestName", false, "Hello TestName!" },
+                    new object[] { @"(string name = ""DefaultName"") => $""Hello {name}!""", "name", null, false, "Hello DefaultName!" },
+                    new object[] { @"(string name = ""DefaultName"") => $""Hello {name}!""", "name", "TestName", false, "Hello TestName!" },
+                    new object[] { @"(string? name) => $""Hello {name}!""", "name", null, false, "Hello !" },
+                    new object[] { @"(string? name) => $""Hello {name}!""", "name", "TestName", false, "Hello TestName!"},
 
-            return new[]
-            {
-                new object[] { fromQueryRequiredSource, expectedBody, 200, expectedBody },
-                new object[] { fromQueryRequiredSource, null, 400, string.Empty },
-                new object[] { fromQueryWithNameRequiredSource, expectedBody, 200, expectedBody },
-                new object[] { fromQueryWithNameRequiredSource, null, 400, string.Empty },
-                new object[] { fromQueryWithNullNameRequiredSource, expectedBody, 200, expectedBody },
-                new object[] { fromQueryWithNullNameRequiredSource, null, 400, string.Empty },
-                new object[] { fromQueryNullableSource, expectedBody, 200, expectedBody },
-                new object[] { fromQueryNullableSource, null, 200, string.Empty },
-                new object[] { fromQueryDefaultValueSource, expectedBody, 200, expectedBody },
-                new object[] { fromQueryDefaultValueSource, null, 200, string.Empty },
-            };
+                    new object[] { @"(int age) => $""Age: {age}""", "age", null, true, null},
+                    new object[] { @"(int age) => $""Age: {age}""", "age", "42", false, "Age: 42" },
+                    new object[] { @"(int age = 12) => $""Age: {age}""", "age", null, false, "Age: 12" },
+                    new object[] { @"(int age = 12) => $""Age: {age}""", "age", "42", false, "Age: 42" },
+                    new object[] { @"(int? age) => $""Age: {age}""", "age", null, false, "Age: " },
+                    new object[] { @"(int? age) => $""Age: {age}""", "age", "42", false, "Age: 42"},
+                };
         }
     }
 
     [Theory]
-    [MemberData(nameof(MapAction_ExplicitQueryParam_StringReturn_Data))]
-    public async Task MapAction_ExplicitQueryParam_StringReturn(string source, string queryValue, int expectedStatusCode, string expectedBody)
+    [MemberData(nameof(QueryParamOptionalityData))]
+    public async Task RequestDelegateHandlesQueryParamOptionality(string innerSource, string paramName, string queryParam, bool isInvalid, string expectedResponse)
     {
-        var (results, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        VerifyStaticEndpointModel(results, (endpointModel) =>
-        {
-            Assert.Equal("/", endpointModel.RoutePattern);
-            Assert.Equal("MapGet", endpointModel.HttpMethod);
-            var p = Assert.Single(endpointModel.Parameters);
-            Assert.Equal(EndpointParameterSource.Query, p.Source);
-            Assert.Equal("queryValue", p.LookupName);
-        });
+        var source = $"""
+string handler{innerSource};
+app.MapGet("/", handler);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider();
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
 
         var httpContext = CreateHttpContext();
-        if (queryValue is not null)
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        if (queryParam is not null)
         {
-            httpContext.Request.QueryString = new QueryString($"?queryValue={queryValue}");
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                [paramName] = queryParam
+            });
         }
 
         await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+
+        if (isInvalid)
+        {
+            Assert.Equal(400, httpContext.Response.StatusCode);
+            var log = Assert.Single(logs);
+            Assert.Equal(LogLevel.Debug, log.LogLevel);
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
+            var expectedType = paramName == "age" ? "int age" : $"string name";
+            var parameterSource = IsGeneratorEnabled ? "route or query string" : "query string";
+            Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from {parameterSource}.", log.Message);
+        }
+        else
+        {
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
     }
 
     [Fact]

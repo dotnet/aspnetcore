@@ -79,11 +79,13 @@ namespace Microsoft.AspNetCore.Http.Generated
     using Microsoft.AspNetCore.Http.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
     using Microsoft.Extensions.Options;
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
+    delegate void LogOrThrowExceptionAction(int eventId, string message, Exception? exceptipon = null, int statusCode = StatusCodes.Status400BadRequest);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {
@@ -101,9 +103,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::System.String[], global::System.Int32>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();
-                    var p_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::System.String[]>(serviceProviderIsService);
                     var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
+                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                    var p_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::System.String[]>(logOrThrowException, "string[]", "p", serviceProviderIsService);
                     var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
                     var jsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)serializerOptions.GetTypeInfo(typeof(global::System.Int32));
 
@@ -213,7 +216,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty)
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, bool allowEmpty, LogOrThrowExceptionAction logOrThrowException, string parameterTypeName, string parameterName, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
 
@@ -221,6 +224,8 @@ namespace Microsoft.AspNetCore.Http.Generated
             {
                 if (!httpContext.Request.HasJsonContentType())
                 {
+                    var message = string.Format(CultureInfo.InvariantCulture, "Expected a supported JSON media type but got \"{0}\".", httpContext.Request.ContentType);
+                    logOrThrowException(6, message, null, StatusCodes.Status415UnsupportedMediaType);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (false, default);
                 }
@@ -229,17 +234,30 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
                     if (!allowEmpty && bodyValue == null)
                     {
+                        if (!isInferred)
+                        {
+                            var message = string.Format(CultureInfo.InvariantCulture, "Required parameter \"{0} {1}\" was not provided from {2}.", parameterTypeName, parameterName, "body");
+                            logOrThrowException(4, message, null);
+                        }
+                        else
+                        {
+                            var message = string.Format(CultureInfo.InvariantCulture, "Implicit body inferred for parameter \"{0}\" but no body was provided. Did you mean to use a Service instead?", parameterName);
+                            logOrThrowException(5, message, null);
+                        }
                         httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                         return (false, bodyValue);
                     }
                     return (true, bodyValue);
                 }
-                catch (IOException)
+                catch (IOException ioException)
                 {
+                    logOrThrowException(1, "Reading the request body failed with an IOException.", ioException, StatusCodes.Status500InternalServerError);
                     return (false, default);
                 }
-                catch (System.Text.Json.JsonException)
+                catch (System.Text.Json.JsonException jsonException)
                 {
+                    var message = string.Format(CultureInfo.InvariantCulture, "Failed to read parameter \"{0} {1}\" from the request body as JSON.", parameterTypeName, parameterName);
+                    logOrThrowException(2, message, jsonException, StatusCodes.Status400BadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (false, default);
                 }
@@ -251,7 +269,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return (allowEmpty, default);
         }
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionAction logOrThrowException, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -260,7 +278,25 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            return static (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, isOptional);
+            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, isOptional, logOrThrowException, parameterTypeName, parameterName, isInferred: true);
+        }
+        private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
+        {
+            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+            var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
+            void logOrThrowException(int eventId, string message, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest)
+            {
+                if ((options?.ThrowOnBadRequest ?? false) && eventId != 1)
+                {
+                    if (exception != null)
+                    {
+                        throw new BadHttpRequestException(message, statusCode, exception);
+                    }
+                    throw new BadHttpRequestException(message, statusCode);
+                }
+                rdgLogger?.LogDebug(eventId, exception, message);
+            }
+            return logOrThrowException;
         }
 
     }

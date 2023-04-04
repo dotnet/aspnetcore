@@ -334,11 +334,13 @@ namespace Microsoft.AspNetCore.Http.Generated
     using Microsoft.AspNetCore.Http.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
     using Microsoft.Extensions.Options;
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
+    delegate void LogOrThrowExceptionAction(int eventId, string message, Exception? exceptipon = null, int statusCode = StatusCodes.Status400BadRequest);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {
@@ -356,6 +358,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -380,6 +384,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyBindAsyncRecord myBindAsyncParam\" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -406,6 +411,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyBindAsyncRecord myBindAsyncParam\" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -437,6 +443,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -498,6 +506,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -522,6 +532,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyBindAsyncStruct myBindAsyncParam\" was not provided from MyBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -548,6 +559,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyBindAsyncStruct myBindAsyncParam\" was not provided from MyBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -579,6 +591,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -640,6 +654,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -664,6 +680,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyNullableBindAsyncStruct myBindAsyncParam\" was not provided from MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -690,6 +707,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyNullableBindAsyncStruct myBindAsyncParam\" was not provided from MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -721,6 +739,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -782,6 +802,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -806,6 +828,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyBothBindAsyncStruct myBindAsyncParam\" was not provided from MyBothBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -832,6 +855,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MyBothBindAsyncStruct myBindAsyncParam\" was not provided from MyBothBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -863,6 +887,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -924,6 +950,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -947,6 +975,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MySimpleBindAsyncRecord myBindAsyncParam\" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -973,6 +1002,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MySimpleBindAsyncRecord myBindAsyncParam\" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1004,6 +1034,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -1064,6 +1096,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -1087,6 +1121,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MySimpleBindAsyncStruct myBindAsyncParam\" was not provided from MySimpleBindAsyncStruct.BindAsync(HttpContext).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1113,6 +1148,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"MySimpleBindAsyncStruct myBindAsyncParam\" was not provided from MySimpleBindAsyncStruct.BindAsync(HttpContext).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1144,6 +1180,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -1204,6 +1242,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1228,6 +1268,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"BindAsyncFromImplicitStaticAbstractInterface myBindAsyncParam\" was not provided from BindAsyncFromImplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1254,6 +1295,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"BindAsyncFromImplicitStaticAbstractInterface myBindAsyncParam\" was not provided from BindAsyncFromImplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1285,6 +1327,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1346,6 +1390,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -1369,6 +1415,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"InheritBindAsync myBindAsyncParam\" was not provided from InheritBindAsync.BindAsync(HttpContext).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1395,6 +1442,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"InheritBindAsync myBindAsyncParam\" was not provided from InheritBindAsync.BindAsync(HttpContext).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1426,6 +1474,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -1486,6 +1536,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1510,6 +1562,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"BindAsyncFromExplicitStaticAbstractInterface myBindAsyncParam\" was not provided from BindAsyncFromExplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1536,6 +1589,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface myBindAsyncParam_local;
                         if ((object?)myBindAsyncParam_temp == null)
                         {
+                            logOrThrowException(4, "Required parameter \"BindAsyncFromExplicitStaticAbstractInterface myBindAsyncParam\" was not provided from BindAsyncFromExplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo).", null);
                             wasParamCheckFailure = true;
                             myBindAsyncParam_local = default!;
                         }
@@ -1567,6 +1621,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface?, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var parameters = del.Method.GetParameters();
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -1669,6 +1725,24 @@ namespace Microsoft.AspNetCore.Http.Generated
             where T : class, IBindableFromHttpContext<T>
         {
             return T.BindAsync(context, parameter);
+        }
+        private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
+        {
+            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+            var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
+            void logOrThrowException(int eventId, string message, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest)
+            {
+                if ((options?.ThrowOnBadRequest ?? false) && eventId != 1)
+                {
+                    if (exception != null)
+                    {
+                        throw new BadHttpRequestException(message, statusCode, exception);
+                    }
+                    throw new BadHttpRequestException(message, statusCode);
+                }
+                rdgLogger?.LogDebug(eventId, exception, message);
+            }
+            return logOrThrowException;
         }
 
     }

@@ -85,6 +85,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
+            if (endpoint!.EmitterContext.RequiresLoggingHelper || endpoint!.EmitterContext.HasJsonBodyOrService || endpoint!.Response?.IsSerializableJsonResponse(out var _) is true)
+            {
+                codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
+            }
+            endpoint!.EmitLoggingPreamble(codeWriter);
             endpoint!.EmitRouteOrQueryResolver(codeWriter);
             endpoint!.EmitJsonBodyOrServiceResolver(codeWriter);
             endpoint!.Response?.EmitJsonPreparation(codeWriter);
@@ -164,6 +169,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var hasBindAsync = endpoints.Any(endpoint => endpoint!.EmitterContext.HasBindAsync);
                 var hasParsable = endpoints.Any(endpoint => endpoint!.EmitterContext.HasParsable);
                 var hasJsonResponse = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonResponse);
+                var requiredLoggingHelper = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresLoggingHelper);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
@@ -196,6 +202,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 if (hasParsable)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.TryParseExplicitMethod);
+                }
+
+                if (requiredLoggingHelper)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.LogOrThrowExceptionMethod);
                 }
 
                 return stringWriter.ToString();

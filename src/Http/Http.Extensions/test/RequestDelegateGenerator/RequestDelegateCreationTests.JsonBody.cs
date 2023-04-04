@@ -5,6 +5,8 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
@@ -401,4 +403,51 @@ app.MapPost("/", TestAction);
 
         Assert.Equal(default(BodyStruct), httpContext.Items[structToBeZeroedKey]);
     }
+
+    public static IEnumerable<object[]> AllowEmptyData
+    {
+        get
+        {
+            return new List<object[]>
+                {
+                    new object[] { $@"string handler([CustomFromBody(AllowEmpty = false)] Todo todo) => todo?.ToString() ?? string.Empty", false },
+                    new object[] { $@"string handler([CustomFromBody(AllowEmpty = true)] Todo todo) => todo?.ToString() ?? string.Empty", true },
+                    new object[] { $@"string handler([CustomFromBody(AllowEmpty = true)] Todo? todo = null) => todo?.ToString() ?? string.Empty", true },
+                    new object[] { $@"string handler([CustomFromBody(AllowEmpty = false)] Todo? todo = null) => todo?.ToString() ?? string.Empty", true }
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(AllowEmptyData))]
+    public async Task AllowEmptyOverridesOptionality(string innerSource, bool allowsEmptyRequest)
+    {
+        var source = $"""
+{innerSource};
+app.MapPost("/", handler);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContextWithBody(null);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var logs = TestSink.Writes.ToArray();
+
+        if (!allowsEmptyRequest)
+        {
+            Assert.Equal(400, httpContext.Response.StatusCode);
+            var log = Assert.Single(logs);
+            Assert.Equal(LogLevel.Debug, log.LogLevel);
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
+            Assert.Equal(@"Required parameter ""Todo todo"" was not provided from body.", log.Message);
+        }
+        else
+        {
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        }
+    }
+
 }

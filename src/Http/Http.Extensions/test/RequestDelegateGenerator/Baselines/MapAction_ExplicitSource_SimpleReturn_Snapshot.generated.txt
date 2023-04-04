@@ -79,11 +79,13 @@ namespace Microsoft.AspNetCore.Http.Generated
     using Microsoft.AspNetCore.Http.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
     using Microsoft.Extensions.Options;
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
+    delegate void LogOrThrowExceptionAction(int eventId, string message, Exception? exceptipon = null, int statusCode = StatusCodes.Status400BadRequest);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {
@@ -101,6 +103,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -124,6 +128,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (StringValues.IsNullOrEmpty(queryValue_raw))
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string queryValue\" was not provided from query string.", null);
                         }
                         var queryValue_temp = (string?)queryValue_raw;
                         string queryValue_local = queryValue_temp!;
@@ -146,6 +151,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (StringValues.IsNullOrEmpty(queryValue_raw))
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string queryValue\" was not provided from query string.", null);
                         }
                         var queryValue_temp = (string?)queryValue_raw;
                         string queryValue_local = queryValue_temp!;
@@ -173,6 +179,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -196,6 +204,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (StringValues.IsNullOrEmpty(headerValue_raw))
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string headerValue\" was not provided from header.", null);
                         }
                         var headerValue_temp = (string?)headerValue_raw;
                         string headerValue_local = headerValue_temp!;
@@ -218,6 +227,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (StringValues.IsNullOrEmpty(headerValue_raw))
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string headerValue\" was not provided from header.", null);
                         }
                         var headerValue_temp = (string?)headerValue_raw;
                         string headerValue_local = headerValue_temp!;
@@ -245,6 +255,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -272,6 +284,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (routeValue_raw == null)
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string routeValue\" was not provided from unknown.", null);
                         }
                         var routeValue_temp = (string?)routeValue_raw;
                         string routeValue_local = routeValue_temp!;
@@ -298,6 +311,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (routeValue_raw == null)
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string routeValue\" was not provided from unknown.", null);
                         }
                         var routeValue_temp = (string?)routeValue_raw;
                         string routeValue_local = routeValue_temp!;
@@ -325,6 +339,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options?.RouteParameterNames);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -349,6 +365,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string value\" was not provided from route or query string.", null);
                         }
                         var value_temp = (string?)value_raw;
                         string value_local = value_temp!;
@@ -371,6 +388,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string value\" was not provided from route or query string.", null);
                         }
                         var value_temp = (string?)value_raw;
                         string value_local = value_temp!;
@@ -398,6 +416,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var logOrThrowException = GetLogOrThrowException(serviceProvider, options);
                     var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options?.RouteParameterNames);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -422,6 +442,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string value\" was not provided from route or query string.", null);
                         }
                         var value_temp = (string?)value_raw;
                         string value_local = value_temp!;
@@ -444,6 +465,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (value_raw is StringValues { Count: 0 })
                         {
                             wasParamCheckFailure = true;
+                            logOrThrowException(4, "Required parameter \"string value\" was not provided from route or query string.", null);
                         }
                         var value_temp = (string?)value_raw;
                         string value_local = value_temp!;
@@ -513,6 +535,24 @@ namespace Microsoft.AspNetCore.Http.Generated
             return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
                 ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
                 : (httpContext) => httpContext.Request.Query[parameterName];
+        }
+        private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
+        {
+            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+            var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
+            void logOrThrowException(int eventId, string message, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest)
+            {
+                if ((options?.ThrowOnBadRequest ?? false) && eventId != 1)
+                {
+                    if (exception != null)
+                    {
+                        throw new BadHttpRequestException(message, statusCode, exception);
+                    }
+                    throw new BadHttpRequestException(message, statusCode);
+                }
+                rdgLogger?.LogDebug(eventId, exception, message);
+            }
+            return logOrThrowException;
         }
 
     }
