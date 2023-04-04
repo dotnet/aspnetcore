@@ -25,12 +25,16 @@ public class DeveloperExceptionPageMiddlewareTest
         using var host = new HostBuilder()
             .ConfigureServices(services =>
             {
+                services.AddRouting();
                 services.AddProblemDetails(configure =>
                 {
                     configure.CustomizeProblemDetails = (context) =>
                     {
                         var feature = context.HttpContext.Features.Get<IExceptionHandlerFeature>();
-                        context.ProblemDetails.Extensions.Add("originalExceptionMessage", feature?.Error.Message);
+                        context.ProblemDetails.Extensions.Add("OriginalExceptionMessage", feature?.Error.Message);
+                        context.ProblemDetails.Extensions.Add("EndpointDisplayName", feature?.Endpoint?.DisplayName);
+                        context.ProblemDetails.Extensions.Add("RouteValue", feature?.RouteValues?["id"]);
+                        context.ProblemDetails.Extensions.Add("Path", feature?.Path);
                     };
 
                 });
@@ -42,9 +46,13 @@ public class DeveloperExceptionPageMiddlewareTest
                 .Configure(app =>
                 {
                     app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoint =>
                     {
-                        throw new Exception("Test exception");
+                        endpoint.MapGet("/test/{id}", (int id) =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
                 });
             }).Build();
@@ -52,17 +60,22 @@ public class DeveloperExceptionPageMiddlewareTest
         await host.StartAsync();
 
         var server = host.GetTestServer();
-        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/test/1");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         // Act
-        await server.CreateClient().GetAsync("/path");
         var response = await server.CreateClient().SendAsync(request);
 
         // Assert
         var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        var originalExceptionMessage = ((JsonElement)body.Extensions["originalExceptionMessage"]).GetString();
+        var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
+        var endpointDisplayName = ((JsonElement)body.Extensions["EndpointDisplayName"]).GetString();
+        var routeValue = ((JsonElement)body.Extensions["RouteValue"]).GetString();
+        var path = ((JsonElement)body.Extensions["Path"]).GetString();
         Assert.Equal("Test exception", originalExceptionMessage);
+        Assert.Contains("/test/{id}", endpointDisplayName);
+        Assert.Equal("1", routeValue);
+        Assert.Equal("/test/1", path);
     }
 
     [Fact]
