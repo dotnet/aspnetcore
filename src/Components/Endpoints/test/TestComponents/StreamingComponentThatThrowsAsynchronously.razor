@@ -1,0 +1,9 @@
+﻿@attribute [StreamRendering(true)]
+Some output
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        throw new InvalidTimeZoneException("Test message");
+    }
+}

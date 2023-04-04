@@ -3,9 +3,9 @@
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlComponent!
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Components.RenderTree.StreamRenderingAttribute
-Microsoft.AspNetCore.Components.RenderTree.StreamRenderingAttribute.Enabled.get -> bool
-Microsoft.AspNetCore.Components.RenderTree.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
+Microsoft.AspNetCore.Components.StreamRenderingAttribute
+Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
+Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlComponent!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlComponent!

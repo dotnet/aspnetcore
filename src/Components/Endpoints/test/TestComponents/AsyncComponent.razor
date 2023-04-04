@@ -1,0 +1,81 @@
+﻿<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Summary</th>
+            <th>F</th>
+            <th>C</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (RowsToDisplay is not null)
+        {
+            foreach (var element in RowsToDisplay)
+            {
+                <tr>
+                    <td>@element.DateFormatted</td>
+                    <td>@element.Summary</td>
+                    <td>@element.TemperatureF</td>
+                    <td>@element.TemperatureC</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+@code {
+    private static readonly WeatherRow[] _weatherData = new[]
+    {
+        new WeatherRow
+        {
+            DateFormatted = "06/05/2018",
+            TemperatureC = 1,
+            Summary = "Freezing",
+            TemperatureF = 33
+        },
+        new WeatherRow
+        {
+            DateFormatted = "07/05/2018",
+            TemperatureC = 14,
+            Summary = "Bracing",
+            TemperatureF = 57
+        },
+        new WeatherRow
+        {
+            DateFormatted = "08/05/2018",
+            TemperatureC = -13,
+            Summary = "Freezing",
+            TemperatureF = 9
+        },
+        new WeatherRow
+        {
+            DateFormatted = "09/05/2018",
+            TemperatureC = -16,
+            Summary = "Balmy",
+            TemperatureF = 4
+        },
+        new WeatherRow
+        {
+            DateFormatted = "10/05/2018",
+            TemperatureC = 2,
+            Summary = "Chilly",
+            TemperatureF = 29
+        }
+    };
+
+    public class WeatherRow
+    {
+        public string DateFormatted { get; set; }
+        public int TemperatureC { get; set; }
+        public string Summary { get; set; }
+        public int TemperatureF { get; set; }
+    }
+
+    public WeatherRow[] RowsToDisplay { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Simulate an async workflow.
+        await Task.Yield();
+        RowsToDisplay = _weatherData;
+    }
+}

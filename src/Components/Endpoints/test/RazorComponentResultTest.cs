@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -78,15 +79,5 @@ public class RazorComponentResultTest
     {
         stream.Position = 0;
         return new StreamReader(stream).ReadToEnd();
-    }
-
-    class SimpleComponent : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.OpenElement(0, "h1");
-            builder.AddContent(1, "Hello from SimpleComponent");
-            builder.CloseElement();
-        }
     }
 }

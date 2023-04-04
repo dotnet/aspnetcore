@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Infrastructure;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Moq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -107,7 +106,7 @@ public class RazorComponentEndpointTest
             null, false);
 
         // Assert
-        Assert.Equal("[TestParentLayout with content: [TestLayout with content: Page]]", GetStringContent(responseBody));
+        Assert.Equal($"[TestParentLayout with content: [TestLayout with content: Page{Environment.NewLine}]{Environment.NewLine}]{Environment.NewLine}", GetStringContent(responseBody));
     }
 
     [Fact]
@@ -159,7 +158,7 @@ public class RazorComponentEndpointTest
 
         // Assert
         Assert.Equal(
-            "Some output<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
+            $"Some output{Environment.NewLine}<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
             GetStringContent(responseBody));
     }
 
@@ -215,7 +214,7 @@ public class RazorComponentEndpointTest
         // Assert
         Assert.Contains("Test message", ex.Message);
         Assert.Contains(
-            $"Some output<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
+            $"Some output{Environment.NewLine}<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
             GetStringContent(responseBody));
     }
 
@@ -223,91 +222,6 @@ public class RazorComponentEndpointTest
     {
         stream.Position = 0;
         return new StreamReader(stream).ReadToEnd();
-    }
-
-    [StreamRendering(true)]
-    class StreamingAsyncLoadingComponent : ComponentBase
-    {
-        [Parameter] public Task LoadingTask { get; set; }
-
-        protected override async Task OnInitializedAsync()
-        {
-            await LoadingTask;
-            await Task.Delay(100); // Doesn't strictly make any difference to the test, but clarifies that arbitrary async stuff could happen here
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, $"Loading task status: {LoadingTask.Status}");
-    }
-
-    [Layout(typeof(TestLayout))]
-    class ComponentWithLayout : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, $"Page");
-    }
-
-    [Layout(typeof(TestParentLayout))]
-    class TestLayout : LayoutComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, $"[{nameof(TestLayout)} with content: ");
-            builder.AddContent(1, Body);
-            builder.AddContent(2, "]");
-        }
-    }
-
-    class TestParentLayout : LayoutComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, $"[{nameof(TestParentLayout)} with content: ");
-            builder.AddContent(1, Body);
-            builder.AddContent(2, "]");
-        }
-    }
-
-    class ComponentThatRedirectsSynchronously : ComponentBase
-    {
-        [Inject] private NavigationManager Nav { get; set; }
-
-        protected override void OnInitialized()
-            => Nav.NavigateTo("/somewhere/else");
-    }
-
-    [StreamRendering(true)]
-    class StreamingComponentThatRedirectsAsynchronously : ComponentBase
-    {
-        [Inject] private NavigationManager Nav { get; set; }
-
-        protected override async Task OnInitializedAsync()
-        {
-            await Task.Yield();
-            Nav.NavigateTo("/somewhere/else");
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, "Some output");
-    }
-
-    class ComponentThatThrowsSynchronously : ComponentBase
-    {
-        protected override void OnInitialized()
-            => throw new InvalidTimeZoneException("Test message");
-    }
-
-    [StreamRendering(true)]
-    class StreamingComponentThatThrowsAsynchronously : ComponentBase
-    {
-        protected override async Task OnInitializedAsync()
-        {
-            await Task.Yield();
-            throw new InvalidTimeZoneException("Test message");
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, "Some output");
     }
 
     public static DefaultHttpContext GetTestHttpContext(string environmentName = null)
@@ -329,16 +243,6 @@ public class RazorComponentEndpointTest
         result.Request.Scheme = "https";
         result.Request.Host = new HostString("test");
         return result;
-    }
-
-    class SimpleComponent : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.OpenElement(0, "h1");
-            builder.AddContent(1, "Hello from SimpleComponent");
-            builder.CloseElement();
-        }
     }
 
     class FakeDataProtectionProvider : IDataProtectionProvider
