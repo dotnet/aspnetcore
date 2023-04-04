@@ -34,7 +34,7 @@ public class RetryHandler : DelegatingHandler
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Error sending request", ex);
+                _logger.LogWarning(ex, "Error sending request");
                 if (i == MaxRetries - 1)
                 {
                     throw;
