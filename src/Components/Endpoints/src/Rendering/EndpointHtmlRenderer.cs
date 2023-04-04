@@ -38,7 +38,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
     private Action<IEnumerable<HtmlComponentBase>>? _onContentUpdatedCallback;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
-    // when everything (regardless of streaming SSR) is fully complete. In this subclass as also track
+    // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
     // the subset of those that are from the non-streaming subtrees, since we want the response to
     // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
     private readonly List<Task> _nonStreamingPendingTasks = new();
