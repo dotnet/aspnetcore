@@ -36,7 +36,6 @@ public class DeveloperExceptionPageMiddlewareTest
                         context.ProblemDetails.Extensions.Add("RouteValue", feature?.RouteValues?["id"]);
                         context.ProblemDetails.Extensions.Add("Path", feature?.Path);
                     };
-
                 });
             })
             .ConfigureWebHost(webHostBuilder =>
@@ -96,7 +95,6 @@ public class DeveloperExceptionPageMiddlewareTest
                         context.ProblemDetails.Extensions.Add("RouteValue", feature?.RouteValues?["id"]);
                         context.ProblemDetails.Extensions.Add("Path", feature?.Path);
                     };
-
                 });
             })
             .ConfigureWebHost(webHostBuilder =>
