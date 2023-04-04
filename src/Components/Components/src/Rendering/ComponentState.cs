@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// within the context of a <see cref="Renderer"/>. This is an internal implementation
 /// detail of <see cref="Renderer"/>.
 /// </summary>
-public sealed class ComponentState : IDisposable
+public class ComponentState : IDisposable
 {
     private readonly Renderer _renderer;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
@@ -28,7 +28,7 @@ public sealed class ComponentState : IDisposable
     /// <param name="componentId">The externally visible identifier for the <see cref="IComponent"/>. The identifier must be unique in the context of the <see cref="Renderer"/>.</param>
     /// <param name="component">The <see cref="IComponent"/> whose state is being tracked.</param>
     /// <param name="parentComponentState">The <see cref="ComponentState"/> for the parent component, or null if this is a root component.</param>
-    public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState parentComponentState)
+    public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
     {
         ComponentId = componentId;
         ParentComponentState = parentComponentState;

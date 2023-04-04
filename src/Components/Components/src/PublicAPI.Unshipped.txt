@@ -7,7 +7,7 @@ Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relative
 Microsoft.AspNetCore.Components.Rendering.ComponentState
 Microsoft.AspNetCore.Components.Rendering.ComponentState.Component.get -> Microsoft.AspNetCore.Components.IComponent!
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentId.get -> int
-Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentState(Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer, int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState! parentComponentState) -> void
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentState(Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer, int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> void
 Microsoft.AspNetCore.Components.Rendering.ComponentState.Dispose() -> void
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
 Microsoft.AspNetCore.Components.Sections.SectionContent
