@@ -104,16 +104,21 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         var count = renderBatch.UpdatedComponents.Count;
         if (count > 0 && _onContentUpdatedCallback is not null)
         {
-            // TODO: Deduplicate these. There's no reason ever to include the same component more than once in a single batch,
-            // as we're rendering its whole final state, not the intermediate diffs.
-            var htmlComponents = new List<HtmlComponentBase>(count);
+            // We deduplicate the set of components in the batch because we're sending their entire current rendered
+            // state, not just an intermediate diff (so there's never a reason to include the same component output
+            // more than once in this callback)
+            var htmlComponents = new Dictionary<int, HtmlComponentBase>(count);
             for (var i = 0; i < count; i++)
             {
                 ref var diff = ref renderBatch.UpdatedComponents.Array[i];
-                htmlComponents.Add(new HtmlComponentBase(this, diff.ComponentId));
+                var componentId = diff.ComponentId;
+                if (!htmlComponents.ContainsKey(componentId))
+                {
+                    htmlComponents.Add(componentId, new HtmlComponentBase(this, componentId));
+                }
             }
 
-            _onContentUpdatedCallback(htmlComponents);
+            _onContentUpdatedCallback(htmlComponents.Values);
         }
 
         return base.UpdateDisplayAsync(renderBatch);

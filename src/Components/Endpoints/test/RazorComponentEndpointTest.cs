@@ -65,7 +65,36 @@ public class RazorComponentEndpointTest
         // Act/Assert 3: When loading completes, it emits a streaming batch update and completes the response
         tcs.SetResult();
         await completionTask;
-        Assert.Equal("Loading task status: WaitingForActivation<blazor-ssr><template blazor-component-id=\"2\">Loading task status: RanToCompletion</template></blazor-ssr>", GetStringContent(responseBody));
+        Assert.Equal(
+            "Loading task status: WaitingForActivation<blazor-ssr><template blazor-component-id=\"X\">Loading task status: RanToCompletion</template></blazor-ssr>",
+            MaskComponentIds(GetStringContent(responseBody)));
+    }
+
+    [Fact]
+    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act/Assert 1: Emits the initial pre-quiescent output to the response
+        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(DoubleRenderingStreamingAsyncComponent),
+            PropertyHelper.ObjectToDictionary(new { WaitFor = tcs.Task }).AsReadOnly(),
+            preventStreamingRendering: false);
+        Assert.Equal("Loading...", GetStringContent(responseBody));
+
+        // Act/Assert 2: When loading completes, it emits a streaming batch update with only one copy of the final output,
+        // despite the RenderBatch containing two diffs from the component
+        tcs.SetResult();
+        await completionTask;
+        Assert.Equal(
+            "Loading...<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(GetStringContent(responseBody)));
     }
 
     [Fact]
@@ -245,7 +274,9 @@ public class RazorComponentEndpointTest
         testContext.WithinStreamingRegionTask.SetResult();
         await testContext.Quiescence;
         html = GetStringContent(testContext.ResponseBody);
-        Assert.EndsWith("<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>", MaskComponentIds(html));
+        Assert.EndsWith(
+            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(html));
     }
 
     [Fact]
@@ -274,7 +305,9 @@ public class RazorComponentEndpointTest
         testContext.WithinStreamingRegionTask.SetResult();
         await testContext.Quiescence;
         html = GetStringContent(testContext.ResponseBody);
-        Assert.EndsWith("<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>", MaskComponentIds(html));
+        Assert.EndsWith(
+            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(html));
     }
 
     // We don't want these tests to be hardcoded for specific component ID numbers, so replace them all with X for assertions
