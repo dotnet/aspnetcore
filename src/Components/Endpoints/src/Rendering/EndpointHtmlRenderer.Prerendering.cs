@@ -169,7 +169,7 @@ internal sealed partial class EndpointHtmlRenderer
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
         public static PrerenderedComponentHtmlContent Empty { get; }
-            = new PrerenderedComponentHtmlContent(null, HtmlComponent.Empty, null, null);
+            = new PrerenderedComponentHtmlContent(null, default, null, null);
 
         public PrerenderedComponentHtmlContent(
             Dispatcher? dispatcher, // If null, we're only emitting the markers
@@ -222,6 +222,6 @@ internal sealed partial class EndpointHtmlRenderer
         }
 
         public Task QuiescenceTask =>
-            _htmlToEmitOrNull is null ? Task.CompletedTask : _htmlToEmitOrNull.QuiescenceTask;
+            _htmlToEmitOrNull.HasValue ? _htmlToEmitOrNull.Value.QuiescenceTask : Task.CompletedTask;
     }
 }
