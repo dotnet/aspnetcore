@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Infrastructure;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +12,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Moq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -51,7 +52,7 @@ public class RazorComponentEndpointTest
         var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
-            typeof(AsyncLoadingComponent),
+            typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
         Assert.Equal("Loading task status: WaitingForActivation", GetStringContent(responseBody));
@@ -64,7 +65,36 @@ public class RazorComponentEndpointTest
         // Act/Assert 3: When loading completes, it emits a streaming batch update and completes the response
         tcs.SetResult();
         await completionTask;
-        Assert.Equal("Loading task status: WaitingForActivation<blazor-ssr><template blazor-component-id=\"2\">Loading task status: RanToCompletion</template></blazor-ssr>", GetStringContent(responseBody));
+        Assert.Equal(
+            "Loading task status: WaitingForActivation<blazor-ssr><template blazor-component-id=\"X\">Loading task status: RanToCompletion</template></blazor-ssr>",
+            MaskComponentIds(GetStringContent(responseBody)));
+    }
+
+    [Fact]
+    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act/Assert 1: Emits the initial pre-quiescent output to the response
+        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(DoubleRenderingStreamingAsyncComponent),
+            PropertyHelper.ObjectToDictionary(new { WaitFor = tcs.Task }).AsReadOnly(),
+            preventStreamingRendering: false);
+        Assert.Equal("Loading...", GetStringContent(responseBody));
+
+        // Act/Assert 2: When loading completes, it emits a streaming batch update with only one copy of the final output,
+        // despite the RenderBatch containing two diffs from the component
+        tcs.SetResult();
+        await completionTask;
+        Assert.Equal(
+            "Loading...<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(GetStringContent(responseBody)));
     }
 
     [Fact]
@@ -80,7 +110,7 @@ public class RazorComponentEndpointTest
         var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
-            typeof(AsyncLoadingComponent),
+            typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: true);
         await Task.Yield();
@@ -106,7 +136,7 @@ public class RazorComponentEndpointTest
             null, false);
 
         // Assert
-        Assert.Equal("[TestParentLayout with content: [TestLayout with content: Page]]", GetStringContent(responseBody));
+        Assert.Equal($"[TestParentLayout with content: [TestLayout with content: Page\n]\n]\n", GetStringContent(responseBody));
     }
 
     [Fact]
@@ -136,7 +166,7 @@ public class RazorComponentEndpointTest
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: true));
 
         // Assert
@@ -153,12 +183,12 @@ public class RazorComponentEndpointTest
 
         // Act
         await RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: false);
 
         // Assert
         Assert.Equal(
-            "Some output<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
+            $"Some output\n<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
             GetStringContent(responseBody));
     }
 
@@ -185,7 +215,7 @@ public class RazorComponentEndpointTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatThrowsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: true));
 
         // Assert
@@ -208,102 +238,118 @@ public class RazorComponentEndpointTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatThrowsAsynchronously),
+            httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: false));
 
         // Assert
         Assert.Contains("Test message", ex.Message);
         Assert.Contains(
-            $"Some output<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
+            $"Some output\n<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
             GetStringContent(responseBody));
     }
+
+    [Fact]
+    public async Task StreamingRendering_IsOffByDefault_AndCanBeEnabledForSubtree()
+    {
+        // Arrange
+        var testContext = PrepareVaryStreamingScenariosTests();
+        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+
+        // Act/Assert: Even if all other blocking tasks complete, we don't produce output until the top-level
+        // nonstreaming component completes
+        testContext.WithinNestedNonstreamingRegionTask.SetResult();
+        await Task.Yield(); // Just to show it's still not completed after
+        Assert.False(initialOutputTask.IsCompleted);
+
+        // Act/Assert: Produce initial output
+        testContext.TopLevelComponentTask.SetResult();
+        await initialOutputTask;
+        var html = GetStringContent(testContext.ResponseBody);
+        Assert.Contains("[Top level component: Loaded]", html);
+        Assert.Contains("[Within streaming region: Loading...]", html);
+        Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
+        Assert.DoesNotContain("blazor-ssr", html);
+
+        // Act/Assert: Complete the streaming
+        testContext.WithinStreamingRegionTask.SetResult();
+        await testContext.Quiescence;
+        html = GetStringContent(testContext.ResponseBody);
+        Assert.EndsWith(
+            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(html));
+    }
+
+    [Fact]
+    public async Task StreamingRendering_CanBeDisabledForSubtree()
+    {
+        // Arrange
+        var testContext = PrepareVaryStreamingScenariosTests();
+        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+
+        // Act/Assert: Even if all other nonblocking tasks complete, we don't produce output until
+        // the component in the nonstreaming subtree is quiescent
+        testContext.TopLevelComponentTask.SetResult();
+        await Task.Yield(); // Just to show it's still not completed after
+        Assert.False(initialOutputTask.IsCompleted);
+
+        // Act/Assert: Does produce output when nonstreaming subtree is quiescent
+        testContext.WithinNestedNonstreamingRegionTask.SetResult();
+        await initialOutputTask;
+        var html = GetStringContent(testContext.ResponseBody);
+        Assert.Contains("[Top level component: Loaded]", html);
+        Assert.Contains("[Within streaming region: Loading...]", html);
+        Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
+        Assert.DoesNotContain("blazor-ssr", html);
+
+        // Act/Assert: Complete the streaming
+        testContext.WithinStreamingRegionTask.SetResult();
+        await testContext.Quiescence;
+        html = GetStringContent(testContext.ResponseBody);
+        Assert.EndsWith(
+            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(html));
+    }
+
+    // We don't want these tests to be hardcoded for specific component ID numbers, so replace them all with X for assertions
+    private static string MaskComponentIds(string html)
+        => new Regex("blazor-component-id=\"\\d+\"").Replace(html, "blazor-component-id=\"X\"");
+
+    private VaryStreamingScenariosContext PrepareVaryStreamingScenariosTests()
+    {
+        var httpContext = GetTestHttpContext();
+        var renderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        var topLevelComponentTask = new TaskCompletionSource();
+        var withinStreamingRegionTask = new TaskCompletionSource();
+        var withinNestedNonstreamingRegionTask = new TaskCompletionSource();
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(VaryStreamingScenarios.TopLevelComponentTask), topLevelComponentTask.Task },
+            { nameof(VaryStreamingScenarios.WithinStreamingRegionTask), withinStreamingRegionTask.Task },
+            { nameof(VaryStreamingScenarios.WithinNestedNonstreamingRegionTask), withinNestedNonstreamingRegionTask.Task },
+        };
+
+        var quiescence = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext, RenderMode.Static, typeof(VaryStreamingScenarios),
+            parameters, preventStreamingRendering: false);
+
+        return new(renderer, quiescence, responseBody, topLevelComponentTask, withinStreamingRegionTask, withinNestedNonstreamingRegionTask);
+    }
+
+    private record struct VaryStreamingScenariosContext(
+        EndpointHtmlRenderer Renderer,
+        Task Quiescence,
+        MemoryStream ResponseBody,
+        TaskCompletionSource TopLevelComponentTask,
+        TaskCompletionSource WithinStreamingRegionTask,
+        TaskCompletionSource WithinNestedNonstreamingRegionTask);
 
     private static string GetStringContent(MemoryStream stream)
     {
         stream.Position = 0;
-        return new StreamReader(stream).ReadToEnd();
-    }
-
-    class AsyncLoadingComponent : ComponentBase
-    {
-        [Parameter] public Task LoadingTask { get; set; }
-
-        protected override async Task OnInitializedAsync()
-        {
-            await LoadingTask;
-            await Task.Delay(100); // Doesn't strictly make any difference to the test, but clarifies that arbitrary async stuff could happen here
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, $"Loading task status: {LoadingTask.Status}");
-    }
-
-    [Layout(typeof(TestLayout))]
-    class ComponentWithLayout : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, $"Page");
-    }
-
-    [Layout(typeof(TestParentLayout))]
-    class TestLayout : LayoutComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, $"[{nameof(TestLayout)} with content: ");
-            builder.AddContent(1, Body);
-            builder.AddContent(2, "]");
-        }
-    }
-
-    class TestParentLayout : LayoutComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, $"[{nameof(TestParentLayout)} with content: ");
-            builder.AddContent(1, Body);
-            builder.AddContent(2, "]");
-        }
-    }
-
-    class ComponentThatRedirectsSynchronously : ComponentBase
-    {
-        [Inject] private NavigationManager Nav { get; set; }
-
-        protected override void OnInitialized()
-            => Nav.NavigateTo("/somewhere/else");
-    }
-
-    class ComponentThatRedirectsAsynchronously : ComponentBase
-    {
-        [Inject] private NavigationManager Nav { get; set; }
-
-        protected override async Task OnInitializedAsync()
-        {
-            await Task.Yield();
-            Nav.NavigateTo("/somewhere/else");
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, "Some output");
-    }
-
-    class ComponentThatThrowsSynchronously : ComponentBase
-    {
-        protected override void OnInitialized()
-            => throw new InvalidTimeZoneException("Test message");
-    }
-
-    class ComponentThatThrowsAsynchronously : ComponentBase
-    {
-        protected override async Task OnInitializedAsync()
-        {
-            await Task.Yield();
-            throw new InvalidTimeZoneException("Test message");
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-            => builder.AddContent(0, "Some output");
+        return new StreamReader(stream).ReadToEnd().Replace("\r\n", "\n");
     }
 
     public static DefaultHttpContext GetTestHttpContext(string environmentName = null)
@@ -325,16 +371,6 @@ public class RazorComponentEndpointTest
         result.Request.Scheme = "https";
         result.Request.Host = new HostString("test");
         return result;
-    }
-
-    class SimpleComponent : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.OpenElement(0, "h1");
-            builder.AddContent(1, "Hello from SimpleComponent");
-            builder.CloseElement();
-        }
     }
 
     class FakeDataProtectionProvider : IDataProtectionProvider

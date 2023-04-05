@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
@@ -35,6 +36,12 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
     private Action<IEnumerable<HtmlComponentBase>>? _onContentUpdatedCallback;
+
+    // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
+    // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
+    // the subset of those that are from the non-streaming subtrees, since we want the response to
+    // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
+    private readonly List<Task> _nonStreamingPendingTasks = new();
 
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
@@ -71,21 +78,47 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         _onContentUpdatedCallback = callback;
     }
 
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+        => new EndpointComponentState(this, componentId, component, parentComponentState);
+
+    protected override void AddPendingTask(ComponentState? componentState, Task task)
+    {
+        var streamRendering = componentState is null
+            ? false
+            : ((EndpointComponentState)componentState).StreamRendering;
+
+        if (!streamRendering)
+        {
+            _nonStreamingPendingTasks.Add(task);
+        }
+
+        // We still need to determine full quiescence, so always let the base renderer track this task too
+        base.AddPendingTask(componentState, task);
+    }
+
+    // For tests only
+    internal List<Task> NonStreamingPendingTasks => _nonStreamingPendingTasks;
+
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         var count = renderBatch.UpdatedComponents.Count;
         if (count > 0 && _onContentUpdatedCallback is not null)
         {
-            // TODO: Deduplicate these. There's no reason ever to include the same component more than once in a single batch,
-            // as we're rendering its whole final state, not the intermediate diffs.
-            var htmlComponents = new List<HtmlComponentBase>(count);
+            // We deduplicate the set of components in the batch because we're sending their entire current rendered
+            // state, not just an intermediate diff (so there's never a reason to include the same component output
+            // more than once in this callback)
+            var htmlComponents = new Dictionary<int, HtmlComponentBase>(count);
             for (var i = 0; i < count; i++)
             {
                 ref var diff = ref renderBatch.UpdatedComponents.Array[i];
-                htmlComponents.Add(new HtmlComponentBase(this, diff.ComponentId));
+                var componentId = diff.ComponentId;
+                if (!htmlComponents.ContainsKey(componentId))
+                {
+                    htmlComponents.Add(componentId, new HtmlComponentBase(this, componentId));
+                }
             }
 
-            _onContentUpdatedCallback(htmlComponents);
+            _onContentUpdatedCallback(htmlComponents.Values);
         }
 
         return base.UpdateDisplayAsync(renderBatch);
