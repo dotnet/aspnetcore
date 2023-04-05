@@ -44,7 +44,21 @@ function focusBySelector(selector: string): void {
 }
 
 function elementExists(identifier: string): boolean {
-  const element = document.getElementById(identifier)
-      || document.getElementsByName(identifier)[0];
-  return !!element;
+  let element : HTMLElement | null = null;
+  
+  element = document.getElementById(identifier);
+  
+  if (!element) {
+
+    let elements = document.getElementsByName(identifier);
+    if (elements.length > 0) {
+      element = elements[0];     
+    }
+  }
+  
+  if (element) {
+    return true;
+  }
+
+  return false;
 }
