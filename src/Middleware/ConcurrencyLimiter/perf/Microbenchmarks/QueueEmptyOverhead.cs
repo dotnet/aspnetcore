@@ -11,8 +11,10 @@ public class QueueEmptyOverhead
 {
     private const int _numRequests = 20000;
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private ConcurrencyLimiterMiddleware _middlewareQueue;
     private ConcurrencyLimiterMiddleware _middlewareStack;
+#pragma warning restore CS0618 // Type or member is obsolete
     private RequestDelegate _restOfServer;
 
     [GlobalSetup]
