@@ -73,7 +73,8 @@ internal sealed class BodyControl
         else if (body.ExtendedConnect)
         {
             // CONNECT requests do not have a request or response body until after accepted,
-            // unless it's a 300+ response.
+            // unless it's a 300+ response. We set CanHaveBody to false here since it's only
+            // for requests (see IHttpRequestBodyDetectionFeature).
             CanHaveBody = false;
             _connectResponse.SetRequest(body.Context);
             _connectPipeWriter.SetRequest(body.Context);
