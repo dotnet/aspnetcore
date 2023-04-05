@@ -136,7 +136,7 @@ public class RazorComponentEndpointTest
             null, false);
 
         // Assert
-        Assert.Equal($"[TestParentLayout with content: [TestLayout with content: Page{Environment.NewLine}]{Environment.NewLine}]{Environment.NewLine}", GetStringContent(responseBody));
+        Assert.Equal($"[TestParentLayout with content: [TestLayout with content: Page\n]\n]\n", GetStringContent(responseBody));
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public class RazorComponentEndpointTest
 
         // Assert
         Assert.Equal(
-            $"Some output{Environment.NewLine}<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
+            $"Some output\n<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
             GetStringContent(responseBody));
     }
 
@@ -244,7 +244,7 @@ public class RazorComponentEndpointTest
         // Assert
         Assert.Contains("Test message", ex.Message);
         Assert.Contains(
-            $"Some output{Environment.NewLine}<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
+            $"Some output\n<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
             GetStringContent(responseBody));
     }
 
@@ -349,7 +349,7 @@ public class RazorComponentEndpointTest
     private static string GetStringContent(MemoryStream stream)
     {
         stream.Position = 0;
-        return new StreamReader(stream).ReadToEnd();
+        return new StreamReader(stream).ReadToEnd().Replace("\r\n", "\n");
     }
 
     public static DefaultHttpContext GetTestHttpContext(string environmentName = null)
