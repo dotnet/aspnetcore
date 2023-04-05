@@ -30,3 +30,4 @@ override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtml
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlComponent.Empty.get -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlComponent!
+virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void

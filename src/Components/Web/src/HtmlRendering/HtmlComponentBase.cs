@@ -54,10 +54,5 @@ public class HtmlComponentBase
     /// </summary>
     /// <param name="output">The output destination.</param>
     public void WriteHtmlTo(TextWriter output)
-    {
-        if (_renderer is not null)
-        {
-            HtmlComponentWriter.Write(_renderer, _componentId, output);
-        }
-    }
+        => _renderer?.WriteComponentHtml(ComponentId, output);
 }

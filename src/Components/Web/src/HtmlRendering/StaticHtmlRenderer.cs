@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 /// developers should not normally use this class directly. Instead, use
 /// <see cref="HtmlRenderer"/> for a more convenient API.
 /// </summary>
-public class StaticHtmlRenderer : Renderer
+public partial class StaticHtmlRenderer : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
