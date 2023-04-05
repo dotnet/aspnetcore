@@ -102,8 +102,16 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
 }
 
 export function scrollToElement(identifier : string) : boolean {
-  const element = document.getElementById(identifier)
-    || document.getElementsByName(identifier)[0];
+  let element : HTMLElement | null = null;
+
+  element = document.getElementById(identifier);
+  
+  if (!element) {
+    let elements = document.getElementsByName(identifier);
+    if (elements.length > 0) {
+      element = elements[0];     
+    }
+  }
   
   if (element) {
     element.scrollIntoView();
