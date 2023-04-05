@@ -15,6 +15,7 @@ public static class ConcurrencyLimiterExtensions
     /// </summary>
     /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
     /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
+    [Obsolete()]
     public static IApplicationBuilder UseConcurrencyLimiter(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);

@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter;
 /// <summary>
 /// Limits the number of concurrent requests allowed in the application.
 /// </summary>
+[Obsolete("Concurrency Limiter middleware has been deprecated, use new rate limiting middleware. See: aspnet/rate-limiting")]
 public partial class ConcurrencyLimiterMiddleware
 {
     private readonly IQueuePolicy _queuePolicy;

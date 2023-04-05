@@ -9,22 +9,30 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
 public static class TestUtils
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public static ConcurrencyLimiterMiddleware CreateTestMiddleware(IQueuePolicy queue = null, RequestDelegate onRejected = null, RequestDelegate next = null)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var options = Options.Create(new ConcurrencyLimiterOptions
         {
             OnRejected = onRejected ?? (context => Task.CompletedTask),
         });
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return new ConcurrencyLimiterMiddleware(
                 next: next ?? (context => Task.CompletedTask),
                 loggerFactory: NullLoggerFactory.Instance,
                 queue: queue ?? CreateQueuePolicy(1, 0),
                 options: options
             );
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public static ConcurrencyLimiterMiddleware CreateTestMiddleware_QueuePolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         return CreateTestMiddleware(
             queue: CreateQueuePolicy(maxConcurrentRequests, requestQueueLimit),
@@ -33,7 +41,9 @@ public static class TestUtils
             );
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public static ConcurrencyLimiterMiddleware CreateTestMiddleware_StackPolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         return CreateTestMiddleware(
             queue: CreateStackPolicy(maxConcurrentRequests, requestQueueLimit),
