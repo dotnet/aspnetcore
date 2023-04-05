@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Components.Web.HtmlRendering;
 /// <summary>
 /// Represents the output of rendering a root component as HTML. The content can change if the component instance re-renders.
 /// </summary>
-public readonly struct HtmlComponent
+public readonly struct HtmlRootComponent
 {
     private readonly StaticHtmlRenderer? _renderer;
 
-    internal HtmlComponent(StaticHtmlRenderer renderer, int componentId, Task quiescenceTask)
+    internal HtmlRootComponent(StaticHtmlRenderer renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
         ComponentId = componentId;
