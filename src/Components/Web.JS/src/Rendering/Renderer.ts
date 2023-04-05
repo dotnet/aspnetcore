@@ -129,7 +129,7 @@ export function setTimeoutToScrollToElement(identifier : string) : void {
   
   scrollToElementTimeout = setTimeout( () => {
     elementToScrollTo = null;
-  }, 5000);
+  }, 3000);
 }
 
 export function resetScrollAfterNextBatch(): void {
