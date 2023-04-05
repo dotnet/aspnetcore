@@ -43,7 +43,7 @@ function focusBySelector(selector: string): void {
   }
 }
 
-function elementExists(identifier: string): boolean {
+function elementExists(identifier : string) : boolean {
   let element : HTMLElement | null = null;
   
   element = document.getElementById(identifier);
