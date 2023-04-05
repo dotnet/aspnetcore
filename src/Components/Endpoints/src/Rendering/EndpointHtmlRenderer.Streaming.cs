@@ -43,6 +43,31 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    protected override void WriteComponentHtml(int componentId, TextWriter output)
+        => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
+
+    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
+    {
+        var renderBoundaryMarkers = allowBoundaryMarkers
+            && ((EndpointComponentState)GetComponentState(componentId)).StreamRendering;
+
+        if (renderBoundaryMarkers)
+        {
+            output.Write("<!--bl:");
+            output.Write(componentId);
+            output.Write("-->");
+        }
+
+        base.WriteComponentHtml(componentId, output);
+
+        if (renderBoundaryMarkers)
+        {
+            output.Write("<!--/bl:");
+            output.Write(componentId);
+            output.Write("-->");
+        }
+    }
+
     private void SendBatchAsStreamingUpdate(in RenderBatch renderBatch)
     {
         var count = renderBatch.UpdatedComponents.Count;
@@ -64,8 +89,9 @@ internal partial class EndpointHtmlRenderer
                     // </template> at the top level without a preceding matching <template>). Alternatively we
                     // could look at using a custom TextWriter that does some extra encoding of all the content
                     // as it is being written out.
+                    // We don't need boundary markers at the top-level since the info is on the <template> anyway.
                     writer.Write($"<template blazor-component-id=\"{componentId}\">");
-                    WriteComponentHtml(componentId, writer);
+                    WriteComponentHtml(componentId, writer, allowBoundaryMarkers: false);
                     writer.Write("</template>");
                 }
             }
