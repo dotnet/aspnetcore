@@ -13,8 +13,6 @@ interface BrowserRendererRegistry {
 }
 const browserRenderers: BrowserRendererRegistry = {};
 let shouldResetScrollAfterNextBatch = false;
-let elementToScrollTo : string | null = null;
-let scrollToElementTimeout : NodeJS.Timeout;
 
 export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number, appendContent: boolean): void {
   let browserRenderer = browserRenderers[browserRendererId];
@@ -90,46 +88,7 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
     browserRenderer.disposeEventHandler(eventHandlerId);
   }
 
-  if (elementToScrollTo && scrollToElement(elementToScrollTo)) {
-    elementToScrollTo = null;
-    clearTimeout(scrollToElementTimeout); 
-
-    // We found the element on the page and we don't want to scroll to the top of the page on the next batch
-    shouldResetScrollAfterNextBatch = false; 
-  } else {
-    resetScrollIfNeeded();
-  }  
-}
-
-export function scrollToElement(identifier : string) : boolean {
-  let element : HTMLElement | null = null;
-
-  element = document.getElementById(identifier);
-  
-  if (!element) {
-    let elements = document.getElementsByName(identifier);
-    if (elements.length > 0) {
-      element = elements[0];     
-    }
-  }
-  
-  if (element) {
-    element.scrollIntoView();
-    return true;
-  }
-
-  return false;
-}
-
-export function setTimeoutToScrollToElement(identifier : string) : void {
-  if (scrollToElementTimeout) {
-    clearTimeout(scrollToElementTimeout);
-  }
-  elementToScrollTo = identifier;
-  
-  scrollToElementTimeout = setTimeout( () => {
-    elementToScrollTo = null;
-  }, 3000);
+  resetScrollIfNeeded();
 }
 
 export function resetScrollAfterNextBatch(): void {

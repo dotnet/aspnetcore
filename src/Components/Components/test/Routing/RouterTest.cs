@@ -23,6 +23,7 @@ public class RouterTest
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);
@@ -215,6 +216,16 @@ public class RouterTest
         public static readonly TestNavigationInterception Instance = new TestNavigationInterception();
 
         public Task EnableNavigationInterceptionAsync()
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    internal sealed class TestScrollToLocationHash : IScrollToLocationHash
+    {
+        public static readonly TestScrollToLocationHash Instance = new TestScrollToLocationHash();
+
+        public Task ScrollToLocationHash(string locationAbsolute)
         {
             return Task.CompletedTask;
         }

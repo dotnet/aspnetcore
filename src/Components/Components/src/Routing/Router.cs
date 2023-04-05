@@ -38,6 +38,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
 
+    [Inject] private IScrollToLocationHash ScrollToLocationHash { get; set; }
+
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
     /// <summary>
@@ -278,13 +280,18 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     Task IHandleAfterRender.OnAfterRenderAsync()
     {
+        return EnableNavigationInterceptionThenScrollToLocationHash();
+    }
+
+    private async Task EnableNavigationInterceptionThenScrollToLocationHash()
+    {
         if (!_navigationInterceptionEnabled)
         {
             _navigationInterceptionEnabled = true;
-            return NavigationInterception.EnableNavigationInterceptionAsync();
+            await NavigationInterception.EnableNavigationInterceptionAsync();
         }
 
-        return Task.CompletedTask;
+        await ScrollToLocationHash.ScrollToLocationHash(_locationAbsolute);
     }
 
     private static partial class Log

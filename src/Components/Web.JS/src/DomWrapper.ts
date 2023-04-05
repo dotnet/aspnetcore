@@ -24,7 +24,10 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
 }
 
 function focusOnNavigate(selector: string): void {
-  if (location.hash.length > 1 && !elementExists(location.hash.slice(1))) {
+  let hash = location.hash;
+  let element : HTMLElement | null;
+  element = hash.length > 1 ? document.getElementById(hash.slice(1)) : null;
+  if (!element) {
     focusBySelector(selector);
   }
 }
@@ -41,24 +44,4 @@ function focusBySelector(selector: string): void {
 
     element.focus();
   }
-}
-
-function elementExists(identifier : string) : boolean {
-  let element : HTMLElement | null = null;
-  
-  element = document.getElementById(identifier);
-  
-  if (!element) {
-
-    let elements = document.getElementsByName(identifier);
-    if (elements.length > 0) {
-      element = elements[0];     
-    }
-  }
-  
-  if (element) {
-    return true;
-  }
-
-  return false;
 }
