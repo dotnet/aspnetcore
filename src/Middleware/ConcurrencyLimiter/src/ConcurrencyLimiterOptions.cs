@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter;
 /// <summary>
 /// Specifies options for the <see cref="ConcurrencyLimiterMiddleware"/>.
 /// </summary>
-[Obsolete("Concurrency Limiter middleware has been deprecated, use new rate limiting middleware. See: aspnet/rate-limiting")]
+[Obsolete("Concurrency Limiter middleware has been deprecated and will be removed in a future release. Update the app to use concurrency features in rate limiting middleware. For more information, see https://aka.ms/aspnet/rate-limiting")]
 public class ConcurrencyLimiterOptions
 {
     /// <summary>
