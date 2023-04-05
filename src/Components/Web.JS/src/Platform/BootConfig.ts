@@ -83,5 +83,6 @@ export type ExtendedResourceList = {
 export enum ICUDataMode {
   Sharded,
   All,
-  Invariant
+  Invariant,
+  Custom
 }

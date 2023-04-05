@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
@@ -10,6 +11,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis;
@@ -44,7 +46,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         // Configure the generator driver and run
         // the compilation with it if the generator
         // is enabled.
-        var generator = new RequestDelegateGenerator().AsSourceGenerator();
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
             {
                 generator
@@ -67,24 +69,24 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return (Assert.Single(runResult.Results), updatedCompilation);
     }
 
-    internal static StaticRouteHandlerModel.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName) =>
+    internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName) =>
         Assert.Single(GetStaticEndpoints(result, stepName));
 
-    internal static StaticRouteHandlerModel.Endpoint[] GetStaticEndpoints(GeneratorRunResult result, string stepName)
+    internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint[] GetStaticEndpoints(GeneratorRunResult result, string stepName)
     {
         // We only invoke the generator once in our test scenarios
         if (result.TrackedSteps.TryGetValue(stepName, out var staticEndpointSteps))
         {
             return staticEndpointSteps
                 .SelectMany(step => step.Outputs)
-                .Select(output => Assert.IsType<StaticRouteHandlerModel.Endpoint>(output.Value))
+                .Select(output => Assert.IsType<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint>(output.Value))
                 .ToArray();
         }
 
-        return Array.Empty<StaticRouteHandlerModel.Endpoint>();
+        return Array.Empty<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint>();
     }
 
-    internal static void VerifyStaticEndpointModel(GeneratorRunResult? result, Action<StaticRouteHandlerModel.Endpoint> runAssertions)
+    internal static void VerifyStaticEndpointModel(GeneratorRunResult? result, Action<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint> runAssertions)
     {
         if (result.HasValue)
         {
@@ -92,7 +94,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         }
     }
 
-    internal static void VerifyStaticEndpointModels(GeneratorRunResult? result, Action<StaticRouteHandlerModel.Endpoint[]> runAssertions)
+    internal static void VerifyStaticEndpointModels(GeneratorRunResult? result, Action<RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint[]> runAssertions)
     {
         if (result.HasValue)
         {
@@ -250,6 +252,8 @@ public static class TestMapActions
         {{sources}}
         return app;
     }
+
+    public static IResult TestResult(this IResultExtensions _) => TypedResults.Text("Hello World!");
 }
 """;
     private static Task<Compilation> CreateCompilationAsync(string sources)
@@ -275,7 +279,7 @@ public static class TestMapActions
             foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(resolver))
             {
                 // Skip the source generator itself
-                if (resolveReferencePath.Equals(typeof(RequestDelegateGenerator).Assembly.Location, StringComparison.OrdinalIgnoreCase))
+                if (resolveReferencePath.Equals(typeof(RequestDelegateGenerator.RequestDelegateGenerator).Assembly.Location, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -429,5 +433,14 @@ Actual Line:
         }
 
         public bool CanHaveBody { get; }
+    }
+
+    internal sealed class PipeRequestBodyFeature : IRequestBodyPipeFeature
+    {
+        public PipeRequestBodyFeature(PipeReader pipeReader)
+        {
+            Reader = pipeReader;
+        }
+        public PipeReader Reader { get; set; }
     }
 }

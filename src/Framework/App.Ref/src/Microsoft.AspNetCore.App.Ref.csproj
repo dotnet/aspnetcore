@@ -77,7 +77,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Private="false"
       ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.Generators.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj"
       Private="false"
       ReferenceOutputAssembly="false" />
 
@@ -180,7 +180,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_InitialRefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.App.Analyzers\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.App.Analyzers.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
       <_InitialRefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Components.Analyzers\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Analyzers.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
       <_InitialRefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.App.CodeFixes\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.App.CodeFixes.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
-      <_InitialRefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Http.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Http.Generators.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
+      <_InitialRefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Http.RequestDelegateGenerator\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
 
       <_InitialRefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <_InitialRefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />

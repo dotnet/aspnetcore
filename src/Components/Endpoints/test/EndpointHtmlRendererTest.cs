@@ -4,9 +4,9 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +21,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class ComponentPrerendererTest
+public class EndpointHtmlRendererTest
 {
     private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
@@ -29,11 +29,11 @@ public class ComponentPrerendererTest
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
     private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
-    private readonly ComponentPrerenderer renderer;
+    private readonly EndpointHtmlRenderer renderer;
 
-    public ComponentPrerendererTest()
+    public EndpointHtmlRendererTest()
     {
-        renderer = GetComponentRenderer();
+        renderer = GetEndpointHtmlRenderer();
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class ComponentPrerendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.WebAssembly, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.WebAssembly, ParameterView.Empty);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -54,8 +54,8 @@ public class ComponentPrerendererTest
         var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Null(marker.PrerenderId);
         Assert.Equal("webassembly", marker.Type);
-        Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, marker.Assembly);
-        Assert.Equal(typeof(TestComponent).FullName, marker.TypeName);
+        Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, marker.Assembly);
+        Assert.Equal(typeof(SimpleComponent).FullName, marker.TypeName);
         Assert.Empty(httpContext.Items);
     }
 
@@ -67,7 +67,7 @@ public class ComponentPrerendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.WebAssemblyPrerendered, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.WebAssemblyPrerendered, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
@@ -78,11 +78,11 @@ public class ComponentPrerendererTest
         var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.Equal("webassembly", preambleMarker.Type);
-        Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, preambleMarker.Assembly);
-        Assert.Equal(typeof(TestComponent).FullName, preambleMarker.TypeName);
+        Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, preambleMarker.Assembly);
+        Assert.Equal(typeof(SimpleComponent).FullName, preambleMarker.TypeName);
 
         var prerenderedContent = match.Groups["content"].Value;
-        Assert.Equal("<h1>Hello world!</h1>", prerenderedContent);
+        Assert.Equal("<h1>Hello from SimpleComponent</h1>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
         var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
@@ -274,12 +274,12 @@ public class ComponentPrerendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.Static, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.Static, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
 
         // Assert
-        Assert.Equal("<h1>Hello world!</h1>", content);
+        Assert.Equal("<h1>Hello from SimpleComponent</h1>", content);
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public class ComponentPrerendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.Server, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.Server, ParameterView.Empty);
         var content = HtmlContentToString(result);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -306,8 +306,8 @@ public class ComponentPrerendererTest
         var unprotectedServerComponent = protector.Unprotect(marker.Descriptor);
         var serverComponent = JsonSerializer.Deserialize<ServerComponent>(unprotectedServerComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, serverComponent.Sequence);
-        Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, serverComponent.AssemblyName);
-        Assert.Equal(typeof(TestComponent).FullName, serverComponent.TypeName);
+        Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, serverComponent.AssemblyName);
+        Assert.Equal(typeof(SimpleComponent).FullName, serverComponent.TypeName);
         Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
         Assert.Equal("no-cache, no-store, max-age=0", httpContext.Response.Headers.CacheControl);
@@ -323,7 +323,7 @@ public class ComponentPrerendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -340,12 +340,12 @@ public class ComponentPrerendererTest
         var serverComponent = JsonSerializer.Deserialize<ServerComponent>(unprotectedServerComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotEqual(default, serverComponent);
         Assert.Equal(0, serverComponent.Sequence);
-        Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, serverComponent.AssemblyName);
-        Assert.Equal(typeof(TestComponent).FullName, serverComponent.TypeName);
+        Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, serverComponent.AssemblyName);
+        Assert.Equal(typeof(SimpleComponent).FullName, serverComponent.TypeName);
         Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
         var prerenderedContent = match.Groups["content"].Value;
-        Assert.Equal("<h1>Hello world!</h1>", prerenderedContent);
+        Assert.Equal("<h1>Hello from SimpleComponent</h1>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
         var epilogueMarker = JsonSerializer.Deserialize<ServerComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
@@ -384,11 +384,11 @@ public class ComponentPrerendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var firstResult = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
+        var firstResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.ServerPrerendered, ParameterView.Empty);
         var firstComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(firstResult));
         var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
 
-        var secondResult = await renderer.PrerenderComponentAsync(httpContext, typeof(TestComponent), RenderMode.Server, ParameterView.Empty);
+        var secondResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.Server, ParameterView.Empty);
         var secondComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(secondResult));
         var secondMatch = Regex.Match(secondComponent, ComponentPattern);
 
@@ -648,8 +648,7 @@ public class ComponentPrerendererTest
     {
         // Arrange
         var collection = CreateDefaultServiceCollection();
-        collection.TryAddScoped<ComponentPrerenderer>();
-        collection.TryAddScoped<HtmlRenderer>();
+        collection.TryAddScoped<EndpointHtmlRenderer>();
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();
@@ -661,7 +660,7 @@ public class ComponentPrerendererTest
         var scopedProvider = scope.ServiceProvider;
         var context = new DefaultHttpContext() { RequestServices = scopedProvider };
         var httpContext = GetHttpContext(context);
-        var renderer = scopedProvider.GetRequiredService<ComponentPrerenderer>();
+        var renderer = scopedProvider.GetRequiredService<EndpointHtmlRenderer>();
 
         // Act
         var state = new AsyncDisposableState();
@@ -802,55 +801,13 @@ public class ComponentPrerendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var expectedContent = @"<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Summary</th>
-<th>F</th>
-<th>C</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>06/05/2018</td>
-<td>Freezing</td>
-<td>33</td>
-<td>33</td>
-</tr>
-<tr>
-<td>07/05/2018</td>
-<td>Bracing</td>
-<td>57</td>
-<td>57</td>
-</tr>
-<tr>
-<td>08/05/2018</td>
-<td>Freezing</td>
-<td>9</td>
-<td>9</td>
-</tr>
-<tr>
-<td>09/05/2018</td>
-<td>Balmy</td>
-<td>4</td>
-<td>4</td>
-</tr>
-<tr>
-<td>10/05/2018</td>
-<td>Chilly</td>
-<td>29</td>
-<td>29</td>
-</tr>
-</tbody>
-</table>";
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(AsyncComponent), RenderMode.Static, ParameterView.Empty);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
 
         // Assert
-        Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
+        Assert.Equal("Loaded", content);
     }
 
     private static string HtmlContentToString(IHtmlAsyncContent result)
@@ -860,12 +817,10 @@ public class ComponentPrerendererTest
         return writer.ToString();
     }
 
-    private ComponentPrerenderer GetComponentRenderer(IServiceProvider services = null)
+    private EndpointHtmlRenderer GetEndpointHtmlRenderer(IServiceProvider services = null)
     {
         var effectiveServices = services ?? _services;
-        return new ComponentPrerenderer(
-            new HtmlRenderer(effectiveServices, NullLoggerFactory.Instance),
-            effectiveServices);
+        return new EndpointHtmlRenderer(effectiveServices, NullLoggerFactory.Instance);
     }
 
     private HttpContext GetHttpContext(HttpContext context = null)
@@ -893,28 +848,6 @@ public class ComponentPrerendererTest
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<ServerComponentSerializer>();
         return services;
-    }
-
-    private class TestComponent : IComponent
-    {
-        private RenderHandle _renderHandle;
-
-        public void Attach(RenderHandle renderHandle)
-        {
-            _renderHandle = renderHandle;
-        }
-
-        public Task SetParametersAsync(ParameterView parameters)
-        {
-            _renderHandle.Render(builder =>
-            {
-                var s = 0;
-                builder.OpenElement(s++, "h1");
-                builder.AddContent(s++, "Hello world!");
-                builder.CloseElement();
-            });
-            return Task.CompletedTask;
-        }
     }
 
     private class RedirectComponent : ComponentBase
@@ -997,160 +930,5 @@ public class ComponentPrerendererTest
     private class AsyncDisposableState
     {
         public bool AsyncDisposableRan { get; set; }
-    }
-
-    private class GreetingComponent : ComponentBase
-    {
-        [Parameter] public string Name { get; set; }
-
-        protected override void OnParametersSet()
-        {
-            base.OnParametersSet();
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            var s = 0;
-            base.BuildRenderTree(builder);
-            builder.OpenElement(s++, "p");
-            builder.AddContent(s++, $"Hello {Name ?? ("(null)")}!");
-            builder.CloseElement();
-        }
-    }
-
-    private class AsyncComponent : ComponentBase
-    {
-        private static readonly WeatherRow[] _weatherData = new[]
-        {
-                new WeatherRow
-                {
-                    DateFormatted = "06/05/2018",
-                    TemperatureC = 1,
-                    Summary = "Freezing",
-                    TemperatureF = 33
-                },
-                new WeatherRow
-                {
-                    DateFormatted = "07/05/2018",
-                    TemperatureC = 14,
-                    Summary = "Bracing",
-                    TemperatureF = 57
-                },
-                new WeatherRow
-                {
-                    DateFormatted = "08/05/2018",
-                    TemperatureC = -13,
-                    Summary = "Freezing",
-                    TemperatureF = 9
-                },
-                new WeatherRow
-                {
-                    DateFormatted = "09/05/2018",
-                    TemperatureC = -16,
-                    Summary = "Balmy",
-                    TemperatureF = 4
-                },
-                new WeatherRow
-                {
-                    DateFormatted = "10/05/2018",
-                    TemperatureC = 2,
-                    Summary = "Chilly",
-                    TemperatureF = 29
-                }
-            };
-
-        public class WeatherRow
-        {
-            public string DateFormatted { get; set; }
-            public int TemperatureC { get; set; }
-            public string Summary { get; set; }
-            public int TemperatureF { get; set; }
-        }
-
-        public WeatherRow[] RowsToDisplay { get; set; }
-
-        protected override async Task OnParametersSetAsync()
-        {
-            // Simulate an async workflow.
-            await Task.Yield();
-            RowsToDisplay = _weatherData;
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            base.BuildRenderTree(builder);
-            var s = 0;
-            builder.OpenElement(s++, "table");
-            builder.AddMarkupContent(s++, "\n");
-            builder.OpenElement(s++, "thead");
-            builder.AddMarkupContent(s++, "\n");
-            builder.OpenElement(s++, "tr");
-            builder.AddMarkupContent(s++, "\n");
-
-            builder.OpenElement(s++, "th");
-            builder.AddContent(s++, "Date");
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-
-            builder.OpenElement(s++, "th");
-            builder.AddContent(s++, "Summary");
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-
-            builder.OpenElement(s++, "th");
-            builder.AddContent(s++, "F");
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-
-            builder.OpenElement(s++, "th");
-            builder.AddContent(s++, "C");
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-            builder.OpenElement(s++, "tbody");
-            builder.AddMarkupContent(s++, "\n");
-            if (RowsToDisplay != null)
-            {
-                var s2 = s;
-                foreach (var element in RowsToDisplay)
-                {
-                    s = s2;
-                    builder.OpenElement(s++, "tr");
-                    builder.AddMarkupContent(s++, "\n");
-
-                    builder.OpenElement(s++, "td");
-                    builder.AddContent(s++, element.DateFormatted);
-                    builder.CloseElement();
-                    builder.AddMarkupContent(s++, "\n");
-
-                    builder.OpenElement(s++, "td");
-                    builder.AddContent(s++, element.Summary);
-                    builder.CloseElement();
-                    builder.AddMarkupContent(s++, "\n");
-
-                    builder.OpenElement(s++, "td");
-                    builder.AddContent(s++, element.TemperatureF);
-                    builder.CloseElement();
-                    builder.AddMarkupContent(s++, "\n");
-
-                    builder.OpenElement(s++, "td");
-                    builder.AddContent(s++, element.TemperatureF);
-                    builder.CloseElement();
-                    builder.AddMarkupContent(s++, "\n");
-
-                    builder.CloseElement();
-                    builder.AddMarkupContent(s++, "\n");
-                }
-            }
-
-            builder.CloseElement();
-            builder.AddMarkupContent(s++, "\n");
-
-            builder.CloseElement();
-        }
     }
 }

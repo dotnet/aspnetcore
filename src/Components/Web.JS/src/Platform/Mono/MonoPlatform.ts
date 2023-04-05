@@ -19,6 +19,7 @@ import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+let MONO_INTERNAL: any = undefined as any;
 
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -146,7 +147,7 @@ export const monoPlatform: Platform = {
 
   beginHeapLock: function beginHeapLock() {
     assertHeapIsNotLocked();
-    currentHeapLock = new MonoHeapLock();
+    currentHeapLock = MonoHeapLock.create();
     return currentHeapLock;
   },
 
@@ -358,10 +359,11 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
   (dotnet as any).withModuleConfig(moduleConfig);
 
   const runtime = await dotnet.create();
-  const { MONO: mono, BINDING: binding, Module: module, setModuleImports } = runtime;
+  const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
   Module = module;
   BINDING = binding;
   MONO = mono;
+  MONO_INTERNAL = mono_internal;
 
   Blazor._internal.dotNetCriticalError = printErr;
   Blazor._internal.loadLazyAssembly = (assemblyNameToLoad) => loadLazyAssembly(resourceLoader, assemblyNameToLoad);
@@ -493,29 +495,43 @@ function attachInteropInvoker(): void {
 }
 
 function getICUResourceName(bootConfig: BootJsonData, culture: string | undefined): string {
+  if (bootConfig.icuDataMode === ICUDataMode.Custom) {
+    const icuFiles = Object
+      .keys(bootConfig.resources.runtime)
+      .filter(n => n.startsWith('icudt') && n.endsWith('.dat'));
+    if (icuFiles.length === 1) {
+      const customIcuFile = icuFiles[0];
+      return customIcuFile;
+    }
+  }
+
   const combinedICUResourceName = 'icudt.dat';
   if (!culture || bootConfig.icuDataMode === ICUDataMode.All) {
     return combinedICUResourceName;
   }
 
   const prefix = culture.split('-')[0];
-  if ([
-    'en',
-    'fr',
-    'it',
-    'de',
-    'es',
-  ].includes(prefix)) {
+  if (prefix === 'en' ||
+    [
+      'fr',
+      'fr-FR',
+      'it',
+      'it-IT',
+      'de',
+      'de-DE',
+      'es',
+      'es-ES',
+    ].includes(culture)) {
     return 'icudt_EFIGS.dat';
-  } else if ([
+  }
+  if ([
     'zh',
     'ko',
     'ja',
   ].includes(prefix)) {
     return 'icudt_CJK.dat';
-  } else {
-    return 'icudt_no_CJK.dat';
   }
+  return 'icudt_no_CJK.dat';
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
@@ -554,6 +570,8 @@ class MonoHeapLock implements HeapLock {
       throw new Error('Trying to release a lock which isn\'t current');
     }
 
+    MONO_INTERNAL.mono_wasm_gc_unlock();
+
     currentHeapLock = null;
 
     while (this.postReleaseActions?.length) {
@@ -565,5 +583,10 @@ class MonoHeapLock implements HeapLock {
       nextQueuedAction();
       assertHeapIsNotLocked();
     }
+  }
+
+  static create(): MonoHeapLock {
+    MONO_INTERNAL.mono_wasm_gc_lock();
+    return new MonoHeapLock();
   }
 }

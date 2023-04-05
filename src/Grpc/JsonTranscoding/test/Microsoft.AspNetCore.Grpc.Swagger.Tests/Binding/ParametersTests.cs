@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
 using Microsoft.OpenApi.Models;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.Parameters;
+namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.Binding;
 
 public class ParametersTests
 {

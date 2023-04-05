@@ -606,24 +606,21 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private static Func<Func<Task>, Task> BuildInboundActivityDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers, Circuit circuit)
     {
-        Func<CircuitInboundActivityContext, Task>? result = null;
+        if (circuitHandlers.Count == 0)
+        {
+            // If there are no registered handlers, there is no need to allocate a context on each call.
+            return static handler => handler();
+        }
+
+        var result = static (CircuitInboundActivityContext context) => context.Handler();
 
         for (var i = circuitHandlers.Count - 1; i >= 0; i--)
         {
-            if (circuitHandlers[i] is IHandleCircuitActivity inboundActivityHandler)
-            {
-                var next = result ?? (static (context) => context.Handler());
-                result = (context) => inboundActivityHandler.HandleInboundActivityAsync(context, next);
-            }
+            var next = result;
+            result = circuitHandlers[i].CreateInboundActivityHandler(next);
         }
 
-        if (result is null)
-        {
-            // If there are no registered handlers, there is no need to allocate a context on each call.
-            return static (handler) => handler();
-        }
-
-        return (handler) => result(new(handler, circuit));
+        return handler => result(new(handler, circuit));
     }
 
     private void AssertInitialized()
@@ -846,9 +843,7 @@ internal partial class CircuitHost : IAsyncDisposable
             }
         }
 
-#pragma warning disable SYSLIB1025
-        [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
+        [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailedInCircuit")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
-#pragma warning restore SYSLIB1025
     }
 }

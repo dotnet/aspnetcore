@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Shared;
@@ -120,15 +121,18 @@ public class ManifestEmbeddedFileProvider : IFileProvider
         return NullChangeToken.Singleton;
     }
 
+    [UnconditionalSuppressMessage("SingleFile", "IL3000:Assembly.Location",
+        Justification = "The code handles if the Assembly.Location is empty. Workaround https://github.com/dotnet/runtime/issues/83607")]
     private static DateTimeOffset ResolveLastModified(Assembly assembly)
     {
         var result = DateTimeOffset.UtcNow;
 
-        if (!string.IsNullOrEmpty(assembly.Location))
+        var assemblyLocation = assembly.Location;
+        if (!string.IsNullOrEmpty(assemblyLocation))
         {
             try
             {
-                result = File.GetLastWriteTimeUtc(assembly.Location);
+                result = File.GetLastWriteTimeUtc(assemblyLocation);
             }
             catch (PathTooLongException)
             {

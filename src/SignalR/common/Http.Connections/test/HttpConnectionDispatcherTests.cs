@@ -1,22 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,8 +23,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -45,7 +41,6 @@ using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests;
 
@@ -3112,6 +3107,109 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         await connection.DisposeAsync();
     }
 
+    [Theory]
+    [InlineData(HttpTransportType.ServerSentEvents)]
+    [InlineData(HttpTransportType.WebSockets)]
+    public async Task RequestTimeoutDisabledWhenConnected(HttpTransportType transportType)
+    {
+        using (StartVerifiableLog())
+        {
+            using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseKestrel()
+                .ConfigureLogging(o =>
+                {
+                    o.AddProvider(new ForwardingLoggerProvider(LoggerFactory));
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddConnections();
+
+                    // Since tests run in parallel, it's possible multiple servers will startup,
+                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+                })
+                .Configure(app =>
+                {
+                    app.Use((c, n) =>
+                    {
+                        c.Features.Set<IHttpRequestTimeoutFeature>(new HttpRequestTimeoutFeature());
+                        Assert.True(((HttpRequestTimeoutFeature)c.Features.Get<IHttpRequestTimeoutFeature>()).Enabled);
+                        return n(c);
+                    });
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapConnectionHandler<TestConnectionHandler>("/foo");
+                    });
+                })
+                .UseUrls("http://127.0.0.1:0");
+            })
+            .Build();
+
+            host.Start();
+
+            var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+            var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
+
+            var stream = new MemoryStream();
+            var connection = new HttpConnection(
+                new HttpConnectionOptions()
+                {
+                    Url = new Uri(url + "/foo"),
+                    Transports = transportType,
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream)
+                },
+                LoggerFactory);
+
+            await connection.StartAsync();
+
+            var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
+
+            Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
+            var feature = Assert.IsType<HttpRequestTimeoutFeature>(context.Features.Get<IHttpContextFeature>()?.HttpContext.Features.Get<IHttpRequestTimeoutFeature>());
+            Assert.False(feature.Enabled);
+
+            await connection.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task DisableRequestTimeoutInLongPolling()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
+            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions();
+            var connection = manager.CreateConnection(options);
+            connection.TransportType = HttpTransportType.LongPolling;
+
+            var services = new ServiceCollection();
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<HttpContextConnectionHandler>();
+            var app = builder.Build();
+            var context = MakeRequest("/foo", connection, services);
+            context.Features.Set<IHttpRequestTimeoutFeature>(new HttpRequestTimeoutFeature());
+            Assert.True(((HttpRequestTimeoutFeature)context.Features.Get<IHttpRequestTimeoutFeature>()).Enabled);
+
+            // Initial poll will complete immediately
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.False(((HttpRequestTimeoutFeature)context.Features.Get<IHttpRequestTimeoutFeature>()).Enabled);
+
+            context.Features.Set<IHttpRequestTimeoutFeature>(new HttpRequestTimeoutFeature());
+            Assert.True(((HttpRequestTimeoutFeature)context.Features.Get<IHttpRequestTimeoutFeature>()).Enabled);
+            var pollTask = dispatcher.ExecuteAsync(context, options, app);
+            // disables on every poll
+            Assert.False(((HttpRequestTimeoutFeature)context.Features.Get<IHttpRequestTimeoutFeature>()).Enabled);
+
+            await connection.DisposeAsync().DefaultTimeout();
+        }
+    }
+
     private class GetNegotiateHttpHandler : DelegatingHandler
     {
         private readonly MemoryStream _stream;
@@ -3501,4 +3599,16 @@ public class ResponseFeature : HttpResponseFeature
 public class MessageWrapper
 {
     public ReadOnlySequence<byte> Buffer { get; set; }
+}
+
+internal sealed class HttpRequestTimeoutFeature : IHttpRequestTimeoutFeature
+{
+    public bool Enabled { get; private set; } = true;
+
+    public CancellationToken RequestTimeoutToken => new CancellationToken();
+
+    public void DisableTimeout()
+    {
+        Enabled = false;
+    }
 }

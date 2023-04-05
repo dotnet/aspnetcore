@@ -81,7 +81,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -129,7 +129,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -154,8 +154,8 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
-        ComponentPrerenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.ServerPrerendered);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.RenderMode.WebAssemblyPrerendered);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -190,8 +190,7 @@ public class PersistComponentStateTagHelperTest
                     x => x.CreateProtector(It.IsAny<string>()) == _protector))
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
-                .AddScoped<HtmlRenderer>()
-                .AddScoped<IComponentPrerenderer, ComponentPrerenderer>()
+                .AddScoped<IComponentPrerenderer, EndpointHtmlRenderer>()
                 .BuildServiceProvider(),
         };
 

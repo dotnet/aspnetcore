@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Generators;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 internal static class RequestDelegateGeneratorSources
 {
@@ -56,7 +56,7 @@ internal static class RequestDelegateGeneratorSources
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
 
-            return (false, default);
+            return (allowEmpty, default);
         }
 """;
 

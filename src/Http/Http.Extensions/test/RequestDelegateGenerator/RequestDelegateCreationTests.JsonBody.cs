@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Buffers;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -147,5 +149,256 @@ app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo
         httpContext = CreateHttpContextWithBody(null);
         await endpoints[1].RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, string.Empty);
+    }
+
+    public static object[][] ImplicitRawFromBodyActions
+    {
+        get
+        {
+            var testStreamSource = """
+void TestStream(HttpContext httpContext, System.IO.Stream stream)
+{
+    var ms = new System.IO.MemoryStream();
+    stream.CopyTo(ms);
+    httpContext.Items.Add("body", ms.ToArray());
+}
+app.MapPost("/", TestStream);
+""";
+            var testPipeReaderSource = """
+async Task TestPipeReader(HttpContext httpContext, System.IO.Pipelines.PipeReader reader)
+{
+    var ms = new System.IO.MemoryStream();
+    await reader.CopyToAsync(ms);
+    httpContext.Items.Add("body", ms.ToArray());
+}
+app.MapPost("/", TestPipeReader);
+""";
+
+            return new[]
+            {
+                new object[] { testStreamSource },
+                new object[] { testPipeReaderSource }
+            };
+        }
+    }
+
+    public static object[][] ExplicitRawFromBodyActions
+    {
+        get
+        {
+            var explicitTestStreamSource = """
+void TestStream(HttpContext httpContext, [FromBody] System.IO.Stream stream)
+{
+    var ms = new System.IO.MemoryStream();
+    stream.CopyTo(ms);
+    httpContext.Items.Add("body", ms.ToArray());
+}
+app.MapPost("/", TestStream);
+""";
+
+            var explicitTestPipeReaderSource = """
+async Task TestPipeReader(HttpContext httpContext, [FromBody] System.IO.Pipelines.PipeReader reader)
+{
+    var ms = new System.IO.MemoryStream();
+    await reader.CopyToAsync(ms);
+    httpContext.Items.Add("body", ms.ToArray());
+}
+app.MapPost("/", TestPipeReader);
+""";
+
+            return new[]
+            {
+                new object[] { explicitTestStreamSource },
+                new object[] { explicitTestPipeReaderSource }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ImplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromImplicitRawBodyParameter(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing
+        httpContext.Request.Body.Position = 0;
+        byte[] data = new byte[requestBodyBytes.Length];
+        int read = await httpContext.Request.Body.ReadAsync(data.AsMemory());
+        Assert.Equal(read, data.Length);
+        Assert.Equal(requestBodyBytes, data);
+
+        httpContext.Request.Body.Position = 0;
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(requestBodyBytes.Length, result.Buffer.Length);
+        Assert.Equal(requestBodyBytes, result.Buffer.ToArray());
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromExplicitRawBodyParameter(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing
+        httpContext.Request.Body.Position = 0;
+        byte[] data = new byte[requestBodyBytes.Length];
+        int read = await httpContext.Request.Body.ReadAsync(data.AsMemory());
+        Assert.Equal(read, data.Length);
+        Assert.Equal(requestBodyBytes, data);
+
+        httpContext.Request.Body.Position = 0;
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(requestBodyBytes.Length, result.Buffer.Length);
+        Assert.Equal(requestBodyBytes, result.Buffer.ToArray());
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(ImplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromImplicitRawBodyParameterPipeReader(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var pipeReader = PipeReader.Create(new MemoryStream(requestBodyBytes));
+        var stream = pipeReader.AsStream();
+        httpContext.Features.Set<IRequestBodyPipeFeature>(new PipeRequestBodyFeature(pipeReader));
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = requestBodyBytes.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+        Assert.Same(httpContext.Request.BodyReader, pipeReader);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing and verify that they are empty (the pipe reader isn't seekable here)
+        int read = await httpContext.Request.Body.ReadAsync(new byte[requestBodyBytes.Length].AsMemory());
+        Assert.Equal(0, read);
+
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(0, result.Buffer.Length);
+        Assert.True(result.IsCompleted);
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExplicitRawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromExplicitRawBodyParameterPipeReader(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var pipeReader = PipeReader.Create(new MemoryStream(requestBodyBytes));
+        var stream = pipeReader.AsStream();
+        httpContext.Features.Set<IRequestBodyPipeFeature>(new PipeRequestBodyFeature(pipeReader));
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = requestBodyBytes.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+        Assert.Same(httpContext.Request.BodyReader, pipeReader);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing and verify that they are empty (the pipe reader isn't seekable here)
+        int read = await httpContext.Request.Body.ReadAsync(new byte[requestBodyBytes.Length].AsMemory());
+        Assert.Equal(0, read);
+
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(0, result.Buffer.Length);
+        Assert.True(result.IsCompleted);
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Fact]
+    public async Task RequestDelegateAllowsEmptyBodyStructGivenCorrectlyConfiguredFromBodyParameter()
+    {
+        var structToBeZeroedKey = "structToBeZeroed";
+
+        var source = $$"""
+void TestAction(HttpContext httpContext, [CustomFromBody(AllowEmpty = true)] BodyStruct bodyStruct)
+{
+    httpContext.Items["{{structToBeZeroedKey}}"] = bodyStruct;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
+        httpContext.Items[structToBeZeroedKey] = new BodyStruct { Id = 42 };
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(default(BodyStruct), httpContext.Items[structToBeZeroedKey]);
     }
 }
