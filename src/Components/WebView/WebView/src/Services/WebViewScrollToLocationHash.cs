@@ -7,5 +7,5 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 
 internal sealed class WebViewScrollToLocationHash : IScrollToLocationHash
 {
-    public Task ScrollToLocationHash(string locationAbsolute) => Task.CompletedTask;
+    public Task RefreshScrollPositionForHash(string locationAbsolute) => Task.CompletedTask;
 }

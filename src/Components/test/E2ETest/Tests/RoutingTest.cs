@@ -1547,7 +1547,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefStartingWithHash_ScrollsToElementOnTheSamePage()
+    public void AnchorWithHrefStartingWithHash_ScrollsToElementWithIdOnTheSamePage()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1563,7 +1563,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefContainingHash_NavigatesToPageAndScrollsToElement()
+    public void AnchorWithHrefContainingHash_NavigatesToPageAndScrollsToElementWithName()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1572,14 +1572,14 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         app.FindElement(By.Id("anchor-test2")).Click();
 
         var currentWindowScrollY = BrowserScrollY;
-        var test2VerticalLocation = app.FindElement(By.Id("test2")).Location.Y;
+        var test2VerticalLocation = app.FindElement(By.Name("test2")).Location.Y;
         var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
         Assert.Equal("subdir/LongPageWithHash2#test2", currentRelativeUrl);
         Assert.Equal(test2VerticalLocation, currentWindowScrollY);
     }
 
     [Fact]
-    public void AnchorWithHrefContainingHash_FocusOnNavigateDoesNotHappenAndScrollsToElement()
+    public void AnchorWithHrefContainingHash_FocusOnNavigatePreventScrollAndScrollsToElementWithId()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1594,6 +1594,56 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal("subdir/LongPageWithHash3#test3", currentRelativeUrl);
         Assert.Equal(test3VerticalLocation, currentWindowScrollY);
         Assert.NotEqual(focusOnNavigateSelectorVerticalLocation, currentWindowScrollY);
+    }
+
+    [Fact]
+    public void AnchorWithHrefContainingHash_FocusOnNavigatePreventScrollAndScrollsToElementWithName()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Long page with hash")).Click();
+
+        app.FindElement(By.Id("anchor-test4")).Click();
+
+        var currentWindowScrollY = BrowserScrollY;
+        var test3VerticalLocation = app.FindElement(By.Name("test4")).Location.Y;
+        var focusOnNavigateSelectorVerticalLocation = app.FindElement(By.Id("test-info")).Location.Y;
+        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
+        Assert.Equal("subdir/LongPageWithHash3#test4", currentRelativeUrl);
+        Assert.Equal(test3VerticalLocation, currentWindowScrollY);
+        Assert.NotEqual(focusOnNavigateSelectorVerticalLocation, currentWindowScrollY);
+    }
+
+    [Fact]
+    public void NavigatationManagerNavigateToSameUrlWithHash_ScrollsToElementWithIdOnTheSamePage()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Long page with hash")).Click();
+
+        app.FindElement(By.Id("navigate-test2")).Click();
+
+        var currentWindowScrollY = BrowserScrollY;
+        var test2VerticalLocation = app.FindElement(By.Name("test2")).Location.Y;
+        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
+        Assert.Equal("subdir/LongPageWithHash2#test2", currentRelativeUrl);
+        Assert.Equal(test2VerticalLocation, currentWindowScrollY);
+    }
+
+    [Fact]
+    public void NavigatationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElementWithName()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Long page with hash")).Click();
+
+        app.FindElement(By.Id("navigate-test1")).Click();
+
+        var currentWindowScrollY = BrowserScrollY;
+        var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
+        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
+        Assert.Equal("subdir/LongPageWithHash#test1", currentRelativeUrl);
+        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
     }
 
     private long BrowserScrollY

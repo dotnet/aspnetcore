@@ -23,7 +23,7 @@ internal sealed class RemoteScrollToLocationHash : IScrollToLocationHash
 
     public bool HasAttachedJSRuntime => _jsRuntime != null;
 
-    public async Task ScrollToLocationHash(string locationAbsolute)
+    public async Task RefreshScrollPositionForHash(string locationAbsolute)
     {
         if (!HasAttachedJSRuntime)
         {

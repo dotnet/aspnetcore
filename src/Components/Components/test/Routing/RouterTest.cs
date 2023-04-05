@@ -225,7 +225,7 @@ public class RouterTest
     {
         public static readonly TestScrollToLocationHash Instance = new TestScrollToLocationHash();
 
-        public Task ScrollToLocationHash(string locationAbsolute)
+        public Task RefreshScrollPositionForHash(string locationAbsolute)
         {
             return Task.CompletedTask;
         }

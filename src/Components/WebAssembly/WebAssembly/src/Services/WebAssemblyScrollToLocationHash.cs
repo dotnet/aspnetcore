@@ -9,7 +9,7 @@ internal sealed class WebAssemblyScrollToLocationHash : IScrollToLocationHash
 {
     public static readonly WebAssemblyScrollToLocationHash Instance = new WebAssemblyScrollToLocationHash();
 
-    public Task ScrollToLocationHash(string locationAbsolute)
+    public Task RefreshScrollPositionForHash(string locationAbsolute)
     {
         var hashIndex = locationAbsolute.IndexOf("#", StringComparison.CurrentCultureIgnoreCase);
 

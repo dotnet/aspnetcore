@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public interface IScrollToLocationHash
 {
     /// <summary>
-    /// Scrolls to location hash on the client.
+    /// Refreshes scroll position for hash on the client.
     /// </summary>
     /// <param name="locationAbsolute">Absolute URL of location</param> 
     /// <returns>A <see cref="Task" /> that represents the asynchronous operation.</returns>
-    Task ScrollToLocationHash(string locationAbsolute);
+    Task RefreshScrollPositionForHash(string locationAbsolute);
 }

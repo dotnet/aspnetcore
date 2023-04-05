@@ -26,6 +26,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
 
+    private Type? _updateScrollPositionForHashLastHandlerType;
+    private bool _updateScrollPositionForHash;
+
     private CancellationTokenSource _onNavigateCts;
 
     private Task _previousOnNavigateTask = Task.CompletedTask;
@@ -208,6 +211,13 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 context.Handler,
                 context.Parameters ?? _emptyParametersDictionary);
             _renderHandle.Render(Found(routeData));
+
+            // If you navigate to a different page, then after the next render we'll update the scroll position
+            if (context.Handler != _updateScrollPositionForHashLastHandlerType)
+            {
+                _updateScrollPositionForHashLastHandlerType = context.Handler;
+                _updateScrollPositionForHash = true;
+            }
         }
         else
         {
@@ -278,12 +288,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    Task IHandleAfterRender.OnAfterRenderAsync()
-    {
-        return EnableNavigationInterceptionThenScrollToLocationHash();
-    }
-
-    private async Task EnableNavigationInterceptionThenScrollToLocationHash()
+    async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!_navigationInterceptionEnabled)
         {
@@ -291,7 +296,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             await NavigationInterception.EnableNavigationInterceptionAsync();
         }
 
-        await ScrollToLocationHash.ScrollToLocationHash(_locationAbsolute);
+        if (_updateScrollPositionForHash)
+        {
+            _updateScrollPositionForHash = false;
+            await ScrollToLocationHash.RefreshScrollPositionForHash(_locationAbsolute);
+        }
     }
 
     private static partial class Log

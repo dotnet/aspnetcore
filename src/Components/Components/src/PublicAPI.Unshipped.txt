@@ -5,7 +5,7 @@ Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Excep
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash
-Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.ScrollToLocationHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.RefreshScrollPositionForHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Sections.SectionContent
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void

@@ -54,12 +54,16 @@ function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
 }
 
-function scrollToElement(id : string) : void {
-  var element = document.getElementById(id);
-  if (element)
-  {
-    element.scrollIntoView();
-  }
+export function scrollToElement(identifier: string): boolean {
+  const element = document.getElementById(identifier)
+    || document.getElementsByName(identifier)[0];
+
+    if (element) {
+      element.scrollIntoView();
+      return true;
+    }
+  
+    return false;
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
@@ -85,15 +89,10 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     const anchorTarget = findAnchorTarget(event);
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      const anchorHref = anchorTarget.getAttribute('href')!;
-
-      if (anchorHref.startsWith('#') && anchorHref.length > 1) {
-        event.preventDefault(); 
-        const hash = location.hash;
-        const urlInBrowser = hash.length > 1 ? location.href.replace(hash, anchorHref) : location.href + anchorHref;
-        window.history.pushState({}, "", urlInBrowser);
-        scrollToElement(anchorHref.slice(1));
-        return;
+      let anchorHref = anchorTarget.getAttribute('href')!; 
+      if (anchorHref.startsWith('#')) {
+        // Preserve the existing URL but set the hash to match the link that was clicked
+        anchorHref = `${location.origin}${location.pathname}${location.search}${anchorHref}`;
       }
 
       const absoluteHref = toAbsoluteUri(anchorHref);     
@@ -104,6 +103,23 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
       }
     }
   });
+}
+
+function isSamePageWithHash(absoluteHref: string): boolean {
+  const hashIndex = absoluteHref.indexOf('#');
+  return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
+}
+
+function performScrollToElementOnTheSamePage(absoluteHref : string): void {
+  history.pushState({}, "", absoluteHref);
+
+  const hashIndex = absoluteHref.indexOf('#');
+  if (hashIndex == absoluteHref.length - 1) {
+    return;
+  }
+
+  const identifier = absoluteHref.substring(hashIndex + 1);
+  scrollToElement(identifier);
 }
 
 // For back-compat, we need to accept multiple overloads
@@ -156,6 +172,11 @@ function performExternalNavigation(uri: string, replace: boolean) {
 
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
   ignorePendingNavigation();
+
+  if (isSamePageWithHash(absoluteInternalHref)) {
+    performScrollToElementOnTheSamePage(absoluteInternalHref);
+    return;
+  }   
 
   if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
     const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
