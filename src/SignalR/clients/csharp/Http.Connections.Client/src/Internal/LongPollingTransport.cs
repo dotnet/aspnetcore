@@ -21,9 +21,9 @@ internal sealed partial class LongPollingTransport : ITransport
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly HttpConnectionOptions _httpConnectionOptions;
+    private readonly bool _useAck;
     private IDuplexPipe? _application;
     private IDuplexPipe? _transport;
-    private bool _useAck;
     // Volatile so that the poll loop sees the updated value set from a different thread
     private volatile Exception? _error;
 

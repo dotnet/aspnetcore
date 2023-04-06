@@ -351,7 +351,7 @@ public class AckPipeTests
 
         // read in client application layer
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await duplexPipe.Transport.Input.ReadAsync());
-        Assert.Equal("Ack ID is greater than total amount of bytes that have been sent.", exception.Message);
+        Assert.Equal("Ack ID '30' is greater than total amount of '0' bytes that have been sent.", exception.Message);
 
         // Pipe is completed
         exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await duplexPipe.Transport.Input.ReadAsync());

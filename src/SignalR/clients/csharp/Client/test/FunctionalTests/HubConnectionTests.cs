@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
@@ -2533,6 +2534,74 @@ public class HubConnectionTests : FunctionalTestBase
             finally
             {
                 await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    //[Theory]
+    //[MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+    [Repeat(500)]
+    public async Task CanReconnectAndSendMessageWhileDisconnected(/*string protocolName, HttpTransportType transportType, string path*/)
+    {
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>())
+        //await using (var proxyServer = await StartServer<ProxyStartup>())
+        {
+            //using var httpClient = new HttpClient();
+            //await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, proxyServer.Url + $"/server?url={server.Url}"));
+
+            var websocket = new ClientWebSocket();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            tcs.SetResult();
+
+            const string originalMessage = "SignalR";
+            //var connection = CreateHubConnection(proxyServer.Url, "/default", HttpTransportType.WebSockets, protocol, LoggerFactory);
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.WebSocketFactory = async (context, token) =>
+                    {
+                        await tcs.Task;
+                        await websocket.ConnectAsync(context.Uri, token);
+                        tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                        return websocket;
+                    };
+                });
+            connectionBuilder.Services.AddSingleton(protocol);
+            var connection = connectionBuilder.Build();
+            connection.ServerTimeout = TimeSpan.FromMinutes(2);
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                Assert.Equal(originalMessage, result);
+
+                var originalWebsocket = websocket;
+                websocket = new ClientWebSocket();
+
+                //var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                //await Task.Delay(1);
+                originalWebsocket.Dispose();
+                //await Task.Delay(1000);
+                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                tcs.SetResult();
+                result = await resultTask;
+
+                Assert.Equal(originalMessage, result);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
     }
