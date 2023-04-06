@@ -22,7 +22,8 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     private readonly HttpContext _context;
     private readonly List<MediaTypeState> _encodings;
-    private readonly HttpLoggingOptions _options;
+    private readonly HashSet<string> _allowedResponseHeaders;
+    private readonly HttpLoggingFields _loggingFields;
     private Encoding? _encoding;
 
     private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
@@ -32,7 +33,8 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         ILogger logger,
         HttpContext context,
         List<MediaTypeState> encodings,
-        HttpLoggingOptions options)
+        HashSet<string> allowedResponseHeaders,
+        HttpLoggingFields loggingFields)
         : base(innerBodyFeature.Stream, logger)
     {
         _innerBodyFeature = innerBodyFeature;
@@ -40,7 +42,8 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         _limit = limit;
         _context = context;
         _encodings = encodings;
-        _options = options;
+        _allowedResponseHeaders = allowedResponseHeaders;
+        _loggingFields = loggingFields;
     }
 
     public bool FirstWrite { get; private set; }
@@ -68,6 +71,25 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     public override void Write(ReadOnlySpan<byte> span)
     {
+        CommonWrite(span);
+
+        _innerStream.Write(span);
+    }
+
+    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        await WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken);
+    }
+
+    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        CommonWrite(buffer.Span);
+
+        await _innerStream.WriteAsync(buffer, cancellationToken);
+    }
+
+    private void CommonWrite(ReadOnlySpan<byte> span)
+    {
         var remaining = _limit - _bytesBuffered;
         var innerCount = Math.Min(remaining, span.Length);
 
@@ -86,38 +108,6 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
                 BuffersExtensions.Write(this, span.Slice(0, innerCount));
             }
         }
-
-        _innerStream.Write(span);
-    }
-
-    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        await WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken);
-    }
-
-    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        var remaining = _limit - _bytesBuffered;
-        var innerCount = Math.Min(remaining, buffer.Length);
-
-        OnFirstWrite();
-
-        if (innerCount > 0)
-        {
-            if (_tailMemory.Length - innerCount > 0)
-            {
-                buffer.Slice(0, innerCount).CopyTo(_tailMemory);
-                _tailBytesBuffered += innerCount;
-                _bytesBuffered += innerCount;
-                _tailMemory = _tailMemory.Slice(innerCount);
-            }
-            else
-            {
-                BuffersExtensions.Write(this, buffer.Span);
-            }
-        }
-
-        await _innerStream.WriteAsync(buffer, cancellationToken);
     }
 
     private void OnFirstWrite()
@@ -125,7 +115,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         if (!FirstWrite)
         {
             // Log headers as first write occurs (headers locked now)
-            HttpLoggingMiddleware.LogResponseHeaders(_context.Response, _options, _logger);
+            HttpLoggingMiddleware.LogResponseHeaders(_context.Response, _loggingFields, _allowedResponseHeaders, _logger);
 
             MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
             FirstWrite = true;
