@@ -110,8 +110,8 @@ function isSamePageWithHash(absoluteHref: string): boolean {
   return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
 }
 
-function performScrollToElementOnTheSamePage(absoluteHref : string): void {
-  history.pushState({}, "", absoluteHref);
+function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boolean, state: string | undefined = undefined): void {
+  saveToBrowserHistory(absoluteHref, replace, state);
 
   const hashIndex = absoluteHref.indexOf('#');
   if (hashIndex == absoluteHref.length - 1) {
@@ -174,7 +174,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   ignorePendingNavigation();
 
   if (isSamePageWithHash(absoluteInternalHref)) {
-    performScrollToElementOnTheSamePage(absoluteInternalHref);
+    performScrollToElementOnTheSamePage(absoluteInternalHref, replace, state);
     return;
   }   
 
@@ -192,6 +192,12 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
+  saveToBrowserHistory(absoluteInternalHref, replace, state);
+
+  await notifyLocationChanged(interceptedLink);
+}
+
+function saveToBrowserHistory(absoluteInternalHref: string, replace: boolean, state: string | undefined = undefined): void {
   if (!replace) {
     currentHistoryIndex++;
     history.pushState({
@@ -204,8 +210,6 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
       _index: currentHistoryIndex,
     }, /* ignored title */ '', absoluteInternalHref);
   }
-
-  await notifyLocationChanged(interceptedLink);
 }
 
 function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
