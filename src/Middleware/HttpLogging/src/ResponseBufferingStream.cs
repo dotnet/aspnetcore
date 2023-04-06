@@ -46,7 +46,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         _loggingFields = loggingFields;
     }
 
-    public bool FirstWrite { get; private set; }
+    public bool HeadersWritten { get; private set; }
 
     public Stream Stream => this;
 
@@ -97,7 +97,8 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
         if (innerCount > 0)
         {
-            if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
+            var slice = span.Slice(0, innerCount);
+            if (slice.TryCopyTo(_tailMemory.Span))
             {
                 _tailBytesBuffered += innerCount;
                 _bytesBuffered += innerCount;
@@ -105,20 +106,20 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
             }
             else
             {
-                BuffersExtensions.Write(this, span.Slice(0, innerCount));
+                BuffersExtensions.Write(this, slice);
             }
         }
     }
 
     private void OnFirstWrite()
     {
-        if (!FirstWrite)
+        if (!HeadersWritten)
         {
             // Log headers as first write occurs (headers locked now)
             HttpLoggingMiddleware.LogResponseHeaders(_context.Response, _loggingFields, _allowedResponseHeaders, _logger);
 
             MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
-            FirstWrite = true;
+            HeadersWritten = true;
         }
     }
 

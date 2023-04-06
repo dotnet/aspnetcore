@@ -220,7 +220,7 @@ internal sealed class HttpLoggingMiddleware
 
     private static bool BodyNotYetWritten(ResponseBufferingStream? responseBufferingStream)
     {
-        return responseBufferingStream == null || responseBufferingStream.FirstWrite == false;
+        return responseBufferingStream == null || responseBufferingStream.HeadersWritten == false;
     }
 
     private static bool NotUpgradeableRequestOrRequestNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
