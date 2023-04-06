@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
@@ -67,18 +68,34 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         {
             _aborted = false;
             // TODO: check if the pipe was used previously?
+            // Currently checked in Resend
+            if (reader.Resend())
+            {
+                // wait for first read?
+                var buf = new byte[AckPipeWriter.FrameSize];
+                var res = await socket.ReceiveAsync(buf, _connection.Cancellation?.Token ?? default);
+                Debug.Assert(res.Count == AckPipeWriter.FrameSize);
+                var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(buf), reader);
+                Debug.Assert(parsedLen == 0);
+                await _application.Output.WriteAsync(buf);
 
-            reader.Resend();
-            // wait for first read?
-            _ = await socket.ReceiveAsync(Memory<byte>.Empty, _connection.Cancellation?.Token ?? default);
+                var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
+                                    ? WebSocketMessageType.Binary
+                                    : WebSocketMessageType.Text);
+                buf = new byte[AckPipeWriter.FrameSize];
+                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_connection.Transport.Output)).lastAck);
+                _logger.LogInformation("sending resend ack {lastack}", ((AckPipeWriter)(_connection.Transport.Output)).lastAck);
+                await socket.SendAsync(buf, webSocketMessageType, endOfMessage: true, _connection.SendingToken);
+            }
         }
         // if (_application.Input.HasBeenUsedBefore)
         //     read first to get the ack id for resending
         //     set resend id on output pipe
         //     start send loop which will resend and tell the client the last ack id it got from the read side
             // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
+
         receiving = StartReceiving(socket);
-        sending = StartSending(socket);
+        sending = StartSending(socket, true);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending);
@@ -150,8 +167,10 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
         try
         {
+            _logger.LogInformation("start recv");
             while (!token.IsCancellationRequested)
             {
+
                 // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                 var result = await socket.ReceiveAsync(Memory<byte>.Empty, token);
 
@@ -225,12 +244,13 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         }
     }
 
-    private async Task StartSending(WebSocket socket)
+    private async Task StartSending(WebSocket socket, bool ignoreFirstCancel)
     {
         Exception? error = null;
 
         try
         {
+            _logger.LogInformation("start send");
             while (true)
             {
                 var result = await _application.Input.ReadAsync();
@@ -240,7 +260,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
                 try
                 {
-                    if (result.IsCanceled)
+                    if (result.IsCanceled && !ignoreFirstCancel)
                     {
                         break;
                     }
@@ -297,6 +317,16 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                     {
                         break;
                     }
+                    else if (ignoreFirstCancel)
+                    {
+                        //var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
+                        //        ? WebSocketMessageType.Binary
+                        //        : WebSocketMessageType.Text);
+                        //var buf = new byte[AckPipeWriter.FrameSize];
+                        //AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_connection.Transport.Output)).lastAck);
+                        //await socket.SendAsync(buffer, webSocketMessageType, _connection.SendingToken);
+                    }
+                    ignoreFirstCancel = false;
                 }
                 finally
                 {

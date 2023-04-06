@@ -261,7 +261,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
                 {
                     sb.Append($"0x{b:x} ");
                 }
-                logger.LogDebug(sb.ToString());
+                logger.LogDebug($"read: {sb}");
             }
 
             try
