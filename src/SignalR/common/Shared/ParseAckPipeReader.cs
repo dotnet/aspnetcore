@@ -91,7 +91,7 @@ internal class ParseAckPipeReader : PipeReader
             {
                 // TODO: didn't get 16 bytes
                 var frame = buffer.Slice(0, FrameSize);
-                var len = ParseFrame(ref frame, _ackPipeReader);
+                var len = ParseFrame(in frame, _ackPipeReader);
                 _totalBytes += len;
                 // 0 len sent on reconnect and not part of acks
                 if (len != 0)
@@ -110,7 +110,9 @@ internal class ParseAckPipeReader : PipeReader
 
                 buffer = buffer.Slice(FrameSize, len);
                 _currentRead = buffer;
-                _ackPipeWriter.lastAck += buffer.Length + FrameSize;
+                // 0 length means it was part of the reconnect handshake and not sent over the pipe, ignore it for acking purposes
+                // TODO: check if 0 byte writes are possible in ConnectionHandlers and possibly handle them differently
+                _ackPipeWriter.lastAck += buffer.Length == 0 ? 0 : buffer.Length + FrameSize;
             }
             else
             {
@@ -142,43 +144,44 @@ internal class ParseAckPipeReader : PipeReader
         }
 
         return res;
+    }
 
-        static long ParseFrame(ref ReadOnlySequence<byte> frame, AckPipeReader ackPipeReader)
-        {
-            Debug.Assert(frame.Length >= FrameSize);
+    public static long ParseFrame(in ReadOnlySequence<byte> frame, AckPipeReader ackPipeReader)
+    {
+        Debug.Assert(frame.Length >= FrameSize);
 
-            long len;
-            long ackId;
+        long len;
+        long ackId;
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-            // Both the Span check and Stackalloc paths are faster than using SequenceReader
-            var frameSpan = frame.FirstSpan;
-            if (frameSpan.Length >= FrameSize)
-            {
-                Span<byte> decodedBytes = stackalloc byte[8];
-                var status = Base64.DecodeFromUtf8(frameSpan.Slice(0, 12), decodedBytes, out var consumed, out var written, isFinalBlock: true);
-                Debug.Assert(status == OperationStatus.Done);
-                Debug.Assert(consumed == 12);
-                Debug.Assert(written == 8);
-                len = BitConverter.ToInt64(decodedBytes);
-                status = Base64.DecodeFromUtf8(frameSpan.Slice(12, 12), decodedBytes, out consumed, out written, isFinalBlock: true);
-                Debug.Assert(status == OperationStatus.Done);
-                Debug.Assert(consumed == 12);
-                Debug.Assert(written == 8);
-                ackId = BitConverter.ToInt64(decodedBytes);
-            }
-            else
-            {
-                Span<byte> buffer = stackalloc byte[FrameSize];
-                frame.CopyTo(buffer);
-                var status = Base64.DecodeFromUtf8InPlace(buffer, out var written);
-                Debug.Assert(status == OperationStatus.Done);
-                Debug.Assert(written == 8);
-                len = BitConverter.ToInt64(buffer);
-                status = Base64.DecodeFromUtf8InPlace(buffer.Slice(12), out written);
-                Debug.Assert(status == OperationStatus.Done);
-                Debug.Assert(written == 8);
-                ackId = BitConverter.ToInt64(buffer.Slice(12));
-            }
+        // Both the Span check and Stackalloc paths are faster than using SequenceReader
+        var frameSpan = frame.FirstSpan;
+        if (frameSpan.Length >= FrameSize)
+        {
+            Span<byte> decodedBytes = stackalloc byte[8];
+            var status = Base64.DecodeFromUtf8(frameSpan.Slice(0, 12), decodedBytes, out var consumed, out var written, isFinalBlock: true);
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(consumed == 12);
+            Debug.Assert(written == 8);
+            len = BitConverter.ToInt64(decodedBytes);
+            status = Base64.DecodeFromUtf8(frameSpan.Slice(12, 12), decodedBytes, out consumed, out written, isFinalBlock: true);
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(consumed == 12);
+            Debug.Assert(written == 8);
+            ackId = BitConverter.ToInt64(decodedBytes);
+        }
+        else
+        {
+            Span<byte> buffer = stackalloc byte[FrameSize];
+            frame.CopyTo(buffer);
+            var status = Base64.DecodeFromUtf8InPlace(buffer, out var written);
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(written == 8);
+            len = BitConverter.ToInt64(buffer);
+            status = Base64.DecodeFromUtf8InPlace(buffer.Slice(12), out written);
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(written == 8);
+            ackId = BitConverter.ToInt64(buffer.Slice(12));
+        }
 #else
 // TODO
             Span<byte> buffer = stackalloc byte[FrameSize];
@@ -186,10 +189,9 @@ internal class ParseAckPipeReader : PipeReader
             len = BitConverter.ToInt64(buffer.Slice(0, 8).ToArray(), 0);
             ackId = BitConverter.ToInt64(buffer.Slice(8).ToArray(), 0);
 #endif
-            // Update ack id provided by other side, so the underlying pipe can release buffered memory
-            ackPipeReader.Ack(ackId);
-            return len;
-        }
+        // Update ack id provided by other side, so the underlying pipe can release buffered memory
+        ackPipeReader.Ack(ackId);
+        return len;
     }
 
     public override bool TryRead(out ReadResult result)

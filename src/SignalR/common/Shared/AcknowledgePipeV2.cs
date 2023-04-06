@@ -50,23 +50,27 @@ internal sealed class AckPipeReader : PipeReader
 
             if (_totalWritten < byteID)
             {
-                Throw();
-                static void Throw()
+                Throw(byteID, _totalWritten);
+                static void Throw(long id, long total)
                 {
-                    throw new InvalidOperationException("Ack ID is greater than total amount of bytes that have been sent.");
+                    throw new InvalidOperationException($"Ack ID '{id}' is greater than total amount of '{total}' bytes that have been sent.");
                 }
             }
         }
     }
 
-    public void Resend()
+    public bool Resend()
     {
         Debug.Assert(_resend == false);
         if (_totalWritten == 0)
         {
-            return;
+            return false;
         }
+        // Unblocks ReadAsync and gives a buffer with the examined but not consumed bytes
+        // This avoids the issue where we wait for someone to write to the pipe before completing the reconnect handshake
+        CancelPendingRead();
         _resend = true;
+        return true;
     }
 
     public override void AdvanceTo(SequencePosition consumed)
@@ -77,13 +81,23 @@ internal sealed class AckPipeReader : PipeReader
     public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
     {
         _consumed = consumed;
+        //if (_ackPosition.Equals(default))
+        //{
+        //    Debug.Assert(false);
+        //    _inner.AdvanceTo(consumed, examined);
+        //}
+        //else
+        //{
+            _inner.AdvanceTo(_ackPosition, examined);
+        //}
+
         if (_consumed.Equals(_ackPosition))
         {
             // Reset to default, we check this in ReadAsync to know if we should provide the current read buffer to the user
             // Or slice to the consumed position
             _consumed = default;
+            _ackPosition = default;
         }
-        _inner.AdvanceTo(_ackPosition, examined);
     }
 
     public override void CancelPendingRead()
@@ -100,10 +114,12 @@ internal sealed class AckPipeReader : PipeReader
     {
         var res = await _inner.ReadAsync(cancellationToken).ConfigureAwait(false);
         var buffer = res.Buffer;
+        long hadAck = 0;
         lock (_lock)
         {
             if (_ackDiff != 0)
             {
+                hadAck = _ackDiff;
                 // This detects the odd scenario where _consumed points to the end of a Segment and buffer.Slice(_ackDiff) points to the beginning of the next Segment
                 // While they technically point to different positions, they point to the same concept of "beginning of the next buffer"
                 var ackSlice = buffer.Slice(_ackDiff);
@@ -111,25 +127,58 @@ internal sealed class AckPipeReader : PipeReader
                 {
                     // Fix consumed to point to the beginning of the next Segment
                     _consumed = ackSlice.Start;
-                    // wtf does this do though
-                    //_consumed = buffer.Slice(buffer.Length - buffer.Slice(_consumed).Length).Start;
+                }
+                else if (!_consumed.Equals(default))
+                {
+                    if (buffer.Slice(_consumed).Length == ackSlice.Length)
+                    {
+                        _consumed = default;
+                    }
+                    else if (buffer.Slice(_consumed).Length > ackSlice.Length)
+                    {
+                        Debug.Assert(false);
+                    }
+                    else if (buffer.Slice(_consumed).Length < ackSlice.Length)
+                    {
+                        // this is normal, ack id is less than total written
+
+                        //_totalWritten += ackSlice.Length - buffer.Slice(_consumed).Length;
+                    }
                 }
 
                 buffer = ackSlice;
                 _ackId += _ackDiff;
                 _ackDiff = 0;
                 _ackPosition = buffer.Start;
+                //if (buffer.Length == 0)
+                //{
+                //    _ackPosition = default;
+                //    _consumed = default;
+                //}
             }
         }
-
+        bool wasResend = _resend;
         // Slice consumed, unless resending, then slice to ackPosition
         if (_resend)
         {
             _resend = false;
-            buffer = buffer.Slice(_ackPosition);
-            // update total written?
+            if (buffer.Length != 0 && !_ackPosition.Equals(default))
+            {
+                buffer = buffer.Slice(_ackPosition);
+            }
+            // update total written if there is more written to the pipe during a reconnect
+            // TODO: add tests for both these paths
+            if (!_consumed.Equals(default))
+            {
+                Debug.Assert(buffer.Length - buffer.Slice(_consumed).Length >= 0);
+                _totalWritten += buffer.Length - buffer.Slice(_consumed).Length;
+            }
+            else
+            {
+                _totalWritten += buffer.Length;
+            }
         }
-        else
+        else if (buffer.Length > 0)
         {
             _ackPosition = buffer.Start;
             // TODO: buffer.Length is 0 sometimes, figure out why and verify behavior
@@ -140,6 +189,11 @@ internal sealed class AckPipeReader : PipeReader
             _totalWritten += (uint)buffer.Length;
         }
         res = new(buffer, res.IsCanceled, res.IsCompleted);
+        //if (buffer.Length == 0)
+        //{
+        //    // everything has been acked
+        //    _ackPosition = default;
+        //}
         return res;
     }
 
@@ -152,7 +206,7 @@ internal sealed class AckPipeReader : PipeReader
 // Wrapper around a PipeWriter that adds framing to writes
 internal sealed class AckPipeWriter : PipeWriter
 {
-    private const int FrameSize = 24;
+    public const int FrameSize = 24;
     private readonly PipeWriter _inner;
     internal long lastAck;
 
@@ -194,27 +248,7 @@ internal sealed class AckPipeWriter : PipeWriter
     {
         Debug.Assert(_frameHeader.Length >= FrameSize);
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        var res = BitConverter.TryWriteBytes(_frameHeader.Span, _buffered);
-        Debug.Assert(res);
-        var status = Base64.EncodeToUtf8InPlace(_frameHeader.Span, 8, out var written);
-        Debug.Assert(status == OperationStatus.Done);
-        Debug.Assert(written == 12);
-        res = BitConverter.TryWriteBytes(_frameHeader.Slice(12).Span, lastAck);
-        Debug.Assert(res);
-        status = Base64.EncodeToUtf8InPlace(_frameHeader.Slice(12).Span, 8, out written);
-        Debug.Assert(status == OperationStatus.Done);
-        Debug.Assert(written == 12);
-#else
-        BitConverter.GetBytes(_buffered).CopyTo(_frameHeader);
-        var status = Base64.EncodeToUtf8InPlace(_frameHeader.Span, 8, out var written);
-        Debug.Assert(status == OperationStatus.Done);
-        Debug.Assert(written == 12);
-        BitConverter.GetBytes(lastAck).CopyTo(_frameHeader.Slice(12).Span);
-        status = Base64.EncodeToUtf8InPlace(_frameHeader.Slice(12).Span, 8, out written);
-        Debug.Assert(status == OperationStatus.Done);
-        Debug.Assert(written == 12);
-#endif
+        WriteFrame(_frameHeader.Span, _buffered, lastAck);
 
         _frameHeader = Memory<byte>.Empty;
         _buffered = 0;
@@ -238,5 +272,32 @@ internal sealed class AckPipeWriter : PipeWriter
     public override Span<byte> GetSpan(int sizeHint = 0)
     {
         return GetMemory(sizeHint).Span;
+    }
+
+    public static void WriteFrame(Span<byte> header, long length, long ack)
+    {
+        Debug.Assert(header.Length >= FrameSize);
+
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+        var res = BitConverter.TryWriteBytes(header, length);
+        Debug.Assert(res);
+        var status = Base64.EncodeToUtf8InPlace(header, 8, out var written);
+        Debug.Assert(status == OperationStatus.Done);
+        Debug.Assert(written == 12);
+        res = BitConverter.TryWriteBytes(header.Slice(12), ack);
+        Debug.Assert(res);
+        status = Base64.EncodeToUtf8InPlace(header.Slice(12), 8, out written);
+        Debug.Assert(status == OperationStatus.Done);
+        Debug.Assert(written == 12);
+#else
+        BitConverter.GetBytes(length).CopyTo(header);
+        var status = Base64.EncodeToUtf8InPlace(header, 8, out var written);
+        Debug.Assert(status == OperationStatus.Done);
+        Debug.Assert(written == 12);
+        BitConverter.GetBytes(ack).CopyTo(header.Slice(12));
+        status = Base64.EncodeToUtf8InPlace(header.Slice(12), 8, out written);
+        Debug.Assert(status == OperationStatus.Done);
+        Debug.Assert(written == 12);
+#endif
     }
 }
