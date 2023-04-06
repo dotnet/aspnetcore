@@ -249,6 +249,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+        Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);

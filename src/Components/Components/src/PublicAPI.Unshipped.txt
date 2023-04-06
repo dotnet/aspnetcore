@@ -4,6 +4,8 @@ Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash
+Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.RefreshScrollPositionForHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Rendering.ComponentState
 Microsoft.AspNetCore.Components.Rendering.ComponentState.Component.get -> Microsoft.AspNetCore.Components.IComponent!
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentId.get -> int
