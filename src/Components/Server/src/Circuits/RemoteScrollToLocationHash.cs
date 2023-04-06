@@ -35,7 +35,7 @@ internal sealed class RemoteScrollToLocationHash : IScrollToLocationHash
                 "attempted during prerendering or while the client is disconnected.");
         }
 
-        var hashIndex = locationAbsolute.IndexOf("#", StringComparison.CurrentCultureIgnoreCase);
+        var hashIndex = locationAbsolute.IndexOf("#", StringComparison.Ordinal);
 
         if (hashIndex > -1 && locationAbsolute.Length > hashIndex + 1)
         {
