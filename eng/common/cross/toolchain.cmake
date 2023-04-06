@@ -298,6 +298,9 @@ if(TARGET_ARCH_NAME MATCHES "^(arm|armel)$")
 
   add_definitions (-DCLR_ARM_FPU_CAPABILITY=${CLR_ARM_FPU_CAPABILITY})
 
+  # persist variables across multiple try_compile passes
+  list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES CLR_ARM_FPU_TYPE CLR_ARM_FPU_CAPABILITY)
+
   if(TARGET_ARCH_NAME STREQUAL "armel")
     add_compile_options(-mfloat-abi=softfp)
   endif()

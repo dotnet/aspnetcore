@@ -9,7 +9,7 @@ builder.Logging.AddConsole();
 #if (NativeAot)
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.AddContext<AppJsonSerializerContext>();
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
 #endif

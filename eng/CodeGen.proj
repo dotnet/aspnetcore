@@ -36,7 +36,7 @@
 -->
 <Project>
   <ItemGroup>
-    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" />', '%0A    ')
+    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" />', '$([System.Environment]::NewLine)    ')
   </ItemGroup>
 </Project>
 ]]></ProjectListContent>
@@ -63,10 +63,10 @@
 <Project>
   <ItemGroup>
     <!-- These assemblies are available as both a NuGet package and in the shared framework -->
-    @(_SharedFrameworkAndPackageRef->'<AspNetCoreAppReferenceAndPackage Include="%(Identity)" />', '%0A    ')
+    @(_SharedFrameworkAndPackageRef->'<AspNetCoreAppReferenceAndPackage Include="%(Identity)" />', '$([System.Environment]::NewLine)    ')
 
     <!-- These assemblies are only in the shared framework -->
-    @(_SharedFrameworkRef->'<AspNetCoreAppReference Include="%(Identity)" />', '%0A    ')
+    @(_SharedFrameworkRef->'<AspNetCoreAppReference Include="%(Identity)" />', '$([System.Environment]::NewLine)    ')
   </ItemGroup>
 </Project>
       ]]>
@@ -89,7 +89,7 @@
 -->
 <Project>
   <ItemGroup>
-    @(_TrimmableProject->'<TrimmableProject Include="%(Identity)" />', '%0A    ')
+    @(_TrimmableProject->'<TrimmableProject Include="%(Identity)" />', '$([System.Environment]::NewLine)    ')
   </ItemGroup>
 </Project>
       ]]>
@@ -111,7 +111,7 @@
 -->
 <Project>
   <ItemGroup>
-    @(_RequiresDelayedBuild->'<RequiresDelayedBuild Include="%24(RepoRoot)%(ProjectFileRelativePath)" />', '%0A    ')
+    @(_RequiresDelayedBuild->'<RequiresDelayedBuild Include="%24(RepoRoot)%(ProjectFileRelativePath)" />', '$([System.Environment]::NewLine)    ')
   </ItemGroup>
 </Project>
 ]]></DelayedBuildContent>

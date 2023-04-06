@@ -101,11 +101,10 @@ public class FormFeature : IFormFeature
 
         if (!HasFormContentType)
         {
-            throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
+            throw new InvalidOperationException("This request does not have a Content-Type header. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data.");
         }
 
-        // TODO: Issue #456 Avoid Sync-over-Async http://blogs.msdn.com/b/pfxteam/archive/2012/04/13/10293638.aspx
-        // TODO: How do we prevent thread exhaustion?
+        // c.f., https://aka.ms/aspnet/forms-async
         return ReadFormAsync().GetAwaiter().GetResult();
     }
 

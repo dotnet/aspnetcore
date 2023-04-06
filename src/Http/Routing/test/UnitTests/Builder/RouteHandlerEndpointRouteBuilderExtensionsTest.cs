@@ -892,6 +892,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(expectedPattern, routeEndpoint.RoutePattern.RawText);
 
         var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().BuildServiceProvider();
         httpContext.Request.RouteValues["id"] = "2";
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;

@@ -1,5 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Primitives;
+using System.Text;
+
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract partial class RequestDelegateCreationTests
@@ -103,6 +108,31 @@ app.MapGet("/", GetTodo);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
+    public static IEnumerable<object[]> MapAction_NoParam_ExtensionResult_Data => new List<object[]>()
+    {
+        new object[] { """app.MapGet("/", () => Results.Extensions.TestResult());""" },
+        new object[] { """app.MapGet("/", () => TypedResults.Extensions.TestResult());""" }
+    };
+
+    [Theory]
+    [MemberData(nameof(MapAction_NoParam_ExtensionResult_Data))]
+    public async Task MapAction_NoParam_ExtensionResult(string source)
+    {
+        var expectedBody = """Hello World!""";
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("/", endpointModel.RoutePattern);
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
     public static IEnumerable<object[]>  MapAction_NoParam_TaskOfTReturn_Data => new List<object[]>()
     {
         new object[] { @"app.MapGet(""/"", () => Task.FromResult(""Hello world!""));", "Hello world!" },
@@ -182,5 +212,40 @@ app.MapGet("/", GetTodo);
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    [Fact]
+    public async Task MapAction_HandlesCompletedTaskReturn()
+    {
+        var source = """
+app.MapGet("/task", () => Task.CompletedTask);
+app.MapGet("/value-task", () => ValueTask.CompletedTask);
+""";
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        VerifyStaticEndpointModels(result, endpointModels => Assert.Collection(endpointModels,
+            endpointModel =>
+            {
+                Assert.Equal("/task", endpointModel.RoutePattern);
+                Assert.Equal("MapGet", endpointModel.HttpMethod);
+                Assert.True(endpointModel.Response.IsAwaitable);
+                Assert.True(endpointModel.Response.HasNoResponse);
+            },
+            endpointModel =>
+            {
+                Assert.Equal("/value-task", endpointModel.RoutePattern);
+                Assert.Equal("MapGet", endpointModel.HttpMethod);
+                Assert.True(endpointModel.Response.IsAwaitable);
+                Assert.True(endpointModel.Response.HasNoResponse);
+            }));
+
+        var httpContext = CreateHttpContext();
+        await endpoints[0].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, string.Empty);
+
+        httpContext = CreateHttpContext();
+        await endpoints[1].RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, string.Empty);
     }
 }

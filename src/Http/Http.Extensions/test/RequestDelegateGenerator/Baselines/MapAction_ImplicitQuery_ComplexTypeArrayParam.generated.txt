@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (Func<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], global::System.Int32>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.ParsableTodo[], global::System.Int32>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var p_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("p", options?.RouteParameterNames);
                     var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
