@@ -3557,6 +3557,79 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(ioException, logMessage.Exception);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateThrowsIOExceptionsWhenReadingFormResultsIn400BadRequest(bool throwOnBadRequests)
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var ioException = new IOException();
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(ioException);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = throwOnBadRequests });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        var logMessage = Assert.Single(TestSink.Writes);
+        Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+        Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+        Assert.Equal("Reading the request body failed with an IOException.", logMessage.Message);
+        Assert.Same(ioException, logMessage.Exception);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateThrowsIOExceptionsWhenReadingJsonBodyResultsIn400BadRequest(bool throwOnBadRequests)
+    {
+        var invoked = false;
+
+        void TestAction(Todo todo)
+        {
+            invoked = true;
+        }
+
+        var ioException = new IOException();
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "1000";
+        httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(ioException);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = throwOnBadRequests });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        var logMessage = Assert.Single(TestSink.Writes);
+        Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+        Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+        Assert.Equal("Reading the request body failed with an IOException.", logMessage.Message);
+        Assert.Same(ioException, logMessage.Exception);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
     [Fact]
     public async Task RequestDelegateLogsMalformedFormAsDebugAndSets400Response()
     {

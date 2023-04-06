@@ -1308,6 +1308,7 @@ public static partial class RequestDelegateFactory
                 catch (IOException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
                 catch (JsonException ex)
@@ -1421,6 +1422,7 @@ public static partial class RequestDelegateFactory
                 catch (IOException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
                 catch (InvalidDataException ex)
