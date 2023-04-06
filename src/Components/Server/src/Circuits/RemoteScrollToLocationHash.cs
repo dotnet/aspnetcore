@@ -41,7 +41,7 @@ internal sealed class RemoteScrollToLocationHash : IScrollToLocationHash
         {
             var elementId = locationAbsolute[(hashIndex + 1)..];
 
-            await _jsRuntime.InvokeVoidAsync(Interop.ScrollToElement, elementId).AsTask();
+            await _jsRuntime.InvokeVoidAsync(Interop.ScrollToElement, elementId);
         }
     }
 }

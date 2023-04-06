@@ -5,7 +5,7 @@ import '@microsoft/dotnet-js-interop';
 
 export const domFunctions = {
   focus,
-  focusOnNavigate
+  focusBySelector
 };
 
 function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
@@ -22,11 +22,6 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
   }
 }
 
-function focusOnNavigate(selector: string): void {
-  const preventScroll = location.hash.length > 1 && elementExists(location.hash.slice(1));
-  focusBySelector(selector, preventScroll);
-}
-
 function focusBySelector(selector: string, preventScroll: boolean): void {
   const element = document.querySelector(selector) as HTMLElement;
   if (element) {
@@ -37,12 +32,6 @@ function focusBySelector(selector: string, preventScroll: boolean): void {
       element.tabIndex = -1;
     }
 
-    element.focus({ preventScroll: preventScroll });
+    element.focus({ preventScroll: true });
   }
-}
-
-function elementExists(identifier: string): boolean {
-  const element = document.getElementById(identifier)
-      || document.getElementsByName(identifier)[0];
-  return !!element;
 }

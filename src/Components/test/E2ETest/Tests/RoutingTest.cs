@@ -1579,42 +1579,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefContainingHash_FocusOnNavigatePreventScrollAndScrollsToElementWithId()
-    {
-        SetUrlViaPushState("/");
-        var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Long page with hash")).Click();
-
-        app.FindElement(By.Id("anchor-test3")).Click();
-
-        var currentWindowScrollY = BrowserScrollY;
-        var test3VerticalLocation = app.FindElement(By.Id("test3")).Location.Y;
-        var focusOnNavigateSelectorVerticalLocation = app.FindElement(By.Id("test-info")).Location.Y;
-        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash3#test3", currentRelativeUrl);
-        Assert.Equal(test3VerticalLocation, currentWindowScrollY);
-        Assert.NotEqual(focusOnNavigateSelectorVerticalLocation, currentWindowScrollY);
-    }
-
-    [Fact]
-    public void AnchorWithHrefContainingHash_FocusOnNavigatePreventScrollAndScrollsToElementWithName()
-    {
-        SetUrlViaPushState("/");
-        var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Long page with hash")).Click();
-
-        app.FindElement(By.Id("anchor-test4")).Click();
-
-        var currentWindowScrollY = BrowserScrollY;
-        var test3VerticalLocation = app.FindElement(By.Name("test4")).Location.Y;
-        var focusOnNavigateSelectorVerticalLocation = app.FindElement(By.Id("test-info")).Location.Y;
-        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
-        Assert.Equal("subdir/LongPageWithHash3#test4", currentRelativeUrl);
-        Assert.Equal(test3VerticalLocation, currentWindowScrollY);
-        Assert.NotEqual(focusOnNavigateSelectorVerticalLocation, currentWindowScrollY);
-    }
-
-    [Fact]
     public void NavigatationManagerNavigateToSameUrlWithHash_ScrollsToElementWithIdOnTheSamePage()
     {
         SetUrlViaPushState("/");

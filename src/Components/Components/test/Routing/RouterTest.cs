@@ -223,8 +223,6 @@ public class RouterTest
 
     internal sealed class TestScrollToLocationHash : IScrollToLocationHash
     {
-        public static readonly TestScrollToLocationHash Instance = new TestScrollToLocationHash();
-
         public Task RefreshScrollPositionForHash(string locationAbsolute)
         {
             return Task.CompletedTask;

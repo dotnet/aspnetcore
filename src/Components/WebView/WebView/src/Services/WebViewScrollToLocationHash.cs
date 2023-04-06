@@ -29,7 +29,7 @@ internal sealed class WebViewScrollToLocationHash : IScrollToLocationHash
             throw new InvalidOperationException("JSRuntime has not been attached.");
         }
 
-        var hashIndex = locationAbsolute.IndexOf("#", StringComparison.CurrentCultureIgnoreCase);
+        var hashIndex = locationAbsolute.IndexOf("#", StringComparison.Ordinal);
 
         if (hashIndex > -1 && locationAbsolute.Length > hashIndex + 1)
         {
