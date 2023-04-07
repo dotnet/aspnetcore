@@ -73,7 +73,7 @@ public class RazorComponentEndpointTest
     }
 
     [Fact]
-    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate()
+    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate_WhenAComponentRendersTwice()
     {
         // Arrange
         var tcs = new TaskCompletionSource();
@@ -98,6 +98,40 @@ public class RazorComponentEndpointTest
         await completionTask;
         Assert.Equal(
             "<!--bl:X-->Loading...<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(GetStringContent(responseBody)));
+    }
+
+    [Fact]
+    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate_WhenAnAncestorAlsoUpdated()
+    {
+        // Since the HTML rendered for each component also includes all its descendants, we don't
+        // want to render output for any component that also has an ancestor in the set of updates
+        // (as it would then be output twice)
+
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act/Assert 1: Emits the initial pre-quiescent output to the response
+        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(StreamingComponentWithChild),
+            PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
+            preventStreamingRendering: false);
+        var expectedInitialHtml = "<!--bl:X-->[LoadingTask: WaitingForActivation]\n<!--bl:X-->[Child render: 1]\n<!--/bl:X--><!--/bl:X-->";
+        Assert.Equal(
+            expectedInitialHtml,
+            MaskComponentIds(GetStringContent(responseBody)));
+
+        // Act/Assert 2: When loading completes, it emits a streaming batch update in which the
+        // child is present only within the parent markup, not as a separate entry
+        tcs.SetResult();
+        await completionTask;
+        Assert.Equal(
+            $"{expectedInitialHtml}<blazor-ssr><template blazor-component-id=\"X\">[LoadingTask: RanToCompletion]\n<!--bl:X-->[Child render: 2]\n<!--/bl:X--></template></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 

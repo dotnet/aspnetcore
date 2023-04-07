@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer
 {
     private TextWriter? _streamingUpdatesWriter;
+    private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
 
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
@@ -43,31 +45,6 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    protected override void WriteComponentHtml(int componentId, TextWriter output)
-        => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
-
-    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
-    {
-        var renderBoundaryMarkers = allowBoundaryMarkers
-            && ((EndpointComponentState)GetComponentState(componentId)).StreamRendering;
-
-        if (renderBoundaryMarkers)
-        {
-            output.Write("<!--bl:");
-            output.Write(componentId);
-            output.Write("-->");
-        }
-
-        base.WriteComponentHtml(componentId, output);
-
-        if (renderBoundaryMarkers)
-        {
-            output.Write("<!--/bl:");
-            output.Write(componentId);
-            output.Write("-->");
-        }
-    }
-
     private void SendBatchAsStreamingUpdate(in RenderBatch renderBatch)
     {
         var count = renderBatch.UpdatedComponents.Count;
@@ -75,29 +52,82 @@ internal partial class EndpointHtmlRenderer
         {
             writer.Write("<blazor-ssr>");
 
-            // We deduplicate the set of components in the batch because we're sending their entire current rendered
-            // state, not just an intermediate diff (so there's never a reason to include the same component output
-            // more than once in this callback)
-            var htmlComponentIds = new HashSet<int>(count);
+            // Each time we transmit the HTML for a component, we also transmit the HTML for its descendants.
+            // So, if we transmitted *every* component in the batch separately, there would be a lot of duplication.
+            // The subtrees projected from each component would overlap a lot.
+            //
+            // To avoid duplicated HTML transmission and unnecessary work on the client, we want to pick a subset
+            // of updated components such that, when we transmit that subset with their descendants, it includes
+            // every updated component without any duplication.
+            //
+            // This is quite easy if we first sort the list into depth order. As long as we process parents before
+            // their descendants, we can keep a log of the descendants we rendered, and then skip over those if we
+            // see them later in the list. This also implicitly handles the case where a batch contains the same
+            // root component multiple times (we only want to emit its HTML once).
+
+            // First, get a list of updated components in depth order
+            // We'll stackalloc a buffer if it's small, otherwise take a buffer on the heap
+            var bufSizeRequired = count * Marshal.SizeOf<ComponentIdAndDepth>();
+            var componentIdsInDepthOrder = bufSizeRequired < 1024
+                ? MemoryMarshal.Cast<byte, ComponentIdAndDepth>(stackalloc byte[bufSizeRequired])
+                : new ComponentIdAndDepth[count];
             for (var i = 0; i < count; i++)
             {
-                ref var diff = ref renderBatch.UpdatedComponents.Array[i];
-                var componentId = diff.ComponentId;
-                if (htmlComponentIds.Add(componentId))
+                var componentId = renderBatch.UpdatedComponents.Array[i].ComponentId;
+                componentIdsInDepthOrder[i] = new(componentId, GetComponentDepth(componentId));
+            }
+            MemoryExtensions.Sort(componentIdsInDepthOrder, static (left, right) => left.Depth - right.Depth);
+
+            // Reset the component rendering tracker. This is safe to share as an instance field because batch-rendering
+            // is synchronous only one batch can be rendered at a time.
+            if (_visitedComponentIdsInCurrentStreamingBatch is null)
+            {
+                _visitedComponentIdsInCurrentStreamingBatch = new();
+            }
+            else
+            {
+                _visitedComponentIdsInCurrentStreamingBatch.Clear();
+            }
+
+            // Now process the list, skipping any we've already visited in an earlier iteration
+            for (var i = 0; i < componentIdsInDepthOrder.Length; i++)
+            {
+                var componentId = componentIdsInDepthOrder[i].ComponentId;
+                if (_visitedComponentIdsInCurrentStreamingBatch.Contains(componentId))
                 {
-                    // This relies on the component producing well-formed markup (i.e., it can't have a closing
-                    // </template> at the top level without a preceding matching <template>). Alternatively we
-                    // could look at using a custom TextWriter that does some extra encoding of all the content
-                    // as it is being written out.
-                    // We don't need boundary markers at the top-level since the info is on the <template> anyway.
-                    writer.Write($"<template blazor-component-id=\"{componentId}\">");
-                    WriteComponentHtml(componentId, writer, allowBoundaryMarkers: false);
-                    writer.Write("</template>");
+                    continue;
                 }
+
+                // This format relies on the component producing well-formed markup (i.e., it can't have a
+                // </template> at the top level without a preceding matching <template>). Alternatively we
+                // could look at using a custom TextWriter that does some extra encoding of all the content
+                // as it is being written out.
+                writer.Write($"<template blazor-component-id=\"");
+                writer.Write(componentId);
+                writer.Write("\">");
+
+                // We don't need boundary markers at the top-level since the info is on the <template> anyway.
+                WriteComponentHtml(componentId, writer, allowBoundaryMarkers: false);
+
+                writer.Write("</template>");
             }
 
             writer.Write("</blazor-ssr>");
         }
+    }
+
+    private int GetComponentDepth(int componentId)
+    {
+        // Regard root components as depth 0, their immediate children as 1, etc.
+        var componentState = GetComponentState(componentId);
+        var depth = 0;
+        while (componentState.ParentComponentState is { } parentComponentState)
+        {
+            depth++;
+            componentState = parentComponentState;
+        }
+
+        return depth;
     }
 
     private static void HandleExceptionAfterResponseStarted(HttpContext httpContext, TextWriter writer, Exception exception)
@@ -122,4 +152,33 @@ internal partial class EndpointHtmlRenderer
         writer.Write(destinationUrl);
         writer.Write("</template>");
     }
+
+    protected override void WriteComponentHtml(int componentId, TextWriter output)
+        => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
+
+    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
+    {
+        _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
+
+        var renderBoundaryMarkers = allowBoundaryMarkers
+            && ((EndpointComponentState)GetComponentState(componentId)).StreamRendering;
+
+        if (renderBoundaryMarkers)
+        {
+            output.Write("<!--bl:");
+            output.Write(componentId);
+            output.Write("-->");
+        }
+
+        base.WriteComponentHtml(componentId, output);
+
+        if (renderBoundaryMarkers)
+        {
+            output.Write("<!--/bl:");
+            output.Write(componentId);
+            output.Write("-->");
+        }
+    }
+
+    private readonly record struct ComponentIdAndDepth(int ComponentId, int Depth);
 }
