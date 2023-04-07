@@ -22,9 +22,6 @@ Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.HtmlRootComp
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.QuiescenceTask.get -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ToHtmlString() -> string!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.WriteHtmlTo(System.IO.TextWriter! output) -> void
-Microsoft.AspNetCore.Components.Web.StreamRenderingAttribute
-Microsoft.AspNetCore.Components.Web.StreamRenderingAttribute.Enabled.get -> bool
-Microsoft.AspNetCore.Components.Web.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!

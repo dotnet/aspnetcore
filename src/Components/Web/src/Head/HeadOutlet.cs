@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// Renders content provided by <see cref="HeadContent"/> components.
 /// </summary>
-[StreamRendering(true)]
 public sealed class HeadOutlet : ComponentBase
 {
     private const string GetAndRemoveExistingTitle = "Blazor._internal.PageTitle.getAndRemoveExistingTitle";
