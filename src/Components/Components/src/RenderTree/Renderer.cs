@@ -118,6 +118,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </summary>
     internal bool Disposed => _rendererIsDisposed;
 
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> associated with the specified component.
+    /// </summary>
+    /// <param name="componentId">The component ID</param>
+    /// <returns>The corresponding <see cref="ComponentState"/>.</returns>
+    protected ComponentState GetComponentState(int componentId)
+        => GetRequiredComponentState(componentId);
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework

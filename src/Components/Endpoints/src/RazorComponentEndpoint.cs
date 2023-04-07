@@ -4,13 +4,9 @@
 using System.Buffers;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Web.HtmlRendering;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -19,7 +15,10 @@ internal static class RazorComponentEndpoint
     public static RequestDelegate CreateRouteDelegate(Type componentType)
     {
         return httpContext =>
-            RenderComponentToResponse(httpContext, RenderMode.Static, componentType, componentParameters: null, preventStreamingRendering: false);
+        {
+            httpContext.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
+            return RenderComponentToResponse(httpContext, RenderMode.Static, componentType, componentParameters: null, preventStreamingRendering: false);
+        };
     }
 
     internal static Task RenderComponentToResponse(
@@ -55,32 +54,13 @@ internal static class RazorComponentEndpoint
 
             // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
             // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
-            // streaming SSR batches. Otherwise some other code might dispatch to the renderer sync context and cause
-            // a batch that would get missed.
+            // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
+            // renderer sync context and cause a batch that would get missed.
             htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
             if (!htmlContent.QuiescenceTask.IsCompleted)
             {
-                endpointHtmlRenderer.OnContentUpdated(htmlComponents =>
-                    EmitStreamingRenderingUpdate(htmlComponents, writer));
-
-                try
-                {
-                    await writer.FlushAsync(); // Make sure the initial HTML was sent
-                    await htmlContent.QuiescenceTask;
-                }
-                catch (NavigationException navigationException)
-                {
-                    HandleNavigationAfterResponseStarted(writer, navigationException.Location);
-                }
-                catch (Exception ex)
-                {
-                    HandleExceptionAfterResponseStarted(httpContext, writer, ex);
-
-                    // The rest of the pipeline can treat this as a regular unhandled exception
-                    // TODO: Is this really right? I think we'll terminate the response in an invalid way.
-                    throw;
-                }
+                await endpointHtmlRenderer.SendStreamingUpdatesAsync(httpContext, htmlContent.QuiescenceTask, writer);
             }
 
             // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
@@ -88,45 +68,6 @@ internal static class RazorComponentEndpoint
             // response as part of the Dispose which has a perf impact.
             await writer.FlushAsync();
         });
-    }
-
-    private static void EmitStreamingRenderingUpdate(IEnumerable<HtmlComponentBase> htmlComponents, TextWriter writer)
-    {
-        writer.Write("<blazor-ssr>");
-        foreach (var entry in htmlComponents)
-        {
-            // This relies on the component producing well-formed markup (i.e., it can't have a closing
-            // </template> at the top level without a preceding matching <template>). Alternatively we
-            // could look at using a custom TextWriter that does some extra encoding of all the content
-            // as it is being written out.
-            writer.Write($"<template blazor-component-id=\"{entry.ComponentId}\">");
-            entry.WriteHtmlTo(writer);
-            writer.Write("</template>");
-        }
-        writer.Write("</blazor-ssr>");
-    }
-
-    private static void HandleExceptionAfterResponseStarted(HttpContext httpContext, TextWriter writer, Exception exception)
-    {
-        // We already started the response so we have no choice but to return a 200 with HTML and will
-        // have to communicate the error information within that
-        var env = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsEndpointsOptions>>();
-        var showDetailedErrors = env.IsDevelopment() || options.Value.DetailedErrors;
-        var message = showDetailedErrors
-            ? exception.ToString()
-            : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";
-
-        writer.Write("<template blazor-type=\"exception\">");
-        writer.Write(message);
-        writer.Write("</template>");
-    }
-
-    private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
-    {
-        writer.Write("<template blazor-type=\"redirection\">");
-        writer.Write(destinationUrl);
-        writer.Write("</template>");
     }
 
     private static TextWriter CreateResponseWriter(Stream bodyStream)

@@ -6,32 +6,28 @@ using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 namespace Microsoft.AspNetCore.Components.Web.HtmlRendering;
 
 /// <summary>
-/// Represents the output of rendering a component as HTML. The content can change if the component instance re-renders.
+/// Represents the output of rendering a root component as HTML. The content can change if the component instance re-renders.
 /// </summary>
-public class HtmlComponentBase
+public readonly struct HtmlRootComponent
 {
     private readonly StaticHtmlRenderer? _renderer;
-    private readonly int _componentId;
 
-    /// <summary>
-    /// Constructs an instance of <see cref="HtmlComponentBase"/>.
-    /// </summary>
-    /// <param name="renderer">The renderer of the component.</param>
-    /// <param name="componentId">The ID of the component.</param>
-    public HtmlComponentBase(StaticHtmlRenderer renderer, int componentId)
+    internal HtmlRootComponent(StaticHtmlRenderer renderer, int componentId, Task quiescenceTask)
     {
         _renderer = renderer;
-        _componentId = componentId;
-    }
-
-    internal HtmlComponentBase()
-    {
+        ComponentId = componentId;
+        QuiescenceTask = quiescenceTask;
     }
 
     /// <summary>
     /// Gets the component ID.
     /// </summary>
-    public int ComponentId => _componentId;
+    public int ComponentId { get; }
+
+    /// <summary>
+    /// Gets a <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.
+    /// </summary>
+    public Task QuiescenceTask { get; } = Task.CompletedTask;
 
     /// <summary>
     /// Returns an HTML string representation of the component's latest output.
@@ -54,10 +50,5 @@ public class HtmlComponentBase
     /// </summary>
     /// <param name="output">The output destination.</param>
     public void WriteHtmlTo(TextWriter output)
-    {
-        if (_renderer is not null)
-        {
-            HtmlComponentWriter.Write(_renderer, _componentId, output);
-        }
-    }
+        => _renderer?.WriteComponentHtml(ComponentId, output);
 }

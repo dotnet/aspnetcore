@@ -164,16 +164,16 @@ internal sealed partial class EndpointHtmlRenderer
     public class PrerenderedComponentHtmlContent : IHtmlAsyncContent
     {
         private readonly Dispatcher? _dispatcher;
-        private readonly HtmlComponent? _htmlToEmitOrNull;
+        private readonly HtmlRootComponent? _htmlToEmitOrNull;
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
         public static PrerenderedComponentHtmlContent Empty { get; }
-            = new PrerenderedComponentHtmlContent(null, HtmlComponent.Empty, null, null);
+            = new PrerenderedComponentHtmlContent(null, default, null, null);
 
         public PrerenderedComponentHtmlContent(
             Dispatcher? dispatcher, // If null, we're only emitting the markers
-            HtmlComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
+            HtmlRootComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
             ServerComponentMarker? serverMarker,
             WebAssemblyComponentMarker? webAssemblyMarker)
         {
@@ -222,6 +222,6 @@ internal sealed partial class EndpointHtmlRenderer
         }
 
         public Task QuiescenceTask =>
-            _htmlToEmitOrNull is null ? Task.CompletedTask : _htmlToEmitOrNull.QuiescenceTask;
+            _htmlToEmitOrNull.HasValue ? _htmlToEmitOrNull.Value.QuiescenceTask : Task.CompletedTask;
     }
 }

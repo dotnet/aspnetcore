@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 /// developers should not normally use this class directly. Instead, use
 /// <see cref="HtmlRenderer"/> for a more convenient API.
 /// </summary>
-public class StaticHtmlRenderer : Renderer
+public partial class StaticHtmlRenderer : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -33,7 +33,7 @@ public class StaticHtmlRenderer : Renderer
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
     /// <inheritdoc/>
-    public HtmlComponent BeginRenderingComponent(
+    public HtmlRootComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
@@ -46,7 +46,7 @@ public class StaticHtmlRenderer : Renderer
             ExceptionDispatchInfo.Capture(quiescenceTask.Exception.InnerException ?? quiescenceTask.Exception).Throw();
         }
 
-        return new HtmlComponent(this, componentId, quiescenceTask);
+        return new HtmlRootComponent(this, componentId, quiescenceTask);
     }
 
     /// <inheritdoc/>

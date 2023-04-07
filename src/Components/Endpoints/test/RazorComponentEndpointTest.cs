@@ -55,7 +55,9 @@ public class RazorComponentEndpointTest
             typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
-        Assert.Equal("Loading task status: WaitingForActivation", GetStringContent(responseBody));
+        Assert.Equal(
+            "<!--bl:X-->Loading task status: WaitingForActivation<!--/bl:X-->",
+            MaskComponentIds(GetStringContent(responseBody)));
 
         // Assert 2: Result task remains incomplete for as long as the component's loading operation remains in flight
         // This keeps the HTTP response open
@@ -66,12 +68,12 @@ public class RazorComponentEndpointTest
         tcs.SetResult();
         await completionTask;
         Assert.Equal(
-            "Loading task status: WaitingForActivation<blazor-ssr><template blazor-component-id=\"X\">Loading task status: RanToCompletion</template></blazor-ssr>",
+            "<!--bl:X-->Loading task status: WaitingForActivation<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loading task status: RanToCompletion</template></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
     [Fact]
-    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate()
+    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate_WhenAComponentRendersTwice()
     {
         // Arrange
         var tcs = new TaskCompletionSource();
@@ -86,14 +88,50 @@ public class RazorComponentEndpointTest
             typeof(DoubleRenderingStreamingAsyncComponent),
             PropertyHelper.ObjectToDictionary(new { WaitFor = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
-        Assert.Equal("Loading...", GetStringContent(responseBody));
+        Assert.Equal(
+            "<!--bl:X-->Loading...<!--/bl:X-->",
+            MaskComponentIds(GetStringContent(responseBody)));
 
         // Act/Assert 2: When loading completes, it emits a streaming batch update with only one copy of the final output,
         // despite the RenderBatch containing two diffs from the component
         tcs.SetResult();
         await completionTask;
         Assert.Equal(
-            "Loading...<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            "<!--bl:X-->Loading...<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            MaskComponentIds(GetStringContent(responseBody)));
+    }
+
+    [Fact]
+    public async Task EmitsEachComponentOnlyOncePerStreamingUpdate_WhenAnAncestorAlsoUpdated()
+    {
+        // Since the HTML rendered for each component also includes all its descendants, we don't
+        // want to render output for any component that also has an ancestor in the set of updates
+        // (as it would then be output twice)
+
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        var httpContext = GetTestHttpContext();
+        var responseBody = new MemoryStream();
+        httpContext.Response.Body = responseBody;
+
+        // Act/Assert 1: Emits the initial pre-quiescent output to the response
+        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+            httpContext,
+            RenderMode.Static,
+            typeof(StreamingComponentWithChild),
+            PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
+            preventStreamingRendering: false);
+        var expectedInitialHtml = "<!--bl:X-->[LoadingTask: WaitingForActivation]\n<!--bl:X-->[Child render: 1]\n<!--/bl:X--><!--/bl:X-->";
+        Assert.Equal(
+            expectedInitialHtml,
+            MaskComponentIds(GetStringContent(responseBody)));
+
+        // Act/Assert 2: When loading completes, it emits a streaming batch update in which the
+        // child is present only within the parent markup, not as a separate entry
+        tcs.SetResult();
+        await completionTask;
+        Assert.Equal(
+            $"{expectedInitialHtml}<blazor-ssr><template blazor-component-id=\"X\">[LoadingTask: RanToCompletion]\n<!--bl:X-->[Child render: 2]\n<!--/bl:X--></template></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
@@ -119,7 +157,9 @@ public class RazorComponentEndpointTest
         // Act/Assert: Does complete when loading finishes
         tcs.SetResult();
         await completionTask;
-        Assert.Equal("Loading task status: RanToCompletion", GetStringContent(responseBody));
+        Assert.Equal(
+            "<!--bl:X-->Loading task status: RanToCompletion<!--/bl:X-->",
+            MaskComponentIds(GetStringContent(responseBody)));
     }
 
     [Fact]
@@ -188,8 +228,8 @@ public class RazorComponentEndpointTest
 
         // Assert
         Assert.Equal(
-            $"Some output\n<template blazor-type=\"redirection\">https://test/somewhere/else</template>",
-            GetStringContent(responseBody));
+            $"<!--bl:X-->Some output\n<!--/bl:X--><template blazor-type=\"redirection\">https://test/somewhere/else</template>",
+            MaskComponentIds(GetStringContent(responseBody)));
     }
 
     [Fact]
@@ -244,8 +284,8 @@ public class RazorComponentEndpointTest
         // Assert
         Assert.Contains("Test message", ex.Message);
         Assert.Contains(
-            $"Some output\n<template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
-            GetStringContent(responseBody));
+            $"<!--bl:X-->Some output\n<!--/bl:X--><template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
+            MaskComponentIds(GetStringContent(responseBody)));
     }
 
     [Fact]
@@ -261,12 +301,12 @@ public class RazorComponentEndpointTest
         await Task.Yield(); // Just to show it's still not completed after
         Assert.False(initialOutputTask.IsCompleted);
 
-        // Act/Assert: Produce initial output
+        // Act/Assert: Produce initial output, noting absence of streaming markers at top level
         testContext.TopLevelComponentTask.SetResult();
         await initialOutputTask;
-        var html = GetStringContent(testContext.ResponseBody);
-        Assert.Contains("[Top level component: Loaded]", html);
-        Assert.Contains("[Within streaming region: Loading...]", html);
+        var html = MaskComponentIds(GetStringContent(testContext.ResponseBody));
+        Assert.StartsWith("[Top level component: Loaded]", html);
+        Assert.Contains("[Within streaming region: <!--bl:X-->Loading...<!--/bl:X-->]", html);
         Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
         Assert.DoesNotContain("blazor-ssr", html);
 
@@ -295,11 +335,13 @@ public class RazorComponentEndpointTest
         // Act/Assert: Does produce output when nonstreaming subtree is quiescent
         testContext.WithinNestedNonstreamingRegionTask.SetResult();
         await initialOutputTask;
-        var html = GetStringContent(testContext.ResponseBody);
-        Assert.Contains("[Top level component: Loaded]", html);
-        Assert.Contains("[Within streaming region: Loading...]", html);
-        Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
+        var html = MaskComponentIds(GetStringContent(testContext.ResponseBody));
+        Assert.Contains("[Within streaming region: <!--bl:X-->Loading...<!--/bl:X-->]", html);
         Assert.DoesNotContain("blazor-ssr", html);
+
+        // Assert: No boundary markers around nonstreaming components, even if they are nested in a streaming region
+        Assert.Contains("[Top level component: Loaded]", html);
+        Assert.Contains("[Within nested nonstreaming region: Loaded]", html);
 
         // Act/Assert: Complete the streaming
         testContext.WithinStreamingRegionTask.SetResult();
@@ -311,8 +353,16 @@ public class RazorComponentEndpointTest
     }
 
     // We don't want these tests to be hardcoded for specific component ID numbers, so replace them all with X for assertions
+    private static readonly Regex TemplateElementComponentIdRegex = new Regex("blazor-component-id=\"\\d+\"");
+    private static readonly Regex OpenBoundaryMarkerRegex = new Regex("<!--bl:\\d+-->");
+    private static readonly Regex CloseBoundaryMarkerRegex = new Regex("<!--/bl:\\d+-->");
     private static string MaskComponentIds(string html)
-        => new Regex("blazor-component-id=\"\\d+\"").Replace(html, "blazor-component-id=\"X\"");
+    {
+        html = TemplateElementComponentIdRegex.Replace(html, "blazor-component-id=\"X\"");
+        html = OpenBoundaryMarkerRegex.Replace(html, "<!--bl:X-->");
+        html = CloseBoundaryMarkerRegex.Replace(html, "<!--/bl:X-->");
+        return html;
+    }
 
     private VaryStreamingScenariosContext PrepareVaryStreamingScenariosTests()
     {

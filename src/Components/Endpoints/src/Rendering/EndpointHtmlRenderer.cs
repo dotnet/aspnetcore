@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,16 +25,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// EndpointHtmlRenderer wraps the underlying <see cref="Web.HtmlRenderer"/> mechanism, annotating the
 /// output with prerendering markers so the content can later switch into interactive mode when used with
 /// blazor.*.js. It also deals with initializing the standard component DI services once per request.
-///
-/// Note that EndpointHtmlRenderer doesn't deal with streaming SSR since that's not applicable to Html.RenderComponentAsync
-/// or ComponentTagHelper, because they don't control the entire response. Streaming SSR is a layer around this implemented
-/// only inside RazorComponentResult/RazorComponentEndpoint.
 /// </summary>
 internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
-    private Action<IEnumerable<HtmlComponentBase>>? _onContentUpdatedCallback;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -67,17 +61,6 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
     }
 
-    public void OnContentUpdated(Action<IEnumerable<HtmlComponentBase>> callback)
-    {
-        if (_onContentUpdatedCallback is not null)
-        {
-            // The framework is the only user of this internal API, so it's OK to have an arbitrary limit like this
-            throw new InvalidOperationException($"{nameof(OnContentUpdated)} can only be called once.");
-        }
-
-        _onContentUpdatedCallback = callback;
-    }
-
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new EndpointComponentState(this, componentId, component, parentComponentState);
 
@@ -101,27 +84,23 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
-        var count = renderBatch.UpdatedComponents.Count;
-        if (count > 0 && _onContentUpdatedCallback is not null)
+        if (_streamingUpdatesWriter is { } writer)
         {
-            // We deduplicate the set of components in the batch because we're sending their entire current rendered
-            // state, not just an intermediate diff (so there's never a reason to include the same component output
-            // more than once in this callback)
-            var htmlComponents = new Dictionary<int, HtmlComponentBase>(count);
-            for (var i = 0; i < count; i++)
-            {
-                ref var diff = ref renderBatch.UpdatedComponents.Array[i];
-                var componentId = diff.ComponentId;
-                if (!htmlComponents.ContainsKey(componentId))
-                {
-                    htmlComponents.Add(componentId, new HtmlComponentBase(this, componentId));
-                }
-            }
-
-            _onContentUpdatedCallback(htmlComponents.Values);
+            SendBatchAsStreamingUpdate(renderBatch, writer);
+            return FlushThenComplete(writer, base.UpdateDisplayAsync(renderBatch));
+        }
+        else
+        {
+            return base.UpdateDisplayAsync(renderBatch);
         }
 
-        return base.UpdateDisplayAsync(renderBatch);
+        // Workaround for methods with "in" parameters not being allowed to be async
+        // We resolve the "result" first and then combine it with the FlushAsync task here
+        static async Task FlushThenComplete(TextWriter writerToFlush, Task completion)
+        {
+            await writerToFlush.FlushAsync();
+            await completion;
+        }
     }
 
     private static string GetFullUri(HttpRequest request)
