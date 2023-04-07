@@ -11,8 +11,12 @@ namespace TestServer;
 
 public class Program
 {
+    private static int nextPortNumber = 5001;
+
     public static async Task Main(string[] args)
     {
+        Console.WriteLine("*****\nVisit http://localhost:5000 to get the URLs to the test apps.\n*****");
+
         var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
         {
             ["Client authentication"] = (BuildWebHost<AuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
@@ -62,7 +66,7 @@ public class Program
     }
 
     private static string[] CreateAdditionalArgs(string[] args) =>
-        args.Concat(new[] { "--urls", "http://127.0.0.1:0" }).ToArray();
+        args.Concat(new[] { "--urls", $"http://127.0.0.1:{GetNextChildAppPortNumber()}" }).ToArray();
 
     public static IHost BuildWebHost(string[] args) => BuildWebHost<Startup>(args);
 
@@ -83,4 +87,17 @@ public class Program
                 webHostBuilder.UseStaticWebAssets();
             })
             .Build();
+
+    private static int GetNextChildAppPortNumber()
+    {
+        if (string.Equals(Environment.GetEnvironmentVariable("TESTSERVER_USE_DETERMINISTIC_PORTS"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return nextPortNumber++;
+        }
+        else
+        {
+            // Let the OS assign an available port
+            return 0;
+        }
+    }
 }
