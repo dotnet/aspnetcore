@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Components.TestServer.RazorComponents;
+using Components.TestServer.RazorComponents.Pages;
 
 namespace TestServer;
 
@@ -36,7 +37,12 @@ public class RazorComponentEndpointsStartup
         app.Map("/subdir", app =>
         {
             app.UseRouting();
-            app.UseEndpoints(endpoints => endpoints.MapRazorComponents<RazorComponentsRoot>());
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapRazorComponents<RazorComponentsRoot>();
+
+                StreamingRendering.MapEndpoints(endpoints);
+            });
         });
     }
 }
