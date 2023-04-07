@@ -15,7 +15,10 @@ internal static class RazorComponentEndpoint
     public static RequestDelegate CreateRouteDelegate(Type componentType)
     {
         return httpContext =>
-            RenderComponentToResponse(httpContext, RenderMode.Static, componentType, componentParameters: null, preventStreamingRendering: false);
+        {
+            httpContext.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
+            return RenderComponentToResponse(httpContext, RenderMode.Static, componentType, componentParameters: null, preventStreamingRendering: false);
+        };
     }
 
     internal static Task RenderComponentToResponse(
