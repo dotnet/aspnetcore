@@ -15,8 +15,6 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        Console.WriteLine("*****\nVisit http://localhost:5000 to get the URLs to the test apps.\n*****");
-
         var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
         {
             ["Client authentication"] = (BuildWebHost<AuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
