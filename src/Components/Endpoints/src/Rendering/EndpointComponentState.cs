@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 
 [assembly: MetadataUpdateHandler(typeof(EndpointComponentState))]
 

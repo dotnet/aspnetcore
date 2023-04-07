@@ -3,9 +3,6 @@
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Components.StreamRenderingAttribute
-Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
-Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
@@ -25,6 +22,9 @@ Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.HtmlRootComp
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.QuiescenceTask.get -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ToHtmlString() -> string!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.WriteHtmlTo(System.IO.TextWriter! output) -> void
+Microsoft.AspNetCore.Components.Web.StreamRenderingAttribute
+Microsoft.AspNetCore.Components.Web.StreamRenderingAttribute.Enabled.get -> bool
+Microsoft.AspNetCore.Components.Web.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
