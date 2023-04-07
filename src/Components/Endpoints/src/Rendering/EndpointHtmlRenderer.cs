@@ -84,8 +84,23 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
-        SendBatchAsStreamingUpdate(renderBatch);
-        return base.UpdateDisplayAsync(renderBatch);
+        if (_streamingUpdatesWriter is { } writer)
+        {
+            SendBatchAsStreamingUpdate(renderBatch, writer);
+            return FlushThenComplete(writer, base.UpdateDisplayAsync(renderBatch));
+        }
+        else
+        {
+            return base.UpdateDisplayAsync(renderBatch);
+        }
+
+        // Workaround for methods with "in" parameters not being allowed to be async
+        // We resolve the "result" first and then combine it with the FlushAsync task here
+        static async Task FlushThenComplete(TextWriter writerToFlush, Task completion)
+        {
+            await writerToFlush.FlushAsync();
+            await completion;
+        }
     }
 
     private static string GetFullUri(HttpRequest request)

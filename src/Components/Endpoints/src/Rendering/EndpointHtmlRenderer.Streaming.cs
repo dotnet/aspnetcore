@@ -45,10 +45,10 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private void SendBatchAsStreamingUpdate(in RenderBatch renderBatch)
+    private void SendBatchAsStreamingUpdate(in RenderBatch renderBatch, TextWriter writer)
     {
         var count = renderBatch.UpdatedComponents.Count;
-        if (count > 0 && _streamingUpdatesWriter is { } writer)
+        if (count > 0)
         {
             writer.Write("<blazor-ssr>");
 
