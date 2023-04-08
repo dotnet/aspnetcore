@@ -62,12 +62,12 @@ public class RouteEndpointBuilderTest
         var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
         Assert.Equal("/", endpoint.RoutePattern.RawText);
         Assert.Collection(endpoint.Metadata,
-            m => Assert.Equal(metadata, m),
             m =>
             {
                 var metadata = Assert.IsAssignableFrom<IRouteDiagnosticsMetadata>(m);
                 Assert.Equal("Test", metadata.Route);
-            });
+            },
+            m => Assert.Equal(metadata, m));
     }
 
     private sealed class TestRouteDiaganosticsMetadata : IRouteDiagnosticsMetadata

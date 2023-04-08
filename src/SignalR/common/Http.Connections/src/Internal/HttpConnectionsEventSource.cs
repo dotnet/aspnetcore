@@ -37,11 +37,11 @@ internal sealed class HttpConnectionsEventSource : EventSource
     [NonEvent]
     public void ConnectionStop(string connectionId, long startTimestamp, long currentTimestamp)
     {
+        Interlocked.Increment(ref _connectionsStopped);
+        Interlocked.Decrement(ref _currentConnections);
+
         if (IsEnabled())
         {
-            Interlocked.Increment(ref _connectionsStopped);
-            Interlocked.Decrement(ref _currentConnections);
-
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
             _connectionDuration!.WriteMetric(duration.TotalMilliseconds);
 
@@ -55,11 +55,11 @@ internal sealed class HttpConnectionsEventSource : EventSource
     [Event(eventId: 1, Level = EventLevel.Informational, Message = "Started connection '{0}'.")]
     public void ConnectionStart(string connectionId)
     {
+        Interlocked.Increment(ref _connectionsStarted);
+        Interlocked.Increment(ref _currentConnections);
+
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
-            Interlocked.Increment(ref _connectionsStarted);
-            Interlocked.Increment(ref _currentConnections);
-
             WriteEvent(1, connectionId);
         }
     }
@@ -70,10 +70,10 @@ internal sealed class HttpConnectionsEventSource : EventSource
     [Event(eventId: 3, Level = EventLevel.Informational, Message = "Connection '{0}' timed out.")]
     public void ConnectionTimedOut(string connectionId)
     {
+        Interlocked.Increment(ref _connectionsTimedOut);
+
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
-            Interlocked.Increment(ref _connectionsTimedOut);
-
             WriteEvent(3, connectionId);
         }
     }
