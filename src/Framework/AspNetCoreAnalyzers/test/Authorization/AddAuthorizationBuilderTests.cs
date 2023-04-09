@@ -544,6 +544,7 @@ public static class Helper
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -558,6 +559,88 @@ builder.Services.AddAuthorization(options =>
 ";
 
         await VerifyNoCodeFix(source);
+    }
+
+    [Fact]
+    public async Task NestedAddAuthorization_UsingBlockBody_FixedWithAddAuthorizationBuilder()
+    {
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
+           .WithLocation(0)
+           .WithMessage(Resources.Analyzer_UseAddAuthorizationBuilder_Message);
+
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = new HostBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        {|#0:services.AddAuthorization(options =>
+        {
+             options.AddPolicy(""AtLeast21"", policy =>
+            {
+                policy.Requirements.Add(new MinimumAgeRequirement(21));
+            });
+        })|};
+    });
+";
+
+        var fixedSource = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = new HostBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        services.AddAuthorizationBuilder()
+            .AddPolicy(""AtLeast21"", policy =>
+            {
+                policy.Requirements.Add(new MinimumAgeRequirement(21));
+            });
+    });
+";
+
+        await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);
+    }
+
+    [Fact]
+    public async Task NestedAddAuthorization_UsingExpressionBody_FixedWithAddAuthorizationBuilder()
+    {
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseAddAuthorizationBuilder)
+           .WithLocation(0)
+           .WithMessage(Resources.Analyzer_UseAddAuthorizationBuilder_Message);
+
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = new HostBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        {|#0:services.AddAuthorization(options =>
+            options.AddPolicy(""AtLeast21"", policy =>
+                policy.Requirements.Add(new MinimumAgeRequirement(21))))|};
+    });
+";
+
+        var fixedSource = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = new HostBuilder()
+    .ConfigureServices((context, services) =>
+    {
+        services.AddAuthorizationBuilder()
+            .AddPolicy(""AtLeast21"", policy =>
+                policy.Requirements.Add(new MinimumAgeRequirement(21)));
+    });
+";
+
+        await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);
     }
 
     private static async Task VerifyCodeFix(string source, DiagnosticResult[] diagnostics, string fixedSource)

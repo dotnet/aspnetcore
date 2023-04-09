@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -115,15 +116,21 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
         string invokedMemberName,
         ArgumentListSyntax argumentList)
     {
+        var invocationLeadingTrivia = invocation.GetLeadingTrivia()
+            .Where(trivia => !trivia.IsKind(SyntaxKind.EndOfLineTrivia));
+        var newInvocationTrivia = new SyntaxTriviaList(
+            SyntaxFactory.EndOfLine(
+                Environment.NewLine),
+                SyntaxFactory.Space,
+                SyntaxFactory.Space,
+                SyntaxFactory.Space,
+                SyntaxFactory.Space)
+            .AddRange(invocationLeadingTrivia);
+
         return SyntaxFactory.InvocationExpression(
             SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
-                invocation.WithTrailingTrivia(
-                    SyntaxFactory.EndOfLine(Environment.NewLine),
-                    SyntaxFactory.Space,
-                    SyntaxFactory.Space,
-                    SyntaxFactory.Space,
-                    SyntaxFactory.Space),
+                invocation.WithTrailingTrivia(newInvocationTrivia),
                 SyntaxFactory.IdentifierName(invokedMemberName)),
            argumentList);
     }
