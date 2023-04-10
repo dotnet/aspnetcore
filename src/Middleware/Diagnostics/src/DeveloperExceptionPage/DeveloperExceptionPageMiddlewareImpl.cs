@@ -92,7 +92,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
     {
         var httpContext = errorContext.HttpContext;
 
-        ExceptionHandlerFeature exceptionHandlerFeature = new()
+        var exceptionHandlerFeature = new ExceptionHandlerFeature()
         {
             Error = errorContext.Exception,
             Path = httpContext.Request.Path.ToString(),
