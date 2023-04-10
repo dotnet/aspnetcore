@@ -123,4 +123,20 @@ public class HeartbeatTests : LoggedTest
 
         Assert.Equal(ex, TestSink.Writes.Single(message => message.LogLevel == LogLevel.Error).Exception);
     }
+
+    [Fact]
+    public void ExceptionFromHeartbeatHandlerIsNotLoggedIfDisposed()
+    {
+        var systemClock = new MockSystemClock();
+        var heartbeatHandler = new Mock<IHeartbeatHandler>();
+        var debugger = new Mock<IDebugger>();
+        var kestrelTrace = new KestrelTrace(LoggerFactory);
+        var ex = new Exception();
+        heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
+        debugger.Setup(d => d.IsAttached).Returns(true);
+        var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace);
+        heartbeat.Dispose();
+        heartbeat.OnHeartbeat();
+        Assert.Empty(TestSink.Writes);
+    }
 }
