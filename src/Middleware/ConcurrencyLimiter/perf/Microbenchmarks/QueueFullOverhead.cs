@@ -13,8 +13,10 @@ public class QueueFullOverhead
     private int _requestCount = 0;
     private readonly ManualResetEventSlim _mres = new ManualResetEventSlim();
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private ConcurrencyLimiterMiddleware _middlewareQueue;
     private ConcurrencyLimiterMiddleware _middlewareStack;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     [Params(8)]
     public int MaxConcurrentRequests;

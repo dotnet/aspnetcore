@@ -27,6 +27,7 @@ export const internalFunctions = {
   navigateTo: navigateToFromDotNet,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
+  scrollToElement
 };
 
 function listenForNavigationEvents(
@@ -53,6 +54,18 @@ function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
 }
 
+export function scrollToElement(identifier: string): boolean {
+  const element = document.getElementById(identifier)
+    || document.getElementsByName(identifier)[0];
+
+    if (element) {
+      element.scrollIntoView();
+      return true;
+    }
+  
+    return false;
+}
+
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
   // running its simulated bubbling process so that we can respect any preventDefault requests.
@@ -76,8 +89,13 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     const anchorTarget = findAnchorTarget(event);
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      const href = anchorTarget.getAttribute('href')!;
-      const absoluteHref = toAbsoluteUri(href);
+      let anchorHref = anchorTarget.getAttribute('href')!; 
+      if (anchorHref.startsWith('#')) {
+        // Preserve the existing URL but set the hash to match the link that was clicked
+        anchorHref = `${location.origin}${location.pathname}${location.search}${anchorHref}`;
+      }
+
+      const absoluteHref = toAbsoluteUri(anchorHref);     
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
@@ -85,6 +103,23 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
       }
     }
   });
+}
+
+function isSamePageWithHash(absoluteHref: string): boolean {
+  const hashIndex = absoluteHref.indexOf('#');
+  return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
+}
+
+function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boolean, state: string | undefined = undefined): void {
+  saveToBrowserHistory(absoluteHref, replace, state);
+
+  const hashIndex = absoluteHref.indexOf('#');
+  if (hashIndex == absoluteHref.length - 1) {
+    return;
+  }
+
+  const identifier = absoluteHref.substring(hashIndex + 1);
+  scrollToElement(identifier);
 }
 
 // For back-compat, we need to accept multiple overloads
@@ -138,6 +173,11 @@ function performExternalNavigation(uri: string, replace: boolean) {
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
   ignorePendingNavigation();
 
+  if (isSamePageWithHash(absoluteInternalHref)) {
+    performScrollToElementOnTheSamePage(absoluteInternalHref, replace, state);
+    return;
+  }   
+
   if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
     const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
     if (!shouldContinueNavigation) {
@@ -152,6 +192,12 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
+  saveToBrowserHistory(absoluteInternalHref, replace, state);
+
+  await notifyLocationChanged(interceptedLink);
+}
+
+function saveToBrowserHistory(absoluteInternalHref: string, replace: boolean, state: string | undefined = undefined): void {
   if (!replace) {
     currentHistoryIndex++;
     history.pushState({
@@ -164,8 +210,6 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
       _index: currentHistoryIndex,
     }, /* ignored title */ '', absoluteInternalHref);
   }
-
-  await notifyLocationChanged(interceptedLink);
 }
 
 function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {

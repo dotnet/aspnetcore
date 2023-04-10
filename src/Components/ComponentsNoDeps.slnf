@@ -55,7 +55,7 @@
       "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
       "src\\Components\\test\\testassets\\LazyTestContentPackage\\LazyTestContentPackage.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj"
+      "src\\Components\\test\\testassets\\Components.TestServer\\Components.TestServer.csproj"
     ]
   }
 }

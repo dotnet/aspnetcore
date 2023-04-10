@@ -983,10 +983,10 @@ public class HtmlRendererTest
         });
     }
 
-    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlComponent actual)
+    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlRootComponent actual)
         => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
 
-    void AssertHtmlContentEquals(string expected, HtmlComponent actual)
+    void AssertHtmlContentEquals(string expected, HtmlRootComponent actual)
     {
         var actualHtml = actual.ToHtmlString();
         Assert.Equal(expected, actualHtml);
