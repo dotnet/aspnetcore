@@ -43,7 +43,8 @@ internal class TestServiceContext : ServiceContext
             new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
             new SystemClock(),
             DebuggerWrapper.Singleton,
-            Log);
+            Log,
+            Heartbeat.Interval);
 
         MockSystemClock = null;
         SystemClock = heartbeatManager;
