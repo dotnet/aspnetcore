@@ -62,7 +62,7 @@ internal sealed class HostingApplicationDiagnostics
             else
             {
                 context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
-                httpContext.Features.Set(context.MetricsTagsFeature);
+                httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
             }
 
             startTimestamp = Stopwatch.GetTimestamp();
