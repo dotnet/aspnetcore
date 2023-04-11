@@ -1344,6 +1344,29 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal(expectedName, parameter.ParameterDescriptor.Name);
     }
 
+    [Fact]
+    public void HandlesEndpointWithoutMethodInfo()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/", (HttpContext context) => Task.CompletedTask);
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.Equal("GET", apiDescription.HttpMethod);
+    }
+
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
     {
         return apiResponseType.ApiResponseFormats

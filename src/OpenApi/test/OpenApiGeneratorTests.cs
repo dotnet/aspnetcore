@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.OpenApi.Tests;
 public class OpenApiOperationGeneratorTests
 {
     [Fact]
-    public void OperationNotCreatedIfNoHttpMethods()
+    public void OperationDefaultsToGetIfNoHttpMethods()
     {
         var operation = GetOpenApiOperation(() => { }, "/", Array.Empty<string>());
 
-        Assert.Null(operation);
+        Assert.NotNull(operation);
     }
 
     [Fact]

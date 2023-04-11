@@ -60,17 +60,20 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         foreach (var endpoint in _endpointDataSource.Endpoints)
         {
             if (endpoint is RouteEndpoint routeEndpoint &&
-                routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
-                routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
                 routeEndpoint.Metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
             {
+                var httpMethods = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata
+                    ? httpMethodMetadata.HttpMethods
+                    : new[] { HttpMethods.Get };
+                var methodInfo = routeEndpoint.Metadata.GetMetadata<MethodInfo>();
+
                 // We need to detect if any of the methods allow inferred body
-                var disableInferredBody = httpMethodMetadata.HttpMethods.Any(ShouldDisableInferredBody);
+                var disableInferredBody = httpMethods.Any(ShouldDisableInferredBody);
 
                 // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
                 // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
                 // In practice, the Delegate will be called for any HTTP method if there is no IHttpMethodMetadata.
-                foreach (var httpMethod in httpMethodMetadata.HttpMethods)
+                foreach (var httpMethod in httpMethods)
                 {
                     context.Results.Add(CreateApiDescription(routeEndpoint, httpMethod, methodInfo, disableInferredBody));
                 }
@@ -82,13 +85,13 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
     {
     }
 
-    private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo, bool disableInferredBody)
+    private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo? methodInfo, bool disableInferredBody)
     {
         // Swashbuckle uses the "controller" name to group endpoints together.
         // For now, put all methods defined the same declaring type together.
         string controllerName;
 
-        if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
+        if (methodInfo?.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
         {
             controllerName = methodInfo.DeclaringType.Name;
         }
@@ -113,6 +116,11 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
                 },
             },
         };
+
+        if (methodInfo == null)
+        {
+            return apiDescription;
+        }
 
         var hasBodyOrFormFileParameter = false;
 

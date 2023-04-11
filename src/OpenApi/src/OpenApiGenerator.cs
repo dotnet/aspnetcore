@@ -58,10 +58,11 @@ internal sealed class OpenApiGenerator
         EndpointMetadataCollection metadata,
         RoutePattern pattern)
     {
-        if (metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
-            httpMethodMetadata.HttpMethods.SingleOrDefault() is { } method &&
-            metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
+        if (metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
         {
+            var method = metadata.GetMetadata<IHttpMethodMetadata>() is { HttpMethods: { Count: 1 } httpMethods }
+                ? httpMethods.Single()
+                : HttpMethods.Get;
             return GetOperation(method, methodInfo, metadata, pattern);
         }
 
