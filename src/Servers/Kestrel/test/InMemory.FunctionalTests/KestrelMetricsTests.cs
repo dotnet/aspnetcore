@@ -5,6 +5,7 @@ using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
@@ -83,6 +85,58 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task Http1Connection_Error()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next =>
+        {
+            return connectionContext =>
+            {
+                // Server signals has has started connection.
+                tcs.TrySetResult();
+
+                throw new InvalidOperationException("Test");
+            };
+        });
+
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var queuedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        await using var server = new TestServer(EchoApp, serviceContext, listenOptions);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(sendString);
+
+            // Wait for connection to start on the server.
+            await tcs.Task;
+
+            Assert.Empty(connectionDuration.GetMeasurements());
+            Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"));
+
+            await connection.ReceiveEnd("");
+
+            await connection.WaitForConnectionClose();
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurements(), m =>
+        {
+            AssertDuration(m, "127.0.0.1:0");
+            Assert.Equal("System.InvalidOperationException", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+        });
+        Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
+        Assert.Collection(queuedConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
+    }
+
+    [Fact]
     public async Task Http1Connection_Upgrade()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -90,7 +144,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var testMeterFactory = new TestMeterFactory();
         using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
         using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
-        using var currentUpgradedRequests = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-upgraded-requests");
+        using var currentUpgradedRequests = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-upgraded-connections");
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
@@ -148,7 +202,10 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)),
         listenOptions =>
         {
-            listenOptions.UseHttps(_x509Certificate2);
+            listenOptions.UseHttps(_x509Certificate2, options =>
+            {
+                options.SslProtocols = SslProtocols.Tls12;
+            });
             listenOptions.Protocols = HttpProtocols.Http2;
         }))
         {
@@ -201,7 +258,11 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             m => AssertRequestCount(m, 1, "HTTP/2"),
             m => AssertRequestCount(m, -1, "HTTP/2"));
 
-        Assert.Collection(tlsHandshakeDuration.GetMeasurements(), m => Assert.True(m.Value > 0));
+        Assert.Collection(tlsHandshakeDuration.GetMeasurements(), m =>
+        {
+            Assert.True(m.Value > 0);
+            Assert.Equal("Tls12", (string)m.Tags.ToArray().Single(t => t.Key == "protocol").Value);
+        });
         Assert.Collection(currentTlsHandshakes.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
 
         static void AssertRequestCount(Measurement<long> measurement, long expectedValue, string httpVersion)

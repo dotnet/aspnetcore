@@ -195,7 +195,7 @@ internal sealed class HttpsConnectionMiddleware
         }
 
         KestrelEventSource.Log.TlsHandshakeStop(context, feature);
-        _metrics.TlsHandshakeStop(context, startTimestamp, Stopwatch.GetTimestamp());
+        _metrics.TlsHandshakeStop(context, startTimestamp, Stopwatch.GetTimestamp(), protocol: sslStream.SslProtocol);
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
@@ -224,7 +224,7 @@ internal sealed class HttpsConnectionMiddleware
         {
             KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
             KestrelEventSource.Log.TlsHandshakeStop(context, null);
-            metrics.TlsHandshakeStop(context, startTimestamp, currentTimestamp, ex);
+            metrics.TlsHandshakeStop(context, startTimestamp, currentTimestamp, exception: ex);
         }
     }
 

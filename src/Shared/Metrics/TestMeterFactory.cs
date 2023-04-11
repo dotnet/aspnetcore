@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.Extensions.Metrics;
 
+// TODO: Remove when Metrics DI intergration package is available https://github.com/dotnet/aspnetcore/issues/47618
 internal class TestMeterFactory : IMeterFactory
 {
     public List<Meter> Meters { get; } = new List<Meter>();

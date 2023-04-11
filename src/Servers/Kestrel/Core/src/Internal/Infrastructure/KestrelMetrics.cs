@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.Metrics;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -31,7 +31,7 @@ internal sealed class KestrelMetrics
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "current-connections",
-            description: "Number of concurrent connections that are currently active on the server.");
+            description: "Number of connections that are currently active on the server.");
 
         _connectionDuration = _meter.CreateHistogram<double>(
             "connection-duration",
@@ -51,8 +51,8 @@ internal sealed class KestrelMetrics
             description: "Number of HTTP requests on multiplexed connections (HTTP/2 and HTTP/3) that are currently queued and are waiting to start.");
 
         _currentUpgradedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "current-upgraded-requests",
-            description: "Number of HTTP requests that are currently upgraded (WebSockets).");
+           "current-upgraded-connections",
+            description: "Number of HTTP connections that are currently upgraded (WebSockets). The number only tracks HTTP/1.1 connections.");
 
         _tlsHandshakeDuration = _meter.CreateHistogram<double>(
             "tls-handshake-duration",
@@ -61,7 +61,7 @@ internal sealed class KestrelMetrics
 
         _currentTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
            "current-tls-handshakes",
-            description: "Number of TLS handshakes that are currently active on the server.");
+            description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 
     public void ConnectionStart(BaseConnectionContext connection)
@@ -80,16 +80,16 @@ internal sealed class KestrelMetrics
         _currentConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionStop(BaseConnectionContext connection, long startTimestamp, long currentTimestamp)
+    public void ConnectionStop(BaseConnectionContext connection, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         if (_currentConnectionsCounter.Enabled || _connectionDuration.Enabled)
         {
-            ConnectionStopCore(connection, startTimestamp, currentTimestamp);
+            ConnectionStopCore(connection, exception, customTags, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStopCore(BaseConnectionContext connection, long startTimestamp, long currentTimestamp)
+    private void ConnectionStopCore(BaseConnectionContext connection, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, connection);
@@ -97,8 +97,12 @@ internal sealed class KestrelMetrics
         // Decrease in connections counter must match tags from increase. No custom tags.
         _currentConnectionsCounter.Add(-1, tags);
 
+        if (exception != null)
+        {
+            tags.Add("exception-name", exception.GetType().FullName);
+        }
+
         // Add custom tags for duration.
-        var customTags = connection.Features.Get<IConnectionMetricsTagsFeature>()?.Tags;
         if (customTags != null)
         {
             for (var i = 0; i < customTags.Count; i++)
@@ -242,16 +246,16 @@ internal sealed class KestrelMetrics
         _currentTlsHandshakesCounter.Add(1, tags);
     }
 
-    public void TlsHandshakeStop(BaseConnectionContext connection, long startTimestamp, long currentTimestamp, Exception? exception = null)
+    public void TlsHandshakeStop(BaseConnectionContext connection, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
     {
         if (_currentTlsHandshakesCounter.Enabled || _tlsHandshakeDuration.Enabled)
         {
-            TlsHandshakeStopCore(connection, startTimestamp, currentTimestamp, exception);
+            TlsHandshakeStopCore(connection, startTimestamp, currentTimestamp, protocol, exception);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStopCore(BaseConnectionContext connection, long startTimestamp, long currentTimestamp, Exception? exception = null)
+    private void TlsHandshakeStopCore(BaseConnectionContext connection, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, connection);
@@ -259,6 +263,10 @@ internal sealed class KestrelMetrics
         // Tags must match TLS handshake start.
         _currentTlsHandshakesCounter.Add(-1, tags);
 
+        if (protocol != null)
+        {
+            tags.Add("protocol", protocol.ToString());
+        }
         if (exception != null)
         {
             tags.Add("exception-name", exception.GetType().FullName);

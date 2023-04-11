@@ -41,6 +41,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private readonly HttpConnectionManager _manager;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly HttpConnectionsMetrics _metrics;
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
 
@@ -49,10 +50,11 @@ internal sealed partial class HttpConnectionDispatcher
     private const string HeaderValueNoCacheNoStore = "no-cache, no-store";
     private const string HeaderValueEpochDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-    public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
+    public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory, HttpConnectionsMetrics metrics)
     {
         _manager = manager;
         _loggerFactory = loggerFactory;
+        _metrics = metrics;
         _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
     }
 
@@ -526,6 +528,7 @@ internal sealed partial class HttpConnectionDispatcher
         if (connection.TransportType == HttpTransportType.None)
         {
             connection.TransportType = transportType;
+            _metrics.TransportStart(transportType);
         }
         else if (connection.TransportType != transportType)
         {

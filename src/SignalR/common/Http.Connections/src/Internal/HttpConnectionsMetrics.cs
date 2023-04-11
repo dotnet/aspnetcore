@@ -14,6 +14,7 @@ internal sealed class HttpConnectionsMetrics : IDisposable
     private readonly Meter _meter;
     private readonly UpDownCounter<long> _currentConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;
+    private readonly UpDownCounter<long> _currentTransportsCounter;
 
     public HttpConnectionsMetrics(IMeterFactory meterFactory)
     {
@@ -21,12 +22,16 @@ internal sealed class HttpConnectionsMetrics : IDisposable
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
             "current-connections",
-            description: "Number of concurrent connections that are currently active on the server.");
+            description: "Number of connections that are currently active on the server.");
 
         _connectionDuration = _meter.CreateHistogram<double>(
             "connection-duration",
             unit: "s",
             description: "The duration of connections on the server.");
+
+        _currentTransportsCounter = _meter.CreateUpDownCounter<long>(
+            "current-transports",
+            description: "Number of negotiated transports that are currently active on the server.");
     }
 
     public void ConnectionStart()
@@ -46,6 +51,24 @@ internal sealed class HttpConnectionsMetrics : IDisposable
             _connectionDuration.Record(duration.TotalSeconds,
                 new KeyValuePair<string, object?>("status", status.ToString()),
                 new KeyValuePair<string, object?>("transport", transportType.ToString()));
+        }
+    }
+
+    public void TransportStart(HttpTransportType transportType)
+    {
+        Debug.Assert(transportType != HttpTransportType.None);
+
+        // Tags must match transport end.
+        _currentTransportsCounter.Add(1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+    }
+
+    public void TransportStop(HttpTransportType transportType)
+    {
+        // Tags must match transport start.
+        // If the transport type is none then the transport was never started for this connection.
+        if (transportType != HttpTransportType.None)
+        {
+            _currentTransportsCounter.Add(-1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
         }
     }
 

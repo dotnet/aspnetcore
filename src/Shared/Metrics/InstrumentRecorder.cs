@@ -5,8 +5,7 @@ using System.Diagnostics.Metrics;
 
 namespace Microsoft.Extensions.Metrics;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable RS0016 // Add public types and members to the declared API
+// TODO: Remove when Metrics DI intergration package is available https://github.com/dotnet/aspnetcore/issues/47618
 internal sealed class InstrumentRecorder<T> : IDisposable where T : struct
 {
     private readonly object _lock = new object();
@@ -68,5 +67,3 @@ internal sealed class InstrumentRecorder<T> : IDisposable where T : struct
         _meterListener.Dispose();
     }
 }
-#pragma warning restore RS0016 // Add public types and members to the declared API
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

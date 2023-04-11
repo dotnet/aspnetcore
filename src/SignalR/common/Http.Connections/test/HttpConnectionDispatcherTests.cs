@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO.Pipelines;
 using System.Net;
@@ -53,7 +54,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -77,7 +78,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -103,7 +104,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -140,7 +141,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -168,7 +169,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -198,7 +199,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var options = new HttpConnectionDispatcherOptions();
             options.TransportMaxBufferSize = 8;
             options.ApplicationMaxBufferSize = 8;
@@ -253,7 +254,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             context.Features.Set<IHttpWebSocketFeature>(new TestWebSocketConnectionFeature());
@@ -288,7 +289,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             using (var strm = new MemoryStream())
             {
@@ -331,7 +332,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             using (var strm = new MemoryStream())
             {
@@ -367,7 +368,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.WebSockets;
 
@@ -405,7 +406,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
             await connection.DisposeAsync(closeGracefully: false);
@@ -444,7 +445,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
@@ -507,7 +508,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         {
             var disconnectTimeout = TimeSpan.FromSeconds(5);
             var manager = CreateConnectionManager(LoggerFactory, disconnectTimeout);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
@@ -572,7 +573,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
@@ -622,7 +623,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
@@ -711,7 +712,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -741,7 +742,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
@@ -843,7 +844,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             using (var strm = new MemoryStream())
             {
                 var context = new DefaultHttpContext();
@@ -883,7 +884,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
@@ -920,7 +921,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             using (var strm = new MemoryStream())
             {
                 var context = new DefaultHttpContext();
@@ -999,7 +1000,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
@@ -1034,7 +1035,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<SynchronusExceptionConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -1061,7 +1062,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
@@ -1085,6 +1086,60 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task Metrics()
+    {
+        using (StartVerifiableLog())
+        {
+            var testMeterFactory = new TestMeterFactory();
+            using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-connections");
+            using var currentTransports = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-transports");
+
+            var metrics = new HttpConnectionsMetrics(testMeterFactory);
+            var manager = CreateConnectionManager(LoggerFactory, metrics);
+            var connection = manager.CreateConnection();
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory, metrics);
+
+            var services = new ServiceCollection();
+            services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+            var context = MakeRequest("/foo", connection, services);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
+            var app = builder.Build();
+            // First poll will 200
+            await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+
+            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context.Response);
+
+            var exists = manager.TryGetConnection(connection.ConnectionId, out _);
+            Assert.False(exists);
+
+            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
+            Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.LongPolling));
+            Assert.Collection(currentTransports.GetMeasurements(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
+        }
+
+        static void AssertTransport(Measurement<long> measurement, long expected, HttpTransportType transportType)
+        {
+            Assert.Equal(expected, measurement.Value);
+            Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+        }
+
+        static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
+        {
+            Assert.True(measurement.Value > 0);
+            Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
+            Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+        }
+    }
+
+    [Fact]
     public async Task LongPollingTimeoutSets200StatusCode()
     {
         using (StartVerifiableLog())
@@ -1093,7 +1148,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1188,7 +1243,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -1221,7 +1276,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -1258,7 +1313,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.WebSockets;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var sync = new SyncPoint();
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1291,7 +1346,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.WebSockets;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
@@ -1321,7 +1376,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1364,7 +1419,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1429,7 +1484,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1494,7 +1549,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             connection.TransportType = transportType;
             connection.Status = HttpConnectionStatus.Disposed;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1525,7 +1580,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1560,7 +1615,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<BlockingConnectionHandler>();
@@ -1595,7 +1650,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<BlockingConnectionHandler>();
@@ -1637,7 +1692,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1684,7 +1739,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
@@ -1716,7 +1771,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
@@ -1768,7 +1823,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
@@ -1823,7 +1878,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddOptions();
             services.AddSingleton<TestConnectionHandler>();
@@ -1869,7 +1924,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1901,7 +1956,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<TestConnectionHandler>();
@@ -1942,7 +1997,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -1995,7 +2050,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -2048,7 +2103,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<NeverEndingConnectionHandler>();
@@ -2096,7 +2151,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         {
             var transportType = HttpTransportType.LongPolling;
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = transportType;
 
@@ -2147,7 +2202,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = new DefaultHttpContext();
             context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             var services = new ServiceCollection();
@@ -2199,7 +2254,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -2261,7 +2316,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -2318,7 +2373,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -2377,7 +2432,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<TestConnectionHandler>();
@@ -2417,7 +2472,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<NeverEndingConnectionHandler>();
@@ -2468,7 +2523,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<NeverEndingConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -2496,7 +2551,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.WebSockets;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<NeverEndingConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -2543,7 +2598,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<NeverEndingConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -2578,7 +2633,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ServiceProviderConnectionHandler>();
@@ -2629,7 +2684,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ServiceProviderConnectionHandler>();
@@ -2684,7 +2739,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var services = new ServiceCollection();
             services.AddSingleton<ServiceProviderConnectionHandler>();
@@ -2731,7 +2786,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var services = new ServiceCollection();
             services.AddSingleton<NeverEndingConnectionHandler>();
             var context = MakeRequest("/foo", connection, services);
@@ -2765,7 +2820,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var options = new HttpConnectionDispatcherOptions() { CloseOnAuthenticationExpiration = true };
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
@@ -3184,7 +3239,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
-            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var options = new HttpConnectionDispatcherOptions();
             var connection = manager.CreateConnection(options);
             connection.TransportType = HttpTransportType.LongPolling;
@@ -3298,7 +3353,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         var connection = manager.CreateConnection();
         connection.TransportType = transportType;
 
-        var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+        var dispatcher = CreateDispatcher(manager, loggerFactory);
         using (var strm = new MemoryStream())
         {
             var context = new DefaultHttpContext();
@@ -3376,12 +3431,12 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, HttpConnectionsMetrics metrics = null)
     {
-        return CreateConnectionManager(loggerFactory, null);
+        return CreateConnectionManager(loggerFactory, null, metrics);
     }
 
-    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan? disconnectTimeout)
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan? disconnectTimeout, HttpConnectionsMetrics metrics = null)
     {
         var connectionOptions = new ConnectionOptions();
         connectionOptions.DisconnectTimeout = disconnectTimeout;
@@ -3389,7 +3444,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             loggerFactory ?? new LoggerFactory(),
             new EmptyApplicationLifetime(),
             Options.Create(connectionOptions),
-            new HttpConnectionsMetrics(new TestMeterFactory()));
+            metrics ?? new HttpConnectionsMetrics(new TestMeterFactory()));
     }
 
     private string GetContentAsString(Stream body)
@@ -3407,6 +3462,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         Assert.Equal("no-cache, no-store", response.Headers.CacheControl);
         Assert.Equal("no-cache", response.Headers.Pragma);
         Assert.Equal("Thu, 01 Jan 1970 00:00:00 GMT", response.Headers.Expires);
+    }
+
+    private static HttpConnectionDispatcher CreateDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory, HttpConnectionsMetrics metrics = null)
+    {
+        return new HttpConnectionDispatcher(manager, loggerFactory, metrics ?? new HttpConnectionsMetrics(new TestMeterFactory()));
     }
 }
 

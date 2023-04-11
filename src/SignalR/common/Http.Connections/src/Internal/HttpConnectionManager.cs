@@ -104,6 +104,7 @@ internal sealed partial class HttpConnectionManager
             var currentTimestamp = (pair.StartTimestamp > 0) ? Stopwatch.GetTimestamp() : default;
 
             HttpConnectionsEventSource.Log.ConnectionStop(id, pair.StartTimestamp, currentTimestamp);
+            _metrics.TransportStop(transportType);
             _metrics.ConnectionStop(transportType, status, pair.StartTimestamp, currentTimestamp);
             Log.RemovedConnection(_logger, id);
         }

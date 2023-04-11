@@ -13,5 +13,5 @@ public interface IConnectionMetricsTagsFeature
     /// <summary>
     /// Gets the tag collection.
     /// </summary>
-    IList<KeyValuePair<string, object?>> Tags { get; }
+    ICollection<KeyValuePair<string, object?>> Tags { get; }
 }

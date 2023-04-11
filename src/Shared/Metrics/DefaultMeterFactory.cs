@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Metrics;
 
+// TODO: Remove when Metrics DI intergration package is available https://github.com/dotnet/aspnetcore/issues/47618
 internal sealed class DefaultMeterFactory : IMeterFactory
 {
     private readonly IOptions<MetricsOptions> _options;

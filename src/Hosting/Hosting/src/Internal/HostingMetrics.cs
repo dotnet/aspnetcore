@@ -32,18 +32,18 @@ internal sealed class HostingMetrics : IDisposable
     }
 
     // Note: Calling code checks whether counter is enabled.
-    public void RequestStart(string scheme, string method, HostString host)
+    public void RequestStart(bool isHttps, string scheme, string method, HostString host)
     {
         // Tags must match request end.
         var tags = new TagList();
-        InitializeRequestTags(ref tags, scheme, method, host);
+        InitializeRequestTags(ref tags, isHttps, scheme, method, host);
         _currentRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string scheme, string method, HostString host, string? routePattern, int statusCode, Exception? exception, IList<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? routePattern, int statusCode, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
-        InitializeRequestTags(ref tags, scheme, method, host);
+        InitializeRequestTags(ref tags, isHttps, scheme, method, host);
 
         // Tags must match request start.
         if (_currentRequestsCounter.Enabled)
@@ -53,6 +53,8 @@ internal sealed class HostingMetrics : IDisposable
 
         if (_requestDuration.Enabled)
         {
+            tags.Add("protocol", protocol);
+
             // Add information gathered during request.
             tags.Add("status-code", GetBoxedStatusCode(statusCode));
             if (routePattern != null)
@@ -85,16 +87,22 @@ internal sealed class HostingMetrics : IDisposable
 
     public bool IsEnabled() => _currentRequestsCounter.Enabled || _requestDuration.Enabled;
 
-    private static void InitializeRequestTags(ref TagList tags, string scheme, string method, HostString host)
+    private static void InitializeRequestTags(ref TagList tags, bool isHttps, string scheme, string method, HostString host)
     {
         tags.Add("scheme", scheme);
         tags.Add("method", method);
         if (host.HasValue)
         {
             tags.Add("host", host.Host);
-            if (host.Port is not null && host.Port != 80 && host.Port != 443)
+
+            // Port is parsed each time it's accessed. Store part in local variable.
+            if (host.Port is { } port)
             {
-                tags.Add("port", host.Port);
+                // Add port tag when not the default value for the current scheme
+                if ((isHttps && port != 443) || (!isHttps && port != 80))
+                {
+                    tags.Add("port", port);
+                }
             }
         }
     }

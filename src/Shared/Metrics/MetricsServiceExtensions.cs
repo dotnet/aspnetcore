@@ -6,8 +6,7 @@ using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable RS0016 // Add public types and members to the declared API
+// TODO: Remove when Metrics DI intergration package is available https://github.com/dotnet/aspnetcore/issues/47618
 internal static class MetricsServiceExtensions
 {
     public static IServiceCollection AddMetrics(this IServiceCollection services)
@@ -36,5 +35,3 @@ internal static class MetricsServiceExtensions
         return builder;
     }
 }
-#pragma warning restore RS0016 // Add public types and members to the declared API
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

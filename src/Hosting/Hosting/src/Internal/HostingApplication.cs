@@ -144,7 +144,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         public bool EventLogOrMetricsEnabled { get; set; }
 
         internal IHttpActivityFeature? HttpActivityFeature;
-        internal IHttpMetricsTagsFeature? MetricsTagsFeature;
+        internal HttpMetricsTagsFeature? MetricsTagsFeature;
 
         public void Reset()
         {
@@ -157,6 +157,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
             StartTimestamp = 0;
             HasDiagnosticListener = false;
             EventLogOrMetricsEnabled = false;
+            MetricsTagsFeature?.Tags.Clear();
         }
     }
 }

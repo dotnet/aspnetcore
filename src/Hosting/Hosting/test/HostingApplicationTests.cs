@@ -37,6 +37,7 @@ public class HostingApplicationTests
         Assert.Null(meter.Version);
 
         // Request 1 (after success)
+        httpContext.Request.Protocol = HttpProtocol.Http11;
         var context1 = hostingApplication.CreateContext(httpContext.Features);
         context1.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
         hostingApplication.DisposeContext(context1, null);
@@ -45,9 +46,10 @@ public class HostingApplicationTests
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
         Assert.Collection(requestDurationRecorder.GetMeasurements(),
-            m => AssertRequestDuration(m, StatusCodes.Status200OK));
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK));
 
         // Request 2 (after failure)
+        httpContext.Request.Protocol = HttpProtocol.Http2;
         var context2 = hostingApplication.CreateContext(httpContext.Features);
         context2.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         hostingApplication.DisposeContext(context2, new InvalidOperationException("Test error"));
@@ -58,10 +60,11 @@ public class HostingApplicationTests
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
         Assert.Collection(requestDurationRecorder.GetMeasurements(),
-            m => AssertRequestDuration(m, StatusCodes.Status200OK),
-            m => AssertRequestDuration(m, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"));
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
+            m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"));
 
         // Request 3
+        httpContext.Request.Protocol = HttpProtocol.Http3;
         var context3 = hostingApplication.CreateContext(httpContext.Features);
         context3.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
@@ -72,8 +75,8 @@ public class HostingApplicationTests
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value));
         Assert.Collection(requestDurationRecorder.GetMeasurements(),
-            m => AssertRequestDuration(m, StatusCodes.Status200OK),
-            m => AssertRequestDuration(m, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"));
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
+            m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"));
 
         hostingApplication.DisposeContext(context3, null);
 
@@ -85,14 +88,15 @@ public class HostingApplicationTests
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
         Assert.Collection(requestDurationRecorder.GetMeasurements(),
-            m => AssertRequestDuration(m, StatusCodes.Status200OK),
-            m => AssertRequestDuration(m, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"),
-            m => AssertRequestDuration(m, StatusCodes.Status200OK));
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
+            m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"),
+            m => AssertRequestDuration(m, HttpProtocol.Http3, StatusCodes.Status200OK));
 
-        static void AssertRequestDuration(Measurement<double> measurement, int statusCode, string exceptionName = null)
+        static void AssertRequestDuration(Measurement<double> measurement, string protocol, int statusCode, string exceptionName = null)
         {
             Assert.True(measurement.Value > 0);
-            Assert.Equal(statusCode, (int) measurement.Tags.ToArray().Single(t => t.Key == "status-code").Value);
+            Assert.Equal(protocol, (string)measurement.Tags.ToArray().Single(t => t.Key == "protocol").Value);
+            Assert.Equal(statusCode, (int)measurement.Tags.ToArray().Single(t => t.Key == "status-code").Value);
             if (exceptionName == null)
             {
                 Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "exception-name");

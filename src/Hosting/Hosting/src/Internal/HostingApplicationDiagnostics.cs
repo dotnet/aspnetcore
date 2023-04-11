@@ -47,11 +47,6 @@ internal sealed class HostingApplicationDiagnostics
         _metrics = metrics;
     }
 
-    private sealed class HttpMetricsTagsFeature : IHttpMetricsTagsFeature
-    {
-        public IList<KeyValuePair<string, object?>> Tags { get; } = new List<KeyValuePair<string, object?>>();
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void BeginRequest(HttpContext httpContext, HostingApplication.Context context)
     {
@@ -60,9 +55,9 @@ internal sealed class HostingApplicationDiagnostics
         if (_eventSource.IsEnabled() || _metrics.IsEnabled())
         {
             context.EventLogOrMetricsEnabled = true;
-            if (httpContext.Features.Get<IHttpMetricsTagsFeature>() is IHttpMetricsTagsFeature feature)
+            if (httpContext.Features.Get<IHttpMetricsTagsFeature>() is HttpMetricsTagsFeature feature)
             {
-                feature.Tags.Clear();
+                context.MetricsTagsFeature = feature;
             }
             else
             {
@@ -150,14 +145,16 @@ internal sealed class HostingApplicationDiagnostics
 
             if (context.EventLogOrMetricsEnabled)
             {
-                var routePattern = httpContext.GetEndpoint()?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-                var customTags = httpContext.Features.Get<IHttpMetricsTagsFeature>()?.Tags;
+                var route = httpContext.GetEndpoint()?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+                var customTags = context.MetricsTagsFeature?.TagsList;
 
                 _metrics.RequestEnd(
+                    httpContext.Request.Protocol,
+                    httpContext.Request.IsHttps,
                     httpContext.Request.Scheme,
                     httpContext.Request.Method,
                     httpContext.Request.Host,
-                    routePattern,
+                    route,
                     httpContext.Response.StatusCode,
                     exception,
                     customTags,
@@ -346,7 +343,7 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RecordRequestStartEventLog(HttpContext httpContext)
     {
-        _metrics.RequestStart(httpContext.Request.Scheme, httpContext.Request.Method, httpContext.Request.Host);
+        _metrics.RequestStart(httpContext.Request.IsHttps, httpContext.Request.Scheme, httpContext.Request.Method, httpContext.Request.Host);
         _eventSource.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
     }
 
