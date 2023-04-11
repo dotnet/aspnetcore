@@ -40,7 +40,7 @@ public class RazorComponentResultTest
     {
         // Arrange
         var result = new RazorComponentResult<SimpleComponent>();
-        var httpContext = RazorComponentEndpointTest.GetTestHttpContext();
+        var httpContext = RazorComponentResultExecutorTest.GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
 
@@ -62,7 +62,7 @@ public class RazorComponentResultTest
             StatusCode = 123,
             ContentType = "application/test-content-type",
         };
-        var httpContext = RazorComponentEndpointTest.GetTestHttpContext();
+        var httpContext = RazorComponentResultExecutorTest.GetTestHttpContext();
         var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
 
