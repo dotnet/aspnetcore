@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 [Serializable]
 public sealed class RoutePatternException : Exception
 {
+    [Obsolete]
     private RoutePatternException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {
@@ -42,6 +43,7 @@ public sealed class RoutePatternException : Exception
     /// </summary>
     /// <param name="info">The <see cref="SerializationInfo"/> to populate with data.</param>
     /// <param name="context">The destination (<see cref="StreamingContext" />) for this serialization.</param>
+    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
         info.AddValue(nameof(Pattern), Pattern);
