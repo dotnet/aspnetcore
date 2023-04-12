@@ -26,7 +26,8 @@ internal sealed partial class GenericWebHostService : IHostedService
                                  IApplicationBuilderFactory applicationBuilderFactory,
                                  IEnumerable<IStartupFilter> startupFilters,
                                  IConfiguration configuration,
-                                 IWebHostEnvironment hostingEnvironment)
+                                 IWebHostEnvironment hostingEnvironment,
+                                 HostingMetrics hostingMetrics)
     {
         Options = options.Value;
         Server = server;
@@ -40,6 +41,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         StartupFilters = startupFilters;
         Configuration = configuration;
         HostingEnvironment = hostingEnvironment;
+        HostingMetrics = hostingMetrics;
     }
 
     public GenericWebHostServiceOptions Options { get; }
@@ -55,6 +57,7 @@ internal sealed partial class GenericWebHostService : IHostedService
     public IEnumerable<IStartupFilter> StartupFilters { get; }
     public IConfiguration Configuration { get; }
     public IWebHostEnvironment HostingEnvironment { get; }
+    public HostingMetrics HostingMetrics { get; }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -153,7 +156,7 @@ internal sealed partial class GenericWebHostService : IHostedService
             application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
         }
 
-        var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory);
+        var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory, HostingEventSource.Log, HostingMetrics);
 
         await Server.StartAsync(httpApplication, cancellationToken);
         HostingEventSource.Log.ServerReady();

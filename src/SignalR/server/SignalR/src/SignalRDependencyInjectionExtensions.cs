@@ -38,6 +38,7 @@ public static class SignalRDependencyInjectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddMetrics();
         services.AddConnections();
         // Disable the WebSocket keep alive since SignalR has it's own
         services.Configure<WebSocketOptions>(o => o.KeepAliveInterval = TimeSpan.Zero);

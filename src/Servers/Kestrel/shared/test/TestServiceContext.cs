@@ -3,31 +3,32 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Testing;
 
 internal class TestServiceContext : ServiceContext
 {
-    public TestServiceContext()
+    public TestServiceContext() : this(disableHttp1LineFeedTerminators: true)
     {
-        Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance), false);
     }
 
-    public TestServiceContext(ILoggerFactory loggerFactory, bool disableHttp1LineFeedTerminators = true)
+    public TestServiceContext(ILoggerFactory loggerFactory = null, KestrelTrace kestrelTrace = null, bool disableHttp1LineFeedTerminators = true, KestrelMetrics metrics = null)
     {
-        Initialize(loggerFactory, CreateLoggingTrace(loggerFactory), disableHttp1LineFeedTerminators);
-    }
+        loggerFactory ??= NullLoggerFactory.Instance;
+        kestrelTrace ??= CreateLoggingTrace(loggerFactory);
+        metrics ??= new KestrelMetrics(new TestMeterFactory());
 
-    public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators = true)
-    {
-        Initialize(loggerFactory, kestrelTrace, disableHttp1LineFeedTerminators);
+        Initialize(loggerFactory, kestrelTrace, disableHttp1LineFeedTerminators, metrics);
     }
 
     private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -49,7 +50,7 @@ internal class TestServiceContext : ServiceContext
         SystemClock = heartbeatManager;
     }
 
-    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators)
+    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators, KestrelMetrics metrics)
     {
         LoggerFactory = loggerFactory;
         Log = kestrelTrace;
@@ -65,6 +66,7 @@ internal class TestServiceContext : ServiceContext
         };
 
         DateHeaderValueManager.OnHeartbeat(SystemClock.UtcNow);
+        Metrics = metrics;
     }
 
     public ILoggerFactory LoggerFactory { get; set; }

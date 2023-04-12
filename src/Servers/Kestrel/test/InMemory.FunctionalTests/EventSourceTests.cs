@@ -1,19 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -23,7 +17,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -380,7 +373,7 @@ public class EventSourceTests : LoggedTest
 
             listenOptions.Use(next =>
             {
-                return new ConnectionLimitMiddleware<ConnectionContext>(c => next(c), connectionLimit: 0, serviceContext.Log).OnConnectionAsync;
+                return new ConnectionLimitMiddleware<ConnectionContext>(c => next(c), connectionLimit: 0, serviceContext.Log, metrics: null).OnConnectionAsync;
             });
         }))
         {

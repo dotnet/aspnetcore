@@ -294,6 +294,9 @@ public class WebHostBuilder : IWebHostBuilder
         services.AddOptions();
         services.AddLogging();
 
+        services.AddMetrics();
+        services.TryAddSingleton<HostingMetrics>();
+
         services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
 
         if (!string.IsNullOrEmpty(_options.StartupAssembly))

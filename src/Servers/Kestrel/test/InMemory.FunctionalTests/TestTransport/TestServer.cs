@@ -86,6 +86,7 @@ internal class TestServer : IAsyncDisposable, IStartup
 
                 services.AddSingleton<IStartup>(this);
                 services.AddSingleton(context.LoggerFactory);
+                services.AddSingleton(context.Metrics);
 
                 services.AddSingleton<IServer>(sp =>
                 {

@@ -124,7 +124,8 @@ internal class ExceptionHandlerMiddlewareImpl
             return;
         }
 
-        _logger.UnhandledException(edi.SourceException);
+        DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
+
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
         {

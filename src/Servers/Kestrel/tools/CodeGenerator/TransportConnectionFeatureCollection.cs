@@ -23,7 +23,8 @@ public class TransportConnectionFeatureCollection
             "IStreamDirectionFeature",
             "IStreamIdFeature",
             "IStreamAbortFeature",
-            "IStreamClosedFeature"
+            "IStreamClosedFeature",
+            "IConnectionMetricsTagsFeature"
         };
 
         var implementedFeatures = new[]

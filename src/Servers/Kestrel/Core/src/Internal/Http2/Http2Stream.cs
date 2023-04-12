@@ -82,6 +82,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     }
 
     public int StreamId => _context.StreamId;
+    public BaseConnectionContext ConnectionContext => _context.ConnectionContext;
 
     public long? InputRemaining { get; internal set; }
 

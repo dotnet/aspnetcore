@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Metrics;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -99,6 +101,9 @@ public class ConnectionLimitTests : LoggedTest
     [Fact]
     public async Task RejectsConnectionsWhenLimitReached()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var rejectedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "rejected-connections");
+
         const int max = 10;
         var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -106,7 +111,7 @@ public class ConnectionLimitTests : LoggedTest
         {
             await context.Response.WriteAsync("Hello");
             await requestTcs.Task;
-        }, max))
+        }, max, meterFactory: testMeterFactory))
         {
             using (var disposables = new DisposableStack<InMemoryConnection>())
             {
@@ -134,11 +139,16 @@ public class ConnectionLimitTests : LoggedTest
                         // connection should close without sending any data
                         await connection.WaitForConnectionClose();
                     }
+
+                    var actions = Enumerable.Repeat(AssertCounter, i + 1).ToArray();
+                    Assert.Collection(rejectedConnections.GetMeasurements(), actions);
                 }
 
                 requestTcs.TrySetResult();
             }
         }
+
+        static void AssertCounter(Measurement<long> measurement) => Assert.Equal(1, measurement.Value);
     }
 
     [Fact]
@@ -196,21 +206,21 @@ public class ConnectionLimitTests : LoggedTest
         }
     }
 
-    private TestServer CreateServerWithMaxConnections(RequestDelegate app, long max)
+    private TestServer CreateServerWithMaxConnections(RequestDelegate app, long max, IMeterFactory meterFactory = null)
     {
-        var serviceContext = new TestServiceContext(LoggerFactory);
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(meterFactory ?? new TestMeterFactory()));
         serviceContext.ServerOptions.Limits.MaxConcurrentConnections = max;
         return new TestServer(app, serviceContext);
     }
 
-    private TestServer CreateServerWithMaxConnections(RequestDelegate app, ResourceCounter concurrentConnectionCounter)
+    private TestServer CreateServerWithMaxConnections(RequestDelegate app, ResourceCounter concurrentConnectionCounter, IMeterFactory meterFactory = null)
     {
-        var serviceContext = new TestServiceContext(LoggerFactory);
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(meterFactory ?? new TestMeterFactory()));
 
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
         listenOptions.Use(next =>
         {
-            var middleware = new ConnectionLimitMiddleware<ConnectionContext>(c => next(c), concurrentConnectionCounter, serviceContext.Log);
+            var middleware = new ConnectionLimitMiddleware<ConnectionContext>(c => next(c), concurrentConnectionCounter, serviceContext.Log, metrics: serviceContext.Metrics);
             return middleware.OnConnectionAsync;
         });
 
