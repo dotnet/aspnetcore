@@ -280,6 +280,9 @@ internal sealed class KestrelMetrics
     {
         if (connection.LocalEndPoint is { } localEndpoint)
         {
+            // TODO: Improve getting string allocation for endpoint. Currently allocates.
+            // Possible solution is to cache in the endpoint: https://github.com/dotnet/runtime/issues/84515
+            // Alternatively, add cache to ConnectionContext.
             tags.Add("endpoint", localEndpoint.ToString());
         }
     }
