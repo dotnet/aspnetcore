@@ -71,7 +71,7 @@ public class HeartbeatTests : LoggedTest
         }
 
         // Interval timing isn't exact. For example, interval of 300ms results in split of 312.67ms.
-        // Round value and assert to make sure the interval between heartbeats is approximately correct.
+        // Under load the server might take a long time to resume. Provide tolerance for late resume.
         Assert.Collection(splits,
             ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
             ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
