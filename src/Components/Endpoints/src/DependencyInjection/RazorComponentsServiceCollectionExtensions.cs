@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -23,6 +25,7 @@ public static class RazorComponentsServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>A builder for configuring the Razor Components endpoints.</returns>
+    [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
         services.TryAddSingleton<RazorComponentsMarkerService>();

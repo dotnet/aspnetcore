@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -26,6 +28,7 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcCoreBuilder AddRazorPages(this IMvcCoreBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
