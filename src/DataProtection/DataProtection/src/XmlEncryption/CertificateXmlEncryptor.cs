@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
@@ -75,6 +76,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
         return new EncryptedXmlInfo(encryptedElement, typeof(EncryptedXmlDecryptor));
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Calls System.Security.Cryptography.Xml.EncryptedXml.EncryptedXml(XmlDocument)")]
     private XElement EncryptElement(XElement plaintextElement)
     {
         // EncryptedXml works with XmlDocument, not XLinq. When we perform the conversion
