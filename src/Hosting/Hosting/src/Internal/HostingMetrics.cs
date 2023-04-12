@@ -23,7 +23,7 @@ internal sealed class HostingMetrics : IDisposable
 
         _currentRequestsCounter = _meter.CreateUpDownCounter<long>(
             "current-requests",
-            description: "Number of concurrent HTTP requests that are currently active on the server.");
+            description: "Number of HTTP requests that are currently active on the server.");
 
         _requestDuration = _meter.CreateHistogram<double>(
             "request-duration",
