@@ -2260,30 +2260,20 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task RegisterAuthMiddlewaresCorrectly(bool useSlimBuilder)
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public async Task RegisterAuthMiddlewaresCorrectly(CreateBuilderFunc createBuilder)
     {
         var helloEndpointCalled = false;
         var customMiddlewareExecuted = false;
         var username = "foobar";
 
-        var builder = useSlimBuilder ?
-            WebApplication.CreateSlimBuilder() :
-            WebApplication.CreateBuilder();
+        var builder = createBuilder();
 
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication("testSchemeName")
             .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
-
-        if (useSlimBuilder)
-        {
-            // NOTE: CreateSlimBuilder doesn't support auto registration of auth middleware, so need to do it explicitly
-            app.UseAuthentication();
-            app.UseAuthorization();
-        }
 
         app.Use(next =>
         {
@@ -2314,11 +2304,11 @@ public class WebApplicationTests
         Assert.True(customMiddlewareExecuted);
     }
 
-    [Fact]
-    public async Task SupportsDisablingMiddlewareAutoRegistration()
+    [Theory]
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public async Task SupportsDisablingMiddlewareAutoRegistration(CreateBuilderFunc createBuilder)
     {
-        // NOTE: CreateSlimBuilder doesn't support auto registration of auth middleware
-        var builder = WebApplication.CreateBuilder();
+        var builder = createBuilder();
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication("testSchemeName")
             .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
