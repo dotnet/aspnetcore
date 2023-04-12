@@ -100,6 +100,7 @@ public class HttpConnectionFactoryTests
                 { $"{nameof(HttpConnectionOptions.WebSocketFactory)}", webSocketFactory },
                 { $"{nameof(HttpConnectionOptions.ApplicationMaxBufferSize)}", 1L * 1024 * 1024 },
                 { $"{nameof(HttpConnectionOptions.TransportMaxBufferSize)}", 1L * 1024 * 1024 },
+                { $"{nameof(HttpConnectionOptions.UseAcks)}", true },
             };
 
         var options = new HttpConnectionOptions();

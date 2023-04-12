@@ -44,9 +44,7 @@ internal sealed class AckPipeReader : PipeReader
             {
                 return;
             }
-            //Debug.Assert(byteID >= _ackId);
             _ackDiff = byteID - _ackId;
-            //Console.WriteLine($"AckId: {byteID}");
 
             if (_totalWritten < byteID)
             {
@@ -61,13 +59,14 @@ internal sealed class AckPipeReader : PipeReader
 
     public bool Resend()
     {
+        // TODO: Do we need to check this?
         Debug.Assert(_resend == false);
         if (_totalWritten == 0)
         {
             return false;
         }
         // Unblocks ReadAsync and gives a buffer with the examined but not consumed bytes
-        // This avoids the issue where we wait for someone to write to the pipe before completing the reconnect handshake
+        // This avoids the issue where we have to wait for someone to write to the pipe before completing the reconnect handshake
         CancelPendingRead();
         _resend = true;
         return true;
@@ -136,13 +135,15 @@ internal sealed class AckPipeReader : PipeReader
                     }
                     else if (buffer.Slice(_consumed).Length > ackSlice.Length)
                     {
+                        // ack is greater than consumed, should not be possible
+
+                        // TODO: verify that if ack is less than total but more than consumed this isn't hit
+                        // e.g. 13 bytes in underlying pipe, only consumed 11 during Read+Advance. Will an ack id of 12 be allowed?
                         Debug.Assert(false);
                     }
                     else if (buffer.Slice(_consumed).Length < ackSlice.Length)
                     {
                         // this is normal, ack id is less than total written
-
-                        //_totalWritten += ackSlice.Length - buffer.Slice(_consumed).Length;
                     }
                 }
 
@@ -150,11 +151,6 @@ internal sealed class AckPipeReader : PipeReader
                 _ackId += _ackDiff;
                 _ackDiff = 0;
                 _ackPosition = buffer.Start;
-                //if (buffer.Length == 0)
-                //{
-                //    _ackPosition = default;
-                //    _consumed = default;
-                //}
             }
         }
         bool wasResend = _resend;
@@ -181,19 +177,14 @@ internal sealed class AckPipeReader : PipeReader
         else if (buffer.Length > 0)
         {
             _ackPosition = buffer.Start;
-            // TODO: buffer.Length is 0 sometimes, figure out why and verify behavior
-            if (buffer.Length > 0 && !_consumed.Equals(default))
+            if (!_consumed.Equals(default))
             {
                 buffer = buffer.Slice(_consumed);
             }
             _totalWritten += (uint)buffer.Length;
         }
+
         res = new(buffer, res.IsCanceled, res.IsCompleted);
-        //if (buffer.Length == 0)
-        //{
-        //    // everything has been acked
-        //    _ackPosition = default;
-        //}
         return res;
     }
 
@@ -208,7 +199,7 @@ internal sealed class AckPipeWriter : PipeWriter
 {
     public const int FrameSize = 24;
     private readonly PipeWriter _inner;
-    internal long lastAck;
+    internal long LastAck;
 
     Memory<byte> _frameHeader;
     bool _shouldAdvanceFrameHeader;
@@ -248,7 +239,7 @@ internal sealed class AckPipeWriter : PipeWriter
     {
         Debug.Assert(_frameHeader.Length >= FrameSize);
 
-        WriteFrame(_frameHeader.Span, _buffered, lastAck);
+        WriteFrame(_frameHeader.Span, _buffered, LastAck);
 
         _frameHeader = Memory<byte>.Empty;
         _buffered = 0;

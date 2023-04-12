@@ -83,8 +83,8 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                                     ? WebSocketMessageType.Binary
                                     : WebSocketMessageType.Text);
                 buf = new byte[AckPipeWriter.FrameSize];
-                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_connection.Transport.Output)).lastAck);
-                _logger.LogInformation("sending resend ack {lastack}", ((AckPipeWriter)(_connection.Transport.Output)).lastAck);
+                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_connection.Transport.Output)).LastAck);
+                _logger.LogInformation("sending resend ack {lastack}", ((AckPipeWriter)(_connection.Transport.Output)).LastAck);
                 await socket.SendAsync(buf, webSocketMessageType, endOfMessage: true, _connection.SendingToken);
             }
         }
@@ -203,7 +203,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
-                LogBytes(memory.Slice(0, receiveResult.Count), _logger);
+                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
 
                 _application.Output.Advance(receiveResult.Count);
 
@@ -275,7 +275,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                                 ? WebSocketMessageType.Binary
                                 : WebSocketMessageType.Text);
 
-                            LogBytes(buffer.ToArray(), _logger);
+                            //LogBytes(buffer.ToArray(), _logger);
 
                             void LogBytes(Memory<byte> memory, ILogger logger)
                             {
