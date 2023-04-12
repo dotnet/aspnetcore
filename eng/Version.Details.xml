@@ -129,9 +129,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -177,9 +177,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.6-servicing.23205.18">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.6-servicing.23211.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="7.0.0-alpha.1.22505.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
@@ -198,9 +198,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="System.DirectoryServices.Protocols" Version="7.0.0">
+    <Dependency Name="System.DirectoryServices.Protocols" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -214,9 +214,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="7.0.1">
+    <Dependency Name="System.Reflection.Metadata" Version="7.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>0a396acafe9a7d46bce11f4338dbb3dd0d99b1b4</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="System.Resources.Extensions" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -242,9 +242,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="7.0.2">
+    <Dependency Name="System.Text.Json" Version="7.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>0a2bda10e81d901396c3cff95533529e3a93ad47</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="System.Threading.AccessControl" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -264,15 +264,15 @@
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.6">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="7.0.6">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="7.0.6">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -280,15 +280,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="7.0.6">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="7.0.6">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="7.0.6-servicing.23205.18">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="7.0.6-servicing.23211.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f5f7b34502e6f9677053bdf72c2ab2fe7c6e0074</Sha>
+      <Sha>41b6f22976124a48cc86b62dde44ea2d520cba73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22423.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
