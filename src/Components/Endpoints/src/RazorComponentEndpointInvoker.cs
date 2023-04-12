@@ -1,9 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,14 +34,21 @@ internal class RazorComponentEndpointInvoker
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
 
+        if (await ValidateRequestAsync())
+        {
+            // If the request is not valid we've already set the response to a 400 or similar
+            // and we can just exit early.
+            return;
+        }
+
         // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
         // backing buffers could come from a pool like they do during rendering.
         var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-                {
-                    { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
-                    { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
-                    { nameof(RazorComponentEndpointHost.ComponentParameters), null },
-                });
+        {
+            { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
+            { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
+            { nameof(RazorComponentEndpointHost.ComponentParameters), null },
+        });
 
         await using var writer = CreateResponseWriter(_context.Response.Body);
 
@@ -67,6 +76,36 @@ internal class RazorComponentEndpointInvoker
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
         await writer.FlushAsync();
+    }
+
+    private Task<bool> ValidateRequestAsync()
+    {
+        if (HttpMethods.IsPost(_context.Request.Method))
+        {
+            return Task.FromResult(TrySetFormHandler());
+        }
+
+        return Task.FromResult(true);
+    }
+
+    private bool TrySetFormHandler()
+    {
+        var handler = _context.Request.Path.Value;
+        if (_context.Request.Query.TryGetValue("handler", out var value))
+        {
+            if (value.Count != 1)
+            {
+                _context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return false;
+            }
+            else
+            {
+                handler = value[0];
+            }
+        }
+
+        _renderer.SetFormHandlerName(handler!);
+        return true;
     }
 
     private static TextWriter CreateResponseWriter(Stream bodyStream)

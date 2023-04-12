@@ -31,6 +31,8 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
 
+    private string? _formHandler;
+
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
     // the subset of those that are from the non-streaming subtrees, since we want the response to
@@ -59,6 +61,11 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+    }
+
+    internal void SetFormHandlerName(string name)
+    {
+        _formHandler = name;
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
