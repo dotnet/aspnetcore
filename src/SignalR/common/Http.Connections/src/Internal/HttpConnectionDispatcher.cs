@@ -190,7 +190,6 @@ internal sealed partial class HttpConnectionDispatcher
             var transport = HttpTransportType.LongPolling;
             if (context.WebSockets.IsWebSocketRequest)
             {
-
                 transport = HttpTransportType.WebSockets;
             }
             else
@@ -221,10 +220,13 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await connection.CancelPreviousPoll(context))
+            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseAcks)
             {
-                // Connection closed. It's already set the response status code.
-                return;
+                if (!await connection.CancelPreviousPoll(context))
+                {
+                    // Connection closed. It's already set the response status code.
+                    return;
+                }
             }
 
             // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
@@ -236,7 +238,10 @@ internal sealed partial class HttpConnectionDispatcher
                     break;
                 case HttpTransportType.WebSockets:
                     var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
-                    connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger);
+                    if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
+                    {
+                        return;
+                    }
                     break;
                 case HttpTransportType.LongPolling:
                     if (!connection.TryActivateLongPollingConnection(
@@ -299,10 +304,11 @@ internal sealed partial class HttpConnectionDispatcher
                 }
                 else
                 {
-                    Console.WriteLine("waiting transporttask");
+                    // If false then the transport was ungracefully closed, this can mean a temporary network disconnection
+                    // We'll mark the connection as inactive and allow the connection to reconnect if that's the case.
+                    // TODO: If acks aren't enabled we can close the connection immediately
                     if (await connection.TransportTask!)
                     {
-                        Console.WriteLine("disposing");
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
                     }
                     else

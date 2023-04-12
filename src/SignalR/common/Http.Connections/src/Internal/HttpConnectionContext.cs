@@ -46,6 +46,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
     private long _startedSendTime;
+    private readonly bool _useAcks;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -57,7 +58,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
-    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
+    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useAcks)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
@@ -95,7 +97,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         _connectionCloseRequested = new CancellationTokenSource();
         ConnectionClosedRequested = _connectionCloseRequested.Token;
         AuthenticationExpiration = DateTimeOffset.MaxValue;
+        _useAcks = useAcks;
     }
+
+    public bool UseAcks => _useAcks;
 
     public CancellationTokenSource? Cancellation { get; set; }
 
@@ -527,6 +532,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             // Cancel the previous request
             cts?.Cancel();
+
+            // TODO: remove transport check once other transports support acks
+            if (UseAcks && TransportType == HttpTransportType.WebSockets)
+            {
+                Application.Input.CancelPendingRead();
+            }
 
             try
             {

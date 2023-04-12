@@ -453,7 +453,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             {
                 uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
             }
-            uri = Utils.AppendQueryString(uri, "useAck=true");
+
+            if (_httpConnectionOptions.UseAcks)
+            {
+                uri = Utils.AppendQueryString(uri, "useAck=true");
+            }
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {

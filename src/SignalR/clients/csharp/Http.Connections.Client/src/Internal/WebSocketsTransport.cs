@@ -314,9 +314,9 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // write nothing so just the ackid gets sent to server
                 // server will then send everything client may have missed as well as the last ackid so the client can resend
                 var buf = new byte[AckPipeWriter.FrameSize];
-                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_transport.Output)).lastAck);
+                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_transport.Output)).LastAck);
                 await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameSize), _webSocketMessageType, true, default).ConfigureAwait(false);
-                _logger.LogInformation("send resend {lastAck}", ((AckPipeWriter)(_transport.Output)).lastAck);
+                _logger.LogInformation("send resend {lastAck}", ((AckPipeWriter)(_transport.Output)).LastAck);
                 // set after first send to server
                 reader.Resend();
                 // once we've received something from the server (which will contain the ack id for the client)
@@ -330,7 +330,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 _application.Output.Advance(receiveResult.Count);
                 // server sends 0 length, but with latest ack, so there shouldn't be more than a frame of data sent
                 Debug.Assert(receiveResult.Count == AckPipeWriter.FrameSize);
-                LogBytes(memory.Slice(0, receiveResult.Count), _logger);
+                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
                 // Parsing ack id and updating reader here avoids issue where we send to server before receive loop runs, which is what normally updates ack
                 // This avoids resending data that was already acked
                 var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(memory), reader);
@@ -494,7 +494,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
-                LogBytes(memory.Slice(0, receiveResult.Count), _logger);
+                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
                 void LogBytes(Memory<byte> memory, ILogger logger)
                 {
                     var sb = new StringBuilder();
@@ -557,6 +557,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         try
         {
+            // TODO: only for acks
             var ignoreFirstCanceled = true;
             _logger.LogInformation("send started");
             while (true)
@@ -564,7 +565,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 var result = await _application.Input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
 
-                LogBytes(buffer.ToArray(), _logger);
+                //LogBytes(buffer.ToArray(), _logger);
                 void LogBytes(Memory<byte> memory, ILogger logger)
                 {
                     var sb = new StringBuilder();

@@ -93,13 +93,13 @@ internal sealed partial class HttpConnectionManager
         _metrics.ConnectionStart(metricsContext);
 
         var pair = DuplexPipe.CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useAck);
 
         _connections.TryAdd(connectionToken, (connection, startTimestamp));
 
         return connection;
 
-        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+        static DuplexPipePair CreateAckConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
         {
             var input = new Pipe(inputOptions);
             var output = new Pipe(outputOptions);
