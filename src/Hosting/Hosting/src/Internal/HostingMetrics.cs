@@ -40,7 +40,7 @@ internal sealed class HostingMetrics : IDisposable
         _currentRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? routePattern, int statusCode, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? route, int statusCode, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeRequestTags(ref tags, isHttps, scheme, method, host);
@@ -57,9 +57,9 @@ internal sealed class HostingMetrics : IDisposable
 
             // Add information gathered during request.
             tags.Add("status-code", GetBoxedStatusCode(statusCode));
-            if (routePattern != null)
+            if (route != null)
             {
-                tags.Add("route", routePattern);
+                tags.Add("route", route);
             }
             // This exception is only present if there is an unhandled exception.
             // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add exception-name to custom tags.
