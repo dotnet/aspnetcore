@@ -25,7 +25,7 @@ internal sealed class Heartbeat : IDisposable
         _debugger = debugger;
         _trace = trace;
         _interval = interval;
-        // Wait time is long so don't try to spin to exit early. Would just wait CPU time.
+        // Wait time is long, so don't try to spin to exit early. Spinning would waste CPU time.
         _stopEvent = new ManualResetEventSlim(false, spinCount: 0);
         _timerThread = new Thread(state => ((Heartbeat)state!).TimerLoop())
         {
