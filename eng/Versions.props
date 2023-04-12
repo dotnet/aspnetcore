@@ -68,7 +68,7 @@
     <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>6.0.17</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
     <MicrosoftNETRuntimeWebAssemblySdkVersion>6.0.17</MicrosoftNETRuntimeWebAssemblySdkVersion>
     <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.17</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.17-servicing.23207.6</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.17-servicing.23212.6</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>6.0.1</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0</MicrosoftExtensionsConfigurationAbstractionsVersion>
@@ -91,7 +91,7 @@
     <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHostingVersion>6.0.1</MicrosoftExtensionsHostingVersion>
     <MicrosoftExtensionsHttpVersion>6.0.0</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.3</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.4</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0</MicrosoftExtensionsLoggingConfigurationVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>6.0.0</MicrosoftExtensionsLoggingConsoleVersion>
     <MicrosoftExtensionsLoggingDebugVersion>6.0.0</MicrosoftExtensionsLoggingDebugVersion>
@@ -103,10 +103,10 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>6.0.0</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.17-servicing.23207.6</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.17-servicing.23212.6</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.1</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0</SystemDiagnosticsEventLogVersion>
-    <SystemDirectoryServicesProtocolsVersion>6.0.1</SystemDirectoryServicesProtocolsVersion>
+    <SystemDirectoryServicesProtocolsVersion>6.0.2</SystemDirectoryServicesProtocolsVersion>
     <SystemIOPipelinesVersion>6.0.3</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>6.0.1</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>6.0.1</SystemNetHttpWinHttpHandlerVersion>
@@ -117,7 +117,7 @@
     <SystemSecurityCryptographyXmlVersion>6.0.1</SystemSecurityCryptographyXmlVersion>
     <SystemServiceProcessServiceControllerVersion>6.0.0</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>6.0.0</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>6.0.7</SystemTextJsonVersion>
+    <SystemTextJsonVersion>6.0.8</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>6.0.0</SystemThreadingChannelsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.9</MicrosoftNETCorePlatformsVersion>
