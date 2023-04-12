@@ -21,7 +21,7 @@ public static class IdentityServiceCollectionExtensions
     /// <typeparam name="TRole">The type representing a Role in the system.</typeparam>
     /// <param name="services">The services available in the application.</param>
     /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
-    [RequiresUnreferencedCode("Server-side Blazor does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Identity middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IdentityBuilder AddIdentity<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>(
         this IServiceCollection services)
         where TUser : class
@@ -36,7 +36,7 @@ public static class IdentityServiceCollectionExtensions
     /// <param name="services">The services available in the application.</param>
     /// <param name="setupAction">An action to configure the <see cref="IdentityOptions"/>.</param>
     /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
-    [RequiresUnreferencedCode("Server-side Blazor does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Identity middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IdentityBuilder AddIdentity<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>(
         this IServiceCollection services,
         Action<IdentityOptions> setupAction)
