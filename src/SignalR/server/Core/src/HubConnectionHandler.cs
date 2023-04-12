@@ -252,7 +252,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         {
             var result = await input.ReadAsync();
             var buffer = result.Buffer;
-            LogBytes(buffer.ToArray(), _logger);
+            //LogBytes(buffer.ToArray(), _logger);
 
             void LogBytes(Memory<byte> memory, ILogger logger)
             {

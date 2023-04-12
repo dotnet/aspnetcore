@@ -275,6 +275,11 @@ public class HttpConnectionOptions
         }
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public bool UseAcks { get; set; }
+
     private static void ThrowIfUnsupportedPlatform()
     {
         if (OperatingSystem.IsBrowser())

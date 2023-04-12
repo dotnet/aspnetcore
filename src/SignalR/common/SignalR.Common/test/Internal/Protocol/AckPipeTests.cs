@@ -582,7 +582,7 @@ public class AckPipeTests
         res = await duplexPipe.Application.Input.ReadAsync();
 
         Assert.Equal(0, res.Buffer.Length);
-        Assert.False(res.IsCanceled);
+        Assert.True(res.IsCanceled);
         Assert.False(res.IsCompleted);
         duplexPipe.Application.Input.AdvanceTo(res.Buffer.End);
 
@@ -594,7 +594,7 @@ public class AckPipeTests
         Assert.Equal(FrameSize + 2, res.Buffer.Length);
         var (len, ackId) = ReadFrame(res.Buffer.ToArray());
         Assert.Equal(2, len);
-        Assert.Equal(FrameSize, ackId);
+        Assert.Equal(0, ackId);
         Assert.False(res.IsCanceled);
         Assert.False(res.IsCompleted);
     }
@@ -657,7 +657,8 @@ public class AckPipeTests
         await duplexPipe.Application.Output.WriteAsync(buffer);
 
         // Updates ack from App.Output in App.Input
-        _ = await duplexPipe.Transport.Input.ReadAsync();
+        res = await duplexPipe.Transport.Input.ReadAsync();
+        duplexPipe.Transport.Input.AdvanceTo(res.Buffer.End);
 
         var reader = (AckPipeReader)duplexPipe.Application.Input;
         reader.Resend();
@@ -665,7 +666,7 @@ public class AckPipeTests
         res = await duplexPipe.Application.Input.ReadAsync();
 
         Assert.Equal(5, res.Buffer.Length);
-        Assert.False(res.IsCanceled);
+        Assert.True(res.IsCanceled);
         Assert.False(res.IsCompleted);
         Assert.Equal(new byte[] { 3, 4, 5, 6, 7 }, res.Buffer.ToArray());
 
@@ -679,7 +680,7 @@ public class AckPipeTests
         Assert.Equal(FrameSize + 2, res.Buffer.Length);
         var (len, ackId) = ReadFrame(res.Buffer.ToArray());
         Assert.Equal(2, len);
-        Assert.Equal(FrameSize, ackId);
+        Assert.Equal(0, ackId);
         Assert.Equal(new byte[] { 9, 7 }, res.Buffer.ToArray().AsSpan(FrameSize, 2).ToArray());
         Assert.False(res.IsCanceled);
         Assert.False(res.IsCompleted);

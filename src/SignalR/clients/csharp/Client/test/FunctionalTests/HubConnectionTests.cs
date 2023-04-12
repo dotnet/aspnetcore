@@ -2546,17 +2546,12 @@ public class HubConnectionTests : FunctionalTestBase
     {
         var protocol = HubProtocols["json"];
         await using (var server = await StartServer<Startup>())
-        //await using (var proxyServer = await StartServer<ProxyStartup>())
         {
-            //using var httpClient = new HttpClient();
-            //await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, proxyServer.Url + $"/server?url={server.Url}"));
-
             var websocket = new ClientWebSocket();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             tcs.SetResult();
 
             const string originalMessage = "SignalR";
-            //var connection = CreateHubConnection(proxyServer.Url, "/default", HttpTransportType.WebSockets, protocol, LoggerFactory);
             var connectionBuilder = new HubConnectionBuilder()
                 .WithLoggerFactory(LoggerFactory)
                 .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
@@ -2568,14 +2563,86 @@ public class HubConnectionTests : FunctionalTestBase
                         tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                         return websocket;
                     };
+                    o.UseAcks = true;
                 });
             connectionBuilder.Services.AddSingleton(protocol);
             var connection = connectionBuilder.Build();
-            connection.ServerTimeout = TimeSpan.FromMinutes(2);
 
             try
             {
                 await connection.StartAsync().DefaultTimeout();
+                var originalConnectionId = connection.ConnectionId;
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                Assert.Equal(originalMessage, result);
+
+                var originalWebsocket = websocket;
+                websocket = new ClientWebSocket();
+                originalWebsocket.Dispose();
+
+                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                tcs.SetResult();
+                result = await resultTask;
+
+                Assert.Equal(originalMessage, result);
+                Assert.Equal(originalConnectionId, connection.ConnectionId);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    //[Theory]
+    //[MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+    [Repeat(500)]
+    public async Task CanReconnectAndSendMessageOnceConnected(/*string protocolName, HttpTransportType transportType, string path*/)
+    {
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>())
+        {
+            var websocket = new ClientWebSocket();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            const string originalMessage = "SignalR";
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.WebSocketFactory = async (context, token) =>
+                    {
+                        await websocket.ConnectAsync(context.Uri, token);
+                        tcs.SetResult();
+                        return websocket;
+                    };
+                    o.UseAcks = true;
+                })
+                .WithAutomaticReconnect();
+            connectionBuilder.Services.AddSingleton(protocol);
+            var connection = connectionBuilder.Build();
+
+            var reconnectCalled = false;
+            connection.Reconnecting += ex =>
+            {
+                reconnectCalled = true;
+                return Task.CompletedTask;
+            };
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+                await tcs.Task;
+                tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var originalConnectionId = connection.ConnectionId;
 
                 var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
 
@@ -2584,15 +2651,69 @@ public class HubConnectionTests : FunctionalTestBase
                 var originalWebsocket = websocket;
                 websocket = new ClientWebSocket();
 
-                //var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
-                //await Task.Delay(1);
                 originalWebsocket.Dispose();
-                //await Task.Delay(1000);
-                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
-                tcs.SetResult();
-                result = await resultTask;
+
+                await tcs.Task.DefaultTimeout();
+                result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
 
                 Assert.Equal(originalMessage, result);
+                Assert.Equal(originalConnectionId, connection.ConnectionId);
+                Assert.False(reconnectCalled);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    //[Theory]
+    //[MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+    [Repeat(500)]
+    public async Task ServerAbortsConnectionNoReconnectAttempted(/*string protocolName, HttpTransportType transportType, string path*/)
+    {
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>())
+        {
+            var connectCount = 0;
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.WebSocketFactory = async (context, token) =>
+                    {
+                        connectCount++;
+                        var ws = new ClientWebSocket();
+                        await ws.ConnectAsync(context.Uri, token);
+                        return ws;
+                    };
+                    o.UseAcks = true;
+                });
+            connectionBuilder.Services.AddSingleton(protocol);
+            var connection = connectionBuilder.Build();
+
+            var closedTcs = new TaskCompletionSource<Exception?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.Closed += ex =>
+            {
+                closedTcs.SetResult(ex);
+                return Task.CompletedTask;
+            };
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+
+                await connection.SendAsync(nameof(TestHub.Abort)).DefaultTimeout();
+
+                Assert.Null(await closedTcs.Task.DefaultTimeout());
+                Assert.Equal(HubConnectionState.Disconnected, connection.State);
+                Assert.Equal(1, connectCount);
             }
             catch (Exception ex)
             {

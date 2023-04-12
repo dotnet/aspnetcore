@@ -89,7 +89,7 @@ internal class ParseAckPipeReader : PipeReader
             ReadOnlySequence<byte> buffer = res.Buffer;
             if (_remaining == 0)
             {
-                // TODO: didn't get 16 bytes
+                // TODO: didn't get 24 bytes
                 var frame = buffer.Slice(0, FrameSize);
                 var len = ParseFrame(in frame, _ackPipeReader);
                 _totalBytes += len;
@@ -112,7 +112,7 @@ internal class ParseAckPipeReader : PipeReader
                 _currentRead = buffer;
                 // 0 length means it was part of the reconnect handshake and not sent over the pipe, ignore it for acking purposes
                 // TODO: check if 0 byte writes are possible in ConnectionHandlers and possibly handle them differently
-                _ackPipeWriter.lastAck += buffer.Length == 0 ? 0 : buffer.Length + FrameSize;
+                _ackPipeWriter.LastAck += buffer.Length == 0 ? 0 : buffer.Length + FrameSize;
             }
             else
             {
@@ -121,10 +121,9 @@ internal class ParseAckPipeReader : PipeReader
                 // We'll need to start buffering to parse multiple frames of data
                 if (_remaining <= _currentRead.Length && buffer.Length > _remaining)
                 {
-                    // TODO
-                    Console.WriteLine("multi frame");
+                    // TODO: multi-frame support
                 }
-                _ackPipeWriter.lastAck += Math.Min(_remaining, newBytes);
+                _ackPipeWriter.LastAck += Math.Min(_remaining, newBytes);
                 _currentRead = buffer;
                 buffer = buffer.Slice(0, Math.Min(_remaining, buffer.Length));
             }
