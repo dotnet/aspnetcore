@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -28,19 +29,19 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task Http1Connection()
     {
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sync = new SyncPoint();
 
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
         listenOptions.Use(next =>
         {
-            return connectionContext =>
+            return async connectionContext =>
             {
                 connectionContext.Features.Get<IConnectionMetricsTagsFeature>().Tags.Add(new KeyValuePair<string, object>("custom", "value!"));
 
-                // Server signals has has started connection.
-                tcs.TrySetResult();
+                // Wait for the test to verify the connection has started.
+                await sync.WaitToContinue();
 
-                return next(connectionContext);
+                await next(connectionContext);
             };
         });
 
@@ -60,10 +61,13 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             await connection.Send(sendString);
 
             // Wait for connection to start on the server.
-            await tcs.Task;
+            await sync.WaitForSyncPoint();
 
             Assert.Empty(connectionDuration.GetMeasurements());
             Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"));
+
+            // Signal that connection can continue.
+            sync.Continue();
 
             await connection.ReceiveEnd(
                 "HTTP/1.1 200 OK",
@@ -87,15 +91,15 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task Http1Connection_Error()
     {
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sync = new SyncPoint();
 
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
         listenOptions.Use(next =>
         {
-            return connectionContext =>
+            return async connectionContext =>
             {
-                // Server signals has has started connection.
-                tcs.TrySetResult();
+                // Wait for the test to verify the connection has started.
+                await sync.WaitToContinue();
 
                 throw new InvalidOperationException("Test");
             };
@@ -117,10 +121,13 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             await connection.Send(sendString);
 
             // Wait for connection to start on the server.
-            await tcs.Task;
+            await sync.WaitForSyncPoint();
 
             Assert.Empty(connectionDuration.GetMeasurements());
             Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"));
+
+            // Signal that connection can continue.
+            sync.Continue();
 
             await connection.ReceiveEnd("");
 
