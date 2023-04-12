@@ -76,7 +76,8 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
         return new EncryptedXmlInfo(encryptedElement, typeof(EncryptedXmlDecryptor));
     }
 
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Calls System.Security.Cryptography.Xml.EncryptedXml.EncryptedXml(XmlDocument)")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "Only XSLTs require dynamic code. The usage of EncryptedXml doesn't use XSLTs.")]
     private XElement EncryptElement(XElement plaintextElement)
     {
         // EncryptedXml works with XmlDocument, not XLinq. When we perform the conversion

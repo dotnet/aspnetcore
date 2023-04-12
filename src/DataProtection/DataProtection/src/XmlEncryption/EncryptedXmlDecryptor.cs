@@ -44,6 +44,8 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// </summary>
     /// <param name="encryptedElement">An encrypted XML element.</param>
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "Only XSLTs require dynamic code. The usage of EncryptedXml doesn't use XSLTs.")]
     public XElement Decrypt(XElement encryptedElement)
     {
         ArgumentNullThrowHelper.ThrowIfNull(encryptedElement);
@@ -80,7 +82,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     {
         private readonly XmlKeyDecryptionOptions? _options;
 
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Calls System.Security.Cryptography.Xml.EncryptedXml.EncryptedXml(XmlDocument)")]
+        [RequiresDynamicCode("XmlDsigXsltTransform uses XslCompiledTransform which requires dynamic code.")]
         public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions? options, XmlDocument document)
             : base(document)
         {
