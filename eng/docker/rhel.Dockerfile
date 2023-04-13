@@ -7,10 +7,8 @@ RUN tdnf update -y && \
         ca-certificates \
         icu \
         awk \
-        # Provides useradd, needed by Azure DevOps
+        # Provides useradd, needed below
         shadow-utils \
-        # Provides su, needed by Azure DevOps
-        util-linux \
         rpm-build
 
 # Setup User to match Host User, and give superuser permissions
