@@ -3,14 +3,16 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
 /// Default implementation for <see cref="IApplicationBuilder"/>.
 /// </summary>
-public class ApplicationBuilder : IApplicationBuilder
+public partial class ApplicationBuilder : IApplicationBuilder
 {
     private const string ServerFeaturesKey = "server.Features";
     private const string ApplicationServicesKey = "application.Services";
@@ -117,8 +119,22 @@ public class ApplicationBuilder : IApplicationBuilder
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
     public RequestDelegate Build()
     {
+        var loggerFactory = ApplicationServices?.GetService<ILoggerFactory>();
+        var logger = loggerFactory?.CreateLogger<ApplicationBuilder>();
+
         RequestDelegate app = context =>
         {
+            if (logger != null && logger.IsEnabled(LogLevel.Information))
+            {
+                Log.RequestPipelineEnd(logger,
+                    context.Request.Protocol,
+                    context.Request.Method,
+                    context.Request.Scheme,
+                    context.Request.Host.Value,
+                    context.Request.PathBase.Value,
+                    context.Request.Path.Value);
+            }
+
             // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
             // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
             var endpoint = context.GetEndpoint();
@@ -148,5 +164,13 @@ public class ApplicationBuilder : IApplicationBuilder
         }
 
         return app;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information,
+            "Request reach the end of the middleware pipeline {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path}",
+            SkipEnabledCheck = true)]
+        public static partial void RequestPipelineEnd(ILogger logger, string protocol, string method, string scheme, string host, string? pathBase, string? path);
     }
 }
