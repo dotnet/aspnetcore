@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
@@ -43,6 +44,8 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// </summary>
     /// <param name="encryptedElement">An encrypted XML element.</param>
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "Only XSLTs require dynamic code. The usage of EncryptedXml doesn't use XSLTs.")]
     public XElement Decrypt(XElement encryptedElement)
     {
         ArgumentNullThrowHelper.ThrowIfNull(encryptedElement);
@@ -79,6 +82,7 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     {
         private readonly XmlKeyDecryptionOptions? _options;
 
+        [RequiresDynamicCode("XmlDsigXsltTransform uses XslCompiledTransform which requires dynamic code.")]
         public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions? options, XmlDocument document)
             : base(document)
         {
