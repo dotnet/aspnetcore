@@ -77,35 +77,36 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
         CertificateConfig? defaultCertificateConfig,
         ConfigurationReader configurationReader)
     {
-        EnsureInitialized();
+        EnsureInitialized(CoreStrings.NeedHttpsConfigurationToApplyHttpsConfiguration);
         _tlsConfigurationLoader.ApplyHttpsConfiguration(httpsOptions, endpoint, serverOptions, defaultCertificateConfig, configurationReader);
     }
 
     /// <inheritdoc/>
     public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
     {
-        EnsureInitialized();
+        // This doesn't get a distinct string since it won't actually throw - it's always called after ApplyHttpsConfiguration
+        EnsureInitialized(CoreStrings.NeedHttpsConfigurationToApplyHttpsConfiguration);
         return _tlsConfigurationLoader.UseHttpsWithSni(listenOptions, httpsOptions, endpoint);
     }
 
     /// <inheritdoc/>
     public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader)
     {
-        EnsureInitialized();
+        EnsureInitialized(CoreStrings.NeedHttpsConfigurationToLoadDefaultCertificate);
         return _tlsConfigurationLoader.LoadDefaultCertificate(configurationReader);
     }
 
     /// <inheritdoc/>
     public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
     {
-        EnsureInitialized();
+        EnsureInitialized(CoreStrings.NeedHttpsConfigurationToUseHttp3);
         _populateMultiplexedTransportFeatures.Invoke(features, listenOptions);
     }
 
     /// <inheritdoc/>
     public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions)
     {
-        EnsureInitialized();
+        EnsureInitialized(CoreStrings.NeedHttpsConfigurationToBindHttpsAddresses);
         return _useHttpsWithDefaults.Invoke(listenOptions);
     }
 
@@ -114,7 +115,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
     /// </summary>
     /// <exception cref="InvalidOperationException">If initialization is not possible.</exception>
     [MemberNotNull(nameof(_useHttpsWithDefaults), nameof(_tlsConfigurationLoader), nameof(_populateMultiplexedTransportFeatures))]
-    private void EnsureInitialized()
+    private void EnsureInitialized(string uninitializedError)
     {
         if (!_isInitialized)
         {
@@ -124,7 +125,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
             }
             else
             {
-                throw new InvalidOperationException(CoreStrings.NeedHttpsConfiguration);
+                throw new InvalidOperationException(uninitializedError);
             }
         }
 
