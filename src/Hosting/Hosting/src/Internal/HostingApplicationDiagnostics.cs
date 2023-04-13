@@ -55,14 +55,14 @@ internal sealed class HostingApplicationDiagnostics
         if (_eventSource.IsEnabled() || _metrics.IsEnabled())
         {
             context.EventLogOrMetricsEnabled = true;
-            if (httpContext.Features.Get<IHttpMetricsTagsFeature>() is HttpMetricsTagsFeature feature)
+            if (httpContext.Features.Get<IHttpMetricsTagsFeature>() is IHttpMetricsTagsFeature feature)
             {
                 context.MetricsTagsFeature = feature;
             }
             else
             {
                 context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
-                httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
+                httpContext.Features.Set(context.MetricsTagsFeature);
             }
 
             startTimestamp = Stopwatch.GetTimestamp();
@@ -146,7 +146,7 @@ internal sealed class HostingApplicationDiagnostics
             if (context.EventLogOrMetricsEnabled)
             {
                 var route = httpContext.GetEndpoint()?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-                var customTags = context.MetricsTagsFeature?.TagsList;
+                var customTags = context.MetricsTagsFeature?.Tags;
 
                 _metrics.RequestEnd(
                     httpContext.Request.Protocol,

@@ -7,7 +7,5 @@ namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class HttpMetricsTagsFeature : IHttpMetricsTagsFeature
 {
-    public ICollection<KeyValuePair<string, object?>> Tags => TagsList;
-
-    public List<KeyValuePair<string, object?>> TagsList { get; } = new List<KeyValuePair<string, object?>>();
+    public ICollection<KeyValuePair<string, object?>> Tags { get; } = new List<KeyValuePair<string, object?>>();
 }

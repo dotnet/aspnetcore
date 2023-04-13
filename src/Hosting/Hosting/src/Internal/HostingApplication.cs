@@ -129,7 +129,10 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
             {
                 if (HttpActivityFeature is null)
                 {
-                    HttpActivityFeature = new ActivityFeature(value!);
+                    if (value != null)
+                    {
+                        HttpActivityFeature = new ActivityFeature(value);
+                    }
                 }
                 else
                 {
@@ -144,7 +147,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         public bool EventLogOrMetricsEnabled { get; set; }
 
         internal IHttpActivityFeature? HttpActivityFeature;
-        internal HttpMetricsTagsFeature? MetricsTagsFeature;
+        internal IHttpMetricsTagsFeature? MetricsTagsFeature;
 
         public void Reset()
         {

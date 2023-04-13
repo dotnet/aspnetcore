@@ -40,15 +40,22 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
         var connectionContext = _transportConnection;
         var metricsConnectionDurationEnabled = _serviceContext.Metrics.IsConnectionDurationEnabled();
         var startTimestamp = 0L;
-        ConnectionMetricsTagsFeature? metricsTagsFeature = null;
+        IConnectionMetricsTagsFeature? metricsTagsFeature = null;
         Exception? unhandledException = null;
 
         if (metricsConnectionDurationEnabled)
         {
-            startTimestamp = Stopwatch.GetTimestamp();
+            if (connectionContext.Features.Get<IConnectionMetricsTagsFeature>() is IConnectionMetricsTagsFeature feature)
+            {
+                metricsTagsFeature = feature;
+            }
+            else
+            {
+                metricsTagsFeature = new ConnectionMetricsTagsFeature();
+                connectionContext.Features.Set(metricsTagsFeature);
+            }
 
-            metricsTagsFeature = new ConnectionMetricsTagsFeature();
-            connectionContext.Features.Set<IConnectionMetricsTagsFeature>(metricsTagsFeature);
+            startTimestamp = Stopwatch.GetTimestamp();
         }
 
         try
@@ -85,7 +92,7 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
 
             Logger.ConnectionStop(connectionContext.ConnectionId);
             KestrelEventSource.Log.ConnectionStop(connectionContext);
-            _serviceContext.Metrics.ConnectionStop(connectionContext, unhandledException, metricsTagsFeature?.TagsList, startTimestamp, currentTimestamp);
+            _serviceContext.Metrics.ConnectionStop(connectionContext, unhandledException, metricsTagsFeature?.Tags, startTimestamp, currentTimestamp);
 
             // Dispose the transport connection, this needs to happen before removing it from the
             // connection manager so that we only signal completion of this connection after the transport
@@ -98,7 +105,6 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
 
     private sealed class ConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
     {
-        public ICollection<KeyValuePair<string, object?>> Tags => TagsList;
-        public List<KeyValuePair<string, object?>> TagsList { get; } = new List<KeyValuePair<string, object?>>();
+        public ICollection<KeyValuePair<string, object?>> Tags { get; } = new List<KeyValuePair<string, object?>>();
     }
 }

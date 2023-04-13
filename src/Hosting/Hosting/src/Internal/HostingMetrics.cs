@@ -40,7 +40,7 @@ internal sealed class HostingMetrics : IDisposable
         _currentRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? route, int statusCode, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? route, int statusCode, Exception? exception, ICollection<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeRequestTags(ref tags, isHttps, scheme, method, host);
@@ -69,14 +69,30 @@ internal sealed class HostingMetrics : IDisposable
             }
             if (customTags != null)
             {
-                for (var i = 0; i < customTags.Count; i++)
-                {
-                    tags.Add(customTags[i]);
-                }
+                AddCustomTags(ref tags, customTags);
             }
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
             _requestDuration.Record(duration.TotalSeconds, tags);
+        }
+    }
+
+    private static void AddCustomTags(ref TagList tags, ICollection<KeyValuePair<string, object?>> customTags)
+    {
+        // Skip allocating enumerator if tags collection is a list.
+        if (customTags is List<KeyValuePair<string, object?>> list)
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                tags.Add(list[i]);
+            }
+        }
+        else
+        {
+            foreach (var tag in customTags)
+            {
+                tags.Add(tag);
+            }
         }
     }
 

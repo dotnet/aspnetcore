@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Hosting.Fakes;
@@ -109,6 +110,46 @@ public class HostingApplicationTests
     }
 
     [Fact]
+    public void MetricsFeatureUsedFromFeatureCollection()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+        var meter = meterFactory.Meters.Single();
+
+        using var requestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, HostingMetrics.MeterName, "request-duration");
+        using var currentRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, HostingMetrics.MeterName, "current-requests");
+
+        // Act/Assert
+        Assert.Equal(HostingMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        var feature = new TestHttpMetricsTagsFeature();
+        feature.Tags.Add(new KeyValuePair<string, object>("test", "Value!"));
+        httpContext.Features.Set<IHttpMetricsTagsFeature>(feature);
+        var context1 = hostingApplication.CreateContext(httpContext.Features);
+        context1.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+        hostingApplication.DisposeContext(context1, null);
+
+        Assert.Collection(currentRequestsRecorder.GetMeasurements(),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value));
+        Assert.Collection(requestDurationRecorder.GetMeasurements(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal("Value!", (string)m.Tags.ToArray().Single(t => t.Key == "test").Value);
+            });
+    }
+
+    private class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new Collection<KeyValuePair<string, object>>();
+    }
+
+    [Fact]
     public void DisposeContextDoesNotClearHttpContextIfDefaultHttpContextFactoryUsed()
     {
         // Arrange
@@ -204,7 +245,9 @@ public class HostingApplicationTests
         var initialActivity = Activity.Current;
 
         // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
+        using var dummyActivity = dummySource.StartActivity("DummyActivity");
+        Assert.NotNull(dummyActivity);
+        Assert.Equal(Activity.Current, dummyActivity);
 
         Assert.Same(initialActivity, activityFeature.Activity);
         Assert.Null(activityFeature.Activity.ParentId);
@@ -247,7 +290,9 @@ public class HostingApplicationTests
         var initialActivity = Activity.Current;
 
         // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
+        using var dummyActivity = dummySource.StartActivity("DummyActivity");
+        Assert.NotNull(dummyActivity);
+        Assert.Equal(Activity.Current, dummyActivity);
 
         Assert.Same(initialActivity, activityFeature.Activity);
         Assert.Null(activityFeature.Activity.ParentId);
