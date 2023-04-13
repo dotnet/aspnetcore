@@ -116,26 +116,6 @@ public static class WebHostBuilderKestrelExtensions
     }
 
     /// <summary>
-    /// Specify Kestrel as the server to be used by the web host.
-    /// Includes less automatic functionality than <see cref="UseKestrel(IWebHostBuilder, Action{KestrelServerOptions})"/> to make trimming more effective
-    /// (e.g. for Native AOT scenarios).  If the host ends up depending on some of the absent functionality, a best-effort
-    /// attempt will be made to enable it on-demand.  Failing that, an instructive error will be reported.
-    /// </summary>
-    /// <param name="hostBuilder">
-    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
-    /// </param>
-    /// <param name="options">
-    /// A callback to configure Kestrel options.
-    /// </param>
-    /// <returns>
-    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
-    /// </returns>
-    public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder, Action<KestrelServerOptions> options)
-    {
-        return hostBuilder.UseKestrelCore().ConfigureKestrel(options);
-    }
-
-    /// <summary>
     /// Configures Kestrel options but does not register an IServer. See <see cref="UseKestrel(IWebHostBuilder)"/>.
     /// </summary>
     /// <param name="hostBuilder">
@@ -169,24 +149,6 @@ public static class WebHostBuilderKestrelExtensions
     public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
     {
         return hostBuilder.UseKestrel().ConfigureKestrel(configureOptions);
-    }
-
-    /// <summary>
-    /// Specify Kestrel as the server to be used by the web host.
-    /// Includes less automatic functionality than <see cref="UseKestrel(IWebHostBuilder, Action{WebHostBuilderContext, KestrelServerOptions})"/> to make trimming more effective
-    /// (e.g. for Native AOT scenarios).  If the host ends up depending on some of the absent functionality, a best-effort
-    /// attempt will be made to enable it on-demand.  Failing that, an instructive error will be reported.
-    /// </summary>
-    /// <param name="hostBuilder">
-    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
-    /// </param>
-    /// <param name="configureOptions">A callback to configure Kestrel options.</param>
-    /// <returns>
-    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
-    /// </returns>
-    public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
-    {
-        return hostBuilder.UseKestrelCore().ConfigureKestrel(configureOptions);
     }
 
     /// <summary>

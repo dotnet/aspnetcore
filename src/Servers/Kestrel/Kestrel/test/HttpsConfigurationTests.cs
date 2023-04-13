@@ -22,7 +22,8 @@ public class HttpsConfigurationTests
     public async Task BindAddressFromSetting(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore(serverOptions =>
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
                 {
                     serverOptions.TestOverrideDefaultCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
                 })
@@ -80,7 +81,8 @@ public class HttpsConfigurationTests
     public async Task BindAddressFromEndpoint(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore(serverOptions =>
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
                 {
                     var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                     {
@@ -117,7 +119,8 @@ public class HttpsConfigurationTests
     public async Task LoadDefaultCertificate(bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore(serverOptions =>
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
                 {
                     var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                     {
@@ -148,7 +151,8 @@ public class HttpsConfigurationTests
     public async Task LoadEndpointCertificate(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore(serverOptions =>
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
                 {
                     var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                     {
@@ -183,7 +187,8 @@ public class HttpsConfigurationTests
     public async Task UseHttpsJustWorks()
     {
         var hostBuilder = new WebHostBuilder()
-            .UseKestrelCore(serverOptions =>
+            .UseKestrelCore()
+            .ConfigureKestrel(serverOptions =>
             {
                 serverOptions.TestOverrideDefaultCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
 
@@ -207,7 +212,8 @@ public class HttpsConfigurationTests
     public async Task UseHttpsMayNotImplyUseKestrelHttpsConfiguration()
     {
         var hostBuilder = new WebHostBuilder()
-            .UseKestrelCore(serverOptions =>
+            .UseKestrelCore()
+            .ConfigureKestrel(serverOptions =>
             {
                 serverOptions.ListenAnyIP(0, listenOptions =>
                 {

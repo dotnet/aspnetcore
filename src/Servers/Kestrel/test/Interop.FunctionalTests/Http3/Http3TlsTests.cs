@@ -342,7 +342,8 @@ public class Http3TlsTests : LoggedTest
     public async Task UseKestrelCore_CodeBased(bool useQuic, bool useHttps, bool useHttpsEnablesHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore(serverOptions =>
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
                 {
                     serverOptions.ListenAnyIP(0, listenOptions =>
                     {
@@ -396,7 +397,8 @@ public class Http3TlsTests : LoggedTest
     public void UseKestrelCore_ConfigurationBased(bool useQuic)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore(serverOptions =>
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
                 {
                     var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                     {
