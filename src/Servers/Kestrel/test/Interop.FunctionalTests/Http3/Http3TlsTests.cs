@@ -339,10 +339,10 @@ public class Http3TlsTests : LoggedTest
     [InlineData(false, true, true)]
     [InlineData(false, true, false)]
     [InlineData(false, false, false)]
-    public async Task UseKestrelSlim_CodeBased(bool useQuic, bool useHttps, bool useHttpsEnablesHttpsConfiguration)
+    public async Task UseKestrelCore_CodeBased(bool useQuic, bool useHttps, bool useHttpsEnablesHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelSlim(serverOptions =>
+                .UseKestrelCore(serverOptions =>
                 {
                     serverOptions.ListenAnyIP(0, listenOptions =>
                     {
@@ -393,10 +393,10 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     [InlineData(true)]
     [InlineData(false)]
-    public void UseKestrelSlim_ConfigurationBased(bool useQuic)
+    public void UseKestrelCore_ConfigurationBased(bool useQuic)
     {
         var hostBuilder = new WebHostBuilder()
-                .UseKestrelSlim(serverOptions =>
+                .UseKestrelCore(serverOptions =>
                 {
                     var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
                     {

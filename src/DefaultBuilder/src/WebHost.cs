@@ -238,7 +238,7 @@ public static class WebHost
 
     internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder)
     {
-        ConfigureWebDefaultsWorker(builder.UseKestrelSlim(ConfigureKestrel), configureRouting: null);
+        ConfigureWebDefaultsWorker(builder.UseKestrelCore(ConfigureKestrel), configureRouting: null);
     }
 
     private static void ConfigureKestrel(WebHostBuilderContext builderContext, KestrelServerOptions options)

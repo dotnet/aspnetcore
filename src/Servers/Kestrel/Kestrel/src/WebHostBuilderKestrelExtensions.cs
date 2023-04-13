@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting;
 public static class WebHostBuilderKestrelExtensions
 {
     /// <summary>
-    /// In <see cref="UseKestrelSlim(IWebHostBuilder)"/> scenarios, it may be necessary to explicitly
+    /// In <see cref="UseKestrelCore(IWebHostBuilder)"/> scenarios, it may be necessary to explicitly
     /// opt in to certain HTTPS functionality.  For example, if <code>ASPNETCORE_URLS</code> includes
     /// an <code>https://</code> address, <see cref="UseKestrelHttpsConfiguration"/> will enable configuration
     /// of HTTPS on that endpoint.
@@ -53,7 +53,7 @@ public static class WebHostBuilderKestrelExtensions
     public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
     {
         return hostBuilder
-            .UseKestrelSlim()
+            .UseKestrelCore()
             .UseKestrelHttpsConfiguration()
             .UseQuic(options =>
             {
@@ -77,7 +77,7 @@ public static class WebHostBuilderKestrelExtensions
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
-    public static IWebHostBuilder UseKestrelSlim(this IWebHostBuilder hostBuilder)
+    public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder)
     {
         hostBuilder.ConfigureServices(services =>
         {
@@ -130,9 +130,9 @@ public static class WebHostBuilderKestrelExtensions
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
-    public static IWebHostBuilder UseKestrelSlim(this IWebHostBuilder hostBuilder, Action<KestrelServerOptions> options)
+    public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder, Action<KestrelServerOptions> options)
     {
-        return hostBuilder.UseKestrelSlim().ConfigureKestrel(options);
+        return hostBuilder.UseKestrelCore().ConfigureKestrel(options);
     }
 
     /// <summary>
@@ -184,9 +184,9 @@ public static class WebHostBuilderKestrelExtensions
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
-    public static IWebHostBuilder UseKestrelSlim(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
+    public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
     {
-        return hostBuilder.UseKestrelSlim().ConfigureKestrel(configureOptions);
+        return hostBuilder.UseKestrelCore().ConfigureKestrel(configureOptions);
     }
 
     /// <summary>
