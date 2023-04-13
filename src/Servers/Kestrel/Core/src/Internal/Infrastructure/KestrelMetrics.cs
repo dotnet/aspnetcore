@@ -80,7 +80,7 @@ internal sealed class KestrelMetrics
         _currentConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionStop(BaseConnectionContext connection, Exception? exception, ICollection<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void ConnectionStop(BaseConnectionContext connection, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         if (_currentConnectionsCounter.Enabled || _connectionDuration.Enabled)
         {
@@ -89,7 +89,7 @@ internal sealed class KestrelMetrics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStopCore(BaseConnectionContext connection, Exception? exception, ICollection<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    private void ConnectionStopCore(BaseConnectionContext connection, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, connection);
@@ -105,30 +105,14 @@ internal sealed class KestrelMetrics
         // Add custom tags for duration.
         if (customTags != null)
         {
-            AddCustomTags(ref tags, customTags);
+            for (var i = 0; i < customTags.Count; i++)
+            {
+                tags.Add(customTags[i]);
+            }
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
         _connectionDuration.Record(duration.TotalSeconds, tags);
-    }
-
-    private static void AddCustomTags(ref TagList tags, ICollection<KeyValuePair<string, object?>> customTags)
-    {
-        // Skip allocating enumerator if tags collection is a list.
-        if (customTags is List<KeyValuePair<string, object?>> list)
-        {
-            for (var i = 0; i < list.Count; i++)
-            {
-                tags.Add(list[i]);
-            }
-        }
-        else
-        {
-            foreach (var tag in customTags)
-            {
-                tags.Add(tag);
-            }
-        }
     }
 
     public void ConnectionRejected(BaseConnectionContext connection)
