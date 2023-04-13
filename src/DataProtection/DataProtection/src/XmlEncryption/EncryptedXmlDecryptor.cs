@@ -84,7 +84,9 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
 
         [RequiresDynamicCode("XmlDsigXsltTransform uses XslCompiledTransform which requires dynamic code.")]
         public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions? options, XmlDocument document)
+#pragma warning disable IL2026 // TODO: https://github.com/dotnet/aspnetcore/issues/47695
             : base(document)
+#pragma warning restore IL2026
         {
             _options = options;
         }
