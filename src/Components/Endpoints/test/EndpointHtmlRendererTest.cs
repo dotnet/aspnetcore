@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +30,7 @@ public class EndpointHtmlRendererTest
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
     private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
-    private readonly EndpointHtmlRenderer renderer;
+    private readonly TestEndpointHtmlRenderer renderer;
 
     public EndpointHtmlRendererTest()
     {
@@ -810,6 +811,145 @@ public class EndpointHtmlRendererTest
         Assert.Equal("Loaded", content);
     }
 
+    [Fact]
+    public void DuplicateNamedEventHandlersAcrossComponentsThrows()
+    {
+        // Arrange
+        var expectedError = @"Two different components are trying to define the same named event 'default':
+'TestComponent > NamedEventHandlerComponent'
+'TestComponent > OtherNamedEventHandlerComponent'";
+
+        var renderer = GetEndpointHtmlRenderer();
+        renderer.SetFormHandlerName("default");
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<NamedEventHandlerComponent>(0);
+            builder.CloseComponent();
+            builder.OpenComponent<OtherNamedEventHandlerComponent>(1);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.TestAssignRootComponentId(component);
+
+        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
+        Assert.Equal(expectedError, exception.Message);
+    }
+
+    [Fact]
+    public void RecreatedComponent_AcrossDifferentBatches_WithNamedEventHandler_Throws()
+    {
+        // Arrange
+        var expectedError = "The named event 'default' was already defined earlier by a component with id '1' but this " +
+            "component was removed before receiving the dispatched event.";
+
+        var renderer = GetEndpointHtmlRenderer();
+        renderer.SetFormHandlerName("default");
+
+        RenderFragment addComponentRender = builder =>
+        {
+            builder.OpenComponent<NamedEventHandlerComponent>(0);
+            builder.CloseComponent();
+        };
+        RenderFragment removeComponentRender = builder =>
+        {
+        };
+
+        var currentRender = addComponentRender;
+        var component = new TestComponent(builder =>
+        {
+            currentRender(builder);
+        });
+
+        // Act
+        var componentId = renderer.TestAssignRootComponentId(component);
+        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
+        currentRender = removeComponentRender;
+        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
+        currentRender = addComponentRender;
+
+        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
+        Assert.Equal(expectedError, exception.Message);
+    }
+
+    [Fact]
+    public void NamedEventHandlers_DifferentComponents_SameNamedHandlerInDifferentBatches_Throws()
+    {
+        // Arrange
+        var expectedError = "The named event 'default' was already defined earlier by a component with id '1' but this " +
+            "component was removed before receiving the dispatched event.";
+
+        var renderer = GetEndpointHtmlRenderer();
+        renderer.SetFormHandlerName("default");
+
+        RenderFragment addComponentRender = builder =>
+        {
+            builder.OpenComponent<NamedEventHandlerComponent>(0);
+            builder.CloseComponent();
+        };
+
+        RenderFragment removeComponentRender = builder =>
+        {
+        };
+        RenderFragment thirdRender = builder =>
+        {
+            builder.OpenComponent<NamedEventHandlerComponent>(0);
+            builder.CloseComponent();
+        };
+
+        var currentRender = addComponentRender;
+        var component = new TestComponent(builder =>
+        {
+            currentRender(builder);
+        });
+
+        // Act
+        var componentId = renderer.TestAssignRootComponentId(component);
+        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
+        currentRender = removeComponentRender;
+        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
+        currentRender = thirdRender;
+
+        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
+        Assert.Equal(expectedError, exception.Message);
+    }
+
+    private class NamedEventHandlerComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("default");
+            builder.CloseElement();
+        }
+    }
+
+    private class OtherNamedEventHandlerComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("default");
+            builder.CloseElement();
+        }
+    }
+
+    class TestComponent : AutoRenderComponent
+    {
+        private readonly RenderFragment _renderFragment;
+
+        public TestComponent(RenderFragment renderFragment)
+        {
+            _renderFragment = renderFragment;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => _renderFragment(builder);
+    }
+
     private static string HtmlContentToString(IHtmlAsyncContent result)
     {
         var writer = new StringWriter();
@@ -817,10 +957,22 @@ public class EndpointHtmlRendererTest
         return writer.ToString();
     }
 
-    private EndpointHtmlRenderer GetEndpointHtmlRenderer(IServiceProvider services = null)
+    private TestEndpointHtmlRenderer GetEndpointHtmlRenderer(IServiceProvider services = null)
     {
         var effectiveServices = services ?? _services;
-        return new EndpointHtmlRenderer(effectiveServices, NullLoggerFactory.Instance);
+        return new TestEndpointHtmlRenderer(effectiveServices, NullLoggerFactory.Instance);
+    }
+
+    private class TestEndpointHtmlRenderer : EndpointHtmlRenderer
+    {
+        public TestEndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : base(serviceProvider, loggerFactory)
+        {
+        }
+
+        internal int TestAssignRootComponentId(IComponent component)
+        {
+            return base.AssignRootComponentId(component);
+        }
     }
 
     private HttpContext GetHttpContext(HttpContext context = null)

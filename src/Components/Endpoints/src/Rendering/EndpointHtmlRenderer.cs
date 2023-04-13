@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// output with prerendering markers so the content can later switch into interactive mode when used with
 /// blazor.*.js. It also deals with initializing the standard component DI services once per request.
 /// </summary>
-internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
+internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
@@ -70,6 +70,8 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         _formHandler = name;
     }
 
+    protected override bool ShouldTrackNamedEventHandlers() => _formHandler != null;
+
     protected override void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventNameId)
     {
         if (_formHandler == null || !string.Equals(eventNameId, _formHandler, StringComparison.Ordinal))
@@ -105,13 +107,13 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
                 throw new InvalidOperationException(
                     $@"Two different components are trying to define the same named event '{eventNameId}':
 '{GenerateComponentPath(state)}'
-'{GenerateComponentPath(GetComponentState(componentId))}'""");
+'{GenerateComponentPath(GetComponentState(componentId))}'");
             }
             catch (ArgumentException)
             {
                 // The component that originally defined the name was disposed.
                 throw new InvalidOperationException(
-                    $"The named event '{eventNameId}' was already defined earlier by a component with id '{_capturedNamedEvent.ComponentId}' but this" +
+                    $"The named event '{eventNameId}' was already defined earlier by a component with id '{_capturedNamedEvent.ComponentId}' but this " +
                     $"component was removed before receiving the dispatched event.");
             }
         }
