@@ -1316,8 +1316,6 @@ public static partial class RequestDelegateFactory
                     Log.RequestBodyIOException(httpContext, ex);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
-
-
                 }
                 catch (JsonException ex)
                 {
