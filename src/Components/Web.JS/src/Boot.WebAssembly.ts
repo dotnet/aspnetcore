@@ -30,7 +30,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    await new Promise(() => {}); // See inAuthRedirectIframe for explanation
+    await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
 
   setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
@@ -101,6 +101,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   // Fetch the resources and prepare the Mono runtime
   const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
 
+  // TODO MF: Hook onConfigLoaded
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
   const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
@@ -126,10 +127,14 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
+
+  // TODO MF: Hook onConfigLoaded
   const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
+
+    // TODO MF: Hook onConfigLoaded
     WebAssemblyConfigLoader.initAsync(bootConfigResult, candidateOptions || {}),
   ]);
 

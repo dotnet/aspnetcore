@@ -245,6 +245,8 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
       const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
       asset.pendingDownload = res;
       totalResources++;
+
+      // TODO MF: Hook onDownloadResourceProgress
       res.response.then(setProgress);
       return res;
     }
@@ -396,6 +398,8 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
 
 let resourcesLoaded = 0;
 let totalResources = 0;
+
+// TODO MF: Hook onDownloadResourceProgress
 function setProgress() {
   resourcesLoaded++;
   const percentage = resourcesLoaded / totalResources * 100;
