@@ -88,7 +88,9 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
         var elementToEncrypt = (XmlElement)xmlDocument.DocumentElement!.FirstChild!;
 
         // Perform the encryption and update the document in-place.
+#pragma warning disable IL2026 // TODO: https://github.com/dotnet/aspnetcore/issues/47695
         var encryptedXml = new EncryptedXml(xmlDocument);
+#pragma warning restore IL2026
         var encryptedData = _encryptor.PerformEncryption(encryptedXml, elementToEncrypt);
         EncryptedXml.ReplaceElement(elementToEncrypt, encryptedData, content: false);
 
