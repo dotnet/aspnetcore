@@ -1305,7 +1305,7 @@ public static partial class RequestDelegateFactory
                 {
                     bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
                 }
-                catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge)
+                catch (BadHttpRequestException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
                     httpContext.Response.StatusCode = ex.StatusCode;
@@ -1314,7 +1314,10 @@ public static partial class RequestDelegateFactory
                 catch (IOException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
+
+
                 }
                 catch (JsonException ex)
                 {
@@ -1424,7 +1427,7 @@ public static partial class RequestDelegateFactory
                 {
                     formValue = await httpContext.Request.ReadFormAsync();
                 }
-                catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge)
+                catch (BadHttpRequestException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
                     httpContext.Response.StatusCode = ex.StatusCode;
@@ -1433,6 +1436,7 @@ public static partial class RequestDelegateFactory
                 catch (IOException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
                 catch (InvalidDataException ex)
