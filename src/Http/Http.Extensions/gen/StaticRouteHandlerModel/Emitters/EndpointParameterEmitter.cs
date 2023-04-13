@@ -45,8 +45,7 @@ internal static class EndpointParameterEmitter
             codeWriter.WriteLine($"if (StringValues.IsNullOrEmpty({endpointParameter.EmitAssigningCodeResult()}))");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
-            var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), endpointParameter.SymbolName, endpointParameter.ToMessageString());
-            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(message, true)}, null);");
+            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.EndBlock();
             codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         }
@@ -110,8 +109,7 @@ internal static class EndpointParameterEmitter
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
-            var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, endpointParameter.Type, endpointParameter.SymbolName, endpointParameter.ToMessageString());
-            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(message, true)}, null);");
+            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.EndBlock();
         }
 
@@ -142,8 +140,7 @@ internal static class EndpointParameterEmitter
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} is StringValues {{ Count: 0 }})");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
-            var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, endpointParameter.Type, endpointParameter.SymbolName, endpointParameter.ToMessageString());
-            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(message, true)}, null);");
+            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.EndBlock();
             codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         }
@@ -224,8 +221,7 @@ internal static class EndpointParameterEmitter
             codeWriter.WriteLine($"{unwrappedTypeString} {endpointParameter.EmitHandlerArgument()};");
             codeWriter.WriteLine($"if ((object?){endpointParameter.EmitTempArgument()} == null)");
             codeWriter.StartBlock();
-            var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), endpointParameter.SymbolName, endpointParameter.ToMessageString());
-            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(message, true)}, null);");
+            codeWriter.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.WriteLine("wasParamCheckFailure = true;");
             codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = default!;");
             codeWriter.EndBlock();

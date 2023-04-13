@@ -259,8 +259,7 @@ internal class EndpointParameter
                     writer.WriteLine($$"""if (!string.IsNullOrEmpty({{inputArgument}}))""");
                     writer.StartBlock();
                     writer.WriteLine("wasParamCheckFailure = true;");
-                    var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, Type, SymbolName, this.ToMessageString());
-                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(message, true)}, null);");
+                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {SymbolDisplay.FormatLiteral(this.ToMessageString(), true)});");
                     writer.EndBlock();
                     writer.EndBlock();
                 }
@@ -270,8 +269,7 @@ internal class EndpointParameter
                     writer.StartBlock();
                     writer.WriteLine($"if (!string.IsNullOrEmpty({inputArgument}))");
                     writer.StartBlock();
-                    var message = $@"string.Format(CultureInfo.InvariantCulture, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedExceptionMessage, true)}, ""{Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}"", ""{SymbolName}"", {inputArgument})";
-                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.ParameterBindingFailedEventId}, {message}, null);");
+                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.ParameterBindingFailedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {inputArgument});");
                     writer.WriteLine("wasParamCheckFailure = true;");
                     writer.EndBlock();
                     writer.EndBlock();

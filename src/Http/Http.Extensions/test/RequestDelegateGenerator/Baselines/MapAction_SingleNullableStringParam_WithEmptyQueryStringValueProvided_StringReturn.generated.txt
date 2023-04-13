@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
-    delegate void LogOrThrowExceptionAction(int eventId, string message, Exception? exceptipon = null, int statusCode = StatusCodes.Status400BadRequest);
+    delegate void LogOrThrowExceptionAction(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {
@@ -208,19 +208,40 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
         {
-            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
-            var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
-            void logOrThrowException(int eventId, string message, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest)
+            string getMessageToFormat(bool shouldThrow, int eventId) => (shouldThrow, eventId) switch
+            {
+                (true, 1) => "RequestBodyIOException",
+                (true, 2) => "Failed to read parameter \"{0} {1}\" from the request body as JSON.",
+                (true, 3) => "Failed to bind parameter \"{0} {1}\" from \"{2}\".",
+                (true, 4) => "Required parameter \"{0} {1}\" was not provided from {2}.",
+                (true, 5) => "Implicit body inferred for parameter \"{0}\" but no body was provided. Did you mean to use a Service instead?",
+                (true, 6) => "Expected a supported JSON media type but got \"{0}\".",
+                (true, 7) => "Expected a supported form media type but got \"{0}\".",
+                (true, 8) => "Failed to read parameter \"{0} {1}\" from the request body as form.",
+                (false, 1) => "Reading the request body failed with an IOException.",
+                (false, 2) => "Failed to read parameter \"{0} {1}\" from the request body as JSON.",
+                (false, 3) => "Failed to bind parameter \"{ParameterType} {ParameterName}\" from \"{SourceValue}\".",
+                (false, 4) => "Required parameter \"{ParameterType} {ParameterName}\" was not provided from {Source}.",
+                (false, 5) => "Implicit body inferred for parameter \"{ParameterName}\" but no body was provided. Did you mean to use a Service instead?",
+                (false, 6) => "Expected a supported JSON media type but got \"{ContentType}\".",
+                (false, 7) => "Expected a supported form media type but got \"{ContentType}\".",
+                (false, 8) => "Failed to read parameter \"{ParameterType} {ParameterName}\" from the request body as form.",
+                _ => throw new UnreachableException("Encountered unsupported logging EventId.")
+            };
+            void logOrThrowException(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs)
             {
                 if ((options?.ThrowOnBadRequest ?? false) && eventId != 1)
                 {
+                    var exceptionMessage = string.Format(CultureInfo.InvariantCulture, getMessageToFormat(true, eventId), messageFormatArgs);
                     if (exception != null)
                     {
-                        throw new BadHttpRequestException(message, statusCode, exception);
+                        throw new BadHttpRequestException(exceptionMessage, statusCode, exception);
                     }
-                    throw new BadHttpRequestException(message, statusCode);
+                    throw new BadHttpRequestException(exceptionMessage, statusCode);
                 }
-                rdgLogger?.LogDebug(eventId, exception, message);
+                var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+                var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
+                rdgLogger?.LogDebug(new EventId(eventId, eventName), exception, getMessageToFormat(false, eventId), messageFormatArgs);
             }
             return logOrThrowException;
         }

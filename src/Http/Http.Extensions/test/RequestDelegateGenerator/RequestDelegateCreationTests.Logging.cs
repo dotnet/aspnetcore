@@ -49,10 +49,18 @@ app.MapGet("/", (
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
         Assert.Equal(@"Required parameter ""StringValues headerValues"" was not provided from header.", logs[0].Message);
+        var log1Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[0].State);
+        Assert.Equal("StringValues", log1Values[0].Value);
+        Assert.Equal("headerValues", log1Values[1].Value);
+        Assert.Equal("header", log1Values[2].Value);
 
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
         Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
         Assert.Equal(@"Required parameter ""StringValues queryValues"" was not provided from query string.", logs[1].Message);
+        var log2Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[1].State);
+        Assert.Equal("StringValues", log2Values[0].Value);
+        Assert.Equal("queryValues", log2Values[1].Value);
+        Assert.Equal("query string", log2Values[2].Value);
 
         // TODO: https://github.com/dotnet/aspnetcore/issues/47200
         // Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
@@ -93,10 +101,19 @@ app.MapGet("/{tryParsable}/{tryParsable2}", TestAction);
         Assert.Equal(new EventId(3, "ParameterBindingFailed"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
         Assert.Equal(@"Failed to bind parameter ""int tryParsable"" from ""invalid!"".", logs[0].Message);
+        var log1Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[0].State);
+        Assert.Equal("int", log1Values[0].Value);
+        Assert.Equal("tryParsable", log1Values[1].Value);
+        Assert.Equal("invalid!", log1Values[2].Value);
 
         Assert.Equal(new EventId(3, "ParameterBindingFailed"), logs[1].EventId);
         Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
         Assert.Equal(@"Failed to bind parameter ""int tryParsable2"" from ""invalid again!"".", logs[1].Message);
+        var log2Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[1].State);
+        Assert.Equal("int", log2Values[0].Value);
+        Assert.Equal("tryParsable2", log2Values[1].Value);
+        Assert.Equal("invalid again!", log2Values[2].Value);
+
     }
 
     [Fact]
@@ -204,10 +221,18 @@ app.MapGet("/", TestAction);
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
         Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncParam1"" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", logs[0].Message);
+        var log1Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[0].State);
+        Assert.Equal("MyBindAsyncRecord", log1Values[0].Value);
+        Assert.Equal("myBindAsyncParam1", log1Values[1].Value);
+        Assert.Equal("MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo)", log1Values[2].Value);
 
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
         Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
         Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncParam2"" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", logs[1].Message);
+        var log2Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[1].State);
+        Assert.Equal("MyBindAsyncRecord", log2Values[0].Value);
+        Assert.Equal("myBindAsyncParam2", log2Values[1].Value);
+        Assert.Equal("MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo)", log2Values[2].Value);
     }
 
     [Fact]
@@ -276,10 +301,18 @@ app.MapGet("/", TestAction);
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
         Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord1"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", logs[0].Message);
+        var log1Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[0].State);
+        Assert.Equal("MySimpleBindAsyncRecord", log1Values[0].Value);
+        Assert.Equal("mySimpleBindAsyncRecord1", log1Values[1].Value);
+        Assert.Equal("MySimpleBindAsyncRecord.BindAsync(HttpContext)", log1Values[2].Value);
 
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
         Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
         Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord2"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", logs[1].Message);
+        var log2Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[1].State);
+        Assert.Equal("MySimpleBindAsyncRecord", log2Values[0].Value);
+        Assert.Equal("mySimpleBindAsyncRecord2", log2Values[1].Value);
+        Assert.Equal("MySimpleBindAsyncRecord.BindAsync(HttpContext)", log2Values[2].Value);
     }
 
     [Fact]
@@ -358,6 +391,8 @@ app.MapPost("/", TestAction);
             Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", logMessage.Message);
+            var logValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logMessage.State);
+            Assert.Equal("application/xml", logValues[0].Value);
         }
     }
 
@@ -367,7 +402,7 @@ app.MapPost("/", TestAction);
     public async Task RequestDelegateWithBindAndImplicitBodyRejectsNonJsonContent(bool shouldThrow)
     {
         var source = """
-void TestAction(HttpContext httpContext, JsonTodo customTodo, Todo todo)
+void TestAction(HttpContext httpContext, Todo todo)
 {
     httpContext.Items["invoked"] = true;
 }
@@ -405,6 +440,8 @@ app.MapPost("/", TestAction);
             Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", logMessage.Message);
+            var logValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logMessage.State);
+            Assert.Equal("application/xml", logValues[0].Value);
         }
     }
 
@@ -483,6 +520,9 @@ app.MapPost("/", TestAction);
         Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
         Assert.Equal(@"Failed to read parameter ""Todo todo"" from the request body as JSON.", logMessage.Message);
         Assert.Same(jsonException, logMessage.Exception);
+        var logValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logMessage.State);
+        Assert.Equal("Todo", logValues[0].Value);
+        Assert.Equal("todo", logValues[1].Value);
     }
 
     [Fact]
@@ -560,6 +600,9 @@ app.MapPost("/", TestAction);
         Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
         Assert.Equal(@"Failed to read parameter ""Todo todo"" from the request body as JSON.", logMessage.Message);
         Assert.IsType<JsonException>(logMessage.Exception);
+        var logValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logMessage.State);
+        Assert.Equal("Todo", logValues[0].Value);
+        Assert.Equal("todo", logValues[1].Value);
     }
 
     [Fact]

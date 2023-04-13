@@ -30,7 +30,11 @@ internal static class RequestDelegateGeneratorSources
                 if (!httpContext.Request.HasJsonContentType())
                 {
                     var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeExceptionMessage, true)}}, httpContext.Request.ContentType);
-                    logOrThrowException({{RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId}}, message, null, StatusCodes.Status415UnsupportedMediaType);
+                    logOrThrowException({{RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId}},
+                        {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventName, true)}},
+                        null,
+                        StatusCodes.Status415UnsupportedMediaType,
+                        httpContext.Request.ContentType);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (false, default);
                 }
@@ -41,13 +45,22 @@ internal static class RequestDelegateGeneratorSources
                     {
                         if (!isInferred)
                         {
-                            var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, true)}}, parameterTypeName, parameterName, "body");
-                            logOrThrowException({{RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}}, message, null);
+                            logOrThrowException({{RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}},
+                                {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}},
+                                null,
+                                StatusCodes.Status400BadRequest,
+                                parameterTypeName,
+                                parameterName,
+                                "body");
                         }
                         else
                         {
                             var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedExceptionMessage, true)}}, parameterName);
-                            logOrThrowException({{RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId}}, message, null);
+                            logOrThrowException({{RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId}},
+                                {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventName, true)}},
+                                null,
+                                StatusCodes.Status400BadRequest,
+                                parameterName);
                         }
                         httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                         return (false, bodyValue);
@@ -56,13 +69,21 @@ internal static class RequestDelegateGeneratorSources
                 }
                 catch (IOException ioException)
                 {
-                    logOrThrowException({{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionMessage, true)}}, ioException, StatusCodes.Status500InternalServerError);
+                    logOrThrowException({{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}},
+                        {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionEventName, true)}},
+                        ioException,
+                        StatusCodes.Status500InternalServerError);
                     return (false, default);
                 }
                 catch (System.Text.Json.JsonException jsonException)
                 {
                     var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyExceptionMessage, true)}}, parameterTypeName, parameterName);
-                    logOrThrowException({{RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId}}, message, jsonException, StatusCodes.Status400BadRequest);
+                    logOrThrowException({{RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId}},
+                        {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyEventName, true)}},
+                        jsonException,
+                        StatusCodes.Status400BadRequest,
+                        parameterTypeName,
+                        parameterName);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (false, default);
                 }
@@ -128,19 +149,40 @@ internal static class RequestDelegateGeneratorSources
     public static string LogOrThrowExceptionMethod => $$"""
         private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
         {
-            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
-            var rdgLogger = loggerFactory?.CreateLogger("{{typeof(RequestDelegateGenerator)}}");
-            void logOrThrowException(int eventId, string message, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest)
+            string getMessageToFormat(bool shouldThrow, int eventId) => (shouldThrow, eventId) switch
+            {
+                (true, {{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionEventName, true)}},
+                (true, {{RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyExceptionMessage, true)}},
+                (true, {{RequestDelegateCreationLogging.ParameterBindingFailedEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedExceptionMessage, true)}},
+                (true, {{RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, true)}},
+                (true, {{RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedExceptionMessage, true)}},
+                (true, {{RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeExceptionMessage, true)}},
+                (true, {{RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedFormContentTypeExceptionMessage, true)}},
+                (true, {{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyExceptionMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyExceptionMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.ParameterBindingFailedEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedLogMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedLogMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedLogMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeLogMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, true)}},
+                (false, {{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, true)}},
+                _ => throw new UnreachableException("Encountered unsupported logging EventId.")
+            };
+            void logOrThrowException(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs)
             {
                 if ((options?.ThrowOnBadRequest ?? false) && eventId != {{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}})
                 {
+                    var exceptionMessage = string.Format(CultureInfo.InvariantCulture, getMessageToFormat(true, eventId), messageFormatArgs);
                     if (exception != null)
                     {
-                        throw new BadHttpRequestException(message, statusCode, exception);
+                        throw new BadHttpRequestException(exceptionMessage, statusCode, exception);
                     }
-                    throw new BadHttpRequestException(message, statusCode);
+                    throw new BadHttpRequestException(exceptionMessage, statusCode);
                 }
-                rdgLogger?.LogDebug(eventId, exception, message);
+                var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+                var rdgLogger = loggerFactory?.CreateLogger("{{typeof(RequestDelegateGenerator)}}");
+                rdgLogger?.LogDebug(new EventId(eventId, eventName), exception, getMessageToFormat(false, eventId), messageFormatArgs);
             }
             return logOrThrowException;
         }
@@ -196,7 +238,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
-    delegate void LogOrThrowExceptionAction(int eventId, string message, Exception? exceptipon = null, int statusCode = StatusCodes.Status400BadRequest);
+    delegate void LogOrThrowExceptionAction(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {

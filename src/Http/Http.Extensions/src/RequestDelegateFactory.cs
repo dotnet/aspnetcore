@@ -2434,7 +2434,7 @@ public static partial class RequestDelegateFactory
             UnexpectedNonFormContentType(GetLogger(httpContext), contentType ?? "(none)");
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedFormContentTypeLogEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, EventName = "UnexpectedNonFormContentType")]
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, EventName = "UnexpectedNonFormContentType")]
         private static partial void UnexpectedNonFormContentType(ILogger logger, string contentType);
 
         public static void InvalidFormRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
@@ -2448,7 +2448,7 @@ public static partial class RequestDelegateFactory
             InvalidFormRequestBody(GetLogger(httpContext), parameterTypeName, parameterName, exception);
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyMessage, EventName = "InvalidFormRequestBody")]
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = "InvalidFormRequestBody")]
         private static partial void InvalidFormRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         private static ILogger GetLogger(HttpContext httpContext)
