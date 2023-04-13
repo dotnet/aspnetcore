@@ -3,7 +3,9 @@ FROM mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
 
 RUN tdnf update -y && \
     tdnf install -y \
-        # Provides 'su', required by Azure DevOps
+        # Provides useradd, needed by Azure DevOps
+        shadow-utils \
+        # Provides su, needed by Azure DevOps
         util-linux
 
 # Setup User to match Host User, and give superuser permissions
