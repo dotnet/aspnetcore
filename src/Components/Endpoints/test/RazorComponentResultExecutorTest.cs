@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class RazorComponentEndpointTest
+public class RazorComponentResultExecutorTest
 {
     [Fact]
     public async Task CanRenderComponentStatically()
@@ -28,7 +28,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act
-        await RazorComponentEndpoint.RenderComponentToResponse(
+        await RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
             typeof(SimpleComponent),
@@ -49,7 +49,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
-        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+        var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
             typeof(StreamingAsyncLoadingComponent),
@@ -82,7 +82,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
-        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+        var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
             typeof(DoubleRenderingStreamingAsyncComponent),
@@ -115,7 +115,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
-        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+        var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
             typeof(StreamingComponentWithChild),
@@ -145,7 +145,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act/Assert: Doesn't complete until loading finishes
-        var completionTask = RazorComponentEndpoint.RenderComponentToResponse(
+        var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
             RenderMode.Static,
             typeof(StreamingAsyncLoadingComponent),
@@ -171,7 +171,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act
-        await RazorComponentEndpoint.RenderComponentToResponse(
+        await RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(ComponentWithLayout),
             null, false);
 
@@ -186,7 +186,7 @@ public class RazorComponentEndpointTest
         var httpContext = GetTestHttpContext();
 
         // Act
-        await RazorComponentEndpoint.RenderComponentToResponse(
+        await RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(ComponentThatRedirectsSynchronously),
             null, false);
 
@@ -205,7 +205,7 @@ public class RazorComponentEndpointTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => RazorComponentEndpoint.RenderComponentToResponse(
+            () => RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: true));
 
@@ -222,7 +222,7 @@ public class RazorComponentEndpointTest
         httpContext.Response.Body = responseBody;
 
         // Act
-        await RazorComponentEndpoint.RenderComponentToResponse(
+        await RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: false);
 
@@ -239,7 +239,7 @@ public class RazorComponentEndpointTest
         var httpContext = GetTestHttpContext();
 
         // Act
-        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(ComponentThatThrowsSynchronously),
             null, false));
 
@@ -254,7 +254,7 @@ public class RazorComponentEndpointTest
         var httpContext = GetTestHttpContext();
 
         // Act
-        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: true));
 
@@ -277,7 +277,7 @@ public class RazorComponentEndpointTest
             : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";
 
         // Act
-        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentEndpoint.RenderComponentToResponse(
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: false));
 
@@ -381,7 +381,7 @@ public class RazorComponentEndpointTest
             { nameof(VaryStreamingScenarios.WithinNestedNonstreamingRegionTask), withinNestedNonstreamingRegionTask.Task },
         };
 
-        var quiescence = RazorComponentEndpoint.RenderComponentToResponse(
+        var quiescence = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext, RenderMode.Static, typeof(VaryStreamingScenarios),
             parameters, preventStreamingRendering: false);
 
