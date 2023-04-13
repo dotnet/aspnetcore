@@ -10,7 +10,12 @@ RUN tdnf update -y && \
         # Provides useradd, needed by Azure DevOps
         shadow-utils \
         # Provides su, needed by Azure DevOps
-        util-linux
+        util-linux \
+        awk \
+        ca-certificates \
+        libicu \
+        tar \
+        rpm-build
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER
