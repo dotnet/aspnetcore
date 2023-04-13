@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Security;
@@ -76,41 +77,42 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
         ConfigurationReader configurationReader)
     {
         EnsureInitialized();
-        _tlsConfigurationLoader!.ApplyHttpsConfiguration(httpsOptions, endpoint, serverOptions, defaultCertificateConfig, configurationReader);
+        _tlsConfigurationLoader.ApplyHttpsConfiguration(httpsOptions, endpoint, serverOptions, defaultCertificateConfig, configurationReader);
     }
 
     /// <inheritdoc/>
     public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
     {
         EnsureInitialized();
-        return _tlsConfigurationLoader!.UseHttpsWithSni(listenOptions, httpsOptions, endpoint);
+        return _tlsConfigurationLoader.UseHttpsWithSni(listenOptions, httpsOptions, endpoint);
     }
 
     /// <inheritdoc/>
     public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader)
     {
         EnsureInitialized();
-        return _tlsConfigurationLoader!.LoadDefaultCertificate(configurationReader);
+        return _tlsConfigurationLoader.LoadDefaultCertificate(configurationReader);
     }
 
     /// <inheritdoc/>
     public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
     {
         EnsureInitialized();
-        _populateMultiplexedTransportFeatures!.Invoke(features, listenOptions);
+        _populateMultiplexedTransportFeatures.Invoke(features, listenOptions);
     }
 
     /// <inheritdoc/>
     public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions)
     {
         EnsureInitialized();
-        return _useHttpsWithDefaults!.Invoke(listenOptions);
+        return _useHttpsWithDefaults.Invoke(listenOptions);
     }
 
     /// <summary>
     /// If this instance has not been initialized, initialize it if possible and throw otherwise.
     /// </summary>
     /// <exception cref="InvalidOperationException">If initialization is not possible.</exception>
+    [MemberNotNull(nameof(_useHttpsWithDefaults), nameof(_tlsConfigurationLoader), nameof(_populateMultiplexedTransportFeatures))]
     private void EnsureInitialized()
     {
         if (!_isInitialized)
