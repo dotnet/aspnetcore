@@ -169,7 +169,7 @@ public partial class ApplicationBuilder : IApplicationBuilder
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Information,
-            "Request reach the end of the middleware pipeline {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path}",
+            "Request reached the end of the middleware pipeline {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path}",
             SkipEnabledCheck = true)]
         public static partial void RequestPipelineEnd(ILogger logger, string protocol, string method, string scheme, string host, string? pathBase, string? path);
     }
