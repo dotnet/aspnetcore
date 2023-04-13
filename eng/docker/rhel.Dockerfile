@@ -1,6 +1,11 @@
 # Dockerfile that creates a container suitable to build dotnet-cli
 FROM mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
 
+RUN tdnf update -y && \
+    tdnf install -y \
+        # Provides 'su', required by Azure DevOps
+        util-linux
+
 # Setup User to match Host User, and give superuser permissions
 ARG USER
 ARG USER_ID
