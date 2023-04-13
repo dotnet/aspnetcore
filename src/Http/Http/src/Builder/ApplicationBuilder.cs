@@ -124,17 +124,6 @@ public partial class ApplicationBuilder : IApplicationBuilder
 
         RequestDelegate app = context =>
         {
-            if (logger != null && logger.IsEnabled(LogLevel.Information))
-            {
-                Log.RequestPipelineEnd(logger,
-                    context.Request.Protocol,
-                    context.Request.Method,
-                    context.Request.Scheme,
-                    context.Request.Host.Value,
-                    context.Request.PathBase.Value,
-                    context.Request.Path.Value);
-            }
-
             // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
             // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
             var endpoint = context.GetEndpoint();
@@ -155,6 +144,19 @@ public partial class ApplicationBuilder : IApplicationBuilder
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
+
+            if (logger != null && logger.IsEnabled(LogLevel.Information))
+            {
+                Log.RequestPipelineEnd(logger,
+                    context.Request.Protocol,
+                    context.Request.Method,
+                    context.Request.Scheme,
+                    context.Request.Host.Value,
+                    context.Request.PathBase.Value,
+                    context.Request.Path.Value,
+                    context.Response.StatusCode);
+            }
+
             return Task.CompletedTask;
         };
 
@@ -169,8 +171,8 @@ public partial class ApplicationBuilder : IApplicationBuilder
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Information,
-            "Request reached the end of the middleware pipeline {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path}",
+            "Request reached the end of the middleware pipeline without being handled by application code {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path} - {statusCode}",
             SkipEnabledCheck = true)]
-        public static partial void RequestPipelineEnd(ILogger logger, string protocol, string method, string scheme, string host, string? pathBase, string? path);
+        public static partial void RequestPipelineEnd(ILogger logger, string protocol, string method, string scheme, string host, string? pathBase, string? path, int statusCode);
     }
 }

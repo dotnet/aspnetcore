@@ -100,7 +100,7 @@ public class ApplicationBuilderTests : LoggedTest
         Assert.Equal(404, httpContext.Response.StatusCode);
 
         var log = TestSink.Writes.Single(w => w.EventId.Name == "RequestPipelineEnd");
-        Assert.Equal("Request reached the end of the middleware pipeline HTTP/2 GET https://localhost:5000/pathbase/path", log.Message);
+        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code HTTP/2 GET https://localhost:5000/pathbase/path - 404", log.Message);
     }
 
     [Fact]
