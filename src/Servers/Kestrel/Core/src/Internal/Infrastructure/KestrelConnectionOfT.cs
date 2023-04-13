@@ -46,7 +46,7 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
         if (metricsConnectionDurationEnabled)
         {
             metricsTagsFeature = new ConnectionMetricsTagsFeature();
-            connectionContext.Features.Set(metricsTagsFeature);
+            connectionContext.Features.Set<IConnectionMetricsTagsFeature>(metricsTagsFeature);
 
             startTimestamp = Stopwatch.GetTimestamp();
         }
