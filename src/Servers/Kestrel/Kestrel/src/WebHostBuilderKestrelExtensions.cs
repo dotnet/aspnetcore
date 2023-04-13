@@ -22,7 +22,7 @@ public static class WebHostBuilderKestrelExtensions
     /// <summary>
     /// In <see cref="UseKestrelSlim(IWebHostBuilder)"/> scenarios, it may be necessary to explicitly
     /// opt in to certain HTTPS functionality.  For example, if <code>ASPNETCORE_URLS</code> includes
-    /// an <code>https://</code> address, <see cref="UseHttpsConfiguration"/> will enable configuration
+    /// an <code>https://</code> address, <see cref="UseKestrelHttpsConfiguration"/> will enable configuration
     /// of HTTPS on that endpoint.
     ///
     /// Has no effect in <see cref="UseKestrel(IWebHostBuilder)"/> scenarios.
@@ -33,7 +33,7 @@ public static class WebHostBuilderKestrelExtensions
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
-    public static IWebHostBuilder UseHttpsConfiguration(this IWebHostBuilder hostBuilder)
+    public static IWebHostBuilder UseKestrelHttpsConfiguration(this IWebHostBuilder hostBuilder)
     {
         return hostBuilder.ConfigureServices(services =>
         {
@@ -54,7 +54,7 @@ public static class WebHostBuilderKestrelExtensions
     {
         return hostBuilder
             .UseKestrelSlim()
-            .UseHttpsConfiguration()
+            .UseKestrelHttpsConfiguration()
             .UseQuic(options =>
             {
                 // Configure server defaults to match client defaults.

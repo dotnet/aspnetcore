@@ -19,7 +19,7 @@ public class HttpsConfigurationTests
     [InlineData("http://127.0.0.1:0", false)]
     [InlineData("https://127.0.0.1:0", true)]
     [InlineData("https://127.0.0.1:0", false)]
-    public async Task BindAddressFromSetting(string address, bool useHttpsConfiguration)
+    public async Task BindAddressFromSetting(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
                 .UseKestrelSlim(serverOptions =>
@@ -31,16 +31,16 @@ public class HttpsConfigurationTests
         // This is what ASPNETCORE_URLS would populate
         hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
 
-        if (useHttpsConfiguration)
+        if (useKestrelHttpsConfiguration)
         {
-            hostBuilder.UseHttpsConfiguration();
+            hostBuilder.UseKestrelHttpsConfiguration();
         }
 
         var host = hostBuilder.Build();
 
         Assert.Single(host.ServerFeatures.Get<IServerAddressesFeature>().Addresses, address);
 
-        if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useHttpsConfiguration)
+        if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useKestrelHttpsConfiguration)
         {
             Assert.Throws<InvalidOperationException>(host.Run);
         }
@@ -77,7 +77,7 @@ public class HttpsConfigurationTests
     [InlineData("http://127.0.0.1:0", false)]
     [InlineData("https://127.0.0.1:0", true)]
     [InlineData("https://127.0.0.1:0", false)]
-    public async Task BindAddressFromEndpoint(string address, bool useHttpsConfiguration)
+    public async Task BindAddressFromEndpoint(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
                 .UseKestrelSlim(serverOptions =>
@@ -92,14 +92,14 @@ public class HttpsConfigurationTests
                 })
                 .Configure(app => { });
 
-        if (useHttpsConfiguration)
+        if (useKestrelHttpsConfiguration)
         {
-            hostBuilder.UseHttpsConfiguration();
+            hostBuilder.UseKestrelHttpsConfiguration();
         }
 
         var host = hostBuilder.Build();
 
-        if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useHttpsConfiguration)
+        if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useKestrelHttpsConfiguration)
         {
             Assert.Throws<InvalidOperationException>(host.Run);
         }
@@ -114,7 +114,7 @@ public class HttpsConfigurationTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task LoadDefaultCertificate(bool useHttpsConfiguration)
+    public async Task LoadDefaultCertificate(bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
                 .UseKestrelSlim(serverOptions =>
@@ -128,9 +128,9 @@ public class HttpsConfigurationTests
                 })
                 .Configure(app => { });
 
-        if (useHttpsConfiguration)
+        if (useKestrelHttpsConfiguration)
         {
-            hostBuilder.UseHttpsConfiguration();
+            hostBuilder.UseKestrelHttpsConfiguration();
         }
 
         var host = hostBuilder.Build();
@@ -145,7 +145,7 @@ public class HttpsConfigurationTests
     [InlineData("http://127.0.0.1:0", false)]
     [InlineData("https://127.0.0.1:0", true)]
     [InlineData("https://127.0.0.1:0", false)]
-    public async Task LoadEndpointCertificate(string address, bool useHttpsConfiguration)
+    public async Task LoadEndpointCertificate(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new WebHostBuilder()
                 .UseKestrelSlim(serverOptions =>
@@ -160,14 +160,14 @@ public class HttpsConfigurationTests
                 })
                 .Configure(app => { });
 
-        if (useHttpsConfiguration)
+        if (useKestrelHttpsConfiguration)
         {
-            hostBuilder.UseHttpsConfiguration();
+            hostBuilder.UseKestrelHttpsConfiguration();
         }
 
         var host = hostBuilder.Build();
 
-        if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useHttpsConfiguration)
+        if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useKestrelHttpsConfiguration)
         {
             Assert.Throws<InvalidOperationException>(host.Run);
         }
@@ -204,7 +204,7 @@ public class HttpsConfigurationTests
     }
 
     [Fact]
-    public async Task UseHttpsMayNotImplyUseHttpsConfiguration()
+    public async Task UseHttpsMayNotImplyUseKestrelHttpsConfiguration()
     {
         var hostBuilder = new WebHostBuilder()
             .UseKestrelSlim(serverOptions =>

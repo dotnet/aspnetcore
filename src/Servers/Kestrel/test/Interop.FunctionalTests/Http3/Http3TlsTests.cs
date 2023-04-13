@@ -384,7 +384,7 @@ public class Http3TlsTests : LoggedTest
         }
         else
         {
-            // This *could* work for `useHttps && !useHttpsEnablesHttpsConfiguration` if `UseQuic` implied `UseHttpsConfiguration`
+            // This *could* work for `useHttps && !useHttpsEnablesHttpsConfiguration` if `UseQuic` implied `UseKestrelHttpsConfiguration`
             Assert.Throws<InvalidOperationException>(host.Run);
         }
     }
@@ -416,7 +416,7 @@ public class Http3TlsTests : LoggedTest
 
         var host = hostBuilder.Build();
 
-        // This *could* work (in some cases) if `UseQuic` implied `UseHttpsConfiguration`
+        // This *could* work (in some cases) if `UseQuic` implied `UseKestrelHttpsConfiguration`
         Assert.Throws<InvalidOperationException>(host.Run);
     }
 
