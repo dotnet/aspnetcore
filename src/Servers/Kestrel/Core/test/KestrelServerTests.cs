@@ -711,7 +711,8 @@ public class KestrelServerTests
             new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
             testContext.MockSystemClock,
             DebuggerWrapper.Singleton,
-            testContext.Log);
+            testContext.Log,
+            Heartbeat.Interval);
 
         using (var server = new KestrelServerImpl(new[] { new MockTransportFactory() }, Array.Empty<IMultiplexedConnectionListenerFactory>(), testContext))
         {

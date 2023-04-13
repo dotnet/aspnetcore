@@ -86,7 +86,8 @@ internal sealed class KestrelServerImpl : IServer
             new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
             new SystemClock(),
             DebuggerWrapper.Singleton,
-            trace);
+            trace,
+            Heartbeat.Interval);
 
         return new ServiceContext
         {
@@ -240,6 +241,10 @@ internal sealed class KestrelServerImpl : IServer
             return;
         }
 
+        // Stop background heartbeat first.
+        // The heartbeat running as the server is shutting down could produce unexpected behavior.
+        ServiceContext.Heartbeat?.Dispose();
+
         _stopCts.Cancel();
 
 #pragma warning disable CA2016 // Don't use cancellationToken when acquiring the semaphore. Dispose calls this with a pre-canceled token.
@@ -257,7 +262,6 @@ internal sealed class KestrelServerImpl : IServer
         }
         finally
         {
-            ServiceContext.Heartbeat?.Dispose();
             _configChangedRegistration?.Dispose();
             _stopCts.Dispose();
             _bindSemaphore.Release();
