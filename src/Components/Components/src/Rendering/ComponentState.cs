@@ -76,6 +76,7 @@ public class ComponentState : IDisposable
         }
 
         _nextRenderTree.Clear();
+        _nextRenderTree.TrackNamedEventHandlers = _renderer.ShouldTrackNamedEventHandlers();
 
         try
         {
@@ -101,7 +102,8 @@ public class ComponentState : IDisposable
             batchBuilder,
             ComponentId,
             _nextRenderTree.GetFrames(),
-            CurrentRenderTree.GetFrames());
+            CurrentRenderTree.GetFrames(),
+            CurrentRenderTree.GetNamedEvents());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
     }
