@@ -104,7 +104,7 @@ public class ApplicationBuilderTests : LoggedTest
     }
 
     [Fact]
-    public async Task BuildDontLogOrChangeStatusWithTerminalMiddleware()
+    public async Task BuildDoesNotLogOrChangeStatusWithTerminalMiddleware()
     {
         var services = new ServiceCollection();
         services.AddSingleton(LoggerFactory);
