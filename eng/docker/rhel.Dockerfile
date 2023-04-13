@@ -3,6 +3,7 @@ FROM mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
 
 RUN tdnf update -y && \
     tdnf install -y \
+        awk \
         # Provides useradd, needed by Azure DevOps
         shadow-utils \
         # Provides su, needed by Azure DevOps
