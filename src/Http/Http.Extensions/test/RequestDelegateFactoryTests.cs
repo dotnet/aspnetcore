@@ -3558,6 +3558,72 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateThrowsBadHttpRequestExceptionWhenReadingOversizeFormResultsIn413BadRequest()
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var exception = new BadHttpRequestException("Request body too large. The max request body size is [who cares] bytes.", 413);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(exception);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        var logMessage = Assert.Single(TestSink.Writes);
+        Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+        Assert.Equal(@"Reading the request body failed with an IOException.", logMessage.Message);
+        Assert.Same(exception, logMessage.Exception);
+        Assert.Equal(413, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateThrowsBadHttpRequestExceptionWhenReadingOversizeJsonBodyResultsIn413BadRequest()
+    {
+        var invoked = false;
+
+        void TestAction(Todo todo)
+        {
+            invoked = true;
+        }
+
+        var exception = new BadHttpRequestException("Request body too large. The max request body size is [who cares] bytes.", 413);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "1000";
+        httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(exception);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        var logMessage = Assert.Single(TestSink.Writes);
+        Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+        Assert.Equal(@"Reading the request body failed with an IOException.", logMessage.Message);
+        Assert.Same(exception, logMessage.Exception);
+        Assert.Equal(413, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task RequestDelegateLogsMalformedFormAsDebugAndSets400Response()
     {
         var invoked = false;
