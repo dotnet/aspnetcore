@@ -257,7 +257,7 @@ public class KestrelServerOptions
 
         // It's important (and currently true) that we don't reach here with https configuration uninitialized because
         // we might incorrectly favor the development certificate over one specified by the user.
-        Debug.Assert(ApplicationServices.GetRequiredService<IHttpsConfigurationService>().IsInitialized, "Https Configuration should have been enabled");
+        Debug.Assert(ApplicationServices.GetRequiredService<IHttpsConfigurationService>().IsInitialized, "HTTPS configuration should have been enabled");
 
         if (TestOverrideDefaultCertificate is X509Certificate2 certificateFromTest)
         {
