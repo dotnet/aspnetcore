@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -109,9 +110,11 @@ internal class TestServer : IAsyncDisposable, IStartup
 
     public InMemoryHttpClientSlim HttpClientSlim { get; }
 
-    public InMemoryConnection CreateConnection(Encoding encoding = null)
+    public InMemoryConnection CreateConnection(Encoding encoding = null, Action<IFeatureCollection> featuresAction = null)
     {
         var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
+        featuresAction?.Invoke(transportConnection.Features);
+
         _transportFactory.AddConnection(transportConnection);
         return new InMemoryConnection(transportConnection, encoding);
     }
