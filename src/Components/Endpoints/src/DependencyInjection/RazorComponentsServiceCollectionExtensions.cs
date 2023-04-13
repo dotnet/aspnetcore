@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -23,6 +24,7 @@ public static class RazorComponentsServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>A builder for configuring the Razor Components endpoints.</returns>
+    [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
         services.TryAddSingleton<RazorComponentsMarkerService>();

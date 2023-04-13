@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -16,6 +17,7 @@ public static class AuthenticationServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
+    [RequiresUnreferencedCode("Authentication middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -36,6 +38,7 @@ public static class AuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="defaultScheme">The default scheme used as a fallback for all other schemes.</param>
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
+    [RequiresUnreferencedCode("Authentication middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, string defaultScheme)
         => services.AddAuthentication(o => o.DefaultScheme = defaultScheme);
 
@@ -45,6 +48,7 @@ public static class AuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="configureOptions">A delegate to configure <see cref="AuthenticationOptions"/>.</param>
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
+    [RequiresUnreferencedCode("Authentication middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);

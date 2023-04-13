@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -26,6 +27,7 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcCoreBuilder AddRazorPages(this IMvcCoreBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);

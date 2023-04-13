@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -76,6 +77,7 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddControllers(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -110,6 +112,7 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddControllers(this IServiceCollection services, Action<MvcOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -167,6 +170,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -199,6 +203,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Action<MvcOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -246,6 +251,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -276,6 +282,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services, Action<RazorPagesOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
