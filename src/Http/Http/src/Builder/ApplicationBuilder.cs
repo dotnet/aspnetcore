@@ -171,7 +171,7 @@ public partial class ApplicationBuilder : IApplicationBuilder
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Information,
-            "Request reached the end of the middleware pipeline without being handled by application code {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path} - {statusCode}",
+            "Request reached the end of the middleware pipeline without being handled by application code {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path} - {StatusCode}",
             SkipEnabledCheck = true)]
         public static partial void RequestPipelineEnd(ILogger logger, string protocol, string method, string scheme, string host, string? pathBase, string? path, int statusCode);
     }
