@@ -1292,7 +1292,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyTestContentPackage", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestContentPackage", "src\Components\test\testassets\TestContentPackage\TestContentPackage.csproj", "{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.TestServer", "src\Components\test\testassets\TestServer\Components.TestServer.csproj", "{8A59AF88-4A82-46ED-977D-D909001F8107}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.TestServer", "src\Components\test\testassets\Components.TestServer\Components.TestServer.csproj", "{8A59AF88-4A82-46ED-977D-D909001F8107}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ObjectPool", "ObjectPool", "{E235DAAD-FE73-469E-B16F-F2B8E872E217}"
 EndProject

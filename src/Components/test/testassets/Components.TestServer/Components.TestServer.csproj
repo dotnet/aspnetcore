@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -20,6 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>

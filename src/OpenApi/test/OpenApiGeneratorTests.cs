@@ -968,6 +968,18 @@ public class OpenApiOperationGeneratorTests
             param => Assert.False(param.Required));
     }
 
+    [Fact]
+    public void DoesNotGenerateRequestBodyWhenInferredBodyDisabled()
+    {
+        var operation = GetOpenApiOperation((string[] names) => { }, httpMethods: new[] { "GET" });
+
+        var parameter = Assert.Single(operation.Parameters);
+
+        Assert.Equal("names", parameter.Name);
+        Assert.Equal(ParameterLocation.Query, parameter.In);
+        Assert.Null(operation.RequestBody);
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,

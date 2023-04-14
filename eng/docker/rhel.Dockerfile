@@ -1,5 +1,15 @@
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-rpmpkg
+FROM mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
+
+RUN tdnf update -y && \
+    tdnf install -y \
+        tar \
+        ca-certificates \
+        icu \
+        awk \
+        # Provides useradd, needed below
+        shadow-utils \
+        rpm-build
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER

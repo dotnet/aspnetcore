@@ -12,18 +12,20 @@ internal sealed class ConnectionLimitMiddleware<T> where T : BaseConnectionConte
     private readonly Func<T, Task> _next;
     private readonly ResourceCounter _concurrentConnectionCounter;
     private readonly KestrelTrace _trace;
+    private readonly KestrelMetrics _metrics;
 
-    public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, KestrelTrace trace)
-        : this(next, ResourceCounter.Quota(connectionLimit), trace)
+    public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, KestrelTrace trace, KestrelMetrics metrics)
+        : this(next, ResourceCounter.Quota(connectionLimit), trace, metrics)
     {
     }
 
     // For Testing
-    internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, KestrelTrace trace)
+    internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, KestrelTrace trace, KestrelMetrics metrics)
     {
         _next = next;
         _concurrentConnectionCounter = concurrentConnectionCounter;
         _trace = trace;
+        _metrics = metrics;
     }
 
     public async Task OnConnectionAsync(T connection)
@@ -32,6 +34,7 @@ internal sealed class ConnectionLimitMiddleware<T> where T : BaseConnectionConte
         {
             KestrelEventSource.Log.ConnectionRejected(connection.ConnectionId);
             _trace.ConnectionRejected(connection.ConnectionId);
+            _metrics.ConnectionRejected(connection);
             await connection.DisposeAsync();
             return;
         }

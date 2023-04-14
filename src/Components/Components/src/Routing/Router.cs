@@ -26,6 +26,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
 
+    private Type? _updateScrollPositionForHashLastHandlerType;
+    private bool _updateScrollPositionForHash;
+
     private CancellationTokenSource _onNavigateCts;
 
     private Task _previousOnNavigateTask = Task.CompletedTask;
@@ -37,6 +40,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
+
+    [Inject] private IScrollToLocationHash ScrollToLocationHash { get; set; }
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
@@ -206,6 +211,13 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 context.Handler,
                 context.Parameters ?? _emptyParametersDictionary);
             _renderHandle.Render(Found(routeData));
+
+            // If you navigate to a different page, then after the next render we'll update the scroll position
+            if (context.Handler != _updateScrollPositionForHashLastHandlerType)
+            {
+                _updateScrollPositionForHashLastHandlerType = context.Handler;
+                _updateScrollPositionForHash = true;
+            }
         }
         else
         {
@@ -276,15 +288,19 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    Task IHandleAfterRender.OnAfterRenderAsync()
+    async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!_navigationInterceptionEnabled)
         {
             _navigationInterceptionEnabled = true;
-            return NavigationInterception.EnableNavigationInterceptionAsync();
+            await NavigationInterception.EnableNavigationInterceptionAsync();
         }
 
-        return Task.CompletedTask;
+        if (_updateScrollPositionForHash)
+        {
+            _updateScrollPositionForHash = false;
+            await ScrollToLocationHash.RefreshScrollPositionForHash(_locationAbsolute);
+        }
     }
 
     private static partial class Log

@@ -1,0 +1,54 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+package body;
+
+import "google/api/annotations.proto";
+
+// Add go_package to keep protoc happy when testing generating OpenAPI from commandline.
+option go_package = "github.com/dotnet/aspnetcore/swagger";
+
+// HttpRule: https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#google.api.HttpRule
+
+service Body {
+  rpc DemoBodyOne (RequestOne) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/body1",
+      body: "parameter_one"
+    };
+  }
+  rpc DemoBodyTwo (RequestOne) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/body2",
+      body: "parameter_two"
+    };
+  }
+  rpc DemoBodyThree (RequestOne) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/body3",
+      body: "parameter_three"
+    };
+  }
+  rpc DemoBodyFour (RequestOne) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/body4",
+      body: "*"
+    };
+  }
+}
+
+message RequestOne {
+  repeated RequestBody parameter_one = 1;
+  map<int32, int32> parameter_two = 2;
+  RequestBody parameter_three = 3;
+}
+
+message RequestBody {
+  string request_body = 1;
+}
+
+message BodyParamResponse {
+  string message = 1;
+}

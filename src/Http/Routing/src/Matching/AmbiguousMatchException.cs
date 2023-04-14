@@ -16,6 +16,7 @@ internal sealed class AmbiguousMatchException : Exception
     {
     }
 
+    [Obsolete]
     internal AmbiguousMatchException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {

@@ -137,7 +137,8 @@ public sealed class WebApplicationBuilder
             {
                 AspNetCore.WebHost.ConfigureWebDefaultsCore(webHostBuilder);
 
-                webHostBuilder.Configure(ConfigureEmptyApplication);
+                // Runs inline.
+                webHostBuilder.Configure(ConfigureApplication);
 
                 webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
                 webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
@@ -261,46 +262,6 @@ public sealed class WebApplicationBuilder
 
     private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
     {
-        ConfigureApplicationCore(
-            context,
-            app,
-            processAuthMiddlewares: () =>
-            {
-                Debug.Assert(_builtApplication is not null);
-
-                // Process authorization and authentication middlewares independently to avoid
-                // registering middlewares for services that do not exist
-                var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
-                if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
-                {
-                    // Don't add more than one instance of the middleware
-                    if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
-                    {
-                        // The Use invocations will set the property on the outer pipeline,
-                        // but we want to set it on the inner pipeline as well.
-                        _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
-                        app.UseAuthentication();
-                    }
-                }
-
-                if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
-                {
-                    if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
-                    {
-                        _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
-                        app.UseAuthorization();
-                    }
-                }
-            });
-    }
-
-    private void ConfigureEmptyApplication(WebHostBuilderContext context, IApplicationBuilder app)
-    {
-        ConfigureApplicationCore(context, app, processAuthMiddlewares: null);
-    }
-
-    private void ConfigureApplicationCore(WebHostBuilderContext context, IApplicationBuilder app, Action? processAuthMiddlewares)
-    {
         Debug.Assert(_builtApplication is not null);
 
         // UseRouting called before WebApplication such as in a StartupFilter
@@ -340,7 +301,29 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        processAuthMiddlewares?.Invoke();
+        // Process authorization and authentication middlewares independently to avoid
+        // registering middlewares for services that do not exist
+        var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
+        if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
+        {
+            // Don't add more than one instance of the middleware
+            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+            {
+                // The Use invocations will set the property on the outer pipeline,
+                // but we want to set it on the inner pipeline as well.
+                _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
+                app.UseAuthentication();
+            }
+        }
+
+        if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
+        {
+            if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
+            {
+                _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
+                app.UseAuthorization();
+            }
+        }
 
         // Wire the source pipeline to run in the destination pipeline
         app.Use(next =>

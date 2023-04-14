@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -20,6 +21,79 @@ public class HeartbeatTests : LoggedTest
     public void HeartbeatIntervalIsOneSecond()
     {
         Assert.Equal(TimeSpan.FromSeconds(1), Heartbeat.Interval);
+    }
+
+    [Fact]
+    public async void HeartbeatLoopRunsWithSpecifiedInterval()
+    {
+        var heartbeatCallCount = 0;
+        var tcs = new TaskCompletionSource();
+        var systemClock = new MockSystemClock();
+        var heartbeatHandler = new Mock<IHeartbeatHandler>();
+        var debugger = new Mock<IDebugger>();
+        var kestrelTrace = new KestrelTrace(LoggerFactory);
+        var now = systemClock.UtcNow;
+
+        var splits = new List<TimeSpan>();
+        Stopwatch sw = null;
+        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        {
+            heartbeatCallCount++;
+            if (sw == null)
+            {
+                sw = Stopwatch.StartNew();
+            }
+            else
+            {
+                var split = sw.Elapsed;
+                splits.Add(split);
+
+                Logger.LogInformation($"Heartbeat split: {split.TotalMilliseconds}ms");
+
+                sw.Restart();
+            }
+
+            if (heartbeatCallCount == 5)
+            {
+                Logger.LogInformation($"Heartbeat run {heartbeatCallCount} times. Notifying test.");
+                tcs.SetResult();
+            }
+        });
+
+        var intervalMs = 300;
+
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace, TimeSpan.FromMilliseconds(intervalMs)))
+        {
+            heartbeat.Start();
+
+            await tcs.Task.DefaultTimeout();
+            Logger.LogInformation($"Starting heartbeat dispose.");
+        }
+
+        Assert.Collection(splits,
+            ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
+            ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
+            ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
+            ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds));
+
+        static void AssertApproxEqual(double intervalMs, double actualMs)
+        {
+            // Interval timing isn't exact on a slow computer. For example, interval of 300ms results in split between 300ms and 450ms.
+            // Under load the server might take a long time to resume. Provide tolerance for late resume.
+
+            // Round value to nearest 50. Avoids error when wait time is slightly less than expected value.
+            var roundedActualMs = Math.Round(actualMs / 50.0) * 50.0;
+
+            if (roundedActualMs < intervalMs)
+            {
+                Assert.Fail($"{roundedActualMs} is smaller than wait time of {intervalMs}.");
+            }
+            // Be tolerant of a much larger value. Heartbeat might not immediately resume if the server is under load.
+            if (roundedActualMs > intervalMs * 4)
+            {
+                Assert.Fail($"{roundedActualMs} is much larger than wait time of {intervalMs}.");
+            }
+        }
     }
 
     [Fact]
@@ -43,7 +117,7 @@ public class HeartbeatTests : LoggedTest
 
         Task blockedHeartbeatTask;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace, Heartbeat.Interval))
         {
             blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -87,7 +161,7 @@ public class HeartbeatTests : LoggedTest
 
         Task blockedHeartbeatTask;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace, Heartbeat.Interval))
         {
             blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -116,7 +190,7 @@ public class HeartbeatTests : LoggedTest
 
         heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, DebuggerWrapper.Singleton, kestrelTrace))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, DebuggerWrapper.Singleton, kestrelTrace, Heartbeat.Interval))
         {
             heartbeat.OnHeartbeat();
         }

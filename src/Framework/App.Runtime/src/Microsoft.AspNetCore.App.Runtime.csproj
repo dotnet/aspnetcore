@@ -630,7 +630,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_BatchCopyToCompositeLayout"
-          Condition="'$(TargetOsName)' == 'linux'">
+          Condition="'$(TargetOsName)' == 'linux' or '$(TargetOsName)' == 'linux-musl'">
     <PropertyGroup>
       <CompositeFrameworkLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', CompositeFx.Layout, '$(Configuration)', '$(TargetRuntimeIdentifier)'))</CompositeFrameworkLayoutRoot>
       <LayoutAspnetPath>$(CompositeFrameworkLayoutRoot)\shared\$(SharedFxName)\$(SharedFxVersion)\</LayoutAspnetPath>
@@ -700,7 +700,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"
-          Condition="'$(TargetOsName)' == 'linux'"
+          Condition="'$(TargetOsName)' == 'linux' or '$(TargetOsName)' == 'linux-musl'"
           Inputs="$(CompositeTargetDir)"
           Outputs="$(CompositeArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />

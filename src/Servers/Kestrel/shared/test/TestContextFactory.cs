@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -42,7 +43,8 @@ internal static class TestContextFactory
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,
-            ServerOptions = serverOptions
+            ServerOptions = serverOptions,
+            Metrics = new KestrelMetrics(new TestMeterFactory())
         };
 
         return context;
@@ -150,6 +152,7 @@ internal static class TestContextFactory
             connectionId: connectionId ?? "TestConnectionId",
             protocols: HttpProtocols.Http2,
             altSvcHeader: null,
+            connectionContext: new DefaultConnectionContext(),
             serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures: connectionFeatures ?? new FeatureCollection(),
             memoryPool: memoryPool ?? MemoryPool<byte>.Shared,

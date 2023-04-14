@@ -10,6 +10,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <!--#if (NativeAot) -->
     <PublishAot>true</PublishAot>
+    <StripSymbols>true</StripSymbols>
     <!--#endif -->
   </PropertyGroup>
 

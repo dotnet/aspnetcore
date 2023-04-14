@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.E2ETesting;
 
 public class BrowserFixture : IAsyncLifetime
 {
+    public static string StreamingContext { get; } = "streaming";
     private readonly ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
 
     public BrowserFixture(IMessageSink diagnosticsMessageSink)
@@ -140,6 +141,12 @@ public class BrowserFixture : IAsyncLifetime
     private async Task<(IWebDriver browser, ILogs log)> CreateBrowserAsync(string context, ITestOutputHelper output)
     {
         var opts = new ChromeOptions();
+
+        if (string.Equals(context, StreamingContext, StringComparison.Ordinal))
+        {
+            // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
+            opts.PageLoadStrategy = PageLoadStrategy.None;
+        }
 
         // Force language to english for tests
         opts.AddUserProfilePreference("intl.accept_languages", "en");

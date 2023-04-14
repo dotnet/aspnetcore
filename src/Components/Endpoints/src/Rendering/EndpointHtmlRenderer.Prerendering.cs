@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,11 +13,19 @@ internal sealed partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
+    public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         Type componentType,
         RenderMode prerenderMode,
         ParameterView parameters)
+        => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
+
+    public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
+        HttpContext httpContext,
+        Type componentType,
+        RenderMode prerenderMode,
+        ParameterView parameters,
+        bool waitForQuiescence)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(componentType);
@@ -35,46 +42,83 @@ internal sealed partial class EndpointHtmlRenderer
 
         UpdateSaveStateRenderMode(httpContext, prerenderMode);
 
-        return prerenderMode switch
-        {
-            RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
-            RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
-            RenderMode.Static => await StaticComponentAsync(httpContext, componentType, parameters),
-            RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(componentType, parameters),
-            RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(httpContext, componentType, parameters),
-            _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(prerenderMode), nameof(prerenderMode)),
-        };
-    }
-
-    private async ValueTask<HtmlComponent> PrerenderComponentCoreAsync(
-        ParameterView parameters,
-        HttpContext httpContext,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType)
-    {
         try
         {
-            return await Dispatcher.InvokeAsync(async () =>
+            var result = prerenderMode switch
             {
-                var content = BeginRenderingComponent(componentType, parameters);
-                await content.WaitForQuiescenceAsync();
-                return content;
-            });
+                RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
+                RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
+                RenderMode.Static => await StaticComponentAsync(componentType, parameters),
+                RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(componentType, parameters),
+                RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(componentType, parameters),
+                _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(prerenderMode), nameof(prerenderMode)),
+            };
+
+            await WaitForResultReady(waitForQuiescence, result);
+
+            return result;
         }
         catch (NavigationException navigationException)
         {
-            // Navigation was attempted during prerendering.
-            if (httpContext.Response.HasStarted)
-            {
-                // We can't perform a redirect as the server already started sending the response.
-                // This is considered an application error as the developer should buffer the response until
-                // all components have rendered.
-                throw new InvalidOperationException("A navigation command was attempted during prerendering after the server already started sending the response. " +
-                    "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                    "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
-            }
+            return await HandleNavigationException(httpContext, navigationException);
+        }
+    }
 
+    internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
+        HttpContext httpContext,
+        Type componentType,
+        ParameterView parameters,
+        bool waitForQuiescence)
+    {
+        await InitializeStandardComponentServicesAsync(httpContext);
+
+        try
+        {
+            var component = BeginRenderingComponent(componentType, parameters);
+            var result = new PrerenderedComponentHtmlContent(Dispatcher, component, null, null);
+
+            await WaitForResultReady(waitForQuiescence, result);
+
+            return result;
+        }
+        catch (NavigationException navigationException)
+        {
+            return await HandleNavigationException(httpContext, navigationException);
+        }
+    }
+
+    private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)
+    {
+        if (waitForQuiescence)
+        {
+            // Full quiescence, i.e., all tasks completed regardless of streaming SSR
+            await result.QuiescenceTask;
+        }
+        else if (_nonStreamingPendingTasks.Count > 0)
+        {
+            // Just wait for quiescence of the non-streaming subtrees
+            await Task.WhenAll(_nonStreamingPendingTasks);
+        }
+    }
+
+    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
+    {
+        if (httpContext.Response.HasStarted)
+        {
+            // If we're not doing streaming SSR, this has no choice but to be a fatal error because there's no way to
+            // communicate the redirection to the browser.
+            // If we are doing streaming SSR, this should not generally happen because if you navigate during the initial
+            // synchronous render, the response would not yet have started, and if you do so during some later async
+            // phase, we would already have exited this method since streaming SSR means not awaiting quiescence.
+            throw new InvalidOperationException(
+                "A navigation command was attempted during prerendering after the server already started sending the response. " +
+                "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
+        }
+        else
+        {
             httpContext.Response.Redirect(navigationException.Location);
-            return HtmlComponent.Empty;
+            return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }
 
@@ -89,16 +133,13 @@ internal sealed partial class EndpointHtmlRenderer
         return (ServerComponentInvocationSequence)result!;
     }
 
-    private async ValueTask<IHtmlAsyncContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async Task<PrerenderedComponentHtmlContent> StaticComponentAsync(Type type, ParameterView parametersCollection)
     {
-        var htmlComponent = await PrerenderComponentCoreAsync(
-            parametersCollection,
-            context,
-            type);
+        var htmlComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(type, parametersCollection));
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, null, null);
     }
 
-    private async Task<IHtmlAsyncContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private async Task<PrerenderedComponentHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
@@ -115,30 +156,22 @@ internal sealed partial class EndpointHtmlRenderer
             parametersCollection,
             prerendered: true);
 
-        var htmlComponent = await PrerenderComponentCoreAsync(
-            parametersCollection,
-            context,
-            type);
-
+        var htmlComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(type, parametersCollection));
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, marker, null);
     }
 
-    private async ValueTask<IHtmlAsyncContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+    private async ValueTask<PrerenderedComponentHtmlContent> PrerenderedWebAssemblyComponentAsync(Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
             parametersCollection,
             prerendered: true);
 
-        var htmlComponent = await PrerenderComponentCoreAsync(
-            parametersCollection,
-            context,
-            type);
-
+        var htmlComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(type, parametersCollection));
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, null, marker);
     }
 
-    private IHtmlAsyncContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private PrerenderedComponentHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
         if (!context.Response.HasStarted)
         {
@@ -153,7 +186,7 @@ internal sealed partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(null, null, marker, null);
     }
 
-    private static IHtmlAsyncContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
+    private static PrerenderedComponentHtmlContent NonPrerenderedWebAssemblyComponent(Type type, ParameterView parametersCollection)
     {
         var marker = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
         return new PrerenderedComponentHtmlContent(null, null, null, marker);
@@ -161,16 +194,19 @@ internal sealed partial class EndpointHtmlRenderer
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.
     // We don't construct the actual HTML until we receive the call to WriteTo.
-    private class PrerenderedComponentHtmlContent : IHtmlAsyncContent
+    public class PrerenderedComponentHtmlContent : IHtmlAsyncContent
     {
         private readonly Dispatcher? _dispatcher;
-        private readonly HtmlComponent? _htmlToEmitOrNull;
+        private readonly HtmlRootComponent? _htmlToEmitOrNull;
         private readonly ServerComponentMarker? _serverMarker;
         private readonly WebAssemblyComponentMarker? _webAssemblyMarker;
 
+        public static PrerenderedComponentHtmlContent Empty { get; }
+            = new PrerenderedComponentHtmlContent(null, default, null, null);
+
         public PrerenderedComponentHtmlContent(
             Dispatcher? dispatcher, // If null, we're only emitting the markers
-            HtmlComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
+            HtmlRootComponent? htmlToEmitOrNull, // If null, we're only emitting the markers
             ServerComponentMarker? serverMarker,
             WebAssemblyComponentMarker? webAssemblyMarker)
         {
@@ -217,5 +253,8 @@ internal sealed partial class EndpointHtmlRenderer
                 }
             }
         }
+
+        public Task QuiescenceTask =>
+            _htmlToEmitOrNull.HasValue ? _htmlToEmitOrNull.Value.QuiescenceTask : Task.CompletedTask;
     }
 }

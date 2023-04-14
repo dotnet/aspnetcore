@@ -16,6 +16,7 @@ module.exports = (env, args) => ({
     },
     entry: {
         'blazor.server': './Boot.Server.ts',
+        'blazor.web': './Boot.Web.ts',
         'blazor.webassembly': './Boot.WebAssembly.ts',
         'blazor.webview': './Boot.WebView.ts',
     },

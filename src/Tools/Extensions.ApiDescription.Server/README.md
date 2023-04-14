@@ -1,4 +1,4 @@
-# Microsoft.Extensions.ApiDescription.Client
+# Microsoft.Extensions.ApiDescription.Server
 
 MSBuild glue for OpenAPI document generation.
 

@@ -6,12 +6,14 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -24,6 +26,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
             .AddSingleton<IHostEnvironment>(env)
+            .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
             .BuildServiceProvider();
         return serverOptions;
     }

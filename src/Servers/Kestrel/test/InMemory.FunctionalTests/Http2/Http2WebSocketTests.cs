@@ -78,6 +78,9 @@ public class Http2WebSocketTests : Http2TestBase
     {
         await InitializeConnectionAsync(async context =>
         {
+            var requestBodyDetectionFeature = context.Features.Get<IHttpRequestBodyDetectionFeature>();
+            Assert.False(requestBodyDetectionFeature.CanHaveBody);
+
             var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
             Assert.True(connectFeature.IsExtendedConnect);
             Assert.Equal(HttpMethods.Connect, context.Request.Method);
