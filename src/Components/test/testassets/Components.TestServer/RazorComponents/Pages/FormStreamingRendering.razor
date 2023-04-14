@@ -1,0 +1,36 @@
+﻿@page "/form-streaming"
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [StreamRendering(true)]
+
+<h1>Streaming Rendering</h1>
+
+@* This just sets the context for the binding, this happens normally inside RouteView *@
+<CascadingModelBinder Name="/form-streaming">
+    <EditForm id="process" method="POST" OnValidSubmit="ProcessForm">
+        <input type="submit" value="Process form" />
+    </EditForm>
+</CascadingModelBinder>
+
+<p id="status">
+    @if (_processing)
+    {
+        <text>Processing form...</text>
+    }
+    else if (_done)
+    {
+        <text>Completed</text>
+    }
+</p>
+
+@code {
+    bool _processing = false;
+    bool _done = false;
+
+    private async Task ProcessForm()
+    {
+        _processing = true;
+        await Task.Yield();
+        _processing = false;
+        _done = true;
+    }
+}

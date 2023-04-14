@@ -64,4 +64,20 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.FindElement(By.Id("end-response-link")).Click();
         Browser.Equal("Finished", () => getStatusText().Text);
     }
+
+    [Fact]
+    public void CanPerformFormPostWithStreamedResponses()
+    {
+        Navigate($"{ServerPathBase}/form-streaming");
+
+        // Initial "waiting" state
+        var submit = Browser.Exists(By.CssSelector("input[type=submit]"));
+        var getStatusText = () => Browser.Exists(By.Id("status"));
+        Assert.Equal("", getStatusText().Text);
+
+        submit.Click();
+
+        Assert.Equal("Processing form...", getStatusText().Text);
+        Assert.Equal("Completed", getStatusText().Text);
+    }
 }
