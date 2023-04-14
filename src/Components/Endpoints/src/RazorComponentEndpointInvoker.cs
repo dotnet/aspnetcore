@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -14,12 +15,14 @@ internal class RazorComponentEndpointInvoker
 {
     private readonly HttpContext _context;
     private readonly EndpointHtmlRenderer _renderer;
+    private readonly Type _rootComponent;
     private readonly Type _componentType;
 
-    public RazorComponentEndpointInvoker(HttpContext context, Type componentType)
+    public RazorComponentEndpointInvoker(HttpContext context, Type rootComponent, Type componentType)
     {
         _context = context;
         _renderer = _context.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        _rootComponent = rootComponent;
         _componentType = componentType;
     }
 
@@ -31,16 +34,7 @@ internal class RazorComponentEndpointInvoker
     private async Task RenderComponentCore()
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
-
-        // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
-        // backing buffers could come from a pool like they do during rendering.
-        var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-                {
-                    { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
-                    { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
-                    { nameof(RazorComponentEndpointHost.ComponentParameters), null },
-                });
-
+        var data = _context.GetRouteData();
         await using var writer = CreateResponseWriter(_context.Response.Body);
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
@@ -48,8 +42,8 @@ internal class RazorComponentEndpointInvoker
         // component takes care of switching into your desired render mode when it produces its own output.
         var htmlContent = await _renderer.RenderEndpointComponent(
             _context,
-            typeof(RazorComponentEndpointHost),
-            hostParameters,
+            _rootComponent,
+            ParameterView.Empty,
             waitForQuiescence: false);
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
