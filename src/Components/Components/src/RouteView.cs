@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public class RouteView : IComponent
 {
-    private readonly RenderFragment _renderDelegate;
-    private readonly RenderFragment _renderPageWithParametersDelegate;
     private RenderHandle _renderHandle;
 
     [Inject]
@@ -39,16 +37,6 @@ public class RouteView : IComponent
     [Parameter]
     public Type DefaultLayout { get; set; }
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="RouteView"/>.
-    /// </summary>
-    public RouteView()
-    {
-        // Cache the delegate instances
-        _renderDelegate = Render;
-        _renderPageWithParametersDelegate = RenderPageWithParameters;
-    }
-
     /// <inheritdoc />
     public void Attach(RenderHandle renderHandle)
     {
@@ -65,7 +53,7 @@ public class RouteView : IComponent
             throw new InvalidOperationException($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.");
         }
 
-        _renderHandle.Render(_renderDelegate);
+        _renderHandle.Render(Render);
         return Task.CompletedTask;
     }
 
@@ -82,7 +70,7 @@ public class RouteView : IComponent
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), _renderPageWithParametersDelegate);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), RenderPageWithParameters);
         builder.CloseComponent();
     }
 
