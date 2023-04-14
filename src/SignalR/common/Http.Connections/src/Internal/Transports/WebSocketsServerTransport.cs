@@ -60,9 +60,12 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
     public async Task ProcessSocketAsync(WebSocket socket)
     {
+        var ignoreFirstCancel = false;
         if (_application.Input is AckPipeReader reader)
         {
             _aborted = false;
+            // TODO: why is this needed on initial connection start, ideally should be in if condition below
+            ignoreFirstCancel = true;
             // TODO: check if the pipe was used previously?
             // Currently checked in Resend
             if (reader.Resend())
@@ -98,7 +101,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         }
 
         var receiving = StartReceiving(socket);
-        var sending = StartSending(socket, true);
+        var sending = StartSending(socket, ignoreFirstCancel);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending);
