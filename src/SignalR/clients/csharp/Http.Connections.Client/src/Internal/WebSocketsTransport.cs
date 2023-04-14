@@ -289,13 +289,15 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         _stopCts = new CancellationTokenSource();
 
+        var ignoreFirstCanceled = false;
+
         if (_transport is null)
         {
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
             DuplexPipePair pair;
             if (_useAck)
             {
-                pair = CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+                pair = CreateAckConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
             }
             else
             {
@@ -307,59 +309,44 @@ internal sealed partial class WebSocketsTransport : ITransport
         }
         else
         {
-            // TODO: set pipe to start resend
             if (_application!.Input is AckPipeReader reader)
             {
-                _logger.LogInformation("start resend");
-                // write nothing so just the ackid gets sent to server
-                // server will then send everything client may have missed as well as the last ackid so the client can resend
-                var buf = new byte[AckPipeWriter.FrameSize];
-                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_transport.Output)).LastAck);
-                await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameSize), _webSocketMessageType, true, default).ConfigureAwait(false);
-                _logger.LogInformation("send resend {lastAck}", ((AckPipeWriter)(_transport.Output)).LastAck);
-                // set after first send to server
-                reader.Resend();
-                // once we've received something from the server (which will contain the ack id for the client)
-                // we can start the normal read/write loops, clients first send will resend everything the server missed
-                var memory = _application.Output.GetMemory();
-                var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
-                Debug.Assert(isArray);
-
-                // Exceptions are handled above where the send and receive tasks are being run.
-                var receiveResult = await _webSocket.ReceiveAsync(arraySegment, _stopCts.Token).ConfigureAwait(false);
-                _application.Output.Advance(receiveResult.Count);
-                // server sends 0 length, but with latest ack, so there shouldn't be more than a frame of data sent
-                Debug.Assert(receiveResult.Count == AckPipeWriter.FrameSize);
-                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
-                // Parsing ack id and updating reader here avoids issue where we send to server before receive loop runs, which is what normally updates ack
-                // This avoids resending data that was already acked
-                var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(memory), reader);
-                Debug.Assert(parsedLen == 0);
-                void LogBytes(Memory<byte> memory, ILogger logger)
+                if (reader.Resend())
                 {
-                    var sb = new StringBuilder();
-                    sb.Append("received: ");
-                    foreach (var b in memory.Span)
-                    {
-                        sb.Append($"0x{b:x} ");
-                    }
-                    logger.LogDebug(sb.ToString());
-                }
-                _logger.LogInformation("recv resend");
+                    // Start reconnect ack handshake
+                    // 1. Send ack ID to server for last message we recieved from server before we disconnected
+                    // 2. Read from server to get the last ack ID it received before we disconnecting
+                    // 3. Resume normal send/receive loops
 
-                var flushResult = await _application.Output.FlushAsync().ConfigureAwait(false);
-                _logger.LogInformation("done resend");
-                // TODO: figure out solution
-                // delay to allow receive loop to read, which updates the ack position so we don't resend data to the server
-                //await Task.Delay(2000);
+                    ignoreFirstCanceled = true;
+                    var buf = new byte[AckPipeWriter.FrameSize];
+                    AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)_transport.Output).LastAck);
+                    await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameSize), _webSocketMessageType, true, _stopCts.Token).ConfigureAwait(false);
+
+                    Array.Clear(buf, 0, buf.Length);
+                    var receiveResult = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameSize), _stopCts.Token).ConfigureAwait(false);
+                    // server sends 0 length, but with latest ack, so there shouldn't be more than a frame of data sent
+                    Debug.Assert(receiveResult.Count == AckPipeWriter.FrameSize);
+                    // Parsing ack id and updating reader here avoids issue where we send to server before receive loop runs, which is what normally updates ack
+                    // This avoids resending data that was already acked
+                    var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(buf), reader);
+
+                    // TODO: why do we need to unblock the receive loop to not delay/block shutdown sometimes?
+                    // Looks like calling stop/dispose on the client doesn't avoid the reconnect cycle in the transport, we'll need to fix that
+                    var flushResult = await _application.Output.FlushAsync(default).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                Debug.Assert(false);
             }
         }
 
         // TODO: Handle TCP connection errors
         // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
-        Running = ProcessSocketAsync(_webSocket, url);
+        Running = ProcessSocketAsync(_webSocket, url, ignoreFirstCanceled);
 
-        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+        static DuplexPipePair CreateAckConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
         {
             var input = new Pipe(inputOptions);
             var output = new Pipe(outputOptions);
@@ -375,7 +362,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         }
     }
 
-    private async Task ProcessSocketAsync(WebSocket socket, Uri url)
+    private async Task ProcessSocketAsync(WebSocket socket, Uri url, bool ignoreFirstCanceled)
     {
         Debug.Assert(_application != null);
 
@@ -383,7 +370,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         {
             // Begin sending and receiving.
             var receiving = StartReceiving(socket);
-            var sending = StartSending(socket);
+            var sending = StartSending(socket, ignoreFirstCanceled);
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
@@ -396,11 +383,8 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // 1. Waiting for application data
                 // 2. Waiting for a websocket send to complete
 
-                //if (_closed)
-                {
-                    // Cancel the application so that ReadAsync yields
-                    _application.Input.CancelPendingRead();
-                }
+                // Cancel the application so that ReadAsync yields
+                _application.Input.CancelPendingRead();
 
                 var resultTask = await Task.WhenAny(sending, Task.Delay(_closeTimeout, _stopCts.Token)).ConfigureAwait(false);
 
@@ -431,8 +415,6 @@ internal sealed partial class WebSocketsTransport : ITransport
             }
         }
 
-        Console.WriteLine("closed socket");
-
         if (_useAck && !_closed)
         {
             await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text, default).ConfigureAwait(false);
@@ -445,7 +427,6 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         try
         {
-            _logger.LogInformation("recv started");
             while (true)
             {
 #if NETSTANDARD2_1 || NETCOREAPP
@@ -494,18 +475,6 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
-                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
-                void LogBytes(Memory<byte> memory, ILogger logger)
-                {
-                    var sb = new StringBuilder();
-                    sb.Append("received: ");
-                    foreach (var b in memory.Span)
-                    {
-                        sb.Append($"0x{b:x} ");
-                    }
-                    logger.LogDebug(sb.ToString());
-                }
-
                 _application.Output.Advance(receiveResult.Count);
 
                 var flushResult = await _application.Output.FlushAsync().ConfigureAwait(false);
@@ -549,7 +518,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         }
     }
 
-    private async Task StartSending(WebSocket socket)
+    private async Task StartSending(WebSocket socket, bool ignoreFirstCanceled)
     {
         Debug.Assert(_application != null);
 
@@ -557,25 +526,10 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         try
         {
-            // TODO: only for acks
-            var ignoreFirstCanceled = true;
-            _logger.LogInformation("send started");
             while (true)
             {
                 var result = await _application.Input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
-
-                //LogBytes(buffer.ToArray(), _logger);
-                void LogBytes(Memory<byte> memory, ILogger logger)
-                {
-                    var sb = new StringBuilder();
-                    sb.Append("sending: ");
-                    foreach (var b in memory.Span)
-                    {
-                        sb.Append($"0x{b:x} ");
-                    }
-                    logger.LogDebug(sb.ToString());
-                }
 
                 // Get a frame from the application
 
@@ -654,13 +608,9 @@ internal sealed partial class WebSocketsTransport : ITransport
 
             if (_closed)
             {
-                _application.Input.Complete();
+                _application.Input.Complete(error);
             }
-
-            if (error is not null)
-            {
-                _logger.LogInformation(error, "send loop");
-            }
+            // TODO: log error in else?
 
             Log.SendStopped(_logger);
         }

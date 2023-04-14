@@ -2698,7 +2698,7 @@ public class HubConnectionTests : FunctionalTestBase
             connectionBuilder.Services.AddSingleton(protocol);
             var connection = connectionBuilder.Build();
 
-            var closedTcs = new TaskCompletionSource<Exception?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var closedTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
             connection.Closed += ex =>
             {
                 closedTcs.SetResult(ex);

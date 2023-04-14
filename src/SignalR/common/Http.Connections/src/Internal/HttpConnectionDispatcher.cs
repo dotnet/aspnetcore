@@ -155,7 +155,7 @@ internal sealed partial class HttpConnectionDispatcher
 
             if (connection.TryActivatePersistentConnection(connectionDelegate, sse, Task.CompletedTask, context, _logger))
             {
-                await DoPersistentConnection(connectionDelegate, sse, context, connection);
+                await DoPersistentConnection(connection);
             }
         }
         //else if (context.WebSockets.IsWebSocketRequest)
@@ -327,16 +327,12 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task DoPersistentConnection(ConnectionDelegate connectionDelegate,
-                                              IHttpTransport transport,
-                                              HttpContext context,
-                                              HttpConnectionContext connection)
+    private async Task DoPersistentConnection(HttpConnectionContext connection, HttpContext context)
     {
-        //if (connection.TryActivatePersistentConnection(connectionDelegate, transport, context, _logger))
-        {
-            context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-            // Wait for any of them to end
-            await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
+        context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+
+        // Wait for any of them to end
+        await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
             await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
         }
