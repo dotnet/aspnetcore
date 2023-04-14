@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Metrics;
 using Moq;
@@ -19,7 +18,7 @@ using static Microsoft.AspNetCore.Hosting.HostingApplication;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
 
-public class HostingApplicationTests : LoggedTest
+public class HostingApplicationTests
 {
     [Fact]
     public void Metrics()
@@ -214,11 +213,9 @@ public class HostingApplicationTests : LoggedTest
         hostingApplication.DisposeContext(context, null);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35142")]
-    public void IHttpActivityFeatureIsPopulated(bool enableLogging)
+    public void IHttpActivityFeatureIsPopulated()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var dummySource = new ActivitySource(Path.GetRandomFileName());
@@ -230,8 +227,7 @@ public class HostingApplicationTests : LoggedTest
         };
         ActivitySource.AddActivityListener(listener);
 
-        var loggerFactory = enableLogging ? LoggerFactory : NullLoggerFactory.Instance;
-        var hostingApplication = CreateApplication(activitySource: testSource, loggerFactory: loggerFactory);
+        var hostingApplication = CreateApplication(activitySource: testSource);
         var httpContext = new DefaultHttpContext();
         var context = hostingApplication.CreateContext(httpContext.Features);
 
@@ -293,7 +289,7 @@ public class HostingApplicationTests : LoggedTest
     [Fact]
     public void IHttpActivityFeatureIsNotPopulatedWithoutAListener()
     {
-        var hostingApplication = CreateApplication(loggerFactory: NullLoggerFactory.Instance);
+        var hostingApplication = CreateApplication();
         var httpContext = new DefaultHttpContext();
         httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
         var context = hostingApplication.CreateContext(httpContext.Features);
@@ -306,8 +302,8 @@ public class HostingApplicationTests : LoggedTest
         hostingApplication.DisposeContext(context, null);
     }
 
-    private HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,
-        ActivitySource activitySource = null, IMeterFactory meterFactory = null, ILoggerFactory loggerFactory = null)
+    private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,
+        ActivitySource activitySource = null, IMeterFactory meterFactory = null)
     {
         var services = new ServiceCollection();
         services.AddOptions();
@@ -317,11 +313,10 @@ public class HostingApplicationTests : LoggedTest
         }
 
         httpContextFactory ??= new DefaultHttpContextFactory(services.BuildServiceProvider());
-        loggerFactory ??= LoggerFactory;
 
         var hostingApplication = new HostingApplication(
             ctx => Task.CompletedTask,
-            loggerFactory.CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics"),
+            NullLogger.Instance,
             new DiagnosticListener("Microsoft.AspNetCore"),
             activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
             DistributedContextPropagator.CreateDefaultPropagator(),
