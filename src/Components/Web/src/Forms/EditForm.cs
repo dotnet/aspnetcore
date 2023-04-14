@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -77,6 +78,11 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
+    /// <summary>
+    /// Gets the context associated with data bound to the EditContext in this form.
+    /// </summary>
+    [CascadingParameter] public ModelBindingContext? BindingContext { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -122,6 +128,10 @@ public class EditForm : ComponentBase
         builder.OpenElement(0, "form");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
+        if (BindingContext != null)
+        {
+            builder.SetEventHandlerName(BindingContext.Name);
+        }
         builder.OpenComponent<CascadingValue<EditContext>>(3);
         builder.AddComponentParameter(4, "IsFixed", true);
         builder.AddComponentParameter(5, "Value", _editContext);

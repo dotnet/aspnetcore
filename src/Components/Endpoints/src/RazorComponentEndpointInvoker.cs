@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +33,7 @@ internal class RazorComponentEndpointInvoker
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
 
-        if (await ValidateRequestAsync())
+        if (!await TryValidateRequestAsync(out var isPost))
         {
             // If the request is not valid we've already set the response to a 400 or similar
             // and we can just exit early.
@@ -57,7 +58,9 @@ internal class RazorComponentEndpointInvoker
             _context,
             typeof(RazorComponentEndpointHost),
             hostParameters,
-            waitForQuiescence: false);
+            waitForQuiescence: isPost);
+
+        var quiesceTask = isPost ? _renderer.DispatchCapturedEvent() : htmlContent.QuiescenceTask;
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
@@ -65,9 +68,9 @@ internal class RazorComponentEndpointInvoker
         // renderer sync context and cause a batch that would get missed.
         htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
-        if (!htmlContent.QuiescenceTask.IsCompleted)
+        if (!quiesceTask.IsCompleted)
         {
-            await _renderer.SendStreamingUpdatesAsync(_context, htmlContent.QuiescenceTask, writer);
+            await _renderer.SendStreamingUpdatesAsync(_context, quiesceTask, writer);
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
@@ -76,9 +79,10 @@ internal class RazorComponentEndpointInvoker
         await writer.FlushAsync();
     }
 
-    private Task<bool> ValidateRequestAsync()
+    private Task<bool> TryValidateRequestAsync(out bool isPost)
     {
-        if (HttpMethods.IsPost(_context.Request.Method))
+        isPost = HttpMethods.IsPost(_context.Request.Method);
+        if (isPost)
         {
             return Task.FromResult(TrySetFormHandler());
         }

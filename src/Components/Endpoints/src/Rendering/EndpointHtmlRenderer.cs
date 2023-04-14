@@ -119,6 +119,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
+    internal Task DispatchCapturedEvent()
+    {
+        // Clear the list of non-streaming rendering tasks, since we've waited for quiesce before dispatching the event.
+        _nonStreamingPendingTasks.Clear();
+        return DispatchEventAsync(_capturedNamedEvent.EventHandlerId, null, EventArgs.Empty, quiesce: true);
+    }
+
     private static string GenerateComponentPath(ComponentState state)
     {
         // We are generating a path from the root component with te component type names like:

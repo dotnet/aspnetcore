@@ -39,7 +39,7 @@ internal class RazorComponentEndpointHost : IComponent
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), RenderPageWithParameters);
         builder.CloseComponent();
     }
 

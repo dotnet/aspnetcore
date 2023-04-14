@@ -373,6 +373,22 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </returns>
     public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
     {
+        return DispatchEventAsync(eventHandlerId, fieldInfo, eventArgs, quiesce: false);
+    }
+
+    /// <summary>
+    /// Notifies the renderer that an event has occurred.
+    /// </summary>
+    /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
+    /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
+    /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
+    /// <param name="quiesce">Whether to wait for quiescence or not.</param>
+    /// <returns>
+    /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
+    /// has completed.
+    /// </returns>
+    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool quiesce)
+    {
         Dispatcher.AssertAccess();
 
         var callback = GetRequiredEventCallback(eventHandlerId);
@@ -402,6 +418,17 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _isBatchInProgress = true;
 
             task = callback.InvokeAsync(eventArgs);
+            if (quiesce)
+            {
+                if (_ongoingQuiescenceTask == null)
+                {
+                    _ongoingQuiescenceTask = task;
+                }
+                else
+                {
+                    AddToPendingTasksWithErrorHandling(task, receiverComponentState);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -415,6 +442,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // Since the task has yielded - process any queued rendering work before we return control
             // to the caller.
             ProcessPendingRender();
+        }
+
+        if (quiesce)
+        {
+            return WaitForQuiescence();
         }
 
         // Task completed synchronously or is still running. We already processed all of the rendering
