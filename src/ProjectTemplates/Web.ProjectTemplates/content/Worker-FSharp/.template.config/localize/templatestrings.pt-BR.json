@@ -6,6 +6,8 @@
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
+  "symbols/NativeAot/displayName": "Enable _native AOT publish",
+  "symbols/NativeAot/description": "Whether to enable the project for publishing as native AOT.",
   "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
   "postActions/restore/manualInstructions/default/text": "Executar 'dotnet restore'"
 }
