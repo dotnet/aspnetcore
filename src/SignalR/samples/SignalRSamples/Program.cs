@@ -25,8 +25,7 @@ public class Program
                 {
                     factory.AddConfiguration(c.Configuration.GetSection("Logging"));
                     factory.AddConsole();
-                    factory.SetMinimumLevel(LogLevel.Trace);
-                    //factory.SetMinimumLevel(LogLevel.Debug);
+                    factory.SetMinimumLevel(LogLevel.Debug);
                 })
                 .UseKestrel(options =>
                 {
