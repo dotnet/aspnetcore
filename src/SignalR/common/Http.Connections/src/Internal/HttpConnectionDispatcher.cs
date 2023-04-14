@@ -285,7 +285,7 @@ internal sealed partial class HttpConnectionDispatcher
                     {
                         if (transport != HttpTransportType.LongPolling)
                         {
-                            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                         }
                         else
                         {
@@ -309,7 +309,7 @@ internal sealed partial class HttpConnectionDispatcher
                     // TODO: If acks aren't enabled we can close the connection immediately
                     if (await connection.TransportTask!)
                     {
-                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
                     }
                     else
                     {
@@ -327,15 +327,12 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task DoPersistentConnection(HttpConnectionContext connection, HttpContext context)
+    private async Task DoPersistentConnection(HttpConnectionContext connection)
     {
-        context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-
         // Wait for any of them to end
         await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
-            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
-        }
+        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
     }
 
     private async Task ProcessNegotiate(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
