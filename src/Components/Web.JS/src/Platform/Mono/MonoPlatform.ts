@@ -8,12 +8,17 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
-import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
-import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
+import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
+import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, EmscriptenModule, AssetEntry, MonoConfig, ModuleAPI } from 'dotnet';
+import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
+import { WebAssemblyComponentDescriptor, discoverComponents, discoverPersistedState } from '../../Services/ComponentDescriptorDiscovery';
+import { attachRootComponentToElement, attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
+import { WebAssemblyComponentAttacher } from '../WebAssemblyComponentAttacher';
+import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
+import { WebAssemblyConfigLoader } from '../WebAssemblyConfigLoader';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -51,10 +56,8 @@ function getValueU64(ptr: number) {
 }
 
 export const monoPlatform: Platform = {
-  start: async function start(resourceLoader: WebAssemblyResourceLoader) {
-    attachDebuggerHotkey(resourceLoader);
-
-    await createRuntimeInstance(resourceLoader);
+  start: function start(options: Partial<WebAssemblyStartOptions>) {
+    return createRuntimeInstance(options);
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
@@ -161,26 +164,18 @@ export const monoPlatform: Platform = {
   },
 };
 
-function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<ModuleAPI> {
+function importDotnetJs(otpions: Partial<WebAssemblyStartOptions>): Promise<ModuleAPI> {
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
   if (!browserSupportsNativeWebAssembly) {
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  // The dotnet.*.js file has a version or hash in its name as a form of cache-busting. This is needed
-  // because it's the only part of the loading process that can't use cache:'no-cache' (because it's
-  // not a 'fetch') and isn't controllable by the developer (so they can't put in their own cache-busting
-  // querystring). So, to find out the exact URL we have to search the boot manifest.
-  const dotnetJsResourceName = Object
-    .keys(resourceLoader.bootConfig.resources.runtime)
-    .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
-  const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
-  let src = `_framework/${dotnetJsResourceName}`;
+  let src = '_framework/dotnet.js';
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
-  if (resourceLoader.startOptions.loadBootResource) {
+  if (otpions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, src, dotnetJsContentHash);
+    const customSrc = otpions.loadBootResource(resourceType, 'dotnet.js', src, '');
     if (typeof (customSrc) === 'string') {
       src = customSrc;
     } else if (customSrc) {
@@ -189,165 +184,66 @@ function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<Modu
     }
   }
 
-  // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
-  if (resourceLoader.bootConfig.cacheBootResources) {
-    const scriptElem = document.createElement('link');
-    scriptElem.rel = 'modulepreload';
-    scriptElem.href = src;
-    scriptElem.crossOrigin = 'anonymous';
-    // it will make dynamic import fail if the hash doesn't match
-    // It's currently only validated by chromium browsers
-    // Firefox doesn't break on it, but doesn't validate it either
-    scriptElem.integrity = dotnetJsContentHash;
-    document.head.appendChild(scriptElem);
-  }
-
   const absoluteSrc = (new URL(src, document.baseURI)).toString();
   return import(/* webpackIgnore: true */ absoluteSrc);
 }
 
-function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): DotnetModuleConfig {
-  const resources = resourceLoader.bootConfig.resources;
-
-  const assets: AssetEntry[] = [];
+function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platformApi: any): DotnetModuleConfig {
   const environmentVariables = {};
   const config: MonoConfig = {
-    assets,
-    globalizationMode: 'icu',
     environmentVariables: environmentVariables,
-    debugLevel: hasDebuggingEnabled() ? 1 : 0,
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
   };
-  const monoToBlazorAssetTypeMap: { [key: string]: WebAssemblyBootResourceType | undefined } = {
-    'assembly': 'assembly',
-    'pdb': 'pdb',
-    'icu': 'globalization',
-    'vfs': 'globalization',
-    'dotnetwasm': 'dotnetwasm',
-  };
-  const behaviorByName = (name) => {
-    return name === 'dotnet.timezones.blat' ? 'vfs'
-      : (name.startsWith('dotnet.worker') && name.endsWith('.js')) ? 'js-module-threads'
-        : (name.startsWith('dotnet') && name.endsWith('.js')) ? 'js-module-dotnet'
-          : name.startsWith('icudt') ? 'icu'
-            : 'other';
-  };
 
-  // it would not `loadResource` on types for which there is no typesMap mapping
-  const downloadResource = (asset: AssetEntry): LoadingResource | undefined => {
-    // GOTCHA: the mapping to blazor asset type may not cover all mono owned asset types in the future in which case:
-    // A) we may need to add such asset types to the mapping and to WebAssemblyBootResourceType
-    // B) or we could add generic "runtime" type to WebAssemblyBootResourceType as fallback
-    // C) or we could return `undefined` and let the runtime to load the asset. In which case the progress will not be reported on it and blazor will not be able to cache it.
-    const type = monoToBlazorAssetTypeMap[asset.behavior];
-    if (type !== undefined) {
-      const res = resourceLoader.loadResource(asset.name, asset.resolvedUrl!, asset.hash!, type);
-      asset.pendingDownload = res;
-      totalResources++;
-
-      // TODO MF: Hook onDownloadResourceProgress
-      res.response.then(setProgress);
-      return res;
+  const onConfigLoaded = async (bootConfig: BootJsonData & MonoConfig): Promise<void> => {
+    if (bootConfig.icuDataMode === ICUDataMode.Sharded) {
+      environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
     }
-    return undefined;
-  };
 
-  // any runtime owned assets, with proper behavior already set
-  for (const name in resources.runtimeAssets) {
-    const asset = resources.runtimeAssets[name] as AssetEntry;
-    asset.name = name;
-    asset.resolvedUrl = `_framework/${name}`;
-    assets.push(asset);
-    if (asset.behavior === 'dotnetwasm') {
-      // start the download as soon as possible
-      downloadResource(asset);
+    if (bootConfig.aspnetCoreBrowserTools) {
+      // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
+      environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
     }
-  }
-  for (const name in resources.assembly) {
-    const asset: AssetEntry = {
-      name,
-      resolvedUrl: `_framework/${name}`,
-      hash: resources.assembly[name],
-      behavior: 'assembly',
+
+    // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
+    // the document.
+    const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
+    const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
+    Blazor._internal.registeredComponents = {
+      getRegisteredComponentsCount: () => componentAttacher.getCount(),
+      getId: (index) => componentAttacher.getId(index),
+      getAssembly: (id) => componentAttacher.getAssembly(id),
+      getTypeName: (id) => componentAttacher.getTypeName(id),
+      getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
+      getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
     };
-    assets.push(asset);
-    // start the download as soon as possible
-    downloadResource(asset);
-  }
-  if (hasDebuggingEnabled() && resources.pdb) {
-    for (const name in resources.pdb) {
-      const asset: AssetEntry = {
-        name,
-        resolvedUrl: `_framework/${name}`,
-        hash: resources.pdb[name],
-        behavior: 'pdb',
-      };
-      assets.push(asset);
-      downloadResource(asset);
-    }
-  }
-  const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
-  const icuDataResourceName = getICUResourceName(resourceLoader.bootConfig, applicationCulture);
-  let hasIcuData = false;
-  for (const name in resources.runtime) {
-    const behavior = behaviorByName(name) as any;
-    if (behavior === 'icu') {
-      if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Invariant) {
-        continue;
+
+    Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
+
+    Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
+      const element = componentAttacher.resolveRegisteredElement(selector);
+      if (!element) {
+        attachRootComponentToElement(selector, componentId, rendererId);
+      } else {
+        attachRootComponentToLogicalElement(rendererId, element, componentId, false);
       }
-      if (name !== icuDataResourceName) {
-        continue;
-      }
-      hasIcuData = true;
-    } else if (behavior === 'js-module-dotnet') {
-      continue;
-    }
-    if (resources.runtimeAssets.hasOwnProperty(name)) {
-      continue;
-    }
-    const asset: AssetEntry = {
-      name,
-      resolvedUrl: `_framework/${name}`,
-      hash: resources.runtime[name],
-      behavior,
     };
-    assets.push(asset);
-    downloadResource(asset);
-  }
 
-  if (!hasIcuData) {
-    config.globalizationMode = 'invariant';
-  }
+    platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
 
-  if (resourceLoader.bootConfig.modifiableAssemblies) {
-    // Configure the app to enable hot reload in Development.
-    environmentVariables['DOTNET_MODIFIABLE_ASSEMBLIES'] = resourceLoader.bootConfig.modifiableAssemblies;
-  }
-
-  if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Sharded) {
-    environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
-  }
-
-  if (resourceLoader.startOptions.applicationCulture) {
-    // If a culture is specified via start options use that to initialize the Emscripten \  .NET culture.
-    environmentVariables['LANG'] = `${resourceLoader.startOptions.applicationCulture}.UTF-8`;
-  }
-
-  if (resourceLoader.bootConfig.aspnetCoreBrowserTools) {
-    // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-    environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = resourceLoader.bootConfig.aspnetCoreBrowserTools;
-  }
+    WebAssemblyConfigLoader.initAsync(bootConfig, bootConfig.applicationEnvironment!, options || {});
+  };
 
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
   // TODO (moduleConfig as any).preloadPlugins = []; // why do we need this ?
   const dotnetModuleConfig: DotnetModuleConfig = {
     ...moduleConfig,
-    configSrc: undefined,
+    onConfigLoaded,
+    onDownloadResourceProgress: setProgress,
+    getApplicationEnvironment: response => response.headers.get('Blazor-Environment') || 'Production',
     config,
-    downloadResource,
-    disableDotnet6Compatibility: false,
     print,
     printErr,
   };
@@ -355,20 +251,13 @@ function prepareRuntimeConfig(resourceLoader: WebAssemblyResourceLoader): Dotnet
   return dotnetModuleConfig;
 }
 
-async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader): Promise<void> {
-  const { dotnet } = await importDotnetJs(resourceLoader);
-  const moduleConfig = prepareRuntimeConfig(resourceLoader);
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi> {
+  const platformApi: Partial<PlatformApi> = {};
+  const { dotnet } = await importDotnetJs(options);
+  const moduleConfig = prepareRuntimeConfig(options, platformApi);
   const anyDotnet = (dotnet as any);
 
   anyDotnet.withModuleConfig(moduleConfig);
-
-  if (resourceLoader.bootConfig.startupMemoryCache !== undefined) {
-    anyDotnet.withStartupMemoryCache(resourceLoader.bootConfig.startupMemoryCache);
-  }
-
-  if (resourceLoader.bootConfig.runtimeOptions) {
-    anyDotnet.withRuntimeOptions(resourceLoader.bootConfig.runtimeOptions);
-  }
 
   const runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
@@ -376,9 +265,14 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
   BINDING = binding;
   MONO = mono;
   MONO_INTERNAL = mono_internal;
+  const resourceLoader = MONO_INTERNAL.resourceLoader;
+  platformApi.resourceLoader = resourceLoader;
+
+  // TODO MF: Moved after .NET started
+  attachDebuggerHotkey(resourceLoader);
 
   Blazor._internal.dotNetCriticalError = printErr;
-  Blazor._internal.loadLazyAssembly = (assemblyNameToLoad) => loadLazyAssembly(resourceLoader, assemblyNameToLoad);
+  Blazor._internal.loadLazyAssembly = (assemblyNameToLoad) => loadLazyAssembly(MONO_INTERNAL.resourceLoader, assemblyNameToLoad);
   Blazor._internal.loadSatelliteAssemblies = (culturesToLoad, loader) => loadSatelliteAssemblies(resourceLoader, culturesToLoad, loader);
   setModuleImports('blazor-internal', {
     Blazor: { _internal: Blazor._internal },
@@ -394,14 +288,11 @@ async function createRuntimeInstance(resourceLoader: WebAssemblyResourceLoader):
     resourceLoader.logToConsole();
   }
   resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
+
+  return platformApi as PlatformApi;
 }
 
-let resourcesLoaded = 0;
-let totalResources = 0;
-
-// TODO MF: Hook onDownloadResourceProgress
-function setProgress() {
-  resourcesLoaded++;
+function setProgress(resourcesLoaded, totalResources) {
   const percentage = resourcesLoaded / totalResources * 100;
   document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
   document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
@@ -505,47 +396,7 @@ function attachInteropInvoker(): void {
         argsJson,
       ) as string;
     },
-  });
-}
-
-function getICUResourceName(bootConfig: BootJsonData, culture: string | undefined): string {
-  if (bootConfig.icuDataMode === ICUDataMode.Custom) {
-    const icuFiles = Object
-      .keys(bootConfig.resources.runtime)
-      .filter(n => n.startsWith('icudt') && n.endsWith('.dat'));
-    if (icuFiles.length === 1) {
-      const customIcuFile = icuFiles[0];
-      return customIcuFile;
-    }
-  }
-
-  const combinedICUResourceName = 'icudt.dat';
-  if (!culture || bootConfig.icuDataMode === ICUDataMode.All) {
-    return combinedICUResourceName;
-  }
-
-  const prefix = culture.split('-')[0];
-  if (prefix === 'en' ||
-    [
-      'fr',
-      'fr-FR',
-      'it',
-      'it-IT',
-      'de',
-      'de-DE',
-      'es',
-      'es-ES',
-    ].includes(culture)) {
-    return 'icudt_EFIGS.dat';
-  }
-  if ([
-    'zh',
-    'ko',
-    'ja',
-  ].includes(prefix)) {
-    return 'icudt_CJK.dat';
-  }
-  return 'icudt_no_CJK.dat';
+  }); ''
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
