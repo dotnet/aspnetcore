@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
-using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using PipelinesOverNetwork;
@@ -21,6 +19,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
     private readonly HttpConnectionContext _connection;
     private volatile bool _aborted;
 
+    // Used to determine if the close was graceful or a network issue
     private bool _closed;
 
     public WebSocketsServerTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
@@ -62,8 +61,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
     public async Task ProcessSocketAsync(WebSocket socket)
     {
-        Task receiving;
-        Task sending;
         if (_application.Input is AckPipeReader reader)
         {
             _aborted = false;
@@ -71,31 +68,38 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
             // Currently checked in Resend
             if (reader.Resend())
             {
+                // Start reconnect ack handshake
+                // 1. Read from client to get the last ack ID it received before disconnecting
+                // 2. Send ack ID to client for last message we received from client before it disconnected
+                // 3. Resume normal send/receive loops
+
                 // wait for first read?
                 var buf = new byte[AckPipeWriter.FrameSize];
                 var res = await socket.ReceiveAsync(buf, _connection.Cancellation?.Token ?? default);
                 Debug.Assert(res.Count == AckPipeWriter.FrameSize);
+                // Needed so that the readers ack position gets updated and we don't re-send messages to client
+                // Normally this would be done by the HubConnectionHandler loop, but that requires a new message to be read
+                // so we instead make sure it's updated immediately here
                 var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(buf), reader);
                 Debug.Assert(parsedLen == 0);
-                await _application.Output.WriteAsync(buf);
+                // we don't need to write to the pipe if we parse the frame?
+                //await _application.Output.WriteAsync(buf);
 
                 var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
                                     ? WebSocketMessageType.Binary
                                     : WebSocketMessageType.Text);
-                buf = new byte[AckPipeWriter.FrameSize];
-                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_connection.Transport.Output)).LastAck);
-                _logger.LogInformation("sending resend ack {lastack}", ((AckPipeWriter)(_connection.Transport.Output)).LastAck);
+                Array.Clear(buf);
+                Debug.Assert(_connection.Transport.Output is AckPipeWriter);
+                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)_connection.Transport.Output).LastAck);
+                _connection.StartSendCancellation();
+                // send without going through the Pipe, we don't treat this as an ackable message
                 await socket.SendAsync(buf, webSocketMessageType, endOfMessage: true, _connection.SendingToken);
+                _connection.StopSendCancellation();
             }
         }
-        // if (_application.Input.HasBeenUsedBefore)
-        //     read first to get the ack id for resending
-        //     set resend id on output pipe
-        //     start send loop which will resend and tell the client the last ack id it got from the read side
-            // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
 
-        receiving = StartReceiving(socket);
-        sending = StartSending(socket, true);
+        var receiving = StartReceiving(socket);
+        var sending = StartSending(socket, true);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending);
@@ -167,7 +171,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
         try
         {
-            _logger.LogInformation("start recv");
             while (!token.IsCancellationRequested)
             {
 
@@ -189,17 +192,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 {
                     _closed = true;
                     return;
-                }
-
-                void LogBytes(Memory<byte> memory, ILogger logger)
-                {
-                    var sb = new StringBuilder();
-                    sb.Append("received: ");
-                    foreach (var b in memory.Span)
-                    {
-                        sb.Append($"0x{b:x} ");
-                    }
-                    logger.LogDebug(sb.ToString());
                 }
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
@@ -250,7 +242,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
         try
         {
-            _logger.LogInformation("start send");
             while (true)
             {
                 var result = await _application.Input.ReadAsync();
@@ -274,19 +265,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                             var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
                                 ? WebSocketMessageType.Binary
                                 : WebSocketMessageType.Text);
-
-                            //LogBytes(buffer.ToArray(), _logger);
-
-                            void LogBytes(Memory<byte> memory, ILogger logger)
-                            {
-                                var sb = new StringBuilder();
-                                sb.Append("sending: ");
-                                foreach (var b in memory.Span)
-                                {
-                                    sb.Append($"0x{b:x} ");
-                                }
-                                logger.LogDebug(sb.ToString());
-                            }
 
                             if (WebSocketCanSend(socket))
                             {

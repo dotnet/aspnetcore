@@ -66,7 +66,8 @@ internal sealed class AckPipeReader : PipeReader
             return false;
         }
         // Unblocks ReadAsync and gives a buffer with the examined but not consumed bytes
-        // This avoids the issue where we have to wait for someone to write to the pipe before completing the reconnect handshake
+        // This avoids the issue where we have to wait for someone to write to the pipe before
+        // the receive loop will see what might have been written during disconnect
         CancelPendingRead();
         _resend = true;
         return true;
@@ -113,12 +114,11 @@ internal sealed class AckPipeReader : PipeReader
     {
         var res = await _inner.ReadAsync(cancellationToken).ConfigureAwait(false);
         var buffer = res.Buffer;
-        long hadAck = 0;
+
         lock (_lock)
         {
             if (_ackDiff != 0)
             {
-                hadAck = _ackDiff;
                 // This detects the odd scenario where _consumed points to the end of a Segment and buffer.Slice(_ackDiff) points to the beginning of the next Segment
                 // While they technically point to different positions, they point to the same concept of "beginning of the next buffer"
                 var ackSlice = buffer.Slice(_ackDiff);
@@ -129,11 +129,12 @@ internal sealed class AckPipeReader : PipeReader
                 }
                 else if (!_consumed.Equals(default))
                 {
-                    if (buffer.Slice(_consumed).Length == ackSlice.Length)
+                    var consumedLength = buffer.Slice(_consumed).Length;
+                    if (consumedLength == ackSlice.Length)
                     {
                         _consumed = default;
                     }
-                    else if (buffer.Slice(_consumed).Length > ackSlice.Length)
+                    else if (consumedLength > ackSlice.Length)
                     {
                         // ack is greater than consumed, should not be possible
 
@@ -141,7 +142,7 @@ internal sealed class AckPipeReader : PipeReader
                         // e.g. 13 bytes in underlying pipe, only consumed 11 during Read+Advance. Will an ack id of 12 be allowed?
                         Debug.Assert(false);
                     }
-                    else if (buffer.Slice(_consumed).Length < ackSlice.Length)
+                    else if (consumedLength < ackSlice.Length)
                     {
                         // this is normal, ack id is less than total written
                     }
@@ -153,7 +154,7 @@ internal sealed class AckPipeReader : PipeReader
                 _ackPosition = buffer.Start;
             }
         }
-        bool wasResend = _resend;
+
         // Slice consumed, unless resending, then slice to ackPosition
         if (_resend)
         {
@@ -231,8 +232,10 @@ internal sealed class AckPipeWriter : PipeWriter
         _inner.Complete(exception);
     }
 
-    // X - 8 byte size of payload as uint
-    // Y - 8 byte number of acked bytes
+    // TODO: We could reduce this to 16 bytes for binary transports and avoid the base64 encode/decode
+    // TODO: We could also reduce this to 1 + 12 (or 8) bytes occasionally if we add a flag for no new ack ID and avoid sending an ack
+    // X - 12 byte - size of payload as long and base64 encoded
+    // Y - 12 byte - number of acked bytes as long and base64 encoded
     // Z - payload
     // [ XXXX YYYY ZZZZ ]
     public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)

@@ -45,5 +45,8 @@ public class NegotiationResponse
     /// </summary>
     public string? Error { get; set; }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public bool UseAcking { get; set; }
 }

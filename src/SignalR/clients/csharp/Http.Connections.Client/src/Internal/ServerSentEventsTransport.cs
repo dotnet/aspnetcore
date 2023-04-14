@@ -76,7 +76,6 @@ internal sealed partial class ServerSentEventsTransport : ITransport
             throw;
         }
 
-
         // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
         DuplexPipePair pair;
         if (_useAck)
