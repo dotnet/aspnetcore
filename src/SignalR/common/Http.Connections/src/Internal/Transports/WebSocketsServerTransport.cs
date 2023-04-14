@@ -7,7 +7,6 @@ using System.IO.Pipelines;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
-using PipelinesOverNetwork;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 
