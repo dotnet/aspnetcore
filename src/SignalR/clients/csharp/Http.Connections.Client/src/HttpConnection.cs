@@ -397,6 +397,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         // The negotiation response gets cleared in the fallback scenario.
                         if (negotiationResponse == null)
                         {
+                            // Temporary until other transports work
+                            _httpConnectionOptions.UseAcks = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseAcks : false;
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                         }

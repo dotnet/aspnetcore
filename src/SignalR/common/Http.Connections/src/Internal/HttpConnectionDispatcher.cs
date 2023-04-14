@@ -158,52 +158,20 @@ internal sealed partial class HttpConnectionDispatcher
                 await DoPersistentConnection(connection);
             }
         }
-        //else if (context.WebSockets.IsWebSocketRequest)
-        //{
-        //    // Connection can be established lazily
-        //    var connection = await GetOrCreateConnectionAsync(context, options);
-        //    if (connection == null)
-        //    {
-        //        // No such connection, GetOrCreateConnection already set the response status code
-        //        return;
-        //    }
-
-        //    if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope))
-        //    {
-        //        // Bad connection state. It's already set the response status code.
-        //        return;
-        //    }
-
-        //    Log.EstablishedConnection(_logger);
-
-        //    // Allow the reads to be canceled
-        //    connection.Cancellation = new CancellationTokenSource();
-
-        //    var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
-
-        //    await DoPersistentConnection(connectionDelegate, ws, context, connection);
-        //}
         else
         {
-            // GET /{path} maps to long polling
+            // GET /{path} maps to long polling or WebSockets
 
+            HttpConnectionContext? connection;
             var transport = HttpTransportType.LongPolling;
             if (context.WebSockets.IsWebSocketRequest)
             {
                 transport = HttpTransportType.WebSockets;
-            }
-            else
-            {
-                AddNoCacheHeaders(context.Response);
-            }
-
-            HttpConnectionContext? connection;
-            if (transport == HttpTransportType.WebSockets)
-            {
                 connection = await GetOrCreateConnectionAsync(context, options);
             }
             else
             {
+                AddNoCacheHeaders(context.Response);
                 // Connection must already exist
                 connection = await GetConnectionAsync(context);
             }

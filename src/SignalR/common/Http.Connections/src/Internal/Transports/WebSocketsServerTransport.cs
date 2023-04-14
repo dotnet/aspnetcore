@@ -75,7 +75,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 // 2. Send ack ID to client for last message we received from client before it disconnected
                 // 3. Resume normal send/receive loops
 
-                // wait for first read?
                 var buf = new byte[AckPipeWriter.FrameSize];
                 var res = await socket.ReceiveAsync(buf, _connection.Cancellation?.Token ?? default);
                 Debug.Assert(res.Count == AckPipeWriter.FrameSize);
@@ -175,7 +174,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         {
             while (!token.IsCancellationRequested)
             {
-
                 // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                 var result = await socket.ReceiveAsync(Memory<byte>.Empty, token);
 
@@ -197,7 +195,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
 
                 Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
-                //LogBytes(memory.Slice(0, receiveResult.Count), _logger);
 
                 _application.Output.Advance(receiveResult.Count);
 
@@ -258,6 +255,8 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                         break;
                     }
 
+                    ignoreFirstCancel = false;
+
                     if (!buffer.IsEmpty)
                     {
                         try
@@ -281,7 +280,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                         catch (OperationCanceledException ex) when (ex.CancellationToken == _connection.SendingToken)
                         {
                             _closed = true;
-                            // Log
+                            // TODO: probably log
                             break;
                         }
                         catch (Exception ex)
@@ -297,16 +296,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                     {
                         break;
                     }
-                    else if (ignoreFirstCancel)
-                    {
-                        //var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
-                        //        ? WebSocketMessageType.Binary
-                        //        : WebSocketMessageType.Text);
-                        //var buf = new byte[AckPipeWriter.FrameSize];
-                        //AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)(_connection.Transport.Output)).lastAck);
-                        //await socket.SendAsync(buffer, webSocketMessageType, _connection.SendingToken);
-                    }
-                    ignoreFirstCancel = false;
                 }
                 finally
                 {
@@ -335,15 +324,15 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
             }
 
-            //if (error is not null)
+            if (_closed)
+            {
+                _application.Input.Complete(error);
+            }
+            // TODO
+            //else if (error is not null)
             //{
             //    _logger.LogError("Error in send {ex}.", error);
             //}
-
-            if (_closed)
-            {
-                _application.Input.Complete();
-            }
         }
     }
 
