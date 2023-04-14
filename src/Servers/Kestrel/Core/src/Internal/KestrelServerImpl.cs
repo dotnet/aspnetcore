@@ -23,6 +23,7 @@ internal sealed class KestrelServerImpl : IServer
     private readonly TransportManager _transportManager;
     private readonly List<IConnectionListenerFactory> _transportFactories;
     private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
+    private readonly IHttpsConfigurationService _httpsConfigurationService;
 
     private readonly SemaphoreSlim _bindSemaphore = new SemaphoreSlim(initialCount: 1);
     private bool _hasStarted;
@@ -36,9 +37,10 @@ internal sealed class KestrelServerImpl : IServer
         IOptions<KestrelServerOptions> options,
         IEnumerable<IConnectionListenerFactory> transportFactories,
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+        IHttpsConfigurationService httpsConfigurationService,
         ILoggerFactory loggerFactory,
         KestrelMetrics metrics)
-        : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, diagnosticSource: null, metrics))
+        : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource: null, metrics))
     {
     }
 
@@ -47,12 +49,14 @@ internal sealed class KestrelServerImpl : IServer
     internal KestrelServerImpl(
         IEnumerable<IConnectionListenerFactory> transportFactories,
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+        IHttpsConfigurationService httpsConfigurationService,
         ServiceContext serviceContext)
     {
         ArgumentNullException.ThrowIfNull(transportFactories);
 
         _transportFactories = transportFactories.Reverse().ToList();
         _multiplexedTransportFactories = multiplexedFactories.Reverse().ToList();
+        _httpsConfigurationService = httpsConfigurationService;
 
         if (_transportFactories.Count == 0 && _multiplexedTransportFactories.Count == 0)
         {
@@ -65,7 +69,7 @@ internal sealed class KestrelServerImpl : IServer
         _serverAddresses = new ServerAddressesFeature();
         Features.Set<IServerAddressesFeature>(_serverAddresses);
 
-        _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, ServiceContext);
+        _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, _httpsConfigurationService, ServiceContext);
     }
 
     private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource, KestrelMetrics metrics)
@@ -168,7 +172,7 @@ internal sealed class KestrelServerImpl : IServer
                 // Quic isn't registered if it's not supported, throw if we can't fall back to 1 or 2
                 if (hasHttp3 && _multiplexedTransportFactories.Count == 0 && !(hasHttp1 || hasHttp2))
                 {
-                    throw new InvalidOperationException("This platform doesn't support QUIC or HTTP/3.");
+                    throw new InvalidOperationException("Unable to bind an HTTP/3 endpoint. This could be because QUIC has not been configured using UseQuic, or the platform doesn't support QUIC or HTTP/3.");
                 }
 
                 // Disable adding alt-svc header if endpoint has configured not to or there is no
@@ -302,7 +306,7 @@ internal sealed class KestrelServerImpl : IServer
 
             Options.ConfigurationLoader?.Load();
 
-            await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, cancellationToken).ConfigureAwait(false);
+            await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, _httpsConfigurationService.UseHttpsWithDefaults, cancellationToken).ConfigureAwait(false);
             _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
         }
         finally

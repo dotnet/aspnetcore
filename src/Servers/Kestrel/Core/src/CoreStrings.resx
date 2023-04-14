@@ -722,4 +722,16 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="FailedToBindToIPv6Any" xml:space="preserve">
     <value>Failed to bind to http://[::]:{port} (IPv6Any).</value>
   </data>
+  <data name="NeedHttpsConfigurationToApplyHttpsConfiguration" xml:space="preserve">
+    <value>Call UseKestrelHttpsConfiguration() on IWebHostBuilder to enable loading HTTPS settings from configuration.</value>
+  </data>
+  <data name="NeedHttpsConfigurationToLoadDefaultCertificate" xml:space="preserve">
+    <value>Call UseKestrelHttpsConfiguration() on IWebHostBuilder to enable loading the default server certificate from configuration.</value>
+  </data>
+  <data name="NeedHttpsConfigurationToUseHttp3" xml:space="preserve">
+    <value>Call UseKestrelHttpsConfiguration() on IWebHostBuilder to enable transport layer security for HTTP/3.</value>
+  </data>
+  <data name="NeedHttpsConfigurationToBindHttpsAddresses" xml:space="preserve">
+    <value>Call UseKestrelHttpsConfiguration() on IWebHostBuilder to automatically enable HTTPS when an https:// address is used.</value>
+  </data>
 </root>

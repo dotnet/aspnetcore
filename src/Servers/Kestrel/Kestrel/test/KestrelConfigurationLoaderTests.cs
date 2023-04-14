@@ -27,6 +27,8 @@ public class KestrelConfigurationLoaderTests
             .AddLogging()
             .AddSingleton<IHostEnvironment>(env)
             .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
+            .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
+            .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
             .BuildServiceProvider();
         return serverOptions;
     }

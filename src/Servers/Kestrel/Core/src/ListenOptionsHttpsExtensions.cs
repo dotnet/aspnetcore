@@ -163,33 +163,20 @@ public static class ListenOptionsHttpsExtensions
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
 
+        // We consider calls to `UseHttps` to be a clear expression of user intent to pull in HTTPS configuration support
+        listenOptions.KestrelServerOptions.EnableHttpsConfiguration();
+
         var options = new HttpsConnectionAdapterOptions();
         listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
         configureOptions(options);
         listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
 
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        if (!options.HasServerCertificateOrSelector)
         {
             throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
         }
 
         return listenOptions.UseHttps(options);
-    }
-
-    // Use Https if a default cert is available
-    internal static bool TryUseHttps(this ListenOptions listenOptions)
-    {
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
-
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
-        {
-            return false;
-        }
-
-        listenOptions.UseHttps(options);
-        return true;
     }
 
     /// <summary>
