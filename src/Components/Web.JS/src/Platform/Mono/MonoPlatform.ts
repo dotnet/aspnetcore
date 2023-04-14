@@ -257,7 +257,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   const moduleConfig = prepareRuntimeConfig(options, platformApi);
   const anyDotnet = (dotnet as any);
 
-  anyDotnet.withModuleConfig(moduleConfig);
+  anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
 
   const runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
