@@ -306,26 +306,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>42c6bcf2076a52d256afcab5080caddb1fbeea98</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23207.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23211.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1db5a29a3a9c8982c784cbe00f44ea1dbed7b680</Sha>
+      <Sha>17d9eee32f20a6af0ebb620254a22f601d159578</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23207.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23211.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1db5a29a3a9c8982c784cbe00f44ea1dbed7b680</Sha>
+      <Sha>17d9eee32f20a6af0ebb620254a22f601d159578</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.23207.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.23211.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1db5a29a3a9c8982c784cbe00f44ea1dbed7b680</Sha>
+      <Sha>17d9eee32f20a6af0ebb620254a22f601d159578</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23207.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23211.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1db5a29a3a9c8982c784cbe00f44ea1dbed7b680</Sha>
+      <Sha>17d9eee32f20a6af0ebb620254a22f601d159578</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23207.2">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23211.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1db5a29a3a9c8982c784cbe00f44ea1dbed7b680</Sha>
+      <Sha>17d9eee32f20a6af0ebb620254a22f601d159578</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
