@@ -26,7 +26,7 @@ public class FunctionalTest
     [Fact]
     public async Task CanChangePasswordOptions()
     {
-        var clock = new TestClock();
+        var clock = new TestTime();
         var server = await CreateServer(services => services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequireUppercase = false;
@@ -44,7 +44,7 @@ public class FunctionalTest
     [Fact]
     public async Task CookieContainsRoleClaim()
     {
-        var clock = new TestClock();
+        var clock = new TestTime();
         var server = await CreateServer(null, null, null, testCore: true);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -67,7 +67,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration(bool testCore)
     {
-        var clock = new TestClock();
+        var time = new TestTime();
         var server = await CreateServer(services =>
         {
             services.ConfigureApplicationCookie(options =>
@@ -75,7 +75,7 @@ public class FunctionalTest
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 options.SlidingExpiration = false;
             });
-            services.AddSingleton<ISystemClock>(clock);
+            services.AddSingleton<TimeProvider>(time);
         }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -91,13 +91,13 @@ public class FunctionalTest
         Assert.Equal("hao", FindClaimValue(transaction3, ClaimTypes.Name));
         Assert.Null(transaction3.SetCookie);
 
-        clock.Add(TimeSpan.FromMinutes(7));
+        time.Add(TimeSpan.FromMinutes(7));
 
         var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
         Assert.Equal("hao", FindClaimValue(transaction4, ClaimTypes.Name));
         Assert.Null(transaction4.SetCookie);
 
-        clock.Add(TimeSpan.FromMinutes(7));
+        time.Add(TimeSpan.FromMinutes(7));
 
         var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
         Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
@@ -111,8 +111,8 @@ public class FunctionalTest
     [InlineData(false, false)]
     public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe, bool testCore)
     {
-        var clock = new TestClock();
-        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
+        var time = new TestTime();
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(time), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -135,13 +135,13 @@ public class FunctionalTest
         Assert.Null(transaction3.SetCookie);
 
         // Make sure we don't get a new cookie yet
-        clock.Add(TimeSpan.FromMinutes(10));
+        time.Add(TimeSpan.FromMinutes(10));
         var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
         Assert.Equal("hao", FindClaimValue(transaction4, ClaimTypes.Name));
         Assert.Null(transaction4.SetCookie);
 
         // Go past SecurityStampValidation interval and ensure we get a new cookie
-        clock.Add(TimeSpan.FromMinutes(21));
+        time.Add(TimeSpan.FromMinutes(21));
 
         var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
         Assert.NotNull(transaction5.SetCookie);
@@ -157,7 +157,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task CanAccessOldPrincipalDuringSecurityStampReplacement(bool testCore)
     {
-        var clock = new TestClock();
+        var time = new TestTime();
         var server = await CreateServer(services =>
         {
             services.Configure<SecurityStampValidatorOptions>(options =>
@@ -170,7 +170,7 @@ public class FunctionalTest
                     return Task.FromResult(0);
                 };
             });
-            services.AddSingleton<ISystemClock>(clock);
+            services.AddSingleton<TimeProvider>(time);
         }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -187,13 +187,13 @@ public class FunctionalTest
         Assert.Null(transaction3.SetCookie);
 
         // Make sure we don't get a new cookie yet
-        clock.Add(TimeSpan.FromMinutes(10));
+        time.Add(TimeSpan.FromMinutes(10));
         var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
         Assert.Equal("hao", FindClaimValue(transaction4, ClaimTypes.Name));
         Assert.Null(transaction4.SetCookie);
 
         // Go past SecurityStampValidation interval and ensure we get a new cookie
-        clock.Add(TimeSpan.FromMinutes(21));
+        time.Add(TimeSpan.FromMinutes(21));
 
         var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
         Assert.NotNull(transaction5.SetCookie);
@@ -210,8 +210,8 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task TwoFactorRememberCookieVerification(bool testCore)
     {
-        var clock = new TestClock();
-        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
+        var clock = new TestTime();
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(clock), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -239,8 +239,8 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task TwoFactorRememberCookieClearedBySecurityStampChange(bool testCore)
     {
-        var clock = new TestClock();
-        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
+        var clock = new TestTime();
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(clock), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);

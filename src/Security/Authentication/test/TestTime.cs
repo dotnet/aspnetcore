@@ -3,17 +3,19 @@
 
 namespace Microsoft.AspNetCore.Authentication;
 
-public class TestClock : ISystemClock
+public class TestTime : TimeProvider
 {
-    public TestClock()
+    public TestTime()
     {
         UtcNow = new DateTimeOffset(2013, 6, 11, 12, 34, 56, 789, TimeSpan.Zero);
     }
 
     public DateTimeOffset UtcNow { get; set; }
 
+    public override DateTimeOffset GetUtcNow() => UtcNow;
+
     public void Add(TimeSpan timeSpan)
     {
-        UtcNow = UtcNow + timeSpan;
+        UtcNow += timeSpan;
     }
 }

@@ -20,7 +20,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         IOptionsMonitor<CertificateAuthenticationOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        TimeProvider time) : base(options, logger, encoder, time)
     {
     }
 

@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.Facebook.FacebookHandler.FacebookHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock, System.TimeProvider! time) -> void
+Microsoft.AspNetCore.Authentication.Facebook.FacebookHandler.FacebookHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, System.TimeProvider! time) -> void

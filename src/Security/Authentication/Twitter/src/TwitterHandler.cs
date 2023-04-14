@@ -38,8 +38,26 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
     /// Initializes a new instance of <see cref="TwitterHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="TwitterHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
+        : base(options, logger, encoder, time)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="TwitterHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+        : base(options, logger, encoder, time)
     { }
 
     /// <inheritdoc />
@@ -89,7 +107,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
             return HandleRequestResult.Fail("Missing or blank oauth_verifier", properties);
         }
 
-        var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.StateCookie.Build(Context, Time.GetUtcNow());
 
         Response.Cookies.Delete(Options.StateCookie.Name!, cookieOptions);
 
@@ -163,7 +181,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
         var requestToken = await ObtainRequestTokenAsync(BuildRedirectUri(Options.CallbackPath), properties);
         var twitterAuthenticationEndpoint = TwitterDefaults.AuthenticationEndpoint + requestToken.Token;
 
-        var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.StateCookie.Build(Context, Time.GetUtcNow());
 
         Response.Cookies.Append(Options.StateCookie.Name!, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
@@ -328,7 +346,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
 
     private string GenerateTimeStamp()
     {
-        var secondsSinceUnixEpocStart = Clock.UtcNow - DateTimeOffset.UnixEpoch;
+        var secondsSinceUnixEpocStart = Time.GetUtcNow() - DateTimeOffset.UnixEpoch;
         return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
     }
 

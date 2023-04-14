@@ -40,8 +40,33 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="CookieAuthenticationHandler"/>.
+    /// </summary>
+    /// <param name="options">Accessor to <see cref="CookieAuthenticationOptions"/>.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    /// <param name="time">The <see cref="TimeProvider"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
+        : base(options, logger, encoder, time)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="CookieAuthenticationHandler"/>.
+    /// </summary>
+    /// <param name="options">Accessor to <see cref="CookieAuthenticationOptions"/>.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    /// <param name="time">The <see cref="TimeProvider"/>.</param>
+    public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+        : base(options, logger, encoder, time)
     { }
 
     /// <summary>
@@ -80,7 +105,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
     private async Task CheckForRefreshAsync(AuthenticationTicket ticket)
     {
-        var currentUtc = Clock.UtcNow;
+        var currentUtc = Time.GetUtcNow();
         var issuedUtc = ticket.Properties.IssuedUtc;
         var expiresUtc = ticket.Properties.ExpiresUtc;
         var allowRefresh = ticket.Properties.AllowRefresh ?? true;
@@ -110,7 +135,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         if (issuedUtc != null && expiresUtc != null)
         {
             _shouldRefresh = true;
-            var currentUtc = Clock.UtcNow;
+            var currentUtc = Time.GetUtcNow();
             _refreshIssuedUtc = currentUtc;
             var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
             _refreshExpiresUtc = currentUtc.Add(timeSpan);
@@ -166,7 +191,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             _sessionKey = claim.Value;
         }
 
-        var currentUtc = Clock.UtcNow;
+        var currentUtc = Time.GetUtcNow();
         var expiresUtc = ticket.Properties.ExpiresUtc;
 
         if (expiresUtc != null && expiresUtc.Value < currentUtc)
@@ -304,7 +329,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         }
         else
         {
-            issuedUtc = Clock.UtcNow;
+            issuedUtc = Time.GetUtcNow();
             signInContext.Properties.IssuedUtc = issuedUtc;
         }
 

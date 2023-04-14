@@ -23,13 +23,49 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
     /// <param name="clock">The system clock.</param>
     /// <param name="logger">The logger.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(signInManager);
         SignInManager = signInManager;
         Options = options.Value;
+        Time = new TimeClockProvider(clock);
         Clock = clock;
+        Logger = logger.CreateLogger(GetType());
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="SecurityStampValidator{TUser}"/>.
+    /// </summary>
+    /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
+    /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
+    /// <param name="clock">The system clock.</param>
+    /// <param name="time">The system clock.</param>
+    /// <param name="logger">The logger.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger, TimeProvider time)
+        : this(options, signInManager, time, logger)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="SecurityStampValidator{TUser}"/>.
+    /// </summary>
+    /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
+    /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
+    /// <param name="time">The system clock.</param>
+    /// <param name="logger">The logger.</param>
+    public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, TimeProvider time, ILoggerFactory logger)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(signInManager);
+        SignInManager = signInManager;
+        Options = options.Value;
+        Time = time;
+#pragma warning disable CS0618 // Type or member is obsolete
+        Clock = new SystemClock(time);
+#pragma warning restore CS0618 // Type or member is obsolete
         Logger = logger.CreateLogger(GetType());
     }
 
@@ -46,7 +82,13 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// <summary>
     /// The <see cref="ISystemClock"/>.
     /// </summary>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public ISystemClock Clock { get; }
+
+    /// <summary>
+    /// The <see cref="ISystemClock"/>.
+    /// </summary>
+    public TimeProvider Time { get; }
 
     /// <summary>
     /// Gets the <see cref="ILogger"/> used to log messages.
@@ -87,7 +129,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         {
             // On renewal calculate the new ticket length relative to now to avoid
             // extending the expiration.
-            context.Properties.IssuedUtc = Clock.UtcNow;
+            context.Properties.IssuedUtc = Time.GetUtcNow();
         }
     }
 
@@ -109,9 +151,9 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
     {
         var currentUtc = DateTimeOffset.UtcNow;
-        if (Clock != null)
+        if (Time != null)
         {
-            currentUtc = Clock.UtcNow;
+            currentUtc = Time.GetUtcNow();
         }
         var issuedUtc = context.Properties.IssuedUtc;
 

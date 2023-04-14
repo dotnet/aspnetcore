@@ -44,8 +44,19 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock) { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RemoteAuthenticationHandler{TOptions}" />.
+    /// </summary>
+    /// <param name="options">The monitor for the options instance.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    /// <param name="time">The <see cref="TimeProvider"/>.</param>
+    protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+        : base(options, logger, encoder, time) { }
 
     /// <inheritdoc />
     protected override Task<object> CreateEventsAsync()
@@ -221,7 +232,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
         RandomNumberGenerator.Fill(bytes);
         var correlationId = Base64UrlTextEncoder.Encode(bytes);
 
-        var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.CorrelationCookie.Build(Context, Time.GetUtcNow());
 
         properties.Items[CorrelationProperty] = correlationId;
 
@@ -256,7 +267,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
             return false;
         }
 
-        var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.CorrelationCookie.Build(Context, Time.GetUtcNow());
 
         Response.Cookies.Delete(cookieName, cookieOptions);
 

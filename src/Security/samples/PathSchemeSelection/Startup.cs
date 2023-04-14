@@ -51,7 +51,7 @@ public class Startup
     {
         private readonly ClaimsPrincipal _id;
 
-        public ApiAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+        public ApiAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time) : base(options, logger, encoder, time)
         {
             var id = new ClaimsIdentity("Api");
             id.AddClaim(new Claim(ClaimTypes.Name, "Hao", ClaimValueTypes.String, "Api"));

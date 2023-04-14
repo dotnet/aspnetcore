@@ -25,7 +25,7 @@ public abstract class RemoteAuthenticationTests<TOptions> : SharedAuthentication
                 s.Configure<AuthenticationOptions>(o => o.DefaultScheme = DefaultScheme);
             }
             RegisterAuth(builder, configureOptions);
-            s.AddSingleton<ISystemClock>(Clock);
+            s.AddSingleton<TimeProvider>(Time);
         }, testpath);
 
     protected virtual async Task<IHost> CreateHostWithServices(Action<IServiceCollection> configureServices, Func<HttpContext, Task> testpath = null)

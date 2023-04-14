@@ -71,7 +71,13 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <summary>
     /// Gets the <see cref="ISystemClock"/>.
     /// </summary>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     protected ISystemClock Clock { get; }
+
+    /// <summary>
+    /// Gets the current time, primarily for unit testing.
+    /// </summary>
+    protected TimeProvider Time { get; }
 
     /// <summary>
     /// Gets the <see cref="IOptionsMonitor{TOptions}"/> to detect changes to options.
@@ -107,11 +113,31 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
     {
         Logger = logger.CreateLogger(this.GetType().FullName!);
         UrlEncoder = encoder;
         Clock = clock;
+        Time = new TimeClockProvider(clock);
+        OptionsMonitor = options;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthenticationHandler{TOptions}"/>.
+    /// </summary>
+    /// <param name="options">The monitor for the options instance.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
+    /// <param name="time">The <see cref="TimeProvider"/> used for unit testing.</param>
+    protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+    {
+        Logger = logger.CreateLogger(this.GetType().FullName!);
+        UrlEncoder = encoder;
+        Time = time;
+#pragma warning disable CS0618 // Type or member is obsolete
+        Clock = new SystemClock(time);
+#pragma warning restore CS0618 // Type or member is obsolete
         OptionsMonitor = options;
     }
 

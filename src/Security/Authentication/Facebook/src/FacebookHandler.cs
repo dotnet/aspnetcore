@@ -24,8 +24,26 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
     /// Initializes a new instance of <see cref="FacebookHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="FacebookHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
+        : base(options, logger, encoder, time)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="FacebookHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+        : base(options, logger, encoder, time)
     { }
 
     /// <inheritdoc />

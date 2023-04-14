@@ -14,7 +14,7 @@ public class SampleAuthenticationHandler : AuthenticationHandler<AuthenticationS
 {
     private readonly ClaimsPrincipal _id;
 
-    public SampleAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+    public SampleAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time) : base(options, logger, encoder, time)
     {
         _id = new ClaimsPrincipal(new ClaimsIdentity("Api"));
     }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
@@ -15,7 +15,7 @@ public class ContosoAuthenticationHandler : AuthenticationHandler<ContosoAuthent
         IOptionsMonitor<ContosoAuthenticationOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock)
+        TimeProvider clock)
         : base(options, logger, encoder, clock)
     {
     }

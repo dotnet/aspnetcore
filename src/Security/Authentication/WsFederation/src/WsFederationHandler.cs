@@ -27,8 +27,35 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
     /// <param name="encoder"></param>
     /// <param name="clock"></param>
     /// <param name="logger"></param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public WsFederationHandler(IOptionsMonitor<WsFederationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new WsFederationAuthenticationHandler
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="encoder"></param>
+    /// <param name="clock"></param>
+    /// <param name="logger"></param>
+    /// <param name="time"></param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    public WsFederationHandler(IOptionsMonitor<WsFederationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
+        : base(options, logger, encoder, time)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new WsFederationAuthenticationHandler
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="encoder"></param>
+    /// <param name="time"></param>
+    /// <param name="logger"></param>
+    public WsFederationHandler(IOptionsMonitor<WsFederationOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+        : base(options, logger, encoder, time)
     {
     }
 

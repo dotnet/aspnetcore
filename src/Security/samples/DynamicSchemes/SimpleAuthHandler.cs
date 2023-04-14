@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -17,7 +17,7 @@ public class SimpleOptions : AuthenticationSchemeOptions
 
 public class SimpleAuthHandler : AuthenticationHandler<SimpleOptions>
 {
-    public SimpleAuthHandler(IOptionsMonitor<SimpleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+    public SimpleAuthHandler(IOptionsMonitor<SimpleOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time) : base(options, logger, encoder, time)
     { }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()

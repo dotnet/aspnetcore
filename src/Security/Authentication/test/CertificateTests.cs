@@ -688,8 +688,8 @@ public class ClientCertificateAuthenticationTests
     {
         const string Expected = "John Doe";
         var validationCount = 0;
-        var clock = new TestClock();
-        clock.UtcNow = DateTime.UtcNow;
+        var time = new TestTime();
+        time.UtcNow = DateTime.UtcNow;
 
         using var host = await CreateHost(
             new CertificateAuthenticationOptions
@@ -716,7 +716,7 @@ public class ClientCertificateAuthenticationTests
                     }
                 }
             },
-            Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache, clock);
+            Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache, time);
 
         using var server = host.GetTestServer();
         var response = await server.CreateClient().GetAsync("https://example.com/");
@@ -759,7 +759,7 @@ public class ClientCertificateAuthenticationTests
         var expected = cache ? "1" : "2";
         Assert.Equal(expected, count.First().Value);
 
-        clock.Add(TimeSpan.FromMinutes(31));
+        time.Add(TimeSpan.FromMinutes(31));
 
         // Third request should always trigger validation even if caching
         response = await server.CreateClient().GetAsync("https://example.com/");
@@ -791,7 +791,7 @@ public class ClientCertificateAuthenticationTests
         bool wireUpHeaderMiddleware = false,
         string headerName = "",
         bool useCache = false,
-        ISystemClock clock = null)
+        TimeProvider time = null)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(builder =>
@@ -863,9 +863,9 @@ public class ClientCertificateAuthenticationTests
                     }
                     if (useCache)
                     {
-                        if (clock != null)
+                        if (time != null)
                         {
-                            services.AddSingleton<ICertificateValidationCache>(new CertificateValidationCache(Options.Create(new CertificateValidationCacheOptions()), clock));
+                            services.AddSingleton<ICertificateValidationCache>(new CertificateValidationCache(Options.Create(new CertificateValidationCacheOptions()), time));
                         }
                         else
                         {
@@ -881,9 +881,9 @@ public class ClientCertificateAuthenticationTests
                         });
                     }
 
-                    if (clock != null)
+                    if (time != null)
                     {
-                        services.AddSingleton(clock);
+                        services.AddSingleton(time);
                     }
 
                 }))

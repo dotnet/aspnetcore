@@ -50,8 +50,39 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// <param name="htmlEncoder">The <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    {
+        HtmlEncoder = htmlEncoder;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="OpenIdConnectHandler"/>.
+    /// </summary>
+    /// <param name="options">A monitor to observe changes to <see cref="OpenIdConnectOptions"/>.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="htmlEncoder">The <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    /// <param name="time">The <see cref="TimeProvider"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
+        : base(options, logger, encoder, time)
+    {
+        HtmlEncoder = htmlEncoder;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="OpenIdConnectHandler"/>.
+    /// </summary>
+    /// <param name="options">A monitor to observe changes to <see cref="OpenIdConnectOptions"/>.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="htmlEncoder">The <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    /// <param name="time">The <see cref="TimeProvider"/>.</param>
+    public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, TimeProvider time)
+        : base(options, logger, encoder, time)
     {
         HtmlEncoder = htmlEncoder;
     }
@@ -983,7 +1014,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             if (int.TryParse(message.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value))
             {
-                var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
+                var expiresAt = Time.GetUtcNow() + TimeSpan.FromSeconds(value);
                 // https://www.w3.org/TR/xmlschema-2/#dateTime
                 // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
                 tokens.Add(new AuthenticationToken { Name = "expires_at", Value = expiresAt.ToString("o", CultureInfo.InvariantCulture) });
@@ -1006,7 +1037,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             throw new ArgumentNullException(nameof(nonce));
         }
 
-        var cookieOptions = Options.NonceCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.NonceCookie.Build(Context, Time.GetUtcNow());
 
         Response.Cookies.Append(
             Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
@@ -1037,7 +1068,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     var nonceDecodedValue = Options.StringDataFormat.Unprotect(nonceKey.Substring(Options.NonceCookie.Name.Length, nonceKey.Length - Options.NonceCookie.Name.Length));
                     if (nonceDecodedValue == nonce)
                     {
-                        var cookieOptions = Options.NonceCookie.Build(Context, Clock.UtcNow);
+                        var cookieOptions = Options.NonceCookie.Build(Context, Time.GetUtcNow());
                         Response.Cookies.Delete(nonceKey, cookieOptions);
                         return nonce;
                     }
