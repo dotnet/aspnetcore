@@ -121,6 +121,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal Task DispatchCapturedEvent()
     {
+        if (_capturedNamedEvent == default)
+        {
+            throw new InvalidOperationException($"No named event handler was captured for '{_formHandler}'.");
+        }
+
         // Clear the list of non-streaming rendering tasks, since we've waited for quiesce before dispatching the event.
         _nonStreamingPendingTasks.Clear();
         return DispatchEventAsync(_capturedNamedEvent.EventHandlerId, null, EventArgs.Empty, quiesce: true);

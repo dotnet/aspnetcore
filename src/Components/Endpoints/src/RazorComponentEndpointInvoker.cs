@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
