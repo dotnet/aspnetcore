@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace PipelinesOverNetwork;
+namespace Microsoft.AspNetCore.Http.Connections;
 
 // Read from "network" 
 // Parse framing and slice the read so the application doesn't see the framing

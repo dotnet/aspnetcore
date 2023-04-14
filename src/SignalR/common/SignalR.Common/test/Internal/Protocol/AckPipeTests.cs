@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using PipelinesOverNetwork;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
