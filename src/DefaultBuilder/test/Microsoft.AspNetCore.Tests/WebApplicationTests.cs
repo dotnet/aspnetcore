@@ -2489,7 +2489,7 @@ public class WebApplicationTests
 
     private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock) { }
+        public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time) : base(options, logger, encoder, time) { }
 
         protected override Task HandleChallengeAsync(AuthenticationProperties properties) => Task.CompletedTask;
 
