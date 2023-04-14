@@ -62,17 +62,20 @@ internal sealed class Heartbeat : IDisposable
         }
         catch (Exception ex)
         {
-            _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
+            if (!_stopped)
+            {
+                _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
+            }
         }
     }
 
     private void TimerLoop()
     {
+        Thread.Sleep(_interval);
         while (!_stopped)
         {
-            Thread.Sleep(_interval);
-
             OnHeartbeat();
+            Thread.Sleep(_interval);
         }
     }
 

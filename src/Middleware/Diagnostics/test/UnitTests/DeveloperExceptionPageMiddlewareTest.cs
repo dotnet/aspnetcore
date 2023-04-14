@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +18,124 @@ namespace Microsoft.AspNetCore.Diagnostics;
 
 public class DeveloperExceptionPageMiddlewareTest
 {
+    [Fact]
+    public async Task ExceptionHandlerFeatureIsAvailableInCustomizeProblemDetailsWhenUsingExceptionPage()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddProblemDetails(configure =>
+                {
+                    configure.CustomizeProblemDetails = (context) =>
+                    {
+                        var feature = context.HttpContext.Features.Get<IExceptionHandlerFeature>();
+                        context.ProblemDetails.Extensions.Add("OriginalExceptionMessage", feature?.Error.Message);
+                        context.ProblemDetails.Extensions.Add("EndpointDisplayName", feature?.Endpoint?.DisplayName);
+                        context.ProblemDetails.Extensions.Add("RouteValue", feature?.RouteValues?["id"]);
+                        context.ProblemDetails.Extensions.Add("Path", feature?.Path);
+                    };
+                });
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.UseRouting();
+                    app.UseEndpoints(endpoint =>
+                    {
+                        endpoint.MapGet("/test/{id}", (int id) =>
+                        {
+                            throw new Exception("Test exception");
+                        });
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/test/1");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Act
+        var response = await server.CreateClient().SendAsync(request);
+
+        // Assert
+        var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
+        var endpointDisplayName = ((JsonElement)body.Extensions["EndpointDisplayName"]).GetString();
+        var routeValue = ((JsonElement)body.Extensions["RouteValue"]).GetString();
+        var path = ((JsonElement)body.Extensions["Path"]).GetString();
+        Assert.Equal("Test exception", originalExceptionMessage);
+        Assert.Contains("/test/{id}", endpointDisplayName);
+        Assert.Equal("1", routeValue);
+        Assert.Equal("/test/1", path);
+    }
+
+    [Fact]
+    public async Task ExceptionHandlerPathFeatureIsAvailableInCustomizeProblemDetailsWhenUsingExceptionPage()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddProblemDetails(configure =>
+                {
+                    configure.CustomizeProblemDetails = (context) =>
+                    {
+                        var feature = context.HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+                        context.ProblemDetails.Extensions.Add("OriginalExceptionMessage", feature?.Error.Message);
+                        context.ProblemDetails.Extensions.Add("EndpointDisplayName", feature?.Endpoint?.DisplayName);
+                        context.ProblemDetails.Extensions.Add("RouteValue", feature?.RouteValues?["id"]);
+                        context.ProblemDetails.Extensions.Add("Path", feature?.Path);
+                    };
+                });
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.UseRouting();
+                    app.UseEndpoints(endpoint =>
+                    {
+                        endpoint.MapGet("/test/{id}", (int id) =>
+                        {
+                            throw new Exception("Test exception");
+                        });
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/test/1");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Act
+        var response = await server.CreateClient().SendAsync(request);
+
+        // Assert
+        var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
+        var endpointDisplayName = ((JsonElement)body.Extensions["EndpointDisplayName"]).GetString();
+        var routeValue = ((JsonElement)body.Extensions["RouteValue"]).GetString();
+        var path = ((JsonElement)body.Extensions["Path"]).GetString();
+        Assert.Equal("Test exception", originalExceptionMessage);
+        Assert.Contains("/test/{id}", endpointDisplayName);
+        Assert.Equal("1", routeValue);
+        Assert.Equal("/test/1", path);
+    }
+
     [Fact]
     public async Task UnhandledErrorsWriteToDiagnosticWhenUsingExceptionPage()
     {
