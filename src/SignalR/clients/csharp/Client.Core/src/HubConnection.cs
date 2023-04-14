@@ -1329,7 +1329,6 @@ public partial class HubConnection : IAsyncDisposable
             {
                 var result = await input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
-                _logger.LogInformation("recv {len}", buffer.Length);
 
                 try
                 {

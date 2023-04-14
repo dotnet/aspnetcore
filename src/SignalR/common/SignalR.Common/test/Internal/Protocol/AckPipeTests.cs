@@ -1,18 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Buffers.Text;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PipelinesOverNetwork;
-using static PipelinesOverNetwork.AckDuplexPipe;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -23,7 +16,7 @@ public class AckPipeTests
     [Fact]
     public async Task CanSendAndReceiveTransport()
     {
-        var duplexPipe = AckDuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        var duplexPipe = CreateConnectionPair(new PipeOptions(), new PipeOptions());
 
         var values = new byte[] { 1, 2, 3, 4, 5 };
         var flushRes = await duplexPipe.Transport.Output.WriteAsync(values);
@@ -42,7 +35,7 @@ public class AckPipeTests
     [Fact]
     public async Task CanSendAndReceiveLargeAmount()
     {
-        var duplexPipe = AckDuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        var duplexPipe = CreateConnectionPair(new PipeOptions(), new PipeOptions());
 
         var values = new byte[20000];
         Random.Shared.NextBytes(values);
@@ -62,7 +55,7 @@ public class AckPipeTests
     [Fact]
     public async Task CanSendAndReceiveLargeAmount_ManyWritesSingleFlush()
     {
-        var duplexPipe = AckDuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        var duplexPipe = CreateConnectionPair(new PipeOptions(), new PipeOptions());
 
         var values = new byte[20000];
         Random.Shared.NextBytes(values);
@@ -762,5 +755,48 @@ public class AckPipeTests
         var ackId = BitConverter.ToInt64(header.Slice(FrameSize / 2));
 
         return (len, ackId);
+    }
+
+    internal static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+    {
+        var input = new Pipe(inputOptions);
+        var output = new Pipe(outputOptions);
+
+        // wire up both sides for testing
+        var ackWriterApp = new AckPipeWriter(output.Writer);
+        var ackReaderApp = new AckPipeReader(output.Reader);
+        var ackWriterClient = new AckPipeWriter(input.Writer);
+        var ackReaderClient = new AckPipeReader(input.Reader);
+        var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReaderApp);
+        var applicationReader = new ParseAckPipeReader(ackReaderApp, ackWriterClient, ackReaderClient);
+        var transportToApplication = new DuplexPipe(applicationReader, ackWriterClient);
+        var applicationToTransport = new DuplexPipe(transportReader, ackWriterApp);
+
+        return new DuplexPipePair(applicationToTransport, transportToApplication);
+    }
+
+    internal sealed class DuplexPipe : IDuplexPipe
+    {
+        public DuplexPipe(PipeReader reader, PipeWriter writer)
+        {
+            Input = reader;
+            Output = writer;
+        }
+
+        public PipeReader Input { get; }
+
+        public PipeWriter Output { get; }
+    }
+
+    public readonly struct DuplexPipePair
+    {
+        public IDuplexPipe Transport { get; }
+        public IDuplexPipe Application { get; }
+
+        public DuplexPipePair(IDuplexPipe transport, IDuplexPipe application)
+        {
+            Transport = transport;
+            Application = application;
+        }
     }
 }

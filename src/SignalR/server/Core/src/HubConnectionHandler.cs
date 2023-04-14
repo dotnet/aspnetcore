@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -251,17 +249,6 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         {
             var result = await input.ReadAsync();
             var buffer = result.Buffer;
-            //LogBytes(buffer.ToArray(), _logger);
-
-            void LogBytes(Memory<byte> memory, ILogger logger)
-            {
-                var sb = new StringBuilder();
-                foreach (var b in memory.Span)
-                {
-                    sb.Append($"0x{b:x} ");
-                }
-                logger.LogDebug($"read: {sb}");
-            }
 
             try
             {
