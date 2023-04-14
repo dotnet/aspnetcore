@@ -716,6 +716,23 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(newValue, mirrorValue.GetAttribute("value"));
     }
 
+    [Fact]
+    public void CanBindTextboxMarkupString()
+    {
+        var target = Browser.Exists(By.Id("textbox-markup"));
+        var boundValue = Browser.Exists(By.Id("textbox-markup-value"));
+        var mirrorValue = Browser.Exists(By.Id("textbox-markup-mirror"));
+        Assert.Equal("", target.GetAttribute("value"));
+        Assert.Equal("", boundValue.Text);
+        Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+        // Modify target; verify value is updated and that textboxes linked to the same data are updated
+        var newValue = "hello";
+        target.SendKeys(newValue + "\t");
+        Browser.Equal(newValue, () => boundValue.Text);
+        Assert.Equal(newValue, mirrorValue.GetAttribute("value"));
+    }
+
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
     [Fact]

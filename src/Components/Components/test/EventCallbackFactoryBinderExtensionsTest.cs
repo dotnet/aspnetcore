@@ -556,6 +556,25 @@ public class EventCallbackFactoryBinderExtensionsTest
         Assert.Equal(1, component.Count);
     }
 
+    [Fact]
+    public async Task CreateBinder_MarkupString()
+    {
+        // Arrange
+        var value = new MarkupString();
+        var component = new EventCountingComponent();
+        Action<MarkupString> setter = (_) => value = _;
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+        var expectedValue = new MarkupString("<br/>");
+
+        // Act
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = expectedValue.ToString(), });
+
+        Assert.Equal(expectedValue, value);
+        Assert.Equal(1, component.Count);
+    }
+
     // This uses a type converter
     [Fact]
     public async Task CreateBinder_NullableGuid()
