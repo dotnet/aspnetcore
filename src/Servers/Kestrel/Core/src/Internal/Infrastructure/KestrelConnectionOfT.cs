@@ -45,10 +45,10 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
 
         if (metricsConnectionDurationEnabled)
         {
-            startTimestamp = Stopwatch.GetTimestamp();
-
             metricsTagsFeature = new ConnectionMetricsTagsFeature();
             connectionContext.Features.Set<IConnectionMetricsTagsFeature>(metricsTagsFeature);
+
+            startTimestamp = Stopwatch.GetTimestamp();
         }
 
         try
@@ -99,6 +99,7 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
     private sealed class ConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
     {
         public ICollection<KeyValuePair<string, object?>> Tags => TagsList;
+
         public List<KeyValuePair<string, object?>> TagsList { get; } = new List<KeyValuePair<string, object?>>();
     }
 }

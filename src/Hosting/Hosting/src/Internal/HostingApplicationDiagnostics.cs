@@ -55,15 +55,8 @@ internal sealed class HostingApplicationDiagnostics
         if (_eventSource.IsEnabled() || _metrics.IsEnabled())
         {
             context.EventLogOrMetricsEnabled = true;
-            if (httpContext.Features.Get<IHttpMetricsTagsFeature>() is HttpMetricsTagsFeature feature)
-            {
-                context.MetricsTagsFeature = feature;
-            }
-            else
-            {
-                context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
-                httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
-            }
+            context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
+            httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
 
             startTimestamp = Stopwatch.GetTimestamp();
 
@@ -80,16 +73,9 @@ internal sealed class HostingApplicationDiagnostics
             context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
-            if (context.Activity is Activity activity)
+            if (context.Activity != null)
             {
-                if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
-                {
-                    feature.Activity = activity;
-                }
-                else
-                {
-                    httpContext.Features.Set(context.HttpActivityFeature);
-                }
+                httpContext.Features.Set<IHttpActivityFeature>(context.HttpActivityFeature);
             }
         }
 
