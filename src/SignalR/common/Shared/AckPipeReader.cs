@@ -79,15 +79,8 @@ internal sealed class AckPipeReader : PipeReader
     public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
     {
         _consumed = consumed;
-        //if (_ackPosition.Equals(default))
-        //{
-        //    Debug.Assert(false);
-        //    _inner.AdvanceTo(consumed, examined);
-        //}
-        //else
-        //{
+        // Consumed stays at the ack positions, we store the passed in consumed value for use in ReadAsync so we can give the user only new data
         _inner.AdvanceTo(_ackPosition, examined);
-        //}
 
         if (_consumed.Equals(_ackPosition))
         {

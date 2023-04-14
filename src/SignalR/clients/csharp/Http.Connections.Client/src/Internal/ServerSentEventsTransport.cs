@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
@@ -76,15 +75,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
         }
 
         // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-        DuplexPipePair pair;
-        if (_useAck)
-        {
-            pair = CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
-        }
-        else
-        {
-            pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
-        }
+        var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
 
         _transport = pair.Transport;
         _application = pair.Application;
@@ -95,21 +86,6 @@ internal sealed partial class ServerSentEventsTransport : ITransport
         // _application.Input.OnWriterCompleted((exception, state) => ((CancellationTokenSource)state).Cancel(), inputCts);
 
         Running = ProcessAsync(url, response);
-
-        static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
-        {
-            var input = new Pipe(inputOptions);
-            var output = new Pipe(outputOptions);
-
-            // Use for one side only, i.e. server
-            var ackWriter = new AckPipeWriter(output.Writer);
-            var ackReader = new AckPipeReader(output.Reader);
-            var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
-            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
-            var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
-
-            return new DuplexPipePair(applicationToTransport, transportToApplication);
-        }
     }
 
     private async Task ProcessAsync(Uri url, HttpResponseMessage response)
