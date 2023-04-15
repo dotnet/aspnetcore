@@ -46,7 +46,14 @@ public class InsertOrAppendAttribute : Transform
     {
         if (string.IsNullOrEmpty(name))
         {
-            throw new ArgumentNullException(nameof(name));
+            if (name is null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            else
+            {
+                throw new ArgumentException("The value cannot be an empty string.", nameof(name));
+            }
         }
 
         string result = null;

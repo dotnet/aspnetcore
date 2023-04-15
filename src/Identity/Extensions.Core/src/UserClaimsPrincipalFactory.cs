@@ -28,7 +28,7 @@ public class UserClaimsPrincipalFactory<TUser> : IUserClaimsPrincipalFactory<TUs
         ArgumentNullThrowHelper.ThrowIfNull(userManager);
         if (optionsAccessor == null || optionsAccessor.Value == null)
         {
-            throw new ArgumentNullException(nameof(optionsAccessor));
+            throw new ArgumentException($"{nameof(optionsAccessor)} cannot be null or wrap a null value.", nameof(optionsAccessor));
         }
         UserManager = userManager;
         Options = optionsAccessor.Value;

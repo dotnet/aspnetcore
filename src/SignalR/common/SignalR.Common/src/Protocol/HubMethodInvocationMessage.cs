@@ -50,7 +50,14 @@ public abstract class HubMethodInvocationMessage : HubInvocationMessage
     {
         if (string.IsNullOrEmpty(target))
         {
-            throw new ArgumentNullException(nameof(target));
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+            else
+            {
+                throw new ArgumentException("The value cannot be an empty string.", nameof(target));
+            }
         }
 
         Target = target;

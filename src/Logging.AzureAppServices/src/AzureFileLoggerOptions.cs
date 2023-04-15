@@ -61,7 +61,14 @@ public class AzureFileLoggerOptions : BatchingLoggerOptions
         {
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentNullException(nameof(value));
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                else
+                {
+                    throw new ArgumentException("The value cannot be an empty string.", nameof(value));
+                }
             }
             _fileName = value;
         }
