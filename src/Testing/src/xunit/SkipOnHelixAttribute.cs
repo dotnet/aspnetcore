@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -14,10 +15,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
 {
     public SkipOnHelixAttribute(string issueUrl)
     {
-        if (string.IsNullOrEmpty(issueUrl))
-        {
-            throw new ArgumentNullException(nameof(issueUrl));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(issueUrl);
         IssueUrl = issueUrl;
     }
 

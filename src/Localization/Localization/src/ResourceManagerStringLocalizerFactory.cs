@@ -76,11 +76,7 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     protected virtual string GetResourcePrefix(TypeInfo typeInfo, string? baseNamespace, string? resourcesRelativePath)
     {
         ArgumentNullThrowHelper.ThrowIfNull(typeInfo);
-
-        if (string.IsNullOrEmpty(baseNamespace))
-        {
-            throw new ArgumentNullException(nameof(baseNamespace));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(baseNamespace);
 
         if (string.IsNullOrEmpty(typeInfo.FullName))
         {
@@ -107,15 +103,8 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     /// <returns>The prefix for resource lookup.</returns>
     protected virtual string GetResourcePrefix(string baseResourceName, string baseNamespace)
     {
-        if (string.IsNullOrEmpty(baseResourceName))
-        {
-            throw new ArgumentNullException(nameof(baseResourceName));
-        }
-
-        if (string.IsNullOrEmpty(baseNamespace))
-        {
-            throw new ArgumentNullException(nameof(baseNamespace));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(baseResourceName);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(baseNamespace);
 
         var assemblyName = new AssemblyName(baseNamespace);
         var assembly = Assembly.Load(assemblyName);

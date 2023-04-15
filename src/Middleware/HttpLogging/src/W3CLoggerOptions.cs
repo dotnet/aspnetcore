@@ -64,10 +64,7 @@ public sealed class W3CLoggerOptions
         get { return _fileName; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
             _fileName = value;
         }
     }
@@ -83,10 +80,7 @@ public sealed class W3CLoggerOptions
         get { return _logDirectory; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
             _logDirectory = value;
         }
     }
