@@ -5,20 +5,21 @@ using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
-using static Microsoft.AspNetCore.Components.Routing.RouterTest;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
 public class RouteViewTest
 {
     private readonly TestRenderer _renderer;
+    private readonly RouteViewTestNavigationManager _navigationManager;
     private readonly RouteView _routeViewComponent;
     private readonly int _routeViewComponentId;
 
     public RouteViewTest()
     {
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton<NavigationManager, TestNavigationManager>();
+        _navigationManager = new RouteViewTestNavigationManager();
+        serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
 
@@ -80,6 +81,84 @@ public class RouteViewTest
             frame => AssertFrame.Component<CascadingModelBinder>(frame, sequence: 0, subtreeLength: 4),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.Name), "", sequence: 1),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.BindingContextId), "jan", sequence: 2),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.ChildContent), typeof(RenderFragment<ModelBindingContext>), sequence: 3),
+            frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
+
+        // Assert: Cascading model binder renders CascadingValue<ModelBindingContext>
+        var cascadingModelBinderComponentId = batch.GetComponentFrames<CascadingModelBinder>().Single().ComponentId;
+        var cascadingModelBinderFrames = _renderer.GetCurrentRenderTreeFrames(cascadingModelBinderComponentId).AsEnumerable();
+        Assert.Collection(cascadingModelBinderFrames,
+            frame => AssertFrame.Component<CascadingValue<ModelBindingContext>>(frame, sequence: 0, subtreeLength: 4),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), true, sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.Value), typeof(ModelBindingContext), sequence: 2),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.ChildContent), typeof(RenderFragment), sequence: 3));
+
+        // Assert: CascadingValue<ModelBindingContext> renders page
+        var cascadingValueComponentId = batch.GetComponentFrames<CascadingValue<ModelBindingContext>>().Single().ComponentId;
+        var cascadingValueFrames = _renderer.GetCurrentRenderTreeFrames(cascadingValueComponentId).AsEnumerable();
+        Assert.Collection(cascadingValueFrames,
+            frame => AssertFrame.Region(frame, sequence: 0, subtreeLength: 3),
+            frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 0, subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 1));
+
+        // Assert: page itself is rendered, having received parameters from the original route data
+        var pageComponentId = batch.GetComponentFrames<ComponentWithLayout>().Single().ComponentId;
+        var pageFrames = _renderer.GetCurrentRenderTreeFrames(pageComponentId).AsEnumerable();
+        Assert.Collection(pageFrames,
+            frame => AssertFrame.Text(frame, "Hello from the page with message 'Test message'", sequence: 0));
+
+        // Assert: nothing else was rendered
+        Assert.Equal(6, batch.DiffsInOrder.Count);
+    }
+
+    [Theory]
+    [InlineData("https://www.example.com/subdir/path", "/path")]
+    [InlineData("https://www.example.com/subdir/", "/")]
+    [InlineData("https://www.example.com/subdir/path/with/multiple/segments", "/path/with/multiple/segments")]
+    [InlineData("https://www.example.com/subdir/path/with/multiple/segments?and=query", "/path/with/multiple/segments")]
+    [InlineData("https://www.example.com/subdir/path/with/multiple/segments?and=query#hashtoo", "/path/with/multiple/segments")]
+    [InlineData("https://www.example.com/subdir/path/with/#multiple/segments?and=query#hashtoo", "/path/with/")]
+    [InlineData("https://www.example.com/subdir/path/with/#multiple/segments#hashtoo?and=query", "/path/with/multiple/segments")]
+    public void ProvidesDocumentPathAsBindingContextId(string url, string expectedBindingContextId)
+    {
+        // Arrange
+        _navigationManager.NotifyLocationChanged(url);
+        var routeParams = new Dictionary<string, object>
+            {
+                { nameof(ComponentWithLayout.Message), "Test message" }
+            };
+        var routeData = new RouteData(typeof(ComponentWithLayout), routeParams);
+
+        // Act
+        _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(RouteView.RouteData), routeData },
+            })));
+
+        // Assert: RouteView renders LayoutView
+        var batch = _renderer.Batches.Single();
+        var routeViewFrames = _renderer.GetCurrentRenderTreeFrames(_routeViewComponentId).AsEnumerable();
+        Assert.Collection(routeViewFrames,
+            frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)typeof(TestLayout), sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+
+        // Assert: LayoutView renders TestLayout
+        var layoutViewComponentId = batch.GetComponentFrames<LayoutView>().Single().ComponentId;
+        var layoutViewFrames = _renderer.GetCurrentRenderTreeFrames(layoutViewComponentId).AsEnumerable();
+        Assert.Collection(layoutViewFrames,
+            frame => AssertFrame.Component<TestLayout>(frame, subtreeLength: 2, sequence: 0),
+            frame => AssertFrame.Attribute(frame, nameof(LayoutComponentBase.Body), sequence: 1));
+
+        // Assert: TestLayout renders cascading model binder
+        var testLayoutComponentId = batch.GetComponentFrames<TestLayout>().Single().ComponentId;
+        var testLayoutFrames = _renderer.GetCurrentRenderTreeFrames(testLayoutComponentId).AsEnumerable();
+        Assert.Collection(testLayoutFrames,
+            frame => AssertFrame.Text(frame, "Layout starts here", sequence: 0),
+            frame => AssertFrame.Region(frame, subtreeLength: 5),
+            frame => AssertFrame.Component<CascadingModelBinder>(frame, sequence: 0, subtreeLength: 4),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.Name), "", sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.BindingContextId), expectedBindingContextId, sequence: 2),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.ChildContent), typeof(RenderFragment<ModelBindingContext>), sequence: 3),
             frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
 
@@ -179,6 +258,18 @@ public class RouteViewTest
             frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)typeof(TestLayout), sequence: 1),
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+    }
+
+    private class RouteViewTestNavigationManager : NavigationManager
+    {
+        public RouteViewTestNavigationManager() =>
+            Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/");
+
+        public void NotifyLocationChanged(string uri)
+        {
+            Uri = uri;
+            NotifyLocationChanged(false);
+        }
     }
 
     private class ComponentWithoutLayout : AutoRenderComponent

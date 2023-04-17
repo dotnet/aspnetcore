@@ -77,7 +77,7 @@ public class RouteView : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        var pathStart = NavigationManager.BaseUri.Length;
+        var pathStart = NavigationManager.BaseUri.Length - 1;
         var bindingId = NavigationManager.Uri.Substring(
             pathStart,
             NavigationManager.Uri.AsSpan().IndexOfAny("?#") switch
