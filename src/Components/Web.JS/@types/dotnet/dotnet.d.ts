@@ -132,6 +132,14 @@ type MonoConfig = {
      * initial number of workers to add to the emscripten pthread pool
      */
     pthreadPoolSize?: number;
+    /**
+     * If true, the snapshot of runtime's memory will be stored in the browser and used for faster startup next time. Default is false.
+     */
+    startupMemoryCache?: boolean;
+    /**
+     * application environment
+     */
+    applicationEnvironment?: string;
 };
 interface ResourceRequest {
     name: string;
