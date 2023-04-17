@@ -21,11 +21,10 @@ public class SqlServerCache : IDistributedCache
 
     private readonly IDatabaseOperations _dbOperations;
     private readonly ISystemClock _systemClock;
-    private readonly TimeSpan _expiredItemsDeletionInterval;
-    private DateTimeOffset _lastExpirationScan;
+    private readonly long _expiredItemsDeletionIntervalTicks;
+    private long _lastExpirationScanTicks;
     private readonly Action _deleteExpiredCachedItemsDelegate;
     private readonly TimeSpan _defaultSlidingExpiration;
-    private readonly Object _mutex = new Object();
 
     /// <summary>
     /// Initializes a new instance of <see cref="SqlServerCache"/>.
@@ -66,8 +65,7 @@ public class SqlServerCache : IDistributedCache
         }
 
         _systemClock = cacheOptions.SystemClock ?? new SystemClock();
-        _expiredItemsDeletionInterval =
-            cacheOptions.ExpiredItemsDeletionInterval ?? DefaultExpiredItemsDeletionInterval;
+        _expiredItemsDeletionIntervalTicks = (cacheOptions.ExpiredItemsDeletionInterval ?? DefaultExpiredItemsDeletionInterval).Ticks;
         _deleteExpiredCachedItemsDelegate = DeleteExpiredCacheItems;
         _defaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration;
 
@@ -186,12 +184,12 @@ public class SqlServerCache : IDistributedCache
     // If sufficient time has elapsed then a scan is initiated on a background task.
     private void ScanForExpiredItemsIfRequired()
     {
-        lock (_mutex)
+        long ticks = _systemClock.UtcNow.UtcTicks;
+        long lastExpirationScanTicks = _lastExpirationScanTicks;
+        if ((ticks - lastExpirationScanTicks) > _expiredItemsDeletionIntervalTicks)
         {
-            var utcNow = _systemClock.UtcNow;
-            if ((utcNow - _lastExpirationScan) > _expiredItemsDeletionInterval)
+            if (Interlocked.CompareExchange(ref _lastExpirationScanTicks, ticks, lastExpirationScanTicks) == lastExpirationScanTicks)
             {
-                _lastExpirationScan = utcNow;
                 Task.Run(_deleteExpiredCachedItemsDelegate);
             }
         }
