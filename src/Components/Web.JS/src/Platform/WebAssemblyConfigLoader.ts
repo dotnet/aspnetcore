@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
-import { BootJsonData } from './BootConfig';
+import { BootJsonData } from 'dotnet';
 import { Blazor } from '../GlobalExports';
 
 export class WebAssemblyConfigLoader {

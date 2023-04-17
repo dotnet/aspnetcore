@@ -284,7 +284,7 @@ declare global {
 declare const dotnet: ModuleAPI["dotnet"];
 declare const exit: ModuleAPI["exit"];
 
-export interface BootJsonData {
+interface BootJsonData {
     readonly entryAssembly: string;
     readonly resources: ResourceGroups;
     /** Gets a value that determines if this boot config was produced from a non-published build (i.e. dotnet build or dotnet run) */
@@ -301,9 +301,9 @@ export interface BootJsonData {
     aspnetCoreBrowserTools: string | null;
 }
 
-export type BootJsonDataExtension = { [extensionName: string]: ResourceList };
+type BootJsonDataExtension = { [extensionName: string]: ResourceList };
 
-export interface ResourceGroups {
+interface ResourceGroups {
     readonly assembly: ResourceList;
     readonly lazyAssembly: ResourceList;
     readonly pdb?: ResourceList;
@@ -314,19 +314,19 @@ export interface ResourceGroups {
     readonly runtimeAssets: ExtendedResourceList;
 }
 
-export type ResourceList = { [name: string]: string };
-export type ExtendedResourceList = {
+type ResourceList = { [name: string]: string };
+type ExtendedResourceList = {
     [name: string]: {
         hash: string,
         behavior: string
     }
 };
 
-export enum ICUDataMode {
+declare const enum ICUDataMode {
     Sharded,
     All,
     Invariant,
     Custom
 }
 
-export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
+export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, BootJsonData, ICUDataMode, createDotnetRuntime as default, dotnet, exit };

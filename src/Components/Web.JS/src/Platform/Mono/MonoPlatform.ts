@@ -10,9 +10,8 @@ import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
-import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI } from 'dotnet';
+import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 import { WebAssemblyComponentDescriptor, discoverComponents, discoverPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { attachRootComponentToElement, attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
@@ -170,7 +169,7 @@ function importDotnetJs(otpions: Partial<WebAssemblyStartOptions>): Promise<Modu
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  let src = '_framework/dotnet.js';
+  let src = '_framework/dotnet.8.0.0-preview.4.23212.4.y6zwiyit52.js';
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (otpions.loadBootResource) {
