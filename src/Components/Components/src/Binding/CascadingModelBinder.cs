@@ -21,9 +21,16 @@ public class CascadingModelBinder : IComponent
     [Parameter] public string Name { get; set; } = default!;
 
     /// <summary>
+    /// The binding context name.
+    /// </summary>
+    [Parameter] public string BindingId { get; set; } = default!;
+
+    /// <summary>
     /// Specifies the content to be rendered inside this <see cref="CascadingModelBinder"/>.
     /// </summary>
-    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public RenderFragment<ModelBindingContext> ChildContent { get; set; } = default!;
+
+    [CascadingParameter] ModelBindingContext? ParentContext { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -36,14 +43,21 @@ public class CascadingModelBinder : IComponent
         {
             _hasRendered = true;
             parameters.SetParameterProperties(this);
+            if (ParentContext != null && string.IsNullOrEmpty(Name))
+            {
+                throw new InvalidOperationException("Nested binding contexts must define a Name.");
+            }
 
-            _bindingContext = new ModelBindingContext(Name);
+            var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
+            var bindingId = !string.IsNullOrEmpty(name) ? null : BindingId;
+            _bindingContext = new ModelBindingContext(name, bindingId);
+
             _handle.Render(builder =>
             {
                 builder.OpenComponent<CascadingValue<ModelBindingContext>>(0);
                 builder.AddComponentParameter(1, nameof(CascadingValue<ModelBindingContext>.IsFixed), true);
                 builder.AddComponentParameter(2, nameof(CascadingValue<ModelBindingContext>.Value), _bindingContext);
-                builder.AddComponentParameter(3, nameof(CascadingValue<ModelBindingContext>.ChildContent), ChildContent);
+                builder.AddComponentParameter(3, nameof(CascadingValue<ModelBindingContext>.ChildContent), ChildContent?.Invoke(_bindingContext));
                 builder.CloseComponent();
             });
         }

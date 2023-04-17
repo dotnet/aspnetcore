@@ -83,6 +83,11 @@ public class EditForm : ComponentBase
     /// </summary>
     [CascadingParameter] public ModelBindingContext? BindingContext { get; set; }
 
+    /// <summary>
+    /// Gets or sets the form name.
+    /// </summary>
+    [Parameter] public string Name { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -125,21 +130,46 @@ public class EditForm : ComponentBase
         // optimizing for the common case where _editContext never changes.
         builder.OpenRegion(_editContext.GetHashCode());
 
-        builder.OpenElement(0, "form");
-        builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
-        if (BindingContext != null)
+        if (Name != null)
         {
-            builder.SetEventHandlerName(BindingContext.Name);
+            builder.OpenComponent<CascadingModelBinder>(0);
+            builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), Name);
+            builder.AddComponentParameter<ModelBindingContext>(2, nameof(CascadingModelBinder.ChildContent), RenderWithNamedContext);
+            builder.CloseComponent();
         }
-        builder.OpenComponent<CascadingValue<EditContext>>(3);
-        builder.AddComponentParameter(4, "IsFixed", true);
-        builder.AddComponentParameter(5, "Value", _editContext);
-        builder.AddComponentParameter(6, "ChildContent", ChildContent?.Invoke(_editContext));
-        builder.CloseComponent();
-        builder.CloseElement();
+        else
+        {
+            RenderFormContents(builder, BindingContext);
+        }
 
         builder.CloseRegion();
+
+        RenderFragment RenderWithNamedContext(ModelBindingContext context)
+        {
+            return builder => RenderFormContents(builder, context);
+        }
+
+        void RenderFormContents(RenderTreeBuilder builder, ModelBindingContext? bindingContext)
+        {
+            builder.OpenElement(0, "form");
+            if (!string.IsNullOrEmpty(bindingContext?.Name))
+            {
+                builder.AddAttribute(1, "name", bindingContext.Name);
+                builder.AddAttribute(2, "action", $"?handler={bindingContext.Name}");
+            }
+            builder.AddMultipleAttributes(3, AdditionalAttributes);
+            builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
+            if (bindingContext != null)
+            {
+                builder.SetEventHandlerName(bindingContext.BindingId);
+            }
+            builder.OpenComponent<CascadingValue<EditContext>>(5);
+            builder.AddComponentParameter(6, "IsFixed", true);
+            builder.AddComponentParameter(7, "Value", _editContext);
+            builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
+            builder.CloseComponent();
+            builder.CloseElement();
+        }
     }
 
     private async Task HandleSubmitAsync()
