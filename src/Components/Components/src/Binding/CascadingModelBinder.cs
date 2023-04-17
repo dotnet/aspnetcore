@@ -45,7 +45,7 @@ public class CascadingModelBinder : IComponent
             parameters.SetParameterProperties(this);
             if (ParentContext != null && string.IsNullOrEmpty(Name))
             {
-                throw new InvalidOperationException("Nested binding contexts must define a Name.");
+                throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.BindingContextId}'.");
             }
 
             var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";

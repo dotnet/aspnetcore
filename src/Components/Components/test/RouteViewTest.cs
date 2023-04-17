@@ -118,7 +118,7 @@ public class RouteViewTest
     [InlineData("https://www.example.com/subdir/path/with/multiple/segments?and=query", "/path/with/multiple/segments")]
     [InlineData("https://www.example.com/subdir/path/with/multiple/segments?and=query#hashtoo", "/path/with/multiple/segments")]
     [InlineData("https://www.example.com/subdir/path/with/#multiple/segments?and=query#hashtoo", "/path/with/")]
-    [InlineData("https://www.example.com/subdir/path/with/#multiple/segments#hashtoo?and=query", "/path/with/multiple/segments")]
+    [InlineData("https://www.example.com/subdir/path/with/multiple/segments#hashtoo?and=query", "/path/with/multiple/segments")]
     public void ProvidesDocumentPathAsBindingContextId(string url, string expectedBindingContextId)
     {
         // Arrange
