@@ -148,7 +148,143 @@ public class CascadingModelBinderTest
 
         // Act
         var exception = Assert.Throws<InvalidOperationException>(() => renderer.RenderRootComponent(id));
-        Assert.Equal($"Nested binding contexts must define a Name. (Parent context) = 'parent-context'.", exception.Message);
+        Assert.Equal("Nested binding contexts must define a Name. (Parent context) = 'parent-context'.", exception.Message);
+    }
+
+    [Fact]
+    public void Throws_WhenIsFixedAndNameChanges()
+    {
+        ModelBindingContext capturedContext = null;
+        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        var contextName = "parent-context";
+
+        var renderer = new TestRenderer();
+        var testComponent = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CascadingModelBinder>(0);
+            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), contextName);
+            builder.AddAttribute(2, nameof(CascadingModelBinder.IsFixed), true);
+            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.CloseComponent();
+        });
+        var id = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(id);
+
+        // Act
+        contextName = "changed";
+        var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
+
+        Assert.Equal("'CascadingModelBinder' 'Name' and 'BindingContextId' can't change after initialized.", exception.Message);
+    }
+
+    [Fact]
+    public void Throws_WhenIsFixedAndBindingIdChanges()
+    {
+        ModelBindingContext capturedContext = null;
+        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        var bindingId = "parent-context";
+
+        var renderer = new TestRenderer();
+        var testComponent = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CascadingModelBinder>(0);
+            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), bindingId);
+            builder.AddAttribute(2, nameof(CascadingModelBinder.IsFixed), true);
+            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.CloseComponent();
+        });
+        var id = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(id);
+
+        // Act
+        bindingId = "changed";
+        var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
+
+        Assert.Equal("'CascadingModelBinder' 'Name' and 'BindingContextId' can't change after initialized.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Throws_WhenIsFixed_Changes(bool isFixed)
+    {
+        ModelBindingContext capturedContext = null;
+        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        var renderer = new TestRenderer();
+        var testComponent = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CascadingModelBinder>(0);
+            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), "parent-context");
+            builder.AddAttribute(2, nameof(CascadingModelBinder.IsFixed), isFixed);
+            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.CloseComponent();
+        });
+        var id = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(id);
+
+        // Act
+        isFixed = !isFixed;
+        var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
+
+        Assert.Equal("The value of IsFixed cannot be changed dynamically.", exception.Message);
+    }
+
+    [Fact]
+    public void CanChange_Name_WhenNotFixed()
+    {
+        ModelBindingContext capturedContext = null;
+        ModelBindingContext originalContext = null;
+        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        var contextName = "parent-context";
+
+        var renderer = new TestRenderer();
+        var testComponent = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CascadingModelBinder>(0);
+            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), contextName);
+            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.CloseComponent();
+        });
+        var id = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(id);
+
+        originalContext = capturedContext;
+        contextName = "changed";
+
+        // Act
+        testComponent.TriggerRender();
+
+        Assert.NotSame(capturedContext, originalContext);
+        Assert.Equal("changed", capturedContext.Name);
+    }
+
+    [Fact]
+    public void CanChange_BindingContextId_WhenNotFixed()
+    {
+        ModelBindingContext capturedContext = null;
+        ModelBindingContext originalContext = null;
+        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        var contextBindingId = "/fetch-data/5";
+
+        var renderer = new TestRenderer();
+        var testComponent = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CascadingModelBinder>(0);
+            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), contextBindingId);
+            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.CloseComponent();
+        });
+        var id = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(id);
+
+        originalContext = capturedContext;
+        contextBindingId = "/fetch-data/6";
+
+        // Act
+        testComponent.TriggerRender();
+
+        Assert.NotSame(capturedContext, originalContext);
+        Assert.Equal("/fetch-data/6", capturedContext.BindingContextId);
     }
 
     class TestComponent : AutoRenderComponent

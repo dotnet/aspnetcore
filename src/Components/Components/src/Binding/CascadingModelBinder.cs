@@ -12,13 +12,17 @@ namespace Microsoft.AspNetCore.Components;
 public class CascadingModelBinder : IComponent
 {
     private RenderHandle _handle;
-    private bool _hasRendered;
     private ModelBindingContext? _bindingContext;
 
     /// <summary>
     /// The binding context name.
     /// </summary>
     [Parameter] public string Name { get; set; } = default!;
+
+    /// <summary>
+    /// The binding context name.
+    /// </summary>
+    [Parameter] public bool IsFixed { get; set; }
 
     /// <summary>
     /// The binding context name.
@@ -39,28 +43,39 @@ public class CascadingModelBinder : IComponent
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        if (!_hasRendered)
+        parameters.SetParameterProperties(this);
+        if (ParentContext != null && string.IsNullOrEmpty(Name))
         {
-            _hasRendered = true;
-            parameters.SetParameterProperties(this);
-            if (ParentContext != null && string.IsNullOrEmpty(Name))
-            {
-                throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.BindingContextId}'.");
-            }
-
-            var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
-            var bindingId = !string.IsNullOrEmpty(name) ? null : BindingContextId;
-            _bindingContext = new ModelBindingContext(name, bindingId);
-
-            _handle.Render(builder =>
-            {
-                builder.OpenComponent<CascadingValue<ModelBindingContext>>(0);
-                builder.AddComponentParameter(1, nameof(CascadingValue<ModelBindingContext>.IsFixed), true);
-                builder.AddComponentParameter(2, nameof(CascadingValue<ModelBindingContext>.Value), _bindingContext);
-                builder.AddComponentParameter(3, nameof(CascadingValue<ModelBindingContext>.ChildContent), ChildContent?.Invoke(_bindingContext));
-                builder.CloseComponent();
-            });
+            throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.BindingContextId}'.");
         }
+
+        var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
+        var bindingId = !string.IsNullOrEmpty(name) ? null : BindingContextId;
+        var bindingContext = _bindingContext != null &&
+            string.Equals(_bindingContext.Name, Name, StringComparison.Ordinal) &&
+            string.Equals(_bindingContext.BindingContextId, BindingContextId, StringComparison.Ordinal) ?
+            _bindingContext : new ModelBindingContext(name, bindingId);
+        if (IsFixed && _bindingContext != null && _bindingContext != bindingContext)
+        {
+            // Throw an exception if either the Name or the BindingContextId changed. Once a CascadingModelBinder has been initialized
+            // as fixed, it can't change it's name nor its BindingContextId. This can happen in several situations:
+            // * Component ParentContext hierarchy changes.
+            //   * Technically, the component won't be retained in this case and will be destroyed instead.
+            // * A parent changes Name.
+            // * A parent changes BindingContextId.
+            throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' and 'BindingContextId' can't change after initialized.");
+        }
+
+        // It doesn't matter that we don't check IsFixed, since the CascadingValue we are setting up will throw if the app changes.
+        _bindingContext = bindingContext;
+        _handle.Render(builder =>
+        {
+            builder.OpenComponent<CascadingValue<ModelBindingContext>>(0);
+            builder.AddComponentParameter(1, nameof(CascadingValue<ModelBindingContext>.IsFixed), IsFixed);
+            builder.AddComponentParameter(2, nameof(CascadingValue<ModelBindingContext>.Value), _bindingContext);
+            builder.AddComponentParameter(3, nameof(CascadingValue<ModelBindingContext>.ChildContent), ChildContent?.Invoke(_bindingContext));
+            builder.CloseComponent();
+        });
 
         return Task.CompletedTask;
     }
