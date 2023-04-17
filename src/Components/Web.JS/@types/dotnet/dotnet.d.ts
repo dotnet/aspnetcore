@@ -188,7 +188,7 @@ type DotnetModuleConfig = {
     disableDotnet6Compatibility?: boolean;
     config?: MonoConfig;
     configSrc?: string;
-    onConfigLoaded?: (config: MonoConfig) => void | Promise<void>;
+    onConfigLoaded?: (config: MonoConfig & BootConfigResult) => void | Promise<void>;
     onDotnetReady?: () => void | Promise<void>;
     imports?: any;
     exports?: string[];
