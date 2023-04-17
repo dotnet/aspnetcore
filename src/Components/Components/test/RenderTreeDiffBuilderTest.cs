@@ -1793,7 +1793,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), renderTreeBuilder.GetFrames(), renderTreeBuilder.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), renderTreeBuilder.GetNamedEvents());
         var componentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
         Assert.Equal(1, componentInstance.SetParametersCallCount);
 

@@ -5,6 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -70,7 +71,7 @@ public class RouteView : IComponent
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), RenderPageWithParameters);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
         builder.CloseComponent();
     }
 
@@ -85,9 +86,15 @@ public class RouteView : IComponent
                 var index => index - pathStart
             });
 
+        builder.OpenComponent<CascadingModelBinder>(0);
         builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), "");
-        builder.AddComponentParameter(1, nameof(CascadingModelBinder.BindingId), bindingId);
-        builder.AddComponentParameter(2, nameof(CascadingModelBinder.ChildContent), builder =>
+        builder.AddComponentParameter(2, nameof(CascadingModelBinder.BindingId), bindingId);
+        builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderPageWithContext);
+        builder.CloseComponent();
+
+        RenderFragment RenderPageWithContext(ModelBindingContext context) => RenderPageCore;
+
+        void RenderPageCore(RenderTreeBuilder builder)
         {
             builder.OpenComponent(0, RouteData.PageType);
 
@@ -113,7 +120,6 @@ public class RouteView : IComponent
             }
 
             builder.CloseComponent();
-        });
-        builder.CloseComponent();
+        }
     }
 }

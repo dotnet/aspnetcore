@@ -5,11 +5,11 @@
 <h1>Streaming Rendering</h1>
 
 @* This just sets the context for the binding, this happens normally inside RouteView *@
-<CascadingModelBinder Name="/form-streaming">
+@* <CascadingModelBinder Name="/form-streaming">
     <EditForm id="process" method="POST" OnValidSubmit="ProcessForm">
         <input type="submit" value="Process form" />
     </EditForm>
-</CascadingModelBinder>
+</CascadingModelBinder> *@
 
 <p id="status">
     @if (_processing)

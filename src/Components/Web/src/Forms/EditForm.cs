@@ -86,7 +86,11 @@ public class EditForm : ComponentBase
     /// <summary>
     /// Gets or sets the form name.
     /// </summary>
-    [Parameter] public string Name { get; set; }
+    /// <remarks>
+    /// The <c>name</c> attribute on the <c>form</c> element will default to
+    /// the <see cref="FormHandlerName"/> unless an explicit name is provided.
+    /// </remarks>
+    [Parameter] public string FormHandlerName { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -130,11 +134,11 @@ public class EditForm : ComponentBase
         // optimizing for the common case where _editContext never changes.
         builder.OpenRegion(_editContext.GetHashCode());
 
-        if (Name != null)
+        if (FormHandlerName != null)
         {
             builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), Name);
-            builder.AddComponentParameter<ModelBindingContext>(2, nameof(CascadingModelBinder.ChildContent), RenderWithNamedContext);
+            builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), FormHandlerName);
+            builder.AddComponentParameter(2, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderWithNamedContext);
             builder.CloseComponent();
         }
         else
