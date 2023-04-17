@@ -188,8 +188,10 @@ type DotnetModuleConfig = {
     disableDotnet6Compatibility?: boolean;
     config?: MonoConfig;
     configSrc?: string;
-    onConfigLoaded?: (config: MonoConfig & BootConfigResult) => void | Promise<void>;
+    onConfigLoaded?: (config: MonoConfig & BootJsonData) => void | Promise<void>;
     onDotnetReady?: () => void | Promise<void>;
+    onDownloadResourceProgress?: (resourcesLoaded: number, totalResources: number) => void;
+    getApplicationEnvironment?: (bootConfigResponse: Response) => string | null;
     imports?: any;
     exports?: string[];
     downloadResource?: (request: ResourceRequest) => LoadingResource | undefined;
@@ -281,5 +283,50 @@ declare global {
 
 declare const dotnet: ModuleAPI["dotnet"];
 declare const exit: ModuleAPI["exit"];
+
+export interface BootJsonData {
+    readonly entryAssembly: string;
+    readonly resources: ResourceGroups;
+    /** Gets a value that determines if this boot config was produced from a non-published build (i.e. dotnet build or dotnet run) */
+    readonly debugBuild: boolean;
+    readonly linkerEnabled: boolean;
+    readonly cacheBootResources: boolean;
+    readonly config: string[];
+    readonly icuDataMode: ICUDataMode;
+    readonly startupMemoryCache: boolean | undefined;
+    readonly runtimeOptions: string[] | undefined;
+
+    // These properties are tacked on, and not found in the boot.json file
+    modifiableAssemblies: string | null;
+    aspnetCoreBrowserTools: string | null;
+}
+
+export type BootJsonDataExtension = { [extensionName: string]: ResourceList };
+
+export interface ResourceGroups {
+    readonly assembly: ResourceList;
+    readonly lazyAssembly: ResourceList;
+    readonly pdb?: ResourceList;
+    readonly runtime: ResourceList;
+    readonly satelliteResources?: { [cultureName: string]: ResourceList };
+    readonly libraryInitializers?: ResourceList,
+    readonly extensions?: BootJsonDataExtension
+    readonly runtimeAssets: ExtendedResourceList;
+}
+
+export type ResourceList = { [name: string]: string };
+export type ExtendedResourceList = {
+    [name: string]: {
+        hash: string,
+        behavior: string
+    }
+};
+
+export enum ICUDataMode {
+    Sharded,
+    All,
+    Invariant,
+    Custom
+}
 
 export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
