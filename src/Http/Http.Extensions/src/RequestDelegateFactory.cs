@@ -2364,7 +2364,7 @@ public static partial class RequestDelegateFactory
         public static void RequestBodyIOException(HttpContext httpContext, IOException exception)
             => RequestBodyIOException(GetLogger(httpContext), exception);
 
-        [LoggerMessage(RequestDelegateCreationLogging.RequestBodyIOExceptionEventId, LogLevel.Debug, RequestDelegateCreationLogging.RequestBodyIOExceptionMessage, EventName = "RequestBodyIOException")]
+        [LoggerMessage(RequestDelegateCreationLogging.RequestBodyIOExceptionEventId, LogLevel.Debug, RequestDelegateCreationLogging.RequestBodyIOExceptionMessage, EventName = RequestDelegateCreationLogging.RequestBodyIOExceptionEventName)]
         private static partial void RequestBodyIOException(ILogger logger, IOException exception);
 
         public static void InvalidJsonRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
@@ -2378,7 +2378,7 @@ public static partial class RequestDelegateFactory
             InvalidJsonRequestBody(GetLogger(httpContext), parameterTypeName, parameterName, exception);
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidJsonRequestBodyMessage, EventName = "InvalidJsonRequestBody")]
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidJsonRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidJsonRequestBodyEventName)]
         private static partial void InvalidJsonRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue, bool shouldThrow)
@@ -2392,7 +2392,7 @@ public static partial class RequestDelegateFactory
             ParameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue);
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.ParameterBindingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.ParameterBindingFailedLogMessage, EventName = "ParameterBindingFailed")]
+        [LoggerMessage(RequestDelegateCreationLogging.ParameterBindingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.ParameterBindingFailedLogMessage, EventName = RequestDelegateCreationLogging.ParameterBindingFailedEventName)]
         private static partial void ParameterBindingFailed(ILogger logger, string parameterType, string parameterName, string sourceValue);
 
         public static void RequiredParameterNotProvided(HttpContext httpContext, string parameterTypeName, string parameterName, string source, bool shouldThrow)
@@ -2406,7 +2406,7 @@ public static partial class RequestDelegateFactory
             RequiredParameterNotProvided(GetLogger(httpContext), parameterTypeName, parameterName, source);
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId, LogLevel.Debug, RequestDelegateCreationLogging.RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
+        [LoggerMessage(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId, LogLevel.Debug, RequestDelegateCreationLogging.RequiredParameterNotProvidedLogMessage, EventName = RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName)]
         private static partial void RequiredParameterNotProvided(ILogger logger, string parameterType, string parameterName, string source);
 
         public static void ImplicitBodyNotProvided(HttpContext httpContext, string parameterName, bool shouldThrow)
@@ -2420,7 +2420,7 @@ public static partial class RequestDelegateFactory
             ImplicitBodyNotProvided(GetLogger(httpContext), parameterName);
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId, LogLevel.Debug, RequestDelegateCreationLogging.ImplicitBodyNotProvidedLogMessage, EventName = "ImplicitBodyNotProvided")]
+        [LoggerMessage(RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId, LogLevel.Debug, RequestDelegateCreationLogging.ImplicitBodyNotProvidedLogMessage, EventName = RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventName)]
         private static partial void ImplicitBodyNotProvided(ILogger logger, string parameterName);
 
         public static void UnexpectedJsonContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
@@ -2434,7 +2434,7 @@ public static partial class RequestDelegateFactory
             UnexpectedJsonContentType(GetLogger(httpContext), contentType ?? "(none)");
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedJsonContentTypeLogMessage, EventName = "UnexpectedContentType")]
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedJsonContentTypeLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventName)]
         private static partial void UnexpectedJsonContentType(ILogger logger, string contentType);
 
         public static void UnexpectedNonFormContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
@@ -2448,7 +2448,7 @@ public static partial class RequestDelegateFactory
             UnexpectedNonFormContentType(GetLogger(httpContext), contentType ?? "(none)");
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, EventName = "UnexpectedNonFormContentType")]
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedFormContentTypeLogEventName)]
         private static partial void UnexpectedNonFormContentType(ILogger logger, string contentType);
 
         public static void InvalidFormRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
@@ -2462,7 +2462,7 @@ public static partial class RequestDelegateFactory
             InvalidFormRequestBody(GetLogger(httpContext), parameterTypeName, parameterName, exception);
         }
 
-        [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = "InvalidFormRequestBody")]
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidFormRequestBodyEventName)]
         private static partial void InvalidFormRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         private static ILogger GetLogger(HttpContext httpContext)

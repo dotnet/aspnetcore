@@ -169,7 +169,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var hasBindAsync = endpoints.Any(endpoint => endpoint!.EmitterContext.HasBindAsync);
                 var hasParsable = endpoints.Any(endpoint => endpoint!.EmitterContext.HasParsable);
                 var hasJsonResponse = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonResponse);
-                var requiredLoggingHelper = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresLoggingHelper);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
@@ -202,11 +201,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 if (hasParsable)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.TryParseExplicitMethod);
-                }
-
-                if (requiredLoggingHelper)
-                {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.LogOrThrowExceptionMethod);
                 }
 
                 return stringWriter.ToString();

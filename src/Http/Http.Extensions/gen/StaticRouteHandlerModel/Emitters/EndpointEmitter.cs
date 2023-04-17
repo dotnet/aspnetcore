@@ -77,7 +77,7 @@ internal static class EndpointEmitter
                 }
                 codeWriter.Write($@"var {parameter.SymbolName}_JsonBodyOrServiceResolver = ");
                 var shortParameterTypeName = parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
-                codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowException, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, serviceProviderIsService);");
+                codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, serviceProviderIsService);");
             }
         }
     }
@@ -86,7 +86,7 @@ internal static class EndpointEmitter
     {
         if (endpoint.EmitterContext.RequiresLoggingHelper)
         {
-            codeWriter.WriteLine("var logOrThrowException = GetLogOrThrowException(serviceProvider, options);");
+            codeWriter.WriteLine("var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);");
         }
     }
 

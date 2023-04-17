@@ -11,7 +11,7 @@ internal static class RequestDelegateCreationLogging
 
     public const int InvalidJsonRequestBodyEventId = 2;
     public const string InvalidJsonRequestBodyEventName = "InvalidJsonRequestBody";
-    public const string InvalidJsonRequestBodyMessage = @"Failed to read parameter ""{ParameterType} {ParameterName}"" from the request body as JSON.";
+    public const string InvalidJsonRequestBodyLogMessage = @"Failed to read parameter ""{ParameterType} {ParameterName}"" from the request body as JSON.";
     public const string InvalidJsonRequestBodyExceptionMessage = @"Failed to read parameter ""{0} {1}"" from the request body as JSON.";
 
     public const int ParameterBindingFailedEventId = 3;

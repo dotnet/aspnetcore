@@ -259,7 +259,7 @@ internal class EndpointParameter
                     writer.WriteLine($$"""if (!string.IsNullOrEmpty({{inputArgument}}))""");
                     writer.StartBlock();
                     writer.WriteLine("wasParamCheckFailure = true;");
-                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {SymbolDisplay.FormatLiteral(this.ToMessageString(), true)});");
+                    writer.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {SymbolDisplay.FormatLiteral(this.ToMessageString(), true)});");
                     writer.EndBlock();
                     writer.EndBlock();
                 }
@@ -269,7 +269,7 @@ internal class EndpointParameter
                     writer.StartBlock();
                     writer.WriteLine($"if (!string.IsNullOrEmpty({inputArgument}))");
                     writer.StartBlock();
-                    writer.WriteLine($@"logOrThrowException({RequestDelegateCreationLogging.ParameterBindingFailedEventId}, {SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedEventName, true)}, null, StatusCodes.Status400BadRequest, {SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {inputArgument});");
+                    writer.WriteLine($@"logOrThrowExceptionHelper.ParameterBindingFailed({SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {inputArgument});");
                     writer.WriteLine("wasParamCheckFailure = true;");
                     writer.EndBlock();
                     writer.EndBlock();
