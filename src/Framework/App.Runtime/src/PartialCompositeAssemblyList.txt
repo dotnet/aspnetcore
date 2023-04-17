@@ -30,7 +30,6 @@ Microsoft.AspNetCore.Server.Kestrel
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 System.Net.Quic
 System.Diagnostics.Tracing
-Microsoft.Extensions.Logging.Abstractions
 Microsoft.Extensions.Features
 Microsoft.AspNetCore.Http.Abstractions
 Microsoft.AspNetCore.Http
