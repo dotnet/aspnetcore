@@ -105,20 +105,10 @@ internal unsafe ref struct ReverseStringBuilder
     public void InsertFront(IFormattable formattable)
         => InsertFront(formattable.ToString(null, CultureInfo.InvariantCulture));
 
-    public override string ToString()
-    {
-        if (_fallbackSequenceSegment is null)
-        {
-            // Only one buffer was used, so we can create the string directly.
-            // This will happen in the most common cases:
-            // 1. We didn't have an initial string length estimate, but the string was shorter than the size
-            //    of the initial buffer (either stack-allocated or copied to the heap). Or...
-            // 2. We were provided a string length estimate, and the resulting string was shorter than that estimate.
-            return new(_currentBuffer[_nextEndIndex..]);
-        }
-
-        return _fallbackSequenceSegment.ToString(_nextEndIndex);
-    }
+    public override readonly string ToString()
+        => _fallbackSequenceSegment is null
+            ? new(_currentBuffer[_nextEndIndex..])
+            : _fallbackSequenceSegment.ToString(_nextEndIndex);
 
     public readonly void Dispose()
     {
