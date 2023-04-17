@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -51,6 +52,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
     /// </summary>
     /// <inheritdoc />
     [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
         : base(options, logger, encoder, time)
     { }
