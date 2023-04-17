@@ -1,0 +1,32 @@
+<h1 id="tableLabel">JavaScript Effects</h1>
+
+<p>This component demonstrates fetching data protected by auth from the server.</p>
+
+<div *ngIf="!authenticated">
+    <h4>Cool stuff is waiting for authenticated people</h4>
+    <div>
+        <form #f="ngForm" (ngSubmit)="validate(f)">
+            <div>Username: <input type="text" name="username" required ngModel></div>
+            <div>Password: <input type="password" name="password" required ngModel></div>                              
+            <div *ngIf="register">Confirm password: <input type="password" name="pconfirm" required ngModel></div>
+            <button type="submit">{{ register ? "Register" : "Login" }}</button>
+        </form>
+        <button class="btn btn-link" (click)="register = !register;f.resetForm()">Switch to {{ register ? "Login" : "Register" }}</button>
+    </div>
+</div> 
+
+<div>Operation status: {{ operationFailed ? operationReason : "Success" }}</div>
+
+<div *ngIf="authenticated">
+
+    <p *ngIf="!fx"><em>Loading...</em></p>
+
+    <p *ngIf="fx && fx.username">Welcome, {{ fx.username }}</p>
+
+    <div *ngIf="fx">
+      <button *ngFor="let eff of fx.effects" [attr.data-js]="eff" onclick="window.canvasStart(this.getAttribute('data-js'));">
+          &nbsp;Effect&nbsp;
+      </button>  
+    </div>
+
+</div>

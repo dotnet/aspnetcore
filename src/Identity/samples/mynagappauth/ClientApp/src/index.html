@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>myngapp</title>
+    <base href="/" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+</head>
+<body>
+    <app-root>Loading...</app-root>
+    <style>
+        canvas {
+            background: lightgray;
+            margin-left: 2em;
+            margin-top: 2em;
+            width: 1920px;
+            height: 1080px;
+        }</style>
+    <script>
+        const S = Math.sin;
+        const C = Math.cos;
+        const T = Math.tan;
+        const step = 1 / 60;
+        const R = (r, g, b, a) => {
+            a = a === undefined ? 1 : a;
+            return "rgba(" + (r | 0) + "," + (g | 0) + "," + (b | 0) + "," + a + ")";
+        };
+
+        const state = {
+            fn: "console.log('nothing');",
+            init: false,
+            cvs: {},
+            div: {
+                innerText: ""
+            }
+        };
+
+        window.canvasStart = code => {
+
+            if (state.init) {
+                state.fn = code;
+                state.div.innerText = code;
+                return;
+            }
+
+            state.div = document.createElement("div");
+            document.body.appendChild(state.div);
+            state.cvs = document.createElement("canvas");
+            state.cvs.width = 1920;
+            state.cvs.height = 1080;
+            document.body.appendChild(state.cvs);
+            state.init = true;
+
+            var t = 0;
+
+            setInterval(() => {
+                u(t);
+                t += step;
+            }, 1000 / 60);
+
+            function u(t) {
+                var c = state.cvs;
+                var x = c.getContext("2d");
+                eval(state.fn);
+            }
+        };
+    </script>
+</body>
+</html>
