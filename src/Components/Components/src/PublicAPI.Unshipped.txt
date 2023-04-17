@@ -13,6 +13,10 @@ Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentState(Microsof
 Microsoft.AspNetCore.Components.Rendering.ComponentState.Dispose() -> void
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentState(int componentId) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
+Microsoft.AspNetCore.Components.Routing.RoutingStateProvider
+Microsoft.AspNetCore.Components.Routing.RoutingStateProvider.RouteData.get -> Microsoft.AspNetCore.Components.RouteData?
+Microsoft.AspNetCore.Components.Routing.RoutingStateProvider.RouteData.set -> void
+Microsoft.AspNetCore.Components.Routing.RoutingStateProvider.RoutingStateProvider() -> void
 Microsoft.AspNetCore.Components.Sections.SectionContent
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void

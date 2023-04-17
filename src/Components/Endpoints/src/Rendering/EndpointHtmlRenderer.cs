@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         _services = serviceProvider;
     }
 
-    private static async Task InitializeStandardComponentServicesAsync(HttpContext httpContext)
+    private static async Task InitializeStandardComponentServicesAsync(HttpContext httpContext, Type componentType)
     {
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -59,6 +60,9 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+
+        var routingStateProvider = httpContext.RequestServices.GetService<RoutingStateProvider>();
+        routingStateProvider!.RouteData = new RouteData(componentType, GetRouteDataParameters(httpContext));
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
@@ -120,5 +124,20 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
+    }
+
+    private static IReadOnlyDictionary<string, object> GetRouteDataParameters(HttpContext httpContext)
+    {
+        var parameters = new Dictionary<string, object>();
+
+        var routeValueDictionary = httpContext.GetRouteData().Values;
+        foreach (var kvp in routeValueDictionary)
+        {
+            if (kvp.Value != null)
+            {
+                parameters[kvp.Key] = kvp.Value;
+            }
+        }
+        return parameters;
     }
 }

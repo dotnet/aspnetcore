@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -15,14 +14,14 @@ internal class RazorComponentEndpointInvoker
 {
     private readonly HttpContext _context;
     private readonly EndpointHtmlRenderer _renderer;
-    private readonly Type _rootComponent;
+    private readonly Type _rootComponentType;
     private readonly Type _componentType;
 
     public RazorComponentEndpointInvoker(HttpContext context, Type rootComponent, Type componentType)
     {
         _context = context;
         _renderer = _context.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
-        _rootComponent = rootComponent;
+        _rootComponentType = rootComponent;
         _componentType = componentType;
     }
 
@@ -34,7 +33,7 @@ internal class RazorComponentEndpointInvoker
     private async Task RenderComponentCore()
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
-        var data = _context.GetRouteData();
+
         await using var writer = CreateResponseWriter(_context.Response.Body);
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
@@ -42,7 +41,8 @@ internal class RazorComponentEndpointInvoker
         // component takes care of switching into your desired render mode when it produces its own output.
         var htmlContent = await _renderer.RenderEndpointComponent(
             _context,
-            _rootComponent,
+            _rootComponentType,
+            _componentType,
             ParameterView.Empty,
             waitForQuiescence: false);
 
