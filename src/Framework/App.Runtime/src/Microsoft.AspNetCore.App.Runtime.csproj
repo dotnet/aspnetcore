@@ -503,13 +503,20 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ReadLinesFromFile>
 
     <ItemGroup>
+      <!-- Temporary workaround tracked by https://github.com/dotnet/runtime/issues/84860 -->
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Abstractions.dll" />
+
       <BaseAssemblies Include="$(ManagedAssetsFullPath)\*.dll" />
       <BaseAssemblies Include="$(TargetDir)\*.dll" />
+
       <PartialCompositeAssemblyPaths Include="$(ManagedAssetsFullPath)\%(PartialCompositeAssemblyNames.Identity).dll" />
       <PartialCompositeAssemblyPaths Include="$(TargetDir)\%(PartialCompositeAssemblyNames.Identity).dll" />
       <PartialCompositeAssemblyPaths Remove="%(PartialCompositeAssemblyPaths.Identity)" Condition="!Exists('%(Identity)')" />
+      <PartialCompositeAssemblyPaths Remove="@(ExcludeAssemblies)" />
+
       <UnrootedAssemblyPaths Include="@(BaseAssemblies)" />
       <UnrootedAssemblyPaths Remove="@(PartialCompositeAssemblyPaths)" />
+      <UnrootedAssemblyPaths Remove="@(ExcludeAssemblies)" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--composite" Overwrite="true" />
@@ -517,6 +524,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--targetos:$(Crossgen2TargetOs)" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-u:&quot;%(UnrootedAssemblyPaths.Identity)&quot;" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="&quot;%(PartialCompositeAssemblyPaths.Identity)&quot;" Overwrite="false" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-r:&quot;%(ExcludeAssemblies.Identity)&quot;" Overwrite="false" Condition="'@(ExcludeAssemblies)' != ''" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--out:&quot;$(CompositeTargetDir)$(CompositeFileName).dll&quot;" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--instruction-set:$(InstructionSetSupport)" Overwrite="false" Condition="'$(InstructionSetSupport)' != ''" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-m:&quot;$(CrossgenOptimizationData)&quot;" Overwrite="false" Condition="'$(CrossgenOptimizationData)' != ''" />
