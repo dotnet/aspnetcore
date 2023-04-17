@@ -169,7 +169,7 @@ function importDotnetJs(otpions: Partial<WebAssemblyStartOptions>): Promise<Modu
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  let src = '_framework/dotnet.8.0.0-preview.4.23212.4.y6zwiyit52.js';
+  let src = '_framework/dotnet.js';
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (otpions.loadBootResource) {
