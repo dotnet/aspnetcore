@@ -80,7 +80,7 @@ public class RouteViewTest
             frame => AssertFrame.Region(frame, subtreeLength: 5),
             frame => AssertFrame.Component<CascadingModelBinder>(frame, sequence: 0, subtreeLength: 4),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.Name), "", sequence: 1),
-            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.BindingContextId), "jan", sequence: 2),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.BindingContextId), "/", sequence: 2),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.ChildContent), typeof(RenderFragment<ModelBindingContext>), sequence: 3),
             frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
 
@@ -89,7 +89,7 @@ public class RouteViewTest
         var cascadingModelBinderFrames = _renderer.GetCurrentRenderTreeFrames(cascadingModelBinderComponentId).AsEnumerable();
         Assert.Collection(cascadingModelBinderFrames,
             frame => AssertFrame.Component<CascadingValue<ModelBindingContext>>(frame, sequence: 0, subtreeLength: 4),
-            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), true, sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), false, sequence: 1),
             frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.Value), typeof(ModelBindingContext), sequence: 2),
             frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.ChildContent), typeof(RenderFragment), sequence: 3));
 
@@ -167,7 +167,7 @@ public class RouteViewTest
         var cascadingModelBinderFrames = _renderer.GetCurrentRenderTreeFrames(cascadingModelBinderComponentId).AsEnumerable();
         Assert.Collection(cascadingModelBinderFrames,
             frame => AssertFrame.Component<CascadingValue<ModelBindingContext>>(frame, sequence: 0, subtreeLength: 4),
-            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), true, sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), false, sequence: 1),
             frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.Value), typeof(ModelBindingContext), sequence: 2),
             frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.ChildContent), typeof(RenderFragment), sequence: 3));
 
