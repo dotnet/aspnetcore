@@ -32,7 +32,7 @@ public class TwoFactorSecurityStampValidator<TUser> : SecurityStampValidator<TUs
     /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
     /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
     /// <param name="clock">The system clock.</param>
-    /// <param name="time">The system clock.</param>
+    /// <param name="time">The time provider.</param>
     /// <param name="logger">The logger.</param>
     [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
     public TwoFactorSecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger, TimeProvider time) : base(options, signInManager, time, logger)
@@ -43,7 +43,7 @@ public class TwoFactorSecurityStampValidator<TUser> : SecurityStampValidator<TUs
     /// </summary>
     /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
     /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
-    /// <param name="time">The system clock.</param>
+    /// <param name="time">The time provider.</param>
     /// <param name="logger">The logger.</param>
     public TwoFactorSecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, TimeProvider time, ILoggerFactory logger) : base(options, signInManager, time, logger)
     { }

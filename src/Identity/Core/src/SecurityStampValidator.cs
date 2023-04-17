@@ -86,7 +86,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     public ISystemClock Clock { get; }
 
     /// <summary>
-    /// The <see cref="ISystemClock"/>.
+    /// The <see cref="TimeProvider"/>.
     /// </summary>
     public TimeProvider Time { get; }
 
