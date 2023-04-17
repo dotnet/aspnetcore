@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public abstract class InputBase<TValue> : ComponentBase, IDisposable
 {
+    private static readonly ExpressionFormatter s_expressionFormatter = new();
+
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
     private bool _hasInitializedParameters;
     private bool _parsingFailed;
@@ -148,6 +150,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
+    /// Gets the formatted value of <see cref="ValueExpression"/>. This can be used as the value for the
+    /// HTML input's "name" attribute.
+    /// </summary>
+    protected string? ValueExpressionAsString { get; private set; }
+
+    /// <summary>
     /// Constructs an instance of <see cref="InputBase{TValue}"/>.
     /// </summary>
     protected InputBase()
@@ -203,6 +211,10 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
 
+            // TODO: We don't always want to format the value expression for the "name" attribute.
+            // Also, FieldIdentifier already does its own processing of the ValueExpression.
+            // Maybe we can deduplicate some work here.
+            ValueExpressionAsString = s_expressionFormatter.FormatLambda(ValueExpression);
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);
 
             if (CascadedEditContext != null)

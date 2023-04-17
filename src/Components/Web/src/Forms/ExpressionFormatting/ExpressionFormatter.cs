@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -16,46 +14,14 @@ internal sealed class ExpressionFormatter
     internal const int StackallocBufferSize = 128;
     internal const int EstimatedStringLengthPadding = 8;
 
-    // Return value of 'true' means non-constant result, 'false' means constant.
-    private delegate bool IndexArgumentFormatter(Expression expression, ref ReverseStringBuilder builder);
+    private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
 
-    private readonly ConcurrentDictionary<Expression, FormattedExpressionInfo> _topLevelExpressionInfoCache = new();
-    private readonly ConcurrentDictionary<Expression, IndexArgumentFormatter> _indexArgumentFormatterCache = new();
+    private readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> _capturedValueFormatterCache = new();
 
-    public string FormatLambda(LambdaExpression lambdaExpression)
+    public string FormatLambda(LambdaExpression expression)
     {
-        if (_topLevelExpressionInfoCache.TryGetValue(lambdaExpression, out var expressionInfo))
-        {
-            if (expressionInfo.CachedResult is { } cachedResult)
-            {
-                // We've seen this expression before and know it yields a constant result,
-                // so we'll return the cached result.
-                return cachedResult;
-            }
-
-            var estimatedLength = expressionInfo.EstimatedLength;
-            Debug.Assert(estimatedLength >= 0);
-
-            // We've seen the expression before, but it may not format the same way every time.
-            // We use the previous formatted string length as an estimate for the new formatted string.
-            // Some extra padding gets added to avoid allocating an extra buffer if we exceed
-            // the estimated amount.
-            return FormatLambdaCore(lambdaExpression, new(estimatedLength + EstimatedStringLengthPadding));
-        }
-        else
-        {
-            // Either we haven't seen the expression before, or its formatted representation fit
-            // within the stack-allocated buffer last time. In either case, we provide a stack-allocated
-            // buffer to hold the initial contents of the formatted string. Additional buffers will be
-            // allocated by the ReverseStringBuilder if we exceed this initial buffer.
-            Span<char> initialBuffer = stackalloc char[StackallocBufferSize];
-            return FormatLambdaCore(lambdaExpression, new(initialBuffer));
-        }
-    }
-
-    private string FormatLambdaCore(LambdaExpression lambdaExpression, ReverseStringBuilder builder)
-    {
-        var node = lambdaExpression.Body;
+        var builder = new ReverseStringBuilder(stackalloc char[StackallocBufferSize]);
+        var node = expression.Body;
         var wasLastExpressionMemberAccess = false;
         var shouldNotCache = false;
 
@@ -102,7 +68,8 @@ internal sealed class ExpressionFormatter
                     var memberExpression = (MemberExpression)node;
                     var nextNode = memberExpression.Expression;
 
-                    // FIXME: Better way of detecting this?
+                    // FIXME: This doesn't work in all cases. Need a better
+                    // way of detecting when we've reached the model object.
                     if (nextNode?.Type.Name.StartsWith('<') ?? false)
                     {
                         // The next node has a compiler-generated closure type,
@@ -127,7 +94,6 @@ internal sealed class ExpressionFormatter
 
                 default:
                     // Unsupported expression type.
-                    // TODO: Should we throw here?
                     node = null;
                     break;
             }
@@ -135,32 +101,7 @@ internal sealed class ExpressionFormatter
 
         var result = builder.ToString();
 
-        if (shouldNotCache)
-        {
-            if (result.Length < StackallocBufferSize - EstimatedStringLengthPadding)
-            {
-                // We can be fairly certain that the formatted string will fit
-                // within a stack-allocated buffer next time, so let's not estimate
-                // a size to use for a heap-allocated buffer.
-            }
-            else
-            {
-                // We can't cache the string, but we can make a good guess on how big the
-                // heap-allocated buffer should be next time.
-                _topLevelExpressionInfoCache[lambdaExpression] = new()
-                {
-                    EstimatedLength = result.Length,
-                };
-            }
-        }
-        else
-        {
-            // Cache the result to return next time.
-            _topLevelExpressionInfoCache[lambdaExpression] = new()
-            {
-                CachedResult = result,
-            };
-        }
+        // TODO: Top-level caching.
 
         builder.Dispose();
 
@@ -170,8 +111,6 @@ internal sealed class ExpressionFormatter
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "The relevant members should be preserved since they were referenced in a Linq expression")]
     private static bool IsSingleArgumentIndexer(Expression expression)
     {
-        // TODO: This was copied from MVC. Investigate if we need to change anything.
-
         if (expression is not MethodCallExpression methodExpression || methodExpression.Arguments.Count != 1)
         {
             return false;
@@ -200,8 +139,8 @@ internal sealed class ExpressionFormatter
 
         foreach (var property in runtimeProperties)
         {
-            if ((string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
-                property.GetMethod == methodExpression.Method))
+            if (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
+                property.GetMethod == methodExpression.Method)
             {
                 return true;
             }
@@ -214,131 +153,89 @@ internal sealed class ExpressionFormatter
         Expression indexExpression,
         ref ReverseStringBuilder builder)
     {
-        if (!_indexArgumentFormatterCache.TryGetValue(indexExpression, out var format))
+        switch (indexExpression)
         {
-            format = MakeFormatter(indexExpression);
-            _indexArgumentFormatterCache[indexExpression] = format;
-        }
-
-        return format(indexExpression, ref builder);
-    }
-
-    private static IndexArgumentFormatter MakeFormatter(Expression indexExpression)
-    {
-        switch (indexExpression.NodeType)
-        {
-            case ExpressionType.MemberAccess:
-                var memberExpression = (MemberExpression)indexExpression;
-                return CreateCapturedVariableFormatter(memberExpression);
-            case ExpressionType.Constant:
-                var constantExpression = (ConstantExpression)indexExpression;
-                return CreateConstantIndexFormatter(constantExpression);
+            case MemberExpression memberExpression when memberExpression.Expression is ConstantExpression constantExpression:
+                FormatCapturedValue(memberExpression, constantExpression, ref builder);
+                return true;
+            case ConstantExpression constantExpression:
+                FormatConstantValue(constantExpression, ref builder);
+                return false;
             default:
                 throw new InvalidOperationException($"Unable to evaluate index expressions of type '{indexExpression.GetType().Name}'.");
         }
     }
 
-    private static IndexArgumentFormatter CreateCapturedVariableFormatter(MemberExpression memberExpression)
+    private void FormatCapturedValue(MemberExpression memberExpression, ConstantExpression constantExpression, ref ReverseStringBuilder builder)
+    {
+        var member = memberExpression.Member;
+        if (!_capturedValueFormatterCache.TryGetValue(member, out var format))
+        {
+            format = CreateCapturedValueFormatter(memberExpression);
+            _capturedValueFormatterCache[member] = format;
+        }
+
+        format(constantExpression.Value!, ref builder);
+    }
+
+    private static CapturedValueFormatter CreateCapturedValueFormatter(MemberExpression memberExpression)
     {
         var memberType = memberExpression.Type;
 
         if (memberType == typeof(int))
         {
-            // Use the "INumber<TSelf>" string builder overload when possible because it doesn't allocate
-            // an extra string.
-            // TODO: Consider handling ISpanFormattable types more generally. That way we can write to
-            // rented arrays rather than allocate new strings.
             var func = CompileMemberEvaluator<int>(memberExpression);
-
-            return (Expression _, ref ReverseStringBuilder builder) =>
-            {
-                var value = func.Invoke();
-                builder.InsertFront(value);
-                return true;
-            };
+            return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
         }
-
-        if (memberType == typeof(string))
+        else if (memberType == typeof(string))
         {
             var func = CompileMemberEvaluator<string>(memberExpression);
-
-            return (Expression _, ref ReverseStringBuilder builder) =>
-            {
-                var value = func.Invoke();
-                builder.InsertFront(value);
-                return true;
-            };
+            return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
         }
-
-        if (typeof(IFormattable).IsAssignableFrom(memberType))
+        else if (typeof(ISpanFormattable).IsAssignableFrom(memberType))
+        {
+            var func = CompileMemberEvaluator<ISpanFormattable>(memberExpression);
+            return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
+        }
+        else if (typeof(IFormattable).IsAssignableFrom(memberType))
         {
             var func = CompileMemberEvaluator<IFormattable>(memberExpression);
-
-            return (Expression _, ref ReverseStringBuilder builder) =>
-            {
-                var value = func.Invoke();
-                builder.InsertFront(value.ToString(null, CultureInfo.InvariantCulture));
-                return true;
-            };
+            return (object closure, ref ReverseStringBuilder builder) => builder.InsertFront(func.Invoke(closure));
+        }
+        else
+        {
+            throw new InvalidOperationException($"Cannot format an index argument of type '{memberType}'.");
         }
 
-        throw new InvalidOperationException($"Cannot format an index argument of type '{memberType}'.");
-
-        static Func<TResult> CompileMemberEvaluator<TResult>(MemberExpression memberExpression)
+        static Func<object, TResult> CompileMemberEvaluator<TResult>(MemberExpression memberExpression)
         {
-            var convertExpression = Expression.Convert(memberExpression, typeof(TResult));
-            var lambdaExpression = Expression.Lambda<Func<TResult>>(convertExpression);
-            return lambdaExpression.Compile();
+            var parameterExpression = Expression.Parameter(typeof(object));
+            var convertExpression = Expression.Convert(parameterExpression, memberExpression.Member.DeclaringType!);
+            var replacedMemberExpression = memberExpression.Update(convertExpression);
+            var replacedExpression = Expression.Lambda<Func<object, TResult>>(replacedMemberExpression, parameterExpression);
+            return replacedExpression.Compile();
         }
     }
 
-    private static IndexArgumentFormatter CreateConstantIndexFormatter(ConstantExpression constantExpression)
+    private static void FormatConstantValue(ConstantExpression constantExpression, ref ReverseStringBuilder builder)
     {
-        // As much as possible, we return static delegates to avoid creating closures.
-        var constantValue = constantExpression.Value;
-
-        if (constantValue is null)
+        switch (constantExpression.Value)
         {
-            // TODO: Should we literally write out "null" in the generated string?
-            return static (Expression _, ref ReverseStringBuilder _) => false;
+            case string s:
+                builder.InsertFront(s);
+                break;
+            case ISpanFormattable spanFormattable:
+                // This is better than the formattable case because we don't allocate an extra string.
+                builder.InsertFront(spanFormattable);
+                break;
+            case IFormattable formattable:
+                builder.InsertFront(formattable);
+                break;
+            case null:
+                builder.InsertFront("null");
+                break;
+            case var x:
+                throw new InvalidOperationException($"Unable to format constant values of type '{x.GetType()}'.");
         }
-
-        var constantType = constantValue.GetType();
-
-        if (constantType == typeof(int))
-        {
-            return static (Expression expression, ref ReverseStringBuilder builder) =>
-            {
-                var value = (int)((ConstantExpression)expression).Value!;
-                builder.InsertFront(value);
-                return false;
-            };
-        }
-
-        if (constantType == typeof(string))
-        {
-            return static (Expression expression, ref ReverseStringBuilder builder) =>
-            {
-                var value = (string)((ConstantExpression)expression).Value!;
-                builder.InsertFront(value);
-                return false;
-            };
-        }
-
-        if (constantValue is IFormattable formattable)
-        {
-            // In this case, we prefer to allocate a string and create a closure once
-            // instead of avoiding the closure but allocating a string on every call.
-            var formattedValue = formattable.ToString(null, CultureInfo.InvariantCulture);
-            return (Expression _, ref ReverseStringBuilder builder) =>
-            {
-                builder.InsertFront(formattedValue);
-                return false;
-            };
-        }
-
-        throw new InvalidOperationException($"Cannot format an index argument of type '{constantType}'.");
     }
-
-    private readonly record struct FormattedExpressionInfo(string? CachedResult, int EstimatedLength);
 }
