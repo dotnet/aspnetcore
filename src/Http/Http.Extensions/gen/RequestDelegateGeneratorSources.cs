@@ -29,7 +29,6 @@ internal static class RequestDelegateGeneratorSources
             {
                 if (!httpContext.Request.HasJsonContentType())
                 {
-                    var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeExceptionMessage, true)}}, httpContext.Request.ContentType);
                     logOrThrowException({{RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId}},
                         {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventName, true)}},
                         null,
@@ -55,7 +54,6 @@ internal static class RequestDelegateGeneratorSources
                         }
                         else
                         {
-                            var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedExceptionMessage, true)}}, parameterName);
                             logOrThrowException({{RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId}},
                                 {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventName, true)}},
                                 null,
@@ -77,7 +75,6 @@ internal static class RequestDelegateGeneratorSources
                 }
                 catch (System.Text.Json.JsonException jsonException)
                 {
-                    var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyExceptionMessage, true)}}, parameterTypeName, parameterName);
                     logOrThrowException({{RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId}},
                         {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyEventName, true)}},
                         jsonException,
@@ -149,6 +146,8 @@ internal static class RequestDelegateGeneratorSources
     public static string LogOrThrowExceptionMethod => $$"""
         private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
         {
+            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+            var rdgLogger = loggerFactory?.CreateLogger("{{typeof(RequestDelegateGenerator)}}");
             string getMessageToFormat(bool shouldThrow, int eventId) => (shouldThrow, eventId) switch
             {
                 (true, {{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionEventName, true)}},
@@ -169,7 +168,7 @@ internal static class RequestDelegateGeneratorSources
                 (false, {{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}) => {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, true)}},
                 _ => throw new UnreachableException("Encountered unsupported logging EventId.")
             };
-            void logOrThrowException(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs)
+            void logOrThrowException(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params string?[] messageFormatArgs)
             {
                 if ((options?.ThrowOnBadRequest ?? false) && eventId != {{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}})
                 {
@@ -180,8 +179,6 @@ internal static class RequestDelegateGeneratorSources
                     }
                     throw new BadHttpRequestException(exceptionMessage, statusCode);
                 }
-                var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
-                var rdgLogger = loggerFactory?.CreateLogger("{{typeof(RequestDelegateGenerator)}}");
                 rdgLogger?.LogDebug(new EventId(eventId, eventName), exception, getMessageToFormat(false, eventId), messageFormatArgs);
             }
             return logOrThrowException;
@@ -238,7 +235,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
-    delegate void LogOrThrowExceptionAction(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs);
+    delegate void LogOrThrowExceptionAction(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params string?[] messageFormatArgs);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {

@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
-    delegate void LogOrThrowExceptionAction(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs);
+    delegate void LogOrThrowExceptionAction(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params string?[] messageFormatArgs);
 
     file static class GeneratedRouteBuilderExtensionsCore
     {
@@ -224,7 +224,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             {
                 if (!httpContext.Request.HasJsonContentType())
                 {
-                    var message = string.Format(CultureInfo.InvariantCulture, "Expected a supported JSON media type but got \"{0}\".", httpContext.Request.ContentType);
                     logOrThrowException(6,
                         "UnexpectedContentType",
                         null,
@@ -250,7 +249,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            var message = string.Format(CultureInfo.InvariantCulture, "Implicit body inferred for parameter \"{0}\" but no body was provided. Did you mean to use a Service instead?", parameterName);
                             logOrThrowException(5,
                                 "ImplicitBodyNotProvided",
                                 null,
@@ -272,7 +270,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
                 catch (System.Text.Json.JsonException jsonException)
                 {
-                    var message = string.Format(CultureInfo.InvariantCulture, "Failed to read parameter \"{0} {1}\" from the request body as JSON.", parameterTypeName, parameterName);
                     logOrThrowException(2,
                         "InvalidJsonRequestBody",
                         jsonException,
@@ -303,6 +300,8 @@ namespace Microsoft.AspNetCore.Http.Generated
         }
         private static LogOrThrowExceptionAction GetLogOrThrowException(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
         {
+            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+            var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
             string getMessageToFormat(bool shouldThrow, int eventId) => (shouldThrow, eventId) switch
             {
                 (true, 1) => "RequestBodyIOException",
@@ -323,7 +322,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 (false, 8) => "Failed to read parameter \"{ParameterType} {ParameterName}\" from the request body as form.",
                 _ => throw new UnreachableException("Encountered unsupported logging EventId.")
             };
-            void logOrThrowException(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params object?[] messageFormatArgs)
+            void logOrThrowException(int eventId, string eventName, Exception? exception = null, int statusCode = StatusCodes.Status400BadRequest, params string?[] messageFormatArgs)
             {
                 if ((options?.ThrowOnBadRequest ?? false) && eventId != 1)
                 {
@@ -334,8 +333,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     }
                     throw new BadHttpRequestException(exceptionMessage, statusCode);
                 }
-                var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
-                var rdgLogger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator");
                 rdgLogger?.LogDebug(new EventId(eventId, eventName), exception, getMessageToFormat(false, eventId), messageFormatArgs);
             }
             return logOrThrowException;
