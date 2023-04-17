@@ -79,7 +79,7 @@ public class RouteViewTest
             frame => AssertFrame.Region(frame, subtreeLength: 5),
             frame => AssertFrame.Component<CascadingModelBinder>(frame, sequence: 0, subtreeLength: 4),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.Name), "", sequence: 1),
-            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.BindingId), "jan", sequence: 2),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.BindingContextId), "jan", sequence: 2),
             frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.ChildContent), typeof(RenderFragment<ModelBindingContext>), sequence: 3),
             frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
 

@@ -23,7 +23,7 @@ public class CascadingModelBinder : IComponent
     /// <summary>
     /// The binding context name.
     /// </summary>
-    [Parameter] public string BindingId { get; set; } = default!;
+    [Parameter] public string BindingContextId { get; set; } = default!;
 
     /// <summary>
     /// Specifies the content to be rendered inside this <see cref="CascadingModelBinder"/>.
@@ -49,7 +49,7 @@ public class CascadingModelBinder : IComponent
             }
 
             var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
-            var bindingId = !string.IsNullOrEmpty(name) ? null : BindingId;
+            var bindingId = !string.IsNullOrEmpty(name) ? null : BindingContextId;
             _bindingContext = new ModelBindingContext(name, bindingId);
 
             _handle.Render(builder =>

@@ -23,7 +23,7 @@ public class ModelBindingContext
     // Nested named binder
     // Name = <<parent>>.<<handler>>
     // FormAction = ?handler=<<parent>>.<<handler>>
-    public ModelBindingContext(string name, string? bindingId = null)
+    internal ModelBindingContext(string name, string? bindingId = null)
     {
         // We are initializing the root context, that can be a "named" root context, or the default context.
         // A named root context only provides a name, and that acts as the BindingId
@@ -35,7 +35,7 @@ public class ModelBindingContext
         }
 
         Name = name;
-        BindingId = bindingId ?? name;
+        BindingContextId = bindingId ?? name;
     }
 
     /// <summary>
@@ -46,5 +46,5 @@ public class ModelBindingContext
     /// <summary>
     /// The computed identifier used to determine what parts of the app can bind data.
     /// </summary>
-    public string BindingId { get; }
+    public string BindingContextId { get; }
 }

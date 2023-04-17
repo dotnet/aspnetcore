@@ -90,7 +90,7 @@ public class EditForm : ComponentBase
     /// The <c>name</c> attribute on the <c>form</c> element will default to
     /// the <see cref="FormHandlerName"/> unless an explicit name is provided.
     /// </remarks>
-    [Parameter] public string FormHandlerName { get; set; }
+    [Parameter] public string? FormHandlerName { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -165,7 +165,7 @@ public class EditForm : ComponentBase
             builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
             if (bindingContext != null)
             {
-                builder.SetEventHandlerName(bindingContext.BindingId);
+                builder.SetEventHandlerName(bindingContext.BindingContextId);
             }
             builder.OpenComponent<CascadingValue<EditContext>>(5);
             builder.AddComponentParameter(6, "IsFixed", true);

@@ -88,7 +88,7 @@ public class RouteView : IComponent
 
         builder.OpenComponent<CascadingModelBinder>(0);
         builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), "");
-        builder.AddComponentParameter(2, nameof(CascadingModelBinder.BindingId), bindingId);
+        builder.AddComponentParameter(2, nameof(CascadingModelBinder.BindingContextId), bindingId);
         builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderPageWithContext);
         builder.CloseComponent();
 

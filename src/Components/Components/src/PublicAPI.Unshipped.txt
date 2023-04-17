@@ -1,10 +1,12 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Binding.ModelBindingContext
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext.ModelBindingContext(string! name) -> void
+Microsoft.AspNetCore.Components.Binding.ModelBindingContext.BindingContextId.get -> string!
 Microsoft.AspNetCore.Components.Binding.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder
+Microsoft.AspNetCore.Components.CascadingModelBinder.BindingContextId.get -> string!
+Microsoft.AspNetCore.Components.CascadingModelBinder.BindingContextId.set -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
-Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Binding.ModelBindingContext!>!
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.set -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder.Name.set -> void
@@ -13,7 +15,6 @@ Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, Microsoft.AspNetCore.Components.RenderFragment? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetEventHandlerName(string! eventHandlerName) -> void
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.RefreshScrollPositionForHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
