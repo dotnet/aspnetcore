@@ -334,44 +334,44 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
-        var clock = new TestClock
+        var time = new TestTime
         {
             UtcNow = DateTimeOffset.UtcNow
         };
         var middleware = TestUtils.CreateTestMiddleware(options: new OutputCacheOptions
         {
-            SystemClock = clock
+            Time = time
         });
         var context = TestUtils.CreateTestContext();
         context.ResponseTime = null;
 
         middleware.StartResponse(context);
 
-        Assert.Equal(clock.UtcNow, context.ResponseTime);
+        Assert.Equal(time.UtcNow, context.ResponseTime);
     }
 
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
     {
-        var clock = new TestClock
+        var time = new TestTime
         {
             UtcNow = DateTimeOffset.UtcNow
         };
         var middleware = TestUtils.CreateTestMiddleware(options: new OutputCacheOptions
         {
-            SystemClock = clock
+            Time = time
         });
         var context = TestUtils.CreateTestContext();
-        var initialTime = clock.UtcNow;
+        var initialTime = time.UtcNow;
         context.ResponseTime = null;
 
         middleware.StartResponse(context);
         Assert.Equal(initialTime, context.ResponseTime);
 
-        clock.UtcNow += TimeSpan.FromSeconds(10);
+        time.UtcNow += TimeSpan.FromSeconds(10);
 
         middleware.StartResponse(context);
-        Assert.NotEqual(clock.UtcNow, context.ResponseTime);
+        Assert.NotEqual(time.UtcNow, context.ResponseTime);
         Assert.Equal(initialTime, context.ResponseTime);
     }
 
@@ -393,20 +393,20 @@ public class OutputCacheMiddlewareTests
     {
         // The Expires header should not be used when set in the response
 
-        var clock = new TestClock
+        var time = new TestTime
         {
             UtcNow = DateTimeOffset.MinValue
         };
         var options = new OutputCacheOptions
         {
-            SystemClock = clock
+            Time = time
         };
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.ResponseTime = time.UtcNow;
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(time.UtcNow + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -419,25 +419,25 @@ public class OutputCacheMiddlewareTests
     {
         // The MaxAge header should not be used if set in the response
 
-        var clock = new TestClock
+        var time = new TestTime
         {
             UtcNow = DateTimeOffset.UtcNow
         };
         var sink = new TestSink();
         var options = new OutputCacheOptions
         {
-            SystemClock = clock
+            Time = time
         };
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
+        context.ResponseTime = time.UtcNow;
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             MaxAge = TimeSpan.FromSeconds(12)
         }.ToString();
 
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(time.UtcNow + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -448,25 +448,25 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseSharedMaxAgeIfAvailable()
     {
-        var clock = new TestClock
+        var time = new TestTime
         {
             UtcNow = DateTimeOffset.UtcNow
         };
         var sink = new TestSink();
         var options = new OutputCacheOptions
         {
-            SystemClock = clock
+            Time = time
         };
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
+        context.ResponseTime = time.UtcNow;
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             MaxAge = TimeSpan.FromSeconds(12),
             SharedMaxAge = TimeSpan.FromSeconds(13)
         }.ToString();
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(time.UtcNow + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
