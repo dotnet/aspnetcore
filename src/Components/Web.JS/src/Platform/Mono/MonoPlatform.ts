@@ -284,10 +284,6 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
     },
   });
   attachInteropInvoker();
-  if (resourceLoader.bootConfig.debugBuild && resourceLoader.bootConfig.cacheBootResources) {
-    resourceLoader.logToConsole();
-  }
-  resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
   return platformApi as PlatformApi;
 }
