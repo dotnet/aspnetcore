@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Endpoints.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -38,6 +39,7 @@ internal class RazorComponentEndpointFactory
         // We do not support link generation, so explicitly opt-out.
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
         builder.Metadata.Add(HttpGet);
+        builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
 
         foreach (var convention in conventions)
