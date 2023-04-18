@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
@@ -122,6 +123,13 @@ internal static class SymbolExtensions
         {
             NullableAnnotation: NullableAnnotation.Annotated
         } || parameterSymbol.HasExplicitDefaultValue;
+
+    public static string GetDefaultValueString(this IParameterSymbol parameterSymbol)
+    {
+        return !parameterSymbol.HasExplicitDefaultValue
+            ? "null"
+            : SymbolDisplay.FormatLiteral((parameterSymbol.ExplicitDefaultValue ?? "null").ToString(), parameterSymbol.ExplicitDefaultValue is string);
+    }
 
     public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? argumentValue)
     {

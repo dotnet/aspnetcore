@@ -152,7 +152,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
         Assert.NotNull(handler);
 
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider ?? new EmptyServiceProvider()));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider ?? CreateServiceProvider()));
         _ = handler(builder);
 
         var dataSource = Assert.Single(builder.DataSources);

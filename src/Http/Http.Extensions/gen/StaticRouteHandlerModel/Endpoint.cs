@@ -48,6 +48,7 @@ internal class Endpoint
 
         if (method.Parameters.Length == 0)
         {
+            EmitterContext.RequiresLoggingHelper = false;
             return;
         }
 
@@ -91,6 +92,9 @@ internal class Endpoint
         EmitterContext.HasRouteOrQuery = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
         EmitterContext.HasBindAsync = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
         EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable);
+        EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
+            parameter.Source == EndpointParameterSource.SpecialType ||
+            parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
     }
 
     public string HttpMethod { get; }
