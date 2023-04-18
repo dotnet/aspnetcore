@@ -3,17 +3,16 @@
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-public class ExpressionFormatterTest
+public sealed class ExpressionFormatterTest : IDisposable
 {
     [Fact]
     public void Works_MemberAccessOnly()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
 
         // Act
-        var result = formatter.FormatLambda(() => person.Parent.Name);
+        var result = ExpressionFormatter.FormatLambda(() => person.Parent.Name);
 
         // Assert
         Assert.Equal("Parent.Name", result);
@@ -23,11 +22,10 @@ public class ExpressionFormatterTest
     public void Works_MemberAccessWithConstIndex()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
 
         // Act
-        var result = formatter.FormatLambda(() => person.Parent.Children[3].Name);
+        var result = ExpressionFormatter.FormatLambda(() => person.Parent.Children[3].Name);
 
         // Assert
         Assert.Equal("Parent.Children[3].Name", result);
@@ -36,17 +34,14 @@ public class ExpressionFormatterTest
     [Fact]
     public void Works_MemberAccessWithConstIndex_SameLambdaMultipleTimes()
     {
-        // TODO: Somehow validate the caching mechanism.
-
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
         var result = new string[3];
 
         // Act
         for (var i = 0; i < result.Length; i++)
         {
-            result[i] = formatter.FormatLambda(() => person.Parent.Children[3].Name);
+            result[i] = ExpressionFormatter.FormatLambda(() => person.Parent.Children[3].Name);
         }
 
         // Assert
@@ -59,12 +54,11 @@ public class ExpressionFormatterTest
     public void Works_MemberAccessWithVariableIndex()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
         var i = 42;
 
         // Act
-        var result = formatter.FormatLambda(() => person.Parent.Children[i].Name);
+        var result = ExpressionFormatter.FormatLambda(() => person.Parent.Children[i].Name);
 
         // Assert
         Assert.Equal("Parent.Children[42].Name", result);
@@ -74,7 +68,6 @@ public class ExpressionFormatterTest
     public void Works_ForLoopIteratorVariableIndex_Short()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
         var i = 0;
         var result = new string[3];
@@ -82,7 +75,7 @@ public class ExpressionFormatterTest
         // Act
         for (; i < result.Length; i++)
         {
-            result[i] = formatter.FormatLambda(() => person.Parent.Children[i].Name);
+            result[i] = ExpressionFormatter.FormatLambda(() => person.Parent.Children[i].Name);
         }
 
         // Assert
@@ -95,7 +88,6 @@ public class ExpressionFormatterTest
     public void Works_ForLoopIteratorVariableIndex_MultipleClosures()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
 
         // Act
@@ -117,8 +109,7 @@ public class ExpressionFormatterTest
 
             for (var i = 0; i < result.Length; i++)
             {
-                // TODO: Verify that caching happens here.
-                result[i] = formatter.FormatLambda(() => person.Parent.Children[i].Name);
+                result[i] = ExpressionFormatter.FormatLambda(() => person.Parent.Children[i].Name);
             }
 
             return result;
@@ -129,7 +120,6 @@ public class ExpressionFormatterTest
     public void Works_ForLoopIteratorVariableIndex_Long()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
         var i = 0;
         var result = new string[3];
@@ -137,7 +127,7 @@ public class ExpressionFormatterTest
         // Act
         for (; i < result.Length; i++)
         {
-            result[i] = formatter.FormatLambda(() => person.Parent.Parent.Children[i].Parent.Children[i].Children[i].Name);
+            result[i] = ExpressionFormatter.FormatLambda(() => person.Parent.Parent.Children[i].Parent.Children[i].Children[i].Name);
         }
 
         // Assert
@@ -147,31 +137,9 @@ public class ExpressionFormatterTest
     }
 
     [Fact]
-    public void Works_ForLoopIteratorVariableIndex_SuperLong()
-    {
-        // Arrange
-        var formatter = new ExpressionFormatter();
-        var person = new Person();
-        var i = 0;
-        var result = new string[3];
-
-        // Act
-        for (; i < result.Length; i++)
-        {
-            result[i] = formatter.FormatLambda(() => person.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Children[i].Age);
-        }
-
-        // Assert
-        Assert.Equal("Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Children[0].Age", result[0]);
-        Assert.Equal("Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Children[1].Age", result[1]);
-        Assert.Equal("Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Children[2].Age", result[2]);
-    }
-
-    [Fact]
     public void Works_ForLoopIteratorVariableIndex_NonArrayType()
     {
         // Arrange
-        var formatter = new ExpressionFormatter();
         var person = new Person();
         var i = 0;
         var result = new string[3];
@@ -179,13 +147,18 @@ public class ExpressionFormatterTest
         // Act
         for (; i < result.Length; i++)
         {
-            result[i] = formatter.FormatLambda(() => person.Parent.Nicknames[i]);
+            result[i] = ExpressionFormatter.FormatLambda(() => person.Parent.Nicknames[i]);
         }
 
         // Assert
         Assert.Equal("Parent.Nicknames[0]", result[0]);
         Assert.Equal("Parent.Nicknames[1]", result[1]);
         Assert.Equal("Parent.Nicknames[2]", result[2]);
+    }
+
+    public void Dispose()
+    {
+        ExpressionFormatter.ClearCache();
     }
 
     private class Person

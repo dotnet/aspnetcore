@@ -423,9 +423,13 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Browser.True(() => FindColorInputs().All(i => string.Equals("modified valid", i.GetAttribute("class"))));
 
-        IReadOnlyCollection<IWebElement> FindCountryInputs() => group.FindElements(By.Name("country"));
+        IReadOnlyCollection<IWebElement> FindCountryInputs() => group.FindElements(By.TagName("input"))
+            .Where((_, i) => i % 2 == 0)
+            .ToArray();
 
-        IReadOnlyCollection<IWebElement> FindColorInputs() => group.FindElements(By.Name("color"));
+        IReadOnlyCollection<IWebElement> FindColorInputs() => group.FindElements(By.TagName("input"))
+            .Where((_, i) => i % 2 == 1)
+            .ToArray();
     }
 
     [Fact]

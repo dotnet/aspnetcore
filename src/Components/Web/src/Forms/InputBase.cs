@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public abstract class InputBase<TValue> : ComponentBase, IDisposable
 {
-    private static readonly ExpressionFormatter s_expressionFormatter = new();
-
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
     private bool _hasInitializedParameters;
     private bool _parsingFailed;
@@ -211,16 +209,17 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
 
-            // TODO: We don't always want to format the value expression for the "name" attribute.
-            // Also, FieldIdentifier already does its own processing of the ValueExpression.
-            // Maybe we can deduplicate some work here.
-            ValueExpressionAsString = s_expressionFormatter.FormatLambda(ValueExpression);
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);
 
             if (CascadedEditContext != null)
             {
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+
+                if (EditContext.ShouldUseFieldIdentifiers)
+                {
+                    ValueExpressionAsString = ExpressionFormatter.FormatLambda(ValueExpression);
+                }
             }
 
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));

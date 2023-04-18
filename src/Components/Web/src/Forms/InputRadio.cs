@@ -66,7 +66,7 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttributeIfNotNullOrEmpty(2, "class", AttributeUtilities.CombineClassNames(AdditionalAttributes, Context.FieldClass));
         builder.AddAttribute(3, "type", "radio");
-        builder.AddAttribute(4, "name", Context.GroupName);
+        builder.AddAttribute(4, "name", Context.NameAttributeValue);
         builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
         builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value) == true ? GetToggledTrueValue() : null);
         builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);

@@ -13,6 +13,7 @@ internal sealed class InputRadioContext
 
     // Mutable properties that may change any time an InputRadioGroup is rendered
     public string? GroupName { get; set; }
+    public string? NameAttributeValue { get; set; }
     public object? CurrentValue { get; set; }
     public string? FieldClass { get; set; }
 

@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-internal unsafe ref struct ReverseStringBuilder
+internal ref struct ReverseStringBuilder
 {
     public const int MinimumRentedArraySize = 1024;
 
@@ -92,7 +92,7 @@ internal unsafe ref struct ReverseStringBuilder
         // We won't try to optimize for anything larger.
         Span<char> result = stackalloc char[11];
 
-        if (value.TryFormat(result, out var charsWritten, default, default))
+        if (value.TryFormat(result, out var charsWritten, format: default, CultureInfo.InvariantCulture))
         {
             InsertFront(result[..charsWritten]);
         }

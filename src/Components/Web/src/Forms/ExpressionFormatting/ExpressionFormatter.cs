@@ -9,21 +9,26 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-internal sealed class ExpressionFormatter
+internal static class ExpressionFormatter
 {
-    internal const int StackallocBufferSize = 128;
-    internal const int EstimatedStringLengthPadding = 8;
+    internal const int StackAllocBufferSize = 128;
 
     private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
 
-    private readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> _capturedValueFormatterCache = new();
+    private static readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_capturedValueFormatterCache = new();
+    private static readonly ConcurrentDictionary<MethodInfo, MethodInfoData> s_methodInfoDataCache = new();
 
-    public string FormatLambda(LambdaExpression expression)
+    public static void ClearCache()
     {
-        var builder = new ReverseStringBuilder(stackalloc char[StackallocBufferSize]);
+        s_capturedValueFormatterCache.Clear();
+        s_methodInfoDataCache.Clear();
+    }
+
+    public static string FormatLambda(LambdaExpression expression)
+    {
+        var builder = new ReverseStringBuilder(stackalloc char[StackAllocBufferSize]);
         var node = expression.Body;
         var wasLastExpressionMemberAccess = false;
-        var shouldNotCache = false;
 
         while (node is not null)
         {
@@ -44,7 +49,7 @@ internal sealed class ExpressionFormatter
                     }
 
                     builder.InsertFront("]");
-                    shouldNotCache |= FormatIndexArgument(methodCallExpression.Arguments.Single(), ref builder);
+                    FormatIndexArgument(methodCallExpression.Arguments.Single(), ref builder);
                     builder.InsertFront("[");
                     node = methodCallExpression.Object;
                     break;
@@ -59,7 +64,7 @@ internal sealed class ExpressionFormatter
                     }
 
                     builder.InsertFront("]");
-                    shouldNotCache |= FormatIndexArgument(binaryExpression.Right, ref builder);
+                    FormatIndexArgument(binaryExpression.Right, ref builder);
                     builder.InsertFront("[");
                     node = binaryExpression.Left;
                     break;
@@ -68,9 +73,7 @@ internal sealed class ExpressionFormatter
                     var memberExpression = (MemberExpression)node;
                     var nextNode = memberExpression.Expression;
 
-                    // FIXME: This doesn't work in all cases. Need a better
-                    // way of detecting when we've reached the model object.
-                    if (nextNode?.Type.Name.StartsWith('<') ?? false)
+                    if (nextNode?.NodeType == ExpressionType.Constant)
                     {
                         // The next node has a compiler-generated closure type,
                         // which means the current member access is on the captured model.
@@ -101,14 +104,11 @@ internal sealed class ExpressionFormatter
 
         var result = builder.ToString();
 
-        // TODO: Top-level caching.
-
         builder.Dispose();
 
         return result;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "The relevant members should be preserved since they were referenced in a Linq expression")]
     private static bool IsSingleArgumentIndexer(Expression expression)
     {
         if (expression is not MethodCallExpression methodExpression || methodExpression.Arguments.Count != 1)
@@ -116,40 +116,58 @@ internal sealed class ExpressionFormatter
             return false;
         }
 
-        var declaringType = methodExpression.Method.DeclaringType;
-        if (declaringType is null)
-        {
-            return false;
-        }
-
-        // Check whether GetDefaultMembers() (if present in CoreCLR) would return a member of this type. Compiler
-        // names the indexer property, if any, in a generated [DefaultMember] attribute for the containing type.
-        var defaultMember = declaringType.GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
-        if (defaultMember is null)
-        {
-            return false;
-        }
-
-        // Find default property (the indexer) and confirm its getter is the method in this expression.
-        var runtimeProperties = declaringType.GetRuntimeProperties();
-        if (runtimeProperties is null)
-        {
-            return false;
-        }
-
-        foreach (var property in runtimeProperties)
-        {
-            if (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
-                property.GetMethod == methodExpression.Method)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        var methodInfoData = GetOrCreateMethodInfoData(methodExpression.Method);
+        return methodInfoData.IsSingleArgumentIndexer;
     }
 
-    private bool FormatIndexArgument(
+    private static MethodInfoData GetOrCreateMethodInfoData(MethodInfo methodInfo)
+    {
+        if (!s_methodInfoDataCache.TryGetValue(methodInfo, out var methodInfoData))
+        {
+            methodInfoData = GetMethodInfoData(methodInfo);
+            s_methodInfoDataCache[methodInfo] = methodInfoData;
+        }
+
+        return methodInfoData;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "The relevant members should be preserved since they were referenced in a LINQ expression")]
+        static MethodInfoData GetMethodInfoData(MethodInfo methodInfo)
+        {
+            var declaringType = methodInfo.DeclaringType;
+            if (declaringType is null)
+            {
+                return new(IsSingleArgumentIndexer: false);
+            }
+
+            // Check whether GetDefaultMembers() (if present in CoreCLR) would return a member of this type. Compiler
+            // names the indexer property, if any, in a generated [DefaultMember] attribute for the containing type.
+            var defaultMember = declaringType.GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
+            if (defaultMember is null)
+            {
+                return new(IsSingleArgumentIndexer: false);
+            }
+
+            // Find default property (the indexer) and confirm its getter is the method in this expression.
+            var runtimeProperties = declaringType.GetRuntimeProperties();
+            if (runtimeProperties is null)
+            {
+                return new(IsSingleArgumentIndexer: false);
+            }
+
+            foreach (var property in runtimeProperties)
+            {
+                if (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
+                    property.GetMethod == methodInfo)
+                {
+                    return new(IsSingleArgumentIndexer: true);
+                }
+            }
+
+            return new(IsSingleArgumentIndexer: false);
+        }
+    }
+   
+    private static void FormatIndexArgument(
         Expression indexExpression,
         ref ReverseStringBuilder builder)
     {
@@ -157,22 +175,22 @@ internal sealed class ExpressionFormatter
         {
             case MemberExpression memberExpression when memberExpression.Expression is ConstantExpression constantExpression:
                 FormatCapturedValue(memberExpression, constantExpression, ref builder);
-                return true;
+                break;
             case ConstantExpression constantExpression:
                 FormatConstantValue(constantExpression, ref builder);
-                return false;
+                break;
             default:
                 throw new InvalidOperationException($"Unable to evaluate index expressions of type '{indexExpression.GetType().Name}'.");
         }
     }
 
-    private void FormatCapturedValue(MemberExpression memberExpression, ConstantExpression constantExpression, ref ReverseStringBuilder builder)
+    private static void FormatCapturedValue(MemberExpression memberExpression, ConstantExpression constantExpression, ref ReverseStringBuilder builder)
     {
         var member = memberExpression.Member;
-        if (!_capturedValueFormatterCache.TryGetValue(member, out var format))
+        if (!s_capturedValueFormatterCache.TryGetValue(member, out var format))
         {
             format = CreateCapturedValueFormatter(memberExpression);
-            _capturedValueFormatterCache[member] = format;
+            s_capturedValueFormatterCache[member] = format;
         }
 
         format(constantExpression.Value!, ref builder);
@@ -238,4 +256,6 @@ internal sealed class ExpressionFormatter
                 throw new InvalidOperationException($"Unable to format constant values of type '{x.GetType()}'.");
         }
     }
+
+    private record struct MethodInfoData(bool IsSingleArgumentIndexer);
 }
