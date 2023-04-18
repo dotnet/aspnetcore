@@ -182,7 +182,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
-        // allow first-render to complete successfully
+        // allow first-render to complete successfully.
         if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
         {
             if (Navigating != null)
