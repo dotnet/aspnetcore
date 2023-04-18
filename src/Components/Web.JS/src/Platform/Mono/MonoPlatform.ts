@@ -188,21 +188,23 @@ function importDotnetJs(otpions: Partial<WebAssemblyStartOptions>): Promise<Modu
 }
 
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platformApi: any): DotnetModuleConfig {
-  const environmentVariables = {};
   const config: MonoConfig = {
-    environmentVariables: environmentVariables,
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
   };
 
   const onConfigLoaded = async (bootConfig: BootJsonData & MonoConfig): Promise<void> => {
+    if (!bootConfig.environmentVariables) {
+      bootConfig.environmentVariables = {};
+    }
+
     if (bootConfig.icuDataMode === ICUDataMode.Sharded) {
-      environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
+      bootConfig.environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
     }
 
     if (bootConfig.aspnetCoreBrowserTools) {
       // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-      environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
+      bootConfig.environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
     }
 
     // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
