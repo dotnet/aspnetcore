@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Rendering;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -210,6 +208,5 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
 
         // Component rendering
         services.AddRazorComponents();
-        services.AddScoped<RoutingStateProvider, MvcRoutingStateProvider>();
     }
 }
