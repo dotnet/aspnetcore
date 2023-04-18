@@ -398,7 +398,6 @@ public class EditFormTest
             {
                 builder.OpenComponent<CascadingModelBinder>(0);
                 builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), BindingContext.Name);
-                builder.AddComponentParameter(2, nameof(CascadingModelBinder.BindingContextId), BindingContext.BindingContextId);
                 builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)((_) => RenderForm));
                 builder.CloseComponent();
             }

@@ -159,13 +159,18 @@ public class EditForm : ComponentBase
             if (!string.IsNullOrEmpty(bindingContext?.Name))
             {
                 builder.AddAttribute(1, "name", bindingContext.Name);
-                builder.AddAttribute(2, "action", $"?handler={bindingContext.Name}");
             }
+
+            if (!string.IsNullOrEmpty(bindingContext?.BindingContextId))
+            {
+                builder.AddAttribute(2, "action", bindingContext.BindingContextId);
+            }
+
             builder.AddMultipleAttributes(3, AdditionalAttributes);
             builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
             if (bindingContext != null)
             {
-                builder.SetEventHandlerName(bindingContext.BindingContextId);
+                builder.SetEventHandlerName(bindingContext.Name);
             }
             builder.OpenComponent<CascadingValue<EditContext>>(5);
             builder.AddComponentParameter(6, "IsFixed", true);

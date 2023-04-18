@@ -88,7 +88,6 @@ public class RouteView : IComponent
 
         builder.OpenComponent<CascadingModelBinder>(0);
         builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), "");
-        builder.AddComponentParameter(2, nameof(CascadingModelBinder.BindingContextId), bindingId);
         builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderPageWithContext);
         builder.CloseComponent();
 
@@ -108,6 +107,7 @@ public class RouteView : IComponent
             {
                 // Since this component does accept some parameters from query, we must supply values for all of them,
                 // even if the querystring in the URI is empty. So don't skip the following logic.
+                var relativeUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
                 var url = NavigationManager.Uri;
                 ReadOnlyMemory<char> query = default;
                 var queryStartPos = url.IndexOf('?');

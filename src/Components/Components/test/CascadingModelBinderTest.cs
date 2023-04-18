@@ -19,7 +19,6 @@ public class CascadingModelBinderTest
         var testComponent = new TestComponent(builder =>
         {
             builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), "/path");
             builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
             builder.CloseComponent();
         });
@@ -108,7 +107,6 @@ public class CascadingModelBinderTest
         var testComponent = new TestComponent(builder =>
         {
             builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), "/path");
             builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), nested);
             builder.CloseComponent();
         });
@@ -131,7 +129,6 @@ public class CascadingModelBinderTest
         RenderFragment<ModelBindingContext> nested = (ctx) => b =>
         {
             b.OpenComponent<CascadingModelBinder>(0);
-            b.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), "/path");
             b.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
             b.CloseComponent();
         };
@@ -188,7 +185,6 @@ public class CascadingModelBinderTest
         var testComponent = new TestComponent(builder =>
         {
             builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), bindingId);
             builder.AddAttribute(2, nameof(CascadingModelBinder.IsFixed), true);
             builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
             builder.CloseComponent();
@@ -214,7 +210,6 @@ public class CascadingModelBinderTest
         var testComponent = new TestComponent(builder =>
         {
             builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), "parent-context");
             builder.AddAttribute(2, nameof(CascadingModelBinder.IsFixed), isFixed);
             builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
             builder.CloseComponent();
@@ -270,7 +265,6 @@ public class CascadingModelBinderTest
         var testComponent = new TestComponent(builder =>
         {
             builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.BindingContextId), contextBindingId);
             builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
             builder.CloseComponent();
         });
