@@ -81,6 +81,7 @@ public static class ComponentServiceCollectionExtensions
         services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
         services.AddScoped<IScrollToLocationHash, RemoteScrollToLocationHash>();
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+        services.TryAddScoped<RoutingStateProvider, RemoteRoutingStateProvider>();
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());

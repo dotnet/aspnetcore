@@ -61,6 +61,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
 
+        // Saving RouteData to avoid routing twice in Router component
         var routingStateProvider = httpContext.RequestServices.GetService<RoutingStateProvider>();
         routingStateProvider!.RouteData = new RouteData(componentType, GetRouteDataParameters(httpContext));
     }

@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -24,6 +25,7 @@ public class RouterTest
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
         services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        services.TryAddScoped<RoutingStateProvider, TestRoutingStateProvider>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);
@@ -227,6 +229,10 @@ public class RouterTest
         {
             return Task.CompletedTask;
         }
+    }
+
+    internal sealed class TestRoutingStateProvider : RoutingStateProvider
+    {
     }
 
     [Route("feb")]

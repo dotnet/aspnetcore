@@ -45,7 +45,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
-    [Inject] private RoutingStateProvider? RoutingStateProvider { get; set; }
+    [Inject] private RoutingStateProvider RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -192,8 +192,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             return;
         }
 
-        // In order to avoid routing twice we check for RouteData from Components.Endpoints
-        if (RoutingStateProvider != null && RoutingStateProvider.RouteData != null)
+        // In order to avoid routing twice we check for RouteData
+        if (RoutingStateProvider.RouteData != null)
         {
             _renderHandle.Render(Found(RoutingStateProvider.RouteData));
             return;
