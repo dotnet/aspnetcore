@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-
 namespace Microsoft.AspNetCore.Components.Endpoints.Builder;
 
 /// <summary>
@@ -11,12 +9,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Builder;
 public class RootComponentMetadata
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ComponentTypeMetadata"/>.
+    /// Initializes a new instance of <see cref="RootComponentMetadata"/>.
     /// </summary>
-    /// <param name="componentType">The component type.</param>
-    public RootComponentMetadata(Type componentType)
+    /// <param name="rootComponentType">The component type.</param>
+    public RootComponentMetadata(Type rootComponentType)
     {
-        Type = componentType;
+        Type = rootComponentType;
     }
 
     /// <summary>
