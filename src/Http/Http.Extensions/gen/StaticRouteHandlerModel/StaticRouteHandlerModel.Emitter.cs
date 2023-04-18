@@ -172,7 +172,6 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (response.HasNoResponse || response.IsIResult)
         {
-            codeWriter.WriteLine("// No built-in IProducesResponseTypeMetadata is generated because response is void or is IResult.");
             return;
         }
 
@@ -184,10 +183,9 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}}), statusCode: 200, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
         }
-
     }
 
-    private static void EmitCallToIEndpointMetadataProvider(this Endpoint endpoint, CodeWriter codeWriter)
+    private static void EmitCallToMetadataProviderForResponse(this Endpoint endpoint, CodeWriter codeWriter)
     {
         if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
         {
@@ -198,16 +196,39 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
         }
-        else
+    }
+    private static void EmitCallsToMetadataProvidersForParameters(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.EmitterContext.HasEndpointParameterMetadataProvider)
         {
-            codeWriter.WriteLine("// Call to IEndpointMetadataProvider not emitted because response type does not implement that interface.");
+            codeWriter.WriteLine("var parameterInfos = methodInfo.GetParameters();");
+        }
+
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Type is not { } parameterType)
+            {
+                break;
+            }
+
+            if (parameter.IsEndpointMetadataProvider)
+            {
+                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+            }
+
+            if (parameter.IsEndpointParameterMetadataProvider)
+            {
+                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos.Single(p => p.Name == "{{parameter.SymbolName}}");""");
+                codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
+            }
         }
     }
 
     public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
     {
         endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
-        endpoint.EmitCallToIEndpointMetadataProvider(codeWriter);
+        endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
+        endpoint.EmitCallsToMetadataProvidersForParameters(codeWriter);
     }
 
     public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)
