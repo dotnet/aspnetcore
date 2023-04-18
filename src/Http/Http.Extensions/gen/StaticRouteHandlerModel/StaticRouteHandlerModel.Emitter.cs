@@ -3,7 +3,9 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
@@ -72,7 +74,7 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
-        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: {} contentType})
+        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: { } contentType })
         {
             codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
         }
@@ -159,6 +161,53 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
+    }
+
+    private static void EmitBuiltinResponseTypeMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        {
+            return;
+        }
+
+        if (response.HasNoResponse || response.IsIResult)
+        {
+            codeWriter.WriteLine("// No built-in IProducesResponseTypeMetadata is generated because response is void or is IResult.");
+            return;
+        }
+
+        if (responseType.SpecialType == SpecialType.System_String)
+        {
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));""");
+        }
+        else
+        {
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}}), statusCode: 200, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+        }
+
+    }
+
+    private static void EmitCallToIEndpointMetadataProvider(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        {
+            return;
+        }
+
+        if (response.IsEndpointMetadataProvider)
+        {
+            codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+        }
+        else
+        {
+            codeWriter.WriteLine("// Call to IEndpointMetadataProvider not emitted because response type does not implement that interface.");
+        }
+    }
+
+    public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
+        endpoint.EmitCallToIEndpointMetadataProvider(codeWriter);
     }
 
     public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)

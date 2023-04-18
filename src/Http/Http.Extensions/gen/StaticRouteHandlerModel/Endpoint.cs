@@ -43,6 +43,7 @@ internal class Endpoint
             return;
         }
 
+        EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider;
         EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
         IsAwaitable = Response?.IsAwaitable == true;
 
