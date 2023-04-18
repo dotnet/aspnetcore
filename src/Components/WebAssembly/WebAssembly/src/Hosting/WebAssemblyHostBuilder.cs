@@ -259,6 +259,6 @@ public sealed class WebAssemblyHostBuilder
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.TryAddScoped<RoutingStateProvider>();
+        Services.TryAddScoped<RoutingStateProvider, WebAssemblyRoutingStateProvider>();
     }
 }

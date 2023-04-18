@@ -4,11 +4,9 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -849,7 +847,6 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<ServerComponentSerializer>();
-        services.AddSingleton<RoutingStateProvider>();
         return services;
     }
 
