@@ -149,6 +149,9 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string WriteToResponseAsyncMethod => """
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "<Pending>")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
         private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
         {
             var runtimeType = value?.GetType();
@@ -157,7 +160,7 @@ internal static class RequestDelegateGeneratorSources
                 return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
             }
 
-            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
+            return httpContext.Response.WriteAsJsonAsync<object?>(value, options);
         }
 """;
 

@@ -30,6 +30,8 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="value">The value to write as JSON.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync<TValue>(
         this HttpResponse response,
         TValue value,
@@ -37,8 +39,7 @@ public static partial class HttpResponseJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        var options = ResolveSerializerOptions(response.HttpContext);
-        return response.WriteAsJsonAsync(value, jsonTypeInfo: (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue)), contentType: null, cancellationToken);
+        return response.WriteAsJsonAsync(value, options: null, contentType: null, cancellationToken);
     }
 
     /// <summary>
@@ -108,9 +109,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static Task WriteAsJsonAsync<TValue>(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         this HttpResponse response,
         TValue value,
         JsonTypeInfo<TValue> jsonTypeInfo,
@@ -204,6 +203,8 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="type">The type of object to write.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static Task WriteAsJsonAsync(
         this HttpResponse response,
         object? value,
@@ -212,8 +213,7 @@ public static partial class HttpResponseJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        var options = ResolveSerializerOptions(response.HttpContext);
-        return response.WriteAsJsonAsync(value, jsonTypeInfo: options.GetTypeInfo(type), contentType: null, cancellationToken);
+        return response.WriteAsJsonAsync(value, type, options: null,  contentType: null, cancellationToken);
     }
 
     /// <summary>
@@ -302,9 +302,7 @@ public static partial class HttpResponseJsonExtensions
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static Task WriteAsJsonAsync(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         this HttpResponse response,
         object? value,
         Type type,
