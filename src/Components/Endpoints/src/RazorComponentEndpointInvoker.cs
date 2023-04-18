@@ -91,7 +91,7 @@ internal class RazorComponentEndpointInvoker
 
     private bool TrySetFormHandler()
     {
-        var handler = _context.Request.Path.Value;
+        var handler = "";
         if (_context.Request.Query.TryGetValue("handler", out var value))
         {
             if (value.Count != 1)

@@ -19,7 +19,7 @@ public class CascadingModelBinder : IComponent, IDisposable
     /// <summary>
     /// The binding context name.
     /// </summary>
-    [Parameter] public string Name { get; set; } = default!;
+    [Parameter] public string Name { get; set; } = "";
 
     /// <summary>
     /// The binding context name.
@@ -102,7 +102,7 @@ public class CascadingModelBinder : IComponent, IDisposable
         // Name = "parent-name.my-handler";
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
         var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
-        var bindingId = !string.IsNullOrEmpty(name) ? null : Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
+        var bindingId = string.IsNullOrEmpty(name) ? null : Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
 
         var bindingContext = _bindingContext != null &&
             string.Equals(_bindingContext.Name, Name, StringComparison.Ordinal) &&

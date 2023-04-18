@@ -3,8 +3,6 @@ Microsoft.AspNetCore.Components.Binding.ModelBindingContext
 Microsoft.AspNetCore.Components.Binding.ModelBindingContext.BindingContextId.get -> string!
 Microsoft.AspNetCore.Components.Binding.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder
-Microsoft.AspNetCore.Components.CascadingModelBinder.BindingContextId.get -> string!
-Microsoft.AspNetCore.Components.CascadingModelBinder.BindingContextId.set -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Binding.ModelBindingContext!>!
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.set -> void

@@ -179,7 +179,6 @@ public class CascadingModelBinderTest
     {
         ModelBindingContext capturedContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        var bindingId = "parent-context";
 
         var renderer = new TestRenderer();
         var testComponent = new TestComponent(builder =>
@@ -193,7 +192,6 @@ public class CascadingModelBinderTest
         renderer.RenderRootComponent(id);
 
         // Act
-        bindingId = "changed";
         var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
 
         Assert.Equal("'CascadingModelBinder' 'Name' and 'BindingContextId' can't change after initialized.", exception.Message);
@@ -259,7 +257,6 @@ public class CascadingModelBinderTest
         ModelBindingContext capturedContext = null;
         ModelBindingContext originalContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        var contextBindingId = "/fetch-data/5";
 
         var renderer = new TestRenderer();
         var testComponent = new TestComponent(builder =>
@@ -272,7 +269,6 @@ public class CascadingModelBinderTest
         renderer.RenderRootComponent(id);
 
         originalContext = capturedContext;
-        contextBindingId = "/fetch-data/6";
 
         // Act
         testComponent.TriggerRender();
