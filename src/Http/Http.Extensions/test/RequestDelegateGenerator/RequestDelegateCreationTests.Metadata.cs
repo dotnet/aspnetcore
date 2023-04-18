@@ -106,4 +106,30 @@ app.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, stri
         Assert.Equal(400, metadata.StatusCode);
         Assert.Equal("application/problem+json", metadata.ContentTypes.Single());
     }
+
+    [Fact]
+    public async Task MapAction_TakesCustomMetadataEmitter_Has_Metadata()
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""
+app.MapPost("/", (CustomMetadataEmitter x) => {});
+""");
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 42);
+        _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 24);
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsCustomMetadataEmitter_Has_Metadata()
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""
+app.MapPost("/", () => new CustomMetadataEmitter());
+""");
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var metadata = endpoint.Metadata.OfType<CustomMetadata>().Single();
+        Assert.Equal(24, metadata.Value);
+    }
 }

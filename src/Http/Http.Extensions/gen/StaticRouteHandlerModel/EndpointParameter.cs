@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using static Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
-
 internal class EndpointParameter
 {
     public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
@@ -27,6 +27,8 @@ internal class EndpointParameter
         DefaultValue = parameter.GetDefaultValueString();
         IsArray = TryGetArrayElementType(parameter, out var elementType);
         ElementType = elementType;
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(parameter, wellKnownTypes);
+        IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(parameter, wellKnownTypes);
 
         if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
         {
@@ -151,6 +153,12 @@ internal class EndpointParameter
         }
     }
 
+    private static bool ImplementsIEndpointMetadataProvider(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
+        => parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+
+    private static bool ImplementsIEndpointParameterMetadataProvider(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
+        => parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
+
     private static bool ShouldDisableInferredBodyParameters(string httpMethod)
     {
         switch (httpMethod)
@@ -164,7 +172,8 @@ internal class EndpointParameter
 
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
-
+    public bool IsEndpointMetadataProvider { get; }
+    public bool IsEndpointParameterMetadataProvider { get; }
     public string SymbolName { get; }
     public string LookupName { get; }
     public int Ordinal { get; }

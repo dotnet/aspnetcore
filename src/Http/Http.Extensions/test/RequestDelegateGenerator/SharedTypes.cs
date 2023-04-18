@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -15,6 +16,30 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public class TestService
 {
     public string TestServiceMethod() => "Produced from service!";
+}
+
+public class CustomMetadata
+{
+    public int? Value { get; set; }
+}
+
+public class CustomMetadataEmitter : IEndpointMetadataProvider, IEndpointParameterMetadataProvider
+{
+    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new CustomMetadata()
+        {
+            Value = 42
+        });
+    }
+
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new CustomMetadata()
+        {
+            Value = 24
+        });
+    }
 }
 
 public class Todo
