@@ -15,7 +15,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileCollectionParameter()
     {
-        var source = """app.MapPost("/", ( IFormFileCollection formFiles, HttpContext httpContext) => httpContext.Items["formFiles"] = formFiles);""";
+        var source = """app.MapPost("/", (IFormFileCollection formFiles, HttpContext httpContext) => httpContext.Items["formFiles"] = formFiles);""";
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
@@ -118,7 +118,15 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     [Fact]
     public async Task RequestDelegatePopulatesFromOptionalIFormFileParameter()
     {
-        var source = """app.MapPost("/", (IFormFile? file, HttpContext httpContext) => httpContext.Items["formFiles"] = file);""";
+        var source = """
+app.MapPost("/", (IFormFile? file, HttpContext httpContext) =>
+{
+    if (file is not null)
+    {
+        httpContext.Items["formFiles"] = file;
+    }
+});
+""";
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 

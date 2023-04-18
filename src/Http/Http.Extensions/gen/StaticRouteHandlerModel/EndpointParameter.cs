@@ -49,9 +49,28 @@ internal class EndpointParameter
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out _))
+        else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out var fromFormAttribute))
         {
-            Source = EndpointParameterSource.Unknown;
+            Source = EndpointParameterSource.FormBody;
+            LookupName = GetEscapedParameterName(fromFormAttribute, parameter.Name);
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
+            {
+                AssigningCode = "httpContext.Request.Form.Files";
+            }
+            else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
+            {
+                AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+            }
+            else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+            {
+                AssigningCode = "httpContext.Request.Form";
+            }
+            else
+            {
+                AssigningCode = $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+                IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+                ParsingBlockEmitter = parsingBlockEmitter;
+            }
         }
         else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
         {
@@ -59,7 +78,6 @@ internal class EndpointParameter
             {
                 Source = EndpointParameterSource.SpecialType;
                 AssigningCode = "httpContext.Request.Body";
-
             }
             else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.System_IO_Pipelines_PipeReader)))
             {
@@ -85,11 +103,23 @@ internal class EndpointParameter
             Source = EndpointParameterSource.SpecialType;
             AssigningCode = specialTypeAssigningCode;
         }
-        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)) ||
-                 SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)) ||
-                 SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
         {
-            Source = EndpointParameterSource.Unknown;
+            Source = EndpointParameterSource.FormBody;
+            LookupName = parameter.Name;
+            AssigningCode = "httpContext.Request.Form.Files";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
+        {
+            Source = EndpointParameterSource.FormBody;
+            LookupName = parameter.Name;
+            AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+        {
+            Source = EndpointParameterSource.FormBody;
+            LookupName = parameter.Name;
+            AssigningCode = "httpContext.Request.Form";
         }
         else if (HasBindAsync(parameter, wellKnownTypes, out var bindMethod))
         {
