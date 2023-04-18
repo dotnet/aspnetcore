@@ -25,7 +25,7 @@ public class RouterTest
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
         services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
-        services.TryAddScoped<RoutingStateProvider, TestRoutingStateProvider>();
+        services.TryAddScoped<RoutingStateProvider>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);
@@ -229,10 +229,6 @@ public class RouterTest
         {
             return Task.CompletedTask;
         }
-    }
-
-    internal sealed class TestRoutingStateProvider : RoutingStateProvider
-    {
     }
 
     [Route("feb")]
