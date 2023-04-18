@@ -2,8 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Net.Http;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,6 +21,54 @@ namespace Microsoft.AspNetCore.Diagnostics;
 
 public class ExceptionHandlerMiddlewareTest
 {
+    [Fact]
+    public async Task ExceptionIsSetOnProblemDetailsContext()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.AddProblemDetails(configure =>
+                {
+                    configure.CustomizeProblemDetails = (context) =>
+                    {
+                        if (context.Exception is not null)
+                        {
+                            context.ProblemDetails.Extensions.Add("OriginalExceptionMessage", context.Exception.Message);
+                        }
+                    };
+                });
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/path");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Act
+        var response = await server.CreateClient().SendAsync(request);
+
+        // Assert
+        var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
+        Assert.Equal("Test exception", originalExceptionMessage);
+    }
+
     [Fact]
     public async Task Invoke_ExceptionThrownResultsInClearedRouteValuesAndEndpoint()
     {
