@@ -7,4 +7,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 
 internal sealed class EndpointsRoutingStateProvider : RoutingStateProvider
 {
+    internal void SetRouteData(RouteData routeData)
+    {
+        RouteData = routeData;
+    }
 }
