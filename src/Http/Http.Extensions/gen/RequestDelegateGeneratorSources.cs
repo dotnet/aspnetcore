@@ -20,6 +20,22 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
+    public static string PopulateEndpointMetadataMethod => """
+        private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
+            where T : IEndpointMetadataProvider
+        {
+            T.PopulateMetadata(method, builder);
+        }
+""";
+
+    public static string PopulateEndpointParameterMetadataMethod => """
+        private static void PopulateMetadataForParameter<T>(ParameterInfo parameter, EndpointBuilder builder)
+            where T : IEndpointParameterMetadataProvider
+        {
+            T.PopulateMetadata(parameter, builder);
+        }
+""";
+
     public static string TryResolveBodyAsyncMethod => """
         private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
         {
@@ -413,6 +429,28 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 {{LogOrThrowExceptionHelperClass}}
+
+    file static class GeneratedMetadataConstants
+    {
+        public static readonly string[] JsonContentType = new [] { "application/json" };
+        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+    }
+
+    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
+    {
+        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
+        {
+            Type = type;
+            StatusCode = statusCode;
+            ContentTypes = contentTypes;
+        }
+
+        public Type? Type { get; }
+
+        public int StatusCode { get; }
+
+        public IEnumerable<string> ContentTypes { get; }
+    }
 }
 """;
     private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""

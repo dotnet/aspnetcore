@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
@@ -21,7 +22,7 @@ internal class EndpointResponse
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
     public bool IsAnonymousType { get; set; }
-
+    public bool IsEndpointMetadataProvider { get; set; }
     private WellKnownTypes WellKnownTypes { get; init; }
 
     internal EndpointResponse(IMethodSymbol method, WellKnownTypes wellKnownTypes)
@@ -35,7 +36,11 @@ internal class EndpointResponse
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType(method);
         IsAnonymousType = method.ReturnType.IsAnonymousType;
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(method, wellKnownTypes);
     }
+
+    private static bool ImplementsIEndpointMetadataProvider(IMethodSymbol method, WellKnownTypes wellKnownTypes)
+        => method.ReturnType.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
 
     private ITypeSymbol? UnwrapResponseType(IMethodSymbol method, out bool isAwaitable, out bool awaitableIsVoid)
     {
