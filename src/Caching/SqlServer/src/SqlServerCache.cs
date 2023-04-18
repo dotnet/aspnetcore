@@ -185,7 +185,7 @@ public class SqlServerCache : IDistributedCache
     private void ScanForExpiredItemsIfRequired()
     {
         long ticks = _systemClock.UtcNow.UtcTicks;
-        long lastExpirationScanTicks = _lastExpirationScanTicks;
+        long lastExpirationScanTicks = Volatile.Read(ref _lastExpirationScanTicks);
         if ((ticks - lastExpirationScanTicks) > _expiredItemsDeletionIntervalTicks)
         {
             if (Interlocked.CompareExchange(ref _lastExpirationScanTicks, ticks, lastExpirationScanTicks) == lastExpirationScanTicks)
