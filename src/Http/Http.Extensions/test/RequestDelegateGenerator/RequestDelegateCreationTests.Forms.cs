@@ -1029,4 +1029,19 @@ app.MapPost("/", TestAction);
         Assert.Equal(400, badHttpRequestException.StatusCode);
         Assert.IsType<InvalidDataException>(badHttpRequestException.InnerException);
     }
+
+    [Fact]
+    public async Task RequestDelegateValidateGeneratedFormCode()
+    {
+        var source = """
+void TestAction(HttpContext httpContext, IFormFile file, IFormFileCollection fileCollection, IFormCollection collection, [FromForm] MyTryParseRecord tryParseRecord)
+{
+    httpContext.Items["invoked"] = true;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
 }
