@@ -85,6 +85,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.StartBlock();
             codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
+            if (endpoint!.EmitterContext.RequiresLoggingHelper || endpoint!.EmitterContext.HasJsonBodyOrService || endpoint!.Response?.IsSerializableJsonResponse(out var _) is true)
+            {
+                codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
+            }
+            endpoint!.EmitLoggingPreamble(codeWriter);
             endpoint!.EmitRouteOrQueryResolver(codeWriter);
             endpoint!.EmitJsonBodyOrServiceResolver(codeWriter);
             endpoint!.Response?.EmitJsonPreparation(codeWriter);

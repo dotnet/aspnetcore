@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -40,6 +42,24 @@ public class TryParseTodo : Todo
             return false;
         }
     }
+}
+
+[JsonPolymorphic]
+[JsonDerivedType(typeof(JsonTodoChild), nameof(JsonTodoChild))]
+public class JsonTodo : Todo
+{
+    public static async ValueTask<JsonTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        // manually call deserialize so we don't check content type
+        var body = await JsonSerializer.DeserializeAsync<JsonTodo>(context.Request.Body);
+        context.Request.Body.Position = 0;
+        return body;
+    }
+}
+
+public class JsonTodoChild : JsonTodo
+{
+    public string? Child { get; set; }
 }
 
 public class CustomFromBodyAttribute : Attribute, IFromBodyMetadata
@@ -150,7 +170,7 @@ public record MyBindAsyncRecord(Uri Uri)
         {
             throw new UnreachableException($"Unexpected parameter type: {parameter.ParameterType}");
         }
-        if (parameter.Name != "myBindAsyncParam")
+        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.Ordinal) == false)
         {
             throw new UnreachableException("Unexpected parameter name");
         }
@@ -406,3 +426,48 @@ public struct BodyStruct
 }
 
 #nullable restore
+
+public class ExceptionThrowingRequestBodyStream : Stream
+{
+    private readonly Exception _exceptionToThrow;
+
+    public ExceptionThrowingRequestBodyStream(Exception exceptionToThrow)
+    {
+        _exceptionToThrow = exceptionToThrow;
+    }
+
+    public override bool CanRead => true;
+
+    public override bool CanSeek => false;
+
+    public override bool CanWrite => false;
+
+    public override long Length => throw new NotImplementedException();
+
+    public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+    public override void Flush()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        throw _exceptionToThrow;
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetLength(long value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        throw new NotImplementedException();
+    }
+}
