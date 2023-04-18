@@ -24,8 +24,10 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
     private bool _isInitialized;
 
     private TlsConfigurationLoader? _tlsConfigurationLoader;
-    private Action<FeatureCollection, ListenOptions>? _populateMultiplexedTransportFeatures;
+    private Action<FeatureCollection, ListenOptions, ILogger<HttpsConnectionMiddleware>>? _populateMultiplexedTransportFeatures;
     private Func<ListenOptions, ListenOptions>? _useHttpsWithDefaults;
+
+    private ILogger<HttpsConnectionMiddleware>? _httpsLogger;
 
     /// <summary>
     /// Create an uninitialized <see cref="HttpsConfigurationService"/>.
@@ -67,6 +69,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
         _tlsConfigurationLoader = new TlsConfigurationLoader(hostEnvironment, serverLogger, httpsLogger);
         _populateMultiplexedTransportFeatures = PopulateMultiplexedTransportFeaturesWorker;
         _useHttpsWithDefaults = UseHttpsWithDefaultsWorker;
+        _httpsLogger = httpsLogger;
     }
 
     /// <inheritdoc/>
@@ -100,7 +103,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
     public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
     {
         EnsureInitialized(CoreStrings.NeedHttpsConfigurationToUseHttp3);
-        _populateMultiplexedTransportFeatures.Invoke(features, listenOptions);
+        _populateMultiplexedTransportFeatures.Invoke(features, listenOptions, _httpsLogger);
     }
 
     /// <inheritdoc/>
@@ -114,7 +117,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
     /// If this instance has not been initialized, initialize it if possible and throw otherwise.
     /// </summary>
     /// <exception cref="InvalidOperationException">If initialization is not possible.</exception>
-    [MemberNotNull(nameof(_useHttpsWithDefaults), nameof(_tlsConfigurationLoader), nameof(_populateMultiplexedTransportFeatures))]
+    [MemberNotNull(nameof(_useHttpsWithDefaults), nameof(_tlsConfigurationLoader), nameof(_populateMultiplexedTransportFeatures), nameof(_httpsLogger))]
     private void EnsureInitialized(string uninitializedError)
     {
         if (!_isInitialized)
@@ -132,18 +135,19 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
         Debug.Assert(_useHttpsWithDefaults is not null);
         Debug.Assert(_tlsConfigurationLoader is not null);
         Debug.Assert(_populateMultiplexedTransportFeatures is not null);
+        Debug.Assert(_httpsLogger is not null);
     }
 
     /// <summary>
     /// The initialized implementation of <see cref="PopulateMultiplexedTransportFeatures"/>.
     /// </summary>
-    internal static void PopulateMultiplexedTransportFeaturesWorker(FeatureCollection features, ListenOptions listenOptions)
+    internal static void PopulateMultiplexedTransportFeaturesWorker(FeatureCollection features, ListenOptions listenOptions, ILogger<HttpsConnectionMiddleware> logger)
     {
         // HttpsOptions or HttpsCallbackOptions should always be set in production, but it's not set for InMemory tests.
         // The QUIC transport will check if TlsConnectionCallbackOptions is missing.
         if (listenOptions.HttpsOptions != null)
         {
-            var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions);
+            var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions, logger);
             features.Set(new TlsConnectionCallbackOptions
             {
                 ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols ?? new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
