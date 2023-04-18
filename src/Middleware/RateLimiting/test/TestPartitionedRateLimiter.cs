@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TResource>
 {
-    private List<RateLimiter> _limiters = new List<RateLimiter>();
+    private readonly List<RateLimiter> _limiters = new List<RateLimiter>();
 
     public TestPartitionedRateLimiter() { }
 
