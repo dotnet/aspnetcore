@@ -101,8 +101,6 @@ public sealed class CascadingModelBinder : IComponent, IDisposable
         // 3) Parent has a name "parent-name"
         // Name = "parent-name.my-handler";
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
-
-
         var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
         var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
 
