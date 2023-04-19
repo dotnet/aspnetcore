@@ -13,13 +13,18 @@ public sealed class HttpLoggingAttribute : Attribute
     /// Initializes an instance of the <see cref="HttpLoggingAttribute"/> class.
     /// </summary>
     /// <param name="loggingFields">Specifies what fields to log for the endpoint.</param>
-    /// <param name="requestBodyLogLimit">Specifies the maximum number of bytes to be logged for the request body. A negative value means use the default setting in <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>.</param>
-    /// <param name="responseBodyLogLimit">Specifies the maximum number of bytes to be logged for the response body. A negative value means use the default setting in <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.</param>
+    /// <param name="requestBodyLogLimit">Specifies the maximum number of bytes to be logged for the request body. A value of <c>-1</c> means use the default setting in <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>.</param>
+    /// <param name="responseBodyLogLimit">Specifies the maximum number of bytes to be logged for the response body. A value of <c>-1</c> means use the default setting in <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="requestBodyLogLimit"/> or <paramref name="responseBodyLogLimit"/> is less than <c>-1</c>.</exception>
     public HttpLoggingAttribute(HttpLoggingFields loggingFields, int requestBodyLogLimit = -1, int responseBodyLogLimit = -1)
     {
         LoggingFields = loggingFields;
-        RequestBodyLogLimit = requestBodyLogLimit < 0 ? null : requestBodyLogLimit;
-        ResponseBodyLogLimit = responseBodyLogLimit < 0 ? null : responseBodyLogLimit;
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(requestBodyLogLimit, -1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(responseBodyLogLimit, -1);
+
+        RequestBodyLogLimit = requestBodyLogLimit;
+        ResponseBodyLogLimit = responseBodyLogLimit;
     }
 
     /// <summary>
@@ -30,10 +35,10 @@ public sealed class HttpLoggingAttribute : Attribute
     /// <summary>
     /// Specifies the maximum number of bytes to be logged for the request body.
     /// </summary>
-    public int? RequestBodyLogLimit { get; }
+    public int RequestBodyLogLimit { get; }
 
     /// <summary>
     /// Specifies the maximum number of bytes to be logged for the response body.
     /// </summary>
-    public int? ResponseBodyLogLimit { get; }
+    public int ResponseBodyLogLimit { get; }
 }

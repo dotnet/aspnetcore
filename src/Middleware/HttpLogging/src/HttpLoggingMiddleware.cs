@@ -109,10 +109,16 @@ internal sealed class HttpLoggingMiddleware
                     options.MediaTypeOptions.MediaTypeStates,
                     out var encoding))
                 {
+                    var requestBodyLogLimit = options.RequestBodyLogLimit;
+                    if (loggingAttribute?.RequestBodyLogLimit is int)
+                    {
+                        requestBodyLogLimit = loggingAttribute.RequestBodyLogLimit;
+                    }
+
                     originalBody = request.Body;
                     requestBufferingStream = new RequestBufferingStream(
                         request.Body,
-                        loggingAttribute?.RequestBodyLogLimit ?? options.RequestBodyLogLimit,
+                        requestBodyLogLimit,
                         _logger,
                         encoding);
                     request.Body = requestBufferingStream;
@@ -154,9 +160,15 @@ internal sealed class HttpLoggingMiddleware
             {
                 originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
 
+                var responseBodyLogLimit = options.ResponseBodyLogLimit;
+                if (loggingAttribute?.ResponseBodyLogLimit is int)
+                {
+                    responseBodyLogLimit = loggingAttribute.ResponseBodyLogLimit;
+                }
+
                 // TODO pool these.
                 responseBufferingStream = new ResponseBufferingStream(originalBodyFeature,
-                    loggingAttribute?.ResponseBodyLogLimit ?? options.ResponseBodyLogLimit,
+                    responseBodyLogLimit,
                     _logger,
                     context,
                     options.MediaTypeOptions.MediaTypeStates,
