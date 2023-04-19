@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -64,7 +63,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
 
         // Saving RouteData to avoid routing twice in Router component
         var routingStateProvider = httpContext.RequestServices.GetService<RoutingStateProvider>();
-        ((EndpointsRoutingStateProvider)routingStateProvider!).SetRouteData(new RouteData(componentType, GetRouteDataParameters(httpContext)));
+        routingStateProvider!.RouteData = new RouteData(componentType, GetRouteDataParameters(httpContext));
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
