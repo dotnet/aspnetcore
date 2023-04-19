@@ -40,7 +40,7 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     {
         builder.OpenElement(0, "select");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttributeIfNotNullOrEmpty(2, "name", ValueExpressionAsString);
+        builder.AddAttributeIfNotNullOrEmpty(2, "name", NameAttributeValue);
         builder.AddAttributeIfNotNullOrEmpty(3, "class", CssClass);
         builder.AddAttribute(4, "multiple", _isMultipleSelect);
 

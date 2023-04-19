@@ -34,7 +34,7 @@ public class InputCheckbox : InputBase<bool>
         builder.OpenElement(0, "input");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "type", "checkbox");
-        builder.AddAttributeIfNotNullOrEmpty(3, "name", ValueExpressionAsString);
+        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
         builder.AddAttribute(4, "class", CssClass);
         builder.AddAttribute(5, "checked", BindConverter.FormatValue(CurrentValue));
         builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CurrentValue = __value, CurrentValue));

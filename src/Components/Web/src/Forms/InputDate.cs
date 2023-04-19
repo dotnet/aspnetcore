@@ -80,7 +80,7 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
         builder.OpenElement(0, "input");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "type", _typeAttributeValue);
-        builder.AddAttributeIfNotNullOrEmpty(3, "name", ValueExpressionAsString);
+        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
         builder.AddAttribute(4, "class", CssClass);
         builder.AddAttribute(5, "value", CurrentValueAsString);
         builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));

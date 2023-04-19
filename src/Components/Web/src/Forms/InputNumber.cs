@@ -55,7 +55,7 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         builder.AddAttribute(1, "step", _stepAttributeValue);
         builder.AddMultipleAttributes(2, AdditionalAttributes);
         builder.AddAttribute(3, "type", "number");
-        builder.AddAttributeIfNotNullOrEmpty(4, "name", ValueExpressionAsString);
+        builder.AddAttributeIfNotNullOrEmpty(4, "name", NameAttributeValue);
         builder.AddAttributeIfNotNullOrEmpty(5, "class", CssClass);
         builder.AddAttribute(6, "value", CurrentValueAsString);
         builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));

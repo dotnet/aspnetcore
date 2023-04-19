@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -18,6 +19,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private bool _hasInitializedParameters;
     private bool _parsingFailed;
     private string? _incomingValueBeforeParsing;
+    private string? _formattedValueExpression;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
@@ -148,12 +150,6 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Gets the formatted value of <see cref="ValueExpression"/>. This can be used as the value for the
-    /// HTML input's "name" attribute.
-    /// </summary>
-    protected string? ValueExpressionAsString { get; private set; }
-
-    /// <summary>
     /// Constructs an instance of <see cref="InputBase{TValue}"/>.
     /// </summary>
     protected InputBase()
@@ -162,7 +158,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Formats the value as a string. Derived classes can override this to determine the formating used for <see cref="CurrentValueAsString"/>.
+    /// Formats the value as a string. Derived classes can override this to determine the formatting used for <see cref="CurrentValueAsString"/>.
     /// </summary>
     /// <param name="value">The value to format.</param>
     /// <returns>A string representation of the value.</returns>
@@ -193,6 +189,32 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the value to be used for the input's "name" attribute.
+    /// </summary>
+    protected string NameAttributeValue
+    {
+        get
+        {
+            if (AdditionalAttributes?.TryGetValue("name", out var nameAttributeValue) ?? false)
+            {
+                return Convert.ToString(nameAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
+
+            if (EditContext?.ShouldUseFieldIdentifiers ?? false)
+            {
+                if (_formattedValueExpression is null && ValueExpression is not null)
+                {
+                    _formattedValueExpression = ExpressionFormatter.FormatLambda(ValueExpression);
+                }
+
+                return _formattedValueExpression ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+    }
+
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -215,11 +237,6 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
-
-                if (EditContext.ShouldUseFieldIdentifiers)
-                {
-                    ValueExpressionAsString = ExpressionFormatter.FormatLambda(ValueExpression);
-                }
             }
 
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));

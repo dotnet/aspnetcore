@@ -33,7 +33,7 @@ public class InputTextArea : InputBase<string?>
     {
         builder.OpenElement(0, "textarea");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttributeIfNotNullOrEmpty(2, "name", ValueExpressionAsString);
+        builder.AddAttributeIfNotNullOrEmpty(2, "name", NameAttributeValue);
         builder.AddAttributeIfNotNullOrEmpty(3, "class", CssClass);
         builder.AddAttribute(4, "value", CurrentValueAsString);
         builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
