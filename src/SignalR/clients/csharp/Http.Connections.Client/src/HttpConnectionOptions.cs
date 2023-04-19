@@ -276,8 +276,13 @@ public class HttpConnectionOptions
     }
 
     /// <summary>
-    /// TODO
+    /// Setting to enable acking bytes sent between client and server, this allows reconnecting that preserves messages sent while disconnected.
+    /// Also preserves the <see cref="HttpConnection.ConnectionId"/> when the reconnect is successful.
     /// </summary>
+    /// <remarks>
+    /// Only works with WebSockets transport currently.
+    /// API likely to change in future previews.
+    /// </remarks>
     public bool UseAcks { get; set; }
 
     private static void ThrowIfUnsupportedPlatform()
