@@ -104,6 +104,6 @@ You can disable this permanently by adding to your `$PROFILE` file. (`notepad $P
 
 ## Error messages
 
-An error similar to this suggests that the submodules have not be initialized or need to be updated.
+An error similar to this suggests that the submodules have not been initialized or need to be updated.
 
 ...\Microsoft.Build.Tasks.Git.targets(26,5): error : Could not find file '...\aspnetcore\src\submodules\...\.git'. The source code won't be available via Source Link. [...\aspnetcore\eng\tools\RepoTasks\RepoTasks.csproj::...]
