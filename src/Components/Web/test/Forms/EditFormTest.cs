@@ -6,12 +6,20 @@ using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class EditFormTest
 {
     private TestRenderer _testRenderer = new();
+
+    public EditFormTest()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<NavigationManager, TestNavigationManager>();
+        _testRenderer = new(services.BuildServiceProvider());
+    }
 
     [Fact]
     public async Task ThrowsIfBothEditContextAndModelAreSupplied()
@@ -99,7 +107,7 @@ public class EditFormTest
 
         // Assert
         AssertFrame.Attribute(attributes[0], "name", "my-form");
-        AssertFrame.Attribute(attributes[1], "action", "?handler=my-form");
+        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=my-form");
     }
 
     [Fact]
@@ -111,7 +119,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "/")
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -120,7 +128,7 @@ public class EditFormTest
 
         // Assert
         AssertFrame.Attribute(attributes[0], "name", "my-form");
-        AssertFrame.Attribute(attributes[1], "action", "?handler=my-form");
+        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=my-form");
     }
 
     [Fact]
@@ -132,7 +140,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context")
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -141,7 +149,7 @@ public class EditFormTest
 
         // Assert
         AssertFrame.Attribute(attributes[0], "name", "parent-context.my-form");
-        AssertFrame.Attribute(attributes[1], "action", "?handler=parent-context.my-form");
+        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=parent-context.my-form");
     }
 
     [Fact]
@@ -157,7 +165,7 @@ public class EditFormTest
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
-            BindingContext = new ModelBindingContext("parent-context")
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -177,7 +185,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "/"),
+            BindingContext = new ModelBindingContext("", ""),
             SubmitHandler = ctx => { }
         };
 
@@ -240,14 +248,14 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "/")
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
         _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
 
         // Assert
-        Assert.Equal("/", tracker.EventName);
+        Assert.Equal("", tracker.EventName);
     }
 
     [Fact]
@@ -280,7 +288,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "/")
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -300,7 +308,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context")
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -423,6 +431,14 @@ public class EditFormTest
 
                 builder.CloseComponent();
             }
+        }
+    }
+
+    class TestNavigationManager : NavigationManager
+    {
+        public TestNavigationManager()
+        {
+            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
         }
     }
 }

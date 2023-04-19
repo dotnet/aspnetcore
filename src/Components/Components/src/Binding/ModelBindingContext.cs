@@ -8,15 +8,17 @@ namespace Microsoft.AspNetCore.Components.Binding;
 /// </summary>
 public class ModelBindingContext
 {
-    internal ModelBindingContext(string name, string? bindingContextId = null)
+    internal ModelBindingContext(string name, string bindingContextId)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(bindingContextId);
         // We are initializing the root context, that can be a "named" root context, or the default context.
         // A named root context only provides a name, and that acts as the BindingId
         // A "default" root context does not provide a name, and instead it provides an explicit Binding ID.
         // The explicit binding ID matches that of the default handler, which is the URL Path.
-        if ((string.IsNullOrEmpty(name) ^ string.IsNullOrEmpty(bindingContextId)))
+        if (string.IsNullOrEmpty(name) ^ string.IsNullOrEmpty(bindingContextId))
         {
-            throw new InvalidOperationException("A root binding context needs to provide a name and explicit binding ID or none.");
+            throw new InvalidOperationException("A root binding context needs to provide a name and explicit binding context id or none.");
         }
 
         Name = name;

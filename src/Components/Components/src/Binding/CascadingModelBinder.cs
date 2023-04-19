@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public class CascadingModelBinder : IComponent, IDisposable
+public sealed class CascadingModelBinder : IComponent, IDisposable
 {
     private RenderHandle _handle;
     private ModelBindingContext? _bindingContext;
@@ -51,7 +51,7 @@ public class CascadingModelBinder : IComponent, IDisposable
         parameters.SetParameterProperties(this);
         if (ParentContext != null && string.IsNullOrEmpty(Name))
         {
-            throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.BindingContextId}'.");
+            throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
         }
 
         UpdateBindingInformation(Navigation.Uri);
@@ -101,8 +101,10 @@ public class CascadingModelBinder : IComponent, IDisposable
         // 3) Parent has a name "parent-name"
         // Name = "parent-name.my-handler";
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
+
+
         var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
-        var bindingId = string.IsNullOrEmpty(name) ? null : Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
+        var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
 
         var bindingContext = _bindingContext != null &&
             string.Equals(_bindingContext.Name, Name, StringComparison.Ordinal) &&
@@ -117,11 +119,17 @@ public class CascadingModelBinder : IComponent, IDisposable
             // * Component ParentContext hierarchy changes.
             //   * Technically, the component won't be retained in this case and will be destroyed instead.
             // * A parent changes Name.
-            // * A parent changes BindingContextId.
-            throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' and 'BindingContextId' can't change after initialized.");
+            throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' can't change after initialized.");
         }
 
         _bindingContext = bindingContext;
+
+        string GenerateBindingContextId(string name)
+        {
+            var bindingId = Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
+            var hashIndex = bindingId.IndexOf('#');
+            return hashIndex == -1 ? bindingId : new string(bindingId.AsSpan(0, hashIndex));
+        }
     }
 
     void IDisposable.Dispose()

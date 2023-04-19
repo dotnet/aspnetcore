@@ -8,30 +8,32 @@ namespace Microsoft.AspNetCore.Components;
 public class ModelBindingContextTest
 {
     [Fact]
-    public void Throws_IfNameAndBindingContextId_AreProvided()
+    public void CanCreate_BindingContext_WithDefaultName()
     {
-        Assert.Throws<InvalidOperationException>(() => new ModelBindingContext("name", "id"));
-    }
-
-    [Fact]
-    public void Throws_IfNoNameOrBindingContextId_AreProvided()
-    {
-        Assert.Throws<InvalidOperationException>(() => new ModelBindingContext("name", "id"));
-    }
-
-    [Fact]
-    public void Name_UsedAsBindingContextId_WhenProvided()
-    {
-        var context = new ModelBindingContext("navigation");
-        Assert.Equal("navigation", context.Name);
-        Assert.Equal("navigation", context.BindingContextId);
-    }
-
-    [Fact]
-    public void CanProvide_BindingContextId_ForDefaultName()
-    {
-        var context = new ModelBindingContext("", "binding-context");
+        var context = new ModelBindingContext("", "");
         Assert.Equal("", context.Name);
-        Assert.Equal("binding-context", context.BindingContextId);
+        Assert.Equal("", context.BindingContextId);
+    }
+
+    [Fact]
+    public void CanCreate_BindingContext_WithName()
+    {
+        var context = new ModelBindingContext("name", "path?handler=name");
+        Assert.Equal("name", context.Name);
+        Assert.Equal("path?handler=name", context.BindingContextId);
+    }
+
+    [Fact]
+    public void Throws_WhenNameIsProvided_AndNoBindingContextId()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => new ModelBindingContext("name", ""));
+        Assert.Equal("A root binding context needs to provide a name and explicit binding context id or none.", exception.Message);
+    }
+
+    [Fact]
+    public void Throws_WhenBindingContextId_IsProvidedForDefaultName()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => new ModelBindingContext("", "context"));
+        Assert.Equal("A root binding context needs to provide a name and explicit binding context id or none.", exception.Message);
     }
 }
