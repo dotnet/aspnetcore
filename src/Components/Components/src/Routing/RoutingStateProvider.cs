@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// Provides RouteData
 /// </summary>
-public class RoutingStateProvider
+public abstract class RoutingStateProvider
 {
     /// <summary>
     /// Gets or sets RouteData
