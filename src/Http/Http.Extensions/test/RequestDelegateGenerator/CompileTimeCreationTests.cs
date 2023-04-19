@@ -58,31 +58,6 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         Assert.Equal("'invalidName' is not a route parameter.", exception.Message);
     }
 
-    [Theory]
-    [InlineData(@"app.MapGet(""/"", (IFormFile? form) => ""Hello world!"");")]
-    [InlineData(@"app.MapGet(""/"", (IFormCollection? form) => ""Hello world!"");")]
-    [InlineData(@"app.MapGet(""/"", (IFormFileCollection? form) => ""Hello world!"");")]
-    [InlineData(@"app.MapGet(""/"", ([FromForm] TryParseTodo? form) => ""Hello world!"");")]
-    public async Task MapAction_WarnsForUnsupportedFormTypes(string source)
-    {
-        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
-
-        // Emits diagnostic but generates no source
-        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
-        Assert.Empty(result.GeneratedSources);
-
-        // Falls back to runtime-generated endpoint
-        var endpoint = GetEndpointFromCompilation(compilation, false);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
-        httpContext.Request.Headers["Content-Length"] = "0";
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "Hello world!");
-    }
-
     [Fact]
     public async Task MapAction_WarnsForUnsupportedAsParametersAttribute()
     {

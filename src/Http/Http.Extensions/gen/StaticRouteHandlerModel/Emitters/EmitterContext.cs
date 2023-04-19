@@ -6,6 +6,7 @@ internal sealed class EmitterContext
 {
     public bool HasJsonBodyOrService { get; set; }
     public bool HasJsonBody { get; set; }
+    public bool HasFormBody { get; set; }
     public bool HasRouteOrQuery { get; set; }
     public bool HasBindAsync { get; set; }
     public bool HasParsable { get; set; }

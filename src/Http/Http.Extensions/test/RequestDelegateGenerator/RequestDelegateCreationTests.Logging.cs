@@ -20,9 +20,8 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
 app.MapGet("/", (
     HttpContext httpContext,
     [FromHeader(Name = "foo")] StringValues headerValues,
-    [FromQuery(Name = "bar")] StringValues queryValues
-    // TODO: https://github.com/dotnet/aspnetcore/issues/47200
-    // [FromForm(Name = "form")] StringValues formValues
+    [FromQuery(Name = "bar")] StringValues queryValues,
+    [FromForm(Name = "form")] StringValues formValues
 ) =>
 {
     httpContext.Items["invoked"] = true;
@@ -44,7 +43,7 @@ app.MapGet("/", (
 
         var logs = TestSink.Writes.ToArray();
 
-        Assert.Equal(2, logs.Length);
+        Assert.Equal(3, logs.Length);
 
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
@@ -62,10 +61,13 @@ app.MapGet("/", (
         Assert.Equal("queryValues", log2Values[1].Value);
         Assert.Equal("query string", log2Values[2].Value);
 
-        // TODO: https://github.com/dotnet/aspnetcore/issues/47200
-        // Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
-        // Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
-        // Assert.Equal(@"Required parameter ""StringValues formValues"" was not provided from form.", logs[2].Message);
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""StringValues formValues"" was not provided from form.", logs[2].Message);
+        var log3Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[2].State);
+        Assert.Equal("StringValues", log3Values[0].Value);
+        Assert.Equal("formValues", log3Values[1].Value);
+        Assert.Equal("form", log3Values[2].Value);
     }
 
     [Fact]

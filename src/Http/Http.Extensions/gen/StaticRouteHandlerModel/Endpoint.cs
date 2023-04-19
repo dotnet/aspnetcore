@@ -72,6 +72,7 @@ internal class Endpoint
                     break;
                 case EndpointParameterSource.JsonBody:
                 case EndpointParameterSource.JsonBodyOrService:
+                case EndpointParameterSource.FormBody:
                     IsAwaitable = true;
                     break;
                 case EndpointParameterSource.Unknown:
@@ -89,6 +90,7 @@ internal class Endpoint
 
         EmitterContext.HasJsonBodyOrService = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
         EmitterContext.HasJsonBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
+        EmitterContext.HasFormBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.FormBody);
         EmitterContext.HasRouteOrQuery = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
         EmitterContext.HasBindAsync = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
         EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable);
