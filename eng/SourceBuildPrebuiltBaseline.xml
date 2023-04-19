@@ -1,5 +1,7 @@
 <UsageData>
   <IgnorePatterns>
     <UsagePattern IdentityGlob="*/*" />
+
+    <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
   </IgnorePatterns>
 </UsageData>
