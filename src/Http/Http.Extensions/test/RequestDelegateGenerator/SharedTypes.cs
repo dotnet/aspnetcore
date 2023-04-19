@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -467,6 +469,38 @@ public class ExceptionThrowingRequestBodyStream : Stream
     }
 
     public override void Write(byte[] buffer, int offset, int count)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public readonly struct TraceIdentifier
+{
+    private TraceIdentifier(string id)
+    {
+        Id = id;
+    }
+
+    public string Id { get; }
+
+    public static implicit operator string(TraceIdentifier value) => value.Id;
+
+    public static ValueTask<TraceIdentifier> BindAsync(HttpContext context)
+    {
+        return ValueTask.FromResult(new TraceIdentifier(context.TraceIdentifier));
+    }
+}
+
+public class TlsConnectionFeature : ITlsConnectionFeature
+{
+    public TlsConnectionFeature(X509Certificate2 clientCertificate)
+    {
+        ClientCertificate = clientCertificate;
+    }
+
+    public X509Certificate2 ClientCertificate { get; set; }
+
+    public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

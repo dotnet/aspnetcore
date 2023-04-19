@@ -13,6 +13,7 @@ internal static class EmitterExtensions
         EndpointParameterSource.Header => "header",
         EndpointParameterSource.Query => "query string",
         EndpointParameterSource.RouteOrQuery => "route or query string",
+        EndpointParameterSource.FormBody => "form",
         EndpointParameterSource.BindAsync => endpointParameter.BindMethod == BindabilityMethod.BindAsync
             ? $"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.BindAsync(HttpContext)"
             : $"{endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.BindAsync(HttpContext, ParameterInfo)",

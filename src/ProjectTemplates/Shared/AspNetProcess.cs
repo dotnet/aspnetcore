@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
-using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Internal;
@@ -18,7 +13,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Playwright;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers;
@@ -66,7 +60,7 @@ public class AspNetProcess : IDisposable
         {
             if (usePublishedAppHost)
             {
-                // When publishingu used the app host to run the app. This makes it easy to consistently run for regular and single-file publish
+                // When publishing, use the app host to run the app. This makes it easy to consistently run for regular and single-file publish
                 process = Path.ChangeExtension(dllPath, OperatingSystem.IsWindows() ? ".exe" : null);
                 arguments = null;
             }

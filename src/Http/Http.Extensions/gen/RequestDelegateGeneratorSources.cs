@@ -20,7 +20,7 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string TryResolveBodyAsyncMethod => $$"""
+    public static string TryResolveBodyAsyncMethod => """
         private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
@@ -76,6 +76,53 @@ internal static class RequestDelegateGeneratorSources
             }
 
             return (allowEmpty, default);
+        }
+""";
+
+    public static string TryResolveFormAsyncMethod => """
+        private static async Task<(bool, object?)> TryResolveFormAsync(
+            HttpContext httpContext,
+            LogOrThrowExceptionHelper logOrThrowExceptionHelper,
+            string parameterTypeName,
+            string parameterName)
+        {
+            object? formValue = null;
+            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasFormContentType)
+                {
+                    logOrThrowExceptionHelper.UnexpectedNonFormContentType(httpContext.Request.ContentType);
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (false, null);
+                }
+
+                try
+                {
+                    formValue = await httpContext.Request.ReadFormAsync();
+                }
+                catch (BadHttpRequestException ex)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
+                    httpContext.Response.StatusCode = ex.StatusCode;
+                    return (false, null);
+                }
+                catch (IOException ex)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+                catch (InvalidDataException ex)
+                {
+                    logOrThrowExceptionHelper.InvalidFormRequestBody(parameterTypeName, parameterName, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+            }
+
+            return (true, formValue);
         }
 """;
 

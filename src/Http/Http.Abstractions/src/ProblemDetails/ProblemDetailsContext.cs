@@ -31,4 +31,9 @@ public sealed class ProblemDetailsContext
         get => _problemDetails ??= new ProblemDetails();
         init => _problemDetails = value;
     }
+
+    /// <summary>
+    /// The exception causing the problem or <c>null</c> if no exception information is available.
+    /// </summary>
+    public Exception? Exception { get; init; }
 }

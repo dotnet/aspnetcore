@@ -14,6 +14,7 @@ internal static class EndpointEmitter
     {
         using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
         using var parameterPreparationBuilder = new CodeWriter(stringWriter, baseIndent);
+        var readFormEmitted = false;
 
         foreach (var parameter in endpoint.Parameters)
         {
@@ -37,6 +38,9 @@ internal static class EndpointEmitter
                     break;
                 case EndpointParameterSource.JsonBody:
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
+                    break;
+                case EndpointParameterSource.FormBody:
+                    parameter.EmitFormParameterPreparation(parameterPreparationBuilder, ref readFormEmitted);
                     break;
                 case EndpointParameterSource.JsonBodyOrService:
                     parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);

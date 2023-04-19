@@ -61,7 +61,7 @@ Updating all submodules to newer versions can be done like this.
 git submodule update --remote
 ```
 
-Updating just one subumodule.
+Updating just one submodule.
 
 ```bash
 git submodule update --remote modules/EntityFrameworkCore/
@@ -101,3 +101,9 @@ $GitPromptSettings.EnableFileStatus = $false
 ```
 
 You can disable this permanently by adding to your `$PROFILE` file. (`notepad $PROFILE`)
+
+## Error messages
+
+An error similar to this suggests that the submodules have not been initialized or need to be updated.
+
+...\Microsoft.Build.Tasks.Git.targets(26,5): error : Could not find file '...\aspnetcore\src\submodules\...\.git'. The source code won't be available via Source Link. [...\aspnetcore\eng\tools\RepoTasks\RepoTasks.csproj::...]

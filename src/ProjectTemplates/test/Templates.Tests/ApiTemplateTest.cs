@@ -35,7 +35,7 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null);
     }
 
-    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
+    [ConditionalFact(Skip = "Unskip when Helix supports native AOT. https://github.com/dotnet/aspnetcore/pull/47247/")]
     public async Task ApiTemplateNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
@@ -47,7 +47,7 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
-    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
+    [ConditionalFact(Skip = "Unskip when Helix supports native AOT. https://github.com/dotnet/aspnetcore/pull/47247/")]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
@@ -55,11 +55,16 @@ public class ApiTemplateTest : LoggedTest
 
     private async Task ApiTemplateCore(string languageOverride, string[] args = null)
     {
+        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
+
         var project = await ProjectFactory.CreateProject(Output);
+        if (nativeAot)
+        {
+            project.SetCurrentRuntimeIdentifier();
+        }
 
         await project.RunDotNetNewAsync("api", args: args, language: languageOverride);
 
-        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
         var expectedLaunchProfileNames = nativeAot
             ? new[] { "http" }
             : new[] { "http", "IIS Express" };
@@ -92,7 +97,7 @@ public class ApiTemplateTest : LoggedTest
             await AssertEndpoints(aspNetProcess);
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true))
+        using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true, usePublishedAppHost: nativeAot))
         {
             Assert.False(
                 aspNetProcess.Process.HasExited,

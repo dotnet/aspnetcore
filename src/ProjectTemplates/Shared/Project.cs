@@ -1,23 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-using static Templates.Test.Helpers.ProcessLock;
 
 namespace Templates.Test.Helpers;
 
@@ -361,6 +354,51 @@ public class Project : IDisposable
 
         var projectFileContents = await File.ReadAllTextAsync(projectFile);
         Assert.Contains($"<{propertyName}>{expectedValue}</{propertyName}>", projectFileContents);
+    }
+
+    public void SetCurrentRuntimeIdentifier()
+    {
+        RuntimeIdentifier = GetRuntimeIdentifier();
+
+        static string GetRuntimeIdentifier()
+        {
+            // we need to use the "portable" RID (win-x64), not the actual RID (win10-x64)
+            return $"{GetOS()}-{GetArchitecture()}";
+        }
+
+        static string GetOS()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return "win";
+            }
+            if (OperatingSystem.IsLinux())
+            {
+                return "linux";
+            }
+            if (OperatingSystem.IsMacOS())
+            {
+                return "osx";
+            }
+            throw new NotSupportedException();
+        }
+
+        static string GetArchitecture()
+        {
+            switch (RuntimeInformation.ProcessArchitecture)
+            {
+                case Architecture.X86:
+                    return "x86";
+                case Architecture.X64:
+                    return "x64";
+                case Architecture.Arm:
+                    return "arm";
+                case Architecture.Arm64:
+                    return "arm64";
+                default:
+                    throw new NotSupportedException();
+            }
+        }
     }
 
     public string ReadFile(string path)
