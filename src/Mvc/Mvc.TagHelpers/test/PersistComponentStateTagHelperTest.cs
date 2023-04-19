@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
@@ -191,6 +192,7 @@ public class PersistComponentStateTagHelperTest
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped<IComponentPrerenderer, EndpointHtmlRenderer>()
+                .AddScoped<RoutingStateProvider, EndpointsRoutingStateProvider>()
                 .BuildServiceProvider(),
         };
 
