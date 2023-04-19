@@ -69,7 +69,7 @@ public sealed class EditContext
     /// <summary>
     /// Gets whether field identifiers should be generated for &lt;input&gt; elements.
     /// </summary>
-    public bool ShouldUseFieldIdentifiers => !OperatingSystem.IsBrowser();
+    public bool ShouldUseFieldIdentifiers { get; set; } = !OperatingSystem.IsBrowser();
 
     /// <summary>
     /// Signals that the value for the specified field has changed.
