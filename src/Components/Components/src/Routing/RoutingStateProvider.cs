@@ -11,5 +11,5 @@ public abstract class RoutingStateProvider
     /// <summary>
     /// Gets or sets RouteData
     /// </summary>
-    public RouteData? RouteData { get; protected set; }
+    public RouteData? RouteData { get; set; }
 }
