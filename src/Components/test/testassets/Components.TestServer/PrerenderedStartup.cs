@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace TestServer;
@@ -23,6 +24,7 @@ public class PrerenderedStartup
         services.AddServerSideBlazor();
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         services.AddScoped<LazyAssemblyLoader>();
+        services.AddScoped<RoutingStateProvider>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
