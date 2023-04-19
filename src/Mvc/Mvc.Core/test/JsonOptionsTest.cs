@@ -11,10 +11,10 @@ public class JsonOptionsTest
 {
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_SetsTypeInfoResolverNull_WhenEnsureJsonTrimmabilityTrue()
+    public void DefaultSerializerOptions_SetsTypeInfoResolverNull_WhenJsonIsReflectionEnabledByDefaultFalse()
     {
         var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", true.ToString());
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", false.ToString());
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
@@ -28,10 +28,10 @@ public class JsonOptionsTest
 
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_SetsTypeInfoResolverToDefault_WhenEnsureJsonTrimmabilityFalse()
+    public void DefaultSerializerOptions_SetsTypeInfoResolverToDefault_WhenJsonIsReflectionEnabledByDefaultTrue()
     {
         var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.EnsureJsonTrimmability", false.ToString());
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true.ToString());
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
