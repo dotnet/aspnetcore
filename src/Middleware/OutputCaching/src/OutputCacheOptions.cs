@@ -43,7 +43,7 @@ public class OutputCacheOptions
     /// <summary>
     /// For testing purposes only.
     /// </summary>
-    internal TimeProvider Time { get; set; } = TimeProvider.System;
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     /// <summary>
     /// Defines a <see cref="IOutputCachePolicy"/> which can be referenced by name.
