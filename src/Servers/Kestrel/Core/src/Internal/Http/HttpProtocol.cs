@@ -366,6 +366,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         IsExtendedConnectRequest = false;
         IsExtendedConnectAccepted = false;
         IsWebTransportRequest = false;
+        ConnectProtocol = null;
 
         var remoteEndPoint = RemoteEndPoint;
         RemoteIpAddress = remoteEndPoint?.Address;
