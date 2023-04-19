@@ -166,7 +166,8 @@ internal class ExceptionHandlerMiddlewareImpl
                 {
                     HttpContext = context,
                     AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                    ProblemDetails = { Status = DefaultStatusCode }
+                    ProblemDetails = { Status = DefaultStatusCode },
+                    Exception = edi.SourceException,
                 });
             }
 
