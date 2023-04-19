@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -416,6 +417,7 @@ public class RazorComponentResultExecutorTest
             .AddSingleton<ServerComponentSerializer>()
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
+            .AddSingleton<RoutingStateProvider, EndpointsRoutingStateProvider>()
             .AddLogging();
         var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
         result.Request.Scheme = "https";
