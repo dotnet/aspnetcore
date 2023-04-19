@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -675,3 +676,6 @@ public class AccessesServicesMetadataBinder : IEndpointMetadataProvider
 }
 
 public record MetadataService;
+public record ParameterListFromQuery(HttpContext HttpContext, [FromQuery] int Value);
+public record ParameterListFromRoute(HttpContext HttpContext, int Value);
+public record ParameterListFromHeader(HttpContext HttpContext, [FromHeader(Name = "X-Custom-Header")] int Value);
