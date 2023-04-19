@@ -1,18 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -130,6 +123,41 @@ public class ResponseBodyTests
             Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
             Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
             Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResponseBody_WriteNoHeaders_SetsChunked_LargeBody(bool enableKernelBuffering)
+    {
+        const int WriteSize = 1024 * 1024;
+        const int NumWrites = 32;
+
+        string address;
+        using (Utilities.CreateHttpServer(
+            baseAddress: out address,
+            configureOptions: options => { options.EnableKernelResponseBuffering = enableKernelBuffering; },
+            app: async httpContext =>
+            {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+                for (int i = 0; i < NumWrites - 1; i++)
+                {
+                    httpContext.Response.Body.Write(new byte[WriteSize], 0, WriteSize);
+                }
+                await httpContext.Response.Body.WriteAsync(new byte[WriteSize], 0, WriteSize);
+            }))
+        {
+            var response = await SendRequestAsync(address);
+            Assert.Equal(200, (int)response.StatusCode);
+            Assert.Equal(new Version(1, 1), response.Version);
+            IEnumerable<string> ignored;
+            Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+            Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            Assert.Equal(WriteSize * NumWrites, bytes.Length);
+            Assert.True(bytes.All(b => b == 0));
         }
     }
 
