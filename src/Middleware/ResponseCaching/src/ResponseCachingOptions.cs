@@ -29,5 +29,5 @@ public class ResponseCachingOptions
     /// <summary>
     /// For testing purposes only.
     /// </summary>
-    internal TimeProvider Time { get; set; } = TimeProvider.System;
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 }
