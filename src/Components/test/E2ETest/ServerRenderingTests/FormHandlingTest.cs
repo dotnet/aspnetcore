@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.E2ETesting;
 using TestServer;
 using Xunit.Abstractions;
 using OpenQA.Selenium;
+using System.Net.Http;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -22,13 +24,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
 
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
-
-    // Can dispatch to the default form
-    // Can dispatch to a named form
-    // Rendering ambiguous forms doesn't cause an error.
-    // Dispatching to ambiguous forms raises an error.
-    // Can dispatch to a nested form
-    // Can dispatch to a nested named form inside the default binding context.
 
     [Fact]
     public void CanDispatchToTheDefaultForm()
@@ -71,11 +66,136 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     {
         var dispatchToForm = new DispatchToForm(this)
         {
-            Url = "/forms/form-defined-inside-component",
+            Url = "forms/form-defined-inside-component",
             FormCssSelector = "form",
-            ExpectedActionValue = "",
+            ExpectedActionValue = null,
         };
         DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CanRenderAmbiguousForms()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/ambiguous-forms",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            DispatchEvent = false
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void DispatchingToAmbiguousFormFails()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/ambiguous-forms",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            DispatchEvent = true,
+            SubmitButtonId = "send-second",
+            // This is an error ID on the page chrome shows from a 500.
+            SubmitPassId = "main-frame-error"
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void FormWithoutBindingContextDoesNotBind()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/no-form-context-no-op",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            SubmitPassId = "main-frame-error"
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CanDispatchToFormRenderedAsynchronously()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/async-rendered-form",
+            FormCssSelector = "form",
+            ExpectedActionValue = null
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void FormThatDisappearsBeforeQuiesceDoesNotBind()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/disappears-before-dispatching",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            SubmitButtonId = "test-send",
+            SubmitPassId = "main-frame-error"
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void ChangingComponentsToDispatchBeforeQuiesceDoesNotBind()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/switching-components-does-not-bind",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            SubmitPassId = "main-frame-error"
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public async Task CanPostFormsWithStreamingRenderingAsync()
+    {
+        GoTo("forms/streaming-rendering/CanPostFormsWithStreamingRendering");
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Null(actionValue);
+
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.Id("progress"));
+
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.PostAsync("subdir/forms/streaming-rendering/complete/CanPostFormsWithStreamingRendering", content: null);
+        response.EnsureSuccessStatusCode();
+
+        Browser.Exists(By.Id("pass"));
+    }
+
+    [Fact]
+    public async Task CanModifyTheHttpResponseDuringEventHandling()
+    {
+        GoTo("forms/modify-http-context/ModifyHttpContext");
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Null(actionValue);
+
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.Id("progress"));
+
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.PostAsync("subdir/forms/streaming-rendering/complete/ModifyHttpContext", content: null);
+        response.EnsureSuccessStatusCode();
+
+        Browser.Exists(By.Id("pass"));
+        var cookie = Browser.Manage().Cookies.GetCookieNamed("operation");
+        Assert.Equal("ModifyHttpContext", cookie.Value);
     }
 
     private void DispatchToFormCore(DispatchToForm dispatch)
@@ -89,7 +209,12 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         Assert.Equal(dispatch.ExpectedTarget, formTarget);
         Assert.Equal(dispatch.ExpectedActionValue, actionValue);
 
-        Browser.Exists(By.Id("send")).Click();
+        if (!dispatch.DispatchEvent)
+        {
+            return;
+        }
+
+        Browser.Click(By.Id(dispatch.SubmitButtonId));
 
         Browser.Exists(By.Id(dispatch.SubmitPassId));
     }
@@ -109,6 +234,9 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         public string ExpectedActionValue;
         public string ExpectedTarget => $"{Base}/{ExpectedActionValue ?? Url}";
 
+        public bool DispatchEvent { get; internal set; } = true;
+
+        public string SubmitButtonId { get; internal set; } = "send";
     }
 
     private void GoTo(string relativePath)
