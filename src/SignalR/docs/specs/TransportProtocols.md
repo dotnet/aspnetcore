@@ -20,11 +20,19 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server.
 
+*negotiateVersion:*
+
 In the POST request the client sends a query string parameter with the key "negotiateVersion" and the value as the negotiate protocol version it would like to use. If the query string is omitted, the server treats the version as zero. The server will include a "negotiateVersion" property in the json response that says which version it will be using. The version is chosen as described below:
 * If the servers minimum supported protocol version is greater than the version requested by the client it will send an error response and close the connection
 * If the server supports the request version it will respond with the requested version
 * If the requested version is greater than the servers largest supported version the server will respond with its largest supported version
 The client may close the connection if the "negotiateVersion" in the response is not acceptable.
+
+*useAck:*
+
+In the POST request the client may include a query string parameter with the key "useAck" and the value of "true". If this is included the server will decide if it supports/allows the [ack protocol](#ack-protocol) described below, and return "useAck": "true" as a json property in the negotiate response if it will use the ack protocol. If true, the client must use the ack protocol when sending/receiving otherwise the connection will be terminated. Similarly, the server must use the ack protocol when sending/receiving. If false, the client must not use the ack protocol and will be terminated if it does. If the "useAck" property is missing from the negotiate response this also implies false, so the ack protocol should not be used.
+
+-----------
 
 The content type of the response is `application/json` and is a JSON payload containing properties to assist the client in establishing a persistent connection. Extra JSON properties that the client does not know about should be ignored. This allows for future additions without breaking older clients.
 
@@ -197,3 +205,78 @@ When data is available, the server responds with a body in one of the two format
 If the `id` parameter is missing, a `400 Bad Request` response is returned. If there is no connection with the ID specified in `id`, a `404 Not Found` response is returned.
 
 When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `id` in the query string) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.
+
+## Ack Protocol
+
+The ack protocol primarily consists of writing and reading framing around the data being sent and received.
+All sends need to start with a 24 byte frame. The frame is 2 12 byte base64 encoded values. The first base64 value when decoded is the length of the payload being sent (minus the framing) as an int64 value. The second base64 value when decoded is the ack ID as an int64 of how many bytes have been received from the other side so far.
+
+The second part of the protocol is for when the transport ungracefully reconnects and uses the Ack IDs to get any data that might have been missed during the disconnect window. This will be described after showing the framing.
+
+### Framing
+
+Consider the following example:
+
+0x41 0x67 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d 0x48 0x51 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d 0x48 0x69
+
+This is a 26 byte message, the first 24 bytes are the framing, which we'll split into two 12 byte sections and the 2 remaining bytes
+0x41 0x67 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d - Base64 represention as bytes
+AgAAAAAAAAA= - Base64 representation in ASCII
+2 0 0 0 0 0 0 0 0 0 0 0 - Base64 decoded, int64 value of 2, representing a 2 length payload after the framing
+
+0x48 0x51 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d - Base64 represention as bytes
+HQAAAAAAAAA= - Base64 representation in ASCII
+29 0 0 0 0 0 0 0 0 0 0 0 - Base64 decoded, int64 value of 29, representing an ack id of 29 bytes received from the endpoint so far
+
+0x48 0x69
+Hi
+
+From now on we'll use `[ <Payload Length>, <Ack ID> ]` annotation to represent the framing, with an implicit payload attached to it.
+
+To explain the Ack IDs we'll use the following example which is sending between a client and server, C and S respectively:
+
+```
+C->S: [ 5, 0 ]
+S->C: [ 10, 29 ]
+S->C: [ 13, 29 ]
+C->S: [ 22, 71 ]
+S->C: [ 1, 75 ]
+```
+
+The first send will send an Ack ID of 0 because the client hasn't received any data yet, so there is nothing to ack. When the server sends after it's received a message from the client it will send an Ack ID of the payload length (5) + the frame length (24), so 29. In this example we also send another message which won't have an updated Ack ID, because nothing new was received, so we send the previous value. The client in its next send adds all the received messages together to get the Ack ID to send to the server, 24 + 10 from the first message received, 24 + 13 from the second message received, for a total of 71. And then finally, the server adds its previously sent Ack ID of 29 with the message(s) received since its last send (24 + 22), for a total of 75 for the Ack ID it sends to the client.
+
+### Reconnect
+
+The second part of the protocol is what makes use of the Ack IDs.
+
+If a transport ungracefully disconnects the client can attempt to reconnect using the same `id` it was using before. The server is free to reject any reconnect attempts, but generally should allow a few seconds grace period.
+
+On a successful reconnect the client must send an Ack ID with a 0 length payload to the server indicating the last message it received before disconnecting. The client then waits for a message from the server that will contain the last Ack ID the server received before the disconnection, as well as a 0 length payload. This message **does not** increment the Ack ID tracking. The Ack ID received from the server will be used to send any missed messages from the client to the server. The normal send/receive loops can now start and if there is any unacked data on the client side the send loop should immediately send the missed data (framing and all).
+
+On a successful reconnect the server must wait for the client to send the last Ack ID it received before disconnecting. This message **does not** increment the Ack ID tracking. The Ack ID received from the client will be used to send any missed messages from the server to the client. The server will then send the last Ack ID it received before the disconnect occurred as well as a 0 length payload. The normal send/receive loops can now start and if there is any unacked data on the server side the send loop should immediately send the missed data (framing and all).
+
+The following example will send a few messages between client and server before having an ungraceful disconnect to show the reconnect flow:
+
+```
+C->S: [ 10, 0 ]
+S->C: [ 1, 34 ]
+C->S: [ 11, 25 ]
+// Ungraceful disconnect
+C->S: [ 0, 25 ]
+S->C: [ 0, 34 ]
+// normal send/receive loops for both sides are now started
+C->S: [ 11, 25 ] // resend 11 byte payload that server didn't get before disconnect occurred
+```
+
+Another example that is the same as the last example except that the server did receive the clients last send before the disconnect:
+
+```
+C->S: [ 10, 0 ]
+S->C: [ 1, 34 ]
+C->S: [ 11, 25 ]
+// Ungraceful disconnect
+C->S: [ 0, 25 ]
+S->C: [ 0, 69 ]
+// normal send/receive loops for both sides are now started
+// 11 bytes from C->S not resent because server did get it before the disconnect, as can be seen by the new Ack ID
+```

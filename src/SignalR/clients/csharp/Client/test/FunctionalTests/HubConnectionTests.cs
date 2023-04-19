@@ -2539,10 +2539,8 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    //[Theory]
-    //[MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
     [Repeat(500)]
-    public async Task CanReconnectAndSendMessageWhileDisconnected(/*string protocolName, HttpTransportType transportType, string path*/)
+    public async Task CanReconnectAndSendMessageWhileDisconnected()
     {
         var protocol = HubProtocols["json"];
         await using (var server = await StartServer<Startup>())
@@ -2601,10 +2599,8 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    //[Theory]
-    //[MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
     [Repeat(500)]
-    public async Task CanReconnectAndSendMessageOnceConnected(/*string protocolName, HttpTransportType transportType, string path*/)
+    public async Task CanReconnectAndSendMessageOnceConnected()
     {
         var protocol = HubProtocols["json"];
         await using (var server = await StartServer<Startup>())
@@ -2673,10 +2669,8 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    //[Theory]
-    //[MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
     [Repeat(500)]
-    public async Task ServerAbortsConnectionNoReconnectAttempted(/*string protocolName, HttpTransportType transportType, string path*/)
+    public async Task ServerAbortsConnectionNoReconnectAttempted()
     {
         var protocol = HubProtocols["json"];
         await using (var server = await StartServer<Startup>())
