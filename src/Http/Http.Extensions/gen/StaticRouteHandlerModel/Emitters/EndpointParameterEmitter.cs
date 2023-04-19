@@ -53,14 +53,14 @@ internal static class EndpointParameterEmitter
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
-    internal static void EmitFormParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    internal static void EmitFormParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, ref bool readFormEmitted)
     {
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
         // Invoke TryResolveFormAsync once per handler so that we can
         // avoid the blocking code-path that occurs when `httpContext.Request.Form`
         // is invoked.
-        if (!codeWriter.ReadFormEmitted)
+        if (!readFormEmitted)
         {
             var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
             var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
@@ -72,7 +72,7 @@ internal static class EndpointParameterEmitter
             codeWriter.StartBlock();
             codeWriter.WriteLine("return;");
             codeWriter.EndBlock();
-            codeWriter.ReadFormEmitted = true;
+            readFormEmitted = true;
         }
 
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {endpointParameter.AssigningCode};");
