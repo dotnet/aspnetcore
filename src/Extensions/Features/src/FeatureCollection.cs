@@ -117,6 +117,15 @@ public class FeatureCollection : IFeatureCollection
     /// <inheritdoc />
     public TFeature? Get<TFeature>()
     {
+        if (typeof(TFeature).IsValueType)
+        {
+            var feature = this[typeof(TFeature)];
+            if (feature is null && Nullable.GetUnderlyingType(typeof(TFeature)) == null)
+            {
+                throw new InvalidOperationException();
+            }
+            return (TFeature?)feature;
+        }
         return (TFeature?)this[typeof(TFeature)];
     }
 
