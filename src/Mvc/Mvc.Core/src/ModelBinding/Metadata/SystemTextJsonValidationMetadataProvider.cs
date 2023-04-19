@@ -55,9 +55,9 @@ public sealed class SystemTextJsonValidationMetadataProvider : IDisplayMetadataP
 
         var propertyName = ReadPropertyNameFrom(context.Attributes);
 
-        if (!string.IsNullOrEmpty(propertyName))
+        if (string.IsNullOrEmpty(propertyName) && context.Key.Name is { } contextKeyName)
         {
-            propertyName = _jsonNamingPolicy.ConvertName(context.Key.Name!);
+            propertyName = _jsonNamingPolicy.ConvertName(contextKeyName);
         }
 
         context.ValidationMetadata.ValidationModelName = propertyName;
