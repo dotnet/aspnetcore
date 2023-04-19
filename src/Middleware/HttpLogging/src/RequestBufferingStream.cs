@@ -27,6 +27,12 @@ internal sealed class RequestBufferingStream : BufferingStream
     {
         var res = await _innerStream.ReadAsync(destination, cancellationToken);
 
+        // Zero-byte reads can occur when using PipeReader, we don't want to accidentally complete the RequestBody logging in this case
+        if (destination.IsEmpty)
+        {
+            return res;
+        }
+
         WriteToBuffer(destination.Slice(0, res).Span);
 
         return res;
@@ -35,6 +41,12 @@ internal sealed class RequestBufferingStream : BufferingStream
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         var res = await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+
+        // Zero-byte reads can occur when using PipeReader, we don't want to accidentally complete the RequestBody logging in this case
+        if (count == 0)
+        {
+            return res;
+        }
 
         WriteToBuffer(buffer.AsSpan(offset, res));
 
