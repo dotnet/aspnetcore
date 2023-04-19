@@ -55,8 +55,16 @@ internal class RazorComponentEndpointFactory
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
 
-        builder.RequestDelegate = RazorComponentEndpoint.CreateRouteDelegate(pageDefinition.Type);
+        builder.RequestDelegate = CreateRouteDelegate(pageDefinition.Type);
 
         endpoints.Add(builder.Build());
+    }
+
+    private static RequestDelegate CreateRouteDelegate(Type componentType)
+    {
+        return httpContext =>
+        {
+            return new RazorComponentEndpointInvoker(httpContext, componentType).RenderComponent();
+        };
     }
 }

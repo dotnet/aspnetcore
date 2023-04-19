@@ -3,13 +3,9 @@
 
 #nullable enable
 
-using System.IO.Pipelines;
 using System.Net;
-using System.Net.Security;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -19,15 +15,18 @@ internal sealed class TransportManager
 
     private readonly List<IConnectionListenerFactory> _transportFactories;
     private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
+    private readonly IHttpsConfigurationService _httpsConfigurationService;
     private readonly ServiceContext _serviceContext;
 
     public TransportManager(
         List<IConnectionListenerFactory> transportFactories,
         List<IMultiplexedConnectionListenerFactory> multiplexedTransportFactories,
+        IHttpsConfigurationService httpsConfigurationService,
         ServiceContext serviceContext)
     {
         _transportFactories = transportFactories;
         _multiplexedTransportFactories = multiplexedTransportFactories;
+        _httpsConfigurationService = httpsConfigurationService;
         _serviceContext = serviceContext;
     }
 
@@ -72,36 +71,8 @@ internal sealed class TransportManager
 
         var features = new FeatureCollection();
 
-        // HttpsOptions or HttpsCallbackOptions should always be set in production, but it's not set for InMemory tests.
-        // The QUIC transport will check if TlsConnectionCallbackOptions is missing.
-        if (listenOptions.HttpsOptions != null)
-        {
-            var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions);
-            features.Set(new TlsConnectionCallbackOptions
-            {
-                ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols ?? new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
-                OnConnection = (context, cancellationToken) => ValueTask.FromResult(sslServerAuthenticationOptions),
-                OnConnectionState = null,
-            });
-        }
-        else if (listenOptions.HttpsCallbackOptions != null)
-        {
-            features.Set(new TlsConnectionCallbackOptions
-            {
-                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
-                OnConnection = (context, cancellationToken) =>
-                {
-                    return listenOptions.HttpsCallbackOptions.OnConnection(new TlsHandshakeCallbackContext
-                    {
-                        ClientHelloInfo = context.ClientHelloInfo,
-                        CancellationToken = cancellationToken,
-                        State = context.State,
-                        Connection = new ConnectionContextAdapter(context.Connection),
-                    });
-                },
-                OnConnectionState = listenOptions.HttpsCallbackOptions.OnConnectionState,
-            });
-        }
+        // Will throw an appropriate error if it's not enabled
+        _httpsConfigurationService.PopulateMultiplexedTransportFeatures(features, listenOptions);
 
         foreach (var multiplexedTransportFactory in _multiplexedTransportFactories)
         {
@@ -122,49 +93,6 @@ internal sealed class TransportManager
         // By default, the last registered factory binds to the endpoint.
         // A factory can implement IConnectionListenerFactorySelector to decide whether it can bind to the endpoint.
         return selector?.CanBind(endPoint) ?? true;
-    }
-
-    /// <summary>
-    /// TlsHandshakeCallbackContext.Connection is ConnectionContext but QUIC connection only implements BaseConnectionContext.
-    /// </summary>
-    private sealed class ConnectionContextAdapter : ConnectionContext
-    {
-        private readonly BaseConnectionContext _inner;
-
-        public ConnectionContextAdapter(BaseConnectionContext inner) => _inner = inner;
-
-        public override IDuplexPipe Transport
-        {
-            get => throw new NotSupportedException("Not supported by HTTP/3 connections.");
-            set => throw new NotSupportedException("Not supported by HTTP/3 connections.");
-        }
-        public override string ConnectionId
-        {
-            get => _inner.ConnectionId;
-            set => _inner.ConnectionId = value;
-        }
-        public override IFeatureCollection Features => _inner.Features;
-        public override IDictionary<object, object?> Items
-        {
-            get => _inner.Items;
-            set => _inner.Items = value;
-        }
-        public override EndPoint? LocalEndPoint
-        {
-            get => _inner.LocalEndPoint;
-            set => _inner.LocalEndPoint = value;
-        }
-        public override EndPoint? RemoteEndPoint
-        {
-            get => _inner.RemoteEndPoint;
-            set => _inner.RemoteEndPoint = value;
-        }
-        public override CancellationToken ConnectionClosed
-        {
-            get => _inner.ConnectionClosed;
-            set => _inner.ConnectionClosed = value;
-        }
-        public override ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
 
     private void StartAcceptLoop<T>(IConnectionListener<T> connectionListener, Func<T, Task> connectionDelegate, EndpointConfig? endpointConfig) where T : BaseConnectionContext

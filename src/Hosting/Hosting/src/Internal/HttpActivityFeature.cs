@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Default implementation for <see cref="IHttpActivityFeature"/>.
 /// </summary>
-internal sealed class ActivityFeature : IHttpActivityFeature
+internal sealed class HttpActivityFeature : IHttpActivityFeature
 {
-    internal ActivityFeature(Activity activity)
+    internal HttpActivityFeature(Activity activity)
     {
         Activity = activity;
     }

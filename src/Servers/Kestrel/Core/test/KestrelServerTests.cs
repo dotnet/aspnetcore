@@ -28,9 +28,15 @@ public class KestrelServerTests
 {
     private KestrelServerOptions CreateServerOptions()
     {
+        // It's not actually going to be used - we just need to satisfy the check in ApplyDefaultCertificate
+        var mockHttpsConfig = new Mock<IHttpsConfigurationService>();
+        mockHttpsConfig.Setup(m => m.IsInitialized).Returns(true);
+
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
+            .AddSingleton(Mock.Of<IHostEnvironment>())
+            .AddSingleton(mockHttpsConfig.Object)
             .AddLogging()
             .BuildServiceProvider();
         return serverOptions;
@@ -287,10 +293,20 @@ public class KestrelServerTests
         ILoggerFactory loggerFactory = null,
         KestrelMetrics metrics = null)
     {
+        var httpsConfigurationService = new HttpsConfigurationService();
+        if (options?.ApplicationServices is IServiceProvider serviceProvider)
+        {
+            httpsConfigurationService.Initialize(
+                serviceProvider.GetRequiredService<IHostEnvironment>(),
+                serviceProvider.GetRequiredService<ILogger<KestrelServer>>(),
+                serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>());
+        }
+	
         return new KestrelServerImpl(
             Options.Create<KestrelServerOptions>(options),
             transportFactories,
             multiplexedFactories,
+            httpsConfigurationService,
             loggerFactory ?? new LoggerFactory(new[] { new KestrelTestLoggerProvider() }),
             metrics ?? new KestrelMetrics(new TestMeterFactory()));
     }
@@ -714,7 +730,7 @@ public class KestrelServerTests
             testContext.Log,
             Heartbeat.Interval);
 
-        using (var server = new KestrelServerImpl(new[] { new MockTransportFactory() }, Array.Empty<IMultiplexedConnectionListenerFactory>(), testContext))
+        using (var server = new KestrelServerImpl(new[] { new MockTransportFactory() }, Array.Empty<IMultiplexedConnectionListenerFactory>(), new HttpsConfigurationService(), testContext))
         {
             Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 
@@ -768,6 +784,7 @@ public class KestrelServerTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
 
         var options = new KestrelServerOptions
         {
@@ -905,6 +922,7 @@ public class KestrelServerTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
 
         var options = new KestrelServerOptions
         {

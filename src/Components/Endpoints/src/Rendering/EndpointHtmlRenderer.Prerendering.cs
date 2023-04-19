@@ -54,38 +54,71 @@ internal sealed partial class EndpointHtmlRenderer
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(prerenderMode), nameof(prerenderMode)),
             };
 
-            if (waitForQuiescence)
-            {
-                // Full quiescence, i.e., all tasks completed regardless of streaming SSR
-                await result.QuiescenceTask;
-            }
-            else if (_nonStreamingPendingTasks.Count > 0)
-            {
-                // Just wait for quiescence of the non-streaming subtrees
-                await Task.WhenAll(_nonStreamingPendingTasks);
-            }
+            await WaitForResultReady(waitForQuiescence, result);
 
             return result;
         }
         catch (NavigationException navigationException)
         {
-            if (httpContext.Response.HasStarted)
-            {
-                // If we're not doing streaming SSR, this has no choice but to be a fatal error because there's no way to
-                // communicate the redirection to the browser.
-                // If we are doing streaming SSR, this should not generally happen because if you navigate during the initial
-                // synchronous render, the response would not yet have started, and if you do so during some later async
-                // phase, we would already have exited this method since streaming SSR means not awaiting quiescence.
-                throw new InvalidOperationException(
-                    "A navigation command was attempted during prerendering after the server already started sending the response. " +
-                    "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                    "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
-            }
-            else
-            {
-                httpContext.Response.Redirect(navigationException.Location);
-                return PrerenderedComponentHtmlContent.Empty;
-            }
+            return await HandleNavigationException(httpContext, navigationException);
+        }
+    }
+
+    internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
+        HttpContext httpContext,
+        Type componentType,
+        ParameterView parameters,
+        bool waitForQuiescence)
+    {
+        await InitializeStandardComponentServicesAsync(httpContext);
+
+        try
+        {
+            var component = BeginRenderingComponent(componentType, parameters);
+            var result = new PrerenderedComponentHtmlContent(Dispatcher, component, null, null);
+
+            await WaitForResultReady(waitForQuiescence, result);
+
+            return result;
+        }
+        catch (NavigationException navigationException)
+        {
+            return await HandleNavigationException(httpContext, navigationException);
+        }
+    }
+
+    private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)
+    {
+        if (waitForQuiescence)
+        {
+            // Full quiescence, i.e., all tasks completed regardless of streaming SSR
+            await result.QuiescenceTask;
+        }
+        else if (_nonStreamingPendingTasks.Count > 0)
+        {
+            // Just wait for quiescence of the non-streaming subtrees
+            await Task.WhenAll(_nonStreamingPendingTasks);
+        }
+    }
+
+    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
+    {
+        if (httpContext.Response.HasStarted)
+        {
+            // If we're not doing streaming SSR, this has no choice but to be a fatal error because there's no way to
+            // communicate the redirection to the browser.
+            // If we are doing streaming SSR, this should not generally happen because if you navigate during the initial
+            // synchronous render, the response would not yet have started, and if you do so during some later async
+            // phase, we would already have exited this method since streaming SSR means not awaiting quiescence.
+            throw new InvalidOperationException(
+                "A navigation command was attempted during prerendering after the server already started sending the response. " +
+                "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
+        }
+        else
+        {
+            httpContext.Response.Redirect(navigationException.Location);
+            return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }
 

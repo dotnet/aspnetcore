@@ -89,6 +89,86 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task Http1Connection_IHttpConnectionTagsFeatureIgnoreFeatureSetOnTransport()
+    {
+        var sync = new SyncPoint();
+        ConnectionContext currentConnectionContext = null;
+
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next =>
+        {
+            return async connectionContext =>
+            {
+                currentConnectionContext = connectionContext;
+
+                connectionContext.Features.Get<IConnectionMetricsTagsFeature>().Tags.Add(new KeyValuePair<string, object>("custom", "value!"));
+
+                // Wait for the test to verify the connection has started.
+                await sync.WaitToContinue();
+
+                await next(connectionContext);
+            };
+        });
+
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var queuedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        await using var server = new TestServer(EchoApp, serviceContext, listenOptions);
+
+        // This feature will be overidden by Kestrel. Kestrel is the owner of the feature and is resposible for setting it.
+        var overridenFeature = new TestConnectionMetricsTagsFeature();
+        overridenFeature.Tags.Add(new KeyValuePair<string, object>("test", "Value!"));
+
+        using (var connection = server.CreateConnection(featuresAction: features =>
+        {
+            features.Set<IConnectionMetricsTagsFeature>(overridenFeature);
+        }))
+        {
+            await connection.Send(sendString);
+
+            // Wait for connection to start on the server.
+            await sync.WaitForSyncPoint();
+
+            Assert.NotEqual(overridenFeature, currentConnectionContext.Features.Get<IConnectionMetricsTagsFeature>());
+
+            Assert.Empty(connectionDuration.GetMeasurements());
+            Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"));
+
+            // Signal that connection can continue.
+            sync.Continue();
+
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "Hello World?");
+
+            await connection.WaitForConnectionClose();
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurements(), m =>
+        {
+            AssertDuration(m, "127.0.0.1:0");
+            Assert.Equal("value!", (string)m.Tags.ToArray().Single(t => t.Key == "custom").Value);
+            Assert.Empty(m.Tags.ToArray().Where(t => t.Key == "test"));
+        });
+        Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
+        Assert.Collection(queuedConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
+    }
+
+    private sealed class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
+    }
+
+    [Fact]
     public async Task Http1Connection_Error()
     {
         var sync = new SyncPoint();

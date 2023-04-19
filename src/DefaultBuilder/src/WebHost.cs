@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -223,23 +224,31 @@ public static class WebHost
             }
         });
 
-        ConfigureWebDefaultsCore(builder, services =>
-        {
-            services.AddRouting();
-        });
+        ConfigureWebDefaultsWorker(
+            builder.UseKestrel(ConfigureKestrel),
+            services =>
+            {
+                services.AddRouting();
+            });
 
         builder
             .UseIIS()
             .UseIISIntegration();
     }
 
-    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting = null)
+    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder)
     {
-        builder.UseKestrel((builderContext, options) =>
-        {
-            options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
-        })
-        .ConfigureServices((hostingContext, services) =>
+        ConfigureWebDefaultsWorker(builder.UseKestrelCore().ConfigureKestrel(ConfigureKestrel), configureRouting: null);
+    }
+
+    private static void ConfigureKestrel(WebHostBuilderContext builderContext, KestrelServerOptions options)
+    {
+        options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
+    }
+
+    private static void ConfigureWebDefaultsWorker(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting)
+    {
+        builder.ConfigureServices((hostingContext, services) =>
         {
             // Fallback
             services.PostConfigure<HostFilteringOptions>(options =>

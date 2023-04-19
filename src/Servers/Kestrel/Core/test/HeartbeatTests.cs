@@ -70,24 +70,28 @@ public class HeartbeatTests : LoggedTest
             Logger.LogInformation($"Starting heartbeat dispose.");
         }
 
-        // Interval timing isn't exact. For example, interval of 300ms results in split of 312.67ms.
-        // Under load the server might take a long time to resume. Provide tolerance for late resume.
         Assert.Collection(splits,
             ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
             ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
             ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds),
             ts => AssertApproxEqual(intervalMs, ts.TotalMilliseconds));
 
-        static void AssertApproxEqual(double expectedValue, double value)
+        static void AssertApproxEqual(double intervalMs, double actualMs)
         {
-            if (value < expectedValue)
+            // Interval timing isn't exact on a slow computer. For example, interval of 300ms results in split between 300ms and 450ms.
+            // Under load the server might take a long time to resume. Provide tolerance for late resume.
+
+            // Round value to nearest 50. Avoids error when wait time is slightly less than expected value.
+            var roundedActualMs = Math.Round(actualMs / 50.0) * 50.0;
+
+            if (roundedActualMs < intervalMs)
             {
-                Assert.Fail($"{value} is smaller than wait time of {expectedValue}.");
+                Assert.Fail($"{roundedActualMs} is smaller than wait time of {intervalMs}.");
             }
             // Be tolerant of a much larger value. Heartbeat might not immediately resume if the server is under load.
-            if (value > expectedValue * 4)
+            if (roundedActualMs > intervalMs * 4)
             {
-                Assert.Fail($"{value} is much larger than wait time of {expectedValue}.");
+                Assert.Fail($"{roundedActualMs} is much larger than wait time of {intervalMs}.");
             }
         }
     }

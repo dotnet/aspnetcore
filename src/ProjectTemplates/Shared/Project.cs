@@ -24,6 +24,7 @@ namespace Templates.Test.Helpers;
 [DebuggerDisplay("{ToString(),nq}")]
 public class Project : IDisposable
 {
+    private const string _urlsNoHttps = "http://127.0.0.1:0";
     private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
     public static string ArtifactsLogDir
@@ -181,11 +182,11 @@ public class Project : IDisposable
         Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("build", this, result));
     }
 
-    internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
+    internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null, bool noHttps = false)
     {
         var environment = new Dictionary<string, string>
         {
-            ["ASPNETCORE_URLS"] = _urls,
+            ["ASPNETCORE_URLS"] = noHttps ? _urlsNoHttps : _urls,
             ["ASPNETCORE_ENVIRONMENT"] = "Development",
             ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
             ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
@@ -197,11 +198,11 @@ public class Project : IDisposable
         return new AspNetProcess(DevCert, Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
     }
 
-    internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true, bool usePublishedAppHost = false)
+    internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true, bool usePublishedAppHost = false, bool noHttps = false)
     {
         var environment = new Dictionary<string, string>
         {
-            ["ASPNETCORE_URLS"] = _urls,
+            ["ASPNETCORE_URLS"] = noHttps ? _urlsNoHttps : _urls,
             ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
             ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
             ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",

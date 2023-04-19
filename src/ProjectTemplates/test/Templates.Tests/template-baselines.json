@@ -534,6 +534,7 @@
       "Files": [
         "Todo.cs",
         "Program.cs",
+        "{ProjectName}.http",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -544,6 +545,7 @@
       "Files": [
         "Todo.cs",
         "Program.cs",
+        "{ProjectName}.http",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -554,6 +556,7 @@
       "Files": [
         "Todo.cs",
         "Program.cs",
+        "{ProjectName}.http",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -564,6 +567,7 @@
       "Files": [
         "Todo.cs",
         "Program.cs",
+        "{ProjectName}.http",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"

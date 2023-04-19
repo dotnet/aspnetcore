@@ -75,6 +75,8 @@ public class BaselineTest : LoggedTest
         Project = await ProjectFactory.CreateProject(Output);
         await Project.RunDotNetNewRawAsync(arguments);
 
+        expectedFiles = expectedFiles.Select(f => f.Replace("{ProjectName}", Project.ProjectName)).ToArray();
+
         foreach (var file in expectedFiles)
         {
             AssertFileExists(Project.TemplateOutputDir, file, shouldExist: true);

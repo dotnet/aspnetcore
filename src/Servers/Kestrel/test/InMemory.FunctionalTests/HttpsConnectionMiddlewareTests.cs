@@ -35,9 +35,15 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     private static KestrelServerOptions CreateServerOptions()
     {
+        var env = new Mock<IHostEnvironment>();
+        env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
+            .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
+            .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
+            .AddSingleton(env.Object)
             .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
             .BuildServiceProvider();
         return serverOptions;
@@ -73,14 +79,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             ["Certificates:Default:Password"] = "aspnetcore",
         }).Build();
 
-        var env = new Mock<IHostEnvironment>();
-        env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
-
         var options = CreateServerOptions();
 
-        var logger = options.ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
-        var httpsLogger = options.ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-        var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
+        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), reloadOnChange: false);
         options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 

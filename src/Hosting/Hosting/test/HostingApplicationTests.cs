@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Hosting.Fakes;
@@ -109,6 +110,39 @@ public class HostingApplicationTests
     }
 
     [Fact]
+    public void IHttpMetricsTagsFeatureNotUsedFromFeatureCollection()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+        var meter = meterFactory.Meters.Single();
+
+        using var requestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, HostingMetrics.MeterName, "request-duration");
+        using var currentRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, HostingMetrics.MeterName, "current-requests");
+
+        // Act/Assert
+        Assert.Equal(HostingMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        // This feature will be overidden by hosting. Hosting is the owner of the feature and is resposible for setting it.
+        var overridenFeature = new TestHttpMetricsTagsFeature();
+        httpContext.Features.Set<IHttpMetricsTagsFeature>(overridenFeature);
+
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        var contextFeature = httpContext.Features.Get<IHttpMetricsTagsFeature>();
+
+        Assert.NotNull(contextFeature);
+        Assert.NotEqual(overridenFeature, contextFeature);
+    }
+
+    private sealed class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new Collection<KeyValuePair<string, object>>();
+    }
+
+    [Fact]
     public void DisposeContextDoesNotClearHttpContextIfDefaultHttpContextFactoryUsed()
     {
         // Arrange
@@ -204,7 +238,9 @@ public class HostingApplicationTests
         var initialActivity = Activity.Current;
 
         // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
+        using var dummyActivity = dummySource.StartActivity("DummyActivity");
+        Assert.NotNull(dummyActivity);
+        Assert.Equal(Activity.Current, dummyActivity);
 
         Assert.Same(initialActivity, activityFeature.Activity);
         Assert.Null(activityFeature.Activity.ParentId);
@@ -221,8 +257,7 @@ public class HostingApplicationTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38736")]
-    public void IHttpActivityFeatureIsAssignedToIfItExists()
+    public void IHttpActivityFeatureNotUsedFromFeatureCollection()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var dummySource = new ActivitySource(Path.GetRandomFileName());
@@ -236,26 +271,19 @@ public class HostingApplicationTests
 
         var hostingApplication = CreateApplication(activitySource: testSource);
         var httpContext = new DefaultHttpContext();
-        httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
+
+        // This feature will be overidden by hosting. Hosting is the owner of the feature and is resposible for setting it.
+        var overridenFeature = new TestHttpActivityFeature();
+        httpContext.Features.Set<IHttpActivityFeature>(overridenFeature);
+
         var context = hostingApplication.CreateContext(httpContext.Features);
 
-        var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
-        Assert.NotNull(activityFeature);
-        Assert.IsType<TestHttpActivityFeature>(activityFeature);
-        Assert.NotNull(activityFeature.Activity);
-        Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
-        var initialActivity = Activity.Current;
+        var contextFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
+        Assert.NotNull(contextFeature);
+        Assert.NotNull(contextFeature.Activity);
+        Assert.Equal(HostingApplicationDiagnostics.ActivityName, contextFeature.Activity.DisplayName);
 
-        // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
-
-        Assert.Same(initialActivity, activityFeature.Activity);
-        Assert.Null(activityFeature.Activity.ParentId);
-        Assert.Equal(activityFeature.Activity.Id, Activity.Current.ParentId);
-        Assert.NotEqual(Activity.Current, activityFeature.Activity);
-
-        // Act/Assert
-        hostingApplication.DisposeContext(context, null);
+        Assert.NotEqual(overridenFeature, contextFeature);
     }
 
     [Fact]
