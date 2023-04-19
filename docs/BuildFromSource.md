@@ -47,7 +47,8 @@ The steps you follow next depend on your preferred development environment:
     ```
 
     Replace `Enterprise` with `Community` if that is your preferred Visual Studio edition. If you use Visual Studio from a preview channel you can specify that also, for example `./eng/scripts/InstallVisualStudio.ps1 Enterprise Preview`.
-If you are seeing errors similar to `the imported project "....\aspnetcore.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found`, this indicates you need to install/update Visual Studio by running `InstallVisualStudio.ps1`
+
+    If you are seeing errors similar to `the imported project "....\aspnetcore.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found`, this indicates you need to install/update Visual Studio by running `InstallVisualStudio.ps1`
 1. Before you open project in Visual Studio, install the required dependencies and set up the repo by running the `restore.cmd` script in the root of the repo:
 
     ```powershell
