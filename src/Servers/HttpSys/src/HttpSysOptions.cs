@@ -121,7 +121,7 @@ public class HttpSysOptions
     /// Applications that use asynchronous I/O and that may have more than one send outstanding at a time should not use this flag.
     /// Enabling this can results in higher CPU and memory usage by Http.Sys.
     /// </summary>
-    public bool EnableKernelResponseBuffering { get; set; } // internal via app-context for non-public release
+    public bool EnableKernelResponseBuffering { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
