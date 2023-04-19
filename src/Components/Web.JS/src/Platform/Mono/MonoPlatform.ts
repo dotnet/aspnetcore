@@ -30,6 +30,8 @@ const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from 
 
 let currentHeapLock: MonoHeapLock | null = null;
 
+let applicationEnvironment = 'Production';
+
 // Memory access helpers
 // The implementations are exactly equivalent to what the global getValue(addr, type) function does,
 // except without having to parse the 'type' parameter, and with less risk of mistakes at the call site
@@ -163,18 +165,63 @@ export const monoPlatform: Platform = {
   },
 };
 
-function importDotnetJs(otpions: Partial<WebAssemblyStartOptions>): Promise<ModuleAPI> {
+type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined;
+
+async function loadBootConfigAsync(loadBootResource?: LoadBootResourceCallback, environment?: string): Promise<BootJsonData> {
+  const loaderResponse = loadBootResource !== undefined ?
+    loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
+    defaultLoadBlazorBootJson('_framework/blazor.boot.json');
+
+  let bootConfigResponse: Response;
+
+  if (!loaderResponse) {
+    bootConfigResponse = await defaultLoadBlazorBootJson('_framework/blazor.boot.json');
+  } else if (typeof loaderResponse === 'string') {
+    bootConfigResponse = await defaultLoadBlazorBootJson(loaderResponse);
+  } else {
+    bootConfigResponse = await loaderResponse;
+  }
+
+  // While we can expect an ASP.NET Core hosted application to include the environment, other
+  // hosts may not. Assume 'Production' in the absence of any specified value.
+  applicationEnvironment = environment || bootConfigResponse.headers.get('Blazor-Environment') || 'Production';
+  const bootConfig: BootJsonData = await bootConfigResponse.json();
+  bootConfig.modifiableAssemblies = bootConfigResponse.headers.get('DOTNET-MODIFIABLE-ASSEMBLIES');
+  bootConfig.aspnetCoreBrowserTools = bootConfigResponse.headers.get('ASPNETCORE-BROWSER-TOOLS');
+
+  return bootConfig;
+
+  function defaultLoadBlazorBootJson(url: string): Promise<Response> {
+    return fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-cache',
+    });
+  }
+}
+
+async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): Promise<ModuleAPI> {
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
   if (!browserSupportsNativeWebAssembly) {
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  let src = '_framework/dotnet.js';
+  const bootConfig = await loadBootConfigAsync(startOptions.loadBootResource, startOptions.environment);
+
+  // The dotnet.*.js file has a version or hash in its name as a form of cache-busting. This is needed
+  // because it's the only part of the loading process that can't use cache:'no-cache' (because it's
+  // not a 'fetch') and isn't controllable by the developer (so they can't put in their own cache-busting
+  // querystring). So, to find out the exact URL we have to search the boot manifest.
+  const dotnetJsResourceName = Object
+    .keys(bootConfig.resources.runtime)
+    .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
+  const dotnetJsContentHash = bootConfig.resources.runtime[dotnetJsResourceName];
+  let src = `_framework/${dotnetJsResourceName}`;
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
-  if (otpions.loadBootResource) {
+  if (startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = otpions.loadBootResource(resourceType, 'dotnet.js', src, '');
+    const customSrc = startOptions.loadBootResource(resourceType, dotnetJsResourceName, src, dotnetJsContentHash);
     if (typeof (customSrc) === 'string') {
       src = customSrc;
     } else if (customSrc) {
@@ -183,14 +230,28 @@ function importDotnetJs(otpions: Partial<WebAssemblyStartOptions>): Promise<Modu
     }
   }
 
+  // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
+  if (bootConfig.cacheBootResources) {
+    const scriptElem = document.createElement('link');
+    scriptElem.rel = 'modulepreload';
+    scriptElem.href = src;
+    scriptElem.crossOrigin = 'anonymous';
+    // it will make dynamic import fail if the hash doesn't match
+    // It's currently only validated by chromium browsers
+    // Firefox doesn't break on it, but doesn't validate it either
+    scriptElem.integrity = dotnetJsContentHash;
+    document.head.appendChild(scriptElem);
+  }
+
   const absoluteSrc = (new URL(src, document.baseURI)).toString();
-  return import(/* webpackIgnore: true */ absoluteSrc);
+  return await import(/* webpackIgnore: true */ absoluteSrc);
 }
 
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platformApi: any): DotnetModuleConfig {
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
+    applicationEnvironment: applicationEnvironment,
   };
 
   const onConfigLoaded = async (bootConfig: BootJsonData & MonoConfig): Promise<void> => {
@@ -243,7 +304,6 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
     ...moduleConfig,
     onConfigLoaded,
     onDownloadResourceProgress: setProgress,
-    getApplicationEnvironment: response => response.headers.get('Blazor-Environment') || 'Production',
     config,
     print,
     printErr,
