@@ -172,7 +172,7 @@ internal class TestUtils
                             {
                                 responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
-                                responseCachingOptions.SystemClock = options.SystemClock;
+                                responseCachingOptions.TimeProvider = options.TimeProvider;
                             }
                         });
                     })
@@ -390,7 +390,21 @@ internal class TestResponseCache : IResponseCache
     }
 }
 
-internal class TestClock : ISystemClock
+internal class TestTimeProvider : TimeProvider
 {
-    public DateTimeOffset UtcNow { get; set; }
+    private DateTimeOffset _current;
+
+    public TestTimeProvider() : this(DateTimeOffset.UtcNow) { }
+
+    public TestTimeProvider(DateTimeOffset current)
+    {
+        _current = current;
+    }
+
+    public override DateTimeOffset GetUtcNow() => _current;
+
+    public void Advance(TimeSpan timeSpan)
+    {
+        _current += timeSpan;
+    }
 }

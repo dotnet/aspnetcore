@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
-
 namespace Microsoft.AspNetCore.ResponseCaching;
 
 /// <summary>
@@ -31,6 +29,5 @@ public class ResponseCachingOptions
     /// <summary>
     /// For testing purposes only.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal ISystemClock SystemClock { get; set; } = new SystemClock();
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 }

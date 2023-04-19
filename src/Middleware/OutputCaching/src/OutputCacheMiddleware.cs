@@ -243,7 +243,7 @@ internal sealed class OutputCacheMiddleware
         }
 
         context.CachedResponse = cacheEntry;
-        context.ResponseTime = _options.SystemClock.UtcNow;
+        context.ResponseTime = _options.TimeProvider.GetUtcNow();
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
@@ -464,7 +464,7 @@ internal sealed class OutputCacheMiddleware
         if (!context.ResponseStarted)
         {
             context.ResponseStarted = true;
-            context.ResponseTime = _options.SystemClock.UtcNow;
+            context.ResponseTime = _options.TimeProvider.GetUtcNow();
 
             return true;
         }
