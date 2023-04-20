@@ -329,7 +329,6 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   const resourceLoader = MONO_INTERNAL.resourceLoader;
   platformApi.resourceLoader = resourceLoader;
 
-  // TODO MF: Moved after .NET started
   attachDebuggerHotkey(resourceLoader);
 
   Blazor._internal.dotNetCriticalError = printErr;
@@ -453,7 +452,7 @@ function attachInteropInvoker(): void {
         argsJson,
       ) as string;
     },
-  }); ''
+  });
 }
 
 function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
