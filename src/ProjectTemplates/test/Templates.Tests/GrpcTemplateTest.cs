@@ -72,11 +72,16 @@ public class GrpcTemplateTest : LoggedTest
 
     private async Task GrpcTemplateCore(string[] args = null)
     {
+        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
+
         var project = await ProjectFactory.CreateProject(Output);
+        if (nativeAot)
+        {
+            project.SetCurrentRuntimeIdentifier();
+        }
 
         await project.RunDotNetNewAsync("grpc", args: args);
 
-        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
@@ -111,7 +116,7 @@ public class GrpcTemplateTest : LoggedTest
             }
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !isWindowsOld))
+        using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !isWindowsOld, usePublishedAppHost: nativeAot))
         {
             // These templates are HTTPS + HTTP/2 only which is not supported on some platforms.
             if (isWindowsOld)
