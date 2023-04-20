@@ -31,6 +31,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     }
 
     [ConditionalTheory]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [RequiresNewHandler]
     [InlineData("/Sub/App/PathAndPathBase", "/Sub/App/PathAndPathBase", "")]
     [InlineData("/SUb/APp/PathAndPAthBase", "/SUb/APp/PathAndPAthBase", "")]
@@ -51,6 +52,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     }
 
     [ConditionalTheory]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [RequiresNewHandler]
     [InlineData("//Sub/App/PathAndPathBase", "//Sub/App/PathAndPathBase", "")]
     [InlineData(@"/\Sub/App/PathAndPathBase/", @"/\Sub/App/PathAndPathBase", "/")]

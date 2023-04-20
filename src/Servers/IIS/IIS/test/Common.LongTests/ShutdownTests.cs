@@ -314,6 +314,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task AppOfflineAddedAndRemovedStress_InProcess()
     {
