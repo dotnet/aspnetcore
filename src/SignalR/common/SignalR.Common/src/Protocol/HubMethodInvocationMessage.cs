@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol;
 
@@ -48,17 +49,7 @@ public abstract class HubMethodInvocationMessage : HubInvocationMessage
     protected HubMethodInvocationMessage(string? invocationId, string target, object?[] arguments)
         : base(invocationId)
     {
-        if (string.IsNullOrEmpty(target))
-        {
-            if (target is null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-            else
-            {
-                throw new ArgumentException("The value cannot be an empty string.", nameof(target));
-            }
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(target);
 
         Target = target;
         Arguments = arguments;
