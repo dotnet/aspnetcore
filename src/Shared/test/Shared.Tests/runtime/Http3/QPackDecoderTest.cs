@@ -25,11 +25,11 @@ namespace System.Net.Http.Unit.Tests.QPack
         // 4.5.4 - Literal Header Field With Name Reference - Static Table - Index 44 (content-type)
         private static readonly byte[] _literalHeaderFieldWithNameReferenceStatic = new byte[] { 0x5f, 0x1d };
 
-        // 4.5.6 - Literal Field Line With Literal Name - (translate)
-        private static readonly byte[] _literalFieldLineWithLiteralName = new byte[] { 0x37, 0x02, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x6c, 0x61, 0x74, 0x65 };
+        // 4.5.6 - Literal Field Line With Literal Name - (literal-header-field)
+        private static readonly byte[] _literalFieldLineWithLiteralName = new byte[] { 0x37, 0x0d, 0x6c, 0x69, 0x74, 0x65, 0x72, 0x61, 0x6c, 0x2d, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x2d, 0x66, 0x69, 0x65, 0x6c, 0x64 };
 
         private const string _contentTypeString = "content-type";
-        private const string _translateString = "translate";
+        private const string _literalHeaderFieldString = "literal-header-field";
 
         // n     e     w       -      h     e     a     d     e     r      *
         // 10101000 10111110 00010110 10011100 10100011 10010000 10110110 01111111
@@ -97,7 +97,7 @@ namespace System.Net.Http.Unit.Tests.QPack
                 .Concat(_headerValue)
                 .ToArray();
 
-            TestDecodeWithoutIndexing(encoded, _translateString, _headerValueString);
+            TestDecodeWithoutIndexing(encoded, _literalHeaderFieldString, _headerValueString);
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace System.Net.Http.Unit.Tests.QPack
                 .Concat(_headerValueHuffman)
                 .ToArray();
 
-            TestDecodeWithoutIndexing(encoded, _translateString, _headerValueString);
+            TestDecodeWithoutIndexing(encoded, _literalHeaderFieldString, _headerValueString);
         }
 
         [Fact]
@@ -171,6 +171,101 @@ namespace System.Net.Http.Unit.Tests.QPack
                 new KeyValuePair<string, string>(":path", new string('A', 8192 / 2)),
                 new KeyValuePair<string, string>(":scheme", "http")
             });
+        }
+
+        [Fact]
+        public void LiteralFieldWithoutNameReference_SingleBuffer()
+        {
+            byte[] encoded = _literalFieldLineWithLiteralName
+                .Concat(_headerValue)
+                .ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded, endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderFieldString));
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
+        }
+
+        [Fact]
+        public void LiteralFieldWithoutNameReference_NameLengthBrokenIntoSeparateBuffers()
+        {
+            byte[] encoded = _literalFieldLineWithLiteralName
+                .Concat(_headerValue)
+                .ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[..1], endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[1..], endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderFieldString));
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
+        }
+
+        [Fact]
+        public void LiteralFieldWithoutNameReference_NameBrokenIntoSeparateBuffers()
+        {
+            byte[] encoded = _literalFieldLineWithLiteralName
+                .Concat(_headerValue)
+                .ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[..(_literalHeaderFieldString.Length / 2)], endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[(_literalHeaderFieldString.Length / 2)..], endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderFieldString));
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
+        }
+
+        [Fact]
+        public void LiteralFieldWithoutNameReference_NameAndValueBrokenIntoSeparateBuffers()
+        {
+            byte[] encoded = _literalFieldLineWithLiteralName
+                .Concat(_headerValue)
+                .ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[..^_headerValue.Length], endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[^_headerValue.Length..], endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderFieldString));
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
+        }
+
+        [Fact]
+        public void LiteralFieldWithoutNameReference_ValueLengthBrokenIntoSeparateBuffers()
+        {
+            byte[] encoded = _literalFieldLineWithLiteralName
+                .Concat(_headerValue)
+                .ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[..^(_headerValue.Length - 1)], endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[^(_headerValue.Length - 1)..], endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderFieldString));
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
+        }
+
+        [Fact]
+        public void LiteralFieldWithoutNameReference_ValueBrokenIntoSeparateBuffers()
+        {
+            byte[] encoded = _literalFieldLineWithLiteralName
+                .Concat(_headerValue)
+                .ToArray();
+
+            _decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[..^(_headerValueString.Length / 2)], endHeaders: false, handler: _handler);
+            _decoder.Decode(encoded[^(_headerValueString.Length / 2)..], endHeaders: true, handler: _handler);
+
+            Assert.Single(_handler.DecodedHeaders);
+            Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderFieldString));
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
         }
 
         public static readonly TheoryData<byte[]> _incompleteHeaderBlockData = new TheoryData<byte[]>
