@@ -44,7 +44,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         _services = serviceProvider;
     }
 
-    private static async Task InitializeStandardComponentServicesAsync(HttpContext httpContext, Type componentType)
+    private static async Task InitializeStandardComponentServicesAsync(HttpContext httpContext, Type componentType, bool isEndpointRendering)
     {
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -61,9 +61,12 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
 
-        // Saving RouteData to avoid routing twice in Router component
-        var routingStateProvider = httpContext.RequestServices.GetService<RoutingStateProvider>();
-        routingStateProvider!.RouteData = new RouteData(componentType, GetRouteDataParameters(httpContext));
+        if (isEndpointRendering)
+        {
+            // Saving RouteData to avoid routing twice in Router component
+            var routingStateProvider = httpContext.RequestServices.GetService<RoutingStateProvider>();
+            routingStateProvider!.RouteData = new RouteData(componentType, GetRouteDataParameters(httpContext));
+        }
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)

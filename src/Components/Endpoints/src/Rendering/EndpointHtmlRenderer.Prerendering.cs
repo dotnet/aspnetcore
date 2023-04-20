@@ -37,7 +37,7 @@ internal sealed partial class EndpointHtmlRenderer
 
         // Make sure we only initialize the services once, but on every call we wait for that process to complete
         // This does not have to be threadsafe since it's not valid to call this simultaneously from multiple threads.
-        _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext, componentType);
+        _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext, componentType, false);
         await _servicesInitializedTask;
 
         UpdateSaveStateRenderMode(httpContext, prerenderMode);
@@ -71,7 +71,7 @@ internal sealed partial class EndpointHtmlRenderer
         ParameterView parameters,
         bool waitForQuiescence)
     {
-        await InitializeStandardComponentServicesAsync(httpContext, componentType);
+        await InitializeStandardComponentServicesAsync(httpContext, componentType, true);
 
         try
         {
