@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 /// with newer functionality.
 /// </summary>
 [Collection(IISHttpsTestSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Http2Tests
 {
     public Http2Tests(IISTestSiteFixture fixture)
