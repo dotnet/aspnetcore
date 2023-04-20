@@ -49,7 +49,7 @@ internal static class ExpressionFormatter
                     }
 
                     builder.InsertFront("]");
-                    FormatIndexArgument(methodCallExpression.Arguments.Single(), ref builder);
+                    FormatIndexArgument(methodCallExpression.Arguments[0], ref builder);
                     builder.InsertFront("[");
                     node = methodCallExpression.Object;
                     break;
