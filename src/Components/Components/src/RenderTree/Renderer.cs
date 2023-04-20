@@ -419,13 +419,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             if (quiesce)
             {
                 _pendingTasks ??= new();
-                task = callback.InvokeAsync(eventArgs);
-                AddToPendingTasksWithErrorHandling(task, receiverComponentState);
             }
-            else
-            {
-                task = callback.InvokeAsync(eventArgs);
-            }
+
+            task = callback.InvokeAsync(eventArgs);
+            AddToPendingTasksWithErrorHandling(task, receiverComponentState);
         }
         catch (Exception e)
         {

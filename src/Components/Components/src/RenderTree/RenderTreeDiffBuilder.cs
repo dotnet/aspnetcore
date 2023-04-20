@@ -40,19 +40,12 @@ internal static class RenderTreeDiffBuilder
         // Once a component has defined a named event handler with a concrete name, no other component instance can
         // define a named event handler with that name.
         //
-        // This is only enforced when we are trying to dispatch an event to a named event handler, since in any other
-        // case we don't actually track the named event handlers.
-        //
-        // We don't enforce the global uniqueness of the event handler name inside the base renderer either. That's
-        // handled by the EndpointRenderer that takes care of ensuring that only one component defined the expected
-        // named event handler before dispatching the named event.
-        //
         // At this stage, we only ensure that the named event handler is unique per component instance, as that,
         // combined with the check that the EndpointRenderer does, is enough to ensure the uniqueness and the stability
         // of the named event handler over time **globally**.
         //
-        // Note that we only enforce this condition at the time we are going to dispatch a named event to a specific
-        // named event handler. In any other case, even though is an error, we don't care, as:
+        // Tracking and uniqueness are enforced when we are trying to dispatch an event to a named event handler, since in
+        // any other case we don't actually track the named event handlers. We do this because:
         // 1) We don't want to break the user's app if we don't have to.
         // 2) We don't have to pay the cost of continously tracking all events all the time to throw.
         // That's why raising the error is delayed until we are forced to make a decission.

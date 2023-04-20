@@ -50,6 +50,18 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     }
 
     [Fact]
+    public void CanDispatchToNamedFormNoParentBindingContext()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/named-form-no-form-context",
+            FormCssSelector = "form[name=named-form-handler]",
+            ExpectedActionValue = "forms/named-form-no-form-context?handler=named-form-handler",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
     public void CanDispatchToNamedFormInNestedContext()
     {
         var dispatchToForm = new DispatchToForm(this)

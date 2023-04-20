@@ -77,15 +77,6 @@ public class RouteView : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        var pathStart = NavigationManager.BaseUri.Length - 1;
-        var bindingId = NavigationManager.Uri.Substring(
-            pathStart,
-            NavigationManager.Uri.AsSpan().IndexOfAny("?#") switch
-            {
-                -1 => NavigationManager.Uri.Length - pathStart,
-                var index => index - pathStart
-            });
-
         builder.OpenComponent<CascadingModelBinder>(0);
         builder.AddComponentParameter(1, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderPageWithContext);
         builder.CloseComponent();

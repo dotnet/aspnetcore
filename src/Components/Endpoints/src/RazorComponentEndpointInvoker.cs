@@ -59,6 +59,11 @@ internal class RazorComponentEndpointInvoker
             hostParameters,
             waitForQuiescence: isPost);
 
+        if (isPost && !_renderer.HasCapturedEvent())
+        {
+            _context.Response.StatusCode = StatusCodes.Status404NotFound;
+        }
+
         var quiesceTask = isPost ? _renderer.DispatchCapturedEvent() : htmlContent.QuiescenceTask;
 
         if (isPost)

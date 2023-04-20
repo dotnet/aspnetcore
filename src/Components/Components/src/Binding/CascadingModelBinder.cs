@@ -22,7 +22,10 @@ public sealed class CascadingModelBinder : IComponent, IDisposable
     [Parameter] public string Name { get; set; } = "";
 
     /// <summary>
-    /// The binding context name.
+    /// If true, indicates that <see cref="ModelBindingContext.BindingContextId"/> will not change.
+    /// This is a performance optimization that allows the framework to skip setting up
+    /// change notifications. Set this flag only if you will not change
+    /// <see cref="Name"/> of this context or its parents' context during the component's lifetime.
     /// </summary>
     [Parameter] public bool IsFixed { get; set; }
 

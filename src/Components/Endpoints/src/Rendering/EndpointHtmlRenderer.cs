@@ -119,6 +119,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
+    internal bool HasCapturedEvent() => _capturedNamedEvent != default;
+
     internal Task DispatchCapturedEvent()
     {
         if (_capturedNamedEvent == default)
