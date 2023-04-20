@@ -205,8 +205,12 @@ internal class DeveloperExceptionPageMiddlewareImpl
             SetExceptionHandlerFeatures(errorContext);
         }
 
-        if (_problemDetailsService == null ||
-            !await _problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = CreateProblemDetails(errorContext, httpContext) }))
+        if (_problemDetailsService == null || !await _problemDetailsService.TryWriteAsync(new()
+            {
+                HttpContext = httpContext,
+                ProblemDetails = CreateProblemDetails(errorContext, httpContext), 
+                Exception = errorContext.Exception 
+            }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
 

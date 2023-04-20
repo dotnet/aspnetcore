@@ -53,6 +53,41 @@ internal static class EndpointParameterEmitter
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
+    internal static void EmitFormParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, ref bool readFormEmitted)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Invoke TryResolveFormAsync once per handler so that we can
+        // avoid the blocking code-path that occurs when `httpContext.Request.Form`
+        // is invoked.
+        if (!readFormEmitted)
+        {
+            var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+            var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+            var resolveFormResult = $"{endpointParameter.SymbolName}_resolveFormResult";
+            codeWriter.WriteLine($"var {resolveFormResult} = {assigningCode};");
+
+            // Exit early if binding from the form has failed.
+            codeWriter.WriteLine($"if (!{resolveFormResult}.Item1)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("return;");
+            codeWriter.EndBlock();
+            readFormEmitted = true;
+        }
+
+        codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {endpointParameter.AssigningCode};");
+        if (!endpointParameter.IsOptional)
+        {
+            codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("wasParamCheckFailure = true;");
+            codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
+            codeWriter.EndBlock();
+        }
+        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
+        endpointParameter.EmitParsingBlock(codeWriter);
+    }
+
     internal static void EmitParsingBlock(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
         if (endpointParameter.IsArray && endpointParameter.IsParsable)
@@ -255,7 +290,7 @@ internal static class EndpointParameterEmitter
 
     public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
     {
-        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
+        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService or EndpointParameterSource.FormBody => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
         EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
         _ => endpointParameter.EmitHandlerArgument()
     };
