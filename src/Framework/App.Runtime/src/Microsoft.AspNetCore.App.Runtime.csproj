@@ -504,7 +504,18 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <ItemGroup>
       <!-- Temporary workaround tracked by https://github.com/dotnet/runtime/issues/84860 -->
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Configuration.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Configuration.Abstractions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Configuration.Binder.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.DependencyInjection.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.dll" />
       <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Abstractions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Console.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Configuration.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Options.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Primitives.dll" />
 
       <BaseAssemblies Include="$(ManagedAssetsFullPath)\*.dll" />
       <BaseAssemblies Include="$(TargetDir)\*.dll" />
