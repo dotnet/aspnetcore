@@ -34,10 +34,6 @@ public class HttpSysOptions
     /// </summary>
     public HttpSysOptions()
     {
-        // this feature is being back-ported to net6/net7 via an app-context switch; respect that even on net8+ to avoid
-        // surprises when upgrading TFMs
-        const string EnableKernelResponseBufferingSwitch = "Microsoft.AspNetCore.Server.HttpSys.EnableKernelResponseBuffering";
-        EnableKernelResponseBuffering = AppContext.TryGetSwitch(EnableKernelResponseBufferingSwitch, out var enabled) && enabled;
     }
 
     /// <summary>
@@ -115,7 +111,7 @@ public class HttpSysOptions
     public bool ThrowWriteExceptions { get; set; }
 
     /// <summary>
-    /// Enable buffering of response data in the Kernel.
+    /// Enable buffering of response data in the Kernel. The default value is <code>false</code>.
     /// It should be used by an application doing synchronous I/O or by an application doing asynchronous I/O with
     /// no more than one outstanding write at a time, and can significantly improve throughput over high-latency connections.
     /// Applications that use asynchronous I/O and that may have more than one send outstanding at a time should not use this flag.
