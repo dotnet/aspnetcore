@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
@@ -49,6 +50,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
+
+        // Form handling
+        services.AddScoped<FormDataProvider, HttpContextFormDataProvider>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

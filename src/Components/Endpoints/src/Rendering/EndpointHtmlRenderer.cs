@@ -3,6 +3,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -47,7 +48,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         _services = serviceProvider;
     }
 
-    private static async Task InitializeStandardComponentServicesAsync(HttpContext httpContext)
+    internal static async Task InitializeStandardComponentServicesAsync(
+        HttpContext httpContext,
+        string? handler = null,
+        IFormCollection? form = null)
     {
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -57,6 +61,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         {
             var authenticationState = new AuthenticationState(httpContext.User);
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+        }
+
+        var formData = (HttpContextFormDataProvider)httpContext.RequestServices.GetRequiredService<FormDataProvider>();
+        if (handler != null)
+        {
+            formData.SetFormState(form!, handler);
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering

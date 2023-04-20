@@ -70,8 +70,6 @@ internal partial class EndpointHtmlRenderer
         ParameterView parameters,
         bool waitForQuiescence)
     {
-        await InitializeStandardComponentServicesAsync(httpContext);
-
         try
         {
             var component = BeginRenderingComponent(componentType, parameters);

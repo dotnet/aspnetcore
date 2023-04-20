@@ -1,7 +1,9 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext.BindingContextId.get -> string!
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext.Name.get -> string!
+abstract Microsoft.AspNetCore.Components.Binding.FormDataProvider.Entries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>!
+abstract Microsoft.AspNetCore.Components.Binding.FormDataProvider.Name.get -> string?
+Microsoft.AspNetCore.Components.Binding.FormDataProvider
+Microsoft.AspNetCore.Components.Binding.FormDataProvider.FormDataProvider() -> void
+Microsoft.AspNetCore.Components.Binding.FormDataProvider.IsFormDataAvailable.get -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!

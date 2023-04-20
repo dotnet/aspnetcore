@@ -1,7 +1,7 @@
 #nullable enable
 *REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
-Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.Binding.ModelBindingContext?
+Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.ModelBindingContext?
 Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.set -> void
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
