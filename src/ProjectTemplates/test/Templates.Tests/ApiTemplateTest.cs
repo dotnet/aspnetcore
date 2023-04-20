@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Templates.Test.Helpers;
 using Xunit.Abstractions;
 
@@ -39,7 +40,6 @@ public class ApiTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateNativeAotCSharp()
     {
-        Assert.True(false);
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
     }
 
@@ -96,7 +96,6 @@ public class ApiTemplateTest : LoggedTest
             Assert.False(
                aspNetProcess.Process.HasExited,
                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
-
             await AssertEndpoints(aspNetProcess);
         }
 
