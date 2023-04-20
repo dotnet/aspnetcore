@@ -30,14 +30,14 @@ public class ApiTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateCSharp()
     {
         await ApiTemplateCore(languageOverride: null);
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateNativeAotCSharp()
     {
         Assert.True(false);
@@ -45,14 +45,14 @@ public class ApiTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateProgramMainCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
