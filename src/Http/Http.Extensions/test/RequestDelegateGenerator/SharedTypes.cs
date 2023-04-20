@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -535,3 +536,150 @@ public class TlsConnectionFeature : ITlsConnectionFeature
         throw new NotImplementedException();
     }
 }
+
+public class AddsCustomParameterMetadataBindable : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+{
+    public static ValueTask<AddsCustomParameterMetadataBindable> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+
+    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name });
+    }
+
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+    }
+}
+
+public class CustomEndpointMetadata
+{
+    public string Data { get; init; }
+
+    public MetadataSource Source { get; init; }
+}
+
+public enum MetadataSource
+{
+    Caller,
+    Parameter,
+    ReturnType,
+    Property
+}
+
+public class ParameterNameMetadata
+{
+    public string Name { get; init; }
+}
+
+public class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider//, IParsable<AddsCustomParameterMetadata>
+{
+    public AddsCustomParameterMetadataAsProperty Data { get; set; }
+
+    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name });
+    }
+
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+    }
+
+    //static bool IParsable<AddsCustomParameterMetadata>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out AddsCustomParameterMetadata result)
+    //{
+    //    result = new();
+    //    return true;
+    //}
+
+    //static AddsCustomParameterMetadata IParsable<AddsCustomParameterMetadata>.Parse(string s, IFormatProvider? provider) => throw new NotSupportedException();
+}
+
+public class AddsCustomParameterMetadataAsProperty : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new ParameterNameMetadata { Name = parameter.Name });
+    }
+
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Property });
+    }
+}
+public class AddsCustomEndpointMetadataResult : IEndpointMetadataProvider, IResult
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+}
+
+public class AccessesServicesMetadataResult : IResult, IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        if (builder.ApplicationServices.GetRequiredService<MetadataService>() is { } metadataService)
+        {
+            builder.Metadata.Add(metadataService);
+        }
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+}
+
+public class RemovesAcceptsParameterMetadata : IEndpointParameterMetadataProvider
+{
+    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        if (builder.Metadata is not null)
+        {
+            for (int i = builder.Metadata.Count - 1; i >= 0; i--)
+            {
+                var metadata = builder.Metadata[i];
+                if (metadata is IAcceptsMetadata)
+                {
+                    builder.Metadata.RemoveAt(i);
+                }
+            }
+        }
+    }
+}
+
+public class RemovesAcceptsMetadataResult : IEndpointMetadataProvider, IResult
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        if (builder.Metadata is not null)
+        {
+            for (int i = builder.Metadata.Count - 1; i >= 0; i--)
+            {
+                var metadata = builder.Metadata[i];
+                if (metadata is IAcceptsMetadata)
+                {
+                    builder.Metadata.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+}
+
+public class AccessesServicesMetadataBinder : IEndpointMetadataProvider
+{
+    public static ValueTask<AccessesServicesMetadataBinder> BindAsync(HttpContext context, ParameterInfo parameter) =>
+        new(new AccessesServicesMetadataBinder());
+
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        if (builder.ApplicationServices.GetRequiredService<MetadataService>() is { } metadataService)
+        {
+            builder.Metadata.Add(metadataService);
+        }
+    }
+}
+
+public record MetadataService;

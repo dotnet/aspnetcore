@@ -36,11 +36,11 @@ internal class EndpointResponse
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType(method);
         IsAnonymousType = method.ReturnType.IsAnonymousType;
-        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(method, wellKnownTypes);
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
     }
 
-    private static bool ImplementsIEndpointMetadataProvider(IMethodSymbol method, WellKnownTypes wellKnownTypes)
-        => method.ReturnType.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol? responseType, WellKnownTypes wellKnownTypes)
+        => responseType == null ? false : responseType.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
 
     private ITypeSymbol? UnwrapResponseType(IMethodSymbol method, out bool isAwaitable, out bool awaitableIsVoid)
     {
