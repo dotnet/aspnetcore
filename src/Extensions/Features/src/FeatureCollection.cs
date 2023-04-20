@@ -120,9 +120,10 @@ public class FeatureCollection : IFeatureCollection
         if (typeof(TFeature).IsValueType)
         {
             var feature = this[typeof(TFeature)];
-            if (feature is null && Nullable.GetUnderlyingType(typeof(TFeature)) == null)
+            if (feature is null && Nullable.GetUnderlyingType(typeof(TFeature)) is null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"{typeof(TFeature).FullName} does not exist in the feature collection " +
+                $"and because it is a struct we can't return null. Use 'featureCollection[typeof({typeof(TFeature).FullName})] is not null' to check if it exists.");
             }
             return (TFeature?)feature;
         }
