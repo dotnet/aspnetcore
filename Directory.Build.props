@@ -14,6 +14,11 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Default</AnalysisMode>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <!-- Enable NuGet static graph evaluation to optimize incremental restore -->
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+  </PropertyGroup>
 
   <!-- Defines project type conventions. -->
   <PropertyGroup>
