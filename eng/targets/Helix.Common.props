@@ -37,7 +37,7 @@
       <!-- aspnetcore-quarantined-tests (quarantined-tests.yml) and RunHelix.ps1 -RunQuarantinedTests -->
       <ItemGroup>
         <!-- Linux -->
-        <HelixAvailableTargetQueue Include="(AlmaLinux.8.Amd64.Open)Ubuntu.1804.Amd64.Open@svencontainers.azurecr.io/ubuntu-22.04-arm64v8/almalinux" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="(AlmaLinux.8.Amd64.Open)Ubuntu.1804.Amd64.Open@svencontainers.azurecr.io/almalinux" Platform="Linux" />
 
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine316)" Platform="Linux" />
