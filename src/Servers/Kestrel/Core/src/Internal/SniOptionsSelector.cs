@@ -77,7 +77,7 @@ internal sealed class SniOptionsSelector
 
             if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
             {
-                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2, _logger);
+                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2, logger);
             }
 
             var clientCertificateMode = sniConfig.ClientCertificateMode ?? fallbackHttpsOptions.ClientCertificateMode;

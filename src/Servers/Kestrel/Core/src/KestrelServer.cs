@@ -35,7 +35,7 @@ public class KestrelServer : IServer
             options,
             new[] { transportFactory ?? throw new ArgumentNullException(nameof(transportFactory)) },
             Array.Empty<IMultiplexedConnectionListenerFactory>(),
-            new SimpleHttpsConfigurationService(loggerFactory.CreateLogger<HttpsConnectionMiddleware>()),
+            new SimpleHttpsConfigurationService(loggerFactory),
             loggerFactory,
             new KestrelMetrics(new DummyMeterFactory()));
     }
@@ -80,9 +80,9 @@ public class KestrelServer : IServer
     {
         private readonly ILogger<HttpsConnectionMiddleware> _httpsLogger;
 
-        public SimpleHttpsConfigurationService(ILogger<HttpsConnectionMiddleware> httpsLogger)
+        public SimpleHttpsConfigurationService(ILoggerFactory loggerFactory)
         {
-            _httpsLogger = httpsLogger;
+            _httpsLogger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
 
         public bool IsInitialized => true;

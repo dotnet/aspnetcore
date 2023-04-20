@@ -601,7 +601,7 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
     public static partial void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, string? storeName, Exception exception);
 
     [LoggerMessage(9, LogLevel.Information, "Certificate with thumbprint {Thumbprint} lacks the subjectAlternativeName (SAN) extension and may not be accepted by browsers.", EventName = "NoSubjectAlternativeName")]
-    public static partial void NoSubjectAlternativeName(this ILogger logger, string thumbprint);
+    public static partial void NoSubjectAlternativeName(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint);
 
     public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
     {
