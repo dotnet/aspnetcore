@@ -133,7 +133,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private static string GenerateComponentPath(ComponentState state)
     {
-        // We are generating a path from the root component with te component type names like:
+        // We are generating a path from the root component with component type names like:
         // App > Router > RouteView > LayoutView > Index > PartA
         // App > Router > RouteView > LayoutView > MainLayout > NavigationMenu
         // To help developers identify when they have multiple forms with the same handler.

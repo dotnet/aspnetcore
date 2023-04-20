@@ -5,8 +5,10 @@
       EXECUTE_COMPONENTS_E2E_TESTS. At least build the Components E2E tests locally unless SkipTestBuild is set.
     -->
     <_BuildAndTest>false</_BuildAndTest>
-    <_BuildAndTest Condition=" '$(ContinuousIntegrationBuild)' == 'true' AND '$(EXECUTE_COMPONENTS_E2E_TESTS)' == 'true' ">true</_BuildAndTest>
-    <_BuildAndTest Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
+    <_BuildAndTest
+        Condition=" '$(ContinuousIntegrationBuild)' == 'true' AND '$(EXECUTE_COMPONENTS_E2E_TESTS)' == 'true' ">true</_BuildAndTest>
+    <_BuildAndTest
+        Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
     <ExcludeFromBuild Condition=" !$(_BuildAndTest) ">true</ExcludeFromBuild>
     <SkipTests Condition=" !$(_BuildAndTest) ">true</SkipTests>
   </PropertyGroup>
@@ -61,15 +63,29 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
+      Targets="Build;Publish"
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
 
-    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
+    <ProjectReference
+      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
+      Targets="Build;Publish"
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
 
-    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
+    <ProjectReference
+      Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
+      Targets="Build;Publish"
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
+    <ProjectReference
+      Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
+      Targets="Build;Publish"
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
+    <ProjectReference
+      Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj"
+      Targets="Build;Publish"
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

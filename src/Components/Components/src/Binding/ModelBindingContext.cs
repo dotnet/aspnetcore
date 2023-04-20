@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Binding;
 /// <summary>
 /// The binding context associated with a given model binding operation.
 /// </summary>
-public class ModelBindingContext
+public sealed class ModelBindingContext
 {
     internal ModelBindingContext(string name, string bindingContextId)
     {
