@@ -6,18 +6,14 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
 import { Module, BINDING, monoPlatform } from './Platform/Mono/MonoPlatform';
-import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
+import { renderBatch, getRendererer } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
-import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
-import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
+import { JSInitializer } from './JSInitializers/JSInitializers';
 
 let started = false;
 
@@ -30,7 +26,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    await new Promise(() => {}); // See inAuthRedirectIframe for explanation
+    await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
 
   setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
@@ -93,48 +89,12 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });
 
-  const candidateOptions = options ?? {};
-
-  // Get the custom environment setting and blazorBootJson loader if defined
-  const environment = candidateOptions.environment;
-
-  // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
-
-  // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
-  // the document.
-  const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-  const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
-  Blazor._internal.registeredComponents = {
-    getRegisteredComponentsCount: () => componentAttacher.getCount(),
-    getId: (index) => componentAttacher.getId(index),
-    getAssembly: (id) => componentAttacher.getAssembly(id),
-    getTypeName: (id) => componentAttacher.getTypeName(id),
-    getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
-    getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
-  };
-
-  Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
-
-  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-    const element = componentAttacher.resolveRegisteredElement(selector);
-    if (!element) {
-      attachRootComponentToElement(selector, componentId, rendererId);
-    } else {
-      attachRootComponentToLogicalElement(rendererId, element, componentId, false);
-    }
-  };
-
-  const bootConfigResult: BootConfigResult = await bootConfigPromise;
-  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
-
-  const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
-    WebAssemblyConfigLoader.initAsync(bootConfigResult, candidateOptions || {}),
-  ]);
-
+  let resourceLoader: WebAssemblyResourceLoader;
+  let jsInitializer: JSInitializer;
   try {
-    await platform.start(resourceLoader);
+    const api = await platform.start(options ?? {});
+    resourceLoader = api.resourceLoader;
+    jsInitializer = api.jsInitializer;
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
