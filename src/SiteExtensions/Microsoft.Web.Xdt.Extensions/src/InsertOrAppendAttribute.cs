@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Web.XmlTransform;
 
 namespace Microsoft.Web.Xdt.Extensions;
@@ -44,17 +45,7 @@ public class InsertOrAppendAttribute : Transform
     /// <returns></returns>
     protected string GetArgumentValue(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            if (name is null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-            else
-            {
-                throw new ArgumentException("The value cannot be an empty string.", nameof(name));
-            }
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(name);
 
         string result = null;
         if (Arguments != null && Arguments.Count > 0)
