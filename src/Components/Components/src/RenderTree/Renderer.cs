@@ -56,7 +56,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             Dispatcher.UnhandledException -= value;
         }
-    }    
+    }
 
     /// <summary>
     /// Constructs an instance of <see cref="Renderer"/>.
@@ -416,18 +416,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // The event handler might request multiple renders in sequence. Capture them
             // all in a single batch.
             _isBatchInProgress = true;
-
-            task = callback.InvokeAsync(eventArgs);
             if (quiesce)
             {
-                if (_ongoingQuiescenceTask == null)
-                {
-                    _ongoingQuiescenceTask = task;
-                }
-                else
-                {
-                    AddToPendingTasksWithErrorHandling(task, receiverComponentState);
-                }
+                _pendingTasks ??= new();
+                task = callback.InvokeAsync(eventArgs);
+                AddToPendingTasksWithErrorHandling(task, receiverComponentState);
+            }
+            else
+            {
+                task = callback.InvokeAsync(eventArgs);
             }
         }
         catch (Exception e)

@@ -61,6 +61,11 @@ internal class RazorComponentEndpointInvoker
 
         var quiesceTask = isPost ? _renderer.DispatchCapturedEvent() : htmlContent.QuiescenceTask;
 
+        if (isPost)
+        {
+            await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+        }
+
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the

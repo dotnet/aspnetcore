@@ -198,6 +198,27 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         Assert.Equal("ModifyHttpContext", cookie.Value);
     }
 
+    [Fact]
+    public async Task CanHandleFormPostNonStreamingRenderingAsyncHandler()
+    {
+        GoTo("forms/non-streaming-async-form-handler/CanHandleFormPostNonStreamingRenderingAsyncHandler");
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Null(actionValue);
+
+        Browser.Click(By.Id("send"));
+
+        await Task.Yield();
+
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.PostAsync("subdir/forms/streaming-rendering/complete/CanHandleFormPostNonStreamingRenderingAsyncHandler", content: null);
+        response.EnsureSuccessStatusCode();
+
+        Browser.Exists(By.Id("pass"));
+    }
+
     private void DispatchToFormCore(DispatchToForm dispatch)
     {
         GoTo(dispatch.Url);
