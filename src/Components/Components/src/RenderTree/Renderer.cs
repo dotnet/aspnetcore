@@ -416,16 +416,24 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // The event handler might request multiple renders in sequence. Capture them
             // all in a single batch.
             _isBatchInProgress = true;
-            if (quiesce)
-            {
-                _pendingTasks ??= new();
-            }
 
             task = callback.InvokeAsync(eventArgs);
-            AddToPendingTasksWithErrorHandling(task, receiverComponentState);
+            if (quiesce)
+            {
+                // If we are waiting for quiescence, the quiescence task will capture any async exception.
+                // If the exception is thrown synchronously, we just want it to flow to the callers, and
+                // not go through the ErrorBoundary.
+                _pendingTasks ??= new();
+                AddPendingTask(receiverComponentState, task);
+            }
         }
         catch (Exception e)
         {
+            if (quiesce)
+            {
+                // Exception filters are not AoT friendly.
+                throw;
+            }
             HandleExceptionViaErrorBoundary(e, receiverComponentState);
             return Task.CompletedTask;
         }
