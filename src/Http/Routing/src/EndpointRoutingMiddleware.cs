@@ -109,6 +109,14 @@ internal sealed partial class EndpointRoutingMiddleware
 
             Log.MatchSuccess(_logger, endpoint);
 
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                if (endpoint.Metadata.GetMetadata<FallbackMetadata>() is not null)
+                {
+                    Log.FallbackMatch(_logger, endpoint);
+                }
+            }
+
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
             {
@@ -283,5 +291,8 @@ internal sealed partial class EndpointRoutingMiddleware
 
         [LoggerMessage(6, LogLevel.Information, "The endpoint '{EndpointName}' is being short circuited without running additional middleware or producing a response.", EventName = "ShortCircuitedEndpoint")]
         public static partial void ShortCircuitedEndpoint(ILogger logger, Endpoint endpointName);
+
+        [LoggerMessage(7, LogLevel.Information, "Matched endpoint '{EndpointName}' is a fallback endpoint.", EventName = "FallbackMatch", SkipEnabledCheck = true)]
+        public static partial void FallbackMatch(ILogger logger, Endpoint endpointName);
     }
 }
