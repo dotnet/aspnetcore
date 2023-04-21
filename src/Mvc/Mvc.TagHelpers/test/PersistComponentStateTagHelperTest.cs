@@ -191,7 +191,6 @@ public class PersistComponentStateTagHelperTest
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped<IComponentPrerenderer, EndpointHtmlRenderer>()
-                .AddScoped<RoutingStateProvider>()
                 .BuildServiceProvider(),
         };
 

@@ -90,7 +90,6 @@ public class ComponentTagHelperTest
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped(_ => navManager.Object)
-                .AddScoped<RoutingStateProvider>()
                 .BuildServiceProvider(),
         };
 

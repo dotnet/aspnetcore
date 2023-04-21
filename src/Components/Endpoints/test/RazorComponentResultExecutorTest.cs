@@ -416,7 +416,6 @@ public class RazorComponentResultExecutorTest
             .AddSingleton<ServerComponentSerializer>()
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
-            .AddSingleton<RoutingStateProvider>()
             .AddLogging();
         var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };
         result.Request.Scheme = "https";
