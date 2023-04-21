@@ -21,11 +21,11 @@ public enum HttpLoggingFields : long
     /// <summary>
     /// Flag for logging the HTTP Request Path, which includes both the <see cref="HttpRequest.Path"/>
     /// and <see cref="HttpRequest.PathBase"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Path: /index
     /// PathBase: /app
-    /// </p>
+    /// </para>
     /// </summary>
     RequestPath = 0x1,
 
