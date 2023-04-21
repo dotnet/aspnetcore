@@ -52,7 +52,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
 
         // Form handling
-        services.AddScoped<FormDataProvider, HttpContextFormDataProvider>();
+        services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
 
         return new DefaultRazorComponentsBuilder(services);
     }
