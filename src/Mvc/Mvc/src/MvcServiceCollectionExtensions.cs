@@ -27,6 +27,7 @@ public static class MvcServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddMvc(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -41,6 +42,7 @@ public static class MvcServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="MvcOptions"/>.</param>
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
