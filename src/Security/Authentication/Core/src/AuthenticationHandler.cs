@@ -72,12 +72,12 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// Gets the <see cref="ISystemClock"/>.
     /// </summary>
     [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
-    protected ISystemClock Clock { get; }
+    protected ISystemClock Clock { get; private set; }
 
     /// <summary>
     /// Gets the current time, primarily for unit testing.
     /// </summary>
-    protected TimeProvider Time { get; }
+    protected TimeProvider TimeProvider { get; private set; } = TimeProvider.System;
 
     /// <summary>
     /// Gets the <see cref="IOptionsMonitor{TOptions}"/> to detect changes to options.
@@ -119,7 +119,6 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
         Logger = logger.CreateLogger(this.GetType().FullName!);
         UrlEncoder = encoder;
         Clock = clock;
-        Time = new TimeClockProvider(clock);
         OptionsMonitor = options;
     }
 
@@ -129,15 +128,13 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <param name="options">The monitor for the options instance.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
-    /// <param name="time">The <see cref="TimeProvider"/> used for unit testing.</param>
-    protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
+// Clock is obsolete.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         Logger = logger.CreateLogger(this.GetType().FullName!);
         UrlEncoder = encoder;
-        Time = time;
-#pragma warning disable CS0618 // Type or member is obsolete
-        Clock = new SystemClock(time);
-#pragma warning restore CS0618 // Type or member is obsolete
         OptionsMonitor = options;
     }
 
@@ -156,6 +153,11 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
         Context = context;
 
         Options = OptionsMonitor.Get(Scheme.Name);
+
+        TimeProvider = Options.TimeProvider ?? TimeProvider.System;
+#pragma warning disable CS0618 // Type or member is obsolete
+        Clock ??= new SystemClock(TimeProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         await InitializeEventsAsync();
         await InitializeHandlerAsync();

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication;
 
 public abstract class SharedAuthenticationTests<TOptions> where TOptions : AuthenticationSchemeOptions
 {
-    protected TestTime Time { get; } = new();
+    protected TestTimeProvider TimeProvider { get; } = new();
 
     protected abstract string DefaultScheme { get; }
     protected virtual string DisplayName { get; }

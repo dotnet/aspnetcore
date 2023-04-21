@@ -135,11 +135,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
     public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
     {
-        var currentUtc = DateTimeOffset.UtcNow;
-        if (TimeProvider != null)
-        {
-            currentUtc = TimeProvider.GetUtcNow();
-        }
+        var currentUtc = TimeProvider.GetUtcNow();
         var issuedUtc = context.Properties.IssuedUtc;
 
         // Only validate if enough time has elapsed

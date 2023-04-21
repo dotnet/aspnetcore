@@ -9,21 +9,21 @@ namespace Microsoft.AspNetCore.Authentication;
 [Obsolete("Use TimeProvider instead.")]
 public class SystemClock : ISystemClock
 {
-    private readonly TimeProvider _time;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
-    /// Creates a new SystemClock that reads the current system time.
+    /// Creates a new SystemClock that reads the current system timeProvider.
     /// </summary>
     public SystemClock() : this(TimeProvider.System) { }
 
     /// <summary>
     /// Creates a new SystemClock that reads from the given TimeProvider.
     /// </summary>
-    /// <param name="time">The authoritative <see cref="TimeProvider"/>.</param>
-    public SystemClock(TimeProvider time)
+    /// <param name="timeProvider">The authoritative <see cref="TimeProvider"/>.</param>
+    public SystemClock(TimeProvider timeProvider)
     {
-        ArgumentNullException.ThrowIfNull(time);
-        _time = time;
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class SystemClock : ISystemClock
         {
             // the clock measures whole seconds only, to have integral expires_in results, and
             // because milliseconds do not round-trip serialization formats
-            var utcNowPrecisionSeconds = new DateTime((_time.GetUtcNow().Ticks / TimeSpan.TicksPerSecond) * TimeSpan.TicksPerSecond, DateTimeKind.Utc);
+            var utcNowPrecisionSeconds = new DateTime((_timeProvider.GetUtcNow().Ticks / TimeSpan.TicksPerSecond) * TimeSpan.TicksPerSecond, DateTimeKind.Utc);
             return new DateTimeOffset(utcNowPrecisionSeconds);
         }
     }

@@ -30,20 +30,7 @@ public class PolicySchemeHandler : SignInAuthenticationHandler<PolicySchemeOptio
     /// <param name="options">The monitor for the options instance.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
-    /// <param name="clock">The <see cref="ISystemClock"/>.</param>
-    /// <param name="time">The <see cref="TimeProvider"/>.</param>
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
-    public PolicySchemeHandler(IOptionsMonitor<PolicySchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time) : base(options, logger, encoder, time)
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="PolicySchemeHandler"/>.
-    /// </summary>
-    /// <param name="options">The monitor for the options instance.</param>
-    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
-    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
-    /// <param name="time">The <see cref="TimeProvider"/>.</param>
-    public PolicySchemeHandler(IOptionsMonitor<PolicySchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time) : base(options, logger, encoder, time)
+    public PolicySchemeHandler(IOptionsMonitor<PolicySchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />

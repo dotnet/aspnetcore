@@ -16,13 +16,13 @@ public class CertificateValidationCache : ICertificateValidationCache
 {
     private readonly MemoryCache _cache;
     private readonly CertificateValidationCacheOptions _options;
-    private readonly TimeProvider _time;
+    private readonly TimeProvider _timeProvider;
 
-    internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, TimeProvider time)
+    internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, TimeProvider timeProvider)
     {
         _options = options.Value;
-        _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(time) });
-        _time = time;
+        _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(timeProvider) });
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class CertificateValidationCache : ICertificateValidationCache
     public void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result)
     {
         // Never cache longer than 30 minutes
-        var absoluteExpiration = _time.GetUtcNow().Add(TimeSpan.FromMinutes(30));
+        var absoluteExpiration = _timeProvider.GetUtcNow().Add(TimeSpan.FromMinutes(30));
         var notAfter = certificate.NotAfter.ToUniversalTime();
         if (notAfter < absoluteExpiration)
         {
@@ -67,8 +67,8 @@ public class CertificateValidationCache : ICertificateValidationCache
 
     private sealed class CachingClock : Extensions.Internal.ISystemClock
     {
-        private readonly TimeProvider _time;
-        public CachingClock(TimeProvider time) => _time = time;
-        public DateTimeOffset UtcNow => _time.GetUtcNow();
+        private readonly TimeProvider _timeProvider;
+        public CachingClock(TimeProvider timeProvider) => _timeProvider = timeProvider;
+        public DateTimeOffset UtcNow => _timeProvider.GetUtcNow();
     }
 }

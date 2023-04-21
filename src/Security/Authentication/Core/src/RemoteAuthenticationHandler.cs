@@ -54,9 +54,8 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <param name="options">The monitor for the options instance.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
-    /// <param name="time">The <see cref="TimeProvider"/>.</param>
-    protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
-        : base(options, logger, encoder, time) { }
+    protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder) { }
 
     /// <inheritdoc />
     protected override Task<object> CreateEventsAsync()
@@ -232,7 +231,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
         RandomNumberGenerator.Fill(bytes);
         var correlationId = Base64UrlTextEncoder.Encode(bytes);
 
-        var cookieOptions = Options.CorrelationCookie.Build(Context, Time.GetUtcNow());
+        var cookieOptions = Options.CorrelationCookie.Build(Context, TimeProvider.GetUtcNow());
 
         properties.Items[CorrelationProperty] = correlationId;
 
@@ -267,7 +266,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
             return false;
         }
 
-        var cookieOptions = Options.CorrelationCookie.Build(Context, Time.GetUtcNow());
+        var cookieOptions = Options.CorrelationCookie.Build(Context, TimeProvider.GetUtcNow());
 
         Response.Cookies.Delete(cookieName, cookieOptions);
 

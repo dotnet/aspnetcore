@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -51,18 +50,8 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
     /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
     /// </summary>
     /// <inheritdoc />
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, TimeProvider time)
-        : base(options, logger, encoder, time)
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
-    /// </summary>
-    /// <inheritdoc />
-    public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, TimeProvider time)
-        : base(options, logger, encoder, time)
+    public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -178,7 +167,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 {
                     // https://www.w3.org/TR/xmlschema-2/#dateTime
                     // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                    var expiresAt = Time.GetUtcNow() + TimeSpan.FromSeconds(value);
+                    var expiresAt = TimeProvider.GetUtcNow() + TimeSpan.FromSeconds(value);
                     authTokens.Add(new AuthenticationToken
                     {
                         Name = "expires_at",
