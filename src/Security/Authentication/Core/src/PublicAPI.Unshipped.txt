@@ -7,4 +7,4 @@ Microsoft.AspNetCore.Authentication.PolicySchemeHandler.PolicySchemeHandler(Micr
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.RemoteAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.SignInAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.SignOutAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.SystemClock.SystemClock(System.TimeProvider! time) -> void
+Microsoft.AspNetCore.Authentication.SystemClock.SystemClock(System.TimeProvider! timeProvider) -> void

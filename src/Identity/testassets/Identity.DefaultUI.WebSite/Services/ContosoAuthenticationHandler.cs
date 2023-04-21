@@ -14,9 +14,8 @@ public class ContosoAuthenticationHandler : AuthenticationHandler<ContosoAuthent
     public ContosoAuthenticationHandler(
         IOptionsMonitor<ContosoAuthenticationOptions> options,
         ILoggerFactory logger,
-        UrlEncoder encoder,
-        TimeProvider clock)
-        : base(options, logger, encoder, clock)
+        UrlEncoder encoder)
+        : base(options, logger, encoder)
     {
     }
 

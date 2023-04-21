@@ -8,6 +8,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -70,6 +71,7 @@ public class FunctionalTest
         {
             services.ConfigureApplicationCookie(options =>
             {
+                options.TimeProvider = timeProvider;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 options.SlidingExpiration = false;
             });
@@ -77,7 +79,6 @@ public class FunctionalTest
             {
                 options.TimeProvider = timeProvider;
             });
-            services.AddSingleton<TimeProvider>(timeProvider);
         }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -116,7 +117,6 @@ public class FunctionalTest
         var timeProvider = new TestTimeProvider();
         var server = await CreateServer(services =>
         {
-            services.AddSingleton<TimeProvider>(timeProvider);
             services.Configure<SecurityStampValidatorOptions>(o => o.TimeProvider = timeProvider);
         }, testCore: testCore);
 
@@ -217,7 +217,13 @@ public class FunctionalTest
     public async Task TwoFactorRememberCookieVerification(bool testCore)
     {
         var timeProvider = new TestTimeProvider();
-        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
+        var server = await CreateServer(services =>
+        {
+            services.Configure<CookieAuthenticationOptions>(o =>
+            {
+                o.TimeProvider = timeProvider;
+            });
+        }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -248,7 +254,6 @@ public class FunctionalTest
         var timeProvider = new TestTimeProvider();
         var server = await CreateServer(services =>
         {
-            services.AddSingleton<TimeProvider>(timeProvider);
             services.Configure<SecurityStampValidatorOptions>(o => o.TimeProvider = timeProvider);
         }, testCore: testCore);
 
