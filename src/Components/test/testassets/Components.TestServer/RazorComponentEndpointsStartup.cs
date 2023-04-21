@@ -4,6 +4,7 @@
 using System.Globalization;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace TestServer;
 
@@ -19,6 +20,7 @@ public class RazorComponentEndpointsStartup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddScoped<RoutingStateProvider>();
         services.AddRazorComponents();
     }
 
@@ -39,7 +41,7 @@ public class RazorComponentEndpointsStartup
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<RazorComponentsRoot>();
+                endpoints.MapRazorComponents<App>();
 
                 StreamingRendering.MapEndpoints(endpoints);
             });
