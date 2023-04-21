@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -49,7 +50,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
-        services.TryAddScoped<RoutingStateProvider>();
+        services.TryAddScoped<RoutingStateProvider ,EndpointRoutingStateProvider>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

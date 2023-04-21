@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public class RoutingStateProvider
 {
     /// <summary>
-    /// Gets or sets RouteData
+    /// Gets RouteData
     /// </summary>
-    public RouteData? RouteData { get; set; }
+    public virtual RouteData? RouteData { get { return null; } }
 }
