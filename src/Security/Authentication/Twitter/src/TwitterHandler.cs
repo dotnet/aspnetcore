@@ -38,7 +38,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
     /// Initializes a new instance of <see cref="TwitterHandler"/>.
     /// </summary>
     /// <inheritdoc />
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
     { }

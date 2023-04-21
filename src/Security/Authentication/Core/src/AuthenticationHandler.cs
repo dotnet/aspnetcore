@@ -113,7 +113,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
     {
         Logger = logger.CreateLogger(this.GetType().FullName!);

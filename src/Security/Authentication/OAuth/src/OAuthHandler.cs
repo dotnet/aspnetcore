@@ -41,7 +41,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
     /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
     /// </summary>
     /// <inheritdoc />
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
     { }
