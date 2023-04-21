@@ -353,8 +353,8 @@ Microsoft.AspNetCore.Components.RouteAttribute.RouteAttribute(string! template) 
 Microsoft.AspNetCore.Components.RouteAttribute.Template.get -> string!
 Microsoft.AspNetCore.Components.RouteData
 Microsoft.AspNetCore.Components.RouteData.PageType.get -> System.Type!
-Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! routeValues) -> void
-Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object!>! routeValues) -> void
+Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.AspNetCore.Components.RouteView
 Microsoft.AspNetCore.Components.RouteView.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.RouteView.DefaultLayout.get -> System.Type!
