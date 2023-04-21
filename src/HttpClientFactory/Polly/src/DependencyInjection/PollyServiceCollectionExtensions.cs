@@ -3,6 +3,7 @@
 
 using System;
 using Polly.Registry;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
