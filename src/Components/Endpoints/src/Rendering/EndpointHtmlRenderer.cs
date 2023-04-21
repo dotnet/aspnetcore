@@ -67,7 +67,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var formData = httpContext.RequestServices.GetRequiredService<FormDataProvider>() as IHostEnvironmentFormDataProvider;
         if (handler != null && formData != null)
         {
-            formData.SetFormData(handler, httpContext.Request.Form.ToDictionary(kvp => kvp.Key, kvp => kvp.Value[0]).AsReadOnly());
+            formData.SetFormData(handler, form!.ToDictionary(kvp => kvp.Key, kvp => kvp.Value[0]).AsReadOnly());
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
