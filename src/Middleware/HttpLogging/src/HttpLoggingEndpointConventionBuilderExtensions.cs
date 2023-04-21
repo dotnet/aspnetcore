@@ -19,11 +19,11 @@ public static class HttpLoggingEndpointConventionBuilderExtensions
     /// <param name="requestBodyLogLimit">Sets the <see cref="HttpLoggingOptions.RequestBodyLogLimit"/> for this endpoint.</param>
     /// <param name="responseBodyLogLimit">Sets the <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/> for this endpoint.</param>
     /// <returns>The original convention builder parameter.</returns>
-    public static TBuilder WithHttpLogging<TBuilder>(this TBuilder builder, HttpLoggingFields loggingFields, int? requestBodyLogLimit = null, int? responseBodyLogLimit = null) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder WithHttpLogging<TBuilder>(this TBuilder builder, HttpLoggingFields loggingFields, int requestBodyLogLimit = -1, int responseBodyLogLimit = -1) where TBuilder : IEndpointConventionBuilder
     {
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(new HttpLoggingAttribute(loggingFields, requestBodyLogLimit ?? -1, responseBodyLogLimit ?? -1));
+            endpointBuilder.Metadata.Add(new HttpLoggingAttribute(loggingFields, requestBodyLogLimit, responseBodyLogLimit));
         });
         return builder;
     }
