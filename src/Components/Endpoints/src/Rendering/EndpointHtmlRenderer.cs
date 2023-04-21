@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Binding;
@@ -63,10 +64,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
         }
 
-        var formData = (HttpContextFormDataProvider)httpContext.RequestServices.GetRequiredService<FormDataProvider>();
-        if (handler != null)
+        var formData = httpContext.RequestServices.GetRequiredService<FormDataProvider>() as IHostEnvironmentFormDataProvider;
+        if (handler != null && formData != null)
         {
-            formData.SetFormState(form!, handler);
+            formData.SetFormData(handler, httpContext.Request.Form.ToDictionary(kvp => kvp.Key, kvp => kvp.Value[0]).AsReadOnly());
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering

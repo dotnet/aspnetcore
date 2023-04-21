@@ -4,6 +4,8 @@ abstract Microsoft.AspNetCore.Components.Binding.FormDataProvider.Name.get -> st
 Microsoft.AspNetCore.Components.Binding.FormDataProvider
 Microsoft.AspNetCore.Components.Binding.FormDataProvider.FormDataProvider() -> void
 Microsoft.AspNetCore.Components.Binding.FormDataProvider.IsFormDataAvailable.get -> bool
+Microsoft.AspNetCore.Components.Binding.IHostEnvironmentFormDataProvider
+Microsoft.AspNetCore.Components.Binding.IHostEnvironmentFormDataProvider.SetFormData(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, string?>! form) -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -90,6 +91,7 @@ public class ComponentTagHelperTest
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped(_ => navManager.Object)
+                .AddScoped<FormDataProvider, HttpContextFormDataProvider>()
                 .BuildServiceProvider(),
         };
 

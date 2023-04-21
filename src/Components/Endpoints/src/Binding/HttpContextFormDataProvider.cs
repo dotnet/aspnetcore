@@ -2,23 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Binding;
 
-internal class HttpContextFormDataProvider : FormDataProvider
+internal class HttpContextFormDataProvider : FormDataProvider, IHostEnvironmentFormDataProvider
 {
     private string? _name;
-    private ReadOnlyDictionary<string, string?>? _entries;
+    private IReadOnlyDictionary<string, string?>? _entries;
 
     public override string? Name => _name;
 
     public override IReadOnlyDictionary<string, string?> Entries => _entries ?? ReadOnlyDictionary<string, string?>.Empty;
 
-    internal void SetFormState(IFormCollection form, string handler)
+    void IHostEnvironmentFormDataProvider.SetFormData(string name, IReadOnlyDictionary<string, string?> form)
     {
-        _name = handler;
-        _entries = form.ToDictionary(kvp => kvp.Key, kvp => kvp.Value[0]).AsReadOnly();
+        _name = name;
+        _entries = form;
     }
 }
