@@ -53,7 +53,7 @@ public class FeatureCollectionTests
 
         // Regression test: Used to throw NullReferenceException because it tried to unbox a null object to a struct
         var ex = Assert.Throws<InvalidOperationException>(() => interfaces.Get<int>());
-        Assert.Equal("System.Int32 does not exist in the feature collection and because it is a struct we can't return null. Use 'featureCollection[typeof(System.Int32)] is not null' to check if it exists.", ex.Message);
+        Assert.Equal("System.Int32 does not exist in the feature collection and because it is a struct the method can't return null. Use 'featureCollection[typeof(System.Int32)] is not null' to check if the feature exists.", ex.Message);
     }
 
     [Fact]
