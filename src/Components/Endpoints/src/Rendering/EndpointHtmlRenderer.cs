@@ -65,7 +65,7 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         {
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetService<RoutingStateProvider>();
-            routingStateProvider!.RouteData = new RouteData(componentType, GetRouteDataParameters(httpContext));
+            routingStateProvider!.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
         }
     }
 
@@ -128,20 +128,5 @@ internal sealed partial class EndpointHtmlRenderer : StaticHtmlRenderer, ICompon
         // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
-    }
-
-    private static IReadOnlyDictionary<string, object> GetRouteDataParameters(HttpContext httpContext)
-    {
-        var parameters = new Dictionary<string, object>();
-
-        var routeValueDictionary = httpContext.GetRouteData().Values;
-        foreach (var kvp in routeValueDictionary)
-        {
-            if (kvp.Value != null)
-            {
-                parameters[kvp.Key] = kvp.Value;
-            }
-        }
-        return parameters;
     }
 }
