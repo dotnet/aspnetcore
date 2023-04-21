@@ -23,14 +23,14 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
     /// <param name="clock">The system clock.</param>
     /// <param name="logger">The logger.</param>
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on SecurityStampValidatorOptions instead.")]
     public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(signInManager);
         SignInManager = signInManager;
         Options = options.Value;
-        Time = new TimeClockProvider(clock);
+        TimeProvider = Options.TimeProvider ?? TimeProvider.System;
         Clock = clock;
         Logger = logger.CreateLogger(GetType());
     }
@@ -40,31 +40,16 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// </summary>
     /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
     /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
-    /// <param name="clock">The system clock.</param>
-    /// <param name="time">The system clock.</param>
     /// <param name="logger">The logger.</param>
-    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
-    public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger, TimeProvider time)
-        : this(options, signInManager, time, logger)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="SecurityStampValidator{TUser}"/>.
-    /// </summary>
-    /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
-    /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
-    /// <param name="time">The system clock.</param>
-    /// <param name="logger">The logger.</param>
-    public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, TimeProvider time, ILoggerFactory logger)
+    public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ILoggerFactory logger)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(signInManager);
         SignInManager = signInManager;
         Options = options.Value;
-        Time = time;
+        TimeProvider = Options.TimeProvider ?? TimeProvider.System;
 #pragma warning disable CS0618 // Type or member is obsolete
-        Clock = new SystemClock(time);
+        Clock = new SystemClock(TimeProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
         Logger = logger.CreateLogger(GetType());
     }
@@ -86,9 +71,9 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     public ISystemClock Clock { get; }
 
     /// <summary>
-    /// The <see cref="TimeProvider"/>.
+    /// The <see cref="System.TimeProvider"/>.
     /// </summary>
-    public TimeProvider Time { get; }
+    public TimeProvider TimeProvider { get; }
 
     /// <summary>
     /// Gets the <see cref="ILogger"/> used to log messages.
@@ -129,7 +114,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         {
             // On renewal calculate the new ticket length relative to now to avoid
             // extending the expiration.
-            context.Properties.IssuedUtc = Time.GetUtcNow();
+            context.Properties.IssuedUtc = TimeProvider.GetUtcNow();
         }
     }
 
@@ -151,9 +136,9 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
     {
         var currentUtc = DateTimeOffset.UtcNow;
-        if (Time != null)
+        if (TimeProvider != null)
         {
-            currentUtc = Time.GetUtcNow();
+            currentUtc = TimeProvider.GetUtcNow();
         }
         var issuedUtc = context.Properties.IssuedUtc;
 
