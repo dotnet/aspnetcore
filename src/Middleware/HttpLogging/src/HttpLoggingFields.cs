@@ -31,10 +31,10 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.QueryString"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Query: ?index=1
-    /// </p>
+    /// </para>
     /// RequestQuery contents can contain private information
     /// which may have regulatory concerns under GDPR
     /// and other laws. RequestQuery should not be logged
@@ -45,37 +45,37 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Protocol"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Protocol: HTTP/1.1
-    /// </p>
+    /// </para>
     /// </summary>
     RequestProtocol = 0x4,
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Method"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Method: GET
-    /// </p>
+    /// </para>
     /// </summary>
     RequestMethod = 0x8,
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Scheme"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Scheme: https
-    /// </p>
+    /// </para>
     /// </summary>
     RequestScheme = 0x10,
 
     /// <summary>
     /// Flag for logging the HTTP Response <see cref="HttpResponse.StatusCode"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// StatusCode: 200
-    /// </p>
+    /// </para>
     /// </summary>
     ResponseStatusCode = 0x20,
 
@@ -84,11 +84,11 @@ public enum HttpLoggingFields : long
     /// Request Headers are logged as soon as the middleware is invoked.
     /// Headers are redacted by default with the character '[Redacted]' unless specified in
     /// the <see cref="HttpLoggingOptions.RequestHeaders"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Connection: keep-alive
     /// My-Custom-Request-Header: [Redacted]
-    /// </p>
+    /// </para>
     /// </summary>
     RequestHeaders = 0x40,
 
@@ -97,13 +97,15 @@ public enum HttpLoggingFields : long
     /// Response Headers are logged when the <see cref="HttpResponse.Body"/> is written to
     /// or when <see cref="IHttpResponseBodyFeature.StartAsync(System.Threading.CancellationToken)"/>
     /// is called.
+    /// <para>
     /// Headers are redacted by default with the character '[Redacted]' unless specified in
     /// the <see cref="HttpLoggingOptions.ResponseHeaders"/>.
-    /// <p>
+    /// </para>
+    /// <para>
     /// For example:
     /// Content-Length: 16
     /// My-Custom-Response-Header: [Redacted]
-    /// </p>
+    /// </para>
     /// </summary>
     ResponseHeaders = 0x80,
 
