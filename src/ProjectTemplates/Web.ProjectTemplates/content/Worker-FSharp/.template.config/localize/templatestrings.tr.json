@@ -6,8 +6,8 @@
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
-  "symbols/NativeAot/displayName": "Enable _native AOT publish",
-  "symbols/NativeAot/description": "Whether to enable the project for publishing as native AOT.",
+  "symbols/NativeAot/displayName": "_yerel AOT yayımlamayı etkinleştir",
+  "symbols/NativeAot/description": "Projenin yerel AOT olarak yayımlama için etkinleştirilip etkinleştirilmeyeceğini belirtir.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
 }

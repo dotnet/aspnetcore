@@ -8,8 +8,8 @@
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",
-  "symbols/NativeAot/displayName": "Enable _native AOT publish",
-  "symbols/NativeAot/description": "Whether to enable the project for publishing as native AOT.",
+  "symbols/NativeAot/displayName": "Abilitare pubblicazione _nativo AOT",
+  "symbols/NativeAot/description": "Se abilitare il progetto per la pubblicazione come AOT nativo.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"
 }
