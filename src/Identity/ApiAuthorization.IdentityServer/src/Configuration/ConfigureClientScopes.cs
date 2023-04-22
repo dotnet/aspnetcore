@@ -30,7 +30,7 @@ internal sealed class ConfigureClientScopes : IPostConfigureOptions<ApiAuthoriza
         {
             if (!identityResource.Properties.TryGetValue(ApplicationProfilesPropertyNames.Clients, out var clientList))
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForIdentityResource, "Identity resource '{IdentityResourceName}' doesn't define a list of allowed applications.", identityResource.Name);
                 }
@@ -40,7 +40,7 @@ internal sealed class ConfigureClientScopes : IPostConfigureOptions<ApiAuthoriza
             var resourceClients = clientList.Split(DefaultClientListSeparator, StringSplitOptions.RemoveEmptyEntries);
             if (resourceClients.Length == 0)
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForIdentityResource, "Identity resource '{IdentityResourceName}' doesn't define a list of allowed applications.", identityResource.Name);
                 }

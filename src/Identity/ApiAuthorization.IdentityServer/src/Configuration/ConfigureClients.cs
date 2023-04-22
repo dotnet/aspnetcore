@@ -39,7 +39,7 @@ internal sealed class ConfigureClients : IConfigureOptions<ApiAuthorizationOptio
         {
             foreach (var kvp in data)
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.ConfiguringClient, "Configuring client '{ClientName}'.", kvp.Key);
                 }

@@ -70,7 +70,7 @@ internal sealed class ConfigureSigningCredentials : IConfigureOptions<ApiAuthori
             case KeySources.Development:
                 var developmentKeyPath = Path.Combine(Directory.GetCurrentDirectory(), key.FilePath ?? DefaultTempKeyRelativePath);
                 var createIfMissing = key.Persisted ?? true;
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.DevelopmentKeyLoaded, "Loading development key at '{developmentKeyPath}'.", developmentKeyPath);
                 }
@@ -82,7 +82,7 @@ internal sealed class ConfigureSigningCredentials : IConfigureOptions<ApiAuthori
             case KeySources.File:
                 var pfxPath = Path.Combine(Directory.GetCurrentDirectory(), key.FilePath);
                 var storageFlags = GetStorageFlags(key);
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.CertificateLoadedFromFile, "Loading certificate file at '{CertificatePath}' with storage flags '{CertificateStorageFlags}'.", pfxPath, key.StorageFlags);
                 }

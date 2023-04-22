@@ -63,7 +63,7 @@ internal static class AngularCliMiddleware
         {
             portNumber = TcpPortFinder.FindAvailablePort();
         }
-        if (_logger.IsEnabled(LogLevel.Information))
+        if (logger.IsEnabled(LogLevel.Information))
         {
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
         }

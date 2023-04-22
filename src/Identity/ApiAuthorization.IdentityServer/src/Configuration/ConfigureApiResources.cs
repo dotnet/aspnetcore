@@ -46,7 +46,7 @@ internal sealed class ConfigureApiResources : IConfigureOptions<ApiAuthorization
         {
             foreach (var kvp in data)
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.ConfiguringAPIResource, "Configuring API resource '{ApiResourceName}'.", kvp.Key);
                 }
@@ -59,7 +59,7 @@ internal sealed class ConfigureApiResources : IConfigureOptions<ApiAuthorization
         {
             foreach (var kvp in localResources)
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.ConfiguringLocalAPIResource, "Configuring local API resource '{ApiResourceName}'.", kvp.Key);
                 }
