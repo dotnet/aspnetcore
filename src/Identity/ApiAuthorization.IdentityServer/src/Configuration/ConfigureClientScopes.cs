@@ -47,7 +47,7 @@ internal sealed class ConfigureClientScopes : IPostConfigureOptions<ApiAuthoriza
                 continue;
             }
 
-            if (_logger.IsEnabled(_logger.Information))
+            if (_logger.IsEnabled(LogLevel.Information))
             {
                 if (resourceClients.Length == 1 && resourceClients[0] == ApplicationProfilesPropertyValues.AllowAllApplications)
                 {
@@ -76,7 +76,7 @@ internal sealed class ConfigureClientScopes : IPostConfigureOptions<ApiAuthoriza
         {
             if (!resource.Properties.TryGetValue(ApplicationProfilesPropertyNames.Clients, out var clientList))
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForApiResource, "Resource '{ApiResourceName}' doesn't define a list of allowed applications.", resource.Name);
                 }
@@ -86,14 +86,14 @@ internal sealed class ConfigureClientScopes : IPostConfigureOptions<ApiAuthoriza
             var resourceClients = clientList.Split(DefaultClientListSeparator, StringSplitOptions.RemoveEmptyEntries);
             if (resourceClients.Length == 0)
             {
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.AllowedApplicationNotDefienedForApiResource, "Resource '{ApiResourceName}' doesn't define a list of allowed applications.", resource.Name);
                 }
                 continue;
             }
 
-            if (_logger.IsEnabled(_logger.Information))
+            if (_logger.IsEnabled(LogLevel.Information))
             {
                 if (resourceClients.Length == 1 && resourceClients[0] == ApplicationProfilesPropertyValues.AllowAllApplications)
                 {

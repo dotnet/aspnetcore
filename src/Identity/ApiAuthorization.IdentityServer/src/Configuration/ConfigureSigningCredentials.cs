@@ -92,7 +92,7 @@ internal sealed class ConfigureSigningCredentials : IConfigureOptions<ApiAuthori
                 {
                     throw new InvalidOperationException($"Invalid certificate store location '{key.StoreLocation}'.");
                 }
-                if (_logger.IsEnabled(_logger.Information))
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation(LoggerEventIds.CertificateLoadedFromStore, "Loading certificate with subject '{CertificateSubject}' in '{CertificateStoreLocation}\\{CertificateStoreName}'.", key.Name, key.StoreLocation, key.StoreName);
                 }
