@@ -47,11 +47,11 @@ public static class ConnectionBuilderExtensions
 
     /// <summary>
     /// Add the given <paramref name="middleware"/> to the connection.
-    /// If you aren't calling the next function, use <see cref="Run(IConnectionBuilder, Func&lt;ConnectionContext, Task&gt;)"/> instead.
+    /// If you aren't calling the next function, use <see cref="Run(IConnectionBuilder, Func{ConnectionContext, Task})"/> instead.
     /// <para>
     /// Prefer using <see cref="Use(IConnectionBuilder, Func{ConnectionContext, ConnectionDelegate, Task})"/> for better performance as shown below:
     /// <code>
-    /// app.Use((context, next) =>
+    /// builder.Use((context, next) =>
     /// {
     ///     return next(context);
     /// });
