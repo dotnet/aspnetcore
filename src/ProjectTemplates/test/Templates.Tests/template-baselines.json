@@ -532,6 +532,8 @@
       "Template": "api",
       "Arguments": "new api",
       "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
         "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
@@ -543,6 +545,8 @@
       "Template": "api",
       "Arguments": "new api -aot",
       "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
         "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
@@ -554,6 +558,8 @@
       "Template": "api",
       "Arguments": "new api --use-program-main",
       "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
         "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
@@ -565,6 +571,8 @@
       "Template": "api",
       "Arguments": "new api -aot --use-program-main",
       "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
         "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
