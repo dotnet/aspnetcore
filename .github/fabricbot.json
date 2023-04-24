@@ -3696,10 +3696,6 @@
               "parameters": {
                 "label": "INTERNAL: Debug"
               }
-            },
-            {
-              "name": "isInMilestone",
-              "parameters": {}
             }
           ]
         },
