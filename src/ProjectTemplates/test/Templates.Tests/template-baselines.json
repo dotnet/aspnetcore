@@ -543,7 +543,7 @@
     },
     "NativeAot": {
       "Template": "api",
-      "Arguments": "new api -aot",
+      "Arguments": "new api --aot",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -569,7 +569,7 @@
     },
     "ProgramMainNativeAot": {
       "Template": "api",
-      "Arguments": "new api -aot --use-program-main",
+      "Arguments": "new api --aot --use-program-main",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
