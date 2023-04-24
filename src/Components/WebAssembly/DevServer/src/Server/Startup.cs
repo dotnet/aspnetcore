@@ -41,7 +41,15 @@ internal sealed class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapFallbackToFile("index.html");
+            endpoints.MapFallbackToFile("index.html", new StaticFileOptions
+            {
+                OnPrepareResponse = fileContext =>
+                {
+                    // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                    fileContext.Context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+                    fileContext.Context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                }
+            });
         });
     }
 

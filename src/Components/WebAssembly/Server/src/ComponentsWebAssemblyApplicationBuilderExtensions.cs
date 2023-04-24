@@ -61,6 +61,8 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
                     }
                 }
 
+                // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                ApplyCrossOriginPolicyHeadersOnJavaScriptFiles(context);
                 await next(context);
             });
 
@@ -124,6 +126,16 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         };
 
         return options;
+    }
+
+    private static void ApplyCrossOriginPolicyHeadersOnJavaScriptFiles(HttpContext httpContext)
+    {
+        string fileExtension = Path.GetExtension(httpContext.Request.Path);
+        if (string.Equals(fileExtension, ".js"))
+        {
+            httpContext.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+            httpContext.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+        }
     }
 
     private static void AddMapping(FileExtensionContentTypeProvider provider, string name, string mimeType)
