@@ -209,7 +209,7 @@ When the client has finished with the connection, it can issue a `DELETE` reques
 ## Ack Protocol
 
 The ack protocol primarily consists of writing and reading framing around the data being sent and received.
-All sends need to start with a 24 byte frame. The frame is 2 12 byte base64 encoded values. The first base64 value when decoded is the length of the payload being sent (minus the framing) as an int64 value. The second base64 value when decoded is the ack ID as an int64 of how many bytes have been received from the other side so far.
+All sends need to start with a 24 byte frame. The frame consists of 2 64-bit little-endian values, both base-64 encoded (preserving padding) for a total of 12 bytes. The first base-64 value when decoded is the length of the payload being sent (minus the framing) as an int64 value. The second base-64 value when decoded is the ack ID as an int64 of how many bytes have been received from the other side so far.
 
 The second part of the protocol is for when the transport ungracefully reconnects and uses the Ack IDs to get any data that might have been missed during the disconnect window. This will be described after showing the framing.
 
@@ -220,11 +220,11 @@ Consider the following example:
 0x41 0x67 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d 0x48 0x51 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d 0x48 0x69
 
 This is a 26 byte message, the first 24 bytes are the framing, which we'll split into two 12 byte sections and the 2 remaining bytes
-0x41 0x67 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d - Base64 represention as bytes
+(hex) 41 67 41 41 41 41 41 41 41 41 41 3d - Base64 represention as bytes
 AgAAAAAAAAA= - Base64 representation in ASCII
 2 0 0 0 0 0 0 0 0 0 0 0 - Base64 decoded, int64 value of 2, representing a 2 length payload after the framing
 
-0x48 0x51 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x41 0x3d - Base64 represention as bytes
+(hex) 48 51 41 41 41 41 41 41 41 41 41 3d - Base64 represention as bytes
 HQAAAAAAAAA= - Base64 representation in ASCII
 29 0 0 0 0 0 0 0 0 0 0 0 - Base64 decoded, int64 value of 29, representing an ack id of 29 bytes received from the endpoint so far
 
