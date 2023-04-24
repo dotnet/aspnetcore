@@ -40,7 +40,7 @@ public class WorkerTemplateTest : LoggedTest
 
     [ConditionalTheory(Skip = "Unskip when Helix supports native AOT. https://github.com/dotnet/aspnetcore/pull/47247/")]
     [InlineData("C#")]
-    [InlineData("F#")]
+    // [InlineData("F#")] F# doesn't fully support NativeAOT - https://github.com/dotnet/fsharp/issues/13398
     public async Task WorkerTemplateNativeAotAsync(string language)
     {
         await WorkerTemplateCoreAsync(language, args: new[] { ArgConstants.PublishNativeAot });
