@@ -217,13 +217,7 @@ public class FunctionalTest
     public async Task TwoFactorRememberCookieVerification(bool testCore)
     {
         var timeProvider = new TestTimeProvider();
-        var server = await CreateServer(services =>
-        {
-            services.Configure<CookieAuthenticationOptions>(o =>
-            {
-                o.TimeProvider = timeProvider;
-            });
-        }, testCore: testCore);
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -252,10 +246,7 @@ public class FunctionalTest
     public async Task TwoFactorRememberCookieClearedBySecurityStampChange(bool testCore)
     {
         var timeProvider = new TestTimeProvider();
-        var server = await CreateServer(services =>
-        {
-            services.Configure<SecurityStampValidatorOptions>(o => o.TimeProvider = timeProvider);
-        }, testCore: testCore);
+        var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);

@@ -91,5 +91,5 @@ public class AuthenticationSchemeOptions
     /// <summary>
     /// Used for testing.
     /// </summary>
-    public TimeProvider TimeProvider { get; set; } = TimeProvider.System;
+    public TimeProvider TimeProvider { get; set; } = null!;
 }
