@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using System.Buffers.Binary;
 
 #nullable enable
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Connections;
 // Wrapper around a PipeWriter that adds framing to writes
 internal sealed class AckPipeWriter : PipeWriter
 {
-    public const int FrameSize = 24;
+    public const int FrameHeaderSize = 24;
     private readonly PipeWriter _inner;
     internal long LastAck;
 
@@ -34,7 +35,7 @@ internal sealed class AckPipeWriter : PipeWriter
         _buffered += bytes;
         if (_shouldAdvanceFrameHeader)
         {
-            bytes += FrameSize;
+            bytes += FrameHeaderSize;
             _shouldAdvanceFrameHeader = false;
         }
         _inner.Advance(bytes);
@@ -58,7 +59,7 @@ internal sealed class AckPipeWriter : PipeWriter
     // [ XXXX YYYY ZZZZ ]
     public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
     {
-        Debug.Assert(_frameHeader.Length >= FrameSize);
+        Debug.Assert(_frameHeader.Length >= FrameHeaderSize);
 
         WriteFrame(_frameHeader.Span, _buffered, LastAck);
 
@@ -69,13 +70,13 @@ internal sealed class AckPipeWriter : PipeWriter
 
     public override Memory<byte> GetMemory(int sizeHint = 0)
     {
-        var segment = _inner.GetMemory(Math.Max(FrameSize + 1, sizeHint));
+        var segment = _inner.GetMemory(Math.Max(FrameHeaderSize + 1, sizeHint));
         if (_frameHeader.IsEmpty || _buffered == 0)
         {
-            Debug.Assert(segment.Length > FrameSize);
+            Debug.Assert(segment.Length > FrameHeaderSize);
 
-            _frameHeader = segment.Slice(0, FrameSize);
-            segment = segment.Slice(FrameSize);
+            _frameHeader = segment.Slice(0, FrameHeaderSize);
+            segment = segment.Slice(FrameHeaderSize);
             _shouldAdvanceFrameHeader = true;
         }
         return segment;
@@ -88,28 +89,16 @@ internal sealed class AckPipeWriter : PipeWriter
 
     public static void WriteFrame(Span<byte> header, long length, long ack)
     {
-        Debug.Assert(header.Length >= FrameSize);
+        Debug.Assert(header.Length >= FrameHeaderSize);
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        var res = BitConverter.TryWriteBytes(header, length);
-        Debug.Assert(res);
+        BinaryPrimitives.WriteInt64LittleEndian(header, length);
         var status = Base64.EncodeToUtf8InPlace(header, 8, out var written);
         Debug.Assert(status == OperationStatus.Done);
         Debug.Assert(written == 12);
-        res = BitConverter.TryWriteBytes(header.Slice(12), ack);
-        Debug.Assert(res);
+
+        BinaryPrimitives.WriteInt64LittleEndian(header.Slice(12), ack);
         status = Base64.EncodeToUtf8InPlace(header.Slice(12), 8, out written);
         Debug.Assert(status == OperationStatus.Done);
         Debug.Assert(written == 12);
-#else
-        BitConverter.GetBytes(length).CopyTo(header);
-        var status = Base64.EncodeToUtf8InPlace(header, 8, out var written);
-        Debug.Assert(status == OperationStatus.Done);
-        Debug.Assert(written == 12);
-        BitConverter.GetBytes(ack).CopyTo(header.Slice(12));
-        status = Base64.EncodeToUtf8InPlace(header.Slice(12), 8, out written);
-        Debug.Assert(status == OperationStatus.Done);
-        Debug.Assert(written == 12);
-#endif
     }
 }

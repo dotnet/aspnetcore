@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.IO.Pipelines;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Connections;
 // Notify application pipe of ack id provided by other side of the network
 internal sealed class ParseAckPipeReader : PipeReader
 {
-    private const int FrameSize = 24;
+    private const int FrameHeaderSize = 24;
     private readonly PipeReader _inner;
     private readonly AckPipeWriter _ackPipeWriter;
     private readonly AckPipeReader _ackPipeReader;
@@ -79,9 +80,9 @@ internal sealed class ParseAckPipeReader : PipeReader
             if (res.IsCompleted || res.IsCanceled)
             {
                 // TODO: figure out behavior
-                if (res.Buffer.Length >= FrameSize)
+                if (res.Buffer.Length >= FrameHeaderSize)
                 {
-                    res = new(res.Buffer.Slice(FrameSize), res.IsCanceled, res.IsCompleted);
+                    res = new(res.Buffer.Slice(FrameHeaderSize), res.IsCanceled, res.IsCompleted);
                 }
                 return res;
             }
@@ -90,23 +91,23 @@ internal sealed class ParseAckPipeReader : PipeReader
             if (_remaining == 0)
             {
                 // TODO: didn't get 24 bytes
-                var frame = buffer.Slice(0, FrameSize);
+                var frame = buffer.Slice(0, FrameHeaderSize);
                 var len = ParseFrame(frame, _ackPipeReader);
                 _totalBytes += len;
 
                 _remaining = len;
 
                 // if the buffer doesn't have enough data we need to update how much we're slicing
-                if (len > buffer.Length - FrameSize)
+                if (len > buffer.Length - FrameHeaderSize)
                 {
-                    len = buffer.Length - FrameSize;
+                    len = buffer.Length - FrameHeaderSize;
                 }
 
-                buffer = buffer.Slice(FrameSize, len);
+                buffer = buffer.Slice(FrameHeaderSize, len);
                 _currentRead = buffer;
                 // 0 length means it was part of the reconnect handshake and not sent over the pipe, ignore it for acking purposes
                 // TODO: check if 0 byte writes are possible in ConnectionHandlers and possibly handle them differently
-                _ackPipeWriter.LastAck += buffer.Length == 0 ? 0 : buffer.Length + FrameSize;
+                _ackPipeWriter.LastAck += buffer.Length == 0 ? 0 : buffer.Length + FrameHeaderSize;
             }
             else
             {
@@ -141,37 +142,26 @@ internal sealed class ParseAckPipeReader : PipeReader
 
     public static long ParseFrame(ReadOnlySequence<byte> frame, AckPipeReader ackPipeReader)
     {
-        Debug.Assert(frame.Length >= FrameSize);
-        frame = frame.Slice(0, FrameSize);
+        Debug.Assert(frame.Length >= FrameHeaderSize);
+        frame = frame.Slice(0, FrameHeaderSize);
 
         long len;
         long ackId;
 
         // TODO: check perf of single Span check vs Stackalloc
-        Span<byte> buffer = stackalloc byte[FrameSize];
+        Span<byte> buffer = stackalloc byte[FrameHeaderSize];
         frame.CopyTo(buffer);
-        var status = Base64.DecodeFromUtf8InPlace(buffer.Slice(0, FrameSize / 2), out var written);
+        var status = Base64.DecodeFromUtf8InPlace(buffer.Slice(0, FrameHeaderSize / 2), out var written);
         Debug.Assert(status == OperationStatus.Done);
         Debug.Assert(written == 8);
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        len = BitConverter.ToInt64(buffer);
-#else
-        var longBuf = new byte[8];
-        buffer.Slice(0, 8).CopyTo(longBuf);
-        len = BitConverter.ToInt64(longBuf, 0);
-#endif
+        len = BinaryPrimitives.ReadInt64LittleEndian(buffer);
 
-        status = Base64.DecodeFromUtf8InPlace(buffer.Slice(FrameSize / 2), out written);
+        var ackFrame = buffer.Slice(FrameHeaderSize / 2);
+        status = Base64.DecodeFromUtf8InPlace(ackFrame, out written);
         Debug.Assert(status == OperationStatus.Done);
         Debug.Assert(written == 8);
-
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        ackId = BitConverter.ToInt64(buffer.Slice(FrameSize / 2));
-#else
-        buffer.Slice(12, 8).CopyTo(longBuf);
-        ackId = BitConverter.ToInt64(longBuf, 0);
-#endif
+        ackId = BinaryPrimitives.ReadInt64LittleEndian(ackFrame);
 
         // Update ack id provided by other side, so the underlying pipe can release buffered memory
         ackPipeReader.Ack(ackId);
@@ -180,6 +170,7 @@ internal sealed class ParseAckPipeReader : PipeReader
 
     public override bool TryRead(out ReadResult result)
     {
+        // TODO: Not needed for SignalR, but could be called in ConnectionHandler layer of user code
         throw new NotImplementedException();
     }
 }

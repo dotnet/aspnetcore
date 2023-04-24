@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
@@ -37,7 +38,9 @@ internal sealed partial class WebSocketsTransport : ITransport
     private readonly bool _useAck;
 
     private IDuplexPipe? _transport;
-    private bool _closed;
+    // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
+    // The assumption is that a graceful close was triggered purposefully by either the client or server and a reconnect shouldn't occur 
+    private bool _gracefulClose;
 
     internal Task Running { get; private set; } = Task.CompletedTask;
 
@@ -318,14 +321,34 @@ internal sealed partial class WebSocketsTransport : ITransport
                     // 3. Resume normal send/receive loops
 
                     ignoreFirstCanceled = true;
-                    var buf = new byte[AckPipeWriter.FrameSize];
+                    var buf = new byte[AckPipeWriter.FrameHeaderSize];
                     AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)_transport.Output).LastAck);
-                    await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameSize), _webSocketMessageType, true, _stopCts.Token).ConfigureAwait(false);
+                    await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameHeaderSize), _webSocketMessageType, true, _stopCts.Token).ConfigureAwait(false);
 
                     Array.Clear(buf, 0, buf.Length);
-                    var receiveResult = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameSize), _stopCts.Token).ConfigureAwait(false);
                     // server sends 0 length, but with latest ack, so there shouldn't be more than a frame of data sent
-                    Debug.Assert(receiveResult.Count == AckPipeWriter.FrameSize);
+                    var readLength = 0;
+                    WebSocketReceiveResult? receiveResult;
+                    do
+                    {
+                        receiveResult = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buf, readLength, AckPipeWriter.FrameHeaderSize - readLength), _stopCts.Token).ConfigureAwait(false);
+                        readLength += receiveResult.Count;
+                    } while (readLength < AckPipeWriter.FrameHeaderSize && !receiveResult.EndOfMessage);
+
+                    if (readLength != AckPipeWriter.FrameHeaderSize)
+                    {
+                        _application.Output.Complete(new InvalidDataException("WebSocket reconnect handshake received less data than expected."));
+                        _application.Input.Complete();
+                        return;
+                    }
+
+                    if (!receiveResult.EndOfMessage)
+                    {
+                        _application.Output.Complete(new InvalidDataException("WebSocket reconnect handshake received more data than expected."));
+                        _application.Input.Complete();
+                        return;
+                    }
+
                     // Parsing ack id and updating reader here avoids issue where we send to server before receive loop runs, which is what normally updates ack
                     // This avoids resending data that was already acked
                     var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(buf), reader);
@@ -407,14 +430,14 @@ internal sealed partial class WebSocketsTransport : ITransport
                 socket.Abort();
 
                 // Cancel any pending flush so that we can quit
-                if (_closed)
+                if (_gracefulClose)
                 {
                     _application.Output.CancelPendingFlush();
                 }
             }
         }
 
-        if (_useAck && !_closed)
+        if (_useAck && !_gracefulClose)
         {
             await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text, default).ConfigureAwait(false);
         }
@@ -434,7 +457,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    _closed = true;
+                    _gracefulClose = true;
                     Log.WebSocketClosed(_logger, socket.CloseStatus);
 
                     if (socket.CloseStatus != WebSocketCloseStatus.NormalClosure)
@@ -461,7 +484,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 // Need to check again for netstandard2.1 because a close can happen between a 0-byte read and the actual read
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
-                    _closed = true;
+                    _gracefulClose = true;
                     Log.WebSocketClosed(_logger, socket.CloseStatus);
 
                     if (socket.CloseStatus != WebSocketCloseStatus.NormalClosure)
@@ -494,7 +517,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         {
             if (!_aborted)
             {
-                if (_closed)
+                if (_gracefulClose)
                 {
                     _application.Output.Complete(ex);
                 }
@@ -508,7 +531,7 @@ internal sealed partial class WebSocketsTransport : ITransport
         finally
         {
             // We're done writing
-            if (_closed)
+            if (_gracefulClose)
             {
                 _application.Output.Complete();
             }
@@ -605,7 +628,7 @@ internal sealed partial class WebSocketsTransport : ITransport
                 }
             }
 
-            if (_closed)
+            if (_gracefulClose)
             {
                 _application.Input.Complete(error);
             }
@@ -639,7 +662,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
     public async Task StopAsync()
     {
-        _closed = true;
+        _gracefulClose = true;
         Log.TransportStopping(_logger);
 
         if (_application == null)
