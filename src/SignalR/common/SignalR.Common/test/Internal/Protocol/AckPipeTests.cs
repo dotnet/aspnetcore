@@ -6,6 +6,7 @@ using System.Buffers.Text;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -679,14 +680,41 @@ public class AckPipeTests
         Assert.False(res.IsCompleted);
     }
 
+    [Fact]
+    public async Task BackpressureIsAppliedInBothDirections()
+    {
+        var duplexPipe = CreateClient(inputOptions: new PipeOptions(pauseWriterThreshold: 10, resumeWriterThreshold: 5, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline),
+            outputOptions: new PipeOptions(pauseWriterThreshold: 10, resumeWriterThreshold: 5, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline));
+
+        var buffer = new byte[FrameSize + 1];
+        WriteFrame(buffer, 1, 0);
+        var writeTask = duplexPipe.Application.Output.WriteAsync(buffer);
+        // Shouldn't complete until the reader reads due to pauseWriterThreshold being 10 and we wrote 25
+        Assert.False(writeTask.IsCompleted);
+
+        var res = await duplexPipe.Transport.Input.ReadAsync();
+        Assert.Equal(1, res.Buffer.Length);
+        duplexPipe.Transport.Input.AdvanceTo(res.Buffer.Start, res.Buffer.End);
+        await writeTask.DefaultTimeout();
+
+        writeTask = duplexPipe.Transport.Output.WriteAsync(new byte[2] { 4, 5 });
+        // Shouldn't complete until the reader reads due to pauseWriterThreshold being 10 and we wrote 26
+        Assert.False(writeTask.IsCompleted);
+
+        res = await duplexPipe.Application.Input.ReadAsync();
+        Assert.Equal(26, res.Buffer.Length);
+        duplexPipe.Application.Input.AdvanceTo(res.Buffer.End);
+        await writeTask.DefaultTimeout();
+    }
+
     internal static DuplexPipePair CreateClient(PipeOptions inputOptions = default, PipeOptions outputOptions = default)
     {
         var input = new Pipe(inputOptions ?? new());
         var output = new Pipe(outputOptions ?? new());
 
         // Use for one side only, this is client side
-        var ackWriter = new AckPipeWriter(output.Writer);
-        var ackReader = new AckPipeReader(output.Reader);
+        var ackWriter = new AckPipeWriter(output);
+        var ackReader = new AckPipeReader(output);
         var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
         var transportToApplication = new DuplexPipe(ackReader, input.Writer);
         var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
@@ -703,8 +731,8 @@ public class AckPipeTests
         var output = new Pipe(outputOptions ?? new());
 
         // Use for one side only, this is server side
-        var ackWriter = new AckPipeWriter(output.Writer);
-        var ackReader = new AckPipeReader(output.Reader);
+        var ackWriter = new AckPipeWriter(output);
+        var ackReader = new AckPipeReader(output);
         var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
         var transportToApplication = new DuplexPipe(ackReader, input.Writer);
         var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
@@ -763,10 +791,10 @@ public class AckPipeTests
         var output = new Pipe(outputOptions);
 
         // wire up both sides for testing
-        var ackWriterApp = new AckPipeWriter(output.Writer);
-        var ackReaderApp = new AckPipeReader(output.Reader);
-        var ackWriterClient = new AckPipeWriter(input.Writer);
-        var ackReaderClient = new AckPipeReader(input.Reader);
+        var ackWriterApp = new AckPipeWriter(output);
+        var ackReaderApp = new AckPipeReader(output);
+        var ackWriterClient = new AckPipeWriter(input);
+        var ackReaderClient = new AckPipeReader(input);
         var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReaderApp);
         var applicationReader = new ParseAckPipeReader(ackReaderApp, ackWriterClient, ackReaderClient);
         var transportToApplication = new DuplexPipe(applicationReader, ackWriterClient);

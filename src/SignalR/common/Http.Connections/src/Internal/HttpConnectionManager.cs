@@ -111,8 +111,8 @@ internal sealed partial class HttpConnectionManager
             var output = new Pipe(outputOptions);
 
             // Use for one side only, i.e. server
-            var ackWriterApp = new AckPipeWriter(output.Writer);
-            var ackReader = new AckPipeReader(output.Reader);
+            var ackWriterApp = new AckPipeWriter(output);
+            var ackReader = new AckPipeReader(output);
             var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReader);
             var transportToApplication = new DuplexPipe(ackReader, input.Writer);
             var applicationToTransport = new DuplexPipe(transportReader, ackWriterApp);
