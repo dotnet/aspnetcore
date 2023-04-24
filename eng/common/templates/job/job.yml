@@ -25,7 +25,7 @@ parameters:
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
   enableBuildRetry: false
-  disableComponentGovernance: false
+  disableComponentGovernance: ''
   componentGovernanceIgnoreDirectories: ''
   mergeTestResults: false
   testRunTitle: ''
@@ -155,11 +155,14 @@ jobs:
         uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true
 
-  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), ne(parameters.disableComponentGovernance, 'true')) }}:
-      - task: ComponentGovernanceComponentDetection@0
-        continueOnError: true
-        inputs:
-          ignoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
+  - template: /eng/common/templates/steps/component-governance.yml
+    parameters:
+      ${{ if eq(parameters.disableComponentGovernance, '') }}:
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(contains(variables['Build.SourceBranch'], 'internal/release'), eq(variables['Build.SourceBranch'], 'main'))) }}:
+          disableComponentGovernance: false
+        ${{ else }}:
+          disableComponentGovernance: true
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
