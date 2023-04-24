@@ -209,7 +209,7 @@ When the client has finished with the connection, it can issue a `DELETE` reques
 ## Ack Protocol
 
 The ack protocol primarily consists of writing and reading framing around the data being sent and received.
-All sends need to start with a 24 byte frame. The frame consists of 2 64-bit little-endian values, both base-64 encoded (preserving padding) for a total of 12 bytes. The first base-64 value when decoded is the length of the payload being sent (minus the framing) as an int64 value. The second base-64 value when decoded is the ack ID as an int64 of how many bytes have been received from the other side so far.
+All sends need to start with a 24 byte frame. The frame consists of 2 64-bit little-endian values (8 bytes), both base-64 encoded (preserving padding) for a total of 2 12 byte base-64 values. The first base-64 value when decoded is the length of the payload being sent (minus the framing) as an int64 value. The second base-64 value when decoded is the ack ID as an int64 of how many bytes have been received from the other side so far.
 
 The second part of the protocol is for when the transport ungracefully reconnects and uses the Ack IDs to get any data that might have been missed during the disconnect window. This will be described after showing the framing.
 

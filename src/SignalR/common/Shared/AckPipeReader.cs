@@ -25,9 +25,12 @@ internal sealed class AckPipeReader : PipeReader
     private long _totalWritten;
     private bool _resend;
 
-    public AckPipeReader(PipeReader inner)
+    // Accept Pipe instead of PipeReader because we don't want custom pipe implementations to be used with this type
+    // and Pipe is sealed so a custom one can't be provided
+    // We rely on undefined implementation details of the default Pipe
+    public AckPipeReader(Pipe innerPipe)
     {
-        _inner = inner;
+        _inner = innerPipe.Reader;
     }
 
     // Update the ack position. This number includes the framing size.

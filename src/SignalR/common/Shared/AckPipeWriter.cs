@@ -25,9 +25,12 @@ internal sealed class AckPipeWriter : PipeWriter
     bool _shouldAdvanceFrameHeader;
     private long _buffered;
 
-    public AckPipeWriter(PipeWriter inner)
+    // Accept Pipe instead of PipeWriter because we don't want custom pipe implementations to be used with this type
+    // and Pipe is sealed so a custom one can't be provided
+    // We rely on undefined implementation details of the default Pipe
+    public AckPipeWriter(Pipe innerPipe)
     {
-        _inner = inner;
+        _inner = innerPipe.Writer;
     }
 
     public override void Advance(int bytes)
