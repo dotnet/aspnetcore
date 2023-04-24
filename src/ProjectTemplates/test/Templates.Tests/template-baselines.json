@@ -541,7 +541,7 @@
     },
     "NativeAot": {
       "Template": "api",
-      "Arguments": "new api -aot",
+      "Arguments": "new api --aot",
       "Files": [
         "Todo.cs",
         "Program.cs",
@@ -563,7 +563,7 @@
     },
     "ProgramMainNativeAot": {
       "Template": "api",
-      "Arguments": "new api -aot --use-program-main",
+      "Arguments": "new api --aot --use-program-main",
       "Files": [
         "Todo.cs",
         "Program.cs",
