@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// within the context of a <see cref="Renderer"/>. This is an internal implementation
 /// detail of <see cref="Renderer"/>.
 /// </summary>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class ComponentState : IDisposable
 {
     private readonly Renderer _renderer;
@@ -74,6 +76,7 @@ public class ComponentState : IDisposable
         }
 
         _nextRenderTree.Clear();
+        _nextRenderTree.TrackNamedEventHandlers = _renderer.ShouldTrackNamedEventHandlers();
 
         try
         {
@@ -99,7 +102,8 @@ public class ComponentState : IDisposable
             batchBuilder,
             ComponentId,
             _nextRenderTree.GetFrames(),
-            CurrentRenderTree.GetFrames());
+            CurrentRenderTree.GetFrames(),
+            CurrentRenderTree.GetNamedEvents());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
     }
@@ -296,5 +300,10 @@ public class ComponentState : IDisposable
         {
             return Task.FromException(e);
         }
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"{ComponentId} - {Component.GetType().Name} - Disposed: {_componentWasDisposed}";
     }
 }

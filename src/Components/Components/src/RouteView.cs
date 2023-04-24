@@ -5,6 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -16,8 +17,6 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public class RouteView : IComponent
 {
-    private readonly RenderFragment _renderDelegate;
-    private readonly RenderFragment _renderPageWithParametersDelegate;
     private RenderHandle _renderHandle;
 
     [Inject]
@@ -39,16 +38,6 @@ public class RouteView : IComponent
     [Parameter]
     public Type DefaultLayout { get; set; }
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="RouteView"/>.
-    /// </summary>
-    public RouteView()
-    {
-        // Cache the delegate instances
-        _renderDelegate = Render;
-        _renderPageWithParametersDelegate = RenderPageWithParameters;
-    }
-
     /// <inheritdoc />
     public void Attach(RenderHandle renderHandle)
     {
@@ -65,7 +54,7 @@ public class RouteView : IComponent
             throw new InvalidOperationException($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.");
         }
 
-        _renderHandle.Render(_renderDelegate);
+        _renderHandle.Render(Render);
         return Task.CompletedTask;
     }
 
@@ -82,35 +71,45 @@ public class RouteView : IComponent
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
-        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), _renderPageWithParametersDelegate);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)RenderPageWithParameters);
         builder.CloseComponent();
     }
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        builder.OpenComponent(0, RouteData.PageType);
-
-        foreach (var kvp in RouteData.RouteValues)
-        {
-            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-        }
-
-        var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
-        if (queryParameterSupplier is not null)
-        {
-            // Since this component does accept some parameters from query, we must supply values for all of them,
-            // even if the querystring in the URI is empty. So don't skip the following logic.
-            var url = NavigationManager.Uri;
-            ReadOnlyMemory<char> query = default;
-            var queryStartPos = url.IndexOf('?');
-            if (queryStartPos >= 0)
-            {
-                var queryEndPos = url.IndexOf('#', queryStartPos);
-                query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-            }
-            queryParameterSupplier.RenderParametersFromQueryString(builder, query);
-        }
-
+        builder.OpenComponent<CascadingModelBinder>(0);
+        builder.AddComponentParameter(1, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderPageWithContext);
         builder.CloseComponent();
+
+        RenderFragment RenderPageWithContext(ModelBindingContext context) => RenderPageCore;
+
+        void RenderPageCore(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent(0, RouteData.PageType);
+
+            foreach (var kvp in RouteData.RouteValues)
+            {
+                builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+            }
+
+            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
+            if (queryParameterSupplier is not null)
+            {
+                // Since this component does accept some parameters from query, we must supply values for all of them,
+                // even if the querystring in the URI is empty. So don't skip the following logic.
+                var relativeUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+                var url = NavigationManager.Uri;
+                ReadOnlyMemory<char> query = default;
+                var queryStartPos = url.IndexOf('?');
+                if (queryStartPos >= 0)
+                {
+                    var queryEndPos = url.IndexOf('#', queryStartPos);
+                    query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
+                }
+                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
+            }
+
+            builder.CloseComponent();
+        }
     }
 }

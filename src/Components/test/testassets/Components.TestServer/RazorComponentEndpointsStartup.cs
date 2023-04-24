@@ -4,6 +4,8 @@
 using System.Globalization;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages;
+using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.Services;
 
 namespace TestServer;
 
@@ -20,6 +22,8 @@ public class RazorComponentEndpointsStartup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddRazorComponents();
+        services.AddHttpContextAccessor();
+        services.AddSingleton<AsyncOperationService>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,6 +46,7 @@ public class RazorComponentEndpointsStartup
                 endpoints.MapRazorComponents<RazorComponentsRoot>();
 
                 StreamingRendering.MapEndpoints(endpoints);
+                StreamingRenderingForm.MapEndpoints(endpoints);
             });
         });
     }

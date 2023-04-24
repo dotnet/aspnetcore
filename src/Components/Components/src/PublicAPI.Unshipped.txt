@@ -1,9 +1,21 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Binding.ModelBindingContext
+Microsoft.AspNetCore.Components.Binding.ModelBindingContext.BindingContextId.get -> string!
+Microsoft.AspNetCore.Components.Binding.ModelBindingContext.Name.get -> string!
+Microsoft.AspNetCore.Components.CascadingModelBinder
+Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
+Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Binding.ModelBindingContext!>!
+Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.get -> bool
+Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.set -> void
+Microsoft.AspNetCore.Components.CascadingModelBinder.Name.get -> string!
+Microsoft.AspNetCore.Components.CascadingModelBinder.Name.set -> void
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetEventHandlerName(string! eventHandlerName) -> void
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.RefreshScrollPositionForHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Rendering.ComponentState
@@ -39,3 +51,6 @@ override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> 
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AddPendingTask(Microsoft.AspNetCore.Components.Rendering.ComponentState? componentState, System.Threading.Tasks.Task! task) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs, bool quiesce) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ShouldTrackNamedEventHandlers() -> bool
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.TrackNamedEventId(ulong eventHandlerId, int componentId, string! eventHandlerName) -> void

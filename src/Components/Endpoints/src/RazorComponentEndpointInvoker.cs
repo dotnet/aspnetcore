@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -32,14 +32,21 @@ internal class RazorComponentEndpointInvoker
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
 
+        if (!await TryValidateRequestAsync(out var isPost))
+        {
+            // If the request is not valid we've already set the response to a 400 or similar
+            // and we can just exit early.
+            return;
+        }
+
         // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
         // backing buffers could come from a pool like they do during rendering.
         var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-                {
-                    { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
-                    { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
-                    { nameof(RazorComponentEndpointHost.ComponentParameters), null },
-                });
+        {
+            { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
+            { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
+            { nameof(RazorComponentEndpointHost.ComponentParameters), null },
+        });
 
         await using var writer = CreateResponseWriter(_context.Response.Body);
 
@@ -50,7 +57,19 @@ internal class RazorComponentEndpointInvoker
             _context,
             typeof(RazorComponentEndpointHost),
             hostParameters,
-            waitForQuiescence: false);
+            waitForQuiescence: isPost);
+
+        if (isPost && !_renderer.HasCapturedEvent())
+        {
+            _context.Response.StatusCode = StatusCodes.Status404NotFound;
+        }
+
+        var quiesceTask = isPost ? _renderer.DispatchCapturedEvent() : htmlContent.QuiescenceTask;
+
+        if (isPost)
+        {
+            await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+        }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
@@ -58,15 +77,46 @@ internal class RazorComponentEndpointInvoker
         // renderer sync context and cause a batch that would get missed.
         htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
-        if (!htmlContent.QuiescenceTask.IsCompleted)
+        if (!quiesceTask.IsCompleted)
         {
-            await _renderer.SendStreamingUpdatesAsync(_context, htmlContent.QuiescenceTask, writer);
+            await _renderer.SendStreamingUpdatesAsync(_context, quiesceTask, writer);
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
         await writer.FlushAsync();
+    }
+
+    private Task<bool> TryValidateRequestAsync(out bool isPost)
+    {
+        isPost = HttpMethods.IsPost(_context.Request.Method);
+        if (isPost)
+        {
+            return Task.FromResult(TrySetFormHandler());
+        }
+
+        return Task.FromResult(true);
+    }
+
+    private bool TrySetFormHandler()
+    {
+        var handler = "";
+        if (_context.Request.Query.TryGetValue("handler", out var value))
+        {
+            if (value.Count != 1)
+            {
+                _context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return false;
+            }
+            else
+            {
+                handler = value[0];
+            }
+        }
+
+        _renderer.SetFormHandlerName(handler!);
+        return true;
     }
 
     private static TextWriter CreateResponseWriter(Stream bodyStream)
