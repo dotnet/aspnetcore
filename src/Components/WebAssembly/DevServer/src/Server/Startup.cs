@@ -29,6 +29,21 @@ internal sealed class Startup
 
         app.UseWebAssemblyDebugging();
 
+        app.Use(async (ctx, next) =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
+            {
+                string fileExtension = Path.GetExtension(ctx.Request.Path);
+                if (string.Equals(fileExtension, ".js"))
+                {
+                    // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                    ApplyCrossOriginPolicyHeaders(ctx);
+                }
+            }
+
+            await next(ctx);
+        });
+
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -46,8 +61,7 @@ internal sealed class Startup
                 OnPrepareResponse = fileContext =>
                 {
                     // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                    fileContext.Context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
-                    fileContext.Context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                    ApplyCrossOriginPolicyHeaders(fileContext.Context);
                 }
             });
         });
@@ -76,5 +90,11 @@ internal sealed class Startup
                 }
             });
         }
+    }
+
+    private static void ApplyCrossOriginPolicyHeaders(HttpContext httpContext)
+    {
+        httpContext.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+        httpContext.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
     }
 }
