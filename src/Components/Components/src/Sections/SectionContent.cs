@@ -75,7 +75,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
             }
 
             _registry.AddProvider(identifier, this, IsDefaultContent);
-            _registeredIdentifier = SectionId;
+            _registeredIdentifier = identifier;
             _registeredIsDefaultContent = IsDefaultContent;
         }
 
