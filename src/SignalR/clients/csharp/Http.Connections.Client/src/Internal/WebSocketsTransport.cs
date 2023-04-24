@@ -374,8 +374,8 @@ internal sealed partial class WebSocketsTransport : ITransport
             var output = new Pipe(outputOptions);
 
             // Use for one side only, i.e. server
-            var ackWriter = new AckPipeWriter(output.Writer);
-            var ackReader = new AckPipeReader(output.Reader);
+            var ackWriter = new AckPipeWriter(output);
+            var ackReader = new AckPipeReader(output);
             var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
             var transportToApplication = new DuplexPipe(ackReader, input.Writer);
             var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
