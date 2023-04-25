@@ -21,7 +21,7 @@ internal static partial class HttpResultsHelper
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-        Justification = "<Pending>")]
+        Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
     public static Task WriteResultAsJsonAsync<TValue>(
         HttpContext httpContext,
