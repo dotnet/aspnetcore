@@ -23,7 +23,7 @@ public class ConfigureBuilderTests
 
         var builder = new ConfigureBuilder(methodInfo);
         Action<IApplicationBuilder> action = builder.Build(instance: null);
-        var ex = Assert.Throws<Exception>(() => action.Invoke(applicationBuilder));
+        var ex = Assert.Throws<InvalidOperationException>(() => action.Invoke(applicationBuilder));
 
         Assert.NotNull(ex);
         Assert.Equal($"Could not resolve a service of type '{typeof(CrasherService).FullName}' for the parameter"

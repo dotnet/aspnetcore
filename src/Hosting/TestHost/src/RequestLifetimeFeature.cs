@@ -25,7 +25,7 @@ internal sealed class RequestLifetimeFeature : IHttpRequestLifetimeFeature
 
     void IHttpRequestLifetimeFeature.Abort()
     {
-        _abort(new Exception("The application aborted the request."));
+        _abort(new OperationCanceledException("The application aborted the request."));
         _cancellationTokenSource.Cancel();
     }
 }
