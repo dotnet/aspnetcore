@@ -64,6 +64,10 @@ public class JsonTodoChild : JsonTodo
     public string? Child { get; set; }
 }
 
+[JsonSerializable(typeof(IAsyncEnumerable<JsonTodo>))]
+public partial class SharedTestJsonContext : JsonSerializerContext
+{ }
+
 public class CustomFromBodyAttribute : Attribute, IFromBodyMetadata
 {
     public bool AllowEmpty { get; set; }

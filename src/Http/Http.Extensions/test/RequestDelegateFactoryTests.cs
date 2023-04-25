@@ -2043,7 +2043,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     [JsonSerializable(typeof(Todo))]
     [JsonSerializable(typeof(TodoChild))]
-    [JsonSerializable(typeof(IAsyncEnumerable<JsonTodo>))]
     private partial class TestJsonContext : JsonSerializerContext
     { }
 
@@ -2073,64 +2072,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType(bool useJsonContext)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.RequestServices = new ServiceCollection()
-            .AddSingleton(LoggerFactory)
-            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = useJsonContext ? TestJsonContext.Default : o.SerializerOptions.TypeInfoResolver)
-            .BuildServiceProvider();
-
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        Delegate @delegate = IAsyncEnumerable<JsonTodo> () => GetTodosAsync();
-
-        var rdfOptions = new RequestDelegateFactoryOptions() { ServiceProvider = httpContext.RequestServices };
-        var factoryResult = RequestDelegateFactory.Create(@delegate, rdfOptions);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var body = JsonSerializer.Deserialize<JsonTodo[]>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        Assert.NotNull(body);
-        Assert.Equal(3, body.Length);
-
-        var one = Assert.IsType<JsonTodo>(body[0]);
-        Assert.Equal(1, one.Id);
-        Assert.True(one.IsComplete);
-        Assert.Equal("One", one.Name);
-
-        var two = Assert.IsType<JsonTodo>(body[1]);
-        Assert.Equal(2, two.Id);
-        Assert.False(two.IsComplete);
-        Assert.Equal("Two", two.Name);
-
-        var three = Assert.IsType<JsonTodoChild>(body[2]);
-        Assert.Equal(3, three.Id);
-        Assert.True(three.IsComplete);
-        Assert.Equal("Three", three.Name);
-        Assert.Equal("ThreeChild", three.Child);
-    }
-
-    private static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
-    {
-        yield return new JsonTodo() { Id = 1, IsComplete = true, Name = "One" };
-
-        // ensure this is async
-        await Task.Yield();
-
-        yield return new JsonTodo() { Id = 2, IsComplete = false, Name = "Two" };
-        yield return new JsonTodoChild() { Id = 3, IsComplete = true, Name = "Three", Child = "ThreeChild" };
     }
 
     [Fact]
