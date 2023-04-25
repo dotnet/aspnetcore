@@ -3687,7 +3687,7 @@
             {
               "name": "bodyContains",
               "parameters": {
-                "bodyPattern": "(AOT)/gi",
+                "bodyPattern": "(aot)/i",
                 "isRegex": true
               }
             },
