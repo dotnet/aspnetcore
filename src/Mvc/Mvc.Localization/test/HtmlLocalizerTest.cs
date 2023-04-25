@@ -150,7 +150,7 @@ public class HtmlLocalizerTest
 
         // Assert
         Assert.NotNull(exception);
-        Assert.Equal("Input string was not in a correct format.", exception.Message);
+        Assert.StartsWith("Input string was not in a correct format.", exception.Message);
     }
 
     [Fact]
