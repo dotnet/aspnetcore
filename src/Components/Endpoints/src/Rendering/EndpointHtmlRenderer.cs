@@ -227,7 +227,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private record struct NamedEvent(ulong EventHandlerId, int ComponentId, string EventNameId);
 
-    private class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
+    private sealed class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
     {
         private readonly IFormCollection _form;
         private List<StringValues>? _values;
