@@ -64,6 +64,7 @@ public class JsonTodoChild : JsonTodo
     public string? Child { get; set; }
 }
 
+[JsonSerializable(typeof(Todo))]
 [JsonSerializable(typeof(IAsyncEnumerable<JsonTodo>))]
 public partial class SharedTestJsonContext : JsonSerializerContext
 { }
