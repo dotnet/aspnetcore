@@ -1547,7 +1547,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefStartingWithHash_ScrollsToElementWithIdOnTheSamePage()
+    public void AnchorWithHrefContainingHashSamePage_ScrollsToElementWithIdOnTheSamePage()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1563,7 +1563,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefContainingHash_NavigatesToPageAndScrollsToElementWithName()
+    public void AnchorWithHrefContainingHashAnotherPage_NavigatesToPageAndScrollsToElementWithName()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
