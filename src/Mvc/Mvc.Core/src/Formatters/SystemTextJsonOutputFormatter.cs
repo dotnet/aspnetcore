@@ -77,7 +77,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             var declaredTypeJsonInfo = SerializerOptions.GetTypeInfo(context.ObjectType);
 
             var runtimeType = context.Object?.GetType();
-            if (declaredTypeJsonInfo.IsValid(runtimeType))
+            if (declaredTypeJsonInfo.ShouldUseWith(runtimeType))
             {
                 jsonTypeInfo = declaredTypeJsonInfo;
             }
