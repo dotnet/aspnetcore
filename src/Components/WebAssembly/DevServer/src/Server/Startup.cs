@@ -29,20 +29,25 @@ internal sealed class Startup
 
         app.UseWebAssemblyDebugging();
 
-        app.Use(async (ctx, next) =>
-        {
-            if (ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
-            {
-                string fileExtension = Path.GetExtension(ctx.Request.Path);
-                if (string.Equals(fileExtension, ".js"))
-                {
-                    // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                    ApplyCrossOriginPolicyHeaders(ctx);
-                }
-            }
+        bool applyCopHeaders = configuration.GetValue<bool>("ApplyCopHeaders");
 
-            await next(ctx);
-        });
+        if (applyCopHeaders)
+        {
+            app.Use(async (ctx, next) =>
+            {
+                if (ctx.Request.Path.StartsWithSegments("/_framework") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.server.js") && !ctx.Request.Path.StartsWithSegments("/_framework/blazor.web.js"))
+                {
+                    string fileExtension = Path.GetExtension(ctx.Request.Path);
+                    if (string.Equals(fileExtension, ".js"))
+                    {
+                        // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                        ApplyCrossOriginPolicyHeaders(ctx);
+                    }
+                }
+
+                await next(ctx);
+            });
+        }
 
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles(new StaticFileOptions
@@ -60,8 +65,11 @@ internal sealed class Startup
             {
                 OnPrepareResponse = fileContext =>
                 {
-                    // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                    ApplyCrossOriginPolicyHeaders(fileContext.Context);
+                    if (applyCopHeaders)
+                    {
+                        // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                        ApplyCrossOriginPolicyHeaders(fileContext.Context);
+                    }
                 }
             });
         });
