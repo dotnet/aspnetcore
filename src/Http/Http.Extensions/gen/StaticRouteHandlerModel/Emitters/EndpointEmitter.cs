@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Globalization;
@@ -10,13 +11,13 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 internal static class EndpointEmitter
 {
-    internal static string EmitParameterPreparation(this Endpoint endpoint, int baseIndent = 0)
+    internal static string EmitParameterPreparation(this IEnumerable<EndpointParameter> endpointParameters, int baseIndent = 0)
     {
         using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
         using var parameterPreparationBuilder = new CodeWriter(stringWriter, baseIndent);
         var readFormEmitted = false;
 
-        foreach (var parameter in endpoint.Parameters)
+        foreach (var parameter in endpointParameters)
         {
             switch (parameter.Source)
             {
@@ -48,6 +49,9 @@ internal static class EndpointEmitter
                 case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
+                case EndpointParameterSource.AsParameters:
+                    parameter.EmitAsParametersParameterPreparation(parameterPreparationBuilder);
+                    break;
             }
         }
 
@@ -63,6 +67,24 @@ internal static class EndpointEmitter
                 var parameterName = parameter.SymbolName;
                 codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
                 codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
+            }
+            if (parameter is
+            {
+                Source: EndpointParameterSource.AsParameters,
+                EndpointParameters:
+                {} asParametersList
+            })
+            {
+                foreach (var (_, innerParameter) in asParametersList)
+                {
+                    if (innerParameter.Source == EndpointParameterSource.RouteOrQuery)
+                    {
+                        var parameterName = innerParameter.SymbolName;
+                        codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
+                        codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
+                        endpoint.EmitterContext.HasRouteOrQuery = true;
+                    }
+                }
             }
         }
     }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -281,8 +282,18 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
+    internal static void EmitAsParametersParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        var endpointParameters = endpointParameter.EndpointParameters?.Select(p => p.Item2);
+        codeWriter.WriteLine(endpointParameters?.EmitParameterPreparation());
+
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.AssigningCode};");
+    }
+
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.SymbolName} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
-    private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_local";
+    public static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_local";
     private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_temp";
 
     private static string EmitParsedTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_parsed_temp";

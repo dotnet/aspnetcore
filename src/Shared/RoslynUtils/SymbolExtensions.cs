@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -123,6 +125,12 @@ internal static class SymbolExtensions
         {
             NullableAnnotation: NullableAnnotation.Annotated
         } || parameterSymbol.HasExplicitDefaultValue;
+
+    public static bool IsOptional(this IPropertySymbol parameterSymbol) =>
+        parameterSymbol.Type is INamedTypeSymbol
+        {
+            NullableAnnotation: NullableAnnotation.Annotated
+        };
 
     public static string GetDefaultValueString(this IParameterSymbol parameterSymbol)
     {

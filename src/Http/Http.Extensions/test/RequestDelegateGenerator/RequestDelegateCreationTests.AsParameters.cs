@@ -10,21 +10,20 @@ public partial class RequestDelegateCreationTests
     [Fact]
     public async Task RequestDelegatePopulatesFromRouteParameterBased_FromParameterList()
     {
-        const string paramName = "value";
         const int originalRouteParam = 42;
 
         var source = """
 static void TestAction([AsParameters] ParameterListFromRoute args)
 {
-    args.HttpContext.Items.Add("input", args.Value);
+    args.HttpContext.Items["input"] = args.Value;
 }
-app.MapGet("/", TestAction);
+app.MapGet("/{Value}", TestAction);
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues["value"] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
         await endpoint.RequestDelegate(httpContext);
 
