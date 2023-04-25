@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Binding;
+using Microsoft.Extensions.Primitives;
+
+namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// An interface implemented by <see cref="FormDataProvider"/> classes that can receive
@@ -12,7 +14,7 @@ public interface IHostEnvironmentFormDataProvider
     /// <summary>
     /// Sets the form data from the environment.
     /// </summary>
-    /// <param name="form">The form data</param>
     /// <param name="name">The form name</param>
-    public void SetFormData(string name, IReadOnlyDictionary<string, string?> form);
+    /// <param name="formData">The form data</param>
+    public void SetFormData(string name, IReadOnlyDictionary<string, StringValues> formData);
 }

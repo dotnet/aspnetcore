@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 

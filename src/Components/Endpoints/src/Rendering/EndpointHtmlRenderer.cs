@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -65,9 +67,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
 
         var formData = httpContext.RequestServices.GetRequiredService<FormDataProvider>() as IHostEnvironmentFormDataProvider;
-        if (handler != null && formData != null)
+        if (handler != null && form != null && formData != null)
         {
-            formData.SetFormData(handler, form!.ToDictionary(kvp => kvp.Key, kvp => kvp.Value[0]).AsReadOnly());
+            formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
@@ -224,4 +226,54 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     private record struct NamedEvent(ulong EventHandlerId, int ComponentId, string EventNameId);
+
+    private class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
+    {
+        private readonly IFormCollection _form;
+        private List<StringValues>? _values;
+
+        public FormCollectionReadOnlyDictionary(IFormCollection form)
+        {
+            _form = form;
+        }
+
+        public StringValues this[string key] => _form[key];
+
+        public IEnumerable<string> Keys => _form.Keys;
+
+        public IEnumerable<StringValues> Values => _values ??= MaterializeValues(_form);
+
+        private static List<StringValues> MaterializeValues(IFormCollection form)
+        {
+            var result = new List<StringValues>(form.Keys.Count);
+            foreach (var key in form.Keys)
+            {
+                result.Add(form[key]);
+            }
+
+            return result;
+        }
+
+        public int Count => _form.Count;
+
+        public bool ContainsKey(string key)
+        {
+            return _form.ContainsKey(key);
+        }
+
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
+        {
+            return _form.GetEnumerator();
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out StringValues value)
+        {
+            return _form.TryGetValue(key, out value);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _form.GetEnumerator();
+        }
+    }
 }
