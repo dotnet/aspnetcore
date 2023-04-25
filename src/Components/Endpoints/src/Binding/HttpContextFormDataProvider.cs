@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class HttpContextFormDataProvider : FormDataProvider, IHostEnvironmentFormDataProvider
 {
