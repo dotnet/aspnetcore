@@ -33,6 +33,7 @@ app.MapGet("/", () => "Hello, world!");
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -45,6 +46,7 @@ app.MapGet("/", () => {});
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -59,6 +61,7 @@ app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -71,6 +74,7 @@ app.MapGet("/", Task () => Task.CompletedTask);
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -85,6 +89,7 @@ app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -97,6 +102,7 @@ app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -111,6 +117,7 @@ app.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, stri
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(400, metadata.StatusCode);
         Assert.Equal("application/problem+json", metadata.ContentTypes.Single());
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -124,6 +131,7 @@ app.MapPost("/", (CustomMetadataEmitter x) => {});
 
         _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 42);
         _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 24);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -137,6 +145,7 @@ app.MapPost("/", () => new CustomMetadataEmitter());
 
         var metadata = endpoint.Metadata.OfType<CustomMetadata>().Single();
         Assert.Equal(24, metadata.Value);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -151,6 +160,7 @@ app.MapGet("/", () => new object());
 
         Assert.Equal("application/json", Assert.Single(responseMetadata.ContentTypes));
         Assert.Equal(typeof(object), responseMetadata.Type);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -165,6 +175,7 @@ app.MapGet("/", () => "Hello");
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
         Assert.Null(responseMetadata.Type);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -181,6 +192,7 @@ app.MapPost("/", (AddsCustomParameterMetadataBindable param1, AddsCustomParamete
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param1" });
         Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param2" });
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -196,6 +208,7 @@ app.MapPost("/", (AddsCustomParameterMetadata param1) => { });
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -211,6 +224,7 @@ app.MapPost("/", () => new AddsCustomEndpointMetadataResult());
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -226,6 +240,7 @@ app.MapPost("/", () => Task.FromResult(new AddsCustomEndpointMetadataResult()));
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -241,300 +256,8 @@ app.MapPost("/", () => ValueTask.FromResult(new AddsCustomEndpointMetadataResult
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
-
-    //[Fact]
-    //public void Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
-    //{
-    //    // Arrange
-    //    var @delegate = () => new CountsDefaultEndpointMetadataResult();
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-    //    // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-    //    Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
-    //}
-
-    //[Fact]
-    //public void Create_CombinesDefaultMetadata_AndMetadataFromTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
-    //{
-    //    // Arrange
-    //    var @delegate = () => Task.FromResult(new CountsDefaultEndpointMetadataResult());
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-    //    // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-    //    Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
-    //}
-
-    //[Fact]
-    //public void Create_CombinesDefaultMetadata_AndMetadataFromValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
-    //{
-    //    // Arrange
-    //    var @delegate = () => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult());
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-    //    // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-    //    Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
-    //}
-
-    //[Fact]
-    //public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointParameterMetadataProvider()
-    //{
-    //    // Arrange
-    //    var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-    //    Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
-    //}
-
-    //[Fact]
-    //public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
-    //{
-    //    // Arrange
-    //    var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
-    //}
-
-    //[Fact]
-    //public void Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
-    //{
-    //    // Arrange
-    //    var @delegate = ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
-    //    Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
-    //    Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Property });
-    //    Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
-    //}
-
-    //[Fact]
-    //public void Create_CombinesAllMetadata_InCorrectOrder()
-    //{
-    //    // Arrange
-    //    var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(new List<object>
-    //        {
-    //            new CustomEndpointMetadata { Source = MetadataSource.Caller }
-    //        }),
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Collection(result.EndpointMetadata,
-    //        // Initial metadata from RequestDelegateFactoryOptions.EndpointBuilder. If the caller want to override inferred metadata,
-    //        // They need to call InferMetadata first, then add the overriding metadata, and then call Create with InferMetadata's result.
-    //        // This is demonstrated in the following tests.
-    //        m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
-    //        // Inferred AcceptsMetadata from RDF for complex type
-    //        m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-    //        // Inferred ProducesResopnseTypeMetadata from RDF for complex type
-    //        m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
-    //        // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
-    //        m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
-    //        // Metadata provided by parameters implementing IEndpointMetadataProvider
-    //        m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
-    //        // Metadata provided by return type implementing IEndpointMetadataProvider
-    //        m => Assert.True(m is MetadataCountMetadata { Count: 5 }));
-    //}
-
-    //[Fact]
-    //public void Create_FlowsRoutePattern_ToMetadataProvider()
-    //{
-    //    // Arrange
-    //    var @delegate = (AddsRoutePatternMetadata param1) => { };
-    //    var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/test/pattern"), order: 0);
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = builder,
-    //    };
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options);
-
-    //    // Assert
-    //    Assert.Contains(result.EndpointMetadata, m => m is RoutePatternMetadata { RoutePattern: "/test/pattern" });
-    //}
-
-    //[Fact]
-    //public void Create_DoesNotInferMetadata_GivenManuallyConstructedMetadataResult()
-    //{
-    //    var invokeCount = 0;
-
-    //    // Arrange
-    //    var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) =>
-    //    {
-    //        invokeCount++;
-    //        return new CountsDefaultEndpointMetadataResult();
-    //    };
-
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(),
-    //    };
-    //    var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
-    //    var httpContext = CreateHttpContext();
-
-    //    // An empty object should deserialize to AddsCustomParameterMetadata since it has no required properties.
-    //    var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new object());
-    //    var stream = new MemoryStream(requestBodyBytes);
-    //    httpContext.Request.Body = stream;
-
-    //    httpContext.Request.Headers["Content-Type"] = "application/json";
-    //    httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
-    //    httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
-
-    //    // Act
-    //    var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
-
-    //    // Assert
-    //    Assert.Empty(result.EndpointMetadata);
-    //    Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
-
-    //    // Make extra sure things are running as expected, as this non-InferMetadata path is no longer exercised by RouteEndpointDataSource,
-    //    // and most of the other unit tests don't pass in a metadataResult without a cached factory context.
-    //    Assert.True(result.RequestDelegate(httpContext).IsCompletedSuccessfully);
-    //    Assert.Equal(1, invokeCount);
-    //}
-
-    //[Fact]
-    //public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
-    //{
-    //    // Arrange
-    //    var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(),
-    //    };
-
-    //    // Act
-    //    var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
-    //    options.EndpointBuilder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Caller });
-    //    var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
-
-    //    // Assert
-    //    Assert.Collection(result.EndpointMetadata,
-    //        // Inferred AcceptsMetadata from RDF for complex type
-    //        m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-    //        // Inferred ProducesResopnseTypeMetadata from RDF for complex type
-    //        m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
-    //        // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
-    //        m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
-    //        // Metadata provided by parameters implementing IEndpointMetadataProvider
-    //        m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
-    //        // Metadata provided by return type implementing IEndpointMetadataProvider
-    //        m => Assert.True(m is MetadataCountMetadata { Count: 4 }),
-    //        // Entry-specific metadata added after a call to InferMetadata
-    //        m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
-    //}
-
-    //[Fact]
-    //public void InferMetadata_PopulatesAcceptsMetadata_WhenReadFromForm()
-    //{
-    //    // Arrange
-    //    var @delegate = void (IFormCollection formCollection) => { };
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(),
-    //    };
-
-    //    // Act
-    //    var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
-
-    //    // Assert
-    //    var allAcceptsMetadata = metadataResult.EndpointMetadata.OfType<IAcceptsMetadata>();
-    //    var acceptsMetadata = Assert.Single(allAcceptsMetadata);
-
-    //    Assert.NotNull(acceptsMetadata);
-    //    Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
-    //}
-
-    //[Fact]
-    //public void InferMetadata_PopulatesCachedContext()
-    //{
-    //    // Arrange
-    //    var @delegate = void () => { };
-    //    var options = new RequestDelegateFactoryOptions
-    //    {
-    //        EndpointBuilder = CreateEndpointBuilder(),
-    //    };
-
-    //    // Act
-    //    var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
-
-    //    // Assert
-    //    Assert.NotNull(metadataResult.CachedFactoryContext);
-    //}
 
     [Fact]
     public async Task Create_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
@@ -550,6 +273,7 @@ app.MapPost("/", (Todo todo) => new RemovesAcceptsMetadataResult());
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -565,6 +289,7 @@ app.MapPost("/", (Todo todo) => Task.FromResult(new RemovesAcceptsMetadataResult
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -580,6 +305,7 @@ app.MapPost("/", (Todo todo) => ValueTask.FromResult(new RemovesAcceptsMetadataR
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -595,6 +321,7 @@ app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -610,6 +337,7 @@ app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -630,6 +358,7 @@ app.MapPost("/", (Todo todo) => new AccessesServicesMetadataResult());
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is MetadataService);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -650,5 +379,6 @@ app.MapPost("/", (AccessesServicesMetadataBinder parameter1) => "Test");
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is MetadataService);
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 }

@@ -572,7 +572,7 @@ public class ParameterNameMetadata
     public string Name { get; init; }
 }
 
-public class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider//, IParsable<AddsCustomParameterMetadata>
+public class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
 {
     public AddsCustomParameterMetadataAsProperty Data { get; set; }
 
@@ -585,14 +585,6 @@ public class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, I
     {
         builder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
     }
-
-    //static bool IParsable<AddsCustomParameterMetadata>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out AddsCustomParameterMetadata result)
-    //{
-    //    result = new();
-    //    return true;
-    //}
-
-    //static AddsCustomParameterMetadata IParsable<AddsCustomParameterMetadata>.Parse(string s, IFormatProvider? provider) => throw new NotSupportedException();
 }
 
 public class AddsCustomParameterMetadataAsProperty : IEndpointParameterMetadataProvider, IEndpointMetadataProvider

@@ -14,6 +14,7 @@ using static Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+
 internal class EndpointParameter
 {
     public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
