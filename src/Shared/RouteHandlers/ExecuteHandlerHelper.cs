@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Internal;
 
 internal static class ExecuteHandlerHelper
 {
-    public static Task ExecuteReturnAsync(object obj, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+    public static Task ExecuteReturnAsync(object obj, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
     {
         // Terminal built ins
         if (obj is IResult result)
@@ -25,7 +24,7 @@ internal static class ExecuteHandlerHelper
         else
         {
             // Otherwise, we JSON serialize when we reach the terminal state
-            return WriteJsonResponseAsync(httpContext.Response, obj, options, jsonTypeInfo);
+            return WriteJsonResponseAsync(httpContext.Response, obj, jsonTypeInfo);
         }
     }
 
@@ -37,7 +36,7 @@ internal static class ExecuteHandlerHelper
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-    public static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
+    public static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T> jsonTypeInfo)
     {
         var runtimeType = value?.GetType();
 
@@ -54,6 +53,6 @@ internal static class ExecuteHandlerHelper
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return response.WriteAsJsonAsync<object?>(value, options);
+        return response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
     }
 }
