@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "8.0.100-preview.4.23220.11"
+    "version": "8.0.100-preview.4.23224.16"
   },
   "tools": {
-    "dotnet": "8.0.100-preview.4.23220.11",
+    "dotnet": "8.0.100-preview.4.23224.16",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
