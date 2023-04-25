@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +33,7 @@ internal class RazorComponentEndpointInvoker
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
 
-        if (!await TryValidateRequestAsync(out var isPost))
+        if (!await TryValidateRequestAsync(out var isPost, out var handler))
         {
             // If the request is not valid we've already set the response to a 400 or similar
             // and we can just exit early.
@@ -47,6 +48,11 @@ internal class RazorComponentEndpointInvoker
             { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
             { nameof(RazorComponentEndpointHost.ComponentParameters), null },
         });
+
+        await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
+            _context,
+            handler: handler,
+            form: handler != null && _context.Request.HasFormContentType ? await _context.Request.ReadFormAsync() : null);
 
         await using var writer = CreateResponseWriter(_context.Response.Body);
 
@@ -88,30 +94,32 @@ internal class RazorComponentEndpointInvoker
         await writer.FlushAsync();
     }
 
-    private Task<bool> TryValidateRequestAsync(out bool isPost)
+    private Task<bool> TryValidateRequestAsync(out bool isPost, out string? handler)
     {
+        handler = null;
         isPost = HttpMethods.IsPost(_context.Request.Method);
         if (isPost)
         {
-            return Task.FromResult(TrySetFormHandler());
+            return Task.FromResult(TrySetFormHandler(out handler));
         }
 
         return Task.FromResult(true);
     }
 
-    private bool TrySetFormHandler()
+    private bool TrySetFormHandler([NotNullWhen(true)] out string? handler)
     {
-        var handler = "";
+        handler = "";
         if (_context.Request.Query.TryGetValue("handler", out var value))
         {
             if (value.Count != 1)
             {
                 _context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                handler = null;
                 return false;
             }
             else
             {
-                handler = value[0];
+                handler = value[0]!;
             }
         }
 

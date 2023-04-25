@@ -1,10 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext.BindingContextId.get -> string!
-Microsoft.AspNetCore.Components.Binding.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
-Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Binding.ModelBindingContext!>!
+Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.set -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.get -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.set -> void
@@ -12,6 +9,9 @@ Microsoft.AspNetCore.Components.CascadingModelBinder.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder.Name.set -> void
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.ModelBindingContext
+Microsoft.AspNetCore.Components.ModelBindingContext.BindingContextId.get -> string!
+Microsoft.AspNetCore.Components.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!

@@ -1,7 +1,14 @@
 #nullable enable
 *REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
+abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Entries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
+abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Name.get -> string?
+Microsoft.AspNetCore.Components.Forms.FormDataProvider
+Microsoft.AspNetCore.Components.Forms.FormDataProvider.FormDataProvider() -> void
+Microsoft.AspNetCore.Components.Forms.FormDataProvider.IsFormDataAvailable.get -> bool
+Microsoft.AspNetCore.Components.Forms.IHostEnvironmentFormDataProvider
+Microsoft.AspNetCore.Components.Forms.IHostEnvironmentFormDataProvider.SetFormData(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! formData) -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
-Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.Binding.ModelBindingContext?
+Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.ModelBindingContext?
 Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.set -> void
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void

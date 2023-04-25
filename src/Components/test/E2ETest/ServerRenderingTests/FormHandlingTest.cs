@@ -38,6 +38,32 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     }
 
     [Fact]
+    public void CanDispatchToTheDefaultFormWithBody()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-with-body",
+            FormCssSelector = "form",
+            InputFieldValue = "stranger",
+            ExpectedActionValue = null,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CanReadFormValuesDuringOnInitialized()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-with-body-on-initialized",
+            FormCssSelector = "form",
+            InputFieldValue = "stranger",
+            ExpectedActionValue = null,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
     public void CanDispatchToNamedForm()
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -247,9 +273,18 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
             return;
         }
 
+        if (dispatch.InputFieldValue != null)
+        {
+            Browser.Exists(By.Id(dispatch.InputFieldId)).SendKeys(dispatch.InputFieldValue);
+        }
+
         Browser.Click(By.Id(dispatch.SubmitButtonId));
 
-        Browser.Exists(By.Id(dispatch.SubmitPassId));
+        var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
+        if (dispatch.InputFieldValue != null)
+        {
+            Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+        }
     }
 
     private record struct DispatchToForm()
@@ -265,11 +300,14 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         public string SubmitPassId = "pass";
         public string FormCssSelector;
         public string ExpectedActionValue;
+        public string InputFieldValue;
+
         public string ExpectedTarget => $"{Base}/{ExpectedActionValue ?? Url}";
 
         public bool DispatchEvent { get; internal set; } = true;
 
         public string SubmitButtonId { get; internal set; } = "send";
+        public string InputFieldId { get; internal set; } = "firstName";
     }
 
     private void GoTo(string relativePath)
