@@ -2735,13 +2735,13 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
-            var intervalInMS = 100;
-            var clock = new MockSystemClock();
+            var interval = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new TestTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
-                    options.KeepAliveInterval = TimeSpan.FromMilliseconds(intervalInMS)), LoggerFactory);
+                    options.KeepAliveInterval = interval), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-            connectionHandler.SystemClock = clock;
+            connectionHandler.TimeProvider = timeProvider;
 
             using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
             {
@@ -2752,7 +2752,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 var heartbeatCount = 5;
                 for (var i = 0; i < heartbeatCount; i++)
                 {
-                    clock.CurrentTicks = clock.CurrentTicks + intervalInMS + 1;
+                    timeProvider.Advance(interval + TimeSpan.FromMilliseconds(1));
                     client.TickHeartbeat();
                 }
 
@@ -2797,13 +2797,13 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
-            var timeoutInMS = 100;
-            var clock = new MockSystemClock();
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new TestTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
-                    options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
+                    options.ClientTimeoutInterval = timeout), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-            connectionHandler.SystemClock = clock;
+            connectionHandler.TimeProvider = timeProvider;
 
             using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
             {
@@ -2814,7 +2814,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 // We go over the 100 ms timeout interval multiple times
                 for (var i = 0; i < 3; i++)
                 {
-                    clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
+                    timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
                     client.TickHeartbeat();
                 }
 
@@ -2833,13 +2833,13 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
-            var timeoutInMS = 100;
-            var clock = new MockSystemClock();
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new TestTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
-                    options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
+                    options.ClientTimeoutInterval = timeout), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-            connectionHandler.SystemClock = clock;
+            connectionHandler.TimeProvider = timeProvider;
 
             using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
             {
@@ -2847,7 +2847,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 await client.Connected.DefaultTimeout();
                 await client.SendHubMessageAsync(PingMessage.Instance);
 
-                clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
+                timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
                 client.TickHeartbeat();
 
                 await connectionHandlerTask.DefaultTimeout();
@@ -2860,13 +2860,13 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
-            var timeoutInMS = 300;
-            var clock = new MockSystemClock();
+            var timeout = TimeSpan.FromMilliseconds(300);
+            var timeProvider = new TestTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
-                    options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
+                    options.ClientTimeoutInterval = timeout), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-            connectionHandler.SystemClock = clock;
+            connectionHandler.TimeProvider = timeProvider;
 
             using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
             {
@@ -2876,7 +2876,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 for (int i = 0; i < 10; i++)
                 {
-                    clock.CurrentTicks = clock.CurrentTicks + timeoutInMS - 1;
+                    timeProvider.Advance(timeout - TimeSpan.FromMilliseconds(1));
                     client.TickHeartbeat();
                     await client.SendHubMessageAsync(PingMessage.Instance);
                 }

@@ -10,7 +10,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -29,11 +28,11 @@ public partial class HubConnectionContext
     private readonly ILogger _logger;
     private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
     private readonly TaskCompletionSource _abortCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly long _keepAliveInterval;
-    private readonly long _clientTimeoutInterval;
+    private readonly TimeSpan _keepAliveInterval;
+    private readonly TimeSpan _clientTimeoutInterval;
     private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
     private readonly object _receiveMessageTimeoutLock = new object();
-    private readonly ISystemClock _systemClock;
+    private readonly TimeProvider _timeProvider;
     private readonly CancellationTokenRegistration _closedRegistration;
     private readonly CancellationTokenRegistration? _closedRequestedRegistration;
 
@@ -46,7 +45,7 @@ public partial class HubConnectionContext
     private readonly int _streamBufferCapacity;
     private readonly long? _maxMessageSize;
     private bool _receivedMessageTimeoutEnabled;
-    private long _receivedMessageElapsedTicks;
+    private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private ClaimsPrincipal? _user;
 
@@ -58,8 +57,9 @@ public partial class HubConnectionContext
     /// <param name="contextOptions">The options to configure the HubConnectionContext.</param>
     public HubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
     {
-        _keepAliveInterval = (long)contextOptions.KeepAliveInterval.TotalMilliseconds;
-        _clientTimeoutInterval = (long)contextOptions.ClientTimeoutInterval.TotalMilliseconds;
+        _timeProvider = contextOptions.TimeProvider ?? TimeProvider.System;
+        _keepAliveInterval = contextOptions.KeepAliveInterval;
+        _clientTimeoutInterval = contextOptions.ClientTimeoutInterval;
         _streamBufferCapacity = contextOptions.StreamBufferCapacity;
         _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
 
@@ -76,8 +76,7 @@ public partial class HubConnectionContext
 
         HubCallerContext = new DefaultHubCallerContext(this);
 
-        _systemClock = contextOptions.SystemClock ?? new SystemClock();
-        _lastSendTick = _systemClock.CurrentTicks;
+        _lastSendTick = _timeProvider.GetTimestamp();
 
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
         ActiveInvocationLimit = new ChannelBasedSemaphore(maxInvokeLimit);
@@ -614,7 +613,8 @@ public partial class HubConnectionContext
 
     private void KeepAliveTick()
     {
-        var currentTime = _systemClock.CurrentTicks;
+        var currentTime = _timeProvider.GetTimestamp();
+        var elapsed = _timeProvider.GetElapsedTime(Volatile.Read(ref _lastSendTick), currentTime);
 
         // Implements the keep-alive tick behavior
         // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
@@ -622,7 +622,7 @@ public partial class HubConnectionContext
         // true "ping rate" of the server could be (_hubOptions.KeepAliveInterval + HubEndPoint.KeepAliveTimerInterval),
         // because if the interval elapses right after the last tick of this timer, it won't be detected until the next tick.
 
-        if (currentTime - Volatile.Read(ref _lastSendTick) > _keepAliveInterval)
+        if (elapsed > _keepAliveInterval)
         {
             // Haven't sent a message for the entire keep-alive duration, so send a ping.
             // If the transport channel is full, this will fail, but that's OK because
@@ -657,11 +657,11 @@ public partial class HubConnectionContext
         {
             if (_receivedMessageTimeoutEnabled)
             {
-                _receivedMessageElapsedTicks = _systemClock.CurrentTicks - _receivedMessageTick;
+                _receivedMessageElapsed = _timeProvider.GetElapsedTime(_receivedMessageTick);
 
-                if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
+                if (_receivedMessageElapsed >= _clientTimeoutInterval)
                 {
-                    Log.ClientTimeout(_logger, TimeSpan.FromMilliseconds(_clientTimeoutInterval));
+                    Log.ClientTimeout(_logger, _clientTimeoutInterval);
                     AbortAllowReconnect();
                 }
             }
@@ -707,7 +707,7 @@ public partial class HubConnectionContext
         lock (_receiveMessageTimeoutLock)
         {
             _receivedMessageTimeoutEnabled = true;
-            _receivedMessageTick = _systemClock.CurrentTicks;
+            _receivedMessageTick = _timeProvider.GetTimestamp();
         }
     }
 
@@ -717,7 +717,7 @@ public partial class HubConnectionContext
         {
             // we received a message so stop the timer and reset it
             // it will resume after the message has been processed
-            _receivedMessageElapsedTicks = 0;
+            _receivedMessageElapsed = TimeSpan.Zero;
             _receivedMessageTick = 0;
             _receivedMessageTimeoutEnabled = false;
         }
