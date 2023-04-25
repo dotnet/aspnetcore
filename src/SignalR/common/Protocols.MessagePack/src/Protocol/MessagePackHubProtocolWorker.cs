@@ -79,10 +79,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
 
         var target = ReadString(ref reader, binder, "target");
-        if (string.IsNullOrEmpty(target))
-        {
-            throw new InvalidDataException("Null or empty target for Invocation message.");
-        }
+        ThrowIfNullOrEmpty(target, "target for Invocation message");
 
         object?[]? arguments;
         try
@@ -109,16 +106,10 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
-        if (string.IsNullOrEmpty(invocationId))
-        {
-            throw new InvalidDataException("Null or empty invocation ID for StreamInvocation message.");
-        }
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for StreamInvocation message");
 
         var target = ReadString(ref reader, "target");
-        if (string.IsNullOrEmpty(target))
-        {
-            throw new InvalidDataException("Null or empty target for StreamInvocation message.");
-        }
+        ThrowIfNullOrEmpty(target, "target for StreamInvocation message");
 
         object?[] arguments;
         try
@@ -145,10 +136,8 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
-        if (string.IsNullOrEmpty(invocationId))
-        {
-            throw new InvalidDataException("Null or empty invocation ID for StreamItem message.");
-        }
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for StreamItem message");
+
         object? value;
         try
         {
@@ -167,10 +156,8 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
-        if (string.IsNullOrEmpty(invocationId))
-        {
-            throw new InvalidDataException("Null or empty invocation ID for Completion message.");
-        }
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for Completion message");
+
         var resultKind = ReadInt32(ref reader, "resultKind");
 
         string? error = null;
@@ -223,10 +210,8 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
-        if (string.IsNullOrEmpty(invocationId))
-        {
-            throw new InvalidDataException("Null or empty invocation ID for CancelInvocation message.");
-        }
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for CancelInvocation message");
+
         return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
     }
 
@@ -259,15 +244,11 @@ internal abstract class MessagePackHubProtocolWorker
             for (var i = 0; i < headerCount; i++)
             {
                 var key = ReadString(ref reader, $"headers[{i}].Key");
-                if (string.IsNullOrEmpty(key))
-                {
-                    throw new InvalidDataException("Null or empty key in header.");
-                }
+                ThrowIfNullOrEmpty(key, "key in header");
+
                 var value = ReadString(ref reader, $"headers[{i}].Value");
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new InvalidDataException("Null or empty value in header.");
-                }
+                ThrowIfNullOrEmpty(value, "value in header");
+
                 headers.Add(key, value);
             }
             return headers;
@@ -289,10 +270,8 @@ internal abstract class MessagePackHubProtocolWorker
             for (var i = 0; i < streamIdCount; i++)
             {
                 var id = reader.ReadString();
-                if (string.IsNullOrEmpty(id))
-                {
-                    throw new InvalidDataException($"Null or empty value in streamIds received.");
-                }
+                ThrowIfNullOrEmpty(id, "value in streamIds received");
+
                 streams.Add(id);
             }
         }
@@ -676,6 +655,14 @@ internal abstract class MessagePackHubProtocolWorker
         catch (Exception ex)
         {
             throw new InvalidDataException($"Reading array length for '{field}' failed.", ex);
+        }
+    }
+
+    private static void ThrowIfNullOrEmpty(string? target, string message)
+    {
+        if (string.IsNullOrEmpty(target))
+        {
+            throw new InvalidDataException($"Null or empty {message}.");
         }
     }
 }
