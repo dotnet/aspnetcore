@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed partial class EndpointHtmlRenderer
+internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
@@ -70,8 +70,6 @@ internal sealed partial class EndpointHtmlRenderer
         ParameterView parameters,
         bool waitForQuiescence)
     {
-        await InitializeStandardComponentServicesAsync(httpContext);
-
         try
         {
             var component = BeginRenderingComponent(componentType, parameters);

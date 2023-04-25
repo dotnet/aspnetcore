@@ -2592,8 +2592,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         {
             public T Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
             {
-                // this method isn't used in our tests
-                return default;
+                return (T)(object)reader.ReadString();
             }
 
             public void Serialize(ref MessagePackWriter writer, T value, MessagePackSerializerOptions options)

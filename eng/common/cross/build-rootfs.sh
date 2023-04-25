@@ -70,7 +70,7 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="12.3-RELEASE"
+__FreeBSDBase="12.4-RELEASE"
 __FreeBSDPkg="1.17.0"
 __FreeBSDABI="12"
 __FreeBSDPackages="libunwind"

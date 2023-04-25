@@ -3668,6 +3668,52 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "name": "bodyContains",
+              "parameters": {
+                "bodyPattern": "(aot)/i",
+                "isRegex": true
+              }
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "INTERNAL: Debug"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Label AOT related issues appropriately",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "NativeAOT"
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": []

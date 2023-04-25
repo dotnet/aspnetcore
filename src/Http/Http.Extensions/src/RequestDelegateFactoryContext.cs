@@ -59,5 +59,4 @@ internal sealed class RequestDelegateFactoryContext
 
     // Grab these options upfront to avoid the per request DI scope that would be made otherwise to get the options when writing Json
     public required JsonSerializerOptions JsonSerializerOptions { get; set; }
-    public required Expression JsonSerializerOptionsExpression { get; set; }
 }

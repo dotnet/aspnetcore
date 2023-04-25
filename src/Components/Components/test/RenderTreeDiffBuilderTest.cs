@@ -816,7 +816,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         using var batchBuilder = new RenderBatchBuilder();
 
         // Act
-        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
+        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames(), newTree.GetNamedEvents());
 
         // Assert: We're going to dispose the old component and render the new one
         Assert.Equal(new[] { 0 }, batchBuilder.ComponentDisposalQueue);
@@ -1627,7 +1627,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
         var originalFakeComponentInstance = oldTree.GetFrames().Array[2].Component;
         var originalFakeComponent2Instance = oldTree.GetFrames().Array[3].Component;
 
@@ -1713,7 +1713,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTree = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
         var originalComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
 
         // Act
@@ -1763,7 +1763,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
         var originalComponentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
         Assert.Equal(1, originalComponentInstance.SetParametersCallCount);
 
@@ -1793,7 +1793,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
         var componentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
         Assert.Equal(1, componentInstance.SetParametersCallCount);
 
@@ -1819,13 +1819,13 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTree = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
 
         // Act/Assert
         // Note that we track NonDisposableComponent was disposed even though it's not IDisposable,
         // because it's up to the upstream renderer to decide what "disposing" a component means
         Assert.Empty(batchBuilder.ComponentDisposalQueue);
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames(), newTree.GetNamedEvents());
         Assert.Equal(new[] { 0, 1 }, batchBuilder.ComponentDisposalQueue);
     }
 
@@ -2238,14 +2238,14 @@ public class RenderTreeDiffBuilderTest : IDisposable
             var emptyFrames = renderTreeBuilder.GetFrames();
             var oldFrames = from.GetFrames();
 
-            RenderTreeDiffBuilder.ComputeDiff(renderer, initializeBatchBuilder, 0, emptyFrames, oldFrames);
+            RenderTreeDiffBuilder.ComputeDiff(renderer, initializeBatchBuilder, 0, emptyFrames, oldFrames, from.GetNamedEvents());
         }
 
         batchBuilder?.Dispose();
         // This gets disposed as part of the test type's Dispose
         batchBuilder = new RenderBatchBuilder();
 
-        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, from.GetFrames(), to.GetFrames());
+        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, from.GetFrames(), to.GetFrames(), to.GetNamedEvents());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         return batchBuilder.ToBatch();
     }
