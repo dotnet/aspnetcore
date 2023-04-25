@@ -76,7 +76,9 @@ public class BlobLoggerProvider : BatchingLoggerProvider
                     writer.Write(logEvent.Message);
                 }
 
-                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2016
+                await writer.FlushAsync().ConfigureAwait(false);
+#pragma warning restore CA2016
                 var tryGetBuffer = stream.TryGetBuffer(out var buffer);
                 System.Diagnostics.Debug.Assert(tryGetBuffer);
                 await blob.AppendAsync(buffer, cancellationToken).ConfigureAwait(false);
