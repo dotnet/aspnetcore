@@ -658,7 +658,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private static void ThrowIfNullOrEmpty(string? target, string message)
+    private static void ThrowIfNullOrEmpty([NotNull] string? target, string message)
     {
         if (string.IsNullOrEmpty(target))
         {
