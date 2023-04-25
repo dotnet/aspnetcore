@@ -125,6 +125,7 @@ public class AuthenticationBuilder
         }
     }
 
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
     private sealed class PostConfigureAuthenticationSchemeOptions<TOptions> : IPostConfigureOptions<TOptions>
         where TOptions : AuthenticationSchemeOptions
     {

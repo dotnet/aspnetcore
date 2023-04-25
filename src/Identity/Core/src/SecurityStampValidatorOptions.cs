@@ -24,5 +24,5 @@ public class SecurityStampValidatorOptions
     /// <summary>
     /// Gives control over the timestamps for testing purposes.
     /// </summary>
-    public TimeProvider TimeProvider { get; set; } = null!;
+    public TimeProvider? TimeProvider { get; set; }
 }

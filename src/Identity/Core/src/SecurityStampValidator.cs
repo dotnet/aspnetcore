@@ -31,7 +31,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         SignInManager = signInManager;
         Options = options.Value;
         TimeProvider = Options.TimeProvider ?? TimeProvider.System;
-        Clock = clock;
+        Clock = new TimeProviderClock(TimeProvider);
         Logger = logger.CreateLogger(GetType());
     }
 
@@ -49,7 +49,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         Options = options.Value;
         TimeProvider = Options.TimeProvider ?? TimeProvider.System;
 #pragma warning disable CS0618 // Type or member is obsolete
-        Clock = new SystemClock(TimeProvider);
+        Clock = new TimeProviderClock(TimeProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
         Logger = logger.CreateLogger(GetType());
     }

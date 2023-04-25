@@ -79,6 +79,7 @@ public static class IdentityBuilderExtensions
         return builder;
     }
 
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
     private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
     {
         public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)

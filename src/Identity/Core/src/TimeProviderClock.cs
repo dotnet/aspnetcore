@@ -6,25 +6,20 @@ namespace Microsoft.AspNetCore.Authentication;
 /// <summary>
 /// Provides access to the normal system clock with precision in seconds.
 /// </summary>
-[Obsolete("Use TimeProvider instead.")]
-public class SystemClock : ISystemClock
+#pragma warning disable CS0618 // Type or member is obsolete
+internal class TimeProviderClock : ISystemClock
+#pragma warning restore CS0618 // Type or member is obsolete
 {
     private readonly TimeProvider _timeProvider;
 
-    /// <summary>
-    /// Creates a new SystemClock that reads the current system time.
-    /// </summary>
-    public SystemClock() : this(TimeProvider.System) { }
+    internal TimeProviderClock() : this(TimeProvider.System) { }
 
-    internal SystemClock(TimeProvider timeProvider)
+    internal TimeProviderClock(TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
         _timeProvider = timeProvider;
     }
 
-    /// <summary>
-    /// Retrieves the current system time in UTC.
-    /// </summary>
     public DateTimeOffset UtcNow
     {
         get
