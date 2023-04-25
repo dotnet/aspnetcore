@@ -268,7 +268,7 @@
     <DuendeIdentityServerVersion>6.0.4</DuendeIdentityServerVersion>
     <DuendeIdentityServerStorageVersion>6.0.4</DuendeIdentityServerStorageVersion>
     <DuendeIdentityServerEntityFrameworkStorageVersion>6.0.4</DuendeIdentityServerEntityFrameworkStorageVersion>
-    <MessagePackVersion>2.1.90</MessagePackVersion>
+    <MessagePackVersion>2.5.108</MessagePackVersion>
     <MicrosoftIdentityWebVersion>1.16.0</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebMicrosoftGraphVersion>1.16.0</MicrosoftIdentityWebMicrosoftGraphVersion>
     <MicrosoftIdentityWebUIVersion>1.16.0</MicrosoftIdentityWebUIVersion>

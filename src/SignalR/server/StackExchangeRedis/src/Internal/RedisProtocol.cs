@@ -184,7 +184,7 @@ internal sealed class RedisProtocol
             var ids = new string[idCount];
             for (var i = 0; i < idCount; i++)
             {
-                ids[i] = reader.ReadString();
+                ids[i] = reader.ReadString()!;
             }
 
             excludedConnectionIds = ids;
@@ -210,10 +210,10 @@ internal sealed class RedisProtocol
         ValidateArraySize(ref reader, 5, "GroupCommand");
 
         var id = reader.ReadInt32();
-        var serverName = reader.ReadString();
+        var serverName = reader.ReadString()!;
         var action = (GroupAction)reader.ReadByte();
-        var groupName = reader.ReadString();
-        var connectionId = reader.ReadString();
+        var groupName = reader.ReadString()!;
+        var connectionId = reader.ReadString()!;
 
         return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
     }
@@ -252,7 +252,7 @@ internal sealed class RedisProtocol
         var serializations = new SerializedMessage[count];
         for (var i = 0; i < count; i++)
         {
-            var protocol = reader.ReadString();
+            var protocol = reader.ReadString()!;
             var serialized = reader.ReadBytes()?.ToArray() ?? Array.Empty<byte>();
 
             serializations[i] = new SerializedMessage(protocol, serialized);
@@ -267,7 +267,7 @@ internal sealed class RedisProtocol
         var reader = new MessagePackReader(data);
         ValidateArraySize(ref reader, 2, "CompletionMessage");
 
-        var protocolName = reader.ReadString();
+        var protocolName = reader.ReadString()!;
         var ros = reader.ReadBytes();
         return new RedisCompletion(protocolName, ros ?? new ReadOnlySequence<byte>());
     }
