@@ -305,6 +305,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
     onConfigLoaded,
     onDownloadResourceProgress: setProgress,
     config,
+    disableDotnet6Compatibility: false,
     print,
     printErr,
   };
