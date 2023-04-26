@@ -348,6 +348,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+
     file class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
