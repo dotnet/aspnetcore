@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof(global::System.Int32), statusCode: 200, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof(global::System.Int32), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
