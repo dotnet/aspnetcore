@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
@@ -24,7 +22,7 @@ internal class EndpointParameter
     {
         Type = parameter.Type;
         SymbolName = parameter.Name;
-        LookupName = parameter.Name; // Default lookup name is same as property name (which is a valid C# identifier).
+        LookupName = parameter.Name; // Default lookup name is same as parameter name (which is a valid C# identifier).
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
         IsOptional = parameter.IsOptional();
@@ -41,7 +39,7 @@ internal class EndpointParameter
         Type = property.Type;
         SymbolName = property.Name;
         LookupName = property.Name;
-        Ordinal = 0;
+        Ordinal = parameter?.Ordinal ?? 0;
         Source = EndpointParameterSource.Unknown;
         IsOptional = property.IsOptional() || parameter?.IsOptional() == true;
         DefaultValue = parameter?.GetDefaultValueString() ?? "null";
@@ -127,24 +125,23 @@ internal class EndpointParameter
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
             Source = EndpointParameterSource.Unknown;
-            if (symbol is IPropertySymbol)
+            if (symbol is IPropertySymbol ||
+                Type is not INamedTypeSymbol namedTypeSymbol ||
+                !TryGetAsParametersConstructor(namedTypeSymbol, out var isParameterlessConstructor, out var matchedParameters))
             {
-                throw new InvalidOperationException("Can't have AsParameters on a property.");
+                return;
             }
-            if (Type is INamedTypeSymbol namedTypeSymbol && TryGetAsParametersConstructor(namedTypeSymbol, out var isParameterlessConstructor, out var matchedParameters))
+            Source = EndpointParameterSource.AsParameters;
+            EndpointParameters = matchedParameters.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
+            if (isParameterlessConstructor == true)
             {
-                Source = EndpointParameterSource.AsParameters;
-                EndpointParameters = matchedParameters.Select(matchedParameter => (matchedParameter, new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes)));
-                if (isParameterlessConstructor == true)
-                {
-                    var parameterTypeList = string.Join(", ", EndpointParameters.Select(p => $"{p.Item1.Property.Name} = {p.Item2.EmitHandlerArgument()}"));
-                    AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {{ {parameterTypeList} }}";
-                }
-                else
-                {
-                    var parameterTypeList = string.Join(", ", EndpointParameters.Select(p => p.Item2.EmitHandlerArgument()));
-                    AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({parameterTypeList})";
-                }
+                var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.LookupName} = {p.EmitHandlerArgument()}"));
+                AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {{ {parameterList} }}";
+            }
+            else
+            {
+                var parameterList = string.Join(", ", EndpointParameters.Select(p => p.EmitHandlerArgument()));
+                AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({parameterList})";
             }
         }
         else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
@@ -231,7 +228,7 @@ internal class EndpointParameter
 
     public EndpointParameterSource Source { get; set; }
 
-    public IEnumerable<(ConstructorParameter, EndpointParameter)>? EndpointParameters { get; set; }
+    public IEnumerable<EndpointParameter>? EndpointParameters { get; set; }
 
     // Only used for SpecialType parameters that need
     // to be resolved by a specific WellKnownType
@@ -270,7 +267,7 @@ internal class EndpointParameter
 
         // ParsabilityHelper returns a single enumeration with a Parsable/NonParsable enumeration result. We use this already
         // in the analyzers to determine whether we need to warn on whether a type needs to implement TryParse/IParsable<T>. To
-        // support usage in the code generator an optional out property has been added to hint at what variant of the various
+        // support usage in the code generator an optional out parameter has been added to hint at what variant of the various
         // TryParse methods should be used (this implies that the preferences are baked into ParsabilityHelper). If we aren't
         // parsable at all we bail.
         if (ParsabilityHelper.GetParsability(parameterType, wellKnownTypes, out var parsabilityMethod) != Parsability.Parsable)
@@ -426,11 +423,11 @@ internal class EndpointParameter
         isOptional |= fromBodyAttribute.TryGetNamedArgumentValue<bool>("AllowEmpty", out var allowEmptyValue) && allowEmptyValue;
         if (typeSymbol is IParameterSymbol parameter)
         {
-            isOptional |= (parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue);
+            isOptional |= parameter.IsOptional();
         }
         else if (typeSymbol is IPropertySymbol property)
         {
-            isOptional |= property.NullableAnnotation == NullableAnnotation.Annotated;
+            isOptional |= property.IsOptional();
         }
         return true;
     }
@@ -454,12 +451,12 @@ internal class EndpointParameter
         if (type.IsAbstract)
         {
             return false;
-            // throw new InvalidOperationException($"The abstract type '{type.Name}' is not supported.");
         }
 
         var constructors = type.Constructors.Where(constructor => constructor.DeclaredAccessibility == Accessibility.Public && !constructor.IsStatic);
+        var numOfConstructors = constructors.Count();
 
-        if (constructors.Count() == 1)
+        if (numOfConstructors == 1)
         {
             var targetConstructor = constructors.SingleOrDefault();
             var properties = type.GetMembers().OfType<IPropertySymbol>().Where(property => property.DeclaredAccessibility == Accessibility.Public);
@@ -468,13 +465,6 @@ internal class EndpointParameter
             {
                 lookupTable.Add(new ParameterLookupKey(property.Name, property.Type), property);
             }
-
-            // This behavior diverge from the JSON serialization
-            // since we don't have an attribute, eg. JsonConstructor,
-            // we need to be very restrictive about the ctor
-            // and only accept if the parameterized ctor has
-            // only arguments that we can match (Type and Name)
-            // with a public property.
 
             var parameters = targetConstructor.GetParameters();
             var propertiesWithParameterInfo = new List<ConstructorParameter>();
@@ -486,31 +476,21 @@ internal class EndpointParameter
                 return true;
             }
 
-            for (var i = 0; i < parameters.Length; i++)
+            foreach (var parameter in parameters)
             {
-                var key = new ParameterLookupKey(parameters[i].Name!, parameters[i].Type);
+                var key = new ParameterLookupKey(parameter.Name!, parameter.Type);
                 if (lookupTable.TryGetValue(key, out var property))
                 {
-                    propertiesWithParameterInfo.Add(new ConstructorParameter(property, parameters[i]));
+                    propertiesWithParameterInfo.Add(new ConstructorParameter(property, parameter));
                 }
                 else
                 {
                     return false;
-                    // throw new InvalidOperationException(
-                    //     $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{type.Name}'.");
                 }
             }
 
             isParameterlessConstructor = false;
             matchedParameters = propertiesWithParameterInfo;
-            return true;
-        }
-
-        var parameterlessConstructor = constructors.SingleOrDefault(c => c.GetParameters().Length == 0);
-        if (parameterlessConstructor is not null)
-        {
-            isParameterlessConstructor = true;
-            matchedParameters = type.GetMembers().OfType<IPropertySymbol>().Select(property => new ConstructorParameter(property, null));
             return true;
         }
 
@@ -521,14 +501,12 @@ internal class EndpointParameter
             return true;
         }
 
-        if (parameterlessConstructor is null && constructors.Count() > 1)
+        if (numOfConstructors > 1)
         {
             return false;
-            // throw new InvalidOperationException($"Only a single public parameterized constructor is allowed for type '{type.Name}'.");
         }
 
         return false;
-        // throw new InvalidOperationException($"No public parameterless constructor found for type '{type.Name}'.");
     }
 
     // Lifted from:

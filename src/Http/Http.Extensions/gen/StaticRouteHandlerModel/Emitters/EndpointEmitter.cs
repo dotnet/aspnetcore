@@ -11,7 +11,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 internal static class EndpointEmitter
 {
-    internal static string EmitParameterPreparation(this IEnumerable<EndpointParameter> endpointParameters, int baseIndent = 0)
+    internal static string EmitParameterPreparation(this IEnumerable<EndpointParameter> endpointParameters, EmitterContext emitterContext, int baseIndent = 0)
     {
         using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
         using var parameterPreparationBuilder = new CodeWriter(stringWriter, baseIndent);
@@ -32,25 +32,30 @@ internal static class EndpointEmitter
                     parameter.EmitRouteParameterPreparation(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.RouteOrQuery:
+                    emitterContext.HasRouteOrQuery = true;
                     parameter.EmitRouteOrQueryParameterPreparation(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.BindAsync:
+                    emitterContext.HasBindAsync = true;
                     parameter.EmitBindAsyncPreparation(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.JsonBody:
+                    emitterContext.HasJsonBody = true;
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.FormBody:
+                    emitterContext.HasFormBody = true;
                     parameter.EmitFormParameterPreparation(parameterPreparationBuilder, ref readFormEmitted);
                     break;
                 case EndpointParameterSource.JsonBodyOrService:
+                    emitterContext.HasJsonBodyOrService = true;
                     parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.AsParameters:
-                    parameter.EmitAsParametersParameterPreparation(parameterPreparationBuilder);
+                    parameter.EmitAsParametersParameterPreparation(parameterPreparationBuilder, emitterContext);
                     break;
             }
         }
@@ -62,29 +67,24 @@ internal static class EndpointEmitter
     {
         foreach (var parameter in endpoint.Parameters)
         {
+            ProcessParameter(parameter, codeWriter, endpoint);
+            if (parameter is { Source: EndpointParameterSource.AsParameters, EndpointParameters: {} innerParameters })
+            {
+                foreach (var innerParameter in innerParameters)
+                {
+                    ProcessParameter(innerParameter, codeWriter, endpoint);
+                }
+            }
+        }
+
+        static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter, Endpoint endpoint)
+        {
             if (parameter.Source == EndpointParameterSource.RouteOrQuery)
             {
                 var parameterName = parameter.SymbolName;
                 codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
                 codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
-            }
-            if (parameter is
-            {
-                Source: EndpointParameterSource.AsParameters,
-                EndpointParameters:
-                {} asParametersList
-            })
-            {
-                foreach (var (_, innerParameter) in asParametersList)
-                {
-                    if (innerParameter.Source == EndpointParameterSource.RouteOrQuery)
-                    {
-                        var parameterName = innerParameter.SymbolName;
-                        codeWriter.Write($@"var {parameterName}_RouteOrQueryResolver = ");
-                        codeWriter.WriteLine($@"GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery(""{parameterName}"", options?.RouteParameterNames);");
-                        endpoint.EmitterContext.HasRouteOrQuery = true;
-                    }
-                }
+                endpoint.EmitterContext.HasRouteOrQuery = true;
             }
         }
     }
@@ -93,6 +93,18 @@ internal static class EndpointEmitter
     {
         var serviceProviderEmitted = false;
         foreach (var parameter in endpoint.Parameters)
+        {
+            ProcessParameter(parameter, codeWriter, ref serviceProviderEmitted);
+            if (parameter is { Source: EndpointParameterSource.AsParameters, EndpointParameters: {} innerParameters })
+            {
+                foreach (var innerParameter in innerParameters)
+                {
+                    ProcessParameter(innerParameter, codeWriter, ref serviceProviderEmitted);
+                }
+            }
+        }
+
+        static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter, ref bool serviceProviderEmitted)
         {
             if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
             {
@@ -105,32 +117,7 @@ internal static class EndpointEmitter
                 var shortParameterTypeName = parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
                 codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, serviceProviderIsService);");
             }
-
-            if (parameter is
-            {
-                Source: EndpointParameterSource.AsParameters,
-                EndpointParameters:
-                {} asParametersList
-            })
-            {
-                foreach (var (_, innerParameter) in asParametersList)
-                {
-                    if (innerParameter.Source == EndpointParameterSource.JsonBodyOrService)
-                    {
-                        if (!serviceProviderEmitted)
-                        {
-                            codeWriter.WriteLine("var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();");
-                            serviceProviderEmitted = true;
-                        }
-                        codeWriter.Write($@"var {innerParameter.SymbolName}_JsonBodyOrServiceResolver = ");
-                        var shortParameterTypeName = innerParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
-                        codeWriter.WriteLine($"ResolveJsonBodyOrService<{innerParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(innerParameter.SymbolName, true)}, serviceProviderIsService);");
-
-                    }
-                }
-            }
         }
-
     }
 
     public static void EmitLoggingPreamble(this Endpoint endpoint, CodeWriter codeWriter)

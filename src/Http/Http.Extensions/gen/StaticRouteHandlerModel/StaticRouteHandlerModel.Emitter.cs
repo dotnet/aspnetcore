@@ -62,7 +62,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.Parameters.Length > 0)
         {
-            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(codeWriter.Indent));
+            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
         }
 
         codeWriter.WriteLine("if (wasParamCheckFailure)");
@@ -151,7 +151,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.Parameters.Length > 0)
         {
-            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(codeWriter.Indent));
+            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
         }
 
         codeWriter.WriteLine("if (wasParamCheckFailure)");

@@ -83,7 +83,7 @@ internal class Endpoint
                     IsAwaitable = true;
                     break;
                 case EndpointParameterSource.AsParameters:
-                    IsAwaitable = parameter.EndpointParameters.Any(parameters => parameters.Item2.Source is EndpointParameterSource.JsonBody || parameters.Item2.Source == EndpointParameterSource.FormBody || parameters.Item2.Source == EndpointParameterSource.JsonBodyOrService);
+                    IsAwaitable = parameter.EndpointParameters?.Any(p => p.Source is EndpointParameterSource.JsonBody or EndpointParameterSource.FormBody or EndpointParameterSource.JsonBodyOrService) ?? false;
                     break;
                 case EndpointParameterSource.Unknown:
                     Diagnostics.Add(Diagnostic.Create(
@@ -100,11 +100,7 @@ internal class Endpoint
 
         EmitterContext.HasEndpointParameterMetadataProvider = Parameters.Any(p => p.IsEndpointParameterMetadataProvider);
         EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider || Parameters.Any(p => p.IsEndpointMetadataProvider || p.IsEndpointParameterMetadataProvider);
-
-        EmitterContext.HasFormBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.FormBody);
-        EmitterContext.HasRouteOrQuery = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery || (parameter.Source == EndpointParameterSource.AsParameters && parameter.EndpointParameters.Any(p => p.Item2.Source == EndpointParameterSource.RouteOrQuery)));
-        EmitterContext.HasBindAsync = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
-        EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable || (parameter.Source == EndpointParameterSource.AsParameters && parameter.EndpointParameters.Any(p => p.Item2.IsParsable)));
+        EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable || (parameter.Source == EndpointParameterSource.AsParameters && parameter.EndpointParameters.Any(p => p.IsParsable)));
         EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
             parameter.Source == EndpointParameterSource.SpecialType ||
             parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
@@ -114,7 +110,7 @@ internal class Endpoint
     public bool IsAwaitable { get; }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
-    public EmitterContext EmitterContext { get;  }
+    public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();

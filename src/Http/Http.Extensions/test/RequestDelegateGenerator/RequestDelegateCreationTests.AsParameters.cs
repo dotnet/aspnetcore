@@ -239,4 +239,32 @@ app.MapGet("/{value}", TestAction);
 
         Assert.Equal(expectedValue, httpContext.Items["input"]);
     }
+
+    [Fact]
+    public async Task VerifyAsParametersBaseline()
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+void parameterListWithDefaultValue([AsParameters] ParameterListWitDefaultValue args)
+{
+    args.HttpContext.Items.Add("input", args.Value);
+}
+void parameterListRecordStruct([AsParameters] ParameterListRecordStruct args)
+{
+    args.HttpContext.Items.Add("input", args.Value);
+}
+static void parametersListWithHttpContext([AsParameters] ParametersListWithHttpContext args)
+{
+    args.HttpContext.Items.Add("input", args.HttpContext);
+    args.HttpContext.Items.Add("user", args.User);
+    args.HttpContext.Items.Add("request", args.Request);
+    args.HttpContext.Items.Add("response", args.Response);
+}
+app.MapGet("/parameterListWithDefaultValue/{value}", parameterListWithDefaultValue);
+app.MapGet("/parameterListRecordStruct/{value}", parameterListRecordStruct);
+app.MapGet("/parametersListWithHttpContext", parametersListWithHttpContext);
+app.MapPost("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
+""");
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
 }
