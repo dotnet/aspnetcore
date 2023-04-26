@@ -231,7 +231,7 @@
     <SystemIdentityModelTokensJwtVersion>6.21.0</SystemIdentityModelTokensJwtVersion>
     <NuGetPackagingVersion>6.2.2</NuGetPackagingVersion>
     <NuGetVersioningVersion>6.2.2</NuGetVersioningVersion>
-    <NuGetPackagingVersion>6.2.2</NuGetPackagingVersion>
+    <NuGetFrameworksVersion>6.2.2</NuGetFrameworksVersion>
     <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <SystemSecurityPrincipalWindowsVersion>5.0.0</SystemSecurityPrincipalWindowsVersion>
