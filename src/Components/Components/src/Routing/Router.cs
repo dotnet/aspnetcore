@@ -136,8 +136,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             _onNavigateCalled = true;
             await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
         }
-
-        Refresh(isNavigationIntercepted: false);
+        else
+        {
+            Refresh(isNavigationIntercepted: false);
+        }
     }
 
     /// <inheritdoc />
