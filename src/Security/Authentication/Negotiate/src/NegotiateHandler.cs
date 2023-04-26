@@ -31,8 +31,17 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
     /// Creates a new <see cref="NegotiateHandler"/>
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="NegotiateHandler"/>
+    /// </summary>
+    /// <inheritdoc />
+    public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
