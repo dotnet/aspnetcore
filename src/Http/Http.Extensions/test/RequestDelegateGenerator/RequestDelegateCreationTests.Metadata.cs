@@ -33,6 +33,8 @@ app.MapGet("/", () => "Hello, world!");
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -45,6 +47,8 @@ app.MapGet("/", () => {});
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -111,6 +115,8 @@ app.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, stri
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(400, metadata.StatusCode);
         Assert.Equal("application/problem+json", metadata.ContentTypes.Single());
+
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -124,6 +130,8 @@ app.MapPost("/", (CustomMetadataEmitter x) => {});
 
         _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 42);
         _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 24);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
