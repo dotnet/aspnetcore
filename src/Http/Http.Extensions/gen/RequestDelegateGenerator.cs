@@ -225,11 +225,28 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers);
+        var helperTypes = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                var requiresMetadataHelperTypes = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresMetadataHelperTypes);
+
+                using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+                using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
+
+                if (requiresMetadataHelperTypes)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentMetadataTypes);
+                }
+
+                return stringWriter.ToString();
+            });
+
+        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers).Combine(helperTypes);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var ((thunks, endpointsCode), helpers) = sources;
+            var (((thunks, endpointsCode), helperMethods), helperTypes) = sources;
 
             if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
@@ -246,7 +263,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 genericThunks: string.Empty,
                 thunks: thunksCode.ToString(),
                 endpoints: endpointsCode,
-                helperMethods: helpers ?? string.Empty);
+                helperMethods: helperMethods ?? string.Empty,
+                helperTypes: helperTypes ?? string.Empty);
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });

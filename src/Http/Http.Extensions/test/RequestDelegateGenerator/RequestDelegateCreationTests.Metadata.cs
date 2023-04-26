@@ -24,7 +24,7 @@ public abstract partial class RequestDelegateCreationTests
     [Fact]
     public async Task MapAction_ReturnsString_Has_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", () => "Hello, world!");
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -39,7 +39,7 @@ app.MapGet("/", () => "Hello, world!");
     [Fact]
     public async Task MapAction_ReturnsVoid_Has_No_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", () => {});
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -52,7 +52,7 @@ app.MapGet("/", () => {});
     [Fact]
     public async Task MapAction_ReturnsTaskOfString_Has_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -67,7 +67,7 @@ app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
     [Fact]
     public async Task MapAction_ReturnsTask_Has_No_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", Task () => Task.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -80,7 +80,7 @@ app.MapGet("/", Task () => Task.CompletedTask);
     [Fact]
     public async Task MapAction_ReturnsValueTaskOfString_Has_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -95,7 +95,7 @@ app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
     [Fact]
     public async Task MapAction_ReturnsValueTask_Has_No_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -108,7 +108,7 @@ app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
     [Fact]
     public async Task MapAction_ReturnsValidationProblemResult_Has_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, string[]>()));
 """);
 
@@ -123,7 +123,7 @@ app.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, stri
     [Fact]
     public async Task MapAction_TakesCustomMetadataEmitter_Has_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (CustomMetadataEmitter x) => {});
 """);
 
@@ -137,7 +137,7 @@ app.MapPost("/", (CustomMetadataEmitter x) => {});
     [Fact]
     public async Task MapAction_ReturnsCustomMetadataEmitter_Has_Metadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", () => new CustomMetadataEmitter());
 """);
 
@@ -151,7 +151,7 @@ app.MapPost("/", () => new CustomMetadataEmitter());
     [Fact]
     public async Task Create_AddJsonResponseType_AsMetadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", () => new object());
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -166,7 +166,7 @@ app.MapGet("/", () => new object());
     [Fact]
     public async Task Create_AddPlaintextResponseType_AsMetadata()
     {
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", () => "Hello");
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
@@ -182,7 +182,7 @@ app.MapGet("/", () => "Hello");
     public async Task Create_DiscoversMetadata_FromParametersImplementingIEndpointParameterMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (AddsCustomParameterMetadataBindable param1, AddsCustomParameterMetadata param2) => { });
 """);
 
@@ -199,7 +199,7 @@ app.MapPost("/", (AddsCustomParameterMetadataBindable param1, AddsCustomParamete
     public async Task Create_DiscoversMetadata_FromParametersImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (AddsCustomParameterMetadata param1) => { });
 """);
 
@@ -215,7 +215,7 @@ app.MapPost("/", (AddsCustomParameterMetadata param1) => { });
     public async Task Create_DiscoversEndpointMetadata_FromReturnTypeImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", () => new AddsCustomEndpointMetadataResult());
 """);
 
@@ -231,7 +231,7 @@ app.MapPost("/", () => new AddsCustomEndpointMetadataResult());
     public async Task Create_DiscoversEndpointMetadata_FromTaskWrappedReturnTypeImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", () => Task.FromResult(new AddsCustomEndpointMetadataResult()));
 """);
 
@@ -247,7 +247,7 @@ app.MapPost("/", () => Task.FromResult(new AddsCustomEndpointMetadataResult()));
     public async Task Create_DiscoversEndpointMetadata_FromValueTaskWrappedReturnTypeImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", () => ValueTask.FromResult(new AddsCustomEndpointMetadataResult()));
 """);
 
@@ -264,7 +264,7 @@ app.MapPost("/", () => ValueTask.FromResult(new AddsCustomEndpointMetadataResult
     {
         // Arrange
         var @delegate = (Todo todo) => new RemovesAcceptsMetadataResult();
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (Todo todo) => new RemovesAcceptsMetadataResult());
 """);
 
@@ -280,7 +280,7 @@ app.MapPost("/", (Todo todo) => new RemovesAcceptsMetadataResult());
     public async Task Create_AllowsRemovalOfDefaultMetadata_ByTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (Todo todo) => Task.FromResult(new RemovesAcceptsMetadataResult()));
 """);
 
@@ -296,7 +296,7 @@ app.MapPost("/", (Todo todo) => Task.FromResult(new RemovesAcceptsMetadataResult
     public async Task Create_AllowsRemovalOfDefaultMetadata_ByValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (Todo todo) => ValueTask.FromResult(new RemovesAcceptsMetadataResult()));
 """);
 
@@ -312,7 +312,7 @@ app.MapPost("/", (Todo todo) => ValueTask.FromResult(new RemovesAcceptsMetadataR
     public async Task Create_AllowsRemovalOfDefaultMetadata_ByParameterTypesImplementingIEndpointParameterMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
 """);
 
@@ -328,7 +328,7 @@ app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
     public async Task Create_AllowsRemovalOfDefaultMetadata_ByParameterTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
 """);
 
@@ -344,7 +344,7 @@ app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
     public async Task Create_SetsApplicationServices_OnEndpointMetadataContext()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (Todo todo) => new AccessesServicesMetadataResult());
 """);
         var serviceProvider = CreateServiceProvider((services) =>
@@ -365,7 +365,7 @@ app.MapPost("/", (Todo todo) => new AccessesServicesMetadataResult());
     public async Task Create_SetsApplicationServices_OnEndpointParameterMetadataContext()
     {
         // Arrange
-        var (_, compilation) = await RunGeneratorAsync($$"""
+        var (_, compilation) = await RunGeneratorAsync("""
 app.MapPost("/", (AccessesServicesMetadataBinder parameter1) => "Test");
 """);
         var serviceProvider = CreateServiceProvider((services) =>
