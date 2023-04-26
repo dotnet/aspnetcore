@@ -298,6 +298,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+
     file class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
@@ -439,27 +440,5 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "InvalidFormRequestBody"), "Failed to read parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
-    }
-
-    file static class GeneratedMetadataConstants
-    {
-        public static readonly string[] JsonContentType = new [] { "application/json" };
-        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
-    }
-
-    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
-    {
-        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
-        {
-            Type = type;
-            StatusCode = statusCode;
-            ContentTypes = contentTypes;
-        }
-
-        public Type? Type { get; }
-
-        public int StatusCode { get; }
-
-        public IEnumerable<string> ContentTypes { get; }
     }
 }
