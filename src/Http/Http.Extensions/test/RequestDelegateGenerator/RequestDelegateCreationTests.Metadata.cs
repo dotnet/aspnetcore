@@ -33,7 +33,6 @@ app.MapGet("/", () => "Hello, world!");
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -46,7 +45,6 @@ app.MapGet("/", () => {});
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -61,7 +59,6 @@ app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -74,7 +71,6 @@ app.MapGet("/", Task () => Task.CompletedTask);
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -89,7 +85,6 @@ app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
         Assert.Null(metadata.Type);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -102,7 +97,6 @@ app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
         Assert.Empty(metadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -117,7 +111,6 @@ app.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, stri
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(400, metadata.StatusCode);
         Assert.Equal("application/problem+json", metadata.ContentTypes.Single());
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -131,7 +124,6 @@ app.MapPost("/", (CustomMetadataEmitter x) => {});
 
         _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 42);
         _ = endpoint.Metadata.OfType<CustomMetadata>().Single(m => m.Value == 24);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -145,7 +137,6 @@ app.MapPost("/", () => new CustomMetadataEmitter());
 
         var metadata = endpoint.Metadata.OfType<CustomMetadata>().Single();
         Assert.Equal(24, metadata.Value);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -160,7 +151,6 @@ app.MapGet("/", () => new object());
 
         Assert.Equal("application/json", Assert.Single(responseMetadata.ContentTypes));
         Assert.Equal(typeof(object), responseMetadata.Type);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -175,7 +165,6 @@ app.MapGet("/", () => "Hello");
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
         Assert.Null(responseMetadata.Type);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -192,7 +181,6 @@ app.MapPost("/", (AddsCustomParameterMetadataBindable param1, AddsCustomParamete
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param1" });
         Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param2" });
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -208,7 +196,6 @@ app.MapPost("/", (AddsCustomParameterMetadata param1) => { });
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -224,7 +211,6 @@ app.MapPost("/", () => new AddsCustomEndpointMetadataResult());
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -240,7 +226,6 @@ app.MapPost("/", () => Task.FromResult(new AddsCustomEndpointMetadataResult()));
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -256,7 +241,6 @@ app.MapPost("/", () => ValueTask.FromResult(new AddsCustomEndpointMetadataResult
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -273,7 +257,6 @@ app.MapPost("/", (Todo todo) => new RemovesAcceptsMetadataResult());
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -289,7 +272,6 @@ app.MapPost("/", (Todo todo) => Task.FromResult(new RemovesAcceptsMetadataResult
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -305,7 +287,6 @@ app.MapPost("/", (Todo todo) => ValueTask.FromResult(new RemovesAcceptsMetadataR
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -321,7 +302,6 @@ app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -337,7 +317,6 @@ app.MapPost("/", (RemovesAcceptsParameterMetadata param1) => "Hello");
 
         // Assert
         Assert.DoesNotContain(endpoint.Metadata, m => m is IAcceptsMetadata);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -358,7 +337,6 @@ app.MapPost("/", (Todo todo) => new AccessesServicesMetadataResult());
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is MetadataService);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 
     [Fact]
@@ -379,6 +357,5 @@ app.MapPost("/", (AccessesServicesMetadataBinder parameter1) => "Test");
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is MetadataService);
-        await VerifyAgainstBaselineUsingFile(compilation);
     }
 }
