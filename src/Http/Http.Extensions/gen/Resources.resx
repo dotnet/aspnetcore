@@ -130,10 +130,10 @@
     <value>Unable to statically resolve endpoint handler method. Only method groups, lambda expressions or readonly fields/variables are allowed. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see aka.ms/aot-known-issues</value>
   </data>
   <data name="UnableToResolveParameter_Message" xml:space="preserve">
-    <value>Unable to statically resolve parameter named '{0}' for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aot-known-issues</value>
+    <value>Unable to statically resolve property named '{0}' for endpoint. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aot-known-issues</value>
   </data>
   <data name="UnableToResolveParameter_Title" xml:space="preserve">
-    <value>Unable to resolve parameter</value>
+    <value>Unable to resolve property</value>
   </data>
   <data name="UnableToResolveAnonymousReturnType_Message" xml:space="preserve">
     <value>Unable to resolve anonymous return type. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aot-known-issues</value>

@@ -15,6 +15,7 @@ public abstract partial class RequestDelegateCreationTests
     {
         get
         {
+#pragma warning disable CS0219
             var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";
             var todo = new Todo()
             {
@@ -25,7 +26,9 @@ public abstract partial class RequestDelegateCreationTests
             var withFilter = """
 .AddEndpointFilter((c, n) => n(c));
 """;
+
             var fromBodyRequiredSource = """app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo));""";
+
             var fromBodyEmptyBodyBehaviorSource = """app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo));""";
             var fromBodyAllowEmptySource = """app.MapPost("/", ([CustomFromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo));""";
             var fromBodyNullableSource = """app.MapPost("/", ([FromBody] Todo? todo) => TypedResults.Ok(todo));""";
@@ -35,6 +38,7 @@ IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo
 app.MapPost("/", postTodoWithDefault);
 #nullable restore
 """;
+            var fromBodyAsParametersRequiredSource = """app.MapPost("/", ([AsParameters] ParametersListWithExplicitFromBody args) => TypedResults.Ok(args.Todo));""";
             var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyEmptyBehaviorWithFilterSource = $"""app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([CustomFromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
@@ -45,11 +49,13 @@ IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo
 app.MapPost("/", postTodoWithDefault){withFilter}
 #nullable restore
 """;
+#pragma warning restore CS0219
 
             return new[]
             {
                 new object[] { fromBodyRequiredSource, todo, 200, expectedBody },
                 new object[] { fromBodyRequiredSource, null, 400, string.Empty },
+                new object[] { fromBodyAsParametersRequiredSource, todo, 200, expectedBody },
                 new object[] { fromBodyEmptyBodyBehaviorSource, todo, 200, expectedBody },
                 new object[] { fromBodyEmptyBodyBehaviorSource, null, 200, string.Empty },
                 new object[] { fromBodyAllowEmptySource, todo, 200, expectedBody },
@@ -82,11 +88,15 @@ app.MapPost("/", postTodoWithDefault){withFilter}
         var httpContext = CreateHttpContext();
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(requestData is not null));
         httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
 
-        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(requestData);
-        var stream = new MemoryStream(requestBodyBytes);
-        httpContext.Request.Body = stream;
-        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        if (requestData is not null)
+        {
+            var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(requestData);
+            var stream = new MemoryStream(requestBodyBytes);
+            httpContext.Request.Body = stream;
+            httpContext.Request.Headers["Content-Length"] = requestData is not null ? stream.Length.ToString(CultureInfo.InvariantCulture) : "0";
+        }
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody, expectedStatusCode);

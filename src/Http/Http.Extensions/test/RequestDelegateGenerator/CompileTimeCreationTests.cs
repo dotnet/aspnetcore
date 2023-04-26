@@ -59,27 +59,6 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     }
 
     [Fact]
-    public async Task MapAction_WarnsForUnsupportedAsParametersAttribute()
-    {
-        var source = """app.MapGet("/{routeValue}", ([AsParameters] Todo todo) => todo);""";
-        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
-
-        // Emits diagnostic but generates no source
-        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
-        Assert.Empty(result.GeneratedSources);
-
-        // Falls back to runtime-generated endpoint
-        var endpoint = GetEndpointFromCompilation(compilation, false);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString($"?Id=0&Name=Test&IsComplete=false");
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, """{"id":0,"name":"Test","isComplete":false}""");
-    }
-
-    [Fact]
     public async Task MapAction_WarnsForUnsupportedRouteVariable()
     {
         var source = """

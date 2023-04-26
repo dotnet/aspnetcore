@@ -105,7 +105,32 @@ internal static class EndpointEmitter
                 var shortParameterTypeName = parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
                 codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, serviceProviderIsService);");
             }
+
+            if (parameter is
+            {
+                Source: EndpointParameterSource.AsParameters,
+                EndpointParameters:
+                {} asParametersList
+            })
+            {
+                foreach (var (_, innerParameter) in asParametersList)
+                {
+                    if (innerParameter.Source == EndpointParameterSource.JsonBodyOrService)
+                    {
+                        if (!serviceProviderEmitted)
+                        {
+                            codeWriter.WriteLine("var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();");
+                            serviceProviderEmitted = true;
+                        }
+                        codeWriter.Write($@"var {innerParameter.SymbolName}_JsonBodyOrServiceResolver = ");
+                        var shortParameterTypeName = innerParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+                        codeWriter.WriteLine($"ResolveJsonBodyOrService<{innerParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(innerParameter.SymbolName, true)}, serviceProviderIsService);");
+
+                    }
+                }
+            }
         }
+
     }
 
     public static void EmitLoggingPreamble(this Endpoint endpoint, CodeWriter codeWriter)

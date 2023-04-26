@@ -61,6 +61,19 @@ internal static class SymbolExtensions
         return false;
     }
 
+    public static bool HasAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType)
+    {
+        foreach (var attributeData in attributes)
+        {
+            if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
     {
         return symbol.HasAttributeImplementingInterface(interfaceType, out var _);
@@ -69,6 +82,26 @@ internal static class SymbolExtensions
     public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in symbol.GetAttributes())
+        {
+            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceType))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
+        return false;
+    }
+
+    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
+    {
+        return attributes.HasAttributeImplementingInterface(interfaceType, out var _);
+    }
+
+    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in attributes)
         {
             if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceType))
             {

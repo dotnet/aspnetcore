@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Diagnostics;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Security.Cryptography.X509Certificates;
@@ -463,7 +464,7 @@ public struct BodyStruct
 
 public class ExceptionThrowingRequestBodyStream : Stream
 {
-    private readonly Exception _exceptionToThrow;
+    public readonly Exception _exceptionToThrow;
 
     public ExceptionThrowingRequestBodyStream(Exception exceptionToThrow)
     {
@@ -508,7 +509,7 @@ public class ExceptionThrowingRequestBodyStream : Stream
 
 public readonly struct TraceIdentifier
 {
-    private TraceIdentifier(string id)
+    public TraceIdentifier(string id)
     {
         Id = id;
     }
@@ -679,3 +680,115 @@ public record MetadataService;
 public record ParameterListFromQuery(HttpContext HttpContext, [FromQuery] int Value);
 public record ParameterListFromRoute(HttpContext HttpContext, int Value);
 public record ParameterListFromHeader(HttpContext HttpContext, [FromHeader(Name = "X-Custom-Header")] int Value);
+public record ParametersListWithImplicitFromBody(HttpContext HttpContext, TodoStruct Todo);
+public record struct TodoStruct(int Id, string Name, bool IsComplete, TodoStatus Status) : ITodo;
+public record ParametersListWithExplicitFromBody(HttpContext HttpContext, [FromBody] Todo Todo);
+public record ParametersListWithHttpContext(
+    HttpContext HttpContext,
+    ClaimsPrincipal User,
+    HttpRequest Request,
+    HttpResponse Response);
+
+public record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
+
+public record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
+
+#nullable enable
+public record ParameterListRecordWithoutPositionalParameters
+{
+    public HttpContext? HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+#nullable restore
+
+public struct ParameterListStruct
+{
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+
+public struct ParameterListMutableStruct
+{
+    public ParameterListMutableStruct()
+    {
+        Value = -1;
+        HttpContext = default!;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+
+public class ParameterListStructWithParameterizedContructor
+{
+    public ParameterListStructWithParameterizedContructor(HttpContext httpContext)
+    {
+        HttpContext = httpContext;
+        Value = 42;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    public int Value { get; set; }
+}
+
+public struct ParameterListStructWithMultipleParameterizedContructor
+{
+    public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext)
+    {
+        HttpContext = httpContext;
+        Value = 10;
+    }
+
+    public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext, [FromHeader(Name = "Value")] int value)
+    {
+        HttpContext = httpContext;
+        Value = value;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+
+#nullable enable
+public class ParameterListClass
+{
+    public HttpContext? HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+#nullable restore
+
+public class ParameterListClassWithParameterizedContructor
+{
+    public ParameterListClassWithParameterizedContructor(HttpContext httpContext)
+    {
+        HttpContext = httpContext;
+        Value = 42;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    public int Value { get; set; }
+}
+
+public class ParameterListWitDefaultValue
+{
+    public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute] int value = 42)
+    {
+        HttpContext = httpContext;
+        Value = value;
+    }
+
+    public HttpContext HttpContext { get; }
+    public int Value { get; }
+}
