@@ -177,11 +177,11 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (responseType.SpecialType == SpecialType.System_String)
         {
-            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));""");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
         }
         else
         {
-            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}}), statusCode: 200, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 
