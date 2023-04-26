@@ -335,16 +335,12 @@
       <Sha>d14c4adbdbb8c7ee060f9e333883fc9890939b66</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-<<<<<<< HEAD
     <Dependency Name="Microsoft.SourceLink.GitHub" Version="8.0.0-beta.23211.2" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
       <Sha>4cf2eb17c295905edeca76a9afe6dda42988359e</Sha>
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23217.1">
-=======
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23224.1">
->>>>>>> upstream/main
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>d14c4adbdbb8c7ee060f9e333883fc9890939b66</Sha>
     </Dependency>
@@ -361,6 +357,14 @@
       <Sha>d14c4adbdbb8c7ee060f9e333883fc9890939b66</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.2">
+      <Uri>https://github.com/nuget/nuget.client</Uri>
+      <Sha>027ca8b8ef4b4dc94995f87b9c441d2bcf742c1d</Sha>
+    </Dependency>
+    <Dependency Name="NuGet.Packaging" Version="6.2.2">
+      <Uri>https://github.com/nuget/nuget.client</Uri>
+      <Sha>027ca8b8ef4b4dc94995f87b9c441d2bcf742c1d</Sha>
+    </Dependency>
+    <Dependency Name="NuGet.Versioning" Version="6.2.2">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>027ca8b8ef4b4dc94995f87b9c441d2bcf742c1d</Sha>
     </Dependency>
