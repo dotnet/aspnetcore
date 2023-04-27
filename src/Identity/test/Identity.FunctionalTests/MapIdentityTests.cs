@@ -70,7 +70,7 @@ public class MapIdentityTests : LoggedTest
     [Fact]
     public async Task CanCustomizeBearerTokenExpiration()
     {
-        var clock = new TestTimeProvider();
+        var clock = new TestClock();
         var expireTimeSpan = TimeSpan.FromSeconds(42);
 
         await using var app = await CreateAppAsync(services =>
@@ -79,8 +79,8 @@ public class MapIdentityTests : LoggedTest
             services.AddAuthentication(IdentityConstants.BearerScheme).AddBearerToken(IdentityConstants.BearerScheme, options =>
             {
                 options.BearerTokenExpiration = expireTimeSpan;
-                options.TimeProvider = clock;
             });
+            services.AddSingleton<ISystemClock>(clock);
         });
 
         using var client = app.GetTestClient();
@@ -99,12 +99,12 @@ public class MapIdentityTests : LoggedTest
         // Works without time passing.
         Assert.Equal($"Hello, {Username}!", await client.GetStringAsync("/auth/hello"));
 
-        clock.Advance(TimeSpan.FromSeconds(expireTimeSpan.TotalSeconds - 1));
+        clock.Add(TimeSpan.FromSeconds(expireTimeSpan.TotalSeconds - 1));
 
         // Still works without one second before expiration.
         Assert.Equal($"Hello, {Username}!", await client.GetStringAsync("/auth/hello"));
 
-        clock.Advance(TimeSpan.FromSeconds(1));
+        clock.Add(TimeSpan.FromSeconds(1));
         var unauthorizedResponse = await client.GetAsync("/auth/hello");
 
         // Fails the second the BearerTokenExpiration elapses.

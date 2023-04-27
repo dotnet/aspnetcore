@@ -58,8 +58,8 @@ public static class IdentityApiEndpointsServiceCollectionExtensions
             .AddApiEndpoints();
     }
 
-    private sealed class CompositeIdentityHandler(IOptionsMonitor<PolicySchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
-        : PolicySchemeHandler(options, logger, encoder)
+    private sealed class CompositeIdentityHandler(IOptionsMonitor<PolicySchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        : PolicySchemeHandler(options, logger, encoder, clock)
     {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
