@@ -10,6 +10,7 @@
     <Compile Include="..\..\UI\src\UIFramework.cs" Link="Infrastructure\UIFramework.cs" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(IdentityTestSharedSourceRoot)\TestTimeProvider.cs" LinkBase="Shared" />
 
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

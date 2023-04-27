@@ -53,6 +53,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.NamedPipes\src\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.BearerToken" ProjectPath="$(RepoRoot)src\Security\Authentication\BearerToken\src\Microsoft.AspNetCore.Authentication.BearerToken.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Certificate" ProjectPath="$(RepoRoot)src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Cookies" ProjectPath="$(RepoRoot)src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication" ProjectPath="$(RepoRoot)src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
