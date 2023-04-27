@@ -9,6 +9,8 @@ internal static class WellKnownTypeData
     {
         Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder,
         Microsoft_AspNetCore_Http_IHeaderDictionary,
+        Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider,
+        Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider,
         Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata,
         Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata,
         Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata,
@@ -114,6 +116,8 @@ internal static class WellKnownTypeData
     {
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
         "Microsoft.AspNetCore.Http.IHeaderDictionary",
+        "Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider",
+        "Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider",
         "Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata",

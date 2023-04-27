@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -212,6 +213,9 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
         private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
         {
             if (obj is IResult r)
@@ -296,6 +300,28 @@ namespace Microsoft.AspNetCore.Http.Generated
             return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, isInferred: true);
         }
 
+    }
+
+    file static class GeneratedMetadataConstants
+    {
+        public static readonly string[] JsonContentType = new [] { "application/json" };
+        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+    }
+
+    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
+    {
+        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
+        {
+            Type = type;
+            StatusCode = statusCode;
+            ContentTypes = contentTypes;
+        }
+
+        public Type? Type { get; }
+
+        public int StatusCode { get; }
+
+        public IEnumerable<string> ContentTypes { get; }
     }
 
     file class LogOrThrowExceptionHelper

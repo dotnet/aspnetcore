@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
         internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::System.String> handler,
+            global::System.Action handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -96,12 +96,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (System.Func<global::System.String>)del;
+                    var handler = (System.Action)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -112,7 +111,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler());
+                            handler();
+                            return ValueTask.FromResult<object?>(Results.Empty);
                         },
                         options.EndpointBuilder,
                         handler.Method);
@@ -126,9 +126,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return Task.CompletedTask;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler();
-                        return httpContext.Response.WriteAsync(result);
+                        handler();
+                        return Task.CompletedTask;
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
@@ -200,27 +199,6 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-    file static class GeneratedMetadataConstants
-    {
-        public static readonly string[] JsonContentType = new [] { "application/json" };
-        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
-    }
-
-    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
-    {
-        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
-        {
-            Type = type;
-            StatusCode = statusCode;
-            ContentTypes = contentTypes;
-        }
-
-        public Type? Type { get; }
-
-        public int StatusCode { get; }
-
-        public IEnumerable<string> ContentTypes { get; }
-    }
 
     file class LogOrThrowExceptionHelper
     {
