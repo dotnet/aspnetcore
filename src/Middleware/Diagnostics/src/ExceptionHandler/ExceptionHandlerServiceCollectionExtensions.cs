@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -46,7 +47,8 @@ public static class ExceptionHandlerServiceCollectionExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="services"></param>
     /// <returns></returns>
-    public static IServiceCollection AddExceptionHandler<T>(this IServiceCollection services) where T : class, IExceptionHandler
+
+    public static IServiceCollection AddExceptionHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services) where T : class, IExceptionHandler
     {
         return services.AddSingleton<IExceptionHandler, T>();
     }
