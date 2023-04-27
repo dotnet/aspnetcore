@@ -141,6 +141,7 @@
     <MicrosoftCodeAnalysisCSharpVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <!-- Packages from NuGet/Nuget.client -->
+    <!-- If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml -->
     <NuGetPackagingVersion>6.2.2</NuGetPackagingVersion>
     <NuGetVersioningVersion>6.2.2</NuGetVersioningVersion>
     <NuGetFrameworksVersion>6.2.2</NuGetFrameworksVersion>
@@ -224,6 +225,7 @@
     <!--
       Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
       This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
+      If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml
     -->
     <Analyzer_MicrosoftCodeAnalysisCSharpVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpVersion>
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
@@ -234,6 +236,7 @@
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>1.1.2-beta1.22531.1</MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>
     <MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>1.1.2-beta1.22531.1</MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>
+    
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftIdentityModelLoggingVersion>6.15.1</MicrosoftIdentityModelLoggingVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>6.15.1</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
