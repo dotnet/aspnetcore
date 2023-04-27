@@ -17,7 +17,6 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
@@ -64,6 +63,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
