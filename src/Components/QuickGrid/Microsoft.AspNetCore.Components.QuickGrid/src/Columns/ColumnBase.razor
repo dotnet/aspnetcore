@@ -17,7 +17,7 @@
         }
         else
         {
-            @if (ColumnOptions is not null && (Align != Align.Right || Align != Align.End))
+            @if (ColumnOptions is not null && (Align != Align.Right && Align != Align.End))
             {
                 <button class="col-options-button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
