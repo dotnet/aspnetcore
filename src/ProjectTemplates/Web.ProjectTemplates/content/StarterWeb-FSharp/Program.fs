@@ -10,7 +10,7 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-#if !NoHttps
+#if (!NoHttps)
 open Microsoft.AspNetCore.HttpsPolicy
 #endif
 open Microsoft.Extensions.Configuration
