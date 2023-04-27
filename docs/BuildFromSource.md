@@ -43,8 +43,12 @@ The steps you follow next depend on your preferred development environment:
     > To modify an existing Visual Studio installation, [follow the instructions for installing from a configuration file](https://learn.microsoft.com/visualstudio/install/import-export-installation-configurations#import-a-configuration) and use the `.vsconfig` file located in the root of the repository:
 
     ```powershell
-    ./eng/scripts/InstallVisualStudio.ps1
+    ./eng/scripts/InstallVisualStudio.ps1 Enterprise
     ```
+
+    Replace `Enterprise` with `Community` if that is your preferred Visual Studio edition. If you use Visual Studio from a preview channel you can specify that also, for example `./eng/scripts/InstallVisualStudio.ps1 Enterprise Preview`.
+
+    If you are seeing errors similar to `the imported project "....\aspnetcore.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found`, try installing/updating Visual Studio as above.
 
 1. Before you open project in Visual Studio, install the required dependencies and set up the repo by running the `restore.cmd` script in the root of the repo:
 
@@ -119,7 +123,7 @@ The steps you follow next depend on your preferred development environment:
 
 1. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
-    > :bulb: The `build.sh` or `build.cmd` script will be local to the directory of the project you opened. For example, the script located in the `src/Http` directory.
+    > :bulb: The `build.sh` or `build.cmd` script will be local to the directory of the project you opened. For example, the script located in the `src/Http` directory. If you want to build the whole tree, use the `build.sh` or `build.cmd` that is located in the `eng` directory.
 
     ```bash
     # Linux or Mac

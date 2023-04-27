@@ -41,8 +41,17 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
     /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -158,7 +167,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 {
                     // https://www.w3.org/TR/xmlschema-2/#dateTime
                     // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                    var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
+                    var expiresAt = TimeProvider.GetUtcNow() + TimeSpan.FromSeconds(value);
                     authTokens.Add(new AuthenticationToken
                     {
                         Name = "expires_at",

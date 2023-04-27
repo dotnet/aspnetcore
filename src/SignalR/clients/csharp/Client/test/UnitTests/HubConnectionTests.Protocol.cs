@@ -853,6 +853,31 @@ public partial class HubConnectionTests
         }
 
         [Fact]
+        public async Task ClientResultReturnsErrorIfCannotParseArgument()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                // No result provided
+                hubConnection.On("Result", (string _) => 1);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[15]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client failed to parse argument(s).\"}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
         public async Task ClientResultCanReturnNullResult()
         {
             var connection = new TestConnection();

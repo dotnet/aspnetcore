@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -906,5 +908,66 @@ public class ExceptionHandlerTest
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Equal("Custom handler", await response.Content.ReadAsStringAsync());
         }
+    }
+
+    [Fact]
+    public async Task UnhandledError_ExceptionNameTagAdded()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+        var instrumentRecorder = new InstrumentRecorder<double>(meterRegistry, "Microsoft.AspNetCore.Hosting", "request-duration");
+        instrumentRecorder.Register(m =>
+        {
+            tcs.SetResult();
+        });
+
+        using var host = new HostBuilder()
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton<IMeterFactory>(meterFactory);
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseExceptionHandler(new ExceptionHandlerOptions()
+                    {
+                        ExceptionHandler = httpContext =>
+                        {
+                            httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                            return httpContext.Response.WriteAsync("Custom handler");
+                        }
+                    });
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        var response = await server.CreateClient().GetAsync("/path");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        await tcs.Task.DefaultTimeout();
+
+        // Assert
+        Assert.Collection(
+            instrumentRecorder.GetMeasurements(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal(404, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
+                Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+            });
     }
 }

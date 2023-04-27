@@ -1504,9 +1504,7 @@
               "src/Azure/AzureAppServices.HostingStartup/",
               "src/Middleware/",
               "src/HttpClientFactory/",
-              "src/Hosting/",
-              "src/SiteExtensions/",
-              "src/DefaultBuilder/"
+              "src/SiteExtensions/"
             ]
           },
           {
@@ -1538,6 +1536,13 @@
               "src/Mvc/Mvc/",
               "src/OpenApi/",
               "src/Mvc/perf/"
+            ]
+          },
+          {
+            "label": "area-hosting",
+            "pathFilter": [
+              "src/DefaultBuilder/",
+              "src/Hosting/"
             ]
           }
         ]
@@ -2562,7 +2567,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview3"
+              "milestoneName": "8.0-preview5"
             }
           }
         ],
@@ -3307,7 +3312,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.15"
+              "milestoneName": "6.0.17"
             }
           }
         ]
@@ -3351,7 +3356,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.4"
+              "milestoneName": "7.0.6"
             }
           }
         ]
@@ -3375,7 +3380,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/8.0-preview2"
+                "branchName": "release/8.0-preview4"
               }
             }
           ]
@@ -3386,7 +3391,7 @@
           "issues",
           "project_card"
         ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview2 branch",
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview4 branch",
         "actions": [
           {
             "name": "removeMilestone",
@@ -3395,7 +3400,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview2"
+              "milestoneName": "8.0-preview4"
             }
           }
         ]
@@ -3585,6 +3590,126 @@
             "name": "removeLabel",
             "parameters": {
               "label": "pending-ci-rerun"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "wtgodbe"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add area-infrastructure to wtgodbe's PRs",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "area-infrastructure"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "breaking-change"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Breaking change actions reminder",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "needs-breaking-change-announcement"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Thanks for identifying a breaking change.\n\n${assignees}, after you commit this PR please take the following actions, as part of the breaking changes announcement process:\n\\n- [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.\n\\n- [ ] Link the breaking change announcement issue from this PR.\n\\n- [ ] Remove the `needs-breaking-change-announcement` label."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "name": "bodyContains",
+              "parameters": {
+                "bodyPattern": "(aot)/i",
+                "isRegex": true
+              }
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "INTERNAL: Debug"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Label AOT related issues appropriately",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "NativeAOT"
             }
           }
         ]

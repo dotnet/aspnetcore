@@ -73,10 +73,9 @@ public sealed class RateLimiterOptions
             throw new ArgumentException($"There already exists a policy with the name {policyName}.", nameof(policyName));
         }
 
-        var policyType = new PolicyTypeState(typeof(TPolicy));
         Func<IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
         {
-            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, policyType.PolicyType);
+            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, typeof(TPolicy));
             return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(policyName, instance.GetPartition), instance.OnRejected);
         };
 
@@ -115,17 +114,5 @@ public sealed class RateLimiterOptions
             var partitionKey = new DefaultKeyType(policyName, partition.PartitionKey, partition.Factory);
             return new RateLimitPartition<DefaultKeyType>(partitionKey, static key => ((Func<TPartitionKey, RateLimiter>)key.Factory!)((TPartitionKey)key.Key!));
         };
-    }
-
-    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
-    private readonly struct PolicyTypeState
-    {
-        public PolicyTypeState([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
-        {
-            PolicyType = policyType;
-        }
-
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        public Type PolicyType { get; }
     }
 }

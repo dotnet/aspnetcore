@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -327,6 +329,97 @@ public class Http3TlsTests : LoggedTest
         Assert.Equal(configuredState, callbackState);
 
         await host.StopAsync().DefaultTimeout();
+    }
+
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(true, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, false)]
+    public async Task UseKestrelCore_CodeBased(bool useQuic, bool useHttps, bool useHttpsEnablesHttpsConfiguration)
+    {
+        var hostBuilder = new WebHostBuilder()
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
+                {
+                    serverOptions.ListenAnyIP(0, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        if (useHttps)
+                        {
+                            if (useHttpsEnablesHttpsConfiguration)
+                            {
+                                listenOptions.UseHttps(httpsOptions =>
+                                {
+                                    httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                                });
+                            }
+                            else
+                            {
+                                // Specifically choose an overload that doesn't enable https configuration
+                                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                                {
+                                    ServerCertificate = TestResources.GetTestCertificate()
+                                });
+                            }
+                        }
+                    });
+                })
+                .Configure(app => { });
+
+        if (useQuic)
+        {
+            hostBuilder.UseQuic();
+        }
+
+        var host = hostBuilder.Build();
+
+        if (useHttps && useHttpsEnablesHttpsConfiguration && useQuic)
+        {
+            // Binding succeeds
+            await host.StartAsync();
+            await host.StopAsync();
+        }
+        else
+        {
+            // This *could* work for `useHttps && !useHttpsEnablesHttpsConfiguration` if `UseQuic` implied `UseKestrelHttpsConfiguration`
+            Assert.Throws<InvalidOperationException>(host.Run);
+        }
+    }
+
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void UseKestrelCore_ConfigurationBased(bool useQuic)
+    {
+        var hostBuilder = new WebHostBuilder()
+                .UseKestrelCore()
+                .ConfigureKestrel(serverOptions =>
+                {
+                    var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                    {
+                        new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
+                        new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http3"),
+                        new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
+                        new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
+                    }).Build();
+                    serverOptions.Configure(config);
+                })
+                .Configure(app => { });
+
+        if (useQuic)
+        {
+            hostBuilder.UseQuic();
+        }
+
+        var host = hostBuilder.Build();
+
+        // This *could* work (in some cases) if `UseQuic` implied `UseKestrelHttpsConfiguration`
+        Assert.Throws<InvalidOperationException>(host.Run);
     }
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)

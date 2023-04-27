@@ -1,0 +1,32 @@
+﻿@page "/LongPageWithHash"
+@inject NavigationManager NavigationManager
+
+<a id="anchor-test1" href="LongPageWithHash#test1">Go to test1 on this page</a>
+<br/>
+<a id="anchor-test2" href="LongPageWithHash2#test2">Go to test2 on LongPageWithHash2 page</a>
+<br />
+<button id="navigate-test1" class="btn btn-primary" @onclick="GoToTest1">NavigationManager.NavigatteTo same page #test1</button>
+<br />
+<button id="navigate-test2" class="btn btn-primary" @onclick="GoToTest2">NavigationManager.NavigatteTo LongPageWithHash2 #test2</button>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>
+
+<p id="test1">Test1</p>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>
+
+@code {
+    void GoToTest1()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash#test1");
+    }
+
+    void GoToTest2()
+    {
+        NavigationManager.NavigateTo("LongPageWithHash2#test2");
+    }
+}

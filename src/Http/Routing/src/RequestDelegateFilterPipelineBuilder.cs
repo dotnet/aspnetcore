@@ -56,7 +56,7 @@ internal static class RequestDelegateFilterPipelineBuilder
             var obj = await filteredInvocation(new DefaultEndpointFilterInvocationContext(httpContext, new object[] { httpContext }));
             if (obj is not null)
             {
-                await ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonSerializerOptions, jsonTypeInfo);
+                await ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonTypeInfo);
             }
         };
     }

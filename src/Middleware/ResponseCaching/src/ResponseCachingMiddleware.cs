@@ -142,7 +142,7 @@ public class ResponseCachingMiddleware
 
         context.CachedResponse = cachedResponse;
         context.CachedResponseHeaders = cachedResponse.Headers;
-        context.ResponseTime = _options.SystemClock.UtcNow;
+        context.ResponseTime = _options.TimeProvider.GetUtcNow();
         var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
 
@@ -374,7 +374,7 @@ public class ResponseCachingMiddleware
         if (!context.ResponseStarted)
         {
             context.ResponseStarted = true;
-            context.ResponseTime = _options.SystemClock.UtcNow;
+            context.ResponseTime = _options.TimeProvider.GetUtcNow();
 
             return true;
         }
@@ -438,7 +438,7 @@ public class ResponseCachingMiddleware
                 return true;
             }
 
-            EntityTagHeaderValue eTag;
+            EntityTagHeaderValue? eTag;
             if (!StringValues.IsNullOrEmpty(cachedResponseHeaders.ETag)
                 && EntityTagHeaderValue.TryParse(cachedResponseHeaders.ETag.ToString(), out eTag)
                 && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))

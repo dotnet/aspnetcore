@@ -474,6 +474,11 @@ public class HubConnection implements AutoCloseable {
                 case INVOCATION_BINDING_FAILURE:
                     InvocationBindingFailureMessage msg = (InvocationBindingFailureMessage)message;
                     logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
+
+                    if (msg.getInvocationId() != null) {
+                        sendHubMessageWithLock(new CompletionMessage(null, msg.getInvocationId(),
+                            null, "Client failed to parse argument(s)."));
+                    }
                     break;
                 case INVOCATION:
                     InvocationMessage invocationMessage = (InvocationMessage) message;

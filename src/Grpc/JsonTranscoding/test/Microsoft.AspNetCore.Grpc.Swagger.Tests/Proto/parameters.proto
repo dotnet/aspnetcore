@@ -77,6 +77,18 @@ service Parameters {
       get: "/v1/parameters9"
     };
   }
+
+  rpc DemoParametersTenOne (RequestOne) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters10/{parameter_int}:one"
+    };
+  }
+
+  rpc DemoParametersTenTwo (RequestOne) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters10/{parameter_int}:two"
+    };
+  }
 }
 
 message RequestOne {

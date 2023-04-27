@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<div>
+    <h2>Counter</h2>
+
+    <p>Counter SectionContent was rendered = @SectionContentExists.ToString()</p>
+
+    @if (SectionContentExists)
+    {
+        <SectionContent SectionId="SectionId">
+            <p id="counter">@currentCount</p>
+        </SectionContent>
+    }
+
+    <button id="increment-button" @onclick="IncrementCount">Click me</button>
+</div>
+
+@code {
+    [Parameter]
+    public bool SectionContentExists { get; set; }
+
+    [Parameter]
+    public object SectionId { get; set; }
+
+    int currentCount = 0;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+}

@@ -13,7 +13,7 @@ internal static class JsonSerializerExtensions
     public static bool HasKnownPolymorphism(this JsonTypeInfo jsonTypeInfo)
      => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
 
-    public static bool IsValid(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
+    public static bool ShouldUseWith(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
      => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
     public static JsonTypeInfo GetReadOnlyTypeInfo(this JsonSerializerOptions options, Type type)

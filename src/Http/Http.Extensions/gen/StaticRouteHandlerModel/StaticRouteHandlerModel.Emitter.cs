@@ -2,59 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.CodeDom.Compiler;
-using System.Globalization;
-using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
 internal static class StaticRouteHandlerModelEmitter
 {
-    public static string EmitHandlerDelegateType(this Endpoint endpoint)
+    public static string EmitHandlerDelegateType(this Endpoint endpoint, bool considerOptionality = false)
     {
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response.IsVoid ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
         }
-        else
-        {
-            var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => considerOptionality
+            ? p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)
+            : p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
 
-            if (endpoint.Response.IsVoid)
-            {
-                return $"System.Action<{parameterTypeList}>";
-            }
-            else
-            {
-                return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
-            }
-        }
-    }
-
-    public static string EmitHandlerDelegateCast(this Endpoint endpoint)
-    {
-        if (endpoint.Parameters.Length == 0)
+        if (endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable))
         {
-            return endpoint.Response.IsVoid ? "Action" : $"Func<{endpoint.Response.WrappedResponseType}>";
+            return $"System.Action<{parameterTypeList}>";
         }
-        else
-        {
-            var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(
-                p => p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)));
-
-            if (endpoint.Response.IsVoid)
-            {
-                return $"Action<{parameterTypeList}>";
-            }
-            else
-            {
-                return $"Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
-            }
-        }
+        return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
     }
 
     public static string EmitSourceKey(this Endpoint endpoint)
@@ -76,16 +49,13 @@ internal static class StaticRouteHandlerModelEmitter
     }
 
     /*
-     * TODO: Emit invocation to the request handler. The structure
+     * Emit invocation to the request handler. The structure
      * involved here consists of a call to bind parameters, check
      * their validity (optionality), invoke the underlying handler with
      * the arguments bound from HTTP context, and write out the response.
      */
-    public static string EmitRequestHandler(this Endpoint endpoint, int baseIndent = 0)
+    public static void EmitRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-        using var codeWriter = new CodeWriter(stringWriter, baseIndent);
-
         codeWriter.WriteLine(endpoint.IsAwaitable ? "async Task RequestHandler(HttpContext httpContext)" : "Task RequestHandler(HttpContext httpContext)");
         codeWriter.StartBlock(); // Start handler method block
         codeWriter.WriteLine("var wasParamCheckFailure = false;");
@@ -100,11 +70,15 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.WriteLine(endpoint.IsAwaitable ? "return;" : "return Task.CompletedTask;");
         codeWriter.EndBlock(); // End if-statement block
-        if (!endpoint.Response.IsVoid)
+        if (endpoint.Response == null)
         {
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{endpoint.Response.ContentType}"";");
+            return;
         }
-        if (!endpoint.Response.IsVoid)
+        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: { } contentType })
+        {
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
+        }
+        if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
         }
@@ -113,33 +87,38 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
-        codeWriter.WriteLine(endpoint.Response.IsVoid ? "return Task.CompletedTask;" : endpoint.EmitResponseWritingCall());
+        if (!endpoint.Response.HasNoResponse)
+        {
+            codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
+        }
+        else if (!endpoint.IsAwaitable)
+        {
+            codeWriter.WriteLine("return Task.CompletedTask;");
+        }
         codeWriter.EndBlock(); // End handler method block
-
-        return stringWriter.ToString();
     }
 
-    private static string EmitResponseWritingCall(this Endpoint endpoint)
+    private static string EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
     {
-        var returnOrAwait = endpoint.IsAwaitable ? "await" : "return";
+        var returnOrAwait = isAwaitable ? "await" : "return";
 
-        if (endpoint.Response.IsIResult)
+        if (endpointResponse.IsIResult)
         {
             return $"{returnOrAwait} result.ExecuteAsync(httpContext);";
         }
-        else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_String)
+        else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_String)
         {
             return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
         }
-        else if (endpoint.Response.ResponseType.SpecialType == SpecialType.System_Object)
+        else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
             return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
         }
-        else if (!endpoint.Response.IsVoid)
+        else if (!endpointResponse.HasNoResponse)
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsJsonAsync(result);";
+            return $"{returnOrAwait} {endpointResponse.EmitJsonResponse()}";
         }
-        else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
+        else if (!endpointResponse.IsAwaitable && endpointResponse.HasNoResponse)
         {
             return $"{returnOrAwait} Task.CompletedTask;";
         }
@@ -156,14 +135,15 @@ internal static class StaticRouteHandlerModelEmitter
      * can be used to reduce the boxing that happens at runtime when constructing
      * the context object.
      */
-    public static string EmitFilteredRequestHandler(this Endpoint endpoint, int baseIndent = 0)
+    public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
-        var invocationConstructor = endpoint.Parameters.Length == 0 ? "DefaultEndpointFilterInvocationContext" : "EndpointFilterInvocationContext";
-        var invocationGenericArgs = endpoint.Parameters.Length == 0 ? string.Empty : $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>";
-
-        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-        using var codeWriter = new CodeWriter(stringWriter, baseIndent);
+        var invocationCreator = endpoint.Parameters.Length > 8
+            ? "new DefaultEndpointFilterInvocationContext"
+            : "EndpointFilterInvocationContext.Create";
+        var invocationGenericArgs = endpoint.Parameters.Length is > 0 and < 8
+            ? $"<{endpoint.EmitFilterInvocationContextTypeArgs()}>"
+            : string.Empty;
 
         codeWriter.WriteLine("async Task RequestHandlerFiltered(HttpContext httpContext)");
         codeWriter.StartBlock(); // Start handler method block
@@ -178,23 +158,97 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.StartBlock(); // Start if-statement block
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
-        codeWriter.WriteLine($"var result = await filteredInvocation(new {invocationConstructor}{invocationGenericArgs}(httpContext{argumentList}));");
+        codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
-
-        return stringWriter.ToString();
     }
 
-    public static string EmitFilteredInvocation(this Endpoint endpoint)
+    private static void EmitBuiltinResponseTypeMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        // Note: This string does not need indentation since it is
-        // handled when we generate the output string in the `thunks` pipeline.
-        return endpoint.Response.IsVoid ? $"""
-handler({endpoint.EmitFilteredArgumentList()});
-return ValueTask.FromResult<object?>(Results.Empty);
-""" : $"""
-return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList()}));
-""";
+        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        {
+            return;
+        }
+
+        if (response.HasNoResponse || response.IsIResult)
+        {
+            return;
+        }
+
+        if (responseType.SpecialType == SpecialType.System_String)
+        {
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+        }
+        else
+        {
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+        }
+    }
+
+    private static void EmitCallToMetadataProviderForResponse(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        {
+            return;
+        }
+
+        if (response.IsEndpointMetadataProvider)
+        {
+            codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+        }
+    }
+    private static void EmitCallsToMetadataProvidersForParameters(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.EmitterContext.HasEndpointParameterMetadataProvider)
+        {
+            codeWriter.WriteLine("var parameterInfos = methodInfo.GetParameters();");
+        }
+
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Type is not { } parameterType)
+            {
+                break;
+            }
+
+            if (parameter.IsEndpointMetadataProvider)
+            {
+                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+            }
+
+            if (parameter.IsEndpointParameterMetadataProvider)
+            {
+                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos.Single(p => p.Name == "{{parameter.SymbolName}}");""");
+                codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
+            }
+        }
+    }
+
+    public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
+        endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
+        endpoint.EmitCallsToMetadataProvidersForParameters(codeWriter);
+    }
+
+    public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.Response?.HasNoResponse == true)
+        {
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? $"await handler({endpoint.EmitFilteredArgumentList()});"
+                : $"handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+        }
+        else if (endpoint.Response?.IsAwaitable == true)
+        {
+            codeWriter.WriteLine($"var result = await handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine("return (object?)result;");
+        }
+        else
+        {
+            codeWriter.WriteLine($"return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList()}));");
+        }
     }
 
     public static string EmitFilteredArgumentList(this Endpoint endpoint)
@@ -208,7 +262,11 @@ return ValueTask.FromResult<object?>(handler({endpoint.EmitFilteredArgumentList(
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})");
+            // The null suppression operator on the GetArgument(...) call here is required because we'll occassionally be
+            // dealing with nullable types here. We could try to do fancy things to branch the logic here depending on
+            // the nullability, but at the end of the day we are going to call GetArguments(...) - at runtime the nullability
+            // suppression operator doesn't come into play - so its not worth worrying about.
+            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})!");
 
             if (i < endpoint.Parameters.Length - 1)
             {

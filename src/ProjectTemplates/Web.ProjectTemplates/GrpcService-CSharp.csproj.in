@@ -4,6 +4,7 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <!--#if (NativeAot) -->
     <PublishAot>true</PublishAot>
     <!--#endif -->
@@ -15,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="${GrpcAspNetCoreVersion}" />
-    <PackageReference Include="Google.Protobuf" Version="3.22.0-rc2" />
   </ItemGroup>
 
 </Project>

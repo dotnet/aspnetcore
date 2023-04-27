@@ -1,9 +1,9 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "API Controller",
-  "description": "API Controller with or without read/write actions",
-  "symbols/namespace/description": "Namespace for the generated code",
-  "symbols/actions/description": "Create controller with read/write actions",
-  "symbols/actions/displayName": "Add Read/Write Actions",
-  "postActions/openInEditor/description": "Opens the created controller in the editor"
+  "name": "API-Controller",
+  "description": "API-Controller mit oder ohne Lese-/Schreibaktionen",
+  "symbols/namespace/description": "Namespace für den generierten Code",
+  "symbols/actions/description": "Controller mit Lese-/Schreibaktionen erstellen",
+  "symbols/actions/displayName": "Read/Write-Aktionen hinzufügen",
+  "postActions/openInEditor/description": "Öffnet den erstellten Controller im Editor."
 }

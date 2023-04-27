@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -100,6 +101,7 @@ public class PooledStreamStackTests
             connectionId: "TestConnectionId",
             protocols: HttpProtocols.Http2,
             altSvcHeader: null,
+            connectionContext: new DefaultConnectionContext(),
             serviceContext: TestContextFactory.CreateServiceContext(serverOptions: new KestrelServerOptions()),
             connectionFeatures: new FeatureCollection(),
             memoryPool: MemoryPool<byte>.Shared,

@@ -5,15 +5,15 @@ namespace Microsoft.AspNetCore.Components.Sections;
 
 internal sealed class SectionRegistry
 {
-    private readonly Dictionary<string, ISectionContentSubscriber> _subscribersByName = new();
-    private readonly Dictionary<string, List<ISectionContentProvider>> _providersByName = new();
+    private readonly Dictionary<object, ISectionContentSubscriber> _subscribersByIdentifier = new();
+    private readonly Dictionary<object, List<ISectionContentProvider>> _providersByIdentifier = new();
 
-    public void AddProvider(string name, ISectionContentProvider provider, bool isDefaultProvider)
+    public void AddProvider(object identifier, ISectionContentProvider provider, bool isDefaultProvider)
     {
-        if (!_providersByName.TryGetValue(name, out var providers))
+        if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
             providers = new();
-            _providersByName.Add(name, providers);
+            _providersByIdentifier.Add(identifier, providers);
         }
 
         if (isDefaultProvider)
@@ -26,18 +26,18 @@ internal sealed class SectionRegistry
         }
     }
 
-    public void RemoveProvider(string name, ISectionContentProvider provider)
+    public void RemoveProvider(object identifier, ISectionContentProvider provider)
     {
-        if (!_providersByName.TryGetValue(name, out var providers))
+        if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
-            throw new InvalidOperationException($"There are no content providers with the name '{name}'.");
+            throw new InvalidOperationException($"There are no content providers with the given section ID '{identifier}'.");
         }
 
         var index = providers.LastIndexOf(provider);
 
         if (index < 0)
         {
-            throw new InvalidOperationException($"The provider was not found in the providers list of name '{name}'.");
+            throw new InvalidOperationException($"The provider was not found in the providers list of the given section ID '{identifier}'.");
         }
 
         providers.RemoveAt(index);
@@ -47,44 +47,44 @@ internal sealed class SectionRegistry
             // We just removed the most recently added provider, meaning we need to change
             // the current content to that of second most recently added provider.
             var content = GetCurrentProviderContentOrDefault(providers);
-            NotifyContentChangedForSubscriber(name, content);
+            NotifyContentChangedForSubscriber(identifier, content);
         }
     }
 
-    public void Subscribe(string name, ISectionContentSubscriber subscriber)
+    public void Subscribe(object identifier, ISectionContentSubscriber subscriber)
     {
-        if (_subscribersByName.ContainsKey(name))
+        if (_subscribersByIdentifier.ContainsKey(identifier))
         {
-            throw new InvalidOperationException($"There is already a subscriber to the content '{name}'.");
+            throw new InvalidOperationException($"There is already a subscriber to the content with the given section ID '{identifier}'.");
         }
 
         // Notify the new subscriber with any existing content.
-        var content = GetCurrentProviderContentOrDefault(name);
+        var content = GetCurrentProviderContentOrDefault(identifier);
         subscriber.ContentChanged(content);
 
-        _subscribersByName.Add(name, subscriber);
+        _subscribersByIdentifier.Add(identifier, subscriber);
     }
 
-    public void Unsubscribe(string name)
+    public void Unsubscribe(object identifier)
     {
-        if (!_subscribersByName.Remove(name))
+        if (!_subscribersByIdentifier.Remove(identifier))
         {
-            throw new InvalidOperationException($"The subscriber with name '{name}' is already unsubscribed.");
+            throw new InvalidOperationException($"The subscriber with the given section ID '{identifier}' is already unsubscribed.");
         }
     }
 
-    public void NotifyContentChanged(string name, ISectionContentProvider provider)
+    public void NotifyContentChanged(object identifier, ISectionContentProvider provider)
     {
-        if (!_providersByName.TryGetValue(name, out var providers))
+        if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
-            throw new InvalidOperationException($"There are no content providers with the name '{name}'.");
+            throw new InvalidOperationException($"There are no content providers with the given section ID '{identifier}'.");
         }
 
         // We only notify content changed for subscribers when the content of the
         // most recently added provider changes.
         if (providers.Count != 0 && providers[^1] == provider)
         {
-            NotifyContentChangedForSubscriber(name, provider.Content);
+            NotifyContentChangedForSubscriber(identifier, provider.Content);
         }
     }
 
@@ -93,14 +93,14 @@ internal sealed class SectionRegistry
             ? providers[^1].Content
             : null;
 
-    private RenderFragment? GetCurrentProviderContentOrDefault(string name)
-        => _providersByName.TryGetValue(name, out var existingList)
+    private RenderFragment? GetCurrentProviderContentOrDefault(object identifier)
+        => _providersByIdentifier.TryGetValue(identifier, out var existingList)
             ? GetCurrentProviderContentOrDefault(existingList)
             : null;
 
-    private void NotifyContentChangedForSubscriber(string name, RenderFragment? content)
+    private void NotifyContentChangedForSubscriber(object identifier, RenderFragment? content)
     {
-        if (_subscribersByName.TryGetValue(name, out var subscriber))
+        if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
         {
             subscriber.ContentChanged(content);
         }

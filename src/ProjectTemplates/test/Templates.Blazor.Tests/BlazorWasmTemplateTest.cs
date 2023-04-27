@@ -23,7 +23,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorwasm";
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/47225")]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
     {

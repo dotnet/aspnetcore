@@ -35,7 +35,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         var options = CreateStaticFilesOptions(webHostEnvironment.WebRootFileProvider);
 
         builder.MapWhen(ctx => ctx.Request.Path.StartsWithSegments(pathPrefix, out var rest) && rest.StartsWithSegments("/_framework") &&
-        !rest.StartsWithSegments("/_framework/blazor.server.js"),
+        !rest.StartsWithSegments("/_framework/blazor.server.js") && !rest.StartsWithSegments("/_framework/blazor.web.js"),
         subBuilder =>
         {
             subBuilder.Use(async (context, next) =>
@@ -86,6 +86,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         options.FileProvider = webRootFileProvider;
         var contentTypeProvider = new FileExtensionContentTypeProvider();
         AddMapping(contentTypeProvider, ".dll", MediaTypeNames.Application.Octet);
+        AddMapping(contentTypeProvider, ".webcil", MediaTypeNames.Application.Octet);
         // We unconditionally map pdbs as there will be no pdbs in the output folder for
         // release builds unless BlazorEnableDebugging is explicitly set to true.
         AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);

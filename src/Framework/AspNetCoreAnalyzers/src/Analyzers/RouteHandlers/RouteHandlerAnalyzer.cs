@@ -25,7 +25,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
         DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
         DiagnosticDescriptors.DetectMismatchedParameterOptionality,
-        DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable,
+        DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
         DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT,
         DiagnosticDescriptors.AmbiguousRouteHandlerRoute,
         DiagnosticDescriptors.AtMostOneFromBodyAttribute

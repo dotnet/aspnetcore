@@ -19,7 +19,7 @@ public class WebAssemblyHostTest
     public async Task RunAsync_CanExitBasedOnCancellationToken()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -38,7 +38,7 @@ public class WebAssemblyHostTest
     public async Task RunAsync_CallingTwiceCausesException()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -59,7 +59,7 @@ public class WebAssemblyHostTest
     public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
         builder.Services.AddSingleton<DisposableService>();
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
@@ -95,7 +95,7 @@ public class WebAssemblyHostTest
     private class TestSatelliteResourcesLoader : WebAssemblyCultureProvider
     {
         internal TestSatelliteResourcesLoader()
-            : base(DefaultWebAssemblyJSRuntime.Instance, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
+            : base(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
         {
         }
 

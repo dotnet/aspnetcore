@@ -127,7 +127,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // The Map methods don't support customizing the order apart from using int.MaxValue to give MapFallback the lowest priority.
         // Otherwise, we always use the default of 0 unless a convention changes it later.
         var order = isFallback ? int.MaxValue : 0;
-        var displayName = pattern.RawText ?? pattern.DebuggerToString();
+        var displayName = pattern.DebuggerToString();
 
         // Don't include the method name for non-route-handlers because the name is just "Invoke" when built from
         // ApplicationBuilder.Build(). This was observed in MapSignalRTests and is not very useful. Maybe if we come up
@@ -172,6 +172,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             DisplayName = displayName,
             ApplicationServices = _applicationServices,
         };
+
+        if (isFallback)
+        {
+            builder.Metadata.Add(FallbackMetadata.Instance);
+        }
 
         if (isRouteHandler)
         {

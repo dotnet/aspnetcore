@@ -6,6 +6,7 @@
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
+      "src\\Components\\Endpoints\\src\\Microsoft.AspNetCore.Components.Endpoints.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",

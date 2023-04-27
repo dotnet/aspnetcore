@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices.JavaScript;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Implementation;
@@ -9,7 +10,7 @@ namespace Microsoft.JSInterop.Implementation;
 /// <summary>
 /// Implements functionality for <see cref="IJSInProcessObjectReference"/>.
 /// </summary>
-public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
+public partial class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
 {
     private readonly JSInProcessRuntime _jsRuntime;
 
@@ -39,7 +40,10 @@ public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectR
         {
             Disposed = true;
 
-            _jsRuntime.InvokeVoid("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
+            DisposeJSObjectReferenceById(Id);
         }
     }
+
+    [JSImport("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", "blazor-internal")]
+    private static partial void DisposeJSObjectReferenceById([JSMarshalAs<JSType.Number>] long id);
 }

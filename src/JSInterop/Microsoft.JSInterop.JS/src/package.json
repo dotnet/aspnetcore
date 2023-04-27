@@ -6,7 +6,7 @@
   "types": "dist/Microsoft.JSInterop.d.ts",
   "type": "module",
   "scripts": {
-    "preclean": "yarn install --mutex network --frozen-lockfile",
+    "preclean": "yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
     "clean": "node node_modules/rimraf/bin.js ./dist",
     "build": "npm run clean && npm run build:esm",
     "build:lint": "eslint -c .eslintrc.json --ext .ts ./src",

@@ -275,7 +275,6 @@ public static partial class RequestDelegateFactory
             EndpointBuilder = endpointBuilder,
             MetadataAlreadyInferred = metadataResult is not null,
             JsonSerializerOptions = jsonSerializerOptions,
-            JsonSerializerOptionsExpression = Expression.Constant(jsonSerializerOptions, typeof(JsonSerializerOptions)),
         };
 
         return factoryContext;
@@ -819,10 +818,10 @@ public static partial class RequestDelegateFactory
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
         }
         else if (factoryContext.DisableInferredFromBody && (
-                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
-                 parameter.ParameterType == typeof(string[]) ||
+            parameter.ParameterType == typeof(string[]) ||
                  parameter.ParameterType == typeof(StringValues) ||
-                 parameter.ParameterType == typeof(StringValues?)))
+                 parameter.ParameterType == typeof(StringValues?) ||
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues/StringValues?, and DisableInferredFromBody is true
 
@@ -1000,7 +999,6 @@ public static partial class RequestDelegateFactory
                 ExecuteAwaitedReturnMethod,
                 methodCall,
                 HttpContextExpr,
-                factoryContext.JsonSerializerOptionsExpression,
                 Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
         else if (returnType == typeof(ValueTask<object>))
@@ -1008,7 +1006,6 @@ public static partial class RequestDelegateFactory
             return Expression.Call(ExecuteValueTaskOfObjectMethod,
                 methodCall,
                 HttpContextExpr,
-                factoryContext.JsonSerializerOptionsExpression,
                 Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
         else if (returnType == typeof(Task<object>))
@@ -1016,7 +1013,6 @@ public static partial class RequestDelegateFactory
             return Expression.Call(ExecuteTaskOfObjectMethod,
                 methodCall,
                 HttpContextExpr,
-                factoryContext.JsonSerializerOptionsExpression,
                 Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
         else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
@@ -1068,7 +1064,6 @@ public static partial class RequestDelegateFactory
                         ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        factoryContext.JsonSerializerOptionsExpression,
                         Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo<>).MakeGenericType(typeArg)));
                 }
             }
@@ -1109,7 +1104,6 @@ public static partial class RequestDelegateFactory
                         ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
                         methodCall,
                         HttpContextExpr,
-                        factoryContext.JsonSerializerOptionsExpression,
                         Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo<>).MakeGenericType(typeArg)));
                 }
             }
@@ -1154,7 +1148,6 @@ public static partial class RequestDelegateFactory
                 JsonResultWriteResponseOfTAsyncMethod.MakeGenericMethod(returnType),
                 HttpResponseExpr,
                 methodCall,
-                factoryContext.JsonSerializerOptionsExpression,
                 Expression.Constant(jsonTypeInfo, typeof(JsonTypeInfo<>).MakeGenericType(returnType)));
         }
     }
@@ -1305,9 +1298,16 @@ public static partial class RequestDelegateFactory
                 {
                     bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
                 }
+                catch (BadHttpRequestException ex)
+                {
+                    Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = ex.StatusCode;
+                    return (null, false);
+                }
                 catch (IOException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
                 catch (JsonException ex)
@@ -1418,9 +1418,16 @@ public static partial class RequestDelegateFactory
                 {
                     formValue = await httpContext.Request.ReadFormAsync();
                 }
+                catch (BadHttpRequestException ex)
+                {
+                    Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = ex.StatusCode;
+                    return (null, false);
+                }
                 catch (IOException ex)
                 {
                     Log.RequestBodyIOException(httpContext, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
                 catch (InvalidDataException ex)
@@ -2093,39 +2100,39 @@ public static partial class RequestDelegateFactory
     // if necessary and restart the cycle until we've reached a terminal state (unknown type).
     // We currently don't handle Task<unknown> or ValueTask<unknown>. We can support this later if this
     // ends up being a common scenario.
-    private static Task ExecuteValueTaskOfObject(ValueTask<object> valueTask, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+    private static Task ExecuteValueTaskOfObject(ValueTask<object> valueTask, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(ValueTask<object> valueTask, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+        static async Task ExecuteAwaited(ValueTask<object> valueTask, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
         {
-            await ExecuteAwaitedReturn(await valueTask, httpContext, options, jsonTypeInfo);
+            await ExecuteAwaitedReturn(await valueTask, httpContext, jsonTypeInfo);
         }
 
         if (valueTask.IsCompletedSuccessfully)
         {
-            return ExecuteAwaitedReturn(valueTask.GetAwaiter().GetResult(), httpContext, options, jsonTypeInfo);
+            return ExecuteAwaitedReturn(valueTask.GetAwaiter().GetResult(), httpContext, jsonTypeInfo);
         }
 
-        return ExecuteAwaited(valueTask, httpContext, options, jsonTypeInfo);
+        return ExecuteAwaited(valueTask, httpContext, jsonTypeInfo);
     }
 
-    private static Task ExecuteTaskOfObject(Task<object> task, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+    private static Task ExecuteTaskOfObject(Task<object> task, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(Task<object> task, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+        static async Task ExecuteAwaited(Task<object> task, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
         {
-            await ExecuteAwaitedReturn(await task, httpContext, options, jsonTypeInfo);
+            await ExecuteAwaitedReturn(await task, httpContext, jsonTypeInfo);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return ExecuteAwaitedReturn(task.GetAwaiter().GetResult(), httpContext, options, jsonTypeInfo);
+            return ExecuteAwaitedReturn(task.GetAwaiter().GetResult(), httpContext, jsonTypeInfo);
         }
 
-        return ExecuteAwaited(task, httpContext, options, jsonTypeInfo);
+        return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
-    private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<object> jsonTypeInfo)
+    private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
     {
-        return ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, options, jsonTypeInfo);
+        return ExecuteHandlerHelper.ExecuteReturnAsync(obj, httpContext, jsonTypeInfo);
     }
 
     private static Task ExecuteTaskOfTFast<T>(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
@@ -2145,21 +2152,21 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
-    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
+    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
     {
         EnsureRequestTaskNotNull(task);
 
-        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
+        static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
-            await WriteJsonResponse(httpContext.Response, await task, options, jsonTypeInfo);
+            await WriteJsonResponse(httpContext.Response, await task, jsonTypeInfo);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), options, jsonTypeInfo);
+            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), jsonTypeInfo);
         }
 
-        return ExecuteAwaited(task, httpContext, options, jsonTypeInfo);
+        return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
     private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
@@ -2250,19 +2257,19 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
-    private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
+    private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
     {
-        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
+        static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
-            await WriteJsonResponse(httpContext.Response, await task, options, jsonTypeInfo);
+            await WriteJsonResponse(httpContext.Response, await task, jsonTypeInfo);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), options, jsonTypeInfo);
+            return WriteJsonResponse(httpContext.Response, task.GetAwaiter().GetResult(), jsonTypeInfo);
         }
 
-        return ExecuteAwaited(task, httpContext, options, jsonTypeInfo);
+        return ExecuteAwaited(task, httpContext, jsonTypeInfo);
     }
 
     private static Task ExecuteValueTaskOfString(ValueTask<string?> task, HttpContext httpContext)
@@ -2314,9 +2321,9 @@ public static partial class RequestDelegateFactory
     private static Task WriteJsonResponseFast<T>(HttpResponse response, T value, JsonTypeInfo<T> jsonTypeInfo)
         => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
 
-    private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonSerializerOptions options, JsonTypeInfo<T> jsonTypeInfo)
+    private static Task WriteJsonResponse<T>(HttpResponse response, T? value, JsonTypeInfo<T> jsonTypeInfo)
     {
-        return ExecuteHandlerHelper.WriteJsonResponseAsync(response, value, options, jsonTypeInfo);
+        return ExecuteHandlerHelper.WriteJsonResponseAsync(response, value, jsonTypeInfo);
     }
 
     private static NotSupportedException GetUnsupportedReturnTypeException(Type returnType)
@@ -2345,131 +2352,110 @@ public static partial class RequestDelegateFactory
 
     private static partial class Log
     {
-        private const string InvalidJsonRequestBodyMessage = @"Failed to read parameter ""{ParameterType} {ParameterName}"" from the request body as JSON.";
-        private const string InvalidJsonRequestBodyExceptionMessage = @"Failed to read parameter ""{0} {1}"" from the request body as JSON.";
-
-        private const string ParameterBindingFailedLogMessage = @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".";
-        private const string ParameterBindingFailedExceptionMessage = @"Failed to bind parameter ""{0} {1}"" from ""{2}"".";
-
-        private const string RequiredParameterNotProvidedLogMessage = @"Required parameter ""{ParameterType} {ParameterName}"" was not provided from {Source}.";
-        private const string RequiredParameterNotProvidedExceptionMessage = @"Required parameter ""{0} {1}"" was not provided from {2}.";
-
-        private const string UnexpectedJsonContentTypeLogMessage = @"Expected a supported JSON media type but got ""{ContentType}"".";
-        private const string UnexpectedJsonContentTypeExceptionMessage = @"Expected a supported JSON media type but got ""{0}"".";
-
-        private const string ImplicitBodyNotProvidedLogMessage = @"Implicit body inferred for parameter ""{ParameterName}"" but no body was provided. Did you mean to use a Service instead?";
-        private const string ImplicitBodyNotProvidedExceptionMessage = @"Implicit body inferred for parameter ""{0}"" but no body was provided. Did you mean to use a Service instead?";
-
-        private const string InvalidFormRequestBodyMessage = @"Failed to read parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
-        private const string InvalidFormRequestBodyExceptionMessage = @"Failed to read parameter ""{0} {1}"" from the request body as form.";
-
-        private const string UnexpectedFormContentTypeLogMessage = @"Expected a supported form media type but got ""{ContentType}"".";
-        private const string UnexpectedFormContentTypeExceptionMessage = @"Expected a supported form media type but got ""{0}"".";
-
         // This doesn't take a shouldThrow parameter because an IOException indicates an aborted request rather than a "bad" request so
         // a BadHttpRequestException feels wrong. The client shouldn't be able to read the Developer Exception Page at any rate.
         public static void RequestBodyIOException(HttpContext httpContext, IOException exception)
             => RequestBodyIOException(GetLogger(httpContext), exception);
 
-        [LoggerMessage(1, LogLevel.Debug, "Reading the request body failed with an IOException.", EventName = "RequestBodyIOException")]
+        [LoggerMessage(RequestDelegateCreationLogging.RequestBodyIOExceptionEventId, LogLevel.Debug, RequestDelegateCreationLogging.RequestBodyIOExceptionMessage, EventName = RequestDelegateCreationLogging.RequestBodyIOExceptionEventName)]
         private static partial void RequestBodyIOException(ILogger logger, IOException exception);
 
         public static void InvalidJsonRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, InvalidJsonRequestBodyExceptionMessage, parameterTypeName, parameterName);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.InvalidJsonRequestBodyExceptionMessage, parameterTypeName, parameterName);
                 throw new BadHttpRequestException(message, exception);
             }
 
             InvalidJsonRequestBody(GetLogger(httpContext), parameterTypeName, parameterName, exception);
         }
 
-        [LoggerMessage(2, LogLevel.Debug, InvalidJsonRequestBodyMessage, EventName = "InvalidJsonRequestBody")]
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidJsonRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidJsonRequestBodyEventName)]
         private static partial void InvalidJsonRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, ParameterBindingFailedExceptionMessage, parameterTypeName, parameterName, sourceValue);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.ParameterBindingFailedExceptionMessage, parameterTypeName, parameterName, sourceValue);
                 throw new BadHttpRequestException(message);
             }
 
             ParameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue);
         }
 
-        [LoggerMessage(3, LogLevel.Debug, ParameterBindingFailedLogMessage, EventName = "ParameterBindingFailed")]
+        [LoggerMessage(RequestDelegateCreationLogging.ParameterBindingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.ParameterBindingFailedLogMessage, EventName = RequestDelegateCreationLogging.ParameterBindingFailedEventName)]
         private static partial void ParameterBindingFailed(ILogger logger, string parameterType, string parameterName, string sourceValue);
 
         public static void RequiredParameterNotProvided(HttpContext httpContext, string parameterTypeName, string parameterName, string source, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, RequiredParameterNotProvidedExceptionMessage, parameterTypeName, parameterName, source);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, parameterTypeName, parameterName, source);
                 throw new BadHttpRequestException(message);
             }
 
             RequiredParameterNotProvided(GetLogger(httpContext), parameterTypeName, parameterName, source);
         }
 
-        [LoggerMessage(4, LogLevel.Debug, RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
+        [LoggerMessage(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId, LogLevel.Debug, RequestDelegateCreationLogging.RequiredParameterNotProvidedLogMessage, EventName = RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName)]
         private static partial void RequiredParameterNotProvided(ILogger logger, string parameterType, string parameterName, string source);
 
         public static void ImplicitBodyNotProvided(HttpContext httpContext, string parameterName, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, ImplicitBodyNotProvidedExceptionMessage, parameterName);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.ImplicitBodyNotProvidedExceptionMessage, parameterName);
                 throw new BadHttpRequestException(message);
             }
 
             ImplicitBodyNotProvided(GetLogger(httpContext), parameterName);
         }
 
-        [LoggerMessage(5, LogLevel.Debug, ImplicitBodyNotProvidedLogMessage, EventName = "ImplicitBodyNotProvided")]
+        [LoggerMessage(RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId, LogLevel.Debug, RequestDelegateCreationLogging.ImplicitBodyNotProvidedLogMessage, EventName = RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventName)]
         private static partial void ImplicitBodyNotProvided(ILogger logger, string parameterName);
 
         public static void UnexpectedJsonContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, UnexpectedJsonContentTypeExceptionMessage, contentType);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.UnexpectedJsonContentTypeExceptionMessage, contentType);
                 throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
             }
 
             UnexpectedJsonContentType(GetLogger(httpContext), contentType ?? "(none)");
         }
 
-        [LoggerMessage(6, LogLevel.Debug, UnexpectedJsonContentTypeLogMessage, EventName = "UnexpectedContentType")]
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedJsonContentTypeLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventName)]
         private static partial void UnexpectedJsonContentType(ILogger logger, string contentType);
 
         public static void UnexpectedNonFormContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, UnexpectedFormContentTypeExceptionMessage, contentType);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.UnexpectedFormContentTypeExceptionMessage, contentType);
                 throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
             }
 
             UnexpectedNonFormContentType(GetLogger(httpContext), contentType ?? "(none)");
         }
 
-        [LoggerMessage(7, LogLevel.Debug, UnexpectedFormContentTypeLogMessage, EventName = "UnexpectedNonFormContentType")]
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedFormContentTypeLogEventName)]
         private static partial void UnexpectedNonFormContentType(ILogger logger, string contentType);
 
         public static void InvalidFormRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
         {
             if (shouldThrow)
             {
-                var message = string.Format(CultureInfo.InvariantCulture, InvalidFormRequestBodyExceptionMessage, parameterTypeName, parameterName);
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.InvalidFormRequestBodyExceptionMessage, parameterTypeName, parameterName);
                 throw new BadHttpRequestException(message, exception);
             }
 
             InvalidFormRequestBody(GetLogger(httpContext), parameterTypeName, parameterName, exception);
         }
 
-        [LoggerMessage(8, LogLevel.Debug, InvalidFormRequestBodyMessage, EventName = "InvalidFormRequestBody")]
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidFormRequestBodyEventName)]
         private static partial void InvalidFormRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         private static ILogger GetLogger(HttpContext httpContext)

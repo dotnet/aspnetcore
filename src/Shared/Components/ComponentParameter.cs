@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Components;
+
+#nullable enable // This is shared-source with Mvc.ViewFeatures which does not enable nullability by default
 
 internal struct ComponentParameter
 {

@@ -26,8 +26,17 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -288,7 +297,20 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
     {
         var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
-        Response.StatusCode = 403;
+
+        if (Response.StatusCode == 403)
+        {
+            // No-op
+        }
+        else if (Response.HasStarted)
+        {
+            Logger.ForbiddenResponseHasStarted();
+        }
+        else
+        {
+            Response.StatusCode = 403;
+        }
+
         return Events.Forbidden(forbiddenContext);
     }
 

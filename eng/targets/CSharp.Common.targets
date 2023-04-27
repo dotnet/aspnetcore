@@ -122,7 +122,8 @@
         (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.1'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
-        <NoWarn>$(NoWarn);nullable</NoWarn>
+        <!-- Repo-specific property to enable nullability warnings for ns2.0 -->
+        <NoWarn Condition=" '$(WarnOnNullable)' != 'true' ">$(NoWarn);nullable</NoWarn>
       </PropertyGroup>
       <ItemGroup>
         <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />

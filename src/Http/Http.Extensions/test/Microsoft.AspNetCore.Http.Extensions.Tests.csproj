@@ -24,12 +24,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.Generators.csproj" />
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="RequestDelegateGenerator\Baselines\*.generated.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RequestDelegateGeneratorTestBaselines</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), "RequestDelegateGenerator", "Baselines"))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\RequestDelegateGenerator\Baselines\**" />
   </ItemGroup>
 </Project>

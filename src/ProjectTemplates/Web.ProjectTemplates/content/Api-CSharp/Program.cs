@@ -4,12 +4,11 @@ using System.Text.Json.Serialization;
 using Company.ApiApplication1;
 
 var builder = WebApplication.CreateSlimBuilder(args);
-builder.Logging.AddConsole();
 
 #if (NativeAot)
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.AddContext<AppJsonSerializerContext>();
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
 #endif

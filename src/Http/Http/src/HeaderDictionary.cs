@@ -73,6 +73,7 @@ public class HeaderDictionary : IHeaderDictionary
             {
                 return value;
             }
+
             return StringValues.Empty;
         }
         set
@@ -94,7 +95,15 @@ public class HeaderDictionary : IHeaderDictionary
 
     StringValues IDictionary<string, StringValues>.this[string key]
     {
-        get { return this[key]; }
+        get
+        {
+            if (Store == null)
+            {
+                ThrowKeyNotFoundException();
+            }
+
+            return Store[key];
+        }
         set
         {
             ThrowIfReadOnly();
@@ -359,6 +368,12 @@ public class HeaderDictionary : IHeaderDictionary
         {
             throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
         }
+    }
+
+    [DoesNotReturn]
+    private static void ThrowKeyNotFoundException()
+    {
+        throw new KeyNotFoundException();
     }
 
     /// <summary>

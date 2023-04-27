@@ -144,21 +144,19 @@ public static class WebHostBuilderExtensions
 
         hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
-        var state = new UseStartupState(startupType);
-
         return hostBuilder
             .ConfigureServices(services =>
             {
-                if (typeof(IStartup).IsAssignableFrom(state.StartupType))
+                if (typeof(IStartup).IsAssignableFrom(startupType))
                 {
-                    services.AddSingleton(typeof(IStartup), state.StartupType);
+                    services.AddSingleton(typeof(IStartup), startupType);
                 }
                 else
                 {
                     services.AddSingleton(typeof(IStartup), sp =>
                     {
                         var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
-                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, state.StartupType, hostingEnvironment.EnvironmentName));
+                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
                     });
                 }
             });

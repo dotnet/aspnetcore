@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\test\AutoRenderComponent.cs" Link="TestComponents\AutoRenderComponent.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+  </ItemGroup>
+</Project>

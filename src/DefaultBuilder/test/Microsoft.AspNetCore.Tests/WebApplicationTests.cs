@@ -24,6 +24,8 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Tests;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -31,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 [assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
+[assembly: UserSecretsId("UserSecret-TestId")]
 
 namespace Microsoft.AspNetCore.Tests;
 
@@ -595,7 +598,7 @@ public class WebApplicationTests
     public void ContentRootIsBaseDirectoryWhenCurrentIsSpecialFolderSystem()
     {
         var options = new RemoteInvokeOptions();
-        options.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System);
+        options.StartInfo.WorkingDirectory = Environment.SystemDirectory;
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
@@ -607,6 +610,41 @@ public class WebApplicationTests
                 Assert.Equal(NormalizePath(AppContext.BaseDirectory), NormalizePath(builder.Environment.ContentRootPath));
             }
         }, options);
+    }
+
+    public static IEnumerable<object[]> EnablesAppSettingsConfigurationData
+    {
+        get
+        {
+            yield return new object[] { (CreateBuilderOptionsFunc)CreateBuilderOptions, true };
+            yield return new object[] { (CreateBuilderOptionsFunc)CreateBuilderOptions, false };
+            yield return new object[] { (CreateBuilderOptionsFunc)CreateSlimBuilderOptions, true };
+            yield return new object[] { (CreateBuilderOptionsFunc)CreateSlimBuilderOptions, false };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(EnablesAppSettingsConfigurationData))]
+    public void WebApplicationBuilderEnablesAppSettingsConfiguration(CreateBuilderOptionsFunc createBuilder, bool isDevelopment)
+    {
+        var options = new WebApplicationOptions
+        {
+            EnvironmentName = isDevelopment ? Environments.Development : Environments.Production
+        };
+
+        var webApplication = createBuilder(options).Build();
+
+        var config = Assert.IsType<ConfigurationManager>(webApplication.Configuration);
+        Assert.Contains(config.Sources, source => source is JsonConfigurationSource jsonSource && jsonSource.Path == "appsettings.json");
+
+        if (isDevelopment)
+        {
+            Assert.Contains(config.Sources, source => source is JsonConfigurationSource jsonSource && jsonSource.Path == "appsettings.Development.json");
+        }
+        else
+        {
+            Assert.DoesNotContain(config.Sources, source => source is JsonConfigurationSource jsonSource && jsonSource.Path == "appsettings.Development.json");
+        }
     }
 
     [Theory]
@@ -624,6 +662,22 @@ public class WebApplicationTests
 
         Assert.Equal(nameof(WebApplicationTests), webApplication.Environment.ApplicationName);
         Assert.Equal(Environments.Development, webApplication.Environment.EnvironmentName);
+    }
+
+    [Theory]
+    [MemberData(nameof(CreateBuilderOptionsFuncs))]
+    public void WebApplicationBuilderEnablesUserSecretsInDevelopment(CreateBuilderOptionsFunc createBuilder)
+    {
+        var options = new WebApplicationOptions
+        {
+            ApplicationName = typeof(WebApplicationTests).Assembly.GetName().Name,
+            EnvironmentName = Environments.Development
+        };
+
+        var webApplication = createBuilder(options).Build();
+
+        var config = Assert.IsType<ConfigurationManager>(webApplication.Configuration);
+        Assert.Contains(config.Sources, source => source is JsonConfigurationSource jsonSource && jsonSource.Path == "secrets.json");
     }
 
     [Theory]
@@ -1470,7 +1524,7 @@ public class WebApplicationTests
     [Fact]
     public void WebApplicationCreate_RegistersEventSourceLogger()
     {
-        var listener = new TestEventListener();
+        using var listener = new TestEventListener();
         var app = WebApplication.Create();
 
         var logger = app.Services.GetRequiredService<ILogger<WebApplicationTests>>();
@@ -1487,7 +1541,7 @@ public class WebApplicationTests
     [MemberData(nameof(CreateBuilderFuncs))]
     public void WebApplicationBuilder_CanClearDefaultLoggers(CreateBuilderFunc createBuilder)
     {
-        var listener = new TestEventListener();
+        using var listener = new TestEventListener();
         var builder = createBuilder();
         builder.Logging.ClearProviders();
 
@@ -1590,33 +1644,14 @@ public class WebApplicationTests
         Assert.Equal("One", chosenEndpoint);
     }
 
-    public static IEnumerable<object[]> OnlyAddsDefaultServicesOnceData
-    {
-        get
-        {
-            // The slim builder doesn't add logging services by default
-            yield return new object[] { (CreateBuilderFunc)CreateBuilder, true };
-            yield return new object[] { (CreateBuilderFunc)CreateSlimBuilder, false };
-        }
-    }
-
     [Theory]
-    [MemberData(nameof(OnlyAddsDefaultServicesOnceData))]
-    public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce(CreateBuilderFunc createBuilder, bool hasLogging)
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
 
         // IWebHostEnvironment is added by ConfigureDefaults
-        var loggingDescriptors = builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>));
-        if (hasLogging)
-        {
-            Assert.Single(loggingDescriptors);
-        }
-        else
-        {
-            Assert.Empty(loggingDescriptors);
-        }
-
+        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
         // IWebHostEnvironment is added by ConfigureWebHostDefaults
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
@@ -1624,16 +1659,7 @@ public class WebApplicationTests
 
         await using var app = builder.Build();
 
-        var loggingServices = app.Services.GetRequiredService<IEnumerable<IConfigureOptions<LoggerFactoryOptions>>>();
-        if (hasLogging)
-        {
-            Assert.Single(loggingServices);
-        }
-        else
-        {
-            Assert.Empty(loggingServices);
-        }
-
+        Assert.Single(app.Services.GetRequiredService<IEnumerable<IConfigureOptions<LoggerFactoryOptions>>>());
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IWebHostEnvironment>>());
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IOptionsChangeTokenSource<HostFilteringOptions>>>());
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IServer>>());
@@ -1867,7 +1893,7 @@ public class WebApplicationTests
 
     [Theory]
     [MemberData(nameof(CreateBuilderOptionsFuncs))]
-    public async Task DeveloperExceptionPageIsOnByDefaltInDevelopment(CreateBuilderOptionsFunc createBuilder)
+    public async Task DeveloperExceptionPageIsOnByDefaultInDevelopment(CreateBuilderOptionsFunc createBuilder)
     {
         var builder = createBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -2260,30 +2286,20 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task RegisterAuthMiddlewaresCorrectly(bool useSlimBuilder)
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public async Task RegisterAuthMiddlewaresCorrectly(CreateBuilderFunc createBuilder)
     {
         var helloEndpointCalled = false;
         var customMiddlewareExecuted = false;
         var username = "foobar";
 
-        var builder = useSlimBuilder ?
-            WebApplication.CreateSlimBuilder() :
-            WebApplication.CreateBuilder();
+        var builder = createBuilder();
 
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication("testSchemeName")
             .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
-
-        if (useSlimBuilder)
-        {
-            // NOTE: CreateSlimBuilder doesn't support auto registration of auth middleware, so need to do it explicitly
-            app.UseAuthentication();
-            app.UseAuthorization();
-        }
 
         app.Use(next =>
         {
@@ -2314,11 +2330,11 @@ public class WebApplicationTests
         Assert.True(customMiddlewareExecuted);
     }
 
-    [Fact]
-    public async Task SupportsDisablingMiddlewareAutoRegistration()
+    [Theory]
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public async Task SupportsDisablingMiddlewareAutoRegistration(CreateBuilderFunc createBuilder)
     {
-        // NOTE: CreateSlimBuilder doesn't support auto registration of auth middleware
-        var builder = WebApplication.CreateBuilder();
+        var builder = createBuilder();
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication("testSchemeName")
             .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
@@ -2341,7 +2357,7 @@ public class WebApplicationTests
 
         app.Properties["__AuthenticationMiddlewareSet"] = true;
 
-        app.MapGet("/hello", (ClaimsPrincipal user) => {}).AllowAnonymous();
+        app.MapGet("/hello", (ClaimsPrincipal user) => { }).AllowAnonymous();
 
         Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
         Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
@@ -2489,7 +2505,7 @@ public class WebApplicationTests
 
     private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock) { }
+        public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder) { }
 
         protected override Task HandleChallengeAsync(AuthenticationProperties properties) => Task.CompletedTask;
 

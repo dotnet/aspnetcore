@@ -3,7 +3,6 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +30,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     private readonly int _maxParallelInvokes;
 
     // Internal for testing
-    internal ISystemClock SystemClock { get; set; } = new SystemClock();
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
@@ -120,7 +119,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
             StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
             MaximumReceiveMessageSize = _maximumMessageSize,
-            SystemClock = SystemClock,
+            TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
         };
 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class IdentityServiceCollectionExtensions
     /// <typeparam name="TRole">The type representing a Role in the system.</typeparam>
     /// <param name="services">The services available in the application.</param>
     /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
+    [RequiresUnreferencedCode("Identity middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IdentityBuilder AddIdentity<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>(
         this IServiceCollection services)
         where TUser : class
@@ -35,6 +37,7 @@ public static class IdentityServiceCollectionExtensions
     /// <param name="services">The services available in the application.</param>
     /// <param name="setupAction">An action to configure the <see cref="IdentityOptions"/>.</param>
     /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
+    [RequiresUnreferencedCode("Identity middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IdentityBuilder AddIdentity<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>(
         this IServiceCollection services,
         Action<IdentityOptions> setupAction)
@@ -90,6 +93,7 @@ public static class IdentityServiceCollectionExtensions
         // No interface for the error describer so we can add errors without rev'ing the interface
         services.TryAddScoped<IdentityErrorDescriber>();
         services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
@@ -122,4 +126,19 @@ public static class IdentityServiceCollectionExtensions
     /// <returns>The services.</returns>
     public static IServiceCollection ConfigureExternalCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
         => services.Configure(IdentityConstants.ExternalScheme, configure);
+
+    private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
+    {
+        public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider TimeProvider { get; }
+
+        public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
+        }
+    }
 }

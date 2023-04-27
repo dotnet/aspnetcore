@@ -1,10 +1,56 @@
 #nullable enable
+Microsoft.AspNetCore.Components.CascadingModelBinder
+Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
+Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!
+Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.get -> bool
+Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.set -> void
+Microsoft.AspNetCore.Components.CascadingModelBinder.Name.get -> string!
+Microsoft.AspNetCore.Components.CascadingModelBinder.Name.set -> void
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.ModelBindingContext
+Microsoft.AspNetCore.Components.ModelBindingContext.BindingContextId.get -> string!
+Microsoft.AspNetCore.Components.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetEventHandlerName(string! eventHandlerName) -> void
+Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash
+Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.RefreshScrollPositionForHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Rendering.ComponentState
+Microsoft.AspNetCore.Components.Rendering.ComponentState.Component.get -> Microsoft.AspNetCore.Components.IComponent!
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentId.get -> int
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentState(Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer, int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> void
+Microsoft.AspNetCore.Components.Rendering.ComponentState.Dispose() -> void
+Microsoft.AspNetCore.Components.Rendering.ComponentState.ParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentState(int componentId) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
+Microsoft.AspNetCore.Components.Sections.SectionContent
+Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Sections.SectionContent.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.Dispose() -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionContent() -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.get -> object?
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionId.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionName.get -> string?
+Microsoft.AspNetCore.Components.Sections.SectionContent.SectionName.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.Dispose() -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.get -> object?
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionId.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionName.get -> string?
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionName.set -> void
+Microsoft.AspNetCore.Components.Sections.SectionOutlet.SectionOutlet() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
+Microsoft.AspNetCore.Components.StreamRenderingAttribute
+Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
+Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AddPendingTask(Microsoft.AspNetCore.Components.Rendering.ComponentState? componentState, System.Threading.Tasks.Task! task) -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs, bool quiesce) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ShouldTrackNamedEventHandlers() -> bool
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.TrackNamedEventId(ulong eventHandlerId, int componentId, string! eventHandlerName) -> void

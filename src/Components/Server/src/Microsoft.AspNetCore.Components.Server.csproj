@@ -31,6 +31,8 @@
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Shared" />
 
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultFormDataProvider.cs" LinkBase="Shared" />
+
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
     <ProjectReference Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"

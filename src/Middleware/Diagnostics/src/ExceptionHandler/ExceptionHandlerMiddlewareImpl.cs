@@ -128,7 +128,8 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             return;
         }
 
-        _logger.UnhandledException(edi.SourceException);
+        DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
+
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
         {
@@ -180,7 +181,8 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                     {
                         HttpContext = context,
                         AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                        ProblemDetails = { Status = DefaultStatusCode }
+                        ProblemDetails = { Status = DefaultStatusCode },
+                        Exception = edi.SourceException,
                     });
                 }
             }

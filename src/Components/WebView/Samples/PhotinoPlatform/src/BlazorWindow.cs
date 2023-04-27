@@ -14,6 +14,7 @@ public class BlazorWindow
 {
     private readonly PhotinoWindow _window;
     private readonly PhotinoWebViewManager _manager;
+    private readonly string _pathBase;
 
     /// <summary>
     /// Constructs an instance of <see cref="BlazorWindow"/>.
@@ -22,11 +23,13 @@ public class BlazorWindow
     /// <param name="hostPage">The path to the host page.</param>
     /// <param name="services">The service provider.</param>
     /// <param name="configureWindow">A callback that configures the window.</param>
+    /// <param name="pathBase">The pathbase for the application. URLs will be resolved relative to this.</param>
     public BlazorWindow(
         string title,
         string hostPage,
         IServiceProvider services,
-        Action<PhotinoWindowOptions>? configureWindow = null)
+        Action<PhotinoWindowOptions>? configureWindow = null,
+        string? pathBase = null)
     {
         _window = new PhotinoWindow(title, options =>
         {
@@ -42,7 +45,15 @@ public class BlazorWindow
 
         var dispatcher = new PhotinoDispatcher(_window);
         var jsComponents = new JSComponentConfigurationStore();
-        _manager = new PhotinoWebViewManager(_window, services, dispatcher, new Uri(PhotinoWebViewManager.AppBaseUri), fileProvider, jsComponents, hostPageRelativePath);
+
+        _pathBase = (pathBase ?? string.Empty);
+        if (!_pathBase.EndsWith('/'))
+        {
+            _pathBase += "/";
+        }
+        var appBaseUri = new Uri(new Uri(PhotinoWebViewManager.AppBaseOrigin), _pathBase);
+
+        _manager = new PhotinoWebViewManager(_window, services, dispatcher, appBaseUri, fileProvider, jsComponents, hostPageRelativePath);
         RootComponents = new BlazorWindowRootComponents(_manager, jsComponents);
     }
 
@@ -61,7 +72,7 @@ public class BlazorWindow
     /// </summary>
     public void Run()
     {
-        _manager.Navigate("/");
+        _manager.Navigate(_pathBase);
         _window.WaitForClose();
     }
 

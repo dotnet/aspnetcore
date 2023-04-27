@@ -119,7 +119,9 @@ internal sealed class OutputCacheMiddleware
                 // Should we store the response to this request?
                 if (context.AllowCacheStorage)
                 {
-                    // It is also a pre-condition to reponse locking
+                    CreateCacheKey(context);
+
+                    // It is also a pre-condition to response locking
 
                     var executed = false;
 
@@ -170,6 +172,14 @@ internal sealed class OutputCacheMiddleware
                         finally
                         {
                             UnshimResponseStream(context);
+                        }
+
+                        // If the policies prevented this response from being cached we can't reuse it for other
+                        // pending requests
+
+                        if (!context.AllowCacheStorage)
+                        {
+                            return null;
                         }
 
                         return context.CachedResponse;
@@ -233,7 +243,7 @@ internal sealed class OutputCacheMiddleware
         }
 
         context.CachedResponse = cacheEntry;
-        context.ResponseTime = _options.SystemClock.UtcNow;
+        context.ResponseTime = _options.TimeProvider.GetUtcNow();
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
@@ -277,9 +287,13 @@ internal sealed class OutputCacheMiddleware
                 var response = context.HttpContext.Response;
                 // Copy the cached status code and response headers
                 response.StatusCode = context.CachedResponse.StatusCode;
-                foreach (var header in context.CachedResponse.Headers)
+
+                if (context.CachedResponse.Headers != null)
                 {
-                    response.Headers[header.Key] = header.Value;
+                    foreach (var header in context.CachedResponse.Headers)
+                    {
+                        response.Headers[header.Key] = header.Value;
+                    }
                 }
 
                 // Note: int64 division truncates result and errors may be up to 1 second. This reduction in
@@ -289,7 +303,8 @@ internal sealed class OutputCacheMiddleware
 
                 // Copy the cached response body
                 var body = context.CachedResponse.Body;
-                if (body.Length > 0)
+
+                if (body != null && body.Length > 0)
                 {
                     try
                     {
@@ -372,12 +387,13 @@ internal sealed class OutputCacheMiddleware
             {
                 Created = context.ResponseTime!.Value,
                 StatusCode = response.StatusCode,
-                Headers = new HeaderDictionary(),
                 Tags = context.Tags.ToArray()
             };
 
             foreach (var header in headers)
             {
+                context.CachedResponse.Headers ??= new();
+
                 if (!string.Equals(header.Key, HeaderNames.Age, StringComparison.OrdinalIgnoreCase))
                 {
                     context.CachedResponse.Headers[header.Key] = header.Value;
@@ -402,6 +418,7 @@ internal sealed class OutputCacheMiddleware
 
             var contentLength = context.HttpContext.Response.ContentLength;
             var cachedResponseBody = context.OutputCacheStream.GetCachedResponseBody();
+
             if (!contentLength.HasValue || contentLength == cachedResponseBody.Length
                 || (cachedResponseBody.Length == 0
                     && HttpMethods.IsHead(context.HttpContext.Request.Method)))
@@ -410,6 +427,7 @@ internal sealed class OutputCacheMiddleware
                 // Add a content-length if required
                 if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers.TransferEncoding))
                 {
+                    context.CachedResponse.Headers ??= new();
                     context.CachedResponse.Headers.ContentLength = cachedResponseBody.Length;
                 }
 
@@ -446,7 +464,7 @@ internal sealed class OutputCacheMiddleware
         if (!context.ResponseStarted)
         {
             context.ResponseStarted = true;
-            context.ResponseTime = _options.SystemClock.UtcNow;
+            context.ResponseTime = _options.TimeProvider.GetUtcNow();
 
             return true;
         }
@@ -508,13 +526,13 @@ internal sealed class OutputCacheMiddleware
                 return true;
             }
 
-            if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
+            if (cachedResponseHeaders != null && !StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
                 && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag].ToString(), out var eTag)
-                && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))
+                && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchETags))
             {
-                for (var i = 0; i < ifNoneMatchEtags?.Count; i++)
+                for (var i = 0; i < ifNoneMatchETags?.Count; i++)
                 {
-                    var requestETag = ifNoneMatchEtags[i];
+                    var requestETag = ifNoneMatchETags[i];
                     if (eTag.Compare(requestETag, useStrongComparison: false))
                     {
                         _logger.NotModifiedIfNoneMatchMatched(requestETag);
@@ -528,6 +546,11 @@ internal sealed class OutputCacheMiddleware
             var ifModifiedSince = context.HttpContext.Request.Headers.IfModifiedSince;
             if (!StringValues.IsNullOrEmpty(ifModifiedSince))
             {
+                if (cachedResponseHeaders == null)
+                {
+                    return false;
+                }
+
                 if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified].ToString(), out var modified) &&
                     !HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.Date].ToString(), out modified))
                 {

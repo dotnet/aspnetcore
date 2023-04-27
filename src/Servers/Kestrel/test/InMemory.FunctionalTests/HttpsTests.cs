@@ -15,14 +15,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -31,11 +35,18 @@ public class HttpsTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
-    private KestrelServerOptions CreateServerOptions()
+    private static KestrelServerOptions CreateServerOptions()
     {
+        // It's not actually going to be used - we just need to satisfy the check in ApplyDefaultCertificate
+        var mockHttpsConfig = new Mock<IHttpsConfigurationService>();
+        mockHttpsConfig.Setup(m => m.IsInitialized).Returns(true);
+
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
+            .AddSingleton(mockHttpsConfig.Object)
+            .AddSingleton(Mock.Of<IHostEnvironment>())
+            .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
             .BuildServiceProvider();
         return serverOptions;
     }

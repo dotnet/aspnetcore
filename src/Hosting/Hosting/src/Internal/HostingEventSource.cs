@@ -20,7 +20,7 @@ internal sealed class HostingEventSource : EventSource
     private long _failedRequests;
 
     internal HostingEventSource()
-        : this("Microsoft.AspNetCore.Hosting")
+        : base("Microsoft.AspNetCore.Hosting", EventSourceSettings.EtwManifestEventFormat)
     {
     }
 
@@ -78,6 +78,7 @@ internal sealed class HostingEventSource : EventSource
         WriteEvent(6);
     }
 
+    [NonEvent]
     internal void RequestFailed()
     {
         Interlocked.Increment(ref _failedRequests);

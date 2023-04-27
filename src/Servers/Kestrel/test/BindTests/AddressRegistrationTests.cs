@@ -328,7 +328,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
             var testUrlWithPort = $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}";
 
             var options = ((IOptions<KestrelServerOptions>)host.Services.GetService(typeof(IOptions<KestrelServerOptions>))).Value;
-            Assert.Single(options.ListenOptions);
+            Assert.Single(options.GetListenOptions());
 
             var response = await HttpClientSlim.GetStringAsync(testUrlWithPort, validateCertificate: false);
 

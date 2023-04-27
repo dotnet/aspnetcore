@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -263,7 +264,7 @@ public class RequestBodyTests
             httpContext.Request.Headers[HeaderNames.ContentLength] = "456";
             CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
             Assert.Equal(456, httpContext.Request.ContentLength);
-            httpContext.Request.Headers[HeaderNames.ContentLength] = "";
+            httpContext.Request.Headers[HeaderNames.ContentLength] = StringValues.Empty;
             CheckHeadersCount(HeaderNames.ContentLength, 0, httpContext.Request);
             Assert.Null(httpContext.Request.ContentLength);
             Assert.Equal("", httpContext.Request.Headers[HeaderNames.ContentLength].ToString());
@@ -276,7 +277,7 @@ public class RequestBodyTests
             CheckHeadersCount("Custom-Header", 1, httpContext.Request);
             httpContext.Request.Headers["Custom-Header"] = "bar";
             CheckHeadersCount("Custom-Header", 1, httpContext.Request);
-            httpContext.Request.Headers["Custom-Header"] = "";
+            httpContext.Request.Headers["Custom-Header"] = StringValues.Empty;
             CheckHeadersCount("Custom-Header", 0, httpContext.Request);
             Assert.Equal("", httpContext.Request.Headers["Custom-Header"].ToString());
 

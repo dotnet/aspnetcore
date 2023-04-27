@@ -35,6 +35,7 @@ internal sealed class HttpsConnectionMiddleware
 
     // The following fields are only set by HttpsConnectionAdapterOptions ctor.
     private readonly HttpsConnectionAdapterOptions? _options;
+    private readonly KestrelMetrics _metrics;
     private readonly SslStreamCertificateContext? _serverCertificateContext;
     private readonly X509Certificate2? _serverCertificate;
     private readonly Func<ConnectionContext, string?, X509Certificate2?>? _serverCertificateSelector;
@@ -47,16 +48,16 @@ internal sealed class HttpsConnectionMiddleware
     // Pool for cancellation tokens that cancel the handshake
     private readonly CancellationTokenSourcePool _ctsPool = new();
 
-    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
-      : this(next, options, loggerFactory: NullLoggerFactory.Instance)
+    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, KestrelMetrics metrics)
+      : this(next, options, loggerFactory: NullLoggerFactory.Instance, metrics: metrics)
     {
     }
 
-    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory)
+    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory, KestrelMetrics metrics)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        if (!options.HasServerCertificateOrSelector)
         {
             throw new ArgumentException(CoreStrings.ServerCertificateRequired, nameof(options));
         }
@@ -64,6 +65,7 @@ internal sealed class HttpsConnectionMiddleware
         _next = next;
         _handshakeTimeout = options.HandshakeTimeout;
         _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+        _metrics = metrics;
 
         // Something similar to the following could allow us to remove more duplicate logic, but we need https://github.com/dotnet/runtime/issues/40402 to be fixed first.
         //var sniOptionsSelector = new SniOptionsSelector("", new Dictionary<string, SniConfig> { { "*", new SniConfig() } }, new NoopCertificateConfigLoader(), options, options.HttpProtocols, _logger);
@@ -88,7 +90,7 @@ internal sealed class HttpsConnectionMiddleware
         {
             Debug.Assert(_serverCertificate != null);
 
-            EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
+            EnsureCertificateIsAllowedForServerAuth(_serverCertificate, _logger);
 
             var certificate = _serverCertificate;
             if (!certificate.HasPrivateKey)
@@ -113,11 +115,13 @@ internal sealed class HttpsConnectionMiddleware
     internal HttpsConnectionMiddleware(
         ConnectionDelegate next,
         TlsHandshakeCallbackOptions tlsCallbackOptions,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        KestrelMetrics metrics)
     {
         _next = next;
         _handshakeTimeout = tlsCallbackOptions.HandshakeTimeout;
         _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+        _metrics = metrics;
 
         _tlsCallbackOptions = tlsCallbackOptions.OnConnection;
         _tlsCallbackOptionsState = tlsCallbackOptions.OnConnectionState;
@@ -145,7 +149,10 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ITlsConnectionFeature>(feature);
         context.Features.Set<ITlsHandshakeFeature>(feature);
         context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+        context.Features.Set<ISslStreamFeature>(feature);
+        context.Features.Set<SslStream>(sslStream); // Anti-pattern, but retain for back compat
 
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             using var cancellationTokenSource = _ctsPool.Rent();
@@ -161,10 +168,9 @@ internal sealed class HttpsConnectionMiddleware
                 await sslStream.AuthenticateAsServerAsync(ServerOptionsCallback, state, cancellationTokenSource.Token);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-            KestrelEventSource.Log.TlsHandshakeStop(context, null);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), context, ex);
 
             _logger.AuthenticationTimedOut();
             await sslStream.DisposeAsync();
@@ -172,8 +178,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
-            KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-            KestrelEventSource.Log.TlsHandshakeStop(context, null);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), context, ex);
 
             _logger.AuthenticationFailed(ex);
             await sslStream.DisposeAsync();
@@ -181,8 +186,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
-            KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-            KestrelEventSource.Log.TlsHandshakeStop(context, null);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), context, ex);
 
             _logger.AuthenticationFailed(ex);
 
@@ -191,6 +195,7 @@ internal sealed class HttpsConnectionMiddleware
         }
 
         KestrelEventSource.Log.TlsHandshakeStop(context, feature);
+        _metrics.TlsHandshakeStop(context, startTimestamp, Stopwatch.GetTimestamp(), protocol: sslStream.SslProtocol);
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
@@ -213,6 +218,13 @@ internal sealed class HttpsConnectionMiddleware
         {
             // Restore the original so that it gets closed appropriately
             context.Transport = originalTransport;
+        }
+
+        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionContext context, Exception ex)
+        {
+            KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+            KestrelEventSource.Log.TlsHandshakeStop(context, null);
+            metrics.TlsHandshakeStop(context, startTimestamp, currentTimestamp, exception: ex);
         }
     }
 
@@ -299,11 +311,10 @@ internal sealed class HttpsConnectionMiddleware
             selector = (sender, name) =>
             {
                 feature.HostName = name;
-                context.Features.Set(sslStream);
                 var cert = _serverCertificateSelector(context, name);
                 if (cert != null)
                 {
-                    EnsureCertificateIsAllowedForServerAuth(cert);
+                    EnsureCertificateIsAllowedForServerAuth(cert, _logger);
                 }
                 return cert!;
             };
@@ -325,6 +336,7 @@ internal sealed class HttpsConnectionMiddleware
         _options.OnAuthenticate?.Invoke(context, sslOptions);
 
         KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
+        _metrics.TlsHandshakeStart(context);
 
         return sslStream.AuthenticateAsServerAsync(sslOptions, cancellationToken);
     }
@@ -417,7 +429,7 @@ internal sealed class HttpsConnectionMiddleware
 
         feature.HostName = clientHelloInfo.ServerName;
         context.Features.Set(sslStream);
-        var callbackContext = new TlsHandshakeCallbackContext()
+        var callbackContext = new TlsHandshakeCallbackContext
         {
             Connection = context,
             SslStream = sslStream,
@@ -433,16 +445,22 @@ internal sealed class HttpsConnectionMiddleware
         {
             ConfigureAlpn(sslOptions, middleware._httpProtocols);
         }
+
         KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
+        middleware._metrics.TlsHandshakeStart(context);
 
         return sslOptions;
     }
 
-    internal static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
+    internal static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate, ILogger<HttpsConnectionMiddleware> logger)
     {
         if (!CertificateLoader.IsCertificateAllowedForServerAuth(certificate))
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidServerCertificateEku(certificate.Thumbprint));
+        }
+        else if (!CertificateLoader.DoesCertificateHaveASubjectAlternativeName(certificate))
+        {
+            logger.NoSubjectAlternativeName(certificate.Thumbprint);
         }
     }
 
@@ -500,7 +518,7 @@ internal sealed class HttpsConnectionMiddleware
         return false;
     }
 
-    internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions)
+    internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions, ILogger<HttpsConnectionMiddleware> logger)
     {
         if (httpsOptions.OnAuthenticate != null)
         {
@@ -525,7 +543,7 @@ internal sealed class HttpsConnectionMiddleware
                 var cert = httpsOptions.ServerCertificateSelector(null, host);
                 if (cert != null)
                 {
-                    EnsureCertificateIsAllowedForServerAuth(cert);
+                    EnsureCertificateIsAllowedForServerAuth(cert, logger);
                 }
                 return cert!;
             };
@@ -581,6 +599,9 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
 
     [LoggerMessage(8, LogLevel.Debug, "Failed to open certificate store {StoreName}.", EventName = "FailToOpenStore")]
     public static partial void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, string? storeName, Exception exception);
+
+    [LoggerMessage(9, LogLevel.Information, "Certificate with thumbprint {Thumbprint} lacks the subjectAlternativeName (SAN) extension and may not be accepted by browsers.", EventName = "NoSubjectAlternativeName")]
+    public static partial void NoSubjectAlternativeName(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint);
 
     public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
     {

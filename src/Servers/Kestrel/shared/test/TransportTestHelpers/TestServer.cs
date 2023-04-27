@@ -78,12 +78,14 @@ internal class TestServer : IAsyncDisposable, IStartup
                     .UseKestrel(options =>
                     {
                         configureKestrel(options);
-                        _listenOptions = options.ListenOptions.First();
+                        _listenOptions = options.GetListenOptions().First();
                     })
                     .ConfigureServices(services =>
                     {
                         services.AddSingleton<IStartup>(this);
                         services.AddSingleton(context.LoggerFactory);
+                        services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
+                        services.AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>();
                         services.AddSingleton<IServer>(sp =>
                         {
                             // Manually configure options on the TestServiceContext.
@@ -94,7 +96,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                                 c.Configure(context.ServerOptions);
                             }
 
-                            return new KestrelServerImpl(sp.GetServices<IConnectionListenerFactory>(), Array.Empty<IMultiplexedConnectionListenerFactory>(), context);
+                            return new KestrelServerImpl(sp.GetServices<IConnectionListenerFactory>(), Array.Empty<IMultiplexedConnectionListenerFactory>(), sp.GetRequiredService<IHttpsConfigurationService>(), context);
                         });
                         configureServices(services);
                     })

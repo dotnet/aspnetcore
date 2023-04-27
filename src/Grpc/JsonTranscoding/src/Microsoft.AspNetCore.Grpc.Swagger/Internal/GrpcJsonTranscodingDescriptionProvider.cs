@@ -120,7 +120,7 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         {
             // If from a property, create model as property to get its XML comments.
             var identity = bodyDescriptor.PropertyInfo != null
-                ? ModelMetadataIdentity.ForProperty(bodyDescriptor.PropertyInfo, bodyDescriptor.Descriptor.ClrType, bodyDescriptor.PropertyInfo.DeclaringType!)
+                ? ModelMetadataIdentity.ForProperty(bodyDescriptor.PropertyInfo, bodyDescriptor.PropertyInfo.PropertyType, bodyDescriptor.PropertyInfo.DeclaringType!)
                 : ModelMetadataIdentity.ForType(bodyDescriptor.Descriptor.ClrType);
 
             // Or if from a parameter, create model as parameter to get its XML comments.
@@ -181,6 +181,11 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             {
                 sb.Append(httpRoutePattern.Segments[i]);
             }
+        }
+        if (httpRoutePattern.Verb != null)
+        {
+            sb.Append(':');
+            sb.Append(httpRoutePattern.Verb);
         }
         return sb.ToString();
     }

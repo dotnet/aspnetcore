@@ -688,8 +688,7 @@ public class ClientCertificateAuthenticationTests
     {
         const string Expected = "John Doe";
         var validationCount = 0;
-        var clock = new TestClock();
-        clock.UtcNow = DateTime.UtcNow;
+        var timeProvider = new TestTimeProvider();
 
         using var host = await CreateHost(
             new CertificateAuthenticationOptions
@@ -716,7 +715,7 @@ public class ClientCertificateAuthenticationTests
                     }
                 }
             },
-            Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache, clock);
+            Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache, timeProvider);
 
         using var server = host.GetTestServer();
         var response = await server.CreateClient().GetAsync("https://example.com/");
@@ -759,7 +758,7 @@ public class ClientCertificateAuthenticationTests
         var expected = cache ? "1" : "2";
         Assert.Equal(expected, count.First().Value);
 
-        clock.Add(TimeSpan.FromMinutes(31));
+        timeProvider.Advance(TimeSpan.FromMinutes(31));
 
         // Third request should always trigger validation even if caching
         response = await server.CreateClient().GetAsync("https://example.com/");
@@ -791,7 +790,7 @@ public class ClientCertificateAuthenticationTests
         bool wireUpHeaderMiddleware = false,
         string headerName = "",
         bool useCache = false,
-        ISystemClock clock = null)
+        TimeProvider timeProvider = null)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(builder =>
@@ -855,17 +854,29 @@ public class ClientCertificateAuthenticationTests
                             options.RevocationMode = configureOptions.RevocationMode;
                             options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
                             options.AdditionalChainCertificates = configureOptions.AdditionalChainCertificates;
+                            options.TimeProvider = configureOptions.TimeProvider;
+
+                            if (timeProvider != null)
+                            {
+                                options.TimeProvider = timeProvider;
+                            }
                         });
                     }
                     else
                     {
-                        authBuilder = services.AddAuthentication().AddCertificate();
+                        authBuilder = services.AddAuthentication().AddCertificate(options =>
+                        {
+                            if (timeProvider != null)
+                            {
+                                options.TimeProvider = timeProvider;
+                            }
+                        });
                     }
                     if (useCache)
                     {
-                        if (clock != null)
+                        if (timeProvider != null)
                         {
-                            services.AddSingleton<ICertificateValidationCache>(new CertificateValidationCache(Options.Create(new CertificateValidationCacheOptions()), clock));
+                            services.AddSingleton<ICertificateValidationCache>(new CertificateValidationCache(Options.Create(new CertificateValidationCacheOptions()), timeProvider));
                         }
                         else
                         {
@@ -880,12 +891,6 @@ public class ClientCertificateAuthenticationTests
                             options.CertificateHeader = headerName;
                         });
                     }
-
-                    if (clock != null)
-                    {
-                        services.AddSingleton(clock);
-                    }
-
                 }))
             .Build();
 

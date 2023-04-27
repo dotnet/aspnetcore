@@ -1,0 +1,96 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Linq;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// 
+/// </summary>
+public static class RazorComponentsEndpointRouteBuilderExtensions
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="endpoints"></param>
+    /// <returns></returns>
+    public static RazorComponentEndpointConventionBuilder MapRazorComponents<TRootComponent>(this IEndpointRouteBuilder endpoints)
+        where TRootComponent : IRazorComponentApplication<TRootComponent>
+    {
+        ArgumentNullException.ThrowIfNull(endpoints);
+
+        EnsureRazorComponentServices(endpoints);
+        AddBlazorWebJsEndpoint(endpoints);
+
+        return GetOrCreateDataSource<TRootComponent>(endpoints).DefaultBuilder;
+    }
+
+    private static void AddBlazorWebJsEndpoint(IEndpointRouteBuilder endpoints)
+    {
+        var options = new StaticFileOptions
+        {
+            FileProvider = new ManifestEmbeddedFileProvider(typeof(RazorComponentsEndpointRouteBuilderExtensions).Assembly),
+            OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders
+        };
+
+        var app = endpoints.CreateApplicationBuilder();
+        app.Use(next => context =>
+        {
+            // Set endpoint to null so the static files middleware will handle the request.
+            context.SetEndpoint(null);
+
+            return next(context);
+        });
+        app.UseStaticFiles(options);
+
+        var blazorEndpoint = endpoints.Map("/_framework/blazor.web.js", app.Build())
+            .WithDisplayName("Blazor web static files");
+
+        blazorEndpoint.Add((builder) => ((RouteEndpointBuilder)builder).Order = int.MinValue);
+
+#if DEBUG
+        // We only need to serve the sourcemap when working on the framework, not in the distributed packages
+        endpoints.Map("/_framework/blazor.web.js.map", app.Build())
+            .WithDisplayName("Blazor web static files sourcemap")
+            .Add((builder) => ((RouteEndpointBuilder)builder).Order = int.MinValue);
+#endif
+    }
+
+    private static RazorComponentEndpointDataSource<TRootComponent> GetOrCreateDataSource<TRootComponent>(IEndpointRouteBuilder endpoints)
+        where TRootComponent : IRazorComponentApplication<TRootComponent>
+    {
+        var dataSource = endpoints.DataSources.OfType<RazorComponentEndpointDataSource<TRootComponent>>().FirstOrDefault();
+        if (dataSource == null)
+        {
+            // Very likely this needs to become a factory and we might need to have multiple endpoint data
+            // sources, once we figure out the exact scenarios for
+            // https://github.com/dotnet/aspnetcore/issues/46992
+            var factory = endpoints.ServiceProvider.GetRequiredService<RazorComponentEndpointDataSourceFactory>();
+            dataSource = factory.CreateDataSource<TRootComponent>();
+            endpoints.DataSources.Add(dataSource);
+        }
+
+        return dataSource;
+    }
+
+    private static void EnsureRazorComponentServices(IEndpointRouteBuilder endpoints)
+    {
+        ArgumentNullException.ThrowIfNull(endpoints);
+        var marker = endpoints.ServiceProvider.GetService<RazorComponentsMarkerService>();
+        if (marker == null)
+        {
+            throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                nameof(RazorComponentsServiceCollectionExtensions.AddRazorComponents)));
+        }
+    }
+}

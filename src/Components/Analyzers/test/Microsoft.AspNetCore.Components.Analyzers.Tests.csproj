@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="TestFiles\**\*.*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

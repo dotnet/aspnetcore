@@ -20,7 +20,17 @@ public abstract class SignOutAuthenticationHandler<TOptions> : AuthenticationHan
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public SignOutAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="SignOutAuthenticationHandler{TOptions}"/>.
+    /// </summary>
+    /// <param name="options">The monitor for the options instance.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    public SignOutAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
     { }
 
     /// <inheritdoc/>

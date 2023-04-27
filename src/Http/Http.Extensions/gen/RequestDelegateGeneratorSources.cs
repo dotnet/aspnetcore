@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Generators;
+using Microsoft.CodeAnalysis.CSharp;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 internal static class RequestDelegateGeneratorSources
 {
@@ -19,7 +20,350 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints) => $$"""
+    public static string ContentMetadataTypes => """
+    file static class GeneratedMetadataConstants
+    {
+        public static readonly string[] JsonContentType = new [] { "application/json" };
+        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+    }
+
+    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
+    {
+        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
+        {
+            Type = type;
+            StatusCode = statusCode;
+            ContentTypes = contentTypes;
+        }
+
+        public Type? Type { get; }
+
+        public int StatusCode { get; }
+
+        public IEnumerable<string> ContentTypes { get; }
+    }
+""";
+
+    public static string PopulateEndpointMetadataMethod => """
+        private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
+            where T : IEndpointMetadataProvider
+        {
+            T.PopulateMetadata(method, builder);
+        }
+""";
+
+    public static string PopulateEndpointParameterMetadataMethod => """
+        private static void PopulateMetadataForParameter<T>(ParameterInfo parameter, EndpointBuilder builder)
+            where T : IEndpointParameterMetadataProvider
+        {
+            T.PopulateMetadata(parameter, builder);
+        }
+""";
+
+    public static string TryResolveBodyAsyncMethod => """
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
+        {
+            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasJsonContentType())
+                {
+                    logOrThrowExceptionHelper.UnexpectedJsonContentType(httpContext.Request.ContentType);
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (false, default);
+                }
+                try
+                {
+                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
+                    if (!allowEmpty && bodyValue == null)
+                    {
+                        if (!isInferred)
+                        {
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
+                        }
+                        else
+                        {
+                            logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
+                        }
+                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        return (false, bodyValue);
+                    }
+                    return (true, bodyValue);
+                }
+                catch (BadHttpRequestException badHttpRequestException)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(badHttpRequestException);
+                    httpContext.Response.StatusCode = badHttpRequestException.StatusCode;
+                    return (false, default);
+                }
+                catch (IOException ioException)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ioException);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, default);
+                }
+                catch (System.Text.Json.JsonException jsonException)
+                {
+                    logOrThrowExceptionHelper.InvalidJsonRequestBody(parameterTypeName, parameterName, jsonException);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, default);
+                }
+            }
+            else if (!allowEmpty)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
+
+            return (allowEmpty, default);
+        }
+""";
+
+    public static string TryResolveFormAsyncMethod => """
+        private static async Task<(bool, object?)> TryResolveFormAsync(
+            HttpContext httpContext,
+            LogOrThrowExceptionHelper logOrThrowExceptionHelper,
+            string parameterTypeName,
+            string parameterName)
+        {
+            object? formValue = null;
+            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasFormContentType)
+                {
+                    logOrThrowExceptionHelper.UnexpectedNonFormContentType(httpContext.Request.ContentType);
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (false, null);
+                }
+
+                try
+                {
+                    formValue = await httpContext.Request.ReadFormAsync();
+                }
+                catch (BadHttpRequestException ex)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
+                    httpContext.Response.StatusCode = ex.StatusCode;
+                    return (false, null);
+                }
+                catch (IOException ex)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+                catch (InvalidDataException ex)
+                {
+                    logOrThrowExceptionHelper.InvalidFormRequestBody(parameterTypeName, parameterName, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+            }
+
+            return (true, formValue);
+        }
+""";
+
+    public static string TryParseExplicitMethod => """
+        private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
+            => T.TryParse(s, provider, out result);
+""";
+
+    public static string BindAsyncMethod => """
+        private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
+            where T : class, IBindableFromHttpContext<T>
+        {
+            return T.BindAsync(context, parameter);
+        }
+""";
+
+    public static string ResolveFromRouteOrQueryMethod => """
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
+                : (httpContext) => httpContext.Request.Query[parameterName];
+        }
+""";
+
+    public static string WriteToResponseAsyncMethod => """
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
+        {
+            var runtimeType = value?.GetType();
+            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
+            {
+                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
+            }
+
+            return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
+        }
+""";
+
+    public static string ResolveJsonBodyOrServiceMethod => """
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
+        {
+            if (serviceProviderIsService is not null)
+            {
+                if (serviceProviderIsService.IsService(typeof(T)))
+                {
+                    return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
+                }
+            }
+            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, isInferred: true);
+        }
+""";
+
+    public static string LogOrThrowExceptionHelperClass => $$"""
+    file class LogOrThrowExceptionHelper
+    {
+        private readonly ILogger? _rdgLogger;
+        private readonly bool _shouldThrow;
+
+        public LogOrThrowExceptionHelper(IServiceProvider? serviceProvider, RequestDelegateFactoryOptions? options)
+        {
+            var loggerFactory = serviceProvider?.GetRequiredService<ILoggerFactory>();
+            _rdgLogger = loggerFactory?.CreateLogger("{{typeof(RequestDelegateGenerator)}}");
+            _shouldThrow = options?.ThrowOnBadRequest ?? false;
+        }
+
+        public void RequestBodyIOException(IOException exception)
+        {
+            if (_rdgLogger != null)
+            {
+                _requestBodyIOException(_rdgLogger, exception);
+            }
+        }
+
+        private static readonly Action<ILogger, Exception?> _requestBodyIOException =
+            LoggerMessage.Define(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.RequestBodyIOExceptionEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequestBodyIOExceptionMessage, true)}});
+
+        public void InvalidJsonRequestBody(string parameterTypeName, string parameterName, Exception exception)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyExceptionMessage, true)}}, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _invalidJsonRequestBody(_rdgLogger, parameterTypeName, parameterName, exception);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _invalidJsonRequestBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.InvalidJsonRequestBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidJsonRequestBodyLogMessage, true)}});
+
+        public void ParameterBindingFailed(string parameterTypeName, string parameterName, string sourceValue)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedExceptionMessage, true)}}, parameterTypeName, parameterName, sourceValue);
+                throw new BadHttpRequestException(message);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _parameterBindingFailed(_rdgLogger, parameterTypeName, parameterName, sourceValue, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, string, Exception?> _parameterBindingFailed =
+            LoggerMessage.Define<string, string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.ParameterBindingFailedEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ParameterBindingFailedLogMessage, true)}});
+
+        public void RequiredParameterNotProvided(string parameterTypeName, string parameterName, string source)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedExceptionMessage, true)}}, parameterTypeName, parameterName, source);
+                throw new BadHttpRequestException(message);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _requiredParameterNotProvided(_rdgLogger, parameterTypeName, parameterName, source, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, string, Exception?> _requiredParameterNotProvided =
+            LoggerMessage.Define<string, string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.RequiredParameterNotProvidedEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.RequiredParameterNotProvidedLogMessage, true)}});
+
+        public void ImplicitBodyNotProvided(string parameterName)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedExceptionMessage, true)}}, parameterName);
+                throw new BadHttpRequestException(message);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _implicitBodyNotProvided(_rdgLogger, parameterName, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, Exception?> _implicitBodyNotProvided =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.ImplicitBodyNotProvidedLogMessage, true)}});
+
+        public void UnexpectedJsonContentType(string? contentType)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeExceptionMessage, true)}}, contentType);
+                throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedJsonContentType(_rdgLogger, contentType ?? "(none)", null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, Exception?> _unexpectedJsonContentType =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedJsonContentTypeLogMessage, true)}});
+
+        public void UnexpectedNonFormContentType(string? contentType)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedFormContentTypeExceptionMessage, true)}}, contentType);
+                throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedNonFormContentType(_rdgLogger, contentType ?? "(none)", null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, Exception?> _unexpectedNonFormContentType =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.UnexpectedFormContentTypeEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedFormContentTypeLogEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedFormContentTypeLogMessage, true)}});
+
+        public void InvalidFormRequestBody(string parameterTypeName, string parameterName, Exception exception)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyExceptionMessage, true)}}, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _invalidFormRequestBody(_rdgLogger, parameterTypeName, parameterName, exception);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, true)}});
+    }
+""";
+
+    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
@@ -47,19 +391,25 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Text.Json;
+    using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Json;
     using Microsoft.AspNetCore.Http.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
+    using Microsoft.Extensions.Options;
 
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
@@ -86,6 +436,9 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
         private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
         {
             if (obj is IResult r)
@@ -102,1416 +455,11 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
-        private static async ValueTask<(bool, T?)> TryResolveBody<T>(HttpContext httpContext, bool allowEmpty)
-        {
-            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
-
-            if (feature?.CanHaveBody == true)
-            {
-                if (!httpContext.Request.HasJsonContentType())
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (false, default);
-                }
-                try
-                {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
-                }
-                catch (IOException)
-                {
-                    return (false, default);
-                }
-                catch (System.Text.Json.JsonException)
-                {
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (false, default);
-                }
-            }
-            return (false, default);
-        }
+{{helperMethods}}
     }
 
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-
-        public int Count => 1;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-
-        public int Count => 2;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-
-        public int Count => 3;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-
-        public int Count => 4;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-            Arg4 = arg4;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                4 => Arg4,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                   case 4:
-                        Arg4 = (T4)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-        public T4 Arg4 { get; set; }
-
-        public int Count => 5;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               4 => (T)(object)Arg4!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-            Arg4 = arg4;
-            Arg5 = arg5;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                4 => Arg4,
-                5 => Arg5,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                   case 4:
-                        Arg4 = (T4)(object?)value!;
-                        break;
-                   case 5:
-                        Arg5 = (T5)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-        public T4 Arg4 { get; set; }
-        public T5 Arg5 { get; set; }
-
-        public int Count => 6;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               4 => (T)(object)Arg4!,
-               5 => (T)(object)Arg5!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-            Arg4 = arg4;
-            Arg5 = arg5;
-            Arg6 = arg6;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                4 => Arg4,
-                5 => Arg5,
-                6 => Arg6,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                   case 4:
-                        Arg4 = (T4)(object?)value!;
-                        break;
-                   case 5:
-                        Arg5 = (T5)(object?)value!;
-                        break;
-                   case 6:
-                        Arg6 = (T6)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-        public T4 Arg4 { get; set; }
-        public T5 Arg5 { get; set; }
-        public T6 Arg6 { get; set; }
-
-        public int Count => 7;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               4 => (T)(object)Arg4!,
-               5 => (T)(object)Arg5!,
-               6 => (T)(object)Arg6!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-            Arg4 = arg4;
-            Arg5 = arg5;
-            Arg6 = arg6;
-            Arg7 = arg7;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                4 => Arg4,
-                5 => Arg5,
-                6 => Arg6,
-                7 => Arg7,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                   case 4:
-                        Arg4 = (T4)(object?)value!;
-                        break;
-                   case 5:
-                        Arg5 = (T5)(object?)value!;
-                        break;
-                   case 6:
-                        Arg6 = (T6)(object?)value!;
-                        break;
-                   case 7:
-                        Arg7 = (T7)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-        public T4 Arg4 { get; set; }
-        public T5 Arg5 { get; set; }
-        public T6 Arg6 { get; set; }
-        public T7 Arg7 { get; set; }
-
-        public int Count => 8;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               4 => (T)(object)Arg4!,
-               5 => (T)(object)Arg5!,
-               6 => (T)(object)Arg6!,
-               7 => (T)(object)Arg7!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-            Arg4 = arg4;
-            Arg5 = arg5;
-            Arg6 = arg6;
-            Arg7 = arg7;
-            Arg8 = arg8;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                4 => Arg4,
-                5 => Arg5,
-                6 => Arg6,
-                7 => Arg7,
-                8 => Arg8,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                   case 4:
-                        Arg4 = (T4)(object?)value!;
-                        break;
-                   case 5:
-                        Arg5 = (T5)(object?)value!;
-                        break;
-                   case 6:
-                        Arg6 = (T6)(object?)value!;
-                        break;
-                   case 7:
-                        Arg7 = (T7)(object?)value!;
-                        break;
-                   case 8:
-                        Arg8 = (T8)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-        public T4 Arg4 { get; set; }
-        public T5 Arg5 { get; set; }
-        public T6 Arg6 { get; set; }
-        public T7 Arg7 { get; set; }
-        public T8 Arg8 { get; set; }
-
-        public int Count => 9;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               4 => (T)(object)Arg4!,
-               5 => (T)(object)Arg5!,
-               6 => (T)(object)Arg6!,
-               7 => (T)(object)Arg7!,
-               8 => (T)(object)Arg8!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
-    {{GeneratedCodeAttribute}}
-    file class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : EndpointFilterInvocationContext, IList<object?>
-    {
-        internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
-        {
-            HttpContext = httpContext;
-            Arg0 = arg0;
-            Arg1 = arg1;
-            Arg2 = arg2;
-            Arg3 = arg3;
-            Arg4 = arg4;
-            Arg5 = arg5;
-            Arg6 = arg6;
-            Arg7 = arg7;
-            Arg8 = arg8;
-            Arg9 = arg9;
-        }
-
-        public object? this[int index]
-        {
-            get => index switch
-            {
-                0 => Arg0,
-                1 => Arg1,
-                2 => Arg2,
-                3 => Arg3,
-                4 => Arg4,
-                5 => Arg5,
-                6 => Arg6,
-                7 => Arg7,
-                8 => Arg8,
-                9 => Arg9,
-                _ => new IndexOutOfRangeException()
-            };
-            set
-            {
-                switch (index)
-                {
-                   case 0:
-                        Arg0 = (T0)(object?)value!;
-                        break;
-                   case 1:
-                        Arg1 = (T1)(object?)value!;
-                        break;
-                   case 2:
-                        Arg2 = (T2)(object?)value!;
-                        break;
-                   case 3:
-                        Arg3 = (T3)(object?)value!;
-                        break;
-                   case 4:
-                        Arg4 = (T4)(object?)value!;
-                        break;
-                   case 5:
-                        Arg5 = (T5)(object?)value!;
-                        break;
-                   case 6:
-                        Arg6 = (T6)(object?)value!;
-                        break;
-                   case 7:
-                        Arg7 = (T7)(object?)value!;
-                        break;
-                   case 8:
-                        Arg8 = (T8)(object?)value!;
-                        break;
-                   case 9:
-                        Arg9 = (T9)(object?)value!;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public override HttpContext HttpContext { get; }
-
-        public override IList<object?> Arguments => this;
-
-        public T0 Arg0 { get; set; }
-        public T1 Arg1 { get; set; }
-        public T2 Arg2 { get; set; }
-        public T3 Arg3 { get; set; }
-        public T4 Arg4 { get; set; }
-        public T5 Arg5 { get; set; }
-        public T6 Arg6 { get; set; }
-        public T7 Arg7 { get; set; }
-        public T8 Arg8 { get; set; }
-        public T9 Arg9 { get; set; }
-
-        public int Count => 10;
-
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => true;
-
-        public void Add(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Contains(object? item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(object?[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                array[arrayIndex++] = Arguments[i];
-            }
-        }
-
-        public IEnumerator<object?> GetEnumerator()
-        {
-            for (int i = 0; i < Arguments.Count; i++)
-            {
-                yield return Arguments[i];
-            }
-        }
-
-        public override T GetArgument<T>(int index)
-        {
-            return index switch
-            {
-               0 => (T)(object)Arg0!,
-               1 => (T)(object)Arg1!,
-               2 => (T)(object)Arg2!,
-               3 => (T)(object)Arg3!,
-               4 => (T)(object)Arg4!,
-               5 => (T)(object)Arg5!,
-               6 => (T)(object)Arg6!,
-               7 => (T)(object)Arg7!,
-               8 => (T)(object)Arg8!,
-               9 => (T)(object)Arg9!,
-               _ => throw new IndexOutOfRangeException()
-            };
-        }
-
-        public int IndexOf(object? item)
-        {
-            return Arguments.IndexOf(item);
-        }
-
-        public void Insert(int index, object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(object? item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
+{{helperTypes}}
+{{LogOrThrowExceptionHelperClass}}
 }
 """;
     private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""

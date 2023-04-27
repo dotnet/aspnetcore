@@ -2,13 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Metrics;
 using Moq;
 using static Microsoft.AspNetCore.Hosting.HostingApplication;
 
@@ -16,6 +20,128 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 
 public class HostingApplicationTests
 {
+    [Fact]
+    public void Metrics()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+        var meter = meterFactory.Meters.Single();
+
+        using var requestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, HostingMetrics.MeterName, "request-duration");
+        using var currentRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, HostingMetrics.MeterName, "current-requests");
+
+        // Act/Assert
+        Assert.Equal(HostingMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        // Request 1 (after success)
+        httpContext.Request.Protocol = HttpProtocol.Http11;
+        var context1 = hostingApplication.CreateContext(httpContext.Features);
+        context1.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+        hostingApplication.DisposeContext(context1, null);
+
+        Assert.Collection(currentRequestsRecorder.GetMeasurements(),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value));
+        Assert.Collection(requestDurationRecorder.GetMeasurements(),
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK));
+
+        // Request 2 (after failure)
+        httpContext.Request.Protocol = HttpProtocol.Http2;
+        var context2 = hostingApplication.CreateContext(httpContext.Features);
+        context2.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        hostingApplication.DisposeContext(context2, new InvalidOperationException("Test error"));
+
+        Assert.Collection(currentRequestsRecorder.GetMeasurements(),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value));
+        Assert.Collection(requestDurationRecorder.GetMeasurements(),
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
+            m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"));
+
+        // Request 3
+        httpContext.Request.Protocol = HttpProtocol.Http3;
+        var context3 = hostingApplication.CreateContext(httpContext.Features);
+        context3.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+
+        Assert.Collection(currentRequestsRecorder.GetMeasurements(),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value),
+            m => Assert.Equal(1, m.Value));
+        Assert.Collection(requestDurationRecorder.GetMeasurements(),
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
+            m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"));
+
+        hostingApplication.DisposeContext(context3, null);
+
+        Assert.Collection(currentRequestsRecorder.GetMeasurements(),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value),
+            m => Assert.Equal(1, m.Value),
+            m => Assert.Equal(-1, m.Value));
+        Assert.Collection(requestDurationRecorder.GetMeasurements(),
+            m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
+            m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"),
+            m => AssertRequestDuration(m, HttpProtocol.Http3, StatusCodes.Status200OK));
+
+        static void AssertRequestDuration(Measurement<double> measurement, string protocol, int statusCode, string exceptionName = null)
+        {
+            Assert.True(measurement.Value > 0);
+            Assert.Equal(protocol, (string)measurement.Tags.ToArray().Single(t => t.Key == "protocol").Value);
+            Assert.Equal(statusCode, (int)measurement.Tags.ToArray().Single(t => t.Key == "status-code").Value);
+            if (exceptionName == null)
+            {
+                Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "exception-name");
+            }
+            else
+            {
+                Assert.Equal(exceptionName, (string)measurement.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+            }
+        }
+    }
+
+    [Fact]
+    public void IHttpMetricsTagsFeatureNotUsedFromFeatureCollection()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+        var meter = meterFactory.Meters.Single();
+
+        using var requestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, HostingMetrics.MeterName, "request-duration");
+        using var currentRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, HostingMetrics.MeterName, "current-requests");
+
+        // Act/Assert
+        Assert.Equal(HostingMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        // This feature will be overidden by hosting. Hosting is the owner of the feature and is resposible for setting it.
+        var overridenFeature = new TestHttpMetricsTagsFeature();
+        httpContext.Features.Set<IHttpMetricsTagsFeature>(overridenFeature);
+
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        var contextFeature = httpContext.Features.Get<IHttpMetricsTagsFeature>();
+
+        Assert.NotNull(contextFeature);
+        Assert.NotEqual(overridenFeature, contextFeature);
+    }
+
+    private sealed class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new Collection<KeyValuePair<string, object>>();
+    }
+
     [Fact]
     public void DisposeContextDoesNotClearHttpContextIfDefaultHttpContextFactoryUsed()
     {
@@ -112,7 +238,9 @@ public class HostingApplicationTests
         var initialActivity = Activity.Current;
 
         // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
+        using var dummyActivity = dummySource.StartActivity("DummyActivity");
+        Assert.NotNull(dummyActivity);
+        Assert.Equal(Activity.Current, dummyActivity);
 
         Assert.Same(initialActivity, activityFeature.Activity);
         Assert.Null(activityFeature.Activity.ParentId);
@@ -129,8 +257,7 @@ public class HostingApplicationTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38736")]
-    public void IHttpActivityFeatureIsAssignedToIfItExists()
+    public void IHttpActivityFeatureNotUsedFromFeatureCollection()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var dummySource = new ActivitySource(Path.GetRandomFileName());
@@ -144,26 +271,19 @@ public class HostingApplicationTests
 
         var hostingApplication = CreateApplication(activitySource: testSource);
         var httpContext = new DefaultHttpContext();
-        httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
+
+        // This feature will be overidden by hosting. Hosting is the owner of the feature and is resposible for setting it.
+        var overridenFeature = new TestHttpActivityFeature();
+        httpContext.Features.Set<IHttpActivityFeature>(overridenFeature);
+
         var context = hostingApplication.CreateContext(httpContext.Features);
 
-        var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
-        Assert.NotNull(activityFeature);
-        Assert.IsType<TestHttpActivityFeature>(activityFeature);
-        Assert.NotNull(activityFeature.Activity);
-        Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
-        var initialActivity = Activity.Current;
+        var contextFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
+        Assert.NotNull(contextFeature);
+        Assert.NotNull(contextFeature.Activity);
+        Assert.Equal(HostingApplicationDiagnostics.ActivityName, contextFeature.Activity.DisplayName);
 
-        // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
-
-        Assert.Same(initialActivity, activityFeature.Activity);
-        Assert.Null(activityFeature.Activity.ParentId);
-        Assert.Equal(activityFeature.Activity.Id, Activity.Current.ParentId);
-        Assert.NotEqual(Activity.Current, activityFeature.Activity);
-
-        // Act/Assert
-        hostingApplication.DisposeContext(context, null);
+        Assert.NotEqual(overridenFeature, contextFeature);
     }
 
     [Fact]
@@ -183,7 +303,7 @@ public class HostingApplicationTests
     }
 
     private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,
-        ActivitySource activitySource = null)
+        ActivitySource activitySource = null, IMeterFactory meterFactory = null)
     {
         var services = new ServiceCollection();
         services.AddOptions();
@@ -200,7 +320,9 @@ public class HostingApplicationTests
             new DiagnosticListener("Microsoft.AspNetCore"),
             activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
             DistributedContextPropagator.CreateDefaultPropagator(),
-            httpContextFactory);
+            httpContextFactory,
+            HostingEventSource.Log,
+            new HostingMetrics(meterFactory ?? new TestMeterFactory()));
 
         return hostingApplication;
     }

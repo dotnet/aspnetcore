@@ -13,6 +13,8 @@
     -->
     <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.server.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.server.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.web.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.web.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.webassembly.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.webassembly.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.webview.js" />

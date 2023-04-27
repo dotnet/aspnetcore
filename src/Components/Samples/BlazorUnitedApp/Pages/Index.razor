@@ -1,0 +1,27 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+@* <CascadingModelBinder Name="Page" Context="pageContext">
+    <CascadingModelBinder Name="Navigation" Context="bindingContext">
+        <EditForm FormHandlerName="Action" method="POST" Model="new object()" OnValidSubmit="Submit">
+            <input type="submit" value="Process form" />
+        </EditForm>
+    </CascadingModelBinder>
+</CascadingModelBinder> *@
+
+
+@if (_submitted)
+{
+    <p>Submited.</p>
+}
+
+@code{
+    bool _submitted = false;
+    public void Submit()
+    {
+        _submitted = true;
+    }
+}

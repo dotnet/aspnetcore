@@ -112,7 +112,7 @@ FILE_WATCHER::Create(
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
         NULL);
 
-    RETURN_LAST_ERROR_IF_NULL(_hDirectory);
+    RETURN_LAST_ERROR_IF(_hDirectory == INVALID_HANDLE_VALUE);
 
     RETURN_LAST_ERROR_IF_NULL(CreateIoCompletionPort(
         _hDirectory,

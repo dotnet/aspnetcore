@@ -2,13 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -185,7 +190,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             Assert.Same(newConnection, connection);
             Assert.Same(transport, newConnection.Transport);
 
-            connectionManager.RemoveConnection(connection.ConnectionToken);
+            connectionManager.RemoveConnection(connection.ConnectionToken, connection.TransportType, HttpConnectionStopStatus.Timeout);
             Assert.False(connectionManager.TryGetConnection(connection.ConnectionToken, out newConnection));
         }
     }
@@ -419,10 +424,43 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null)
+    [Fact]
+    public void Metrics()
     {
-        lifetime = lifetime ?? new EmptyApplicationLifetime();
-        return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(new ConnectionOptions()));
+        using (StartVerifiableLog())
+        {
+            var testMeterFactory = new TestMeterFactory();
+            using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-connections");
+
+            var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
+            var connection = connectionManager.CreateConnection();
+
+            Assert.NotNull(connection.ConnectionId);
+
+            Assert.Empty(connectionDuration.GetMeasurements());
+            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value));
+
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
+
+            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
+            Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.WebSockets));
+        }
+    }
+
+    private static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
+    {
+        Assert.True(measurement.Value > 0);
+        Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+    }
+
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null, HttpConnectionsMetrics metrics = null)
+    {
+        lifetime ??= new EmptyApplicationLifetime();
+        return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(new ConnectionOptions()), metrics ?? new HttpConnectionsMetrics(new TestMeterFactory()));
     }
 
     [Flags]
