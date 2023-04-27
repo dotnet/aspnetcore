@@ -586,32 +586,3 @@ internal class EndpointParameter
         return hashCode.ToHashCode();
     }
 }
-
-internal sealed class ParameterLookupKey
-{
-    public ParameterLookupKey(string name, ITypeSymbol type)
-    {
-        Name = name;
-        Type = type;
-    }
-
-    public string Name { get; }
-    public ITypeSymbol Type { get; }
-
-    public override int GetHashCode()
-    {
-        return StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
-    }
-
-    public override bool Equals([NotNullWhen(true)] object? obj)
-    {
-        if (obj is ParameterLookupKey other)
-        {
-            return SymbolEqualityComparer.Default.Equals(Type, other.Type) &&
-                string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
-        }
-        return false;
-    }
-}
-
-internal record ConstructorParameter(IPropertySymbol Property, IParameterSymbol? Parameter);
