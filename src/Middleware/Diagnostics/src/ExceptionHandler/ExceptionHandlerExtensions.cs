@@ -97,6 +97,7 @@ public static class ExceptionHandlerExtensions
             {
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
                 var diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                var exceptionHandlers = app.ApplicationServices.GetRequiredService<IEnumerable<IExceptionHandler>>();
 
                 if (options is null)
                 {
@@ -110,7 +111,7 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = newNext;
                 }
 
-                return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;
+                return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, exceptionHandlers, problemDetailsService).Invoke;
             });
         }
 

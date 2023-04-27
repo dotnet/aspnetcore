@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -37,5 +38,16 @@ public static class ExceptionHandlerServiceCollectionExtensions
 
         services.AddOptions<ExceptionHandlerOptions>().Configure(configureOptions);
         return services;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddExceptionHandler<T>(this IServiceCollection services) where T : class, IExceptionHandler
+    {
+        return services.AddSingleton<IExceptionHandler, T>();
     }
 }
