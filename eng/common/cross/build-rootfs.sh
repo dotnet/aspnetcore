@@ -330,7 +330,7 @@ while :; do
             ;;
         freebsd13)
             __CodeName=freebsd
-            __FreeBSDBase="13.0-RELEASE"
+            __FreeBSDBase="13.2-RELEASE"
             __FreeBSDABI="13"
             __SkipUnmount=1
             ;;
