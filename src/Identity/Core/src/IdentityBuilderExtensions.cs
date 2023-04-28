@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -36,6 +38,7 @@ public static class IdentityBuilderExtensions
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(builder.UserType));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
     }
 
     /// <summary>
@@ -74,5 +77,21 @@ public static class IdentityBuilderExtensions
         }
         builder.Services.AddScoped(managerType, typeof(TSignInManager));
         return builder;
+    }
+
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
+    private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
+    {
+        public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider TimeProvider { get; }
+
+        public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
+        }
     }
 }

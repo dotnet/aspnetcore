@@ -30,7 +30,10 @@ public class InputRadioTest
         var model = new TestModel();
         var rootComponent = new TestInputRadioHostComponent<TestEnum>
         {
-            EditContext = new EditContext(model),
+            EditContext = new EditContext(model)
+            {
+                ShouldUseFieldIdentifiers = false,
+            },
             InnerContent = RadioButtonsWithGroup(null, () => model.TestEnum)
         };
 

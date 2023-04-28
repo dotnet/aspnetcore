@@ -23,6 +23,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Metrics;
 using Moq;
 
@@ -1341,6 +1342,26 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
     }
 
+    [Theory]
+    [InlineData("no_extensions.pfx")]
+    public void LogsForCertificateMissingSubjectAlternativeName(string testCertName)
+    {
+        var certPath = TestResources.GetCertPath(testCertName);
+        TestOutputHelper.WriteLine("Loading " + certPath);
+        var cert = new X509Certificate2(certPath, "testPassword");
+        Assert.False(CertificateLoader.DoesCertificateHaveASubjectAlternativeName(cert));
+
+        var testLogger = new TestApplicationErrorLogger();
+        CreateMiddleware(
+            new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = cert,
+            },
+            testLogger);
+
+        Assert.Single(testLogger.Messages.Where(log => log.EventId == 9));
+    }
+
     [ConditionalTheory]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
@@ -1440,6 +1461,12 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         {
             ServerCertificate = serverCertificate,
         });
+    }
+
+    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options, TestApplicationErrorLogger testLogger = null)
+    {
+        var loggerFactory = testLogger is null ? (ILoggerFactory)NullLoggerFactory.Instance : new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) });
+        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, loggerFactory, new KestrelMetrics(new TestMeterFactory()));
     }
 
     private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options)

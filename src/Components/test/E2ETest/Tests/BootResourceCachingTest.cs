@@ -19,7 +19,7 @@ public class BootResourceCachingTest
     : ServerTestBase<AspNetSiteServerFixture>
 {
     // The cache name is derived from the application's base href value (in this case, '/')
-    private const string CacheName = "blazor-resources-/";
+    private const string CacheName = "dotnet-resources-/";
 
     public BootResourceCachingTest(
         BrowserFixture browserFixture,

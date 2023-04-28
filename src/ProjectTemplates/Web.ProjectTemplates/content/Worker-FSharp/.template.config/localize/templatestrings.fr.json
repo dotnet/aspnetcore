@@ -6,8 +6,6 @@
   "symbols/Framework/description": "Framework cible du projet.",
   "symbols/Framework/choices/net8.0/description": "Cible net8.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
-  "symbols/NativeAot/displayName": "Enable _native AOT publish",
-  "symbols/NativeAot/description": "Whether to enable the project for publishing as native AOT.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »"
 }

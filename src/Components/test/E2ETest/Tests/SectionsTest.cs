@@ -144,6 +144,33 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
+    public void SectionContentWithSectionNameGetsDisposed_OldSectionOutletNoLongerRendersContent()
+    {
+        _appElement.FindElement(By.Id("section-content-with-name")).Click();
+
+        Browser.Exists(By.Id("test6"));
+
+        _appElement.FindElement(By.Id("section-content-with-name-dispose")).Click();
+
+        Browser.DoesNotExist(By.Id("test6"));
+    }
+
+    [Fact]
+    public void SectionOutletWithSectionNameGetsDisposed_ContentDissapears()
+    {
+        // Render Counter and change its id so the content is rendered in second SectionOutlet
+        _appElement.FindElement(By.Id("counter-render-section-content")).Click();
+
+        _appElement.FindElement(By.Id("counter-change-section-content-id")).Click();
+
+        Browser.Exists(By.Id("counter"));
+
+        _appElement.FindElement(By.Id("second-section-outlet-dispose")).Click();
+
+        Browser.DoesNotExist(By.Id("counter"));
+    }
+
+    [Fact]
     public void RenderTwoSectionContentsWithSameSectionId_LastRenderedOverridesSectionOutletContent()
     {
         _appElement.FindElement(By.Id("counter-render-section-content")).Click();

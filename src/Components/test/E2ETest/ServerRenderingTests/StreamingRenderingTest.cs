@@ -1,14 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
-using OpenQA.Selenium;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
+namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
 public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup>>
 {

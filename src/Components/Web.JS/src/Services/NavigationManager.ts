@@ -90,10 +90,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
       let anchorHref = anchorTarget.getAttribute('href')!; 
-      if (anchorHref.startsWith('#')) {
-        // Preserve the existing URL but set the hash to match the link that was clicked
-        anchorHref = `${location.origin}${location.pathname}${location.search}${anchorHref}`;
-      }
 
       const absoluteHref = toAbsoluteUri(anchorHref);     
 

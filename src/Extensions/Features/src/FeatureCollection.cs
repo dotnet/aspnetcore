@@ -117,6 +117,17 @@ public class FeatureCollection : IFeatureCollection
     /// <inheritdoc />
     public TFeature? Get<TFeature>()
     {
+        if (typeof(TFeature).IsValueType)
+        {
+            var feature = this[typeof(TFeature)];
+            if (feature is null && Nullable.GetUnderlyingType(typeof(TFeature)) is null)
+            {
+                throw new InvalidOperationException(
+                    $"{typeof(TFeature).FullName} does not exist in the feature collection " +
+                    $"and because it is a struct the method can't return null. Use 'featureCollection[typeof({typeof(TFeature).FullName})] is not null' to check if the feature exists.");
+            }
+            return (TFeature?)feature;
+        }
         return (TFeature?)this[typeof(TFeature)];
     }
 

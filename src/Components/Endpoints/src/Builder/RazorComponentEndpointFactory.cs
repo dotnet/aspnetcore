@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class RazorComponentEndpointFactory
 {
-    private static readonly HttpMethodMetadata HttpGet = new(new[] { HttpMethods.Get });
+    private static readonly HttpMethodMetadata HttpMethodsMetadata = new(new[] { HttpMethods.Get, HttpMethods.Post });
 
 #pragma warning disable CA1822 // It's a singleton
     internal void AddEndpoints(
@@ -36,7 +36,7 @@ internal class RazorComponentEndpointFactory
 
         // We do not support link generation, so explicitly opt-out.
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
-        builder.Metadata.Add(HttpGet);
+        builder.Metadata.Add(HttpMethodsMetadata);
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
 
         foreach (var convention in conventions)
@@ -55,16 +55,8 @@ internal class RazorComponentEndpointFactory
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
 
-        builder.RequestDelegate = CreateRouteDelegate(pageDefinition.Type);
+        builder.RequestDelegate = httpContext => new RazorComponentEndpointInvoker(httpContext, pageDefinition.Type).RenderComponent();
 
         endpoints.Add(builder.Build());
-    }
-
-    private static RequestDelegate CreateRouteDelegate(Type componentType)
-    {
-        return httpContext =>
-        {
-            return new RazorComponentEndpointInvoker(httpContext, componentType).RenderComponent();
-        };
     }
 }

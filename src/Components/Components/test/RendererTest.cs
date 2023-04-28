@@ -1333,8 +1333,9 @@ public class RendererTest
     {
         // Arrange
         var renderer = new TestRenderer();
-        var parentComponent = new OuterEventComponent();
-        parentComponent.RenderFragment = (builder) =>
+        var parentComponent = new OuterEventComponent
+        {
+            RenderFragment = (builder) =>
         {
             builder.OpenComponent<EventComponent>(0);
             builder.AddComponentParameter(1, nameof(EventComponent.OnClickAction), (Action)(() =>
@@ -1342,6 +1343,7 @@ public class RendererTest
                 // Do nothing.
             }));
             builder.CloseComponent();
+        }
         };
 
         var parentComponentId = renderer.AssignRootComponentId(parentComponent);
@@ -1432,8 +1434,9 @@ public class RendererTest
     {
         // Arrange
         var renderer = new TestRenderer();
-        var parentComponent = new OuterEventComponent();
-        parentComponent.RenderFragment = (builder) =>
+        var parentComponent = new OuterEventComponent
+        {
+            RenderFragment = (builder) =>
         {
             builder.OpenComponent<EventComponent>(0);
             builder.AddComponentParameter(1, nameof(EventComponent.OnClickAction), (Action)(() =>
@@ -1441,6 +1444,7 @@ public class RendererTest
                 throw new OperationCanceledException();
             }));
             builder.CloseComponent();
+        }
         };
 
         var parentComponentId = renderer.AssignRootComponentId(parentComponent);
@@ -1532,8 +1536,9 @@ public class RendererTest
     {
         // Arrange
         var renderer = new TestRenderer();
-        var parentComponent = new OuterEventComponent();
-        parentComponent.RenderFragment = (builder) =>
+        var parentComponent = new OuterEventComponent
+        {
+            RenderFragment = (builder) =>
         {
             builder.OpenComponent<EventComponent>(0);
             builder.AddComponentParameter(1, nameof(EventComponent.OnClickAction), (Action)(() =>
@@ -1541,6 +1546,7 @@ public class RendererTest
                 throw new InvalidTimeZoneException();
             }));
             builder.CloseComponent();
+        }
         };
 
         var parentComponentId = renderer.AssignRootComponentId(parentComponent);
@@ -1634,8 +1640,9 @@ public class RendererTest
         var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
-        var parentComponent = new OuterEventComponent();
-        parentComponent.RenderFragment = (builder) =>
+        var parentComponent = new OuterEventComponent
+        {
+            RenderFragment = (builder) =>
         {
             builder.OpenComponent<EventComponent>(0);
             builder.AddComponentParameter(1, nameof(EventComponent.OnClickAsyncAction), (Func<Task>)(async () =>
@@ -1643,6 +1650,7 @@ public class RendererTest
                 await tcs.Task;
             }));
             builder.CloseComponent();
+        }
         };
 
         var parentComponentId = renderer.AssignRootComponentId(parentComponent);
@@ -1743,8 +1751,9 @@ public class RendererTest
         var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
-        var parentComponent = new OuterEventComponent();
-        parentComponent.RenderFragment = (builder) =>
+        var parentComponent = new OuterEventComponent
+        {
+            RenderFragment = (builder) =>
         {
             builder.OpenComponent<EventComponent>(0);
             builder.AddComponentParameter(1, nameof(EventComponent.OnClickAsyncAction), (Func<Task>)(async () =>
@@ -1753,6 +1762,7 @@ public class RendererTest
                 throw new TaskCanceledException();
             }));
             builder.CloseComponent();
+        }
         };
 
         var parentComponentId = renderer.AssignRootComponentId(parentComponent);
@@ -1861,8 +1871,9 @@ public class RendererTest
         var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
-        var parentComponent = new OuterEventComponent();
-        parentComponent.RenderFragment = (builder) =>
+        var parentComponent = new OuterEventComponent
+        {
+            RenderFragment = (builder) =>
         {
             builder.OpenComponent<EventComponent>(0);
             builder.AddComponentParameter(1, nameof(EventComponent.OnClickAsyncAction), (Func<Task>)(async () =>
@@ -1871,6 +1882,7 @@ public class RendererTest
                 throw new InvalidTimeZoneException();
             }));
             builder.CloseComponent();
+        }
         };
 
         var parentComponentId = renderer.AssignRootComponentId(parentComponent);
@@ -2365,8 +2377,11 @@ public class RendererTest
     {
         // Arrange
         var semaphore = new Semaphore(0, 1);
-        var renderer = new TestRenderer { ShouldHandleExceptions = true };
-        renderer.OnExceptionHandled = () => semaphore.Release();
+        var renderer = new TestRenderer
+        {
+            ShouldHandleExceptions = true,
+            OnExceptionHandled = () => semaphore.Release()
+        };
         var exception1 = new InvalidOperationException();
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -2407,8 +2422,11 @@ public class RendererTest
     {
         // Arrange
         var semaphore = new Semaphore(0, 1);
-        var renderer = new TestRenderer { ShouldHandleExceptions = true };
-        renderer.OnExceptionHandled = () => semaphore.Release();
+        var renderer = new TestRenderer
+        {
+            ShouldHandleExceptions = true,
+            OnExceptionHandled = () => semaphore.Release()
+        };
         var exception1 = new InvalidOperationException();
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -2855,7 +2873,7 @@ public class RendererTest
         var component = new TestComponent(builder => { });
 
         // Act/Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
+        var ex = Assert.Throws<InvalidOperationException>(component.TriggerRender);
         Assert.Equal("The render handle is not yet assigned.", ex.Message);
     }
 
@@ -3272,7 +3290,7 @@ public class RendererTest
         var onAfterRenderCallCountLog = new List<int>();
         var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
         {
-            OnAfterRenderComplete = () => @event.Set(),
+            OnAfterRenderComplete = @event.Set,
         };
         var renderer = new AsyncUpdateTestRenderer()
         {
@@ -3301,7 +3319,7 @@ public class RendererTest
         var onAfterRenderCallCountLog = new List<int>();
         var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
         {
-            OnAfterRenderComplete = () => @event.Set(),
+            OnAfterRenderComplete = @event.Set,
         };
         var renderer = new AsyncUpdateTestRenderer()
         {
@@ -3639,7 +3657,7 @@ public class RendererTest
         var renderer = new TestRenderer()
         {
             ShouldHandleExceptions = true,
-            OnExceptionHandled = () => { @event.Set(); },
+            OnExceptionHandled = @event.Set,
         };
         var taskToAwait = Task.CompletedTask;
         var component = new TestComponent(builder =>
@@ -4357,14 +4375,7 @@ public class RendererTest
     {
         // Arrange
         var renderer = new InvalidRecursiveRenderer();
-        var component = new CallbackOnRenderComponent(() =>
-        {
-            // The renderer disallows one batch to be started inside another, because that
-            // would violate all kinds of state tracking invariants. It's not something that
-            // would ever happen except if you subclass the renderer and do something unsupported
-            // that commences batches from inside each other.
-            renderer.ProcessPendingRender();
-        });
+        var component = new CallbackOnRenderComponent(renderer.ProcessPendingRender);
         var componentId = renderer.AssignRootComponentId(component);
 
         // Act/Assert
@@ -4399,7 +4410,7 @@ public class RendererTest
         Assert.Throws<InvalidOperationException>(() => parameterView.GetEnumerator());
         Assert.Throws<InvalidOperationException>(() => parameterView.GetValueOrDefault<object>("anything"));
         Assert.Throws<InvalidOperationException>(() => parameterView.SetParameterProperties(new object()));
-        Assert.Throws<InvalidOperationException>(() => parameterView.ToDictionary());
+        Assert.Throws<InvalidOperationException>(parameterView.ToDictionary);
         var ex = Assert.Throws<InvalidOperationException>(() => parameterView.TryGetValue<object>("anything", out _));
 
         // It's enough to assert about one of the messages
@@ -4834,8 +4845,11 @@ public class RendererTest
     {
         // Arrange
         var autoResetEvent = new AutoResetEvent(false);
-        var renderer = new TestRenderer { ShouldHandleExceptions = true };
-        renderer.OnExceptionHandled = () => autoResetEvent.Set();
+        var renderer = new TestRenderer
+        {
+            ShouldHandleExceptions = true,
+            OnExceptionHandled = () => autoResetEvent.Set()
+        };
         var exception1 = new InvalidTimeZoneException();
         var exception2Tcs = new TaskCompletionSource();
         var rootComponent = new TestComponent(builder =>
@@ -4963,6 +4977,244 @@ public class RendererTest
 
         // Assert
         Assert.False(hotReloadManager.IsSubscribedTo);
+    }
+
+    [Fact]
+    public void DoesNotTrackNamedEventHandlersWhenNotEnabled()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
+        renderer.OnNamedEvent = namedEvents.Add;
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.CloseElement();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var diff = batch.DiffsByComponentId[componentId].Single();
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
+        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
+
+        Assert.Empty(namedEvents);
+    }
+
+    [Fact]
+    public void CanCreateNamedEventHandlers()
+    {
+        // Arrange
+        var renderer = new TestRenderer
+        {
+            TrackNamedEventHandlers = true
+        };
+        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
+        renderer.OnNamedEvent = namedEvents.Add;
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.CloseElement();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var diff = batch.DiffsByComponentId[componentId].Single();
+        var evt = Assert.Single(namedEvents);
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
+        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
+        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, evt.eventHandlerId);
+        Assert.Equal("MyFormSubmit", evt.eventHandlerName);
+        Assert.Equal(componentId, evt.componentId);
+    }
+
+    [Fact]
+    public void CanCreateMultipleNamedEventHandlersPerComponent()
+    {
+        // Arrange
+        var renderer = new TestRenderer
+        {
+            TrackNamedEventHandlers = true
+        };
+        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
+        renderer.OnNamedEvent = namedEvents.Add;
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.CloseElement();
+            builder.OpenElement(2, "form");
+            builder.AddAttribute(3, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyOtherFormSubmit");
+            builder.CloseElement();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var diff = batch.DiffsByComponentId[componentId].Single();
+        Assert.Equal(2, namedEvents.Count);
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            },
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(2, edit.ReferenceFrameIndex);
+            });
+
+        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
+        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
+        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, namedEvents[0].eventHandlerId);
+        Assert.Equal("MyFormSubmit", namedEvents[0].eventHandlerName);
+        Assert.Equal(componentId, namedEvents[0].componentId);
+
+        AssertFrame.Element(batch.ReferenceFrames[2], "form", 2);
+        AssertFrame.Attribute(batch.ReferenceFrames[3], "onsubmit");
+        Assert.Equal(batch.ReferenceFrames[3].AttributeEventHandlerId, namedEvents[1].eventHandlerId);
+        Assert.Equal("MyOtherFormSubmit", namedEvents[1].eventHandlerName);
+        Assert.Equal(componentId, namedEvents[1].componentId);
+    }
+
+    [Fact]
+    public void CanCreateMultipleNamedEventHandlersPerElement()
+    {
+        // Arrange
+        var renderer = new TestRenderer
+        {
+            TrackNamedEventHandlers = true
+        };
+        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
+        renderer.OnNamedEvent = namedEvents.Add;
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.AddAttribute(2, "onclick", () => { });
+            builder.SetEventHandlerName("MyFormClick");
+            builder.CloseElement();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var diff = batch.DiffsByComponentId[componentId].Single();
+        Assert.Equal(2, namedEvents.Count);
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+        AssertFrame.Element(batch.ReferenceFrames[0], "form", 3);
+        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
+        AssertFrame.Attribute(batch.ReferenceFrames[2], "onclick");
+
+        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, namedEvents[0].eventHandlerId);
+        Assert.Equal("MyFormSubmit", namedEvents[0].eventHandlerName);
+        Assert.Equal(componentId, namedEvents[0].componentId);
+
+        Assert.Equal(batch.ReferenceFrames[2].AttributeEventHandlerId, namedEvents[1].eventHandlerId);
+        Assert.Equal("MyFormClick", namedEvents[1].eventHandlerName);
+        Assert.Equal(componentId, namedEvents[1].componentId);
+    }
+
+    [Fact]
+    public void DuplicateNamedEventHandlersOnComponentThrows()
+    {
+        // Arrange
+        var renderer = new TestRenderer
+        {
+            TrackNamedEventHandlers = true
+        };
+        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
+        renderer.OnNamedEvent = namedEvents.Add;
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.CloseElement();
+            builder.OpenElement(2, "form");
+            builder.AddAttribute(3, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.CloseElement();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+
+        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
+        Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
+    }
+
+    [Fact]
+    public void DuplicateNamedEventHandlersOnElementThrows()
+    {
+        // Arrange
+        var renderer = new TestRenderer
+        {
+            TrackNamedEventHandlers = true
+        };
+        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
+        renderer.OnNamedEvent = namedEvents.Add;
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.AddAttribute(2, "onclick", () => { });
+            builder.SetEventHandlerName("MyFormSubmit");
+            builder.CloseElement();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+
+        // Assert
+        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
+        Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
     }
 
     private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
