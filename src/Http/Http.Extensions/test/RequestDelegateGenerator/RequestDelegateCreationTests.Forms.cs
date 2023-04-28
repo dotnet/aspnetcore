@@ -41,14 +41,11 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         var formFilesArgument = Assert.IsAssignableFrom<IFormFileCollection>(httpContext.Items["formFiles"]);
         Assert.NotNull(formFilesArgument!["file"]);
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
 
-            Assert.NotNull(acceptsMetadata);
-            Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
-        }
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
     [Fact]
@@ -78,14 +75,11 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         var formFiles = Assert.IsAssignableFrom<IFormFileCollection>(httpContext.Items["formFiles"]);
         Assert.NotNull(formFiles["file"]);
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
 
-            Assert.NotNull(acceptsMetadata);
-            Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
-        }
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
     [Fact]
@@ -231,14 +225,11 @@ app.MapPost("/", (IFormFile? file1, IFormFile? file2, HttpContext httpContext) =
         Assert.Equal(httpContext.Request.Form.Files["file2"], httpContext.Items["file2"]);
         Assert.Null(httpContext.Items["file2"]);
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
 
-            Assert.NotNull(acceptsMetadata);
-            Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
-        }
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
     [Fact]
@@ -414,14 +405,11 @@ app.MapPost("/", (IFormFile file, IFormFileCollection formFiles, HttpContext htt
         Assert.Equal("file.txt", fileArgument!.FileName);
         Assert.Equal("file", fileArgument.Name);
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
 
-            Assert.NotNull(acceptsMetadata);
-            Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
-        }
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
     }
 
     [Theory]
@@ -571,14 +559,11 @@ app.MapPost("/", (IFormCollection formFiles, HttpContext httpContext) =>
                 Assert.Equal("foo", item.Value);
             });
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
 
-            Assert.NotNull(acceptsMetadata);
-            Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
-        }
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
     }
 
     [Theory]
@@ -621,14 +606,11 @@ app.MapPost("/", ([FromForm] IFormCollection formFiles, HttpContext httpContext)
                 Assert.Equal("foo", item.Value);
             });
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
 
-            Assert.NotNull(acceptsMetadata);
-            Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
-        }
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data", "application/x-www-form-urlencoded" }, acceptsMetadata.ContentTypes);
     }
 
     [Theory]
@@ -857,12 +839,9 @@ app.MapPost("/", TestAction);
                 Assert.Equal("foo", item.Value);
             });
 
-        if (!IsGeneratorEnabled)
-        {
-            var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
-            Assert.Collection(allAcceptsMetadata,
-                (m) => Assert.Equal(new[] { "multipart/form-data" }, m.ContentTypes));
-        }
+        var allAcceptsMetadata = endpoint.Metadata.OfType<IAcceptsMetadata>();
+        Assert.Collection(allAcceptsMetadata,
+            (m) => Assert.Equal(new[] { "multipart/form-data" }, m.ContentTypes));
     }
 
     [Theory]
@@ -1035,6 +1014,66 @@ app.MapPost("/", TestAction);
     {
         var source = """
 void TestAction(HttpContext httpContext, IFormFile file, IFormFileCollection fileCollection, IFormCollection collection, [FromForm] MyTryParseRecord tryParseRecord)
+{
+    httpContext.Items["invoked"] = true;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task RequestDelegateValidateGeneratedFormCodeWithOnlyFormCollection()
+    {
+        var source = """
+void TestAction(HttpContext httpContext, IFormCollection collection)
+{
+    httpContext.Items["invoked"] = true;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task RequestDelegateValidateGeneratedFormCodeWithOnlyFormFile()
+    {
+        var source = """
+void TestAction(HttpContext httpContext, IFormFile file)
+{
+    httpContext.Items["invoked"] = true;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task RequestDelegateValidateGeneratedFormCodeWithOnlyFormFileCollection()
+    {
+        var source = """
+void TestAction(HttpContext httpContext, IFormFileCollection files)
+{
+    httpContext.Items["invoked"] = true;
+}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task RequestDelegateValidateGeneratedFormCodeWithOnlyFromFormAttributes()
+    {
+        var source = """
+void TestAction(HttpContext httpContext, [FromForm] MyTryParseRecord tryParseRecord)
 {
     httpContext.Items["invoked"] = true;
 }

@@ -43,12 +43,16 @@ internal class Endpoint
             return;
         }
 
-        EmitterContext.RequiresMetadataHelperTypes = !(Response.IsIResult || Response.HasNoResponse);
         EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
         IsAwaitable = Response?.IsAwaitable == true;
 
+        // NOTE: We set this twice. It is possible that we don't have any parameters, but if our
+        //       endpoint doesn't return IResult or have no response we need to inject a default
+        //       response metadata for application/json, which requires some extra generated types.
+        EmitterContext.RequiresMetadataHelperTypes = !(Response!.IsIResult || Response.HasNoResponse);
+
         // NOTE: We set this twice. It is possible that we don't have any parameters so we
-        //       want this to be true if the reponse type implements IEndpointMetadataProvider.
+        //       want this to be true if the response type implements IEndpointMetadataProvider.
         //       Later on we set this to be true if the parameters or the response type
         //       implement the interface.
         EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider;
@@ -101,6 +105,7 @@ internal class Endpoint
         EmitterContext.HasJsonBodyOrService = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
         EmitterContext.HasJsonBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
         EmitterContext.HasFormBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.FormBody);
+        EmitterContext.RequiresMetadataHelperTypes = EmitterContext.HasFormBody || !(Response.IsIResult || Response.HasNoResponse);
         EmitterContext.HasRouteOrQuery = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
         EmitterContext.HasBindAsync = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
         EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable);

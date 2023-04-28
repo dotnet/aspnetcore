@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
         private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapPost(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus, global::System.String> handler,
+            global::System.Action<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints,
                 pattern,
                 handler,
-                GetVerb,
+                PostVerb,
                 filePath,
                 lineNumber);
         }
@@ -91,17 +91,17 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 25)] = (
+            [(@"TestMapActions.cs", 29)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus, global::System.String>)del;
+                    var handler = (System.Action<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
@@ -114,69 +114,80 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(0)!));
+                            handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>(1)!);
+                            return ValueTask.FromResult<object?>(Results.Empty);
                         },
                         options.EndpointBuilder,
                         handler.Method);
                     }
 
-                    Task RequestHandler(HttpContext httpContext)
+                    async Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus, IsOptional = False, IsParsable = True, IsArray = False, Source = Query)
-                        var p_raw = httpContext.Request.Query["p"];
-                        if (StringValues.IsNullOrEmpty(p_raw))
+                        var httpContext_local = httpContext;
+                        // Endpoint Parameter: tryParseRecord (Type = Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord, IsOptional = False, IsParsable = True, IsArray = False, Source = FormBody)
+                        var tryParseRecord_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "MyTryParseRecord", "tryParseRecord");
+                        if (!tryParseRecord_resolveFormResult.Item1)
+                        {
+                            return;
+                        }
+                        var tryParseRecord_raw = (string?)httpContext.Request.Form["tryParseRecord"];
+                        if (tryParseRecord_raw == null)
                         {
                             wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("TodoStatus", "p", "query string");
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("MyTryParseRecord", "tryParseRecord", "form");
                         }
-                        var p_temp = (string?)p_raw;
-                        if (!Enum.TryParse<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(p_temp!, out var p_parsed_temp))
+                        var tryParseRecord_temp = tryParseRecord_raw;
+                        if (!global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord.TryParse(tryParseRecord_temp!, out var tryParseRecord_parsed_temp))
                         {
-                            if (!string.IsNullOrEmpty(p_temp))
+                            if (!string.IsNullOrEmpty(tryParseRecord_temp))
                             {
-                                logOrThrowExceptionHelper.ParameterBindingFailed("TodoStatus", "p", p_temp);
+                                logOrThrowExceptionHelper.ParameterBindingFailed("MyTryParseRecord", "tryParseRecord", tryParseRecord_temp);
                                 wasParamCheckFailure = true;
                             }
                         }
-                        global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus p_local = p_parsed_temp!;
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord tryParseRecord_local = tryParseRecord_parsed_temp!;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
-                            return Task.CompletedTask;
+                            return;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(p_local);
-                        return httpContext.Response.WriteAsync(result);
+                        handler(httpContext_local, tryParseRecord_local!);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus, IsOptional = False, IsParsable = True, IsArray = False, Source = Query)
-                        var p_raw = httpContext.Request.Query["p"];
-                        if (StringValues.IsNullOrEmpty(p_raw))
+                        var httpContext_local = httpContext;
+                        // Endpoint Parameter: tryParseRecord (Type = Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord, IsOptional = False, IsParsable = True, IsArray = False, Source = FormBody)
+                        var tryParseRecord_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "MyTryParseRecord", "tryParseRecord");
+                        if (!tryParseRecord_resolveFormResult.Item1)
+                        {
+                            return;
+                        }
+                        var tryParseRecord_raw = (string?)httpContext.Request.Form["tryParseRecord"];
+                        if (tryParseRecord_raw == null)
                         {
                             wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("TodoStatus", "p", "query string");
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("MyTryParseRecord", "tryParseRecord", "form");
                         }
-                        var p_temp = (string?)p_raw;
-                        if (!Enum.TryParse<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(p_temp!, out var p_parsed_temp))
+                        var tryParseRecord_temp = tryParseRecord_raw;
+                        if (!global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord.TryParse(tryParseRecord_temp!, out var tryParseRecord_parsed_temp))
                         {
-                            if (!string.IsNullOrEmpty(p_temp))
+                            if (!string.IsNullOrEmpty(tryParseRecord_temp))
                             {
-                                logOrThrowExceptionHelper.ParameterBindingFailed("TodoStatus", "p", p_temp);
+                                logOrThrowExceptionHelper.ParameterBindingFailed("MyTryParseRecord", "tryParseRecord", tryParseRecord_temp);
                                 wasParamCheckFailure = true;
                             }
                         }
-                        global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus p_local = p_parsed_temp!;
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord tryParseRecord_local = tryParseRecord_parsed_temp!;
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(httpContext, p_local));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>(httpContext, httpContext_local, tryParseRecord_local!));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -191,7 +202,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             this IEndpointRouteBuilder routes,
             string pattern,
             Delegate handler,
-            IEnumerable<string>? httpMethods,
+            IEnumerable<string> httpMethods,
             string filePath,
             int lineNumber)
         {
@@ -235,6 +246,50 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
+        private static async Task<(bool, object?)> TryResolveFormAsync(
+            HttpContext httpContext,
+            LogOrThrowExceptionHelper logOrThrowExceptionHelper,
+            string parameterTypeName,
+            string parameterName)
+        {
+            object? formValue = null;
+            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasFormContentType)
+                {
+                    logOrThrowExceptionHelper.UnexpectedNonFormContentType(httpContext.Request.ContentType);
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (false, null);
+                }
+
+                try
+                {
+                    formValue = await httpContext.Request.ReadFormAsync();
+                }
+                catch (BadHttpRequestException ex)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
+                    httpContext.Response.StatusCode = ex.StatusCode;
+                    return (false, null);
+                }
+                catch (IOException ex)
+                {
+                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+                catch (InvalidDataException ex)
+                {
+                    logOrThrowExceptionHelper.InvalidFormRequestBody(parameterTypeName, parameterName, ex);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+            }
+
+            return (true, formValue);
+        }
         private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
             => T.TryParse(s, provider, out result);
 
