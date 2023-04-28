@@ -34,6 +34,12 @@ public class ConsumesAttribute :
     /// <summary>
     /// Creates a new instance of <see cref="ConsumesAttribute"/>.
     /// <param name="contentType">The request content type.</param>
+    /// </summary>
+    public ConsumesAttribute(string contentType) : this(contentType, Array.Empty<string>()) { }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ConsumesAttribute"/>.
+    /// <param name="contentType">The request content type.</param>
     /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
     /// </summary>
     public ConsumesAttribute(string contentType, params string[] otherContentTypes)
