@@ -290,6 +290,23 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
+    public static void EmitFormAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.EmitterContext.HasFormBody)
+        {
+            var hasFormFiles = endpoint.Parameters.Any(p => p.IsFormFile);
+
+            if (hasFormFiles)
+            {
+                codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
+            }
+            else
+            {
+                codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
+            }
+        }
+    }
+
     public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
     {
         endpoint.EmitAcceptsMetadata(codeWriter);
