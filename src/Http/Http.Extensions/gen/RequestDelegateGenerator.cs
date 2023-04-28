@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -25,28 +27,22 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
         "MapPut",
         "MapDelete",
         "MapPatch",
+        "Map",
+        "MapMethods",
+        "MapFallback"
     };
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var endpointsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
-            predicate: static (node, _) => node is InvocationExpressionSyntax
-            {
-                Expression: MemberAccessExpressionSyntax
-                {
-                    Name: IdentifierNameSyntax
-                    {
-                        Identifier: { ValueText: var method }
-                    }
-                },
-                ArgumentList: { Arguments: { Count: 2 } args }
-            } && _knownMethods.Contains(method),
+            predicate: static (node, _) => node.TryGetMapMethodName(out var method) && _knownMethods.Contains(method),
             transform: static (context, token) =>
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token);
                 var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-                if (operation is IInvocationOperation { Arguments: { Length: 3 } parameters } invocationOperation &&
-                    invocationOperation.GetRouteHandlerArgument() is { Parameter.Type: {} delegateType } &&
+                if (operation is IInvocationOperation invocationOperation &&
+                    invocationOperation.TryGetRouteHandlerArgument(out var routeHandlerParameter) &&
+                    routeHandlerParameter is { Parameter.Type: {} delegateType } &&
                     SymbolEqualityComparer.Default.Equals(delegateType, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Delegate)))
                 {
                     return new Endpoint(invocationOperation, wellKnownTypes, context.SemanticModel);
@@ -136,11 +132,20 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
                 foreach (var endpoint in dedupedByDelegate)
                 {
-                    codeWriter.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint!.HttpMethod}(");
+                    codeWriter.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint.HttpMethod}(");
                     codeWriter.Indent++;
                     codeWriter.WriteLine("this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
-                    codeWriter.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
-                    codeWriter.WriteLine($"global::{endpoint!.EmitHandlerDelegateType()} handler,");
+                    // MapFallback overloads that only take a delegate do not need a pattern argument
+                    if (endpoint.HttpMethod != "MapFallback" || endpoint.Operation.Arguments.Length != 2)
+                    {
+                        codeWriter.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
+                    }
+                    // MapMethods overloads define an additional `httpMethods` parameter
+                    if (endpoint.HttpMethod == "MapMethods")
+                    {
+                        codeWriter.WriteLine("global::System.Collections.Generic.IEnumerable<string> httpMethods,");
+                    }
+                    codeWriter.WriteLine($"global::{endpoint.EmitHandlerDelegateType()} handler,");
                     codeWriter.WriteLine(@"[global::System.Runtime.CompilerServices.CallerFilePath] string filePath = """",");
                     codeWriter.WriteLine("[global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)");
                     codeWriter.Indent--;
@@ -148,9 +153,18 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     codeWriter.WriteLine("return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(");
                     codeWriter.Indent++;
                     codeWriter.WriteLine("endpoints,");
-                    codeWriter.WriteLine("pattern,");
+                    // For `MapFallback` overloads that only take a delegate, provide the assumed default
+                    // Otherwise, pass the pattern provided from the MapX invocation
+                    if (endpoint.HttpMethod != "MapFallback" && endpoint.Operation.Arguments.Length != 2)
+                    {
+                        codeWriter.WriteLine("pattern,");
+                    }
+                    else
+                    {
+                        codeWriter.WriteLine($"{SymbolDisplay.FormatLiteral(endpoint.RoutePattern!, true)},");
+                    }
                     codeWriter.WriteLine("handler,");
-                    codeWriter.WriteLine($"{endpoint!.EmitVerb()},");
+                    codeWriter.WriteLine($"{endpoint.EmitVerb()},");
                     codeWriter.WriteLine("filePath,");
                     codeWriter.WriteLine("lineNumber);");
                     codeWriter.Indent--;

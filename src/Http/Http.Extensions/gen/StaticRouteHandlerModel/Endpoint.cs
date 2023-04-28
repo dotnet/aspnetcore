@@ -28,7 +28,7 @@ internal class Endpoint
             return;
         }
 
-        RoutePattern = routeToken.ValueText;
+        RoutePattern = routeToken;
 
         if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method) || method == null)
         {

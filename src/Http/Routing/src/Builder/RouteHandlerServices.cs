@@ -34,7 +34,7 @@ public static class RouteHandlerServices
             IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler,
-            IEnumerable<string> httpMethods,
+            IEnumerable<string>? httpMethods,
             Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult> populateMetadata,
             Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createRequestDelegate)
     {
