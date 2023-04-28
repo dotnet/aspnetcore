@@ -3687,7 +3687,7 @@
             {
               "name": "bodyContains",
               "parameters": {
-                "bodyPattern": "([Aa][Oo][Tt])+",
+                "bodyPattern": "[Aa][Oo][Tt]",
                 "isRegex": true
               }
             },
