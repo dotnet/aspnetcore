@@ -55,8 +55,7 @@ function setHasLocationChangingListeners(hasListeners: boolean) {
 }
 
 export function scrollToElement(identifier: string): boolean {
-  const element = document.getElementById(identifier)
-    || document.getElementsByName(identifier)[0];
+  const element = document.getElementById(identifier);
 
     if (element) {
       element.scrollIntoView();

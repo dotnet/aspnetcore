@@ -1547,7 +1547,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefContainingHashSamePage_ScrollsToElementWithIdOnTheSamePage()
+    public void AnchorWithHrefContainingHashSamePage_ScrollsToElementOnTheSamePage()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1563,7 +1563,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void AnchorWithHrefContainingHashAnotherPage_NavigatesToPageAndScrollsToElementWithName()
+    public void AnchorWithHrefContainingHashAnotherPage_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1579,7 +1579,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void NavigatationManagerNavigateToSameUrlWithHash_ScrollsToElementWithIdOnTheSamePage()
+    public void NavigatationManagerNavigateToSameUrlWithHash_ScrollsToElementOnTheSamePage()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1595,7 +1595,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void NavigatationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElementWithName()
+    public void NavigatationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
