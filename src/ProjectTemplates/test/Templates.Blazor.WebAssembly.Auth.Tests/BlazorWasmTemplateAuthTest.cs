@@ -65,6 +65,7 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB_ProgramMain()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, true, false);
 
