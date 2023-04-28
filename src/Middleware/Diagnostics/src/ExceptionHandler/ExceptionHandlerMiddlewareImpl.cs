@@ -25,7 +25,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
-    private readonly IEnumerable<IExceptionHandler> _exceptionHandlers;
+    private readonly IExceptionHandler[] _exceptionHandlers;
     private readonly IProblemDetailsService? _problemDetailsService;
 
     /// <summary>
@@ -50,7 +50,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
-        _exceptionHandlers = exceptionHandlers;
+        _exceptionHandlers = exceptionHandlers as IExceptionHandler[] ?? new List<IExceptionHandler>(exceptionHandlers).ToArray();
         _problemDetailsService = problemDetailsService;
 
         if (_options.ExceptionHandler == null)
