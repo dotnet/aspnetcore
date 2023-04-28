@@ -7,11 +7,18 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsPackable>false</IsPackable>
-    <IsTrimmable>true</IsTrimmable>
+    <!-- TODO: Re-enable trimming once https://github.com/dotnet/aspnetcore/issues/47918 is fixed and RDG is enabled. -->
+    <!--<IsTrimmable>true</IsTrimmable>-->
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)BearerToken\DTO\*.cs" LinkBase="DTO" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
   </ItemGroup>
 
@@ -21,5 +28,10 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.InMemory.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- TODO: Re-enable RDG once https://github.com/dotnet/aspnetcore/issues/47918 is fixed. -->
+    <!--<ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
   </ItemGroup>
 </Project>
