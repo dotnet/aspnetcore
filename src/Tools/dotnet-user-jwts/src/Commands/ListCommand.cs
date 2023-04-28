@@ -52,7 +52,7 @@ internal sealed class ListCommand
 
     private static void PrintJwtsJson(IReporter reporter, JwtStore jwtStore)
     {
-        if (jwtStore.Jwts is { Count: > 0 })
+        if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
             reporter.Output(JsonSerializer.Serialize(jwts, new JsonSerializerOptions { WriteIndented = true }));
         }
