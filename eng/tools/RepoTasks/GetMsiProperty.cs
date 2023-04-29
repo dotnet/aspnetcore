@@ -22,18 +22,7 @@ public class GetMsiProperty : Microsoft.Build.Utilities.Task
 
     public override bool Execute()
     {
-        try
-        {
-            using (var package = new InstallPackage(InstallPackage, 0))
-            {
-                Value = package.Property[Property];
-            }
-        }
-        catch (Exception exception)
-        {
-            Log.LogErrorFromException(exception);
-        }
-        return !Log.HasLoggedErrors;
+        return true;
     }
 }
 #endif
