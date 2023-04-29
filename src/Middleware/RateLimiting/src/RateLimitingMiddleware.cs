@@ -77,13 +77,19 @@ internal sealed partial class RateLimitingMiddleware
         {
             return _next(context);
         }
-        return InvokeInternal(context, enableRateLimitingAttribute, endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route);
+
+        // Only include route and method if we have an endpoint with a route.
+        // A request always has a HTTP request, but it isn't useful unless combined with a route.
+        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+        var method = route is not null ? context.Request.Method : null;
+
+        return InvokeInternal(context, enableRateLimitingAttribute, method, route);
     }
 
-    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute, string? route)
+    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute, string? method, string? route)
     {
         var policyName = enableRateLimitingAttribute?.PolicyName;
-        using var leaseContext = await TryAcquireAsync(context, policyName, route);
+        using var leaseContext = await TryAcquireAsync(context, policyName, method, route);
 
         if (leaseContext.Lease?.IsAcquired == true)
         {
@@ -91,17 +97,17 @@ internal sealed partial class RateLimitingMiddleware
             try
             {
 
-                _metrics.LeaseStart(policyName, route);
+                _metrics.LeaseStart(policyName, method, route);
                 await _next(context);
             }
             finally
             {
-                _metrics.LeaseEnd(policyName, route, startTimestamp, Stopwatch.GetTimestamp());
+                _metrics.LeaseEnd(policyName, method, route, startTimestamp, Stopwatch.GetTimestamp());
             }
         }
         else
         {
-            _metrics.LeaseFailed(policyName, route, leaseContext.RequestRejectionReason!.Value);
+            _metrics.LeaseFailed(policyName, method, route, leaseContext.RequestRejectionReason!.Value);
 
             // If the request was canceled, do not call OnRejected, just return.
             if (leaseContext.RequestRejectionReason == RequestRejectionReason.RequestCanceled)
@@ -140,7 +146,7 @@ internal sealed partial class RateLimitingMiddleware
         }
     }
 
-    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, string? policyName, string? route)
+    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, string? policyName, string? method, string? route)
     {
         var leaseContext = CombinedAcquire(context);
         if (leaseContext.Lease?.IsAcquired == true)
@@ -158,12 +164,13 @@ internal sealed partial class RateLimitingMiddleware
         var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            _metrics.QueueStart(policyName, route);
-            return await waitTask;
+            _metrics.QueueStart(policyName, method, route);
+            leaseContext = await waitTask;
+            return leaseContext;
         }
         finally
         {
-            _metrics.QueueEnd(policyName, route, startTimestamp, Stopwatch.GetTimestamp());
+            _metrics.QueueEnd(policyName, method, route, leaseContext.RequestRejectionReason, startTimestamp, Stopwatch.GetTimestamp());
         }
     }
 
