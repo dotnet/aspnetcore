@@ -54,6 +54,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     private const byte ByteQuestionMark = (byte)'?';
     private const byte BytePercentage = (byte)'%';
     private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
+    private static ReadOnlySpan<byte> RequestLineDelimeters => new byte[] { ByteLF, 0 };
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
@@ -61,17 +62,20 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
-        if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
+        // Find the next delimeter.
+        if (!reader.TryReadToAny(out ReadOnlySpan<byte> requestLine, RequestLineDelimeters, advancePastDelimiter: false))
         {
-            ParseRequestLine(handler, requestLine);
-            return true;
+            return false;
         }
 
-        return false;
-    }
+        // Consume the delimiter.
+        bool foundDelimiter = reader.TryRead(out var next);
+        Debug.Assert(foundDelimiter);
+        if (next == 0 || requestLine.Length == 0)
+        {
+            RejectRequestLine(requestLine);
+        }
 
-    private void ParseRequestLine(TRequestHandler handler, ReadOnlySpan<byte> requestLine)
-    {
         // Get Method and set the offset
         var method = requestLine.GetKnownMethod(out var methodEnd);
         if (method == HttpMethod.Custom)
@@ -175,6 +179,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // in-place normalization and decoding to transform into a canonical path
         var startLine = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(requestLine), queryEnd);
         handler.OnStartLine(versionAndMethod, path, startLine);
+
+        return true;
     }
 
     /// <summary>

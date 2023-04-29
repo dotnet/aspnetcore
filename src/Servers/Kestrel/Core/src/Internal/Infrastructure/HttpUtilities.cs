@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -28,7 +30,6 @@ internal static partial class HttpUtilities
     private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
     private static readonly UTF8Encoding DefaultRequestHeaderEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-    private static readonly SpanAction<char, IntPtr> s_getHeaderName = GetHeaderName;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -85,28 +86,13 @@ internal static partial class HttpUtilities
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
     {
-        if (span.IsEmpty)
+        return string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
         {
-            return string.Empty;
-        }
-
-        fixed (byte* source = &MemoryMarshal.GetReference(span))
-        {
-            return string.Create(span.Length, new IntPtr(source), s_getHeaderName);
-        }
-    }
-
-    private static unsafe void GetHeaderName(Span<char> buffer, IntPtr state)
-    {
-        fixed (char* output = &MemoryMarshal.GetReference(buffer))
-        {
-            // This version of AsciiUtilities returns null if there are any null (0 byte) characters
-            // in the string
-            if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+            if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
             }
-        }
+        });
     }
 
     public static string GetAsciiStringNonNullCharacters(this Span<byte> span)

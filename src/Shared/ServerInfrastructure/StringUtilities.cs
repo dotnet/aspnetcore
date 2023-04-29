@@ -11,83 +11,51 @@ using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 #nullable enable
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal static class StringUtilities
 {
+    private static readonly SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = GetLatin1StringNonNullCharacters;
+    private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
+
     public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
     {
-        if (span.IsEmpty)
+        var resultString = string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
         {
-            return string.Empty;
-        }
-
-        fixed (byte* source = &MemoryMarshal.GetReference(span))
-        {
-            var resultString = string.Create(span.Length, (IntPtr)source, s_getAsciiOrUTF8StringNonNullCharacters);
-
-            // If resultString is marked, perform UTF-8 encoding
-            if (resultString[0] == '\0')
-            {
-                // null characters are considered invalid
-                if (span.IndexOf((byte)0) != -1)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                try
-                {
-                    resultString = defaultEncoding.GetString(span);
-                }
-                catch (DecoderFallbackException)
-                {
-                    throw new InvalidOperationException();
-                }
-            }
-
-            return resultString;
-        }
-    }
-
-    private static readonly unsafe SpanAction<char, IntPtr> s_getAsciiOrUTF8StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
-    {
-        fixed (char* output = &MemoryMarshal.GetReference(buffer))
-        {
-            // This version of AsciiUtilities returns false if there are any null ('\0') or non-Ascii
-            // character (> 127) in the string.
-            if (!TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+            if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
             {
                 // Mark resultString for UTF-8 encoding
-                output[0] = '\0';
+                destination[0] = '\0';
             }
-        }
-    };
+        });
 
-    public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
-    {
-        if (span.IsEmpty)
+        // If resultString is marked, perform UTF-8 encoding
+        if (resultString[0] == '\0')
         {
-            return string.Empty;
-        }
-
-        fixed (byte* source = &MemoryMarshal.GetReference(span))
-        {
-            return string.Create(span.Length, (IntPtr)source, s_getAsciiStringNonNullCharacters);
-        }
-    }
-
-    private static readonly unsafe SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
-    {
-        fixed (char* output = &MemoryMarshal.GetReference(buffer))
-        {
-            // This version of AsciiUtilities returns false if there are any null ('\0') or non-Ascii
-            // character (> 127) in the string.
-            if (!TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+            try
+            {
+                resultString = defaultEncoding.GetString(span);
+            }
+            catch (DecoderFallbackException)
             {
                 throw new InvalidOperationException();
             }
         }
+
+        return resultString;
+    }
+
+    public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
+    {
+        return string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
+        {
+            if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
+            {
+                throw new InvalidOperationException();
+            }
+        });
     };
 
     public static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
@@ -114,196 +82,6 @@ internal static class StringUtilities
             }
         }
     };
-
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
-    {
-        Debug.Assert(input != null);
-        Debug.Assert(output != null);
-
-        var end = input + count;
-
-        Debug.Assert((long)end >= Vector256<sbyte>.Count);
-
-        // PERF: so the JIT can reuse the zero from a register
-        var zero = Vector128<sbyte>.Zero;
-
-        if (Sse2.IsSupported)
-        {
-            if (Avx2.IsSupported && input <= end - Vector256<sbyte>.Count)
-            {
-                var avxZero = Vector256<sbyte>.Zero;
-
-                do
-                {
-                    var vector = Avx.LoadVector256(input).AsSByte();
-                    if (!CheckBytesInAsciiRange(vector, avxZero))
-                    {
-                        return false;
-                    }
-
-                    var tmp0 = Avx2.UnpackLow(vector, avxZero);
-                    var tmp1 = Avx2.UnpackHigh(vector, avxZero);
-
-                    // Bring into the right order
-                    var out0 = Avx2.Permute2x128(tmp0, tmp1, 0x20);
-                    var out1 = Avx2.Permute2x128(tmp0, tmp1, 0x31);
-
-                    Avx.Store((ushort*)output, out0.AsUInt16());
-                    Avx.Store((ushort*)output + Vector256<ushort>.Count, out1.AsUInt16());
-
-                    input += Vector256<sbyte>.Count;
-                    output += Vector256<sbyte>.Count;
-                } while (input <= end - Vector256<sbyte>.Count);
-
-                if (input == end)
-                {
-                    return true;
-                }
-            }
-
-            if (input <= end - Vector128<sbyte>.Count)
-            {
-                do
-                {
-                    var vector = Sse2.LoadVector128(input).AsSByte();
-                    if (!CheckBytesInAsciiRange(vector, zero))
-                    {
-                        return false;
-                    }
-
-                    var c0 = Sse2.UnpackLow(vector, zero).AsUInt16();
-                    var c1 = Sse2.UnpackHigh(vector, zero).AsUInt16();
-
-                    Sse2.Store((ushort*)output, c0);
-                    Sse2.Store((ushort*)output + Vector128<ushort>.Count, c1);
-
-                    input += Vector128<sbyte>.Count;
-                    output += Vector128<sbyte>.Count;
-                } while (input <= end - Vector128<sbyte>.Count);
-
-                if (input == end)
-                {
-                    return true;
-                }
-            }
-        }
-        else if (Vector.IsHardwareAccelerated)
-        {
-            while (input <= end - Vector<sbyte>.Count)
-            {
-                var vector = Unsafe.AsRef<Vector<sbyte>>(input);
-                if (!CheckBytesInAsciiRange(vector))
-                {
-                    return false;
-                }
-
-                Vector.Widen(
-                    vector,
-                    out Unsafe.AsRef<Vector<short>>(output),
-                    out Unsafe.AsRef<Vector<short>>(output + Vector<short>.Count));
-
-                input += Vector<sbyte>.Count;
-                output += Vector<sbyte>.Count;
-            }
-
-            if (input == end)
-            {
-                return true;
-            }
-        }
-
-        if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
-        {
-            // 64-bit: Loop longs by default
-            while (input <= end - sizeof(long))
-            {
-                var value = *(long*)input;
-                if (!CheckBytesInAsciiRange(value))
-                {
-                    return false;
-                }
-
-                // BMI2 could be used, but this variant is faster on both Intel and AMD.
-                if (Sse2.X64.IsSupported)
-                {
-                    var vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
-                    var vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
-                    Sse2.Store((ulong*)output, vecWide);
-                }
-                else
-                {
-                    output[0] = (char)input[0];
-                    output[1] = (char)input[1];
-                    output[2] = (char)input[2];
-                    output[3] = (char)input[3];
-                    output[4] = (char)input[4];
-                    output[5] = (char)input[5];
-                    output[6] = (char)input[6];
-                    output[7] = (char)input[7];
-                }
-
-                input += sizeof(long);
-                output += sizeof(long);
-            }
-
-            if (input <= end - sizeof(int))
-            {
-                var value = *(int*)input;
-                if (!CheckBytesInAsciiRange(value))
-                {
-                    return false;
-                }
-
-                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
-
-                input += sizeof(int);
-                output += sizeof(int);
-            }
-        }
-        else
-        {
-            // 32-bit: Loop ints by default
-            while (input <= end - sizeof(int))
-            {
-                var value = *(int*)input;
-                if (!CheckBytesInAsciiRange(value))
-                {
-                    return false;
-                }
-
-                WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
-
-                input += sizeof(int);
-                output += sizeof(int);
-            }
-        }
-
-        if (input <= end - sizeof(short))
-        {
-            if (!CheckBytesInAsciiRange(((short*)input)[0]))
-            {
-                return false;
-            }
-
-            output[0] = (char)input[0];
-            output[1] = (char)input[1];
-
-            input += sizeof(short);
-            output += sizeof(short);
-        }
-
-        if (input < end)
-        {
-            if (!CheckBytesInAsciiRange(((sbyte*)input)[0]))
-            {
-                return false;
-            }
-            output[0] = (char)input[0];
-        }
-
-        return true;
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool TryGetLatin1String(byte* input, char* output, int count)
