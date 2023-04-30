@@ -101,7 +101,7 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
                 return true;
             }
 
-            if (expressionStatementOperation is IInvocationOperation { TargetMethod.ContainingType: { } invokedMethodContainingType } invocationOperation
+            if (expressionStatementOperation is IInvocationOperation { TargetMethod.ContainingType: { } invokedMethodContainingType }
                 && SymbolEqualityComparer.Default.Equals(invokedMethodContainingType, authorizationOptionsTypes.AuthorizationOptions))
             {
                 return true;
