@@ -515,7 +515,7 @@ describe("hubConnection", () => {
                     await resultPromise;
                     expect(false).toBe(true);
                 } catch (err) {
-                    expect((err as any).message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. Exception: Something bad");
+                    expect((err as any).message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. IOException: Something bad");
                 } finally {
                     await hubConnection.stop();
                 }
