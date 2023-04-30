@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Internal;
@@ -190,7 +191,7 @@ internal sealed class ProcessEx : IDisposable
     {
         if (!_process.HasExited)
         {
-            throw new InvalidOperationException($"Process {_process.ProcessName} with pid: {_process.Id} has not finished running.");
+            Assert.Fail($"Process {_process.ProcessName} with pid: {_process.Id} has not finished running.");
         }
 
         return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
@@ -215,7 +216,7 @@ internal sealed class ProcessEx : IDisposable
         }
         else if (assertSuccess && _process.ExitCode != 0)
         {
-            throw new Exception($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
+            Assert.Fail($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
         }
     }
 
