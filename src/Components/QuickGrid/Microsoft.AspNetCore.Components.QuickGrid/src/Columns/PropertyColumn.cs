@@ -70,7 +70,10 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
 
         if (Title is null && Property.Body is MemberExpression memberExpression)
         {
-            Title = memberExpression.Member.Name;
+            var memberInfo = memberExpression.Member;
+            var displayName = memberInfo?.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            var display = memberInfo?.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;
+            Title = displayName?.DisplayName ?? display?.Name ?? memberInfo?.Name ?? "";
         }
     }
 
