@@ -13,12 +13,14 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TResource>
 {
     private List<RateLimiter> limiters = new List<RateLimiter>();
+    private RateLimiterStatistics _statistics;
 
     public TestPartitionedRateLimiter() { }
 
-    public TestPartitionedRateLimiter(RateLimiter limiter)
+    public TestPartitionedRateLimiter(RateLimiter limiter, RateLimiterStatistics statistics = null)
     {
         limiters.Add(limiter);
+        _statistics = statistics;
     }
 
     public void AddLimiter(RateLimiter limiter)
@@ -28,7 +30,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
 
     public override RateLimiterStatistics GetStatistics(TResource resourceID)
     {
-        throw new NotImplementedException();
+        return _statistics;
     }
 
     protected override RateLimitLease AttemptAcquireCore(TResource resourceID, int permitCount)
