@@ -101,11 +101,7 @@ public class RouteTemplate
     /// <returns>A <see cref="TemplateSegment"/> instance.</returns>
     public TemplateSegment? GetSegment(int index)
     {
-        if (index < 0)
-        {
-            throw new IndexOutOfRangeException();
-        }
-
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
         return index >= Segments.Count ? null : Segments[index];
     }
 

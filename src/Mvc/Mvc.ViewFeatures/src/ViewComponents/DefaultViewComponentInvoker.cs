@@ -302,7 +302,7 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
                     {
                         return new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id);
                     }
-                    throw new IndexOutOfRangeException(nameof(index));
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 

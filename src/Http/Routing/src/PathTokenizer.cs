@@ -68,10 +68,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
     {
         get
         {
-            if (index >= Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
 
             var currentSegmentIndex = 0;
             var currentSegmentStart = 1;
