@@ -23,6 +23,7 @@ public class RouterTest
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);
@@ -198,6 +199,31 @@ public class RouterTest
         Assert.Equal($"Rendering route matching {typeof(MultiSegmentRouteComponent)}", renderedFrame.TextContent);
     }
 
+    [Fact]
+    public async Task SetParametersAsyncRefreshesOnce()
+    {
+        //Arrange
+        var parameters = new Dictionary<string, object>
+            {
+                { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+                { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
+            };
+
+        var refreshCalled = 0;
+        _renderer.OnUpdateDisplay = (renderBatch) =>
+        {
+            refreshCalled += 1;
+            return;
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        //Assert
+        Assert.Equal(1, refreshCalled);
+    }
+
     internal class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager() =>
@@ -215,6 +241,14 @@ public class RouterTest
         public static readonly TestNavigationInterception Instance = new TestNavigationInterception();
 
         public Task EnableNavigationInterceptionAsync()
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    internal sealed class TestScrollToLocationHash : IScrollToLocationHash
+    {
+        public Task RefreshScrollPositionForHash(string locationAbsolute)
         {
             return Task.CompletedTask;
         }

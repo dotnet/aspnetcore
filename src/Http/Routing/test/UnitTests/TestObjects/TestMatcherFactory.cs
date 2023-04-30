@@ -12,15 +12,17 @@ namespace Microsoft.AspNetCore.Routing.TestObjects;
 internal class TestMatcherFactory : MatcherFactory
 {
     private readonly bool _isHandled;
+    private readonly Action<HttpContext> _setEndpointCallback;
 
-    public TestMatcherFactory(bool isHandled)
+    public TestMatcherFactory(bool isHandled, Action<HttpContext> setEndpointCallback = null)
     {
         _isHandled = isHandled;
+        _setEndpointCallback = setEndpointCallback;
     }
 
     public override Matcher CreateMatcher(EndpointDataSource dataSource)
     {
-        return new TestMatcher(_isHandled);
+        return new TestMatcher(_isHandled, _setEndpointCallback);
     }
 }
 

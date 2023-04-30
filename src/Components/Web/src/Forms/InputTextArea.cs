@@ -33,11 +33,12 @@ public class InputTextArea : InputBase<string?>
     {
         builder.OpenElement(0, "textarea");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttributeIfNotNullOrEmpty(2, "class", CssClass);
-        builder.AddAttribute(3, "value", CurrentValueAsString);
-        builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.AddAttributeIfNotNullOrEmpty(2, "name", NameAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(3, "class", CssClass);
+        builder.AddAttribute(4, "value", CurrentValueAsString);
+        builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
         builder.SetUpdatesAttributeName("value");
-        builder.AddElementReferenceCapture(5, __inputReference => Element = __inputReference);
+        builder.AddElementReferenceCapture(6, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

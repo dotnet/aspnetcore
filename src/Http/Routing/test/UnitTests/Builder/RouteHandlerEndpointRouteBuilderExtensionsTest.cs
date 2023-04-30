@@ -765,6 +765,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Single(routeEndpointBuilder.RoutePattern.Parameters);
         Assert.True(routeEndpointBuilder.RoutePattern.Parameters[0].IsCatchAll);
         Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
+        Assert.Contains(FallbackMetadata.Instance, routeEndpointBuilder.Metadata);
     }
 
     [Fact]

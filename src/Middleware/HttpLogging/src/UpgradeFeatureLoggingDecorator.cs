@@ -11,17 +11,19 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
 {
     private readonly IHttpUpgradeFeature _innerUpgradeFeature;
     private readonly HttpResponse _response;
-    private readonly HttpLoggingOptions _options;
+    private readonly HashSet<string> _allowedResponseHeaders;
     private readonly ILogger _logger;
+    private readonly HttpLoggingFields _loggingFields;
 
     private bool _isUpgraded;
 
-    public UpgradeFeatureLoggingDecorator(IHttpUpgradeFeature innerUpgradeFeature, HttpResponse response, HttpLoggingOptions options, ILogger logger)
+    public UpgradeFeatureLoggingDecorator(IHttpUpgradeFeature innerUpgradeFeature, HttpResponse response, HashSet<string> allowedResponseHeaders, HttpLoggingFields loggingFields, ILogger logger)
     {
         _innerUpgradeFeature = innerUpgradeFeature ?? throw new ArgumentNullException(nameof(innerUpgradeFeature));
         _response = response ?? throw new ArgumentNullException(nameof(response));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _allowedResponseHeaders = allowedResponseHeaders ?? throw new ArgumentNullException(nameof(allowedResponseHeaders));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _loggingFields = loggingFields;
     }
 
     public bool IsUpgradableRequest => _innerUpgradeFeature.IsUpgradableRequest;
@@ -34,7 +36,7 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
 
         _isUpgraded = true;
 
-        HttpLoggingMiddleware.LogResponseHeaders(_response, _options, _logger);
+        HttpLoggingMiddleware.LogResponseHeaders(_response, _loggingFields, _allowedResponseHeaders, _logger);
 
         return upgradeStream;
     }

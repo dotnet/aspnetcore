@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
 public static class TestUtils
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public static ConcurrencyLimiterMiddleware CreateTestMiddleware(IQueuePolicy queue = null, RequestDelegate onRejected = null, RequestDelegate next = null)
     {
         var options = Options.Create(new ConcurrencyLimiterOptions
@@ -63,6 +64,7 @@ public static class TestUtils
 
         return new QueuePolicy(options);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }
 
 internal class TestQueue : IQueuePolicy

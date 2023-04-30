@@ -41,6 +41,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private readonly HttpConnectionManager _manager;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly HttpConnectionsMetrics _metrics;
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
 
@@ -49,10 +50,11 @@ internal sealed partial class HttpConnectionDispatcher
     private const string HeaderValueNoCacheNoStore = "no-cache, no-store";
     private const string HeaderValueEpochDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-    public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
+    public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory, HttpConnectionsMetrics metrics)
     {
         _manager = manager;
         _loggerFactory = loggerFactory;
+        _metrics = metrics;
         _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
     }
 
@@ -238,7 +240,7 @@ internal sealed partial class HttpConnectionDispatcher
 
                         // We should be able to safely dispose because there's no more data being written
                         // We don't need to wait for close here since we've already waited for both sides
-                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                     }
                     else
                     {
@@ -252,7 +254,7 @@ internal sealed partial class HttpConnectionDispatcher
                     currentRequestTcs.TrySetCanceled();
                     // We should be able to safely dispose because there's no more data being written
                     // We don't need to wait for close here since we've already waited for both sides
-                    await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+                    await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                 }
                 else
                 {
@@ -280,7 +282,7 @@ internal sealed partial class HttpConnectionDispatcher
             // Wait for any of them to end
             await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
-            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
         }
     }
 
@@ -503,7 +505,7 @@ internal sealed partial class HttpConnectionDispatcher
         Log.TerminatingConnection(_logger);
 
         // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
-        connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+        connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
 
         context.Response.StatusCode = StatusCodes.Status202Accepted;
         context.Response.ContentType = "text/plain";
@@ -526,6 +528,7 @@ internal sealed partial class HttpConnectionDispatcher
         if (connection.TransportType == HttpTransportType.None)
         {
             connection.TransportType = transportType;
+            _metrics.TransportStart(transportType);
         }
         else if (connection.TransportType != transportType)
         {

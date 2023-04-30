@@ -23,6 +23,7 @@ internal sealed class KestrelServerImpl : IServer
     private readonly TransportManager _transportManager;
     private readonly List<IConnectionListenerFactory> _transportFactories;
     private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
+    private readonly IHttpsConfigurationService _httpsConfigurationService;
 
     private readonly SemaphoreSlim _bindSemaphore = new SemaphoreSlim(initialCount: 1);
     private bool _hasStarted;
@@ -35,27 +36,11 @@ internal sealed class KestrelServerImpl : IServer
     public KestrelServerImpl(
         IOptions<KestrelServerOptions> options,
         IEnumerable<IConnectionListenerFactory> transportFactories,
-        ILoggerFactory loggerFactory)
-        : this(transportFactories, Array.Empty<IMultiplexedConnectionListenerFactory>(), CreateServiceContext(options, loggerFactory, null))
-    {
-    }
-
-    public KestrelServerImpl(
-        IOptions<KestrelServerOptions> options,
-        IEnumerable<IConnectionListenerFactory> transportFactories,
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
-        ILoggerFactory loggerFactory)
-        : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, null))
-    {
-    }
-
-    public KestrelServerImpl(
-        IOptions<KestrelServerOptions> options,
-        IEnumerable<IConnectionListenerFactory> transportFactories,
-        IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+        IHttpsConfigurationService httpsConfigurationService,
         ILoggerFactory loggerFactory,
-        DiagnosticSource diagnosticSource)
-        : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, diagnosticSource))
+        KestrelMetrics metrics)
+        : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource: null, metrics))
     {
     }
 
@@ -64,12 +49,14 @@ internal sealed class KestrelServerImpl : IServer
     internal KestrelServerImpl(
         IEnumerable<IConnectionListenerFactory> transportFactories,
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+        IHttpsConfigurationService httpsConfigurationService,
         ServiceContext serviceContext)
     {
         ArgumentNullException.ThrowIfNull(transportFactories);
 
         _transportFactories = transportFactories.Reverse().ToList();
         _multiplexedTransportFactories = multiplexedFactories.Reverse().ToList();
+        _httpsConfigurationService = httpsConfigurationService;
 
         if (_transportFactories.Count == 0 && _multiplexedTransportFactories.Count == 0)
         {
@@ -82,10 +69,10 @@ internal sealed class KestrelServerImpl : IServer
         _serverAddresses = new ServerAddressesFeature();
         Features.Set<IServerAddressesFeature>(_serverAddresses);
 
-        _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, ServiceContext);
+        _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, _httpsConfigurationService, ServiceContext);
     }
 
-    private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)
+    private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource, KestrelMetrics metrics)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -103,7 +90,8 @@ internal sealed class KestrelServerImpl : IServer
             new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
             new SystemClock(),
             DebuggerWrapper.Singleton,
-            trace);
+            trace,
+            Heartbeat.Interval);
 
         return new ServiceContext
         {
@@ -115,7 +103,8 @@ internal sealed class KestrelServerImpl : IServer
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,
             ServerOptions = serverOptions,
-            DiagnosticSource = diagnosticSource
+            DiagnosticSource = diagnosticSource,
+            Metrics = metrics
         };
     }
 
@@ -183,7 +172,7 @@ internal sealed class KestrelServerImpl : IServer
                 // Quic isn't registered if it's not supported, throw if we can't fall back to 1 or 2
                 if (hasHttp3 && _multiplexedTransportFactories.Count == 0 && !(hasHttp1 || hasHttp2))
                 {
-                    throw new InvalidOperationException("This platform doesn't support QUIC or HTTP/3.");
+                    throw new InvalidOperationException("Unable to bind an HTTP/3 endpoint. This could be because QUIC has not been configured using UseQuic, or the platform doesn't support QUIC or HTTP/3.");
                 }
 
                 // Disable adding alt-svc header if endpoint has configured not to or there is no
@@ -206,7 +195,7 @@ internal sealed class KestrelServerImpl : IServer
                     var connectionDelegate = options.Build();
 
                     // Add the connection limit middleware
-                    connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
+                    connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace, ServiceContext.Metrics);
 
                     options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                 }
@@ -225,7 +214,7 @@ internal sealed class KestrelServerImpl : IServer
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware
-                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
+                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace, ServiceContext.Metrics);
 
                         options.EndPoint = await _transportManager.BindAsync(configuredEndpoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
                     }
@@ -256,6 +245,10 @@ internal sealed class KestrelServerImpl : IServer
             return;
         }
 
+        // Stop background heartbeat first.
+        // The heartbeat running as the server is shutting down could produce unexpected behavior.
+        ServiceContext.Heartbeat?.Dispose();
+
         _stopCts.Cancel();
 
 #pragma warning disable CA2016 // Don't use cancellationToken when acquiring the semaphore. Dispose calls this with a pre-canceled token.
@@ -273,7 +266,6 @@ internal sealed class KestrelServerImpl : IServer
         }
         finally
         {
-            ServiceContext.Heartbeat?.Dispose();
             _configChangedRegistration?.Dispose();
             _stopCts.Dispose();
             _bindSemaphore.Release();
@@ -314,7 +306,7 @@ internal sealed class KestrelServerImpl : IServer
 
             Options.ConfigurationLoader?.Load();
 
-            await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, cancellationToken).ConfigureAwait(false);
+            await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, _httpsConfigurationService.UseHttpsWithDefaults, cancellationToken).ConfigureAwait(false);
             _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
         }
         finally
@@ -424,23 +416,23 @@ internal sealed class KestrelServerImpl : IServer
         }
     }
 
-    private static ConnectionDelegate EnforceConnectionLimit(ConnectionDelegate innerDelegate, long? connectionLimit, KestrelTrace trace)
+    private static ConnectionDelegate EnforceConnectionLimit(ConnectionDelegate innerDelegate, long? connectionLimit, KestrelTrace trace, KestrelMetrics metrics)
     {
         if (!connectionLimit.HasValue)
         {
             return innerDelegate;
         }
 
-        return new ConnectionLimitMiddleware<ConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace).OnConnectionAsync;
+        return new ConnectionLimitMiddleware<ConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace, metrics).OnConnectionAsync;
     }
 
-    private static MultiplexedConnectionDelegate EnforceConnectionLimit(MultiplexedConnectionDelegate innerDelegate, long? connectionLimit, KestrelTrace trace)
+    private static MultiplexedConnectionDelegate EnforceConnectionLimit(MultiplexedConnectionDelegate innerDelegate, long? connectionLimit, KestrelTrace trace, KestrelMetrics metrics)
     {
         if (!connectionLimit.HasValue)
         {
             return innerDelegate;
         }
 
-        return new ConnectionLimitMiddleware<MultiplexedConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace).OnConnectionAsync;
+        return new ConnectionLimitMiddleware<MultiplexedConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace, metrics).OnConnectionAsync;
     }
 }

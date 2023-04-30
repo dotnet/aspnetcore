@@ -13,6 +13,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -135,6 +136,14 @@ app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
 
             Assert.Null(httpContext.Items["uri"]);
             Assert.Equal(400, httpContext.Response.StatusCode);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+            var log = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Debug, log.LogLevel);
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
+            var parameters = bindAsyncType is "MySimpleBindAsyncRecord" || bindAsyncType is "InheritBindAsync"
+                ? "(HttpContext)"
+                : "(HttpContext, ParameterInfo)";
+            Assert.Equal($@"Required parameter ""{bindAsyncType} myBindAsyncParam"" was not provided from {bindAsyncType}.BindAsync{parameters}.", log.Message);
         }
     }
 

@@ -249,7 +249,22 @@ internal static class ServiceDescriptorHelpers
 
     public static void SetValue(IMessage message, FieldDescriptor field, object? values)
     {
-        if (field.IsRepeated)
+        if (field.IsMap)
+        {
+            var map = (IDictionary)field.Accessor.GetValue(message);
+            if (values is IDictionary dictionaryValues)
+            {
+                foreach (DictionaryEntry value in dictionaryValues)
+                {
+                    map[value.Key] = value.Value;
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Map field requires repeating keys and values.");
+            }
+        }
+        else if (field.IsRepeated)
         {
             var list = (IList)field.Accessor.GetValue(message);
             if (values is StringValues stringValues)
@@ -263,7 +278,11 @@ internal static class ServiceDescriptorHelpers
             {
                 foreach (var value in listValues)
                 {
-                    list.Add(ConvertValue(value, field));
+                    var v = field.Accessor.Descriptor.FieldType == FieldType.Message
+                        ? value
+                        : ConvertValue(value, field);
+
+                    list.Add(v);
                 }
             }
             else

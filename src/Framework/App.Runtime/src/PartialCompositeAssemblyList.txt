@@ -2,14 +2,9 @@ System.Private.CoreLib
 System.Runtime
 Microsoft.AspNetCore.Hosting
 Microsoft.AspNetCore.Hosting.Abstractions
-Microsoft.Extensions.Configuration.Abstractions
-Microsoft.Extensions.DependencyInjection.Abstractions
-Microsoft.Extensions.Configuration
 Microsoft.EntityFrameworkCore
 System.ComponentModel
 Microsoft.AspNetCore.Server.Kestrel.Core
-Microsoft.Extensions.Logging
-Microsoft.Extensions.DependencyInjection
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 System.Console
 System.Threading
@@ -20,7 +15,6 @@ Microsoft.Extensions.Configuration.Json
 Microsoft.Extensions.Configuration.FileExtensions
 Microsoft.Extensions.FileProviders.Abstractions
 Microsoft.Extensions.FileProviders.Physical
-Microsoft.Extensions.Primitives
 Microsoft.Extensions.Configuration.EnvironmentVariables
 Microsoft.Extensions.Configuration.CommandLine
 System.Linq
@@ -30,14 +24,12 @@ Microsoft.AspNetCore.Server.Kestrel
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 System.Net.Quic
 System.Diagnostics.Tracing
-Microsoft.Extensions.Logging.Abstractions
 Microsoft.Extensions.Features
 Microsoft.AspNetCore.Http.Abstractions
 Microsoft.AspNetCore.Http
 System.Diagnostics.DiagnosticSource
 Microsoft.AspNetCore.Mvc.Core
 Microsoft.AspNetCore.Razor.Runtime
-Microsoft.Extensions.Options
 Microsoft.AspNetCore.Connections.Abstractions
 System.Net.Primitives
 Microsoft.AspNetCore.Hosting.Server.Abstractions

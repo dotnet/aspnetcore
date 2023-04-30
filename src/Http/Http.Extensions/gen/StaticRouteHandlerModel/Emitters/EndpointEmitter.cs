@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,6 +14,7 @@ internal static class EndpointEmitter
     {
         using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
         using var parameterPreparationBuilder = new CodeWriter(stringWriter, baseIndent);
+        var readFormEmitted = false;
 
         foreach (var parameter in endpoint.Parameters)
         {
@@ -35,6 +38,9 @@ internal static class EndpointEmitter
                     break;
                 case EndpointParameterSource.JsonBody:
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
+                    break;
+                case EndpointParameterSource.FormBody:
+                    parameter.EmitFormParameterPreparation(parameterPreparationBuilder, ref readFormEmitted);
                     break;
                 case EndpointParameterSource.JsonBodyOrService:
                     parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);
@@ -70,12 +76,21 @@ internal static class EndpointEmitter
             {
                 if (!serviceProviderEmitted)
                 {
-                    codeWriter.WriteLine("var serviceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>();");
+                    codeWriter.WriteLine("var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();");
                     serviceProviderEmitted = true;
                 }
                 codeWriter.Write($@"var {parameter.SymbolName}_JsonBodyOrServiceResolver = ");
-                codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(serviceProviderIsService);");
+                var shortParameterTypeName = parameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+                codeWriter.WriteLine($"ResolveJsonBodyOrService<{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(parameter.SymbolName, true)}, serviceProviderIsService);");
             }
+        }
+    }
+
+    public static void EmitLoggingPreamble(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.EmitterContext.RequiresLoggingHelper)
+        {
+            codeWriter.WriteLine("var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);");
         }
     }
 

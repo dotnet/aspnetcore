@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
@@ -22,8 +23,11 @@ internal class EndpointParameter
         Ordinal = parameter.Ordinal;
         Source = EndpointParameterSource.Unknown;
         IsOptional = parameter.IsOptional();
+        DefaultValue = parameter.GetDefaultValueString();
         IsArray = TryGetArrayElementType(parameter, out var elementType);
         ElementType = elementType;
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(parameter, wellKnownTypes);
+        IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(parameter, wellKnownTypes);
 
         if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
         {
@@ -46,9 +50,28 @@ internal class EndpointParameter
             IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out _))
+        else if (parameter.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out var fromFormAttribute))
         {
-            Source = EndpointParameterSource.Unknown;
+            Source = EndpointParameterSource.FormBody;
+            LookupName = GetEscapedParameterName(fromFormAttribute, parameter.Name);
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
+            {
+                AssigningCode = "httpContext.Request.Form.Files";
+            }
+            else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
+            {
+                AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+            }
+            else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+            {
+                AssigningCode = "httpContext.Request.Form";
+            }
+            else
+            {
+                AssigningCode = $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+                IsParsable = TryGetParsability(parameter, wellKnownTypes, out var parsingBlockEmitter);
+                ParsingBlockEmitter = parsingBlockEmitter;
+            }
         }
         else if (TryGetExplicitFromJsonBody(parameter, wellKnownTypes, out var isOptional))
         {
@@ -56,7 +79,6 @@ internal class EndpointParameter
             {
                 Source = EndpointParameterSource.SpecialType;
                 AssigningCode = "httpContext.Request.Body";
-
             }
             else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.System_IO_Pipelines_PipeReader)))
             {
@@ -82,11 +104,23 @@ internal class EndpointParameter
             Source = EndpointParameterSource.SpecialType;
             AssigningCode = specialTypeAssigningCode;
         }
-        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)) ||
-                 SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)) ||
-                 SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
         {
-            Source = EndpointParameterSource.Unknown;
+            Source = EndpointParameterSource.FormBody;
+            LookupName = parameter.Name;
+            AssigningCode = "httpContext.Request.Form.Files";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
+        {
+            Source = EndpointParameterSource.FormBody;
+            LookupName = parameter.Name;
+            AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+        }
+        else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+        {
+            Source = EndpointParameterSource.FormBody;
+            LookupName = parameter.Name;
+            AssigningCode = "httpContext.Request.Form";
         }
         else if (HasBindAsync(parameter, wellKnownTypes, out var bindMethod))
         {
@@ -118,6 +152,12 @@ internal class EndpointParameter
         }
     }
 
+    private static bool ImplementsIEndpointMetadataProvider(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
+        => parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+
+    private static bool ImplementsIEndpointParameterMetadataProvider(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
+        => parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
+
     private static bool ShouldDisableInferredBodyParameters(string httpMethod)
     {
         switch (httpMethod)
@@ -131,12 +171,14 @@ internal class EndpointParameter
 
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
-
+    public bool IsEndpointMetadataProvider { get; }
+    public bool IsEndpointParameterMetadataProvider { get; }
     public string SymbolName { get; }
     public string LookupName { get; }
     public int Ordinal { get; }
     public bool IsOptional { get; }
     public bool IsArray { get; set; }
+    public string DefaultValue { get; set; }
 
     public EndpointParameterSource Source { get; }
 
@@ -236,7 +278,7 @@ internal class EndpointParameter
                 writer.EndBlock();
                 writer.WriteLine($$"""else if (string.IsNullOrEmpty({{inputArgument}}))""");
                 writer.StartBlock();
-                writer.WriteLine($$"""{{outputArgument}} = null;""");
+                writer.WriteLine($$"""{{outputArgument}} = {{DefaultValue}};""");
                 writer.EndBlock();
                 writer.WriteLine("else");
                 writer.StartBlock();
@@ -255,6 +297,7 @@ internal class EndpointParameter
                     writer.WriteLine($$"""if (!string.IsNullOrEmpty({{inputArgument}}))""");
                     writer.StartBlock();
                     writer.WriteLine("wasParamCheckFailure = true;");
+                    writer.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {SymbolDisplay.FormatLiteral(this.ToMessageString(), true)});");
                     writer.EndBlock();
                     writer.EndBlock();
                 }
@@ -262,7 +305,11 @@ internal class EndpointParameter
                 {
                     writer.WriteLine($$"""if (!{{preferredTryParseInvocation(inputArgument, outputArgument)}})""");
                     writer.StartBlock();
+                    writer.WriteLine($"if (!string.IsNullOrEmpty({inputArgument}))");
+                    writer.StartBlock();
+                    writer.WriteLine($@"logOrThrowExceptionHelper.ParameterBindingFailed({SymbolDisplay.FormatLiteral(Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(SymbolName, true)}, {inputArgument});");
                     writer.WriteLine("wasParamCheckFailure = true;");
+                    writer.EndBlock();
                     writer.EndBlock();
                 }
             };

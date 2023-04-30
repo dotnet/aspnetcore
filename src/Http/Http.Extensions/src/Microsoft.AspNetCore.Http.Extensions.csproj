@@ -14,6 +14,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RequestDelegateCreationMessages.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" LinkBase="Shared" />
@@ -23,12 +24,7 @@
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)TrimmingAppContextSwitches.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared"/>
-  </ItemGroup>  
-  
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
+    <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

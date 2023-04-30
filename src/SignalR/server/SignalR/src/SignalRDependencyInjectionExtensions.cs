@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -34,10 +35,12 @@ public static class SignalRDependencyInjectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
+    [RequiresUnreferencedCode("SignalR does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static ISignalRServerBuilder AddSignalR(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddMetrics();
         services.AddConnections();
         // Disable the WebSocket keep alive since SignalR has it's own
         services.Configure<WebSocketOptions>(o => o.KeepAliveInterval = TimeSpan.Zero);
@@ -52,6 +55,7 @@ public static class SignalRDependencyInjectionExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="configure">An <see cref="Action{HubOptions}"/> to configure the provided <see cref="HubOptions"/>.</param>
     /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
+    [RequiresUnreferencedCode("SignalR does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);

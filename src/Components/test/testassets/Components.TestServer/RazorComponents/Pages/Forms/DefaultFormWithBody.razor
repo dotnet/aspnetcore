@@ -1,0 +1,25 @@
+﻿@page "/forms/default-form-with-body"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with body</h2>
+
+<EditForm
+    EditContext="_editContext"
+    method="POST"
+    OnValidSubmit="@(() => { _ = FormData.Entries.TryGetValue("firstName", out var greeting) ? _greeting = (string)greeting : ""; })">
+    <input id="firstName" name="firstName" />
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_greeting != null)
+{
+    <p id="pass"> Hello @(_greeting)!</p>
+}
+
+@code{
+    string? _greeting = null;
+
+    [Inject] FormDataProvider FormData { get; set; }
+
+    EditContext _editContext = new EditContext(new object());
+}

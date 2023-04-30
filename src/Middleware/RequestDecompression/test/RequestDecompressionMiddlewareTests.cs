@@ -59,6 +59,14 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
+    private static async Task<byte[]> GetZlibCompressedContent(byte[] uncompressedBytes)
+    {
+        static Stream compressorDelegate(Stream compressedContent) =>
+            new ZLibStream(compressedContent, CompressionMode.Compress);
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
     private static async Task<byte[]> GetGZipCompressedContent(byte[] uncompressedBytes)
     {
         static Stream compressorDelegate(Stream compressedContent) =>
@@ -84,12 +92,12 @@ public class RequestDecompressionMiddlewareTests
     }
 
     [Fact]
-    public async Task Request_ContentEncodingDeflate_Decompressed()
+    public async Task Request_ContentEncodingDeflate_ZlibCompressed_Decompressed()
     {
         // Arrange
         var contentEncoding = "deflate";
         var uncompressedBytes = GetUncompressedContent();
-        var compressedBytes = await GetDeflateCompressedContent(uncompressedBytes);
+        var compressedBytes = await GetZlibCompressedContent(uncompressedBytes);
 
         // Act
         var (logMessages, decompressedBytes) = await InvokeMiddleware(compressedBytes, new[] { contentEncoding });
@@ -97,6 +105,22 @@ public class RequestDecompressionMiddlewareTests
         // Assert
         AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingDeflate_RawDeflateCompressed_Throws()
+    {
+        // This tests an incorrect version of deflate usage where the 'deflate'
+        // content-encoding is used with raw, unwrapped deflate compression. This
+        // usage doesn't conform to the spec (RFC 2616).
+
+        // Arrange
+        var contentEncoding = "deflate";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetDeflateCompressedContent(uncompressedBytes);
+
+        // Act/Assert
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await InvokeMiddleware(compressedBytes, new[] { contentEncoding }));
     }
 
     [Fact]

@@ -4,6 +4,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -249,6 +251,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+        Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
@@ -257,5 +260,6 @@ public sealed class WebAssemblyHostBuilder
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
+        Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
     }
 }

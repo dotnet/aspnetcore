@@ -3,7 +3,6 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -41,9 +40,9 @@ public class JsonOptions
         MaxDepth = MvcOptions.DefaultMaxModelBindingRecursionDepth,
 
         // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
-        // setting the default resolver (reflection-based) but the user can overwrite it directly or calling
-        // .AddContext<TContext>()
-        TypeInfoResolver = TrimmingAppContextSwitches.EnsureJsonTrimmability ? null : CreateDefaultTypeResolver()
+        // setting the default resolver (reflection-based) but the user can overwrite it directly or by modifying
+        // the TypeInfoResolverChain
+        TypeInfoResolver = JsonSerializer.IsReflectionEnabledByDefault ? CreateDefaultTypeResolver() : null
     };
 
     private static IJsonTypeInfoResolver CreateDefaultTypeResolver()

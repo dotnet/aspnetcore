@@ -67,6 +67,11 @@ public sealed class EditContext
     public EditContextProperties Properties { get; }
 
     /// <summary>
+    /// Gets whether field identifiers should be generated for &lt;input&gt; elements.
+    /// </summary>
+    public bool ShouldUseFieldIdentifiers { get; set; } = !OperatingSystem.IsBrowser();
+
+    /// <summary>
     /// Signals that the value for the specified field has changed.
     /// </summary>
     /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>

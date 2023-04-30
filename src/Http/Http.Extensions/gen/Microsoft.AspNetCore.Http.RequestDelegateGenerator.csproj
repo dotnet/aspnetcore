@@ -22,6 +22,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HashCode.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RequestDelegateCreationMessages.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypeData.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />

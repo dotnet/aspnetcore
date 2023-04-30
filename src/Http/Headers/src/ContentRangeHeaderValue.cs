@@ -35,10 +35,16 @@ public class ContentRangeHeaderValue
         // Scenario: "Content-Range: bytes 12-34/5678"
 
         ArgumentOutOfRangeException.ThrowIfNegative(length);
-        if ((to < 0) || (to > length))
+
+        // "To" is inclusive. Per RFC 7233:
+        // A Content-Range field value is invalid if it contains a byte-range-resp that has a
+        // last-byte-pos value less than its first-byte-pos value, or a complete-length value
+        // less than or equal to its last-byte-pos value.
+        if ((to < 0) || (length <= to))
         {
             throw new ArgumentOutOfRangeException(nameof(to));
         }
+
         if ((from < 0) || (from > to))
         {
             throw new ArgumentOutOfRangeException(nameof(from));

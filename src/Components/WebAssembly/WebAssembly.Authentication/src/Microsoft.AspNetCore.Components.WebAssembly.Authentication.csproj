@@ -41,7 +41,7 @@
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
 
-    <UpToDateCheckInput Include="@(YarnInputs)" Set="StaticWebassets" />
+    <UpToDateCheckInput Include="@(YarnInputs)" Exclude="$(YarnWorkingDir)package.json" Set="StaticWebassets" />
     <UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />
   </ItemGroup>
 

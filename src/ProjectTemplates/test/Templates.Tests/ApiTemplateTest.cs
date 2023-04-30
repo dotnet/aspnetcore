@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Templates.Test.Helpers;
 using Xunit.Abstractions;
 
@@ -35,7 +36,8 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null);
     }
 
-    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
@@ -47,7 +49,8 @@ public class ApiTemplateTest : LoggedTest
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
-    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "OSX.13.Amd64.Open;Ubuntu.2004.Amd64.Open;Windows.11.Amd64.Client.Open;")]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
@@ -55,11 +58,16 @@ public class ApiTemplateTest : LoggedTest
 
     private async Task ApiTemplateCore(string languageOverride, string[] args = null)
     {
+        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
+
         var project = await ProjectFactory.CreateProject(Output);
+        if (nativeAot)
+        {
+            project.SetCurrentRuntimeIdentifier();
+        }
 
         await project.RunDotNetNewAsync("api", args: args, language: languageOverride);
 
-        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
         var expectedLaunchProfileNames = nativeAot
             ? new[] { "http" }
             : new[] { "http", "IIS Express" };
@@ -82,16 +90,16 @@ public class ApiTemplateTest : LoggedTest
 
         await project.RunDotNetBuildAsync();
 
-        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        // The minimal/slim/core scenario doesn't include TLS support, so tell `project` not to register an https address
+        using (var aspNetProcess = project.StartBuiltProjectAsync(noHttps: true))
         {
             Assert.False(
                aspNetProcess.Process.HasExited,
                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
-
             await AssertEndpoints(aspNetProcess);
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync())
+        using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true, usePublishedAppHost: nativeAot))
         {
             Assert.False(
                 aspNetProcess.Process.HasExited,

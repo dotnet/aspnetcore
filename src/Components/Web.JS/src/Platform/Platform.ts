@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { MonoObject, MonoString, MonoArray } from 'dotnet/dotnet-legacy';
+import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
 import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
+import { JSInitializer } from '../JSInitializers/JSInitializers';
 
 export interface Platform {
-  start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
+  start(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi>;
 
   callEntryPoint(assemblyName: string): Promise<unknown>;
 
@@ -25,6 +27,11 @@ export interface Platform {
 
   beginHeapLock(): HeapLock;
   invokeWhenHeapUnlocked(callback: Function): void;
+}
+
+export type PlatformApi = {
+  resourceLoader: WebAssemblyResourceLoader,
+  jsInitializer: JSInitializer
 }
 
 export interface HeapLock {

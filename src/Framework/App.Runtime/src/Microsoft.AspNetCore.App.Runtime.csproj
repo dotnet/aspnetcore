@@ -503,13 +503,31 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ReadLinesFromFile>
 
     <ItemGroup>
+      <!-- Temporary workaround tracked by https://github.com/dotnet/runtime/issues/84860 -->
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Configuration.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Configuration.Abstractions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Configuration.Binder.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.DependencyInjection.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Abstractions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Console.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Logging.Configuration.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Options.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
+      <ExcludeAssemblies Include="$(TargetDir)\Microsoft.Extensions.Primitives.dll" />
+
       <BaseAssemblies Include="$(ManagedAssetsFullPath)\*.dll" />
       <BaseAssemblies Include="$(TargetDir)\*.dll" />
+
       <PartialCompositeAssemblyPaths Include="$(ManagedAssetsFullPath)\%(PartialCompositeAssemblyNames.Identity).dll" />
       <PartialCompositeAssemblyPaths Include="$(TargetDir)\%(PartialCompositeAssemblyNames.Identity).dll" />
       <PartialCompositeAssemblyPaths Remove="%(PartialCompositeAssemblyPaths.Identity)" Condition="!Exists('%(Identity)')" />
+      <PartialCompositeAssemblyPaths Remove="@(ExcludeAssemblies)" />
+
       <UnrootedAssemblyPaths Include="@(BaseAssemblies)" />
       <UnrootedAssemblyPaths Remove="@(PartialCompositeAssemblyPaths)" />
+      <UnrootedAssemblyPaths Remove="@(ExcludeAssemblies)" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--composite" Overwrite="true" />
@@ -517,6 +535,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--targetos:$(Crossgen2TargetOs)" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-u:&quot;%(UnrootedAssemblyPaths.Identity)&quot;" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="&quot;%(PartialCompositeAssemblyPaths.Identity)&quot;" Overwrite="false" />
+    <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-r:&quot;%(ExcludeAssemblies.Identity)&quot;" Overwrite="false" Condition="'@(ExcludeAssemblies)' != ''" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--out:&quot;$(CompositeTargetDir)$(CompositeFileName).dll&quot;" Overwrite="false" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="--instruction-set:$(InstructionSetSupport)" Overwrite="false" Condition="'$(InstructionSetSupport)' != ''" />
     <WriteLinesToFile File="$(CompositeResponseFile)" Lines="-m:&quot;$(CrossgenOptimizationData)&quot;" Overwrite="false" Condition="'$(CrossgenOptimizationData)' != ''" />
@@ -630,7 +649,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_BatchCopyToCompositeLayout"
-          Condition="'$(TargetOsName)' == 'linux'">
+          Condition="'$(TargetOsName)' == 'linux' or '$(TargetOsName)' == 'linux-musl'">
     <PropertyGroup>
       <CompositeFrameworkLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', CompositeFx.Layout, '$(Configuration)', '$(TargetRuntimeIdentifier)'))</CompositeFrameworkLayoutRoot>
       <LayoutAspnetPath>$(CompositeFrameworkLayoutRoot)\shared\$(SharedFxName)\$(SharedFxVersion)\</LayoutAspnetPath>
@@ -700,7 +719,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"
-          Condition="'$(TargetOsName)' == 'linux'"
+          Condition="'$(TargetOsName)' == 'linux' or '$(TargetOsName)' == 'linux-musl'"
           Inputs="$(CompositeTargetDir)"
           Outputs="$(CompositeArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />

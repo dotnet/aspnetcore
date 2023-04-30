@@ -36,8 +36,10 @@ public class RazorComponentEndpointFactoryTest
         Assert.NotNull(endpoint.RequestDelegate);
 
         var methods = Assert.Single(endpoint.Metadata.GetOrderedMetadata<HttpMethodMetadata>());
-        var method = Assert.Single(methods.HttpMethods);
-        Assert.Equal("GET", method);
+        Assert.Collection(methods.HttpMethods,
+            method => Assert.Equal("GET", method),
+            method => Assert.Equal("POST", method)
+            );
     }
 
     [Fact]

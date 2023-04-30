@@ -44,7 +44,21 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
 
         // Mutate the InputRadioContext instance in place. Since this is a non-fixed cascading parameter, the descendant
         // InputRadio/InputRadioGroup components will get notified to re-render and will see the new values.
-        _context.GroupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
+        if (!string.IsNullOrEmpty(Name))
+        {
+            // Prefer the explicitly-specified group name over anything else.
+            _context.GroupName = Name;
+        }
+        else if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            // If the user specifies a "name" attribute, or we're using "name" as a form field identifier, use that.
+            _context.GroupName = NameAttributeValue;
+        }
+        else
+        {
+            // Otherwise, just use a GUID to disambiguate this group's radio inputs from any others on the page.
+            _context.GroupName = _defaultGroupName;
+        }
         _context.CurrentValue = CurrentValue;
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
     }

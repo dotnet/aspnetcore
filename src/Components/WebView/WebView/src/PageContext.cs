@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebView.Services;
@@ -46,6 +47,9 @@ internal sealed class PageContext : IAsyncDisposable
         var loggerFactory = ServiceProvider.GetRequiredService<ILoggerFactory>();
         var jsComponents = new JSComponentInterop(jsComponentsConfiguration);
         Renderer = new WebViewRenderer(ServiceProvider, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
+
+        var webViewScrollToLocationHash = (WebViewScrollToLocationHash)ServiceProvider.GetRequiredService<IScrollToLocationHash>();
+        webViewScrollToLocationHash.AttachJSRuntime(JSRuntime);
     }
 
     public async ValueTask DisposeAsync()

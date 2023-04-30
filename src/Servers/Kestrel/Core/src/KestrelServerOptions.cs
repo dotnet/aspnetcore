@@ -250,10 +250,14 @@ public class KestrelServerOptions
 
     internal void ApplyDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions)
     {
-        if (httpsOptions.ServerCertificate != null || httpsOptions.ServerCertificateSelector != null)
+        if (httpsOptions.HasServerCertificateOrSelector)
         {
             return;
         }
+
+        // It's important (and currently true) that we don't reach here with https configuration uninitialized because
+        // we might incorrectly favor the development certificate over one specified by the user.
+        Debug.Assert(ApplicationServices.GetRequiredService<IHttpsConfigurationService>().IsInitialized, "HTTPS configuration should have been enabled");
 
         if (TestOverrideDefaultCertificate is X509Certificate2 certificateFromTest)
         {
@@ -276,6 +280,19 @@ public class KestrelServerOptions
         }
 
         httpsOptions.ServerCertificate = DevelopmentCertificate;
+    }
+
+    internal void EnableHttpsConfiguration()
+    {
+        var httpsConfigurationService = ApplicationServices.GetRequiredService<IHttpsConfigurationService>();
+
+        if (!httpsConfigurationService.IsInitialized)
+        {
+            var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+            httpsConfigurationService.Initialize(hostEnvironment, logger, httpsLogger);
+        }
     }
 
     internal void Serialize(Utf8JsonWriter writer)
@@ -392,11 +409,8 @@ public class KestrelServerOptions
             throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
         }
 
-        var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
-        var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
-        var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-
-        var loader = new KestrelConfigurationLoader(this, config, hostEnvironment, reloadOnChange, logger, httpsLogger);
+        var httpsConfigurationService = ApplicationServices.GetRequiredService<IHttpsConfigurationService>();
+        var loader = new KestrelConfigurationLoader(this, config, httpsConfigurationService, reloadOnChange);
         ConfigurationLoader = loader;
         return loader;
     }
