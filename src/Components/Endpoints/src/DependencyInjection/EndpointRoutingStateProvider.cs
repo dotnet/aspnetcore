@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 
-internal sealed class EndpointRouteDataProvider : RouteDataProvider
+internal sealed class EndpointRoutingStateProvider : RoutingStateProvider
 {
     private RouteData? _routeData;
 
-    public override RouteData? GetRouteData(string url) => _routeData;
+    public override RouteData? RouteData => _routeData;
 
     internal void SetRouteData(RouteData routeData)
     {
