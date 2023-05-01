@@ -50,7 +50,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
-        services.TryAddScoped<RoutingStateProvider ,EndpointRoutingStateProvider>();
+        services.TryAddScoped<RouteDataProvider ,EndpointRouteDataProvider>();
 
         return new DefaultRazorComponentsBuilder(services);
     }
