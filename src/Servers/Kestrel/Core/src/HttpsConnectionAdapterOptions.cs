@@ -78,12 +78,6 @@ public class HttpsConnectionAdapterOptions
     public SslProtocols SslProtocols { get; set; }
 
     /// <summary>
-    /// The protocols enabled on this endpoint.
-    /// </summary>
-    /// <remarks>Defaults to HTTP/1.x only.</remarks>
-    internal HttpProtocols HttpProtocols { get; set; }
-
-    /// <summary>
     /// Specifies whether the certificate revocation list is checked during authentication.
     /// </summary>
     public bool CheckCertificateRevocation { get; set; }

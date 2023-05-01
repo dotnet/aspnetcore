@@ -196,9 +196,7 @@ public static class ListenOptionsHttpsExtensions
 
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
-            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory, metrics);
+            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, listenOptions.Protocols, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
 
