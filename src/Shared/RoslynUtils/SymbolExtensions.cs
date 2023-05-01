@@ -74,12 +74,12 @@ internal static class SymbolExtensions
         return false;
     }
 
-    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
+    public static bool TryGetAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
     {
-        return symbol.HasAttributeImplementingInterface(interfaceType, out var _);
+        return symbol.TryGetAttributeImplementingInterface(interfaceType, out var _);
     }
 
-    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    public static bool TryGetAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in symbol.GetAttributes())
         {
@@ -94,12 +94,12 @@ internal static class SymbolExtensions
         return false;
     }
 
-    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
+    public static bool TryGetAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
     {
-        return attributes.HasAttributeImplementingInterface(interfaceType, out var _);
+        return attributes.TryGetAttributeImplementingInterface(interfaceType, out var _);
     }
 
-    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    public static bool TryGetAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in attributes)
         {

@@ -18,33 +18,20 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal class EndpointParameter
 {
-    public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
+    public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes): this(endpoint, parameter.Type, parameter.Name, wellKnownTypes)
     {
-        Type = parameter.Type;
-        SymbolName = parameter.Name;
-        LookupName = parameter.Name; // Default lookup name is same as parameter name (which is a valid C# identifier).
         Ordinal = parameter.Ordinal;
-        Source = EndpointParameterSource.Unknown;
         IsOptional = parameter.IsOptional();
         DefaultValue = parameter.GetDefaultValueString();
-        IsArray = TryGetArrayElementType(Type, out var elementType);
-        ElementType = elementType;
-        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(parameter, wellKnownTypes);
-        IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(parameter, wellKnownTypes);
         ProcessEndpointParameterSource(endpoint, parameter, parameter.GetAttributes(), wellKnownTypes);
     }
 
-    public EndpointParameter(Endpoint endpoint, IPropertySymbol property, IParameterSymbol? parameter, WellKnownTypes wellKnownTypes)
+    private EndpointParameter(Endpoint endpoint, IPropertySymbol property, IParameterSymbol? parameter, WellKnownTypes wellKnownTypes) : this(endpoint, property.Type, property.Name, wellKnownTypes)
     {
-        Type = property.Type;
-        SymbolName = property.Name;
-        LookupName = property.Name;
         Ordinal = parameter?.Ordinal ?? 0;
-        Source = EndpointParameterSource.Unknown;
         IsOptional = property.IsOptional() || parameter?.IsOptional() == true;
         DefaultValue = parameter?.GetDefaultValueString() ?? "null";
-        IsArray = TryGetArrayElementType(Type, out var elementType);
-        ElementType = elementType;
+        // Coalesce attributes on the property and attributes on the matching parameter
         var attributeBuilder = ImmutableArray.CreateBuilder<AttributeData>();
         attributeBuilder.AddRange(property.GetAttributes());
         if (parameter is not null)
@@ -54,31 +41,45 @@ internal class EndpointParameter
         ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable(), wellKnownTypes);
     }
 
+    private EndpointParameter(Endpoint endpoint, ITypeSymbol typeSymbol, string parameterName, WellKnownTypes wellKnownTypes)
+    {
+        Type = typeSymbol;
+        SymbolName = parameterName;
+        LookupName = parameterName;
+        Source = EndpointParameterSource.Unknown;
+        IsArray = TryGetArrayElementType(typeSymbol, out var elementType);
+        ElementType = elementType;
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol, wellKnownTypes);
+        IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol, wellKnownTypes);
+        endpoint.EmitterContext.HasEndpointParameterMetadataProvider = IsEndpointParameterMetadataProvider;
+    }
+
     private void ProcessEndpointParameterSource(Endpoint endpoint, ISymbol symbol, ImmutableArray<AttributeData> attributes, WellKnownTypes wellKnownTypes)
     {
-        if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
+        if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
         {
             Source = EndpointParameterSource.Route;
             LookupName = GetEscapedParameterName(fromRouteAttribute, symbol.Name);
             IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata), out var fromQueryAttribute))
+        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata), out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
             LookupName = GetEscapedParameterName(fromQueryAttribute, symbol.Name);
             IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata), out var fromHeaderAttribute))
+        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata), out var fromHeaderAttribute))
         {
             Source = EndpointParameterSource.Header;
             LookupName = GetEscapedParameterName(fromHeaderAttribute, symbol.Name);
             IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out var fromFormAttribute))
+        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out var fromFormAttribute))
         {
+            endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             LookupName = GetEscapedParameterName(fromFormAttribute, symbol.Name);
             if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
@@ -114,11 +115,12 @@ internal class EndpointParameter
             }
             else
             {
+                endpoint.IsAwaitable = true;
                 Source = EndpointParameterSource.JsonBody;
             }
             IsOptional = isOptional;
         }
-        else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
+        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
         }
@@ -151,24 +153,28 @@ internal class EndpointParameter
         }
         else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
         {
+            endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             LookupName = symbol.Name;
             AssigningCode = "httpContext.Request.Form.Files";
         }
         else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
         {
+            endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             LookupName = symbol.Name;
             AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
         }
         else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
         {
+            endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             LookupName = symbol.Name;
             AssigningCode = "httpContext.Request.Form";
         }
         else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod))
         {
+            endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.BindAsync;
             BindMethod = bindMethod;
         }
@@ -189,20 +195,21 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.RouteOrQuery;
             IsParsable = true;
-            endpoint.EmitterContext.HasParsable = true;
             ParsingBlockEmitter = parsingBlockEmitter;
         }
         else
         {
+            endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.JsonBodyOrService;
         }
+        endpoint.EmitterContext.HasParsable |= IsParsable;
     }
 
-    private static bool ImplementsIEndpointMetadataProvider(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
-        => parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+        => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
 
-    private static bool ImplementsIEndpointParameterMetadataProvider(IParameterSymbol parameter, WellKnownTypes wellKnownTypes)
-        => parameter.Type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
+    private static bool ImplementsIEndpointParameterMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+        => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
 
     private static bool ShouldDisableInferredBodyParameters(string httpMethod)
     {
@@ -220,11 +227,11 @@ internal class EndpointParameter
     public bool IsEndpointMetadataProvider { get; }
     public bool IsEndpointParameterMetadataProvider { get; }
     public string SymbolName { get; }
-    public string LookupName { get; set;  }
+    public string LookupName { get; set; }
     public int Ordinal { get; }
     public bool IsOptional { get; set; }
     public bool IsArray { get; set; }
-    public string DefaultValue { get; set; }
+    public string DefaultValue { get; set; } = "null";
 
     public EndpointParameterSource Source { get; set; }
 
@@ -415,7 +422,7 @@ internal class EndpointParameter
         out bool isOptional)
     {
         isOptional = false;
-        if (!attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
+        if (!attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
         {
             return false;
         }
@@ -455,11 +462,14 @@ internal class EndpointParameter
 
         var constructors = type.Constructors.Where(constructor => constructor.DeclaredAccessibility == Accessibility.Public && !constructor.IsStatic);
         var numOfConstructors = constructors.Count();
+        // When leveraging parameterless constructors, we want to ensure we only emit for writable
+        // properties. We do not have this constraint if we are leveraging a parameterized constructor.
+        var properties = type.GetMembers().OfType<IPropertySymbol>().Where(property => property.DeclaredAccessibility == Accessibility.Public);
+        var writableProperties = properties.Where(property => !property.IsReadOnly);
 
         if (numOfConstructors == 1)
         {
             var targetConstructor = constructors.SingleOrDefault();
-            var properties = type.GetMembers().OfType<IPropertySymbol>().Where(property => property.DeclaredAccessibility == Accessibility.Public);
             var lookupTable = new Dictionary<ParameterLookupKey, IPropertySymbol>();
             foreach (var property in properties)
             {
@@ -472,7 +482,7 @@ internal class EndpointParameter
             if (parameters.Length == 0)
             {
                 isParameterlessConstructor = true;
-                matchedParameters = properties.Select(property => new ConstructorParameter(property, null));
+                matchedParameters = writableProperties.Select(property => new ConstructorParameter(property, null));
                 return true;
             }
 
@@ -497,7 +507,7 @@ internal class EndpointParameter
         if (type.IsValueType)
         {
             isParameterlessConstructor = true;
-            matchedParameters = type.GetMembers().OfType<IPropertySymbol>().Select(property => new ConstructorParameter(property, null));
+            matchedParameters = writableProperties.Select(property => new ConstructorParameter(property, null));
             return true;
         }
 

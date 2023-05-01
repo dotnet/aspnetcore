@@ -267,4 +267,30 @@ app.MapPost("/parametersListWithImplicitFromBody", ([AsParameters] ParametersLis
 
         await VerifyAgainstBaselineUsingFile(compilation);
     }
+
+    [Fact]
+    public async Task RequestDelegateHandlesReadOnlyProperties()
+    {
+        const int expectedValue = 32;
+        var source = """
+void TestAction([AsParameters] ParameterListWithReadOnlyProperty args)
+{
+    args.HttpContext.Items.Add("input", args.Value);
+}
+app.MapGet("/{value}", TestAction);
+""";
+        const string paramName = "value";
+        const int originalRouteParam = 42;
+
+        var httpContext = CreateHttpContext();
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(expectedValue, httpContext.Items["input"]);
+    }
 }

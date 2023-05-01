@@ -68,7 +68,6 @@ internal class Endpoint
             switch (parameter.Source)
             {
                 case EndpointParameterSource.BindAsync:
-                    IsAwaitable = true;
                     switch (parameter.BindMethod)
                     {
                         case BindabilityMethod.IBindableFromHttpContext:
@@ -80,10 +79,8 @@ internal class Endpoint
                 case EndpointParameterSource.JsonBody:
                 case EndpointParameterSource.JsonBodyOrService:
                 case EndpointParameterSource.FormBody:
-                    IsAwaitable = true;
                     break;
                 case EndpointParameterSource.AsParameters:
-                    IsAwaitable = parameter.EndpointParameters?.Any(p => p.Source is EndpointParameterSource.JsonBody or EndpointParameterSource.FormBody or EndpointParameterSource.JsonBodyOrService) ?? false;
                     break;
                 case EndpointParameterSource.Unknown:
                     Diagnostics.Add(Diagnostic.Create(
@@ -100,14 +97,13 @@ internal class Endpoint
 
         EmitterContext.HasEndpointParameterMetadataProvider = Parameters.Any(p => p.IsEndpointParameterMetadataProvider);
         EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider || Parameters.Any(p => p.IsEndpointMetadataProvider || p.IsEndpointParameterMetadataProvider);
-        EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable || (parameter.Source == EndpointParameterSource.AsParameters && parameter.EndpointParameters.Any(p => p.IsParsable)));
         EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
             parameter.Source == EndpointParameterSource.SpecialType ||
             parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
     }
 
     public string HttpMethod { get; }
-    public bool IsAwaitable { get; }
+    public bool IsAwaitable { get; set;  }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }

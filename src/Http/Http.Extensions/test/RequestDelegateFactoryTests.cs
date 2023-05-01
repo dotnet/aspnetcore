@@ -21,6 +21,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -2750,42 +2751,42 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormCollection.", nse.Message);
     }
 
-    // public static object[][] NullableFromParameterListActions
-    // {
-    //     get
-    //     {
-    //         void TestParameterListRecordStruct([AsParameters] ParameterListRecordStruct? args)
-    //         { }
-    //
-    //         void TestParameterListRecordClass([AsParameters] ParameterListRecordClass? args)
-    //         { }
-    //
-    //         void TestParameterListStruct([AsParameters] ParameterListStruct? args)
-    //         { }
-    //
-    //         void TestParameterListClass([AsParameters] ParameterListClass? args)
-    //         { }
-    //
-    //         return new[]
-    //         {
-    //             new object[] { (Action<ParameterListRecordStruct?>)TestParameterListRecordStruct },
-    //             new object[] { (Action<ParameterListRecordClass?>)TestParameterListRecordClass },
-    //             new object[] { (Action<ParameterListStruct?>)TestParameterListStruct },
-    //             new object[] { (Action<ParameterListClass?>)TestParameterListClass },
-    //         };
-    //     }
-    // }
-    //
-    // [Theory]
-    // [MemberData(nameof(NullableFromParameterListActions))]
-    // public void RequestDelegateThrowsWhenNullableParameterList(Delegate action)
-    // {
-    //     var parameter = action.Method.GetParameters()[0];
-    //     var httpContext = CreateHttpContext();
-    //
-    //     var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
-    //     Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.", exception.Message);
-    // }
+    public static object[][] NullableFromParameterListActions
+    {
+        get
+        {
+            void TestParameterListRecordStruct([AsParameters] ParameterListRecordStruct? args)
+            { }
+
+            void TestParameterListRecordClass([AsParameters] ParameterListRecordClass? args)
+            { }
+
+            void TestParameterListStruct([AsParameters] ParameterListStruct? args)
+            { }
+
+            void TestParameterListClass([AsParameters] ParameterListClass? args)
+            { }
+
+            return new[]
+            {
+                new object[] { (Action<ParameterListRecordStruct?>)TestParameterListRecordStruct },
+                new object[] { (Action<ParameterListRecordClass?>)TestParameterListRecordClass },
+                new object[] { (Action<ParameterListStruct?>)TestParameterListStruct },
+                new object[] { (Action<ParameterListClass?>)TestParameterListClass },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(NullableFromParameterListActions))]
+    public void RequestDelegateThrowsWhenNullableParameterList(Delegate action)
+    {
+        var parameter = action.Method.GetParameters()[0];
+        var httpContext = CreateHttpContext();
+
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+        Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.", exception.Message);
+    }
 
     private record struct SampleParameterList(int Foo);
     private record struct AdditionalSampleParameterList(int Bar);

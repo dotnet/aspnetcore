@@ -792,3 +792,11 @@ public class ParameterListWitDefaultValue
     public HttpContext HttpContext { get; }
     public int Value { get; }
 }
+
+public class ParameterListWithReadOnlyProperty
+{
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value => 32;
+}
