@@ -855,13 +855,16 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         var responseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
 
         var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
-        if (string.IsNullOrEmpty(contentMediaType))
+        if (Logger.IsEnabled(LogLevel.Debug))
         {
-            Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type header is missing.");
-        }
-        else if (!string.Equals(contentMediaType, "application/json", StringComparison.OrdinalIgnoreCase))
-        {
-            Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type {responseMessage.Content.Headers.ContentType}.");
+            if (string.IsNullOrEmpty(contentMediaType))
+            {
+                Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type header is missing.");
+            }
+            else if (!string.Equals(contentMediaType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type {responseMessage.Content.Headers.ContentType}.");
+            }
         }
 
         // Error handling:
