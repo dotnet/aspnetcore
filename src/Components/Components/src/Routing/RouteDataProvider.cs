@@ -6,10 +6,13 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// Provides RouteData
 /// </summary>
-public class RoutingStateProvider
+public class RouteDataProvider
 {
     /// <summary>
     /// Gets RouteData
     /// </summary>
-    public virtual RouteData? RouteData { get { return null; } }
+    public virtual RouteData? GetRouteData(string url)
+    {
+        return null;
+    }
 }
