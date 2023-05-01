@@ -44,6 +44,7 @@ internal class RazorComponentEndpointInvoker
 
         await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
             _context,
+            componentType: _componentType,
             handler: handler,
             form: handler != null && _context.Request.HasFormContentType ? await _context.Request.ReadFormAsync() : null);
 
@@ -55,7 +56,6 @@ internal class RazorComponentEndpointInvoker
         var htmlContent = await _renderer.RenderEndpointComponent(
             _context,
             _rootComponentType,
-            _componentType,
             ParameterView.Empty,
             waitForQuiescence: isPost);
 

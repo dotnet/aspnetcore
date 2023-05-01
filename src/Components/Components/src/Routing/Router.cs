@@ -45,7 +45,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
-    [Inject] private DefaultRouteDataProvider RouteDataProvider { get; set; }
+    [Inject] private RouteDataProvider RouteDataProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
