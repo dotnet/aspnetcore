@@ -16,6 +16,12 @@ Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Excep
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetEventHandlerName(string! eventHandlerName) -> void
+*REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object!>! routeValues) -> void
+*REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! routeValues) -> void
+Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Components.Routing.DefaultRouteDataProvider
+Microsoft.AspNetCore.Components.Routing.DefaultRouteDataProvider.DefaultRouteDataProvider() -> void
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash
 Microsoft.AspNetCore.Components.Routing.IScrollToLocationHash.RefreshScrollPositionForHash(string! locationAbsolute) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Rendering.ComponentState
@@ -54,3 +60,4 @@ virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs, bool quiesce) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ShouldTrackNamedEventHandlers() -> bool
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.TrackNamedEventId(ulong eventHandlerId, int componentId, string! eventHandlerName) -> void
+virtual Microsoft.AspNetCore.Components.Routing.DefaultRouteDataProvider.GetRouteData(string! url) -> Microsoft.AspNetCore.Components.RouteData?

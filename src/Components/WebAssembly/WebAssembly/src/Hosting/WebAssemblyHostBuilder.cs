@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -261,5 +262,6 @@ public sealed class WebAssemblyHostBuilder
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
         Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
+        Services.TryAddScoped<DefaultRouteDataProvider>();
     }
 }

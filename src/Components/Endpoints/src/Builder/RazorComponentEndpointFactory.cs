@@ -16,6 +16,7 @@ internal class RazorComponentEndpointFactory
     internal void AddEndpoints(
 #pragma warning restore CA1822 // It's a singleton
         List<Endpoint> endpoints,
+        Type rootComponent,
         PageDefinition pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions)
@@ -55,7 +56,7 @@ internal class RazorComponentEndpointFactory
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
 
-        builder.RequestDelegate = httpContext => new RazorComponentEndpointInvoker(httpContext, pageDefinition.Type).RenderComponent();
+        builder.RequestDelegate = httpContext => new RazorComponentEndpointInvoker(httpContext, rootComponent, pageDefinition.Type).RenderComponent();
 
         endpoints.Add(builder.Build());
     }

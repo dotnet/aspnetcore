@@ -43,7 +43,7 @@ public class RazorComponentEndpointsStartup
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<RazorComponentsRoot>();
+                endpoints.MapRazorComponents<App>();
 
                 StreamingRendering.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);

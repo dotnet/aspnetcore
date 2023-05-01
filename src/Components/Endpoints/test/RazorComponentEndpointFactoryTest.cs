@@ -17,7 +17,7 @@ public class RazorComponentEndpointFactoryTest
         var factory = new RazorComponentEndpointFactory();
         var conventions = new List<Action<EndpointBuilder>>();
         var finallyConventions = new List<Action<EndpointBuilder>>();
-        factory.AddEndpoints(endpoints, new PageDefinition(
+        factory.AddEndpoints(endpoints, typeof(App), new PageDefinition(
             "App",
             typeof(App),
             "/",
@@ -54,6 +54,7 @@ public class RazorComponentEndpointFactoryTest
         var finallyConventions = new List<Action<EndpointBuilder>>();
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),
@@ -80,6 +81,7 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),
@@ -106,6 +108,7 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),
@@ -136,6 +139,7 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),

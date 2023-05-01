@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -66,13 +69,18 @@ internal partial class EndpointHtmlRenderer
 
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
+        Type rootComponentType,
         Type componentType,
         ParameterView parameters,
         bool waitForQuiescence)
     {
         try
         {
-            var component = BeginRenderingComponent(componentType, parameters);
+            // Saving RouteData to avoid routing twice in Router component
+            var routingStateProvider = httpContext.RequestServices.GetService<DefaultRouteDataProvider>();
+            ((EndpointRouteDataProvider)routingStateProvider!).SetRouteData(new RouteData(componentType, httpContext.GetRouteData().Values));
+
+            var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component, null, null);
 
             await WaitForResultReady(waitForQuiescence, result);
