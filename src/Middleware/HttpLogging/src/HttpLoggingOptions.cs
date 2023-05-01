@@ -17,7 +17,7 @@ public sealed class HttpLoggingOptions
 
     /// <summary>
     /// Request header values that are allowed to be logged.
-    /// <p>
+    /// <para>
     /// If a request header is not present in the <see cref="RequestHeaders"/>,
     /// the header name will be logged with a redacted value.
     /// Request headers can contain authentication tokens,
@@ -25,7 +25,7 @@ public sealed class HttpLoggingOptions
     /// under GDPR and other laws. Arbitrary request headers
     /// should not be logged unless logs are secure and
     /// access controlled and the privacy impact assessed.
-    /// </p>
+    /// </para>
     /// </summary>
     public ISet<string> RequestHeaders => _internalRequestHeaders;
 
@@ -61,10 +61,10 @@ public sealed class HttpLoggingOptions
 
     /// <summary>
     /// Response header values that are allowed to be logged.
-    /// <p>
+    /// <para>
     /// If a response header is not present in the <see cref="ResponseHeaders"/>,
     /// the header name will be logged with a redacted value.
-    /// </p>
+    /// </para>
     /// </summary>
     public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
@@ -93,10 +93,10 @@ public sealed class HttpLoggingOptions
 
     /// <summary>
     /// Options for configuring encodings for a specific media type.
-    /// <p>
+    /// <para>
     /// If the request or response do not match the supported media type,
     /// the response body will not be logged.
-    /// </p>
+    /// </para>
     /// </summary>
     public MediaTypeOptions MediaTypeOptions { get; } = MediaTypeOptions.BuildDefaultMediaTypeOptions();
 

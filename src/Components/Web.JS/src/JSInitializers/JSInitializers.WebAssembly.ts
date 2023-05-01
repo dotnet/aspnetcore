@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { BootJsonData } from '../Platform/BootConfig';
+import { BootJsonData } from 'dotnet';
 import { WebAssemblyStartOptions } from '../Platform/WebAssemblyStartOptions';
 import { JSInitializer } from './JSInitializers';
 
-export async function fetchAndInvokeInitializers(bootConfig: BootJsonData, options: Partial<WebAssemblyStartOptions>) : Promise<JSInitializer> {
+export async function fetchAndInvokeInitializers(bootConfig: BootJsonData, options: Partial<WebAssemblyStartOptions>): Promise<JSInitializer> {
   const initializers = bootConfig.resources.libraryInitializers;
   const jsInitializer = new JSInitializer();
   if (initializers) {

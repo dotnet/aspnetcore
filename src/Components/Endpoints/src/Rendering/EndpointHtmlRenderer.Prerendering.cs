@@ -2,14 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed partial class EndpointHtmlRenderer
+internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
@@ -37,7 +40,7 @@ internal sealed partial class EndpointHtmlRenderer
 
         // Make sure we only initialize the services once, but on every call we wait for that process to complete
         // This does not have to be threadsafe since it's not valid to call this simultaneously from multiple threads.
-        _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext, componentType, false);
+        _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext);
         await _servicesInitializedTask;
 
         UpdateSaveStateRenderMode(httpContext, prerenderMode);
@@ -71,10 +74,12 @@ internal sealed partial class EndpointHtmlRenderer
         ParameterView parameters,
         bool waitForQuiescence)
     {
-        await InitializeStandardComponentServicesAsync(httpContext, componentType, true);
-
         try
         {
+            // Saving RouteData to avoid routing twice in Router component
+            var routingStateProvider = httpContext.RequestServices.GetService<DefaultRouteDataProvider>();
+            ((EndpointRouteDataProvider)routingStateProvider!).SetRouteData(new RouteData(componentType, httpContext.GetRouteData().Values));
+
             var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component, null, null);
 

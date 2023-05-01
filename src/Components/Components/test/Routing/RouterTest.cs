@@ -25,7 +25,7 @@ public class RouterTest
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
         services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
-        services.TryAddScoped<RouteDataProvider>();
+        services.TryAddScoped<DefaultRouteDataProvider>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);
@@ -199,6 +199,31 @@ public class RouterTest
         var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
         Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
         Assert.Equal($"Rendering route matching {typeof(MultiSegmentRouteComponent)}", renderedFrame.TextContent);
+    }
+
+    [Fact]
+    public async Task SetParametersAsyncRefreshesOnce()
+    {
+        //Arrange
+        var parameters = new Dictionary<string, object>
+            {
+                { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+                { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
+            };
+
+        var refreshCalled = 0;
+        _renderer.OnUpdateDisplay = (renderBatch) =>
+        {
+            refreshCalled += 1;
+            return;
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        //Assert
+        Assert.Equal(1, refreshCalled);
     }
 
     internal class TestNavigationManager : NavigationManager

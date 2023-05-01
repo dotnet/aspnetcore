@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 
-internal sealed class EndpointRouteDataProvider : RouteDataProvider
+internal sealed class EndpointRouteDataProvider : DefaultRouteDataProvider
 {
     private RouteData? _routeData;
 

@@ -106,6 +106,9 @@ public static class CertificateLoader
     internal static bool DoesCertificateHaveAnAccessiblePrivateKey(X509Certificate2 certificate)
         => certificate.HasPrivateKey;
 
+    internal static bool DoesCertificateHaveASubjectAlternativeName(X509Certificate2 certificate)
+        => certificate.Extensions.OfType<X509SubjectAlternativeNameExtension>().Any();
+
     private static void DisposeCertificates(X509Certificate2Collection? certificates, X509Certificate2? except)
     {
         if (certificates != null)

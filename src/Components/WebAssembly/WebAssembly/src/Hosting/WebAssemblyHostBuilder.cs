@@ -4,6 +4,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -259,6 +261,7 @@ public sealed class WebAssemblyHostBuilder
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.TryAddScoped<RouteDataProvider>();
+        Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
+        Services.TryAddScoped<DefaultRouteDataProvider>();
     }
 }

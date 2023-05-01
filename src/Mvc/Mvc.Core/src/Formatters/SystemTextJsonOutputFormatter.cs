@@ -65,27 +65,38 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
 
         var httpContext = context.HttpContext;
 
-        var runtimeType = context.Object?.GetType();
+        // context.ObjectType reflects the declared model type when specified.
+        // For polymorphic scenarios where the user declares a return type, but returns a derived type,
+        // we want to serialize all the properties on the derived type. This keeps parity with
+        // the behavior you get when the user does not declare the return type.
+        // To enable this our best option is to check if the JsonTypeInfo for the declared type is valid,
+        // if it is use it. If it isn't, serialize the value as 'object' and let JsonSerializer serialize it as necessary.
         JsonTypeInfo? jsonTypeInfo = null;
-
         if (context.ObjectType is not null)
         {
             var declaredTypeJsonInfo = SerializerOptions.GetTypeInfo(context.ObjectType);
 
-            if (declaredTypeJsonInfo.IsValid(runtimeType))
+            var runtimeType = context.Object?.GetType();
+            if (declaredTypeJsonInfo.ShouldUseWith(runtimeType))
             {
                 jsonTypeInfo = declaredTypeJsonInfo;
             }
         }
-
-        jsonTypeInfo ??= SerializerOptions.GetTypeInfo(runtimeType ?? typeof(object));
 
         var responseStream = httpContext.Response.Body;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(responseStream, context.Object, jsonTypeInfo, httpContext.RequestAborted);
+                if (jsonTypeInfo is not null)
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, context.Object, jsonTypeInfo, httpContext.RequestAborted);
+                }
+                else
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, context.Object, SerializerOptions, httpContext.RequestAborted);
+                }
+
                 await responseStream.FlushAsync(httpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
@@ -99,7 +110,15 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             ExceptionDispatchInfo? exceptionDispatchInfo = null;
             try
             {
-                await JsonSerializer.SerializeAsync(transcodingStream, context.Object, jsonTypeInfo);
+                if (jsonTypeInfo is not null)
+                {
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, jsonTypeInfo);
+                }
+                else
+                {
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, SerializerOptions);
+                }
+
                 await transcodingStream.FlushAsync();
             }
             catch (Exception ex)

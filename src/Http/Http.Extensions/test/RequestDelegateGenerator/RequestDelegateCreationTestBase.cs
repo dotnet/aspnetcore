@@ -192,8 +192,6 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton(LoggerFactory);
-        var jsonOptions = new JsonOptions();
-        serviceCollection.AddSingleton(Options.Create(jsonOptions));
         if (configureServices is not null)
         {
             configureServices(serviceCollection);

@@ -2033,45 +2033,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(nameof(JsonTodoChild), deserializedResponseBody["$type"]!.GetValue<string>());
     }
 
-    public static IEnumerable<object[]> JsonContextActions
-    {
-        get
-        {
-            return ComplexResult.Concat(ChildResult);
-        }
-    }
-
     [JsonSerializable(typeof(Todo))]
     [JsonSerializable(typeof(TodoChild))]
     private partial class TestJsonContext : JsonSerializerContext
     { }
-
-    [Theory]
-    [MemberData(nameof(JsonContextActions))]
-    public async Task RequestDelegateWritesAsJsonResponseBody_WithJsonSerializerContext(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.RequestServices = new ServiceCollection()
-            .AddSingleton(LoggerFactory)
-            .ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = TestJsonContext.Default)
-            .BuildServiceProvider();
-
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var deserializedResponseBody = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        Assert.NotNull(deserializedResponseBody);
-        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
-    }
 
     [Fact]
     public void CreateDelegateThrows_WhenGetJsonTypeInfoFail()

@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using System.Text;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -247,5 +249,105 @@ app.MapGet("/value-task", () => ValueTask.CompletedTask);
         httpContext = CreateHttpContext();
         await endpoints[1].RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, string.Empty);
+    }
+
+    public static IEnumerable<object[]> JsonContextActions
+    {
+        get
+        {
+            yield return new[] { "TestAction", """Todo TestAction() => new Todo { Name = "Write even more tests!" };""" };
+            yield return new[] { "TaskTestAction", """Task<Todo> TaskTestAction() => Task.FromResult(new Todo { Name = "Write even more tests!" });""" };
+            yield return new[] { "ValueTaskTestAction", """ValueTask<Todo> ValueTaskTestAction() => ValueTask.FromResult(new Todo { Name = "Write even more tests!" });""" };
+
+            yield return new[] { "StaticTestAction", """static Todo StaticTestAction() => new Todo { Name = "Write even more tests!" };""" };
+            yield return new[] { "StaticTaskTestAction", """static Task<Todo> StaticTaskTestAction() => Task.FromResult(new Todo { Name = "Write even more tests!" });""" };
+            yield return new[] { "StaticValueTaskTestAction", """static ValueTask<Todo> StaticValueTaskTestAction() => ValueTask.FromResult(new Todo { Name = "Write even more tests!" });""" };
+
+            yield return new[] { "TestAction", """Todo TestAction() => new JsonTodoChild { Name = "Write even more tests!", Child = "With type hierarchies!" };""" };
+
+            yield return new[] { "TaskTestAction", """Task<Todo> TaskTestAction() => Task.FromResult<Todo>(new JsonTodoChild { Name = "Write even more tests!", Child = "With type hierarchies!" });""" };
+            yield return new[] { "TaskTestActionAwaited", """
+                    async Task<Todo> TaskTestActionAwaited()
+                    {
+                        await Task.Yield();
+                        return new JsonTodoChild { Name = "Write even more tests!", Child = "With type hierarchies!" };
+                    }
+                    """ };
+
+            yield return new[] { "ValueTaskTestAction", """ValueTask<Todo> ValueTaskTestAction() => ValueTask.FromResult<Todo>(new JsonTodoChild { Name = "Write even more tests!", Child = "With type hierarchies!" });""" };
+            yield return new[] { "ValueTaskTestActionAwaited", """
+                    async ValueTask<Todo> ValueTaskTestActionAwaited()
+                    {
+                        await Task.Yield();
+                        return new JsonTodoChild { Name = "Write even more tests!", Child = "With type hierarchies!" };
+                    }
+                    """ };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(JsonContextActions))]
+    public async Task RequestDelegateWritesAsJsonResponseBody_WithJsonSerializerContext(string delegateName, string delegateSource)
+    {
+        var source = $"""
+app.MapGet("/test", {delegateName});
+
+{delegateSource}
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default);
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<Todo>(((MemoryStream)httpContext.Response.Body).ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType(bool useJsonContext)
+    {
+        var source = """
+app.MapGet("/todos", () => GetTodosAsync());
+
+static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
+{
+    yield return new JsonTodo() { Id = 1, IsComplete = true, Name = "One" };
+
+    // ensure this is async
+    await Task.Yield();
+
+    yield return new JsonTodoChild() { Id = 2, IsComplete = false, Name = "Two", Child = "TwoChild" };
+}
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            if (useJsonContext)
+            {
+                serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default);
+            }
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var expectedBody = """[{"id":1,"name":"One","isComplete":true},{"$type":"JsonTodoChild","child":"TwoChild","id":2,"name":"Two","isComplete":false}]""";
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 }

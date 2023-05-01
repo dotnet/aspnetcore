@@ -49,6 +49,7 @@ public class AuthenticationBuilder
             return true;
         });
         Services.AddTransient<THandler>();
+        Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, PostConfigureAuthenticationSchemeOptions<TOptions>>());
         return this;
     }
 
@@ -121,6 +122,23 @@ public class AuthenticationBuilder
         public void PostConfigure(string? name, TOptions options)
         {
             options.SignInScheme ??= _authOptions.DefaultSignInScheme ?? _authOptions.DefaultScheme;
+        }
+    }
+
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
+    private sealed class PostConfigureAuthenticationSchemeOptions<TOptions> : IPostConfigureOptions<TOptions>
+        where TOptions : AuthenticationSchemeOptions
+    {
+        public PostConfigureAuthenticationSchemeOptions(TimeProvider timeProvider)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider TimeProvider { get; }
+
+        public void PostConfigure(string? name, TOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
         }
     }
 }

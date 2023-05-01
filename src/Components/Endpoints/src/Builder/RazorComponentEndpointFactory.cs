@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Endpoints.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class RazorComponentEndpointFactory
 {
-    private static readonly HttpMethodMetadata HttpGet = new(new[] { HttpMethods.Get });
+    private static readonly HttpMethodMetadata HttpMethodsMetadata = new(new[] { HttpMethods.Get, HttpMethods.Post });
 
 #pragma warning disable CA1822 // It's a singleton
     internal void AddEndpoints(
@@ -38,8 +37,7 @@ internal class RazorComponentEndpointFactory
 
         // We do not support link generation, so explicitly opt-out.
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
-        builder.Metadata.Add(HttpGet);
-        builder.Metadata.Add(new RootComponentMetadata(rootComponent));
+        builder.Metadata.Add(HttpMethodsMetadata);
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
 
         foreach (var convention in conventions)
@@ -58,16 +56,8 @@ internal class RazorComponentEndpointFactory
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
 
-        builder.RequestDelegate = CreateRouteDelegate(rootComponent, pageDefinition.Type);
+        builder.RequestDelegate = httpContext => new RazorComponentEndpointInvoker(httpContext, rootComponent, pageDefinition.Type).RenderComponent();
 
         endpoints.Add(builder.Build());
-    }
-
-    private static RequestDelegate CreateRouteDelegate(Type rootComponent, Type componentType)
-    {
-        return httpContext =>
-        {
-            return new RazorComponentEndpointInvoker(httpContext, rootComponent, componentType).RenderComponent();
-        };
     }
 }

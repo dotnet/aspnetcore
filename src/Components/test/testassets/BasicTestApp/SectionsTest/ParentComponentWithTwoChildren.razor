@@ -9,16 +9,25 @@
 
 <p>Text between two section outlets</p>
 
-<SectionOutlet SectionName="@SecondSectionName" />
+@if (SecondSectionOutletExists)
+{
+    <SectionOutlet SectionName="@SecondSectionName" />
+}
 
 <p>Text between two section outlets</p>
 
 <SectionOutlet SectionId="ThirdSectionName" />
 
-
 <button id="section-outlet-dispose"
         @onclick="@(() => FirstSectionOutletExists = false)">
     Dispose first SectionOutlet
+</button>
+
+<br/>
+
+<button id="second-section-outlet-dispose"
+        @onclick="@(() => SecondSectionOutletExists = false)">
+    Dispose second SectionOutlet
 </button>
 
 @if (SectionOutletWithSameSectionIdExists)
@@ -114,6 +123,11 @@
     Change SectionContent SectionName
 </button><br />
 
+<button id="section-content-with-name-dispose"
+        @onclick="@(() => SectionContentWithSectionNameExists = false)">
+    Dispose SectionContent SectionName
+</button><br />
+
 <Counter
     SectionContentExists="CounterSectionContentExists"
     SectionId="CounterSectionContentId">
@@ -164,6 +178,7 @@
 
 @code {
     private bool FirstSectionOutletExists = true;
+    private bool SecondSectionOutletExists = true;
     private bool SectionOutletWithSameSectionIdExists = false;
     private bool SectionOutletWithSameSectionNameExists = false;
     private bool SectionOutletWithEqualSectionNameToSectionIdExist = false;

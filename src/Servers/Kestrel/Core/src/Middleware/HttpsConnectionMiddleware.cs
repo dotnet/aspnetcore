@@ -90,7 +90,7 @@ internal sealed class HttpsConnectionMiddleware
         {
             Debug.Assert(_serverCertificate != null);
 
-            EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
+            EnsureCertificateIsAllowedForServerAuth(_serverCertificate, _logger);
 
             var certificate = _serverCertificate;
             if (!certificate.HasPrivateKey)
@@ -314,7 +314,7 @@ internal sealed class HttpsConnectionMiddleware
                 var cert = _serverCertificateSelector(context, name);
                 if (cert != null)
                 {
-                    EnsureCertificateIsAllowedForServerAuth(cert);
+                    EnsureCertificateIsAllowedForServerAuth(cert, _logger);
                 }
                 return cert!;
             };
@@ -452,11 +452,15 @@ internal sealed class HttpsConnectionMiddleware
         return sslOptions;
     }
 
-    internal static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
+    internal static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate, ILogger<HttpsConnectionMiddleware> logger)
     {
         if (!CertificateLoader.IsCertificateAllowedForServerAuth(certificate))
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidServerCertificateEku(certificate.Thumbprint));
+        }
+        else if (!CertificateLoader.DoesCertificateHaveASubjectAlternativeName(certificate))
+        {
+            logger.NoSubjectAlternativeName(certificate.Thumbprint);
         }
     }
 
@@ -514,7 +518,7 @@ internal sealed class HttpsConnectionMiddleware
         return false;
     }
 
-    internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions)
+    internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions, ILogger<HttpsConnectionMiddleware> logger)
     {
         if (httpsOptions.OnAuthenticate != null)
         {
@@ -539,7 +543,7 @@ internal sealed class HttpsConnectionMiddleware
                 var cert = httpsOptions.ServerCertificateSelector(null, host);
                 if (cert != null)
                 {
-                    EnsureCertificateIsAllowedForServerAuth(cert);
+                    EnsureCertificateIsAllowedForServerAuth(cert, logger);
                 }
                 return cert!;
             };
@@ -595,6 +599,9 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
 
     [LoggerMessage(8, LogLevel.Debug, "Failed to open certificate store {StoreName}.", EventName = "FailToOpenStore")]
     public static partial void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, string? storeName, Exception exception);
+
+    [LoggerMessage(9, LogLevel.Information, "Certificate with thumbprint {Thumbprint} lacks the subjectAlternativeName (SAN) extension and may not be accepted by browsers.", EventName = "NoSubjectAlternativeName")]
+    public static partial void NoSubjectAlternativeName(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint);
 
     public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
     {

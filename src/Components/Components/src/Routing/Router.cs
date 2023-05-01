@@ -45,7 +45,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
-    [Inject] private RouteDataProvider RoutingStateProvider { get; set; }
+    [Inject] private DefaultRouteDataProvider RouteDataProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -138,8 +138,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             _onNavigateCalled = true;
             await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
         }
-
-        Refresh(isNavigationIntercepted: false);
+        else
+        {
+            Refresh(isNavigationIntercepted: false);
+        }
     }
 
     /// <inheritdoc />
@@ -195,9 +197,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
         locationPath = TrimQueryOrHash(locationPath);
 
-        var routeData = RoutingStateProvider.GetRouteData(locationPath);
-
         // In order to avoid routing twice we check for RouteData
+        var routeData = RouteDataProvider.GetRouteData(locationPath);
         if (routeData != null)
         {
             _renderHandle.Render(Found(routeData));
@@ -222,7 +223,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             routeData = new RouteData(
                 context.Handler,
                 context.Parameters ?? _emptyParametersDictionary);
-
             _renderHandle.Render(Found(routeData));
 
             // If you navigate to a different page, then after the next render we'll update the scroll position
