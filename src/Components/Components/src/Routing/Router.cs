@@ -45,7 +45,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
-    [Inject] private RouteDataProvider RouteDataProvider { get; set; }
+    [Inject] private RoutingStateProvider RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -192,20 +192,19 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 _renderHandle.Render(Navigating);
             }
             return;
-        }
-
-        var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
-        locationPath = TrimQueryOrHash(locationPath);
+        }      
 
         // In order to avoid routing twice we check for RouteData
-        var routeData = RouteDataProvider.GetRouteData(locationPath);
-        if (routeData != null)
+        if (RoutingStateProvider.RouteData != null)
         {
-            _renderHandle.Render(Found(routeData));
+            _renderHandle.Render(Found(RoutingStateProvider.RouteData));
             return;
         }
 
         RefreshRouteTable();
+
+        var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
+        locationPath = TrimQueryOrHash(locationPath);
 
         var context = new RouteContext(locationPath);
         Routes.Route(context);
@@ -220,7 +219,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
             Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
-            routeData = new RouteData(
+            var routeData = new RouteData(
                 context.Handler,
                 context.Parameters ?? _emptyParametersDictionary);
             _renderHandle.Render(Found(routeData));
