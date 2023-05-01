@@ -192,19 +192,22 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 _renderHandle.Render(Navigating);
             }
             return;
-        }      
+        }
+
+        var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
+        locationPath = TrimQueryOrHash(locationPath);
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider.RouteData != null)
         {
+            Log.NavigatingToComponent(_logger, RoutingStateProvider.RouteData.PageType, locationPath, _baseUri);
+
             _renderHandle.Render(Found(RoutingStateProvider.RouteData));
+
             return;
         }
 
         RefreshRouteTable();
-
-        var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
-        locationPath = TrimQueryOrHash(locationPath);
 
         var context = new RouteContext(locationPath);
         Routes.Route(context);
