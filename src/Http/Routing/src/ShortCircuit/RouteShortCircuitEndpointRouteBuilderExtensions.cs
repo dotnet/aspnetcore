@@ -13,7 +13,7 @@ public static class RouteShortCircuitEndpointRouteBuilderExtensions
 {
     private static readonly RequestDelegate _shortCircuitDelegate = (context) => Task.CompletedTask;
     /// <summary>
-    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests (all verbs)
     /// for the specified prefixes.
     /// </summary>
     ///<param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
