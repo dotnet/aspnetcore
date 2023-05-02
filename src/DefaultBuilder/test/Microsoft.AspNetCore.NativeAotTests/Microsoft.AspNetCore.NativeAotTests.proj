@@ -1,9 +1,7 @@
-<Project DefaultTargets="Build">
-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props))" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <TestConsoleAppSourceFiles Include="UseStartupThrowsForStructContainersTest.cs" />
   </ItemGroup>
 
-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.targets))" />
 </Project>

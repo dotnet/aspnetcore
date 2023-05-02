@@ -4,4 +4,10 @@
     <TrimmingTestProjectsDir>$([MSBuild]::NormalizeDirectory('$(TrimmingTestDir)', 'projects'))</TrimmingTestProjectsDir>
     <ProjectTemplate>$(MSBuildThisFileDirectory)project.csproj.template</ProjectTemplate>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Microsoft.NET.Sdk needs a TFM set. Set a default one. -->
+    <TargetFramework Condition="'$(TargetFramework)' == '' and '$(TargetFrameworks)' == ''">$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
 </Project>

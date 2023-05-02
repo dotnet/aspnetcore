@@ -125,7 +125,9 @@
     <Error Condition="'$(ExecutionExitCode)' != '100'" Text="Error: [Failed Test]: %(TestConsoleApps.ProjectCompileItems). The Command %(TestConsoleApps.TestCommand) return a non-success exit code." ContinueOnError="ErrorAndContinue" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="ExecuteApplications" />
+  <Target Name="CoreBuild" DependsOnTargets="ExecuteApplications" />
+
+  <Target Name="Restore" />
 
   <!-- define test to do nothing, for this project Build does all the testing -->
   <Target Name="Test" DependsOnTargets="Build" />
