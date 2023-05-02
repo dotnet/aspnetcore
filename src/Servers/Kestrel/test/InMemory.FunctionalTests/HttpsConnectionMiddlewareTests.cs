@@ -566,7 +566,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure turning on Http/2 doesn't regress HTTP/1
     [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificate(HttpProtocols httpProtocols)
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -692,7 +692,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalFact]
     [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForTlsCallbackOptions()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -740,7 +740,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalFact]
     [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificateOnHttp1CanReturnNoCert()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -864,7 +864,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     // then the connection is aborted.
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [TlsAlpnSupported]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1001,7 +1001,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalFact]
     [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificateOnPostIfDrained()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1048,7 +1048,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
     [TlsAlpnSupported]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task RenegotationFailureCausesConnectionClose()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)

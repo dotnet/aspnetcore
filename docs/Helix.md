@@ -19,7 +19,7 @@ This will restore, and then publish all the test project including some bootstra
 ## Overview of the helix usage in our pipelines
 
 - Required queues: Windows10, OSX, Ubuntu1804
-- Full queue matrix: Windows[10, 11], Ubuntu[1804, 2004], Debian11, Redhat7, Arm64 (Win10, Debian11)
+- Full queue matrix: Windows[10, 11], Ubuntu[1804, 2004], Debian11, AlmaLinux8, Arm64 (Win10, Debian11)
 - The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/main/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
@@ -149,7 +149,7 @@ WorkItems
 | where JobName == "bc108374-750c-4084-853e-bc5b9b0d553e"
 | where Name != JobName
 | extend RunTime = Finished-Started
-| top 20 by RunTime desc  
+| top 20 by RunTime desc
 | project FriendlyName, RunTime
 ```
 

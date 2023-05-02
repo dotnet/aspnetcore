@@ -3,7 +3,9 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
@@ -72,7 +74,7 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
-        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: {} contentType})
+        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: { } contentType })
         {
             codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
         }
@@ -159,6 +161,74 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
         codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
         codeWriter.EndBlock(); // End handler method block
+    }
+
+    private static void EmitBuiltinResponseTypeMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        {
+            return;
+        }
+
+        if (response.HasNoResponse || response.IsIResult)
+        {
+            return;
+        }
+
+        if (responseType.SpecialType == SpecialType.System_String)
+        {
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+        }
+        else
+        {
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+        }
+    }
+
+    private static void EmitCallToMetadataProviderForResponse(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.Response is not { } response || response.ResponseType is not { } responseType)
+        {
+            return;
+        }
+
+        if (response.IsEndpointMetadataProvider)
+        {
+            codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+        }
+    }
+    private static void EmitCallsToMetadataProvidersForParameters(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        if (endpoint.EmitterContext.HasEndpointParameterMetadataProvider)
+        {
+            codeWriter.WriteLine("var parameterInfos = methodInfo.GetParameters();");
+        }
+
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (parameter.Type is not { } parameterType)
+            {
+                break;
+            }
+
+            if (parameter.IsEndpointMetadataProvider)
+            {
+                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+            }
+
+            if (parameter.IsEndpointParameterMetadataProvider)
+            {
+                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos.Single(p => p.Name == "{{parameter.SymbolName}}");""");
+                codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
+            }
+        }
+    }
+
+    public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
+        endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
+        endpoint.EmitCallsToMetadataProvidersForParameters(codeWriter);
     }
 
     public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)

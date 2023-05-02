@@ -32,8 +32,13 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     protected abstract bool IsGeneratorEnabled { get; }
 
+    private static readonly Project _baseProject = CreateProject();
+
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
+        var source = GetMapActionString(sources);
+        var project = _baseProject.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        // Create a Roslyn compilation for the syntax tree.
         var compilation = await CreateCompilationAsync(sources);
 
         // Return the compilation immediately if
@@ -116,7 +121,8 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
         var emitOptions = new EmitOptions(
             debugInformationFormat: DebugInformationFormat.PortablePdb,
-            pdbFilePath: symbolsName);
+            pdbFilePath: symbolsName,
+            outputNameOverride: $"TestProject-{Guid.NewGuid()}");
 
         var embeddedTexts = new List<EmbeddedText>();
 
@@ -257,14 +263,19 @@ public static class TestMapActions
     private static Task<Compilation> CreateCompilationAsync(string sources)
     {
         var source = GetMapActionString(sources);
+        var project = _baseProject.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        // Create a Roslyn compilation for the syntax tree.
+        return project.GetCompilationAsync();
+    }
+
+    private static Project CreateProject()
+    {
         var projectName = $"TestProject-{Guid.NewGuid()}";
         var project = new AdhocWorkspace().CurrentSolution
             .AddProject(projectName, projectName, LanguageNames.CSharp)
             .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable))
             .WithParseOptions(new CSharpParseOptions(LanguageVersion.CSharp11));
-
-        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
 
         // Add in required metadata references
         var resolver = new AppLocalResolver();
@@ -285,8 +296,7 @@ public static class TestMapActions
             }
         }
 
-        // Create a Roslyn compilation for the syntax tree.
-        return project.GetCompilationAsync();
+        return project;
     }
 
     internal async Task VerifyAgainstBaselineUsingFile(Compilation compilation, [CallerMemberName] string callerName = "")

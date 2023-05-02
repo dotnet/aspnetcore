@@ -1162,13 +1162,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
     private IdentityResult UserAlreadyInRoleError(string role)
     {
-        Logger.LogDebug(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
+        if (Logger.IsEnabled(LogLevel.Debug))
+        {
+            Logger.LogDebug(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
+        }
         return IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role));
     }
 
     private IdentityResult UserNotInRoleError(string role)
     {
-        Logger.LogDebug(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
+        if (Logger.IsEnabled(LogLevel.Debug))
+        {
+            Logger.LogDebug(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
+        }
         return IdentityResult.Failed(ErrorDescriber.UserNotInRole(role));
     }
 
@@ -1549,7 +1555,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         // Make sure the token is valid
         var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user).ConfigureAwait(false);
 
-        if (!result)
+        if (!result && Logger.IsEnabled(LogLevel.Debug))
         {
             Logger.LogDebug(LoggerEventIds.VerifyUserTokenFailed, "VerifyUserTokenAsync() failed with purpose: {purpose} for user.", purpose);
         }
@@ -2307,7 +2313,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (errors?.Count > 0)
         {
-            Logger.LogDebug(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            if (Logger.IsEnabled(LogLevel.Debug))
+            {
+                Logger.LogDebug(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            }
             return IdentityResult.Failed(errors);
         }
         return IdentityResult.Success;
@@ -2340,7 +2349,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (!isValid)
         {
-            Logger.LogDebug(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors?.Select(e => e.Code) ?? Array.Empty<string>()));
+            if (Logger.IsEnabled(LogLevel.Debug))
+            {
+                Logger.LogDebug(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors?.Select(e => e.Code) ?? Array.Empty<string>()));
+            }
             return IdentityResult.Failed(errors);
         }
         return IdentityResult.Success;

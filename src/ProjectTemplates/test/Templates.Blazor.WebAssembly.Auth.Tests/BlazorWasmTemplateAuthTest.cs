@@ -45,6 +45,7 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47919")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_NoHttps_Works_WithOutLocalDB()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, false, false);
 
@@ -64,6 +65,7 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB_ProgramMain()
         => BlazorWasmHostedTemplate_IndividualAuth_Works(false, true, false);
 
@@ -263,31 +265,37 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataIndividualB2C))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataIndividualB2C))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_NoHttps_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrg))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrg))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 

@@ -3685,17 +3685,23 @@
               }
             },
             {
-              "name": "bodyContains",
-              "parameters": {
-                "bodyPattern": "(aot)/i",
-                "isRegex": true
-              }
-            },
-            {
-              "name": "hasLabel",
-              "parameters": {
-                "label": "INTERNAL: Debug"
-              }
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "bodyContains",
+                  "parameters": {
+                    "bodyPattern": "[Aa][Oo][Tt]",
+                    "isRegex": true
+                  }
+                },
+                {
+                  "name": "titleContains",
+                  "parameters": {
+                    "isRegex": true,
+                    "titlePattern": "[Aa][Oo][Tt]"
+                  }
+                }
+              ]
             }
           ]
         },

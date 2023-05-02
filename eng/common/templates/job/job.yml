@@ -158,10 +158,12 @@ jobs:
   - template: /eng/common/templates/steps/component-governance.yml
     parameters:
       ${{ if eq(parameters.disableComponentGovernance, '') }}:
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(contains(variables['Build.SourceBranch'], 'internal/release'), eq(variables['Build.SourceBranch'], 'main'))) }}:
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
           disableComponentGovernance: false
         ${{ else }}:
           disableComponentGovernance: true
+      ${{ else }}:
+        disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
       componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:

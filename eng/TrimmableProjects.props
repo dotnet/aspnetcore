@@ -32,7 +32,6 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
     <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Identity" />
     <TrimmableProject Include="Microsoft.Extensions.Identity.Core" />
     <TrimmableProject Include="Microsoft.Extensions.Identity.Stores" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
@@ -44,6 +43,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication" />

@@ -1762,7 +1762,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests", "src\Servers\Kestrel\Transport.NamedPipes\test\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests.csproj", "{97C7D2A4-87E5-4A4A-A170-D736427D5C21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.RequestDelegateGenerator", "src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj", "{4730F56D-24EF-4BB2-AA75-862E31205F3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.RequestDelegateGenerator", "src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj", "{4730F56D-24EF-4BB2-AA75-862E31205F3A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickGrid", "QuickGrid", "{C406D9E0-1585-43F9-AA8F-D468AF84A996}"
 EndProject
@@ -1779,6 +1779,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Endpoints.Tests", "src\Components\Endpoints\test\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj", "{5D438258-CB19-4282-814F-974ABBC71411}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnitedApp", "src\Components\Samples\BlazorUnitedApp\BlazorUnitedApp.csproj", "{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BearerToken", "BearerToken", "{56291265-B7BF-4756-92AB-FC30F09381D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.BearerToken", "src\Security\Authentication\BearerToken\src\Microsoft.AspNetCore.Authentication.BearerToken.csproj", "{66FA1041-5556-43A0-9CA3-F9937F085F6E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.ApiEndpoints", "src\Identity\samples\IdentitySample.ApiEndpoints\IdentitySample.ApiEndpoints.csproj", "{37FC77EA-AC44-4D08-B002-8EFF415C424A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10701,6 +10707,38 @@ Global
 		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x64.Build.0 = Release|Any CPU
 		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x86.ActiveCfg = Release|Any CPU
 		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E}.Release|x86.Build.0 = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|arm64.Build.0 = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|x64.Build.0 = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Debug|x86.Build.0 = Debug|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|arm64.ActiveCfg = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|arm64.Build.0 = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|x64.ActiveCfg = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|x64.Build.0 = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|x86.ActiveCfg = Release|Any CPU
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E}.Release|x86.Build.0 = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|arm64.Build.0 = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|x64.Build.0 = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Debug|x86.Build.0 = Debug|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|arm64.ActiveCfg = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|arm64.Build.0 = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x64.ActiveCfg = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x64.Build.0 = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x86.ActiveCfg = Release|Any CPU
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11580,6 +11618,9 @@ Global
 		{AE4D272D-6F13-42C8-9404-C149188AFA33} = {7BAEB9BF-28F4-4DFD-9A04-E5193683C261}
 		{5D438258-CB19-4282-814F-974ABBC71411} = {7BAEB9BF-28F4-4DFD-9A04-E5193683C261}
 		{F5AE525F-F435-40F9-A567-4D5EC3B50D6E} = {5FE1FBC1-8CE3-4355-9866-44FE1307C5F1}
+		{56291265-B7BF-4756-92AB-FC30F09381D1} = {822D1519-77F0-484A-B9AB-F694C2CC25F1}
+		{66FA1041-5556-43A0-9CA3-F9937F085F6E} = {56291265-B7BF-4756-92AB-FC30F09381D1}
+		{37FC77EA-AC44-4D08-B002-8EFF415C424A} = {64B2A28F-6D82-4F2B-B0BB-88DE5216DD2C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

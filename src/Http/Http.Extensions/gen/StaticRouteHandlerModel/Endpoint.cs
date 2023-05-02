@@ -43,8 +43,15 @@ internal class Endpoint
             return;
         }
 
+        EmitterContext.RequiresMetadataHelperTypes = !(Response.IsIResult || Response.HasNoResponse);
         EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
         IsAwaitable = Response?.IsAwaitable == true;
+
+        // NOTE: We set this twice. It is possible that we don't have any parameters so we
+        //       want this to be true if the reponse type implements IEndpointMetadataProvider.
+        //       Later on we set this to be true if the parameters or the response type
+        //       implement the interface.
+        EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider;
 
         if (method.Parameters.Length == 0)
         {
@@ -87,6 +94,9 @@ internal class Endpoint
         }
 
         Parameters = parameters;
+
+        EmitterContext.HasEndpointParameterMetadataProvider = Parameters.Any(p => p.IsEndpointParameterMetadataProvider);
+        EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider || Parameters.Any(p => p.IsEndpointMetadataProvider || p.IsEndpointParameterMetadataProvider);
 
         EmitterContext.HasJsonBodyOrService = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
         EmitterContext.HasJsonBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);

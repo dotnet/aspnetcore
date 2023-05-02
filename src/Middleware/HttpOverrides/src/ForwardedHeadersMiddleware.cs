@@ -213,7 +213,10 @@ public class ForwardedHeadersMiddleware
                 if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
                 {
                     // Stop at the first unknown remote IP, but still apply changes processed so far.
-                    _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                    }
                     break;
                 }
 
@@ -227,7 +230,10 @@ public class ForwardedHeadersMiddleware
                 else if (!string.IsNullOrEmpty(set.IpAndPortText))
                 {
                     // Stop at the first unparsable IP, but still apply changes processed so far.
-                    _logger.LogDebug(1, "Unparsable IP: {IpAndPortText}", set.IpAndPortText);
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug(1, "Unparsable IP: {IpAndPortText}", set.IpAndPortText);
+                    }
                     break;
                 }
                 else if (_options.RequireHeaderSymmetry)

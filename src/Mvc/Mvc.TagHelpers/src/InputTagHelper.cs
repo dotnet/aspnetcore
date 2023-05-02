@@ -464,7 +464,8 @@ public class InputTagHelper : TagHelper
         else if (ViewContext.Html5DateRenderingMode == Html5DateRenderingMode.Rfc3339 &&
             !modelExplorer.Metadata.HasNonDefaultEditFormat &&
             (typeof(DateTime) == modelExplorer.Metadata.UnderlyingOrModelType ||
-             typeof(DateTimeOffset) == modelExplorer.Metadata.UnderlyingOrModelType))
+             typeof(DateTimeOffset) == modelExplorer.Metadata.UnderlyingOrModelType ||
+             typeof(DateOnly) == modelExplorer.Metadata.UnderlyingOrModelType))
         {
             // Rfc3339 mode _may_ override EditFormatString in a limited number of cases. Happens only when
             // EditFormatString has a default format i.e. came from a [DataType] attribute.

@@ -54,7 +54,7 @@ internal sealed class ListCommand
     {
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
-            reporter.Output(JsonSerializer.Serialize(jwtStore.Jwts, new JsonSerializerOptions { WriteIndented = true }));
+            reporter.Output(JsonSerializer.Serialize(jwts, new JsonSerializerOptions { WriteIndented = true }));
         }
         else
         {
