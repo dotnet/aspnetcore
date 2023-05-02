@@ -13,8 +13,8 @@ internal static class HttpRuleParser
 {
     // token = 1*<any CHAR except CTLs or separators>
     // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
-    private static readonly IndexOfAnyValues<char> TokenChars =
-        IndexOfAnyValues.Create("!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+    private static readonly SearchValues<char> TokenChars =
+        SearchValues.Create("!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
 
     private const int MaxNestedCount = 5;
     private static readonly string[] DateFormats = new string[]

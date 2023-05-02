@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 // * Catch-all parameters (Like /blog/{*slug})
 internal sealed class TemplateParser
 {
-    private static readonly IndexOfAnyValues<char> _invalidParameterNameCharacters = IndexOfAnyValues.Create("{}=.");
+    private static readonly SearchValues<char> _invalidParameterNameCharacters = SearchValues.Create("{}=.");
 
     internal static RouteTemplate ParseTemplate(string template)
     {
