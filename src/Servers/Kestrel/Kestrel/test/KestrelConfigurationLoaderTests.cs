@@ -380,7 +380,105 @@ public class KestrelConfigurationLoaderTests
         void CheckListenOptions(X509Certificate2 expectedCert)
         {
             var listenOptions = Assert.Single(serverOptions.ConfigurationBackedListenOptions);
-            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions.ServerCertificate.SerialNumber);
+            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions!.Value.ServerCertificate.SerialNumber);
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_ConfigureFirst()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            Assert.False(listenOptions.HttpsOptions.IsValueCreated);
+            listenOptions.Build();
+            Assert.True(listenOptions.HttpsOptions.IsValueCreated);
+            Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_UseHttpsFirst()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            Assert.False(listenOptions.HttpsOptions.IsValueCreated);
+            listenOptions.Build();
+            Assert.True(listenOptions.HttpsOptions.IsValueCreated);
+            Assert.Equal(listenOptions.HttpsOptions.Value.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
         }
     }
 
@@ -862,6 +960,8 @@ public class KestrelConfigurationLoaderTests
             });
         });
 
+        _ = serverOptions.CodeBackedListenOptions.Single().HttpsOptions.Value; // Force evaluation
+
         Assert.True(ranDefault);
         Assert.True(ran1);
         Assert.True(ran2);
@@ -996,6 +1096,8 @@ public class KestrelConfigurationLoaderTests
                 ran2 = true;
             });
         });
+
+        _ = serverOptions.CodeBackedListenOptions.Single().HttpsOptions.Value; // Force evaluation
 
         Assert.True(ranDefault);
         Assert.True(ran1);

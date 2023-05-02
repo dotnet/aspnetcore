@@ -140,7 +140,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     }
 
     internal bool IsTls { get; set; }
-    internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
+    internal Lazy<HttpsConnectionAdapterOptions>? HttpsOptions { get; set; }
     internal TlsHandshakeCallbackOptions? HttpsCallbackOptions { get; set; }
 
     /// <summary>

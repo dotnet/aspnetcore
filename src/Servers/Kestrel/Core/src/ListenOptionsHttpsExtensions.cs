@@ -166,17 +166,20 @@ public static class ListenOptionsHttpsExtensions
         // We consider calls to `UseHttps` to be a clear expression of user intent to pull in HTTPS configuration support
         listenOptions.KestrelServerOptions.EnableHttpsConfiguration();
 
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        configureOptions(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
-
-        if (!options.HasServerCertificateOrSelector)
+        return listenOptions.UseHttps(new Lazy<HttpsConnectionAdapterOptions>(() =>
         {
-            throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
-        }
+            var options = new HttpsConnectionAdapterOptions();
+            listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
+            configureOptions(options);
+            listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
 
-        return listenOptions.UseHttps(options);
+            if (!options.HasServerCertificateOrSelector)
+            {
+                throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+            }
+
+            return options;
+        }));
     }
 
     /// <summary>
@@ -188,14 +191,28 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {
-        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
-        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
+        return listenOptions.UseHttps(new Lazy<HttpsConnectionAdapterOptions>(httpsOptions));
+    }
 
+    /// <summary>
+    /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+    /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
+    /// </summary>
+    /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+    /// <param name="lazyHttpsOptions">Options to configure HTTPS.</param>
+    /// <returns>The <see cref="ListenOptions"/>.</returns>
+    private static ListenOptions UseHttps(this ListenOptions listenOptions, Lazy<HttpsConnectionAdapterOptions> lazyHttpsOptions)
+    {
         listenOptions.IsTls = true;
-        listenOptions.HttpsOptions = httpsOptions;
+        listenOptions.HttpsOptions = lazyHttpsOptions;
 
+        // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
+            // Evaluate the HttpsConnectionAdapterOptions, now that the configuration, if any, has been loaded
+            var httpsOptions = lazyHttpsOptions.Value;
+            var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
             var middleware = new HttpsConnectionMiddleware(next, httpsOptions, listenOptions.Protocols, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
@@ -257,6 +274,7 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.HttpsCallbackOptions = callbackOptions;
 
+        // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
             // Set the list of protocols from listen options.
