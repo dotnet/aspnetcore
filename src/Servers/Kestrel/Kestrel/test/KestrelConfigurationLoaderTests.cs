@@ -385,6 +385,70 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    public void GetServerCertificate_FromDevelopmentCertificate()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+            serverOptions.ConfigurationLoader.Load();
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                var serverCertificate = listenOptions.GetServerCertificate();
+                Assert.Equal(serverCertificate.SerialNumber, certificate.SerialNumber);
+            });
+            Assert.True(ran1);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void GetServerCertificate_FromEndpointCertificate()
+    {
+        var certificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Certificates:Default:Path", TestResources.TestCertificatePath),
+            new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword")
+        }).Build();
+
+        serverOptions.Configure(config);
+        serverOptions.ConfigurationLoader.Load();
+
+        var ran1 = false;
+        serverOptions.ListenAnyIP(4545, listenOptions =>
+        {
+            ran1 = true;
+            var serverCertificate = listenOptions.GetServerCertificate();
+            Assert.Equal(serverCertificate.SerialNumber, certificate.SerialNumber);
+        });
+        Assert.True(ran1);
+    }
+
+    [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
     {
         var serverOptions = CreateServerOptions();

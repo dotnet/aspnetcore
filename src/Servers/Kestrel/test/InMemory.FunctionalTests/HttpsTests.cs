@@ -775,6 +775,104 @@ public class HttpsTests : LoggedTest
         Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
     }
 
+    [Fact]
+    public void GetServerCertificate_ConfigurationNotLoaded()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        serverOptions.Configure();
+
+        var listenCallbackRan = false;
+        serverOptions.ListenLocalhost(5000, options =>
+        {
+            listenCallbackRan = true;
+            Assert.Throws<InvalidOperationException>(() => options.GetServerCertificate());
+        });
+
+        Assert.True(listenCallbackRan);
+    }
+
+    [Fact]
+    public void GetServerCertificate_ConfigurationLoaded()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        serverOptions.Configure();
+        serverOptions.ConfigurationLoader.Load();
+
+        var listenCallbackRan = false;
+        serverOptions.ListenLocalhost(5000, options =>
+        {
+            listenCallbackRan = true;
+            Assert.Equal(_x509Certificate2, options.GetServerCertificate());
+        });
+
+        Assert.True(listenCallbackRan);
+    }
+
+    [Fact]
+    public void GetServerCertificate_NoConfiguration()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        var listenCallbackRan = false;
+        serverOptions.ListenLocalhost(5000, options =>
+        {
+            listenCallbackRan = true;
+            Assert.Equal(_x509Certificate2, options.GetServerCertificate());
+        });
+
+        Assert.True(listenCallbackRan);
+    }
+
+    [Fact]
+    public void GetServerCertificate_FromHttpsDefaults()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+        {
+            httpsOptions.ServerCertificate = _x509Certificate2;
+        });
+
+        var listenCallbackRan = false;
+        serverOptions.ListenLocalhost(5000, options =>
+        {
+            listenCallbackRan = true;
+            Assert.Equal(_x509Certificate2, options.GetServerCertificate());
+        });
+
+        Assert.True(listenCallbackRan);
+    }
+
+    [Fact]
+    public void GetServerCertificateFailureIsRecoverable()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var listenCallbackRan1 = false;
+        serverOptions.ListenLocalhost(5000, options =>
+        {
+            listenCallbackRan1 = true;
+        });
+
+        var listenCallbackRan2 = false;
+        Assert.Throws<InvalidOperationException>(() => serverOptions.ListenLocalhost(5001, options =>
+        {
+            listenCallbackRan2 = true;
+            _ = options.GetServerCertificate();
+        }));
+
+        Assert.True(listenCallbackRan1);
+        Assert.True(listenCallbackRan2);
+
+        var listenOptions = Assert.Single(serverOptions.CodeBackedListenOptions);
+        Assert.Equal(5000, listenOptions.IPEndPoint.Port);
+        Assert.False(listenOptions.IsTls);
+    }
+
     private class HandshakeErrorLoggerProvider : ILoggerProvider
     {
         public HttpsConnectionFilterLogger FilterLogger { get; set; } = new HttpsConnectionFilterLogger();

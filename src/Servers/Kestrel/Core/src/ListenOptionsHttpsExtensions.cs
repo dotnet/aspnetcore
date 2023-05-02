@@ -180,6 +180,34 @@ public static class ListenOptionsHttpsExtensions
     }
 
     /// <summary>
+    /// Retrieve the server certificate, if any, for an endpoint; otherwise, throw.
+    /// Should not be called before the configuration is loaded, if there is one.
+    /// </summary>
+    /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+    /// <returns>The server certificate for this endpoint.</returns>
+    /// <exception cref="InvalidOperationException">If there is no server certificate for this endpoint.</exception>
+    /// <exception cref="InvalidOperationException">If there is a configuration and it has not been loaded.</exception>
+    public static X509Certificate2 GetServerCertificate(this ListenOptions listenOptions)
+    {
+        var serverOptions = listenOptions.KestrelServerOptions;
+
+        if (serverOptions.ConfigurationLoader is { IsLoaded: false })
+        {
+            throw new InvalidOperationException(CoreStrings.NeedConfigurationToRetrieveServerCertificate);
+        }
+
+        // We consider calls to `GetServerCertificate` to be a clear expression of user intent to pull in HTTPS configuration support
+        serverOptions.EnableHttpsConfiguration();
+
+        var options = new HttpsConnectionAdapterOptions();
+        serverOptions.ApplyHttpsDefaults(options);
+        serverOptions.ApplyDefaultCertificate(options);
+
+        return options.ServerCertificate ??
+            throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+    }
+
+    /// <summary>
     /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
     /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
     /// </summary>

@@ -4,3 +4,4 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Features.ISslStreamFeature.SslStream.ge
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.PipeName.get -> string?
+static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.GetServerCertificate(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions) -> System.Security.Cryptography.X509Certificates.X509Certificate2!

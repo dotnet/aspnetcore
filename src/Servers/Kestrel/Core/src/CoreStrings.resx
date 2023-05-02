@@ -734,4 +734,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="NeedHttpsConfigurationToBindHttpsAddresses" xml:space="preserve">
     <value>Call UseKestrelHttpsConfiguration() on IWebHostBuilder to automatically enable HTTPS when an https:// address is used.</value>
   </data>
+  <data name="NeedConfigurationToRetrieveServerCertificate" xml:space="preserve">
+    <value>Call KestrelConfigurationLoader.Load() before retrieving the server certificate.</value>
+  </data>
 </root>
