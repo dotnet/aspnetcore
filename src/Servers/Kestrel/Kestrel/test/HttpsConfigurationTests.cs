@@ -184,6 +184,29 @@ public class HttpsConfigurationTests
     }
 
     [Fact]
+    public async Task HasDefaultOrDevelopmentCertificateJustWorks()
+    {
+        var hostBuilder = new WebHostBuilder()
+            .UseKestrelCore()
+            .ConfigureKestrel(serverOptions =>
+            {
+                var testCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
+                serverOptions.TestOverrideDefaultCertificate = testCertificate;
+
+                Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+            })
+            .Configure(app => { });
+
+        var host = hostBuilder.Build();
+
+        // Binding succeeds
+        await host.StartAsync();
+        await host.StopAsync();
+
+        Assert.True(host.Services.GetRequiredService<IHttpsConfigurationService>().IsInitialized);
+    }
+
+    [Fact]
     public async Task UseHttpsJustWorks()
     {
         var hostBuilder = new WebHostBuilder()

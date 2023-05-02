@@ -385,6 +385,56 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    public void HasDefaultOrDevelopmentCertificate_DevelopmentCertificate()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void HasDefaultOrDevelopmentCertificate_DefaultCertificate()
+    {
+        var certificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+
+        var serverOptions = CreateServerOptions();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Certificates:Default:Path", TestResources.TestCertificatePath),
+            new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword")
+        }).Build();
+
+        serverOptions.Configure(config);
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+    }
+
+    [Fact]
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
     {
         var serverOptions = CreateServerOptions();

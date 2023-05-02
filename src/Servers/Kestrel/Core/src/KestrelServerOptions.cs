@@ -585,4 +585,30 @@ public class KestrelServerOptions
         configure(listenOptions);
         CodeBackedListenOptions.Add(listenOptions);
     }
+
+    /// <summary>
+    /// Return true if there is a default or development server certificate.
+    /// Should not be called before the configuration is loaded, if there is one.
+    /// </summary>
+    /// <returns>True if there is a default or development server certificate, false otherwise.</returns>
+    /// <exception cref="InvalidOperationException">If there is a configuration and it has not been loaded.</exception>
+    public bool HasDefaultOrDevelopmentCertificate
+    {
+        get
+        {
+            if (ConfigurationLoader is { IsLoaded: false })
+            {
+                throw new InvalidOperationException(CoreStrings.NeedConfigurationToRetrieveServerCertificate);
+            }
+
+            // We consider calls to `GetServerCertificate` to be a clear expression of user intent to pull in HTTPS configuration support
+            EnableHttpsConfiguration();
+
+            var httpsOptions = new HttpsConnectionAdapterOptions();
+            ApplyHttpsDefaults(httpsOptions);
+            ApplyDefaultCertificate(httpsOptions);
+
+            return httpsOptions.ServerCertificate is not null;
+        }
+    }
 }

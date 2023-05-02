@@ -18,7 +18,7 @@ public class KestrelConfigurationLoader
 {
     private readonly IHttpsConfigurationService _httpsConfigurationService;
 
-    private bool _loaded;
+    internal bool IsLoaded { get; private set; }
 
     internal KestrelConfigurationLoader(
         KestrelServerOptions options,
@@ -234,12 +234,12 @@ public class KestrelConfigurationLoader
     /// </summary>
     public void Load()
     {
-        if (_loaded)
+        if (IsLoaded)
         {
             // The loader has already been run.
             return;
         }
-        _loaded = true;
+        IsLoaded = true;
 
         Reload();
 

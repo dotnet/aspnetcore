@@ -775,6 +775,59 @@ public class HttpsTests : LoggedTest
         Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
     }
 
+    [Fact]
+    public void HasDefaultOrDevelopmentCertificate_ConfigurationNotLoaded()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        serverOptions.Configure();
+
+        Assert.Throws<InvalidOperationException>(() => serverOptions.HasDefaultOrDevelopmentCertificate);
+    }
+
+    [Fact]
+    public void HasDefaultOrDevelopmentCertificate_ConfigurationLoaded()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        serverOptions.Configure();
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+    }
+
+    [Fact]
+    public void HasDefaultOrDevelopmentCertificate_NoConfiguration()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
+
+        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+    }
+
+    [Fact]
+    public void HasDefaultOrDevelopmentCertificate_NoCertificate()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.IsDevelopmentCertificateLoaded = true; // Prevent the system default from being loaded
+
+        Assert.False(serverOptions.HasDefaultOrDevelopmentCertificate);
+    }
+
+    [Fact]
+    public void HasDefaultOrDevelopmentCertificate_FromHttpsDefaults()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+        {
+            httpsOptions.ServerCertificate = _x509Certificate2;
+        });
+
+        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+    }
+
     private class HandshakeErrorLoggerProvider : ILoggerProvider
     {
         public HttpsConnectionFilterLogger FilterLogger { get; set; } = new HttpsConnectionFilterLogger();
