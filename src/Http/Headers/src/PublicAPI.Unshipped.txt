@@ -5,5 +5,6 @@
 *REMOVED*static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue! parsedValue) -> bool
 static Microsoft.Net.Http.Headers.ContentRangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.ContentRangeHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.EntityTagHeaderValue? parsedValue) -> bool
+static Microsoft.Net.Http.Headers.MediaTypeHeaderValue.ParseList(System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>!
 static Microsoft.Net.Http.Headers.RangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.RangeHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue? parsedValue) -> bool

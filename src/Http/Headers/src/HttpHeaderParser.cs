@@ -108,6 +108,11 @@ internal abstract class HttpHeaderParser<T>
         return ParseValues(values, strict: false);
     }
 
+    public virtual IList<T> ParseValues(IList<StringSegment>? values)
+    {
+        return ParseValues(values, strict: false);
+    }
+
     public virtual IList<T> ParseStrictValues(IList<string>? values)
     {
         return ParseValues(values, strict: true);
@@ -128,6 +133,45 @@ internal abstract class HttpHeaderParser<T>
             int index = 0;
 
             while (!string.IsNullOrEmpty(value) && index < value.Length)
+            {
+                if (TryParseValue(value, ref index, out var output))
+                {
+                    // The entry may not contain an actual value, like " , "
+                    if (output != null)
+                    {
+                        parsedValues.Add(output);
+                    }
+                }
+                else if (strict)
+                {
+                    throw new FormatException(string.Format(CultureInfo.InvariantCulture,
+                        "The header contains invalid values at index {0}: '{1}'", index, value));
+                }
+                else
+                {
+                    // Skip the invalid values and keep trying.
+                    index++;
+                }
+            }
+        }
+        return parsedValues;
+    }
+
+    protected virtual IList<T> ParseValues(IList<StringSegment>? values, bool strict)
+    {
+        Contract.Assert(_supportsMultipleValues);
+        // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
+        // can ignore the value.
+        var parsedValues = new List<T>();
+        if (values == null)
+        {
+            return parsedValues;
+        }
+        foreach (var value in values)
+        {
+            var index = 0;
+
+            while (!StringSegment.IsNullOrEmpty(value) && index < value.Length)
             {
                 if (TryParseValue(value, ref index, out var output))
                 {

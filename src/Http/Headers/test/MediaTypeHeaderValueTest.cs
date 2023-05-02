@@ -514,9 +514,9 @@ public class MediaTypeHeaderValueTest
     }
 
     [Fact]
-    public void ParseList_NullOrEmptyArray_ReturnsEmptyList()
+    public void ParseList_String_NullOrEmptyArray_ReturnsEmptyList()
     {
-        var results = MediaTypeHeaderValue.ParseList(null);
+        var results = MediaTypeHeaderValue.ParseList(null as IList<string>);
         Assert.NotNull(results);
         Assert.Equal(0, results.Count);
 
@@ -530,6 +530,22 @@ public class MediaTypeHeaderValueTest
     }
 
     [Fact]
+    public void ParseList_StringSegment_NullOrEmptyArray_ReturnsEmptyList()
+    {
+        var results = MediaTypeHeaderValue.ParseList(null as IList<StringSegment>);
+        Assert.NotNull(results);
+        Assert.Equal(0, results.Count);
+
+        results = MediaTypeHeaderValue.ParseList(new StringSegment[0]);
+        Assert.NotNull(results);
+        Assert.Equal(0, results.Count);
+
+        results = MediaTypeHeaderValue.ParseList(new StringSegment[] { "" });
+        Assert.NotNull(results);
+        Assert.Equal(0, results.Count);
+    }
+
+    [Fact]
     public void TryParseList_NullOrEmptyArray_ReturnsFalse()
     {
         Assert.False(MediaTypeHeaderValue.TryParseList(null, out var results));
@@ -538,9 +554,27 @@ public class MediaTypeHeaderValueTest
     }
 
     [Fact]
-    public void ParseList_SetOfValidValueStrings_ReturnsValues()
+    public void ParseList_String_SetOfValidValueStrings_ReturnsValues()
     {
         var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
+        var results = MediaTypeHeaderValue.ParseList(inputs);
+
+        var expectedResults = new[]
+        {
+                new MediaTypeHeaderValue("text/html"),
+                new MediaTypeHeaderValue("application/xhtml+xml"),
+                new MediaTypeHeaderValue("application/xml", 0.9),
+                new MediaTypeHeaderValue("image/webp"),
+                new MediaTypeHeaderValue("*/*", 0.8),
+            }.ToList();
+
+        Assert.Equal(expectedResults, results);
+    }
+
+    [Fact]
+    public void ParseList_StringSegment_SetOfValidValueStrings_ReturnsValues()
+    {
+        var inputs = new StringSegment[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
         var results = MediaTypeHeaderValue.ParseList(inputs);
 
         var expectedResults = new[]
@@ -610,24 +644,46 @@ public class MediaTypeHeaderValueTest
     }
 
     [Fact]
-    public void ParseList_WithSomeInvalidValues_IgnoresInvalidValues()
+    public void ParseList_String_WithSomeInvalidValues_IgnoresInvalidValues()
     {
         var inputs = new[]
         {
-                "text/html,application/xhtml+xml, ignore-this, ignore/this",
-                "application/xml;q=0.9,image/webp,*/*;q=0.8"
-            };
+            "text/html,application/xhtml+xml, ignore-this, ignore/this",
+            "application/xml;q=0.9,image/webp,*/*;q=0.8"
+        };
+        var results = MediaTypeHeaderValue.ParseList(inputs);
+
+        var expectedResults = new[]
+        { new MediaTypeHeaderValue("text/html"),
+            new MediaTypeHeaderValue("application/xhtml+xml"),
+            new MediaTypeHeaderValue("ignore/this"),
+            new MediaTypeHeaderValue("application/xml", 0.9),
+            new MediaTypeHeaderValue("image/webp"),
+            new MediaTypeHeaderValue("*/*", 0.8),
+        }.ToList();
+
+        Assert.Equal(expectedResults, results);
+    }
+
+    [Fact]
+    public void ParseList_StringSegment_WithSomeInvalidValues_IgnoresInvalidValues()
+    {
+        var inputs = new StringSegment[]
+        {
+            "text/html,application/xhtml+xml, ignore-this, ignore/this",
+            "application/xml;q=0.9,image/webp,*/*;q=0.8"
+        };
         var results = MediaTypeHeaderValue.ParseList(inputs);
 
         var expectedResults = new[]
         {
-                new MediaTypeHeaderValue("text/html"),
-                new MediaTypeHeaderValue("application/xhtml+xml"),
-                new MediaTypeHeaderValue("ignore/this"),
-                new MediaTypeHeaderValue("application/xml", 0.9),
-                new MediaTypeHeaderValue("image/webp"),
-                new MediaTypeHeaderValue("*/*", 0.8),
-            }.ToList();
+            new MediaTypeHeaderValue("text/html"),
+            new MediaTypeHeaderValue("application/xhtml+xml"),
+            new MediaTypeHeaderValue("ignore/this"),
+            new MediaTypeHeaderValue("application/xml", 0.9),
+            new MediaTypeHeaderValue("image/webp"),
+            new MediaTypeHeaderValue("*/*", 0.8),
+        }.ToList();
 
         Assert.Equal(expectedResults, results);
     }
