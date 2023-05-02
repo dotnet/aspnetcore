@@ -81,21 +81,6 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
-    public static string GetMapMethodVerbs(this IInvocationOperation invocation)
-    {
-        foreach (var argument in invocation.Arguments)
-        {
-            // The `methods` parameter is the second parameter provided
-            // to the `MapMethods` call.
-            if (argument.Parameter?.Ordinal == 2)
-            {
-                var syntax = argument.Syntax;
-                return syntax.ToFullString();
-            }
-        }
-        throw new InvalidOperationException("Could not resolve 'methods' parameter in MapMethods calls.");
-    }
-
     public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, [NotNullWhen(true)] out string? token)
     {
         token = default;
