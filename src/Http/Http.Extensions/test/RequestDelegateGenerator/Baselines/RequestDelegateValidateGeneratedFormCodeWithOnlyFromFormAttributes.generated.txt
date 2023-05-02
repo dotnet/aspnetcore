@@ -94,18 +94,11 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 29)] = (
                 (methodInfo, options) =>
                 {
-<<<<<<< HEAD
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
                     options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
-=======
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
->>>>>>> 2a98db8b95 (Add form metadata.)
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -304,6 +297,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     file static class GeneratedMetadataConstants
     {
@@ -330,6 +324,8 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 >>>>>>> 2a98db8b95 (Add form metadata.)
+=======
+>>>>>>> b17659f45a (Selectively emit accepts/produces metadata.)
     file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
     {
         public GeneratedAcceptsMetadata(string[] contentTypes)
@@ -356,6 +352,9 @@ namespace Microsoft.AspNetCore.Http.Generated
         public bool IsOptional { get; }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b17659f45a (Selectively emit accepts/produces metadata.)
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -364,8 +363,11 @@ namespace Microsoft.AspNetCore.Http.Generated
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 2a98db8b95 (Add form metadata.)
+=======
+>>>>>>> b17659f45a (Selectively emit accepts/produces metadata.)
 
     file class LogOrThrowExceptionHelper
     {
