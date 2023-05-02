@@ -44,7 +44,6 @@ internal class RazorComponentEndpointInvoker
         // backing buffers could come from a pool like they do during rendering.
         var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
             { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
             { nameof(RazorComponentEndpointHost.ComponentParameters), null },
         });

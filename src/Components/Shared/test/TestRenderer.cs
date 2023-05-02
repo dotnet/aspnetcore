@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -143,6 +144,25 @@ public class TestRenderer : Renderer
         return NextRenderResultTask;
     }
 
+    protected override RenderModeResolver RenderModeResolver { get; } = new TestRenderModeResolver();
+
+    public void OverrideRenderModeResolver(RenderModeResolver resolver)
+    {
+        ((TestRenderModeResolver)RenderModeResolver).OverriddenResolver = resolver;
+    }
+
     public new void ProcessPendingRender()
         => base.ProcessPendingRender();
+
+    public class TestRenderModeResolver : RenderModeResolver
+    {
+        public RenderModeResolver OverriddenResolver { get; set; }
+
+        public override IComponent ResolveComponent(Type componentType, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode, IComponentRenderMode callSiteRenderMode)
+        {
+            return OverriddenResolver is not null
+                ? OverriddenResolver.ResolveComponent(componentType, componentActivator, componentTypeRenderMode, callSiteRenderMode)
+                : base.ResolveComponent(componentType, componentActivator, componentTypeRenderMode, callSiteRenderMode);
+        }
+    }
 }

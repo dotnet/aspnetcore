@@ -58,5 +58,9 @@ public enum RenderTreeFrameType : short
     /// Represents a block of markup content.
     /// </summary>
     Markup = 8,
-}
 
+    /// <summary>
+    /// Represents an instruction to use a specified render mode for the parent component.
+    /// </summary>
+    ComponentRenderMode = 9,
+}

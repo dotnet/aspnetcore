@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
+using Microsoft.AspNetCore.Components.Rendering;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -14,46 +15,70 @@ internal sealed class ComponentFactory
     private const BindingFlags _injectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
+    private static readonly ConcurrentDictionary<Type, ComponentTypeInfoCacheEntry> _cachedComponentTypeInfo = new();
 
     private readonly IComponentActivator _componentActivator;
+    private readonly RenderModeResolver _renderModeResolver;
 
-    public ComponentFactory(IComponentActivator componentActivator)
+    public ComponentFactory(IComponentActivator componentActivator, RenderModeResolver renderModeResolver)
     {
         _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
+        _renderModeResolver = renderModeResolver ?? throw new ArgumentNullException(nameof(renderModeResolver));
     }
 
-    public static void ClearCache() => _cachedInitializers.Clear();
+    public static void ClearCache() => _cachedComponentTypeInfo.Clear();
 
-    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
+    private static ComponentTypeInfoCacheEntry GetComponentTypeInfo([DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        var component = _componentActivator.CreateInstance(componentType);
+        // Unfortunately we can't use 'GetOrAdd' here because the DynamicallyAccessedMembers annotation doesn't flow through to the
+        // callback, so it becomes an IL2111 warning. The following is equivalent and thread-safe because it's a ConcurrentDictionary
+        // and it doesn't matter if we build a cache entry more than once.
+        if (!_cachedComponentTypeInfo.TryGetValue(componentType, out var cacheEntry))
+        {
+            cacheEntry = new ComponentTypeInfoCacheEntry(GetRenderModeFromComponentType(componentType), CreatePropertyInjector(componentType));
+            _cachedComponentTypeInfo.TryAdd(componentType, cacheEntry);
+        }
+
+        return cacheEntry;
+    }
+
+    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode? callerSpecifiedRenderMode)
+    {
+        var componentTypeInfo = GetComponentTypeInfo(componentType);
+        var component = callerSpecifiedRenderMode is null && componentTypeInfo.RenderMode is null
+            ? _componentActivator.CreateInstance(componentType)
+            : _renderModeResolver.ResolveComponent(componentType, _componentActivator, componentTypeInfo.RenderMode, callerSpecifiedRenderMode);
+
         if (component is null)
         {
             // The default activator will never do this, but an externally-supplied one might
             throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
         }
 
-        PerformPropertyInjection(serviceProvider, component);
+        if (component.GetType() == componentType)
+        {
+            // Fast, common case: use the cached data we already looked up
+            componentTypeInfo.PerformPropertyInjection(serviceProvider, component);
+        }
+        else
+        {
+            // Uncommon case where the activator/resolver returned a different type. Needs an extra cache lookup.
+            PerformPropertyInjection(serviceProvider, component);
+        }
+
         return component;
     }
 
     private static void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
     {
-        // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
-        // We might generate the initializer more than once for a given type, but would
-        // still produce the correct result.
-        var instanceType = instance.GetType();
-        if (!_cachedInitializers.TryGetValue(instanceType, out var initializer))
-        {
-            initializer = CreateInitializer(instanceType);
-            _cachedInitializers.TryAdd(instanceType, initializer);
-        }
-
-        initializer(serviceProvider, instance);
+        var componentTypeInfo = GetComponentTypeInfo(instance.GetType());
+        componentTypeInfo.PerformPropertyInjection(serviceProvider, instance);
     }
 
-    private static Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
+    private static IComponentRenderMode? GetRenderModeFromComponentType(Type componentType)
+        => componentType.GetCustomAttribute<RenderModeAttribute>()?.Mode;
+
+    private static Action<IServiceProvider, IComponent> CreatePropertyInjector([DynamicallyAccessedMembers(Component)] Type type)
     {
         // Do all the reflection up front
         List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
@@ -93,4 +118,9 @@ internal sealed class ComponentFactory
             }
         }
     }
+
+    // Tracks information about a specific component type that ComponentFactory uses
+    private record class ComponentTypeInfoCacheEntry(
+        IComponentRenderMode? RenderMode,
+        Action<IServiceProvider, IComponent> PerformPropertyInjection);
 }

@@ -35,9 +35,10 @@ public partial class StaticHtmlRenderer : Renderer
     /// <inheritdoc/>
     public HtmlRootComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
-        ParameterView initialParameters)
+        ParameterView initialParameters,
+        IComponentRenderMode? renderMode)
     {
-        var component = InstantiateComponent(componentType);
+        var component = InstantiateComponent(componentType, renderMode);
         var componentId = AssignRootComponentId(component);
         var quiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
 

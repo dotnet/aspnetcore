@@ -1,0 +1,13 @@
+﻿@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@attribute [GeneratedRenderMode]
+
+<p>Hello @(Name ?? "(null)")!</p>
+
+@code {
+    [Parameter] public string Name { get; set; }
+
+    private class GeneratedRenderModeAttribute : RenderModeAttribute
+    {
+        public override IComponentRenderMode Mode => Server;
+    }
+}
