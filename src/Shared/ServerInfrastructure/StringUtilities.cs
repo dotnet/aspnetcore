@@ -17,11 +17,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal static class StringUtilities
 {
-    private static readonly SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = GetLatin1StringNonNullCharacters;
     private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
 
-    public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
+    // Null checks must be done independently of this method (if required)
+    public static unsafe string GetAsciiOrUTF8String(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
     {
+        if (span.IsEmpty)
+        {
+            return string.Empty;
+        }
+
         var resultString = string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
         {
             if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
@@ -47,7 +52,8 @@ internal static class StringUtilities
         return resultString;
     }
 
-    public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
+    // Null checks must be done independently of this method (if required)
+    public static unsafe string GetAsciiString(this ReadOnlySpan<byte> span)
     {
         return string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
         {
@@ -58,162 +64,24 @@ internal static class StringUtilities
         });
     };
 
-    public static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
+    // Null checks must be done independently of this method (if required)
+    public static unsafe string GetLatin1String(this ReadOnlySpan<byte> span)
     {
         if (span.IsEmpty)
         {
             return string.Empty;
         }
 
-        fixed (byte* source = &MemoryMarshal.GetReference(span))
-        {
-            return string.Create(span.Length, (IntPtr)source, s_getLatin1StringNonNullCharacters);
-        }
+        return Encoding.Latin1.GetString(span);
     }
-
-    private static readonly unsafe SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
-    {
-        fixed (char* output = &MemoryMarshal.GetReference(buffer))
-        {
-            if (!TryGetLatin1String((byte*)state.ToPointer(), output, buffer.Length))
-            {
-                // null characters are considered invalid
-                throw new InvalidOperationException();
-            }
-        }
-    };
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public static unsafe bool TryGetLatin1String(byte* input, char* output, int count)
-    {
-        Debug.Assert(input != null);
-        Debug.Assert(output != null);
-
-        // Calculate end position
-        var end = input + count;
-        // Start as valid
-        var isValid = true;
-
-        do
-        {
-            // If Vector not-accelerated or remaining less than vector size
-            if (!Vector.IsHardwareAccelerated || input > end - Vector<sbyte>.Count)
-            {
-                if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
-                {
-                    // 64-bit: Loop longs by default
-                    while (input <= end - sizeof(long))
-                    {
-                        isValid &= CheckBytesNotNull(((long*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-                        output[4] = (char)input[4];
-                        output[5] = (char)input[5];
-                        output[6] = (char)input[6];
-                        output[7] = (char)input[7];
-
-                        input += sizeof(long);
-                        output += sizeof(long);
-                    }
-                    if (input <= end - sizeof(int))
-                    {
-                        isValid &= CheckBytesNotNull(((int*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-
-                        input += sizeof(int);
-                        output += sizeof(int);
-                    }
-                }
-                else
-                {
-                    // 32-bit: Loop ints by default
-                    while (input <= end - sizeof(int))
-                    {
-                        isValid &= CheckBytesNotNull(((int*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-
-                        input += sizeof(int);
-                        output += sizeof(int);
-                    }
-                }
-                if (input <= end - sizeof(short))
-                {
-                    isValid &= CheckBytesNotNull(((short*)input)[0]);
-
-                    output[0] = (char)input[0];
-                    output[1] = (char)input[1];
-
-                    input += sizeof(short);
-                    output += sizeof(short);
-                }
-                if (input < end)
-                {
-                    isValid &= CheckBytesNotNull(((sbyte*)input)[0]);
-                    output[0] = (char)input[0];
-                }
-
-                return isValid;
-            }
-
-            // do/while as entry condition already checked
-            do
-            {
-                // Use byte/ushort instead of signed equivalents to ensure it doesn't fill based on the high bit.
-                var vector = Unsafe.AsRef<Vector<byte>>(input);
-                isValid &= CheckBytesNotNull(vector);
-                Vector.Widen(
-                    vector,
-                    out Unsafe.AsRef<Vector<ushort>>(output),
-                    out Unsafe.AsRef<Vector<ushort>>(output + Vector<ushort>.Count));
-
-                input += Vector<byte>.Count;
-                output += Vector<byte>.Count;
-            } while (input <= end - Vector<byte>.Count);
-
-            // Vector path done, loop back to do non-Vector
-            // If is a exact multiple of vector size, bail now
-        } while (input < end);
-
-        return isValid;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool BytesOrdinalEqualsStringAndAscii(string previousValue, ReadOnlySpan<byte> newValue)
     {
         // previousValue is a previously materialized string which *must* have already passed validation.
         Debug.Assert(IsValidHeaderString(previousValue));
 
         return Ascii.Equals(previousValue, newValue);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value, Vector128<sbyte> zero)
-    {
-        // BMI2 could be used, but this variant is faster on both Intel and AMD.
-        if (Sse2.X64.IsSupported)
-        {
-            var vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
-            var vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
-            Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
-        }
-        else
-        {
-            output[0] = (char)input[0];
-            output[1] = (char)input[1];
-            output[2] = (char)input[2];
-            output[3] = (char)input[3];
-        }
     }
 
     private static bool IsValidHeaderString(string value)
@@ -335,85 +203,4 @@ internal static class StringUtilities
         // Vectorized byte range check, signed byte > 0 for 1-127
         return Vector.GreaterThanAll(check, Vector<sbyte>.Zero);
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(Vector256<sbyte> check, Vector256<sbyte> zero)
-    {
-        Debug.Assert(Avx2.IsSupported);
-
-        var mask = Avx2.CompareGreaterThan(check, zero);
-        return (uint)Avx2.MoveMask(mask) == 0xFFFF_FFFF;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(Vector128<sbyte> check, Vector128<sbyte> zero)
-    {
-        Debug.Assert(Sse2.IsSupported);
-
-        var mask = Sse2.CompareGreaterThan(check, zero);
-        return Sse2.MoveMask(mask) == 0xFFFF;
-    }
-
-    // Validate: bytes != 0 && bytes <= 127
-    //  Subtract 1 from all bytes to move 0 to high bits
-    //  bitwise or with self to catch all > 127 bytes
-    //  mask off non high bits and check if 0
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesInAsciiRange(long check)
-    {
-        const long HighBits = unchecked((long)0x8080808080808080L);
-        return (((check - 0x0101010101010101L) | check) & HighBits) == 0;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(int check)
-    {
-        const int HighBits = unchecked((int)0x80808080);
-        return (((check - 0x01010101) | check) & HighBits) == 0;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckBytesInAsciiRange(short check)
-    {
-        const short HighBits = unchecked((short)0x8080);
-        return (((short)(check - 0x0101) | check) & HighBits) == 0;
-    }
-
-    private static bool CheckBytesInAsciiRange(sbyte check)
-        => check > 0;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesNotNull(Vector<byte> check)
-    {
-        // Vectorized byte range check, signed byte != null
-        return !Vector.EqualsAny(check, Vector<byte>.Zero);
-    }
-
-    // Validate: bytes != 0
-    //  Subtract 1 from all bytes to move 0 to high bits
-    //  bitwise and with ~check so high bits are only set for bytes that were originally 0
-    //  mask off non high bits and check if 0
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-    private static bool CheckBytesNotNull(long check)
-    {
-        const long HighBits = unchecked((long)0x8080808080808080L);
-        return ((check - 0x0101010101010101L) & ~check & HighBits) == 0;
-    }
-
-    private static bool CheckBytesNotNull(int check)
-    {
-        const int HighBits = unchecked((int)0x80808080);
-        return ((check - 0x01010101) & ~check & HighBits) == 0;
-    }
-
-    private static bool CheckBytesNotNull(short check)
-    {
-        const short HighBits = unchecked((short)0x8080);
-        return ((check - 0x0101) & ~check & HighBits) == 0;
-    }
-
-    private static bool CheckBytesNotNull(sbyte check)
-        => check != 0;
 }

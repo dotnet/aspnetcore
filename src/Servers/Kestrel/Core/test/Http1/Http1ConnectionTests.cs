@@ -494,7 +494,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         TakeStartLine(readableBuffer, out _consumed, out _examined));
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
+        var partialTarget = target.AsSpan(0, target.IndexOf('\0') + 1).ToString();
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail($"GET {partialTarget.EscapeNonPrintable()}"), exception.Message);
     }
 
     [Theory]
@@ -510,7 +511,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         TakeStartLine(readableBuffer, out _consumed, out _examined));
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
+        var partialRequestLine = requestLine.AsSpan(0, requestLine.IndexOf('\0') + 1).ToString();
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(partialRequestLine.EscapeNonPrintable()), exception.Message);
     }
 
     [Theory]
@@ -526,7 +528,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
          TakeStartLine(readableBuffer, out _consumed, out _examined));
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
+        var partialTarget = target.AsSpan(0, target.IndexOf('\0') + 1).ToString();
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail($"GET {partialTarget.EscapeNonPrintable()}"), exception.Message);
     }
 
     [Theory]

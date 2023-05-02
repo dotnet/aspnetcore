@@ -290,6 +290,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
     {
+        Debug.Assert(startLine.IndexOf((byte)0) == -1);
+
         var targetStart = targetPath.Offset;
         // Slice out target
         var target = startLine[targetStart..];
@@ -322,7 +324,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         Method = method;
         if (method == HttpMethod.Custom)
         {
-            _methodText = startLine[..versionAndMethod.MethodEnd].GetAsciiStringNonNullCharacters();
+            _methodText = startLine[..versionAndMethod.MethodEnd].GetAsciiString();
         }
 
         _httpVersion = versionAndMethod.Version;
@@ -386,7 +388,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // The previous string does not match what the bytes would convert to,
             // so we will need to generate a new string.
-            RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            RawTarget = _parsedRawTarget = target.GetAsciiString();
 
             var queryLength = 0;
             if (target.Length == targetPath.Length)
@@ -436,7 +438,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // The previous string does not match what the bytes would convert to,
             // so we will need to generate a new string.
-            QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+            QueryString = _parsedQueryString = query.GetAsciiString();
         }
         else
         {
@@ -482,7 +484,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // The previous string does not match what the bytes would convert to,
             // so we will need to generate a new string.
-            RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            RawTarget = _parsedRawTarget = target.GetAsciiString();
         }
         else
         {
@@ -542,7 +544,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             {
                 // The previous string does not match what the bytes would convert to,
                 // so we will need to generate a new string.
-                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+                RawTarget = _parsedRawTarget = target.GetAsciiString();
             }
             catch (InvalidOperationException)
             {
@@ -572,7 +574,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             {
                 // The previous string does not match what the bytes would convert to,
                 // so we will need to generate a new string.
-                QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                QueryString = _parsedQueryString = query.GetAsciiString();
             }
             else
             {

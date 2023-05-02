@@ -86,27 +86,39 @@ internal static partial class HttpUtilities
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
     {
-        return string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
+        if (span.IsEmpty)
+        {
+            return string.Empty;
+        }
+
+        var str = string.Create(span.Length, (IntPtr)(&span), (destination, spanPtr) =>
         {
             if (Ascii.ToUtf16(*(ReadOnlySpan<byte>*)spanPtr, destination, out _) != OperationStatus.Done)
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
             }
         });
+
+        if (str.Contains('\0'))
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+        }
+        return str;
     }
 
-    public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
-        => StringUtilities.GetAsciiStringNonNullCharacters(span);
+    // Null checks must be done independently of this method (if required)
+    public static string GetAsciiString(this Span<byte> span)
+        => StringUtilities.GetAsciiString(span);
 
-    public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
-        => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
+    public static string GetAsciiOrUTF8String(this ReadOnlySpan<byte> span)
+        => StringUtilities.GetAsciiOrUTF8String(span, DefaultRequestHeaderEncoding);
 
     public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector, bool checkForNewlineChars)
     {
         string result;
         if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, encodingSelector))
         {
-            result = span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            result = span.GetAsciiOrUTF8String(DefaultRequestHeaderEncoding);
         }
         else
         {
@@ -114,9 +126,21 @@ internal static partial class HttpUtilities
         }
 
         // New Line characters (CR, LF) are considered invalid at this point.
-        if (checkForNewlineChars && ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n') >= 0)
+        // Null characters are also not allowed.
+        var invalidCharIndex = checkForNewlineChars ?
+            ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n', '\0')
+            : ((ReadOnlySpan<char>)result).IndexOf('\0');
+
+        if (invalidCharIndex >= 0)
         {
-            throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+            if (result[invalidCharIndex] == 0)
+            {
+                throw new InvalidOperationException("Null characters are not allowed in request headers.");
+            }
+            else
+            {
+                throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+            }
         }
 
         return result;
@@ -128,11 +152,11 @@ internal static partial class HttpUtilities
 
         if (encoding is null)
         {
-            return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            return span.GetAsciiOrUTF8String(DefaultRequestHeaderEncoding);
         }
         if (ReferenceEquals(encoding, Encoding.Latin1))
         {
-            return span.GetLatin1StringNonNullCharacters();
+            return span.GetLatin1String();
         }
         try
         {

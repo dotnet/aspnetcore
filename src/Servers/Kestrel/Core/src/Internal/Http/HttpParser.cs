@@ -69,10 +69,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         // Consume the delimiter.
-        bool foundDelimiter = reader.TryRead(out var next);
+        var foundDelimiter = reader.TryRead(out var next);
         Debug.Assert(foundDelimiter);
         if (next == 0 || requestLine.Length == 0)
         {
+            reader.Rewind(requestLine.Length + 1);
+            var readResult = reader.TryReadExact(requestLine.Length + 1, out var requestLineSequence);
+            Debug.Assert(readResult);
+            requestLine = requestLineSequence.IsSingleSegment ? requestLineSequence.FirstSpan : requestLineSequence.ToArray();
             RejectRequestLine(requestLine);
         }
 

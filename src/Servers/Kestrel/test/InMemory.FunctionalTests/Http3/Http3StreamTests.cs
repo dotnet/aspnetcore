@@ -2418,7 +2418,7 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Fact]
-    public Task HEADERS_Received_InvalidCharacters_ConnectionError()
+    public Task HEADERS_Received_InvalidCharactersInHeaderValue_ConnectionError()
     {
         var headers = new[]
         {
@@ -2429,6 +2429,20 @@ public class Http3StreamTests : Http3TestBase
         };
 
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+    }
+
+    [Fact]
+    public Task HEADERS_Received_InvalidCharactersInHeaderName_ConnectionError()
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>("Cus\0tom", "value"),
+        };
+
+        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
     }
 
     [Fact]
