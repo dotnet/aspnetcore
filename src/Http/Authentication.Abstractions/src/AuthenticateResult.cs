@@ -30,7 +30,7 @@ public class AuthenticateResult
     public AuthenticationTicket? Ticket { get; protected set; }
 
     /// <summary>
-    /// Gets the claims-principal with authenticated user identities.
+    /// Gets the claims-principal with which the authenticated user identities.
     /// </summary>
     public ClaimsPrincipal? Principal => Ticket?.Principal;
 
