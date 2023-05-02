@@ -27,7 +27,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         foreach (var asParameterDecoratedParameter in asParametersDecoratedParameters)
         {
             var fromBodyMetadataInterfaceMembers = asParameterDecoratedParameter.Type.GetMembers().Where(
-                m => m.HasAttributeImplementingInterface(fromBodyMetadataInterfaceType)
+                m => m.TryGetAttributeImplementingInterface(fromBodyMetadataInterfaceType)
                 );
 
             if (fromBodyMetadataInterfaceMembers.Count() >= 2)
@@ -36,7 +36,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        var fromBodyMetadataInterfaceParameters = methodSymbol.Parameters.Where(p => p.HasAttributeImplementingInterface(fromBodyMetadataInterfaceType));
+        var fromBodyMetadataInterfaceParameters = methodSymbol.Parameters.Where(p => p.TryGetAttributeImplementingInterface(fromBodyMetadataInterfaceType));
 
         if (fromBodyMetadataInterfaceParameters.Count() >= 2)
         {

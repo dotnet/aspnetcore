@@ -98,7 +98,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             var fromMetadataInterfaceTypeSymbol = wellKnownTypes.Get(fromMetadataInterfaceType);
             var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
-            if (parameter.HasAttributeImplementingInterface(fromMetadataInterfaceTypeSymbol) && parsability != Parsability.Parsable)
+            if (parameter.TryGetAttributeImplementingInterface(fromMetadataInterfaceTypeSymbol) && parsability != Parsability.Parsable)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
