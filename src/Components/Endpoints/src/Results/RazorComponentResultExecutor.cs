@@ -37,7 +37,6 @@ public class RazorComponentResultExecutor
         
         return RenderComponentToResponse(
             httpContext,
-            result.RenderMode,
             result.ComponentType,
             result.Parameters,
             result.PreventStreamingRendering);
@@ -45,7 +44,6 @@ public class RazorComponentResultExecutor
 
     internal static Task RenderComponentToResponse(
         HttpContext httpContext,
-        RenderMode renderMode,
         Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters,
         bool preventStreamingRendering)
@@ -57,20 +55,19 @@ public class RazorComponentResultExecutor
             // backing buffers could come from a pool like they do during rendering.
             var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
             {
-                { nameof(RazorComponentEndpointHost.RenderMode), renderMode },
                 { nameof(RazorComponentEndpointHost.ComponentType), componentType },
                 { nameof(RazorComponentEndpointHost.ComponentParameters), componentParameters },
             });
 
             await using var writer = CreateResponseWriter(httpContext.Response.Body);
 
-            // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
+            // Note that we don't set any interactive rendering mode for the top-level output from a RazorComponentResult,
             // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
             // component takes care of switching into your desired render mode when it produces its own output.
             var htmlContent = (EndpointHtmlRenderer.PrerenderedComponentHtmlContent)(await endpointHtmlRenderer.PrerenderComponentAsync(
                 httpContext,
                 typeof(RazorComponentEndpointHost),
-                RenderMode.Static,
+                null,
                 hostParameters,
                 waitForQuiescence: preventStreamingRendering));
 

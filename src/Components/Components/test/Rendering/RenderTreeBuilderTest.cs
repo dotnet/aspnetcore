@@ -2106,4 +2106,6 @@ public class RenderTreeBuilderTest
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             => throw new NotImplementedException();
     }
+
+    class TestRenderMode : IComponentRenderMode { }
 }
