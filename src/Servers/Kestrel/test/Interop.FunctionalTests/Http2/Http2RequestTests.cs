@@ -115,6 +115,7 @@ public class Http2RequestTests : LoggedTest
     private static async Task<(byte[], HttpResponseHeaders)> StartLongRunningRequestAsync(ILogger logger, IHost host, HttpMessageInvoker client)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
+        request.Headers.Host = "localhost2";
         request.Version = HttpVersion.Version20;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 

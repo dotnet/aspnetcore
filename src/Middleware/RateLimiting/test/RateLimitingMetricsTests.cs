@@ -116,6 +116,53 @@ public class RateLimitingMetricsTests
     }
 
     [Fact]
+    public async Task Metrics_ListenInMiddleOfRequest_CurrentLeasesNotDecreased()
+    {
+        // Arrange
+        var syncPoint = new SyncPoint();
+
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+
+        var options = CreateOptionsAccessor();
+        options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true));
+
+        var middleware = CreateTestRateLimitingMiddleware(
+            options,
+            meterFactory: meterFactory,
+            next: async c =>
+            {
+                await syncPoint.WaitToContinue();
+            });
+        var meter = meterFactory.Meters.Single();
+
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+
+        // Act
+        var middlewareTask = middleware.Invoke(context);
+
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+
+        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, RateLimitingMetrics.MeterName, "leased-request-duration");
+        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, RateLimitingMetrics.MeterName, "current-leased-requests");
+        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterRegistry, RateLimitingMetrics.MeterName, "current-queued-requests");
+        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, RateLimitingMetrics.MeterName, "queued-request-duration");
+        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, RateLimitingMetrics.MeterName, "lease-failed-requests");
+
+        syncPoint.Continue();
+
+        await middlewareTask.DefaultTimeout();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+        Assert.Empty(currentLeaseRequestsRecorder.GetMeasurements());
+        Assert.Collection(leaseRequestDurationRecorder.GetMeasurements(),
+            m => AssertDuration(m, null, null, null));
+    }
+
+    [Fact]
     public async Task Metrics_Queued()
     {
         // Arrange
@@ -183,6 +230,76 @@ public class RateLimitingMetricsTests
         Assert.Collection(currentRequestsQueuedRecorder.GetMeasurements(),
             m => AssertCounter(m, 1, "GET", "/", "concurrencyPolicy"),
             m => AssertCounter(m, -1, "GET", "/", "concurrencyPolicy"));
+        Assert.Collection(queuedRequestDurationRecorder.GetMeasurements(),
+            m => AssertDuration(m, "GET", "/", "concurrencyPolicy"));
+    }
+
+    [Fact]
+    public async Task Metrics_ListenInMiddleOfQueued_CurrentQueueNotDecreased()
+    {
+        // Arrange
+        var syncPoint = new SyncPoint();
+
+        var meterFactory = new TestMeterFactory();
+        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
+
+        var services = new ServiceCollection();
+
+        services.AddRateLimiter(_ => _
+            .AddConcurrencyLimiter(policyName: "concurrencyPolicy", options =>
+            {
+                options.PermitLimit = 1;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.QueueLimit = 1;
+            }));
+        var serviceProvider = services.BuildServiceProvider();
+
+        var middleware = CreateTestRateLimitingMiddleware(
+            serviceProvider.GetRequiredService<IOptions<RateLimiterOptions>>(),
+            meterFactory: meterFactory,
+            next: async c =>
+            {
+                await syncPoint.WaitToContinue();
+            },
+            serviceProvider: serviceProvider);
+        var meter = meterFactory.Meters.Single();
+
+        var routeEndpointBuilder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        routeEndpointBuilder.Metadata.Add(new EnableRateLimitingAttribute("concurrencyPolicy"));
+        var endpoint = routeEndpointBuilder.Build();
+
+        // Act
+        var context1 = new DefaultHttpContext();
+        context1.Request.Method = "GET";
+        context1.SetEndpoint(endpoint);
+        var middlewareTask1 = middleware.Invoke(context1);
+
+        // Wait for first request to reach server and block it.
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+
+        var context2 = new DefaultHttpContext();
+        context2.Request.Method = "GET";
+        context2.SetEndpoint(endpoint);
+        var middlewareTask2 = middleware.Invoke(context1);
+
+        // Start listening while the second request is queued.
+
+        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, RateLimitingMetrics.MeterName, "leased-request-duration");
+        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, RateLimitingMetrics.MeterName, "current-leased-requests");
+        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterRegistry, RateLimitingMetrics.MeterName, "current-queued-requests");
+        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterRegistry, RateLimitingMetrics.MeterName, "queued-request-duration");
+        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterRegistry, RateLimitingMetrics.MeterName, "lease-failed-requests");
+
+        Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
+        Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
+
+        // Allow both requests to finish.
+        syncPoint.Continue();
+
+        await middlewareTask1.DefaultTimeout();
+        await middlewareTask2.DefaultTimeout();
+
+        Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
         Assert.Collection(queuedRequestDurationRecorder.GetMeasurements(),
             m => AssertDuration(m, "GET", "/", "concurrencyPolicy"));
     }

@@ -89,25 +89,34 @@ internal sealed partial class RateLimitingMiddleware
     private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute, string? method, string? route)
     {
         var policyName = enableRateLimitingAttribute?.PolicyName;
-        using var leaseContext = await TryAcquireAsync(context, policyName, method, route);
+
+        // Cache the up/down counter enabled state at the start of the middleware.
+        // This ensures that the state is consistent for the entire request.
+        // For example, if a meter listener starts after a request is queued, when the request exits the queue
+        // the requests queued counter won't go into a negative value.
+        var metricsContext = new MetricsContext(policyName, method, route,
+            _metrics.CurrentLeasedRequestsCounterEnabled, _metrics.CurrentQueuedRequestsCounterEnabled);
+
+        using var leaseContext = await TryAcquireAsync(context, metricsContext);
 
         if (leaseContext.Lease?.IsAcquired == true)
         {
             var startTimestamp = Stopwatch.GetTimestamp();
+            var currentLeaseStart = _metrics.CurrentLeasedRequestsCounterEnabled;
             try
             {
 
-                _metrics.LeaseStart(policyName, method, route);
+                _metrics.LeaseStart(metricsContext);
                 await _next(context);
             }
             finally
             {
-                _metrics.LeaseEnd(policyName, method, route, startTimestamp, Stopwatch.GetTimestamp());
+                _metrics.LeaseEnd(metricsContext, startTimestamp, Stopwatch.GetTimestamp());
             }
         }
         else
         {
-            _metrics.LeaseFailed(policyName, method, route, leaseContext.RequestRejectionReason!.Value);
+            _metrics.LeaseFailed(metricsContext, leaseContext.RequestRejectionReason!.Value);
 
             // If the request was canceled, do not call OnRejected, just return.
             if (leaseContext.RequestRejectionReason == RequestRejectionReason.RequestCanceled)
@@ -146,7 +155,7 @@ internal sealed partial class RateLimitingMiddleware
         }
     }
 
-    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, string? policyName, string? method, string? route)
+    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, MetricsContext metricsContext)
     {
         var leaseContext = CombinedAcquire(context);
         if (leaseContext.Lease?.IsAcquired == true)
@@ -164,13 +173,13 @@ internal sealed partial class RateLimitingMiddleware
         var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            _metrics.QueueStart(policyName, method, route);
+            _metrics.QueueStart(metricsContext);
             leaseContext = await waitTask;
             return leaseContext;
         }
         finally
         {
-            _metrics.QueueEnd(policyName, method, route, leaseContext.RequestRejectionReason, startTimestamp, Stopwatch.GetTimestamp());
+            _metrics.QueueEnd(metricsContext, leaseContext.RequestRejectionReason, startTimestamp, Stopwatch.GetTimestamp());
         }
     }
 

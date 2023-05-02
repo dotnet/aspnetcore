@@ -13,9 +13,9 @@ internal sealed class RateLimitingMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.RateLimiting";
 
     private readonly Meter _meter;
-    private readonly UpDownCounter<long> _currentLeaseRequestsCounter;
-    private readonly Histogram<double> _leaseRequestDurationCounter;
-    private readonly UpDownCounter<long> _currentRequestsQueuedCounter;
+    private readonly UpDownCounter<long> _currentLeasedRequestsCounter;
+    private readonly Histogram<double> _leasedRequestDurationCounter;
+    private readonly UpDownCounter<long> _currentQueuedRequestsCounter;
     private readonly Histogram<double> _queuedRequestDurationCounter;
     private readonly Counter<long> _leaseFailedRequestsCounter;
 
@@ -23,16 +23,16 @@ internal sealed class RateLimitingMetrics : IDisposable
     {
         _meter = meterFactory.CreateMeter(MeterName);
 
-        _currentLeaseRequestsCounter = _meter.CreateUpDownCounter<long>(
+        _currentLeasedRequestsCounter = _meter.CreateUpDownCounter<long>(
             "current-leased-requests",
             description: "Number of HTTP requests that are currently active on the server that hold a rate limiting lease.");
 
-        _leaseRequestDurationCounter = _meter.CreateHistogram<double>(
+        _leasedRequestDurationCounter = _meter.CreateHistogram<double>(
             "leased-request-duration",
             unit: "s",
             description: "The duration of rate limiting leases held by HTTP requests on the server.");
 
-        _currentRequestsQueuedCounter = _meter.CreateUpDownCounter<long>(
+        _currentQueuedRequestsCounter = _meter.CreateUpDownCounter<long>(
             "current-queued-requests",
             description: "Number of HTTP requests that are currently queued, waiting to acquire a rate limiting lease.");
 
@@ -46,96 +46,112 @@ internal sealed class RateLimitingMetrics : IDisposable
             description: "Number of HTTP requests that failed to acquire a rate limiting lease. Requests could be rejected by global or endpoint rate limiting policies. Or the request could be canceled while waiting for the lease.");
     }
 
-    public void LeaseFailed(string? policyName, string? method, string? route, RequestRejectionReason reason)
+    public bool CurrentLeasedRequestsCounterEnabled => _currentLeasedRequestsCounter.Enabled;
+    public bool CurrentQueuedRequestsCounterEnabled => _currentQueuedRequestsCounter.Enabled;
+
+    public void LeaseFailed(in MetricsContext metricsContext, RequestRejectionReason reason)
     {
         if (_leaseFailedRequestsCounter.Enabled)
         {
-            LeaseFailedCore(policyName, method, route, reason);
+            LeaseFailedCore(metricsContext, reason);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void LeaseFailedCore(string? policyName, string? method, string? route, RequestRejectionReason reason)
+    private void LeaseFailedCore(in MetricsContext metricsContext, RequestRejectionReason reason)
     {
         var tags = new TagList();
-        InitializeRateLimitingTags(ref tags, policyName, method, route);
+        InitializeRateLimitingTags(ref tags, metricsContext);
         tags.Add("reason", reason.ToString());
         _leaseFailedRequestsCounter.Add(1, tags);
     }
 
-    public void LeaseStart(string? policyName, string? method, string? route)
+    public void LeaseStart(in MetricsContext metricsContext)
     {
-        if (_currentLeaseRequestsCounter.Enabled)
+        if (metricsContext.CurrentLeaseRequestsCounterEnabled)
         {
-            LeaseStartCore(policyName, method, route);
+            LeaseStartCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void LeaseStartCore(string? policyName, string? method, string? route)
+    public void LeaseStartCore(in MetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeRateLimitingTags(ref tags, policyName, method, route);
-        _currentLeaseRequestsCounter.Add(1, tags);
+        InitializeRateLimitingTags(ref tags, metricsContext);
+        _currentLeasedRequestsCounter.Add(1, tags);
     }
 
-    public void LeaseEnd(string? policyName, string? method, string? route, long startTimestamp, long currentTimestamp)
+    public void LeaseEnd(in MetricsContext metricsContext, long startTimestamp, long currentTimestamp)
     {
-        if (_currentLeaseRequestsCounter.Enabled || _leaseRequestDurationCounter.Enabled)
+        if (metricsContext.CurrentLeaseRequestsCounterEnabled || _leasedRequestDurationCounter.Enabled)
         {
-            LeaseEndCore(policyName, method, route, startTimestamp, currentTimestamp);
+            LeaseEndCore(metricsContext, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void LeaseEndCore(string? policyName, string? method, string? route, long startTimestamp, long currentTimestamp)
+    private void LeaseEndCore(in MetricsContext metricsContext, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
-        InitializeRateLimitingTags(ref tags, policyName, method, route);
+        InitializeRateLimitingTags(ref tags, metricsContext);
 
-        _currentLeaseRequestsCounter.Add(-1, tags);
+        if (metricsContext.CurrentLeaseRequestsCounterEnabled)
+        {
+            _currentLeasedRequestsCounter.Add(-1, tags);
+        }
 
-        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-        _leaseRequestDurationCounter.Record(duration.TotalSeconds, tags);
+        if (_leasedRequestDurationCounter.Enabled)
+        {
+            var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+            _leasedRequestDurationCounter.Record(duration.TotalSeconds, tags);
+        }
     }
 
-    public void QueueStart(string? policyName, string? method, string? route)
+    public void QueueStart(in MetricsContext metricsContext)
     {
-        if (_currentRequestsQueuedCounter.Enabled)
+        if (_currentQueuedRequestsCounter.Enabled)
         {
-            QueueStartCore(policyName, method, route);
+            QueueStartCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void QueueStartCore(string? policyName, string? method, string? route)
+    private void QueueStartCore(in MetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeRateLimitingTags(ref tags, policyName, method, route);
-        _currentRequestsQueuedCounter.Add(1, tags);
+        InitializeRateLimitingTags(ref tags, metricsContext);
+        _currentQueuedRequestsCounter.Add(1, tags);
     }
 
-    public void QueueEnd(string? policyName, string? method, string? route, RequestRejectionReason? reason, long startTimestamp, long currentTimestamp)
+    public void QueueEnd(in MetricsContext metricsContext, RequestRejectionReason? reason, long startTimestamp, long currentTimestamp)
     {
-        if (_currentRequestsQueuedCounter.Enabled || _queuedRequestDurationCounter.Enabled)
+        if (metricsContext.CurrentRequestsQueuedCounterEnabled || _queuedRequestDurationCounter.Enabled)
         {
-            QueueEndCore(policyName, method, route, reason, startTimestamp, currentTimestamp);
+            QueueEndCore(metricsContext, reason, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void QueueEndCore(string? policyName, string? method, string? route, RequestRejectionReason? reason, long startTimestamp, long currentTimestamp)
+    private void QueueEndCore(in MetricsContext metricsContext, RequestRejectionReason? reason, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
-        InitializeRateLimitingTags(ref tags, policyName, method, route);
-        _currentRequestsQueuedCounter.Add(-1, tags);
+        InitializeRateLimitingTags(ref tags, metricsContext);
 
-        if (reason != null)
+        if (metricsContext.CurrentRequestsQueuedCounterEnabled)
         {
-            tags.Add("reason", reason.Value.ToString());
+            _currentQueuedRequestsCounter.Add(-1, tags);
         }
-        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-        _queuedRequestDurationCounter.Record(duration.TotalSeconds, tags);
+
+        if (_queuedRequestDurationCounter.Enabled)
+        {
+            if (reason != null)
+            {
+                tags.Add("reason", reason.Value.ToString());
+            }
+            var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+            _queuedRequestDurationCounter.Record(duration.TotalSeconds, tags);
+        }
     }
 
     public void Dispose()
@@ -143,19 +159,19 @@ internal sealed class RateLimitingMetrics : IDisposable
         _meter.Dispose();
     }
 
-    private static void InitializeRateLimitingTags(ref TagList tags, string? policyName, string? method, string? route)
+    private static void InitializeRateLimitingTags(ref TagList tags, in MetricsContext metricsContext)
     {
-        if (policyName is not null)
+        if (metricsContext.PolicyName is not null)
         {
-            tags.Add("policy", policyName);
+            tags.Add("policy", metricsContext.PolicyName);
         }
-        if (method is not null)
+        if (metricsContext.Method is not null)
         {
-            tags.Add("method", method);
+            tags.Add("method", metricsContext.Method);
         }
-        if (route is not null)
+        if (metricsContext.Route is not null)
         {
-            tags.Add("route", route);
+            tags.Add("route", metricsContext.Route);
         }
     }
 }
