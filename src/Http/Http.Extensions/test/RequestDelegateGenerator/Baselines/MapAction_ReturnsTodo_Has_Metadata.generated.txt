@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
         private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapPost(
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
             this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
             [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Action<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.IFormFile> handler,
+            global::System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo> handler,
             [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
             [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints,
                 pattern,
                 handler,
-                PostVerb,
+                GetVerb,
                 filePath,
                 lineNumber);
         }
@@ -91,20 +91,21 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 29)] = (
+            [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
-                    var handler = (System.Action<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.IFormFile>)del;
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
-                    var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
+                    var jsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)serializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo));
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
                     {
@@ -114,64 +115,33 @@ namespace Microsoft.AspNetCore.Http.Generated
                             {
                                 return ValueTask.FromResult<object?>(Results.Empty);
                             }
-                            handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.IFormFile>(1)!);
-                            return ValueTask.FromResult<object?>(Results.Empty);
+                            return ValueTask.FromResult<object?>(handler());
                         },
                         options.EndpointBuilder,
                         handler.Method);
                     }
 
-                    async Task RequestHandler(HttpContext httpContext)
+                    Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        var httpContext_local = httpContext;
-                        // Endpoint Parameter: file (Type = Microsoft.AspNetCore.Http.IFormFile, IsOptional = False, IsParsable = False, IsArray = False, Source = FormBody)
-                        var file_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "IFormFile", "file");
-                        if (!file_resolveFormResult.Item1)
-                        {
-                            return;
-                        }
-                        var file_raw = httpContext.Request.Form.Files["file"];
-                        if (file_raw == null)
-                        {
-                            wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("IFormFile", "file", "form");
-                        }
-                        var file_temp = file_raw;
-                        global::Microsoft.AspNetCore.Http.IFormFile file_local = file_temp!;
-
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
-                            return;
+                            return Task.CompletedTask;
                         }
-                        handler(httpContext_local, file_local!);
+                        httpContext.Response.ContentType ??= "application/json";
+                        var result = handler();
+                        return GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        var httpContext_local = httpContext;
-                        // Endpoint Parameter: file (Type = Microsoft.AspNetCore.Http.IFormFile, IsOptional = False, IsParsable = False, IsArray = False, Source = FormBody)
-                        var file_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "IFormFile", "file");
-                        if (!file_resolveFormResult.Item1)
-                        {
-                            return;
-                        }
-                        var file_raw = httpContext.Request.Form.Files["file"];
-                        if (file_raw == null)
-                        {
-                            wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("IFormFile", "file", "form");
-                        }
-                        var file_temp = file_raw;
-                        global::Microsoft.AspNetCore.Http.IFormFile file_local = file_temp!;
-
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.IFormFile>(httpContext, httpContext_local, file_local!));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create(httpContext));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -230,78 +200,38 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
-        private static async Task<(bool, object?)> TryResolveFormAsync(
-            HttpContext httpContext,
-            LogOrThrowExceptionHelper logOrThrowExceptionHelper,
-            string parameterTypeName,
-            string parameterName)
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
-            object? formValue = null;
-            var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
-
-            if (feature?.CanHaveBody == true)
+            var runtimeType = value?.GetType();
+            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
             {
-                if (!httpContext.Request.HasFormContentType)
-                {
-                    logOrThrowExceptionHelper.UnexpectedNonFormContentType(httpContext.Request.ContentType);
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (false, null);
-                }
-
-                try
-                {
-                    formValue = await httpContext.Request.ReadFormAsync();
-                }
-                catch (BadHttpRequestException ex)
-                {
-                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
-                    httpContext.Response.StatusCode = ex.StatusCode;
-                    return (false, null);
-                }
-                catch (IOException ex)
-                {
-                    logOrThrowExceptionHelper.RequestBodyIOException(ex);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (false, null);
-                }
-                catch (InvalidDataException ex)
-                {
-                    logOrThrowExceptionHelper.InvalidFormRequestBody(parameterTypeName, parameterName, ex);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (false, null);
-                }
+                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
             }
 
-            return (true, formValue);
+            return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
         }
 
     }
 
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
+    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
-        public GeneratedAcceptsMetadata(string[] contentTypes)
+        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
         {
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
+            Type = type;
+            StatusCode = statusCode;
             ContentTypes = contentTypes;
         }
 
-        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(contentTypes);
+        public Type? Type { get; }
 
-            RequestType = type;
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
+        public int StatusCode { get; }
 
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        public Type? RequestType { get; }
-
-        public bool IsOptional { get; }
+        public IEnumerable<string> ContentTypes { get; }
     }
+
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };

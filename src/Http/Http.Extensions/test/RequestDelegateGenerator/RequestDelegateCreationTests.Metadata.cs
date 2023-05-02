@@ -38,6 +38,22 @@ app.MapGet("/", () => "Hello, world!");
     }
 
     [Fact]
+    public async Task MapAction_ReturnsTodo_Has_Metadata()
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapGet("/", () => new Todo());
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
+        Assert.Equal(200, metadata.StatusCode);
+        Assert.Equal("application/json", metadata.ContentTypes.Single());
+        Assert.Equal(typeof(Todo), metadata.Type);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
     public async Task MapAction_ReturnsVoid_Has_No_Metadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""

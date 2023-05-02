@@ -12,7 +12,6 @@ internal sealed class EmitterContext
     public bool HasParsable { get; set; }
     public bool HasJsonResponse { get; set; }
     public bool RequiresLoggingHelper { get; set; }
-    public bool RequiresMetadataHelperTypes { get; set; }
     public bool HasEndpointMetadataProvider { get; set; }
     public bool HasEndpointParameterMetadataProvider { get; set; }
 }

@@ -397,14 +397,6 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-    file static class GeneratedMetadataConstants
-    {
-        public static readonly string[] JsonContentType = new [] { "application/json" };
-        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
-        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
-        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
-    }
-
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -421,31 +413,14 @@ namespace Microsoft.AspNetCore.Http.Generated
         public IEnumerable<string> ContentTypes { get; }
     }
 
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
+    file static class GeneratedMetadataConstants
     {
-        public GeneratedAcceptsMetadata(string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            ContentTypes = contentTypes;
-        }
-
-        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            RequestType = type;
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
-
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        public Type? RequestType { get; }
-
-        public bool IsOptional { get; }
+        public static readonly string[] JsonContentType = new [] { "application/json" };
+        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
+        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
+
 
     file class LogOrThrowExceptionHelper
     {

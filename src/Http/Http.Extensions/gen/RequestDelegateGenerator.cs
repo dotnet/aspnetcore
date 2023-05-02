@@ -231,14 +231,26 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) =>
             {
-                var requiresMetadataHelperTypes = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresMetadataHelperTypes);
+                var hasFormBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasFormBody);
+                var hasJsonBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonBody || endpoint!.EmitterContext.HasJsonBodyOrService);
+                var hasResponseMetadata = endpoints.Any(endpoint => endpoint!.Response is { } response && !(response.IsIResult || response.HasNoResponse));
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
 
-                if (requiresMetadataHelperTypes)
+                if (hasFormBody || hasJsonBody)
                 {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentMetadataTypes);
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.AcceptsMetadataType);
+                }
+
+                if (hasResponseMetadata)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ProducesResponseTypeMetadataType);
+                }
+
+                if (hasFormBody || hasJsonBody || hasResponseMetadata)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentTypeConstantsType);
                 }
 
                 return stringWriter.ToString();

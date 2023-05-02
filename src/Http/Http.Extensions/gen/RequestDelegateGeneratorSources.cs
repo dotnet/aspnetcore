@@ -20,7 +20,7 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string ContentMetadataTypes => """
+    public static string ContentTypeConstantsType => """
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -29,6 +29,9 @@ internal static class RequestDelegateGeneratorSources
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+""";
+
+    public static string ProducesResponseTypeMetadataType => """
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -45,6 +48,9 @@ internal static class RequestDelegateGeneratorSources
         public IEnumerable<string> ContentTypes { get; }
     }
 
+""";
+
+    public static string AcceptsMetadataType => """
     file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
     {
         public GeneratedAcceptsMetadata(string[] contentTypes)
