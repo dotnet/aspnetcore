@@ -3,6 +3,10 @@
     <TrimmingTestDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'trimmingTests'))</TrimmingTestDir>
     <TrimmingTestProjectsDir>$([MSBuild]::NormalizeDirectory('$(TrimmingTestDir)', 'projects'))</TrimmingTestProjectsDir>
     <ProjectTemplate>$(MSBuildThisFileDirectory)project.csproj.template</ProjectTemplate>
+
+    <!-- These test projects cannot be run in helix, since there is nothing to publish. -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
   <PropertyGroup>
