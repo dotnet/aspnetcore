@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Security;
-using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -30,7 +29,7 @@ internal sealed class NegotiateState : INegotiateState
         }
         else
         {
-            error = new AuthenticationException(authStatus.ToString());
+            error = new AuthenticationFailureException(authStatus.ToString());
             if (IsCredentialError(authStatus))
             {
                 status = BlobErrorType.CredentialError;

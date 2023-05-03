@@ -31,12 +31,12 @@ internal sealed class ConsoleTable
 
         if (!_columns.Any())
         {
-            throw new Exception("Columns must be set before rows can be added.");
+            throw new InvalidOperationException("Columns must be set before rows can be added.");
         }
 
         if (_columns.Count != values.Length)
         {
-            throw new Exception(
+            throw new InvalidOperationException(
                 $"The number of columns in the table '{_columns.Count}' does not match the number of columns in the row '{values.Length}'.");
         }
 

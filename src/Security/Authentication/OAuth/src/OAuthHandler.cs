@@ -96,7 +96,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 {
                     return result;
                 }
-                var deniedEx = new Exception("Access was denied by the resource owner or by the remote server.");
+                var deniedEx = new AuthenticationFailureException("Access was denied by the resource owner or by the remote server.");
                 deniedEx.Data["error"] = error.ToString();
                 deniedEx.Data["error_description"] = errorDescription.ToString();
                 deniedEx.Data["error_uri"] = errorUri.ToString();
@@ -115,7 +115,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 failureMessage.Append(";Uri=").Append(errorUri);
             }
 
-            var ex = new Exception(failureMessage.ToString());
+            var ex = new AuthenticationFailureException(failureMessage.ToString());
             ex.Data["error"] = error.ToString();
             ex.Data["error_description"] = errorDescription.ToString();
             ex.Data["error_uri"] = errorUri.ToString();
@@ -236,7 +236,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         if (exception is null)
         {
             var errorMessage = $"OAuth token endpoint failure: Status: {response.StatusCode};Headers: {response.Headers};Body: {body};";
-            return OAuthTokenResponse.Failed(new Exception(errorMessage));
+            return OAuthTokenResponse.Failed(new AuthenticationFailureException(errorMessage));
         }
 
         return OAuthTokenResponse.Failed(exception);

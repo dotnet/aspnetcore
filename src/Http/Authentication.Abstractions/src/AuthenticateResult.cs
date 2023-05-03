@@ -118,7 +118,7 @@ public class AuthenticateResult
     /// <param name="failureMessage">The failure message.</param>
     /// <returns>The result.</returns>
     public static AuthenticateResult Fail(string failureMessage)
-        => Fail(new Exception(failureMessage));
+        => Fail(new AuthenticationFailureException(failureMessage));
 
     /// <summary>
     /// Indicates that there was a failure during authentication.
@@ -127,5 +127,5 @@ public class AuthenticateResult
     /// <param name="properties">Additional state values for the authentication session.</param>
     /// <returns>The result.</returns>
     public static AuthenticateResult Fail(string failureMessage, AuthenticationProperties? properties)
-        => Fail(new Exception(failureMessage), properties);
+        => Fail(new AuthenticationFailureException(failureMessage), properties);
 }

@@ -281,7 +281,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
             }
             else if (errorContext.Result.Failure != null)
             {
-                throw new Exception("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
+                throw new AuthenticationFailureException("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
             }
         }
 

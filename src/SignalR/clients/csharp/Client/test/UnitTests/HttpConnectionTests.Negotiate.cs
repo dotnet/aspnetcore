@@ -593,7 +593,7 @@ public partial class HttpConnectionTests
                     CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                     async (connection) =>
                     {
-                        var exception = await Assert.ThrowsAsync<Exception>(() => connection.StartAsync().DefaultTimeout());
+                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().DefaultTimeout());
                         Assert.Equal("Test error.", exception.Message);
                     });
             }

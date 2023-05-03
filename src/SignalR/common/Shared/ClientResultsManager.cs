@@ -27,7 +27,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
             }
             else
             {
-                tcs.SetException(new Exception(completionMessage.Error));
+                tcs.SetException(new HubException(completionMessage.Error));
             }
         }
         ));

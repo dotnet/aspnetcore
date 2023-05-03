@@ -239,7 +239,7 @@ internal class EndpointParameter
             ParsabilityMethod.Enum => (string inputArgument, string outputArgument) => $$"""Enum.TryParse<{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}>({{inputArgument}}!, out var {{outputArgument}})""",
             ParsabilityMethod.Uri => (string inputArgument, string outputArgument) => $$"""Uri.TryCreate({{inputArgument}}!, UriKind.RelativeOrAbsolute, out var {{outputArgument}})""",
             ParsabilityMethod.String => null, // string parameters don't require parsing
-            _ => throw new Exception("Unreachable!"),
+            _ => throw new NotImplementedException($"Unreachable! Unexpected {nameof(ParsabilityMethod)}: {parsabilityMethod}"),
         };
 
         // Special case handling for specific types
