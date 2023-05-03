@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -25,7 +26,8 @@ public class RateLimitingMiddlewareTests
             null,
             new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
-            Mock.Of<IServiceProvider>()));
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory())));
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
             {
@@ -33,7 +35,8 @@ public class RateLimitingMiddlewareTests
             },
             null,
             options,
-            Mock.Of<IServiceProvider>()));
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory())));
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
             {
@@ -41,6 +44,16 @@ public class RateLimitingMiddlewareTests
             },
             new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
+            null,
+            new RateLimitingMetrics(new TestMeterFactory())));
+
+        Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>(),
             null));
     }
 
@@ -59,7 +72,8 @@ public class RateLimitingMiddlewareTests
             },
             new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
-            Mock.Of<IServiceProvider>());
+            Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory()));
 
         // Act
         await middleware.Invoke(new DefaultHttpContext());
@@ -637,7 +651,8 @@ public class RateLimitingMiddlewareTests
         },
             logger ?? new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
-            serviceProvider ?? Mock.Of<IServiceProvider>());
+            serviceProvider ?? Mock.Of<IServiceProvider>(),
+            new RateLimitingMetrics(new TestMeterFactory()));
 
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
 }
