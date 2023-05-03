@@ -174,40 +174,4 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.UseAddAuthorizationBuilder,
             location));
     }
-    private sealed class AuthorizationOptionsTypes
-    {
-        public AuthorizationOptionsTypes(WellKnownTypes wellKnownTypes)
-        {
-            AuthorizationOptions = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Authorization_AuthorizationOptions);
-
-            if (AuthorizationOptions is not null)
-            {
-                var authorizationOptionsMembers = AuthorizationOptions.GetMembers();
-
-                var authorizationOptionsProperties = authorizationOptionsMembers.OfType<IPropertySymbol>();
-
-                DefaultPolicy = authorizationOptionsProperties
-                    .FirstOrDefault(member => member.Name == "DefaultPolicy");
-                FallbackPolicy = authorizationOptionsProperties
-                    .FirstOrDefault(member => member.Name == "FallbackPolicy");
-                InvokeHandlersAfterFailure = authorizationOptionsProperties
-                    .FirstOrDefault(member => member.Name == "InvokeHandlersAfterFailure");
-
-                GetPolicy = authorizationOptionsMembers.OfType<IMethodSymbol>()
-                    .FirstOrDefault(member => member.Name == "GetPolicy");
-            }
-        }
-
-        public INamedTypeSymbol? AuthorizationOptions { get; }
-        public IPropertySymbol? DefaultPolicy { get; }
-        public IPropertySymbol? FallbackPolicy { get; }
-        public IPropertySymbol? InvokeHandlersAfterFailure { get; }
-        public IMethodSymbol? GetPolicy { get; }
-
-        public bool HasRequiredTypes => AuthorizationOptions is not null
-            && DefaultPolicy is not null
-            && FallbackPolicy is not null
-            && InvokeHandlersAfterFailure is not null
-            && GetPolicy is not null;
-    }
 }
