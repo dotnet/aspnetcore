@@ -46,7 +46,7 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
                 context.RegisterCodeFix(
                     CodeAction.Create(title,
                         cancellationToken => ReplaceWithAddAuthorizationBuilder(diagnostic, root, context.Document, invocation),
-                        equivalenceKey: title),
+                        equivalenceKey: DiagnosticDescriptors.UseAddAuthorizationBuilder.Id),
                     diagnostic);
             }
         }
