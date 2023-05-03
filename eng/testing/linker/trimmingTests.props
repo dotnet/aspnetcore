@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <!-- Enforce build order. Ensure the Shared Fx is built before generating and publishing the test apps. -->
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj"
                       Private="false"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true" />
