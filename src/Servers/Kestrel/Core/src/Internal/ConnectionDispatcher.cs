@@ -22,6 +22,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
     }
 
     private KestrelTrace Log => _serviceContext.Log;
+    private KestrelMetrics Metrics => _serviceContext.Metrics;
 
     public Task StartAcceptingConnections(IConnectionListener<T> listener)
     {
@@ -50,14 +51,17 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
                     // Add the connection to the connection manager before we queue it for execution
                     var id = _transportConnectionManager.GetNewConnectionId();
+                    var metricsContext = new ConnectionMetricsContext(connection,
+                        Metrics.CurrentConnectionsCounterEnabled, Metrics.ConnectionDurationEnabled, Metrics.QueuedConnectionsCounterEnabled,
+                        Metrics.QueuedRequestsCounterEnabled, Metrics.CurrentUpgradedRequestsCounterEnabled, Metrics.CurrentTlsHandshakesCounterEnabled);
                     var kestrelConnection = new KestrelConnection<T>(
-                        id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log);
+                        id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log, metricsContext);
 
                     _transportConnectionManager.AddConnection(id, kestrelConnection);
 
                     Log.ConnectionAccepted(connection.ConnectionId);
                     KestrelEventSource.Log.ConnectionQueuedStart(connection);
-                    _serviceContext.Metrics.ConnectionQueuedStart(connection);
+                    Metrics.ConnectionQueuedStart(metricsContext);
 
                     ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
                 }

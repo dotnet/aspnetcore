@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Metrics;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -24,6 +23,13 @@ internal sealed class KestrelMetrics
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
     private readonly Histogram<double> _tlsHandshakeDuration;
     private readonly UpDownCounter<long> _currentTlsHandshakesCounter;
+
+    public bool CurrentConnectionsCounterEnabled => _currentConnectionsCounter.Enabled;
+    public bool ConnectionDurationEnabled => _connectionDuration.Enabled;
+    public bool QueuedConnectionsCounterEnabled => _queuedConnectionsCounter.Enabled;
+    public bool QueuedRequestsCounterEnabled => _queuedRequestsCounter.Enabled;
+    public bool CurrentUpgradedRequestsCounterEnabled => _currentUpgradedRequestsCounter.Enabled;
+    public bool CurrentTlsHandshakesCounterEnabled => _currentTlsHandshakesCounter.Enabled;
 
     public KestrelMetrics(IMeterFactory meterFactory)
     {
@@ -64,204 +70,213 @@ internal sealed class KestrelMetrics
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 
-    public void ConnectionStart(BaseConnectionContext connection)
+    public void ConnectionStart(in ConnectionMetricsContext metricsContext)
     {
-        if (_currentConnectionsCounter.Enabled)
+        if (metricsContext.CurrentConnectionsCounterEnabled)
         {
-            ConnectionStartCore(connection);
+            ConnectionStartCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStartCore(BaseConnectionContext connection)
+    private void ConnectionStartCore(in ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _currentConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionStop(BaseConnectionContext connection, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void ConnectionStop(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
-        if (_currentConnectionsCounter.Enabled || _connectionDuration.Enabled)
+        if (metricsContext.CurrentConnectionsCounterEnabled || metricsContext.ConnectionDurationEnabled)
         {
-            ConnectionStopCore(connection, exception, customTags, startTimestamp, currentTimestamp);
+            ConnectionStopCore(metricsContext, exception, customTags, startTimestamp, currentTimestamp);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionStopCore(BaseConnectionContext connection, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    private void ConnectionStopCore(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
 
-        // Decrease in connections counter must match tags from increase. No custom tags.
-        _currentConnectionsCounter.Add(-1, tags);
-
-        if (exception != null)
+        if (metricsContext.CurrentConnectionsCounterEnabled)
         {
-            tags.Add("exception-name", exception.GetType().FullName);
+            // Decrease in connections counter must match tags from increase. No custom tags.
+            _currentConnectionsCounter.Add(-1, tags);
         }
 
-        // Add custom tags for duration.
-        if (customTags != null)
+        if (metricsContext.ConnectionDurationEnabled)
         {
-            for (var i = 0; i < customTags.Count; i++)
+            if (exception != null)
             {
-                tags.Add(customTags[i]);
+                tags.Add("exception-name", exception.GetType().FullName);
             }
-        }
 
-        var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-        _connectionDuration.Record(duration.TotalSeconds, tags);
+            // Add custom tags for duration.
+            if (customTags != null)
+            {
+                for (var i = 0; i < customTags.Count; i++)
+                {
+                    tags.Add(customTags[i]);
+                }
+            }
+
+            var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+            _connectionDuration.Record(duration.TotalSeconds, tags);
+        }
     }
 
-    public void ConnectionRejected(BaseConnectionContext connection)
+    public void ConnectionRejected(in ConnectionMetricsContext metricsContext)
     {
         if (_rejectedConnectionsCounter.Enabled)
         {
-            ConnectionRejectedCore(connection);
+            ConnectionRejectedCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionRejectedCore(BaseConnectionContext connection)
+    private void ConnectionRejectedCore(in ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _rejectedConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionQueuedStart(BaseConnectionContext connection)
+    public void ConnectionQueuedStart(in ConnectionMetricsContext metricsContext)
     {
-        if (_queuedConnectionsCounter.Enabled)
+        if (metricsContext.QueuedConnectionsCounterEnabled)
         {
-            ConnectionQueuedStartCore(connection);
+            ConnectionQueuedStartCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionQueuedStartCore(BaseConnectionContext connection)
+    private void ConnectionQueuedStartCore(in ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _queuedConnectionsCounter.Add(1, tags);
     }
 
-    public void ConnectionQueuedStop(BaseConnectionContext connection)
+    public void ConnectionQueuedStop(in ConnectionMetricsContext metricsContext)
     {
-        if (_queuedConnectionsCounter.Enabled)
+        if (metricsContext.QueuedConnectionsCounterEnabled)
         {
-            ConnectionQueuedStopCore(connection);
+            ConnectionQueuedStopCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ConnectionQueuedStopCore(BaseConnectionContext connection)
+    private void ConnectionQueuedStopCore(in ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _queuedConnectionsCounter.Add(-1, tags);
     }
 
-    public void RequestQueuedStart(BaseConnectionContext connection, string httpVersion)
+    public void RequestQueuedStart(in ConnectionMetricsContext metricsContext, string httpVersion)
     {
-        if (_queuedRequestsCounter.Enabled)
+        if (metricsContext.QueuedRequestsCounterEnabled)
         {
-            RequestQueuedStartCore(connection, httpVersion);
+            RequestQueuedStartCore(metricsContext, httpVersion);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestQueuedStartCore(BaseConnectionContext connection, string httpVersion)
+    private void RequestQueuedStartCore(in ConnectionMetricsContext metricsContext, string httpVersion)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         tags.Add("version", httpVersion);
         _queuedRequestsCounter.Add(1, tags);
     }
 
-    public void RequestQueuedStop(BaseConnectionContext connection, string httpVersion)
+    public void RequestQueuedStop(in ConnectionMetricsContext metricsContext, string httpVersion)
     {
-        if (_queuedRequestsCounter.Enabled)
+        if (metricsContext.QueuedRequestsCounterEnabled)
         {
-            RequestQueuedStopCore(connection, httpVersion);
+            RequestQueuedStopCore(metricsContext, httpVersion);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestQueuedStopCore(BaseConnectionContext connection, string httpVersion)
+    private void RequestQueuedStopCore(in ConnectionMetricsContext metricsContext, string httpVersion)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         tags.Add("version", httpVersion);
         _queuedRequestsCounter.Add(-1, tags);
     }
 
-    public void RequestUpgradedStart(BaseConnectionContext connection)
+    public void RequestUpgradedStart(in ConnectionMetricsContext metricsContext)
     {
-        if (_currentUpgradedRequestsCounter.Enabled)
+        if (metricsContext.CurrentUpgradedRequestsCounterEnabled)
         {
-            RequestUpgradedStartCore(connection);
+            RequestUpgradedStartCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestUpgradedStartCore(BaseConnectionContext connection)
+    private void RequestUpgradedStartCore(in ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _currentUpgradedRequestsCounter.Add(1, tags);
     }
 
-    public void RequestUpgradedStop(BaseConnectionContext connection)
+    public void RequestUpgradedStop(in ConnectionMetricsContext metricsContext)
     {
-        if (_currentUpgradedRequestsCounter.Enabled)
+        if (metricsContext.CurrentUpgradedRequestsCounterEnabled)
         {
-            RequestUpgradedStopCore(connection);
+            RequestUpgradedStopCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void RequestUpgradedStopCore(BaseConnectionContext connection)
+    private void RequestUpgradedStopCore(in ConnectionMetricsContext metricsContext)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _currentUpgradedRequestsCounter.Add(-1, tags);
     }
 
-    public void TlsHandshakeStart(BaseConnectionContext connection)
+    public void TlsHandshakeStart(in ConnectionMetricsContext metricsContext)
     {
-        if (_currentTlsHandshakesCounter.Enabled)
+        if (metricsContext.CurrentTlsHandshakesCounterEnabled)
         {
-            TlsHandshakeStartCore(connection);
+            TlsHandshakeStartCore(metricsContext);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStartCore(BaseConnectionContext connection)
+    private void TlsHandshakeStartCore(in ConnectionMetricsContext metricsContext)
     {
         // Tags must match TLS handshake end.
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
         _currentTlsHandshakesCounter.Add(1, tags);
     }
 
-    public void TlsHandshakeStop(BaseConnectionContext connection, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
+    public void TlsHandshakeStop(in ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
     {
-        if (_currentTlsHandshakesCounter.Enabled || _tlsHandshakeDuration.Enabled)
+        if (metricsContext.CurrentTlsHandshakesCounterEnabled || _tlsHandshakeDuration.Enabled)
         {
-            TlsHandshakeStopCore(connection, startTimestamp, currentTimestamp, protocol, exception);
+            TlsHandshakeStopCore(metricsContext, startTimestamp, currentTimestamp, protocol, exception);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void TlsHandshakeStopCore(BaseConnectionContext connection, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
+    private void TlsHandshakeStopCore(in ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
     {
         var tags = new TagList();
-        InitializeConnectionTags(ref tags, connection);
+        InitializeConnectionTags(ref tags, metricsContext);
 
-        // Tags must match TLS handshake start.
-        _currentTlsHandshakesCounter.Add(-1, tags);
+        if (metricsContext.CurrentTlsHandshakesCounterEnabled)
+        {
+            // Tags must match TLS handshake start.
+            _currentTlsHandshakesCounter.Add(-1, tags);
+        }
 
         if (protocol != null)
         {
@@ -276,9 +291,9 @@ internal sealed class KestrelMetrics
         _tlsHandshakeDuration.Record(duration.TotalSeconds, tags);
     }
 
-    private static void InitializeConnectionTags(ref TagList tags, BaseConnectionContext connection)
+    private static void InitializeConnectionTags(ref TagList tags, in ConnectionMetricsContext metricsContext)
     {
-        if (connection.LocalEndPoint is { } localEndpoint)
+        if (metricsContext.ConnectionContext.LocalEndPoint is { } localEndpoint)
         {
             // TODO: Improve getting string allocation for endpoint. Currently allocates.
             // Possible solution is to cache in the endpoint: https://github.com/dotnet/runtime/issues/84515
@@ -286,6 +301,4 @@ internal sealed class KestrelMetrics
             tags.Add("endpoint", localEndpoint.ToString());
         }
     }
-
-    public bool IsConnectionDurationEnabled() => _connectionDuration.Enabled;
 }

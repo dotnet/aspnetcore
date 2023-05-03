@@ -55,6 +55,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
         _context = context;
         _streamLifetimeHandler = this;
+        MetricsContext = context.ConnectionFeatures.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
 
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
@@ -91,6 +92,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private long GetCurrentGoAwayStreamId() => Interlocked.Read(ref _highestOpenedRequestStreamId) + 4;
 
     private KestrelTrace Log => _context.ServiceContext.Log;
+    public ConnectionMetricsContext MetricsContext { get; }
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
     public Http3ControlStream? OutboundControlStream { get; set; }
     public Http3ControlStream? ControlStream { get; set; }
@@ -594,7 +596,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         _streamLifetimeHandler.OnStreamCreated(stream);
         KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
-        _context.ServiceContext.Metrics.RequestQueuedStart(_multiplexedContext, AspNetCore.Http.HttpProtocol.Http3);
+        _context.ServiceContext.Metrics.RequestQueuedStart(MetricsContext, AspNetCore.Http.HttpProtocol.Http3);
 
         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
     }

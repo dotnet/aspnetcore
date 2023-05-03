@@ -8,6 +8,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
+internal interface IConnectionMetricsContextFeature
+{
+    ConnectionMetricsContext MetricsContext { get; }
+}
+
+internal readonly struct ConnectionMetricsContext
+{
+    public BaseConnectionContext ConnectionContext { get; }
+    public bool CurrentConnectionsCounterEnabled { get; }
+    public bool ConnectionDurationEnabled { get; }
+    public bool QueuedConnectionsCounterEnabled { get; }
+    public bool QueuedRequestsCounterEnabled { get; }
+    public bool CurrentUpgradedRequestsCounterEnabled { get; }
+    public bool CurrentTlsHandshakesCounterEnabled { get; }
+
+    public ConnectionMetricsContext(BaseConnectionContext connectionContext, bool currentConnectionsCounterEnabled,
+        bool connectionDurationEnabled, bool queuedConnectionsCounterEnabled, bool queuedRequestsCounterEnabled,
+        bool currentUpgradedRequestsCounterEnabled, bool currentTlsHandshakesCounterEnabled)
+    {
+        ConnectionContext = connectionContext;
+        CurrentConnectionsCounterEnabled = currentConnectionsCounterEnabled;
+        ConnectionDurationEnabled = connectionDurationEnabled;
+        QueuedConnectionsCounterEnabled = queuedConnectionsCounterEnabled;
+        QueuedRequestsCounterEnabled = queuedRequestsCounterEnabled;
+        CurrentUpgradedRequestsCounterEnabled = currentUpgradedRequestsCounterEnabled;
+        CurrentTlsHandshakesCounterEnabled = currentTlsHandshakesCounterEnabled;
+    }
+}
+
 internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkItem where T : BaseConnectionContext
 {
     private readonly Func<T, Task> _connectionDelegate;
@@ -18,16 +47,19 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
                              TransportConnectionManager transportConnectionManager,
                              Func<T, Task> connectionDelegate,
                              T connectionContext,
-                             KestrelTrace logger)
-        : base(id, serviceContext, transportConnectionManager, logger)
+                             KestrelTrace logger,
+                             ConnectionMetricsContext connectionMetricsContext)
+        : base(id, serviceContext, transportConnectionManager, logger, connectionMetricsContext)
     {
         _connectionDelegate = connectionDelegate;
         _transportConnection = connectionContext;
         connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
         connectionContext.Features.Set<IConnectionCompleteFeature>(this);
         connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);
+        connectionContext.Features.Set<IConnectionMetricsContextFeature>(this);
     }
 
+    private KestrelMetrics Metrics => _serviceContext.Metrics;
     public override BaseConnectionContext TransportConnection => _transportConnection;
 
     void IThreadPoolWorkItem.Execute()
@@ -38,12 +70,11 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
     internal async Task ExecuteAsync()
     {
         var connectionContext = _transportConnection;
-        var metricsConnectionDurationEnabled = _serviceContext.Metrics.IsConnectionDurationEnabled();
         var startTimestamp = 0L;
         ConnectionMetricsTagsFeature? metricsTagsFeature = null;
         Exception? unhandledException = null;
 
-        if (metricsConnectionDurationEnabled)
+        if (MetricsContext.ConnectionDurationEnabled)
         {
             metricsTagsFeature = new ConnectionMetricsTagsFeature();
             connectionContext.Features.Set<IConnectionMetricsTagsFeature>(metricsTagsFeature);
@@ -54,11 +85,11 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
         try
         {
             KestrelEventSource.Log.ConnectionQueuedStop(connectionContext);
-            _serviceContext.Metrics.ConnectionQueuedStop(connectionContext);
+            Metrics.ConnectionQueuedStop(MetricsContext);
 
             Logger.ConnectionStart(connectionContext.ConnectionId);
             KestrelEventSource.Log.ConnectionStart(connectionContext);
-            _serviceContext.Metrics.ConnectionStart(connectionContext);
+            Metrics.ConnectionStart(MetricsContext);
 
             using (BeginConnectionScope(connectionContext))
             {
@@ -78,14 +109,14 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
             await FireOnCompletedAsync();
 
             var currentTimestamp = 0L;
-            if (metricsConnectionDurationEnabled)
+            if (MetricsContext.ConnectionDurationEnabled)
             {
                 currentTimestamp = Stopwatch.GetTimestamp();
             }
 
             Logger.ConnectionStop(connectionContext.ConnectionId);
             KestrelEventSource.Log.ConnectionStop(connectionContext);
-            _serviceContext.Metrics.ConnectionStop(connectionContext, unhandledException, metricsTagsFeature?.TagsList, startTimestamp, currentTimestamp);
+            Metrics.ConnectionStop(MetricsContext, unhandledException, metricsTagsFeature?.TagsList, startTimestamp, currentTimestamp);
 
             // Dispose the transport connection, this needs to happen before removing it from the
             // connection manager so that we only signal completion of this connection after the transport
