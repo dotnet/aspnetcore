@@ -110,7 +110,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
     public void QueueStart(in MetricsContext metricsContext)
     {
-        if (_currentQueuedRequestsCounter.Enabled)
+        if (metricsContext.CurrentRequestsQueuedCounterEnabled)
         {
             QueueStartCore(metricsContext);
         }
