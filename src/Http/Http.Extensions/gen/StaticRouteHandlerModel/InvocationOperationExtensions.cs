@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,24 +37,15 @@ internal static class InvocationOperationExtensions
     public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)]out IArgumentOperation? argumentOperation)
     {
         argumentOperation = null;
-        if (invocation.Syntax.TryGetMapMethodName(out var methodName))
+        // Route handler argument is typically the last parameter provided to
+        // the Map methods.
+        var routeHandlerArgumentOrdinal = invocation.Arguments.Length - 1;
+        foreach (var argument in invocation.Arguments)
         {
-            var routeHandlerArgumentOrdinal = methodName switch
+            if (argument.Parameter?.Ordinal == routeHandlerArgumentOrdinal)
             {
-                "MapGet" or "MapPost" or "MapDelete" or "MapPut" or "MapPatch" => 2,
-                "Map" => 2,
-                "MapMethods" => 3,
-                "MapFallback" when invocation.Arguments.Length == 3 => 2,
-                "MapFallback" when invocation.Arguments.Length == 2 => 1,
-                _ => throw new Exception("Encountered invalid method name.")
-            };
-            foreach (var argument in invocation.Arguments)
-            {
-                if (argument.Parameter?.Ordinal == routeHandlerArgumentOrdinal)
-                {
-                    argumentOperation = argument;
-                    return true;
-                }
+                argumentOperation = argument;
+                return true;
             }
         }
         return false;

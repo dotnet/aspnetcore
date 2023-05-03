@@ -20,22 +20,10 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 [Generator]
 public sealed class RequestDelegateGenerator : IIncrementalGenerator
 {
-    private static readonly string[] _knownMethods =
-    {
-        "MapGet",
-        "MapPost",
-        "MapPut",
-        "MapDelete",
-        "MapPatch",
-        "Map",
-        "MapMethods",
-        "MapFallback"
-    };
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var endpointsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
-            predicate: static (node, _) => node.TryGetMapMethodName(out var method) && _knownMethods.Contains(method),
+            predicate: static (node, _) => node.TryGetMapMethodName(out var method) && InvocationOperationExtensions.KnownMethods.Contains(method),
             transform: static (context, token) =>
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token);
