@@ -64,7 +64,10 @@ internal sealed class SpaProxyMiddleware
         }
         else
         {
-            _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.GetRedirectUrl()}.");
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.GetRedirectUrl()}.");
+            }
             context.Response.Redirect(_options.Value.GetRedirectUrl());
         }
 
