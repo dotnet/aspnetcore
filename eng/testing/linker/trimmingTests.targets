@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$(RepoRoot)eng\targets\ResolveReferences.targets" />
+
   <ItemGroup>
     <TestConsoleAppSourceFiles Condition="'@(TestConsoleAppSourceFiles)' == ''" Include="$(MSBuildProjectDirectory)\*.cs" />
 
@@ -94,10 +96,6 @@
     <Message Text="Generated $(_projectFile)" />
   </Target>
 
-  <Target Name="GetTrimmingProjectsToRestore"
-          DependsOnTargets="GenerateProjects"
-          Returns="@(TestConsoleApps)" />
-
   <Target Name="PublishTrimmedProjects"
           DependsOnTargets="GenerateProjects">
 
@@ -126,7 +124,6 @@
   </Target>
 
   <Target Name="CoreBuild" DependsOnTargets="ExecuteApplications" />
-
   <Target Name="Restore" />
 
   <!-- define test to do nothing, for this project Build does all the testing -->
