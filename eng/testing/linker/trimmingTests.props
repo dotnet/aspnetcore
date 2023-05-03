@@ -8,6 +8,8 @@
   <PropertyGroup>
     <!-- Microsoft.NET.Sdk needs a TFM set. Set a default one. -->
     <TargetFramework Condition="'$(TargetFramework)' == '' and '$(TargetFrameworks)' == ''">$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
   </PropertyGroup>
 
   <ItemGroup>
