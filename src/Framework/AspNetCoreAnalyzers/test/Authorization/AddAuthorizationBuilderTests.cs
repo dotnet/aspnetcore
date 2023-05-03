@@ -24,7 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-{|#0:builder.Services.AddAuthorization(options =>
+{|#0:builder.Services.AddAuthorization(configure: options =>
     options.AddPolicy(""AtLeast21"", policy =>
         policy.Requirements.Add(new MinimumAgeRequirement(21))))|};
 ";
