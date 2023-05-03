@@ -382,4 +382,101 @@ app.MapPost("/", (AccessesServicesMetadataBinder parameter1) => "Test");
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is MetadataService);
     }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", () => new CountsDefaultEndpointMetadataResult()).WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Differs from RDF test because we end up with more metadata in RDG.
+        Assert.Contains(endpoint.Metadata, m => m is MetadataCountMetadata { Count: > 1 });
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", () => Task.FromResult(new CountsDefaultEndpointMetadataResult())).WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Differs from RDF test because we end up with more metadata in RDG.
+        Assert.Contains(endpoint.Metadata, m => m is MetadataCountMetadata { Count: > 1 });
+    }
+
+    [Fact]
+    public async Task AndMetadataFromValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", () => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult())).WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Differs from RDF test because we end up with more metadata in RDG.
+        Assert.Contains(endpoint.Metadata, m => m is MetadataCountMetadata { Count: > 1 });
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointParameterMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param1" });
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
+    public async Task Create_FlowsRoutePattern_ToMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/test/pattern", (AddsRoutePatternMetadata param1) => {});
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is RoutePatternMetadata { RoutePattern: "/test/pattern" });
+    }
 }
