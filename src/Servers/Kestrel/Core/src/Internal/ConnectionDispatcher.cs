@@ -51,9 +51,13 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
                     // Add the connection to the connection manager before we queue it for execution
                     var id = _transportConnectionManager.GetNewConnectionId();
+
+                    // Cache counter enabled state at the start of the connection.
+                    // This ensures that the state is consistent for the entire connection.
                     var metricsContext = new ConnectionMetricsContext(connection,
                         Metrics.CurrentConnectionsCounterEnabled, Metrics.ConnectionDurationEnabled, Metrics.QueuedConnectionsCounterEnabled,
                         Metrics.QueuedRequestsCounterEnabled, Metrics.CurrentUpgradedRequestsCounterEnabled, Metrics.CurrentTlsHandshakesCounterEnabled);
+
                     var kestrelConnection = new KestrelConnection<T>(
                         id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log, metricsContext);
 
