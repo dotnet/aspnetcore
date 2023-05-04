@@ -8,7 +8,7 @@ internal sealed class BCryptKeyHandle : BCryptHandle
     private BCryptAlgorithmHandle? _algProviderHandle;
 
     // Called by P/Invoke when returning SafeHandles
-    private BCryptKeyHandle() { }
+    public BCryptKeyHandle() { }
 
     // Do not provide a finalizer - SafeHandle's critical finalizer will call ReleaseHandle for you.
     protected override bool ReleaseHandle()

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles;
 
 internal sealed unsafe class NCryptDescriptorHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
-    private NCryptDescriptorHandle()
+    public NCryptDescriptorHandle()
         : base(ownsHandle: true)
     {
     }
