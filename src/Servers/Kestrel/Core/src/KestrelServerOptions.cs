@@ -601,7 +601,7 @@ public class KestrelServerOptions
                 throw new InvalidOperationException(CoreStrings.NeedConfigurationToRetrieveServerCertificate);
             }
 
-            // We consider calls to `GetServerCertificate` to be a clear expression of user intent to pull in HTTPS configuration support
+            // We consider calls to `HasDefaultOrDevelopmentCertificate.get` to be a clear expression of user intent to pull in HTTPS configuration support
             EnableHttpsConfiguration();
 
             var httpsOptions = new HttpsConnectionAdapterOptions();
