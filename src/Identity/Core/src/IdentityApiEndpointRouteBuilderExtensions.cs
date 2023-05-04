@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
@@ -28,8 +27,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     /// Call <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, string)"/> to add a prefix to all the endpoints.
     /// </param>
     /// <returns>An <see cref="IEndpointConventionBuilder"/> to further customize the added endpoints.</returns>
-    // TODO: Remove RequiresDynamicCode when https://github.com/dotnet/aspnetcore/issues/47918 is fixed and RDG is enabled.
-    [RequiresDynamicCode("This API requires generated code that is not compatible with native AOT applications.")]
     public static IEndpointConventionBuilder MapIdentityApi<TUser>(this IEndpointRouteBuilder endpoints) where TUser : class, new()
     {
         ArgumentNullException.ThrowIfNull(endpoints);
