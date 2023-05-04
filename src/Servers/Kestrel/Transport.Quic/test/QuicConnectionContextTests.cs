@@ -505,7 +505,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Arrange
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
-        var testTimeProvider = new TestTimeProvider(123456789l);
+        var testTimeProvider = new TestTimeProvider(123456789L);
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testTimeProvider);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);

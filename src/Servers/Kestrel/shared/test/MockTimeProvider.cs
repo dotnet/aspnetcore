@@ -30,7 +30,7 @@ public class MockTimeProvider : TimeProvider
         Interlocked.Exchange(ref _utcNowTicks, now.Ticks);
     }
 
-    public override long GetTimestamp() => GetUtcNow().Ticks;
+    public override long GetTimestamp() => Interlocked.Read(ref _utcNowTicks);
 
     public override long TimestampFrequency => TimeSpan.TicksPerSecond;
 
