@@ -31,7 +31,6 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
         services.TryAddScoped<FormDataProvider, DefaultFormDataProvider>();
-        services.TryAddScoped<RoutingStateProvider>();
         return services;
     }
 }

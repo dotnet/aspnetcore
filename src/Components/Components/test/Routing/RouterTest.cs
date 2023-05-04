@@ -25,7 +25,6 @@ public class RouterTest
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
         services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
-        services.TryAddScoped<RoutingStateProvider>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);

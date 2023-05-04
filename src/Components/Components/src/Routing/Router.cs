@@ -45,7 +45,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
-    [Inject] private RoutingStateProvider RoutingStateProvider { get; set; }
+    [Inject] IServiceProvider ServiceProvider { get; set; }
+
+    private RoutingStateProvider RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -101,6 +103,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+        RoutingStateProvider = (RoutingStateProvider)ServiceProvider.GetService(typeof(RoutingStateProvider));
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
@@ -198,7 +201,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         locationPath = TrimQueryOrHash(locationPath);
 
         // In order to avoid routing twice we check for RouteData
-        if (RoutingStateProvider.RouteData != null)
+        if (RoutingStateProvider != null && RoutingStateProvider.RouteData != null)
         {
             Log.NavigatingToComponent(_logger, RoutingStateProvider.RouteData.PageType, locationPath, _baseUri);
 
