@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <TestConsoleAppSourceFiles Include="TestCertificateXmlEncryptor.cs" />
+    <TestConsoleAppSourceFiles Include="TestUnprotectWorksWithX509Certificate.cs" />
+  </ItemGroup>
+
+</Project>
