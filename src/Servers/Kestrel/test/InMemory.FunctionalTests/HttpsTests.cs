@@ -783,7 +783,7 @@ public class HttpsTests : LoggedTest
 
         serverOptions.Configure();
 
-        Assert.Throws<InvalidOperationException>(() => serverOptions.CheckDefaultCertificate);
+        Assert.Throws<InvalidOperationException>(() => serverOptions.CheckDefaultCertificate());
     }
 
     [Fact]
