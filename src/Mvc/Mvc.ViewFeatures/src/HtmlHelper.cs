@@ -1390,12 +1390,13 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
 
             if (!string.IsNullOrEmpty(keyValuePair.Key.Group))
             {
-                if (!groupList.ContainsKey(keyValuePair.Key.Group))
+                if (!groupList.TryGetValue(keyValuePair.Key.Group, out var group))
                 {
-                    groupList[keyValuePair.Key.Group] = new SelectListGroup() { Name = keyValuePair.Key.Group };
+                    group = new SelectListGroup() { Name = keyValuePair.Key.Group };
+                    groupList[keyValuePair.Key.Group] = group;
                 }
 
-                selectListItem.Group = groupList[keyValuePair.Key.Group];
+                selectListItem.Group = group;
             }
 
             selectList.Add(selectListItem);
