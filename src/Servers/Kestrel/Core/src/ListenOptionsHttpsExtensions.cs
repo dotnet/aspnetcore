@@ -206,13 +206,14 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.HttpsOptions = lazyHttpsOptions;
 
+        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
+
         // NB: This lambda will only be invoked if either HTTP/1.* or HTTP/2 is being used
         listenOptions.Use(next =>
         {
             // Evaluate the HttpsConnectionAdapterOptions, now that the configuration, if any, has been loaded
             var httpsOptions = lazyHttpsOptions.Value;
-            var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
             var middleware = new HttpsConnectionMiddleware(next, httpsOptions, listenOptions.Protocols, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
