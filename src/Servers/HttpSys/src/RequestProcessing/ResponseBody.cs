@@ -523,6 +523,15 @@ internal sealed partial class ResponseBody : Stream
             throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
         }
 
+        if (count == 0 && _requestContext.Response.HasStarted)
+        {
+            // avoid trivial writes (unless we haven't started the response yet)
+            // note that this precedes disposal check, since writing the last bytes
+            // may have completed the response (marking us disposed) - a trailing
+            // empty write is *not* harmful
+            return;
+        }
+
         // Validates for null and bounds. Allows count == 0.
         // TODO: Verbose log parameters
         var data = new ArraySegment<byte>(buffer, offset, count);
@@ -565,6 +574,15 @@ internal sealed partial class ResponseBody : Stream
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         ValidateBufferArguments(buffer, offset, count);
+
+        if (count == 0 && _requestContext.Response.HasStarted)
+        {
+            // avoid trivial writes (unless we haven't started the response yet)
+            // note that this precedes disposal check, since writing the last bytes
+            // may have completed the response (marking us disposed) - a trailing
+            // empty write is *not* harmful
+            return Task.CompletedTask;
+        }
 
         // Validates for null and bounds. Allows count == 0.
         // TODO: Verbose log parameters

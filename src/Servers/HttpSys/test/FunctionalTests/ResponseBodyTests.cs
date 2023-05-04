@@ -368,6 +368,43 @@ public class ResponseBodyTests
         }
     }
 
+    [ConditionalTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResponseBody_ZeroLengthTrailingWrite_Success(bool setContentLength)
+    {
+        string address, fault = null;
+        using (Utilities.CreateHttpServer(out address, async httpContext =>
+        {
+            byte[] data = Encoding.UTF8.GetBytes("hello, world");
+            if (setContentLength)
+            {
+                httpContext.Response.ContentLength = data.Length;
+            }
+            var body = httpContext.Response.Body;
+            await body.WriteAsync(data);
+            try
+            {
+                await body.FlushAsync();
+                await body.WriteAsync(Array.Empty<byte>());
+            }
+            catch (Exception ex)
+            {
+                // in content-length scenarios, server-side faults after
+                // the payload would not be observed
+                Volatile.Write(ref fault, ex.Message);
+            }
+        }))
+        {
+            var response = await SendRequestAsync(address);
+            var payload = await response.Content.ReadAsByteArrayAsync();
+            Assert.Equal("hello, world", Encoding.UTF8.GetString(payload));
+        }
+
+        await Task.Delay(50);
+        Assert.Null(fault);
+    }
+
     private async Task<HttpResponseMessage> SendRequestAsync(string uri)
     {
         using (HttpClient client = new HttpClient())
