@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Quic;
 using System.Text;
@@ -499,14 +500,12 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37862")]
     public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
     {
         // Arrange
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
-        var now = new DateTimeOffset(2021, 7, 6, 12, 0, 0, TimeSpan.Zero);
-        var testTimeProvider = new TestTimeProvider(now);
+        var testTimeProvider = new TestTimeProvider(123456789l);
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testTimeProvider);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
@@ -526,10 +525,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
+        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTicks);
 
-        now = now.AddMilliseconds(100);
-        testTimeProvider.SetUtcNow(now);
+        testTimeProvider.Advance((long)(0.1 * testTimeProvider.TimestampFrequency));
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
@@ -539,18 +537,16 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
+        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTicks);
 
         Assert.Same(stream1, stream2);
 
-        now = now.AddTicks(QuicConnectionContext.StreamPoolExpiryTicks);
-        testTimeProvider.SetUtcNow(now);
+        testTimeProvider.Advance(QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency);
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
-        now = now.AddTicks(1);
-        testTimeProvider.SetUtcNow(now);
+        testTimeProvider.Advance(1);
         testHeartbeatFeature.RaiseHeartbeat();
         // Removed.
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
@@ -722,22 +718,24 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     private class TestTimeProvider : TimeProvider
     {
-        private DateTimeOffset _now;
+        private long _now;
 
-        public TestTimeProvider(DateTimeOffset now)
+        public TestTimeProvider(long now)
         {
             _now = now;
         }
 
         public override DateTimeOffset GetUtcNow()
-        {
-            return _now;
-        }
+            => throw new NotImplementedException();
 
-        public void SetUtcNow(DateTimeOffset now)
-        {
-            _now = now;
-        }
+        public override long TimestampFrequency => Stopwatch.Frequency;
+
+        public override long GetTimestamp() => _now;
+
+        public void Advance(long ticks) =>  _now += ticks;
+
+        public override ITimer CreateTimer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)
+            => throw new NotImplementedException();
     }
 
     private class TestHeartbeatFeature : IConnectionHeartbeatFeature

@@ -33,7 +33,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
     internal const int InitialStreamPoolSize = 5;
     internal const int MaxStreamPoolSize = 100;
-    internal const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
+    internal const long StreamPoolExpirySeconds = 5;
 
     public QuicConnectionContext(QuicConnection connection, QuicTransportContext context)
     {
@@ -240,6 +240,8 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
     {
         lock (_poolLock)
         {
+            var timeProvider = _context.Options.TimeProvider;
+
             if (!_streamPoolHeartbeatInitialized)
             {
                 // Heartbeat feature is added to connection features by Kestrel.
@@ -255,7 +257,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
                 heartbeatFeature.OnHeartbeat(static state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
 
                 // Set ticks for the first time. Ticks are then updated in heartbeat.
-                var now = _context.Options.TimeProvider.GetUtcNow().Ticks;
+                var now = timeProvider.GetTimestamp();
                 Volatile.Write(ref _heartbeatTicks, now);
 
                 _streamPoolHeartbeatInitialized = true;
@@ -263,7 +265,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
             if (stream.CanReuse && StreamPool.Count < MaxStreamPoolSize)
             {
-                stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpiryTicks;
+                stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpirySeconds * timeProvider.TimestampFrequency;
                 StreamPool.Push(stream);
 
                 QuicLog.StreamPooled(_log, stream);
@@ -284,7 +286,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         lock (_poolLock)
         {
             // Update ticks on heartbeat. A precise value isn't necessary.
-            var now = _context.Options.TimeProvider.GetUtcNow().Ticks;
+            var now = _context.Options.TimeProvider.GetTimestamp();
             Volatile.Write(ref _heartbeatTicks, now);
 
             StreamPool.RemoveExpired(now);
