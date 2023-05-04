@@ -24,6 +24,7 @@ else if (_submitted)
     bool _submitted = false;
     bool _submitting = false;
     EditContext _editContext = new EditContext(new object());
+    [Parameter] public string? OperationId { get; set; }
 
     protected override void OnInitialized()
     {

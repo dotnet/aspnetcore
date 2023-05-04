@@ -9,14 +9,15 @@ using Xunit.Abstractions;
 using OpenQA.Selenium;
 using System.Net.Http;
 using static System.Net.Mime.MediaTypeNames;
+using Components.TestServer.RazorComponents;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
+namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
-public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup>>
+public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
-    public FormHandlingTest(
+    public FormWithParentBindingContextTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -76,18 +77,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     }
 
     [Fact]
-    public void CanDispatchToNamedFormNoParentBindingContext()
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/named-form-no-form-context",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form-no-form-context?handler=named-form-handler",
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Fact]
     public void CanDispatchToNamedFormInNestedContext()
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -141,19 +130,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     }
 
     [Fact]
-    public void FormWithoutBindingContextDoesNotBind()
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/no-form-context-no-op",
-            FormCssSelector = "form",
-            ExpectedActionValue = null,
-            SubmitPassId = "main-frame-error"
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Fact]
     public void CanDispatchToFormRenderedAsynchronously()
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -197,7 +173,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     {
         GoTo("forms/streaming-rendering/CanPostFormsWithStreamingRendering");
 
-        Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -218,7 +193,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     {
         GoTo("forms/modify-http-context/ModifyHttpContext");
 
-        Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -241,7 +215,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     {
         GoTo("forms/non-streaming-async-form-handler/CanHandleFormPostNonStreamingRenderingAsyncHandler");
 
-        Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -261,7 +234,6 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     {
         GoTo(dispatch.Url);
 
-        Browser.Exists(By.Id(dispatch.Ready));
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));
         var formTarget = form.GetAttribute("action");
         var actionValue = form.GetDomAttribute("action");
@@ -289,14 +261,13 @@ public class FormHandlingTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
 
     private record struct DispatchToForm()
     {
-        public DispatchToForm(FormHandlingTest test) : this()
+        public DispatchToForm(FormWithParentBindingContextTest test) : this()
         {
             Base = new Uri(test._serverFixture.RootUri, test.ServerPathBase).ToString();
         }
 
         public string Base;
         public string Url;
-        public string Ready = "ready";
         public string SubmitPassId = "pass";
         public string FormCssSelector;
         public string ExpectedActionValue;
