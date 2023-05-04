@@ -1392,7 +1392,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
             {
                 if (!groupList.TryGetValue(keyValuePair.Key.Group, out var group))
                 {
-                    group = new group = new SelectListGroup() { Name = keyValuePair.Key.Group };
+                    group = new SelectListGroup() { Name = keyValuePair.Key.Group };
                     groupList[keyValuePair.Key.Group] = group;
                 }
 
