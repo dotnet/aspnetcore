@@ -30,7 +30,7 @@ else if (_submitted)
     public async Task HandleSubmit()
     {
         _submitting = true;
-        await AsyncOperation.Start(new Uri(Navigation.Uri).AbsolutePath.Split('/')[^1]);
+        await AsyncOperation.Start(OperationId);
         _submitting = false;
         _submitted = true;
     }
