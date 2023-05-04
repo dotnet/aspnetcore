@@ -262,9 +262,9 @@
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\testing\linker\trimmingTests.props" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
   <Import Project="eng\targets\Helix.props" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestWithAssets.props" Condition=" $(IsTestProject) " />
-  <Import Project="eng\testing\linker\trimmingTests.props" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
 
   <!-- Keys used by InternalsVisibleTo attributes. -->
   <PropertyGroup>
