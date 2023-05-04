@@ -64,7 +64,7 @@ if [ -z "$CLR_CC" ]; then
     if [ -z "$majorVersion" ]; then
         # note: gcc (all versions) and clang versions higher than 6 do not have minor version in file name, if it is zero.
         if [ "$compiler" = "clang" ]; then versions="16 15 14 13 12 11 10 9 8 7 6.0 5.0 4.0 3.9 3.8 3.7 3.6 3.5"
-        elif [ "$compiler" = "gcc" ]; then versions="12 11 10 9 8 7 6 5 4.9"; fi
+        elif [ "$compiler" = "gcc" ]; then versions="13 12 11 10 9 8 7 6 5 4.9"; fi
 
         for version in $versions; do
             _major="${version%%.*}"
