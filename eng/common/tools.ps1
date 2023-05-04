@@ -399,7 +399,9 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
   # Locate Visual Studio installation or download x-copy msbuild.
   $vsInfo = LocateVisualStudio $vsRequirements
   if ($vsInfo -ne $null) {
-    $vsInstallDir = $vsInfo.installationPath
+    # Needed until we get https://github.com/dotnet/arcade/pull/13406/
+    # Ensure vsInstallDir has a trailing slash
+    $vsInstallDir = Join-path $vsInfo.installationPath "\"
     $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
 
     InitializeVisualStudioEnvironmentVariables $vsInstallDir $vsMajorVersion
