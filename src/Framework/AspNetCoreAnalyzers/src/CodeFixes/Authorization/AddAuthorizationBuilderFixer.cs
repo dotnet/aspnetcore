@@ -119,12 +119,8 @@ public sealed class AddAuthorizationBuilderFixer : CodeFixProvider
         var invocationLeadingTrivia = invocation.GetLeadingTrivia()
             .Where(trivia => !trivia.IsKind(SyntaxKind.EndOfLineTrivia));
         var newInvocationTrivia = new SyntaxTriviaList(
-            SyntaxFactory.EndOfLine(
-                Environment.NewLine),
-                SyntaxFactory.Space,
-                SyntaxFactory.Space,
-                SyntaxFactory.Space,
-                SyntaxFactory.Space)
+            SyntaxFactory.EndOfLine(Environment.NewLine),
+            SyntaxFactory.Tab)
             .AddRange(invocationLeadingTrivia);
 
         return SyntaxFactory.InvocationExpression(
