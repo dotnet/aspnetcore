@@ -504,19 +504,18 @@ internal abstract partial class ResourceInvoker
                             Canceled = true,
                             Result = _resourceExecutingContext.Result,
                         };
-
-                        _diagnosticListener.AfterOnResourceExecution(_resourceExecutedContext, filter);
-                        _logger.AfterExecutingMethodOnFilter(
-                            FilterTypeConstants.ResourceFilter,
-                            nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
-                            filter);
-
-                        // A filter could complete a Task without setting a result
-                        if (_resourceExecutingContext.Result != null)
-                        {
-                            goto case State.ResourceShortCircuit;
-                        }
                     }
+                    _diagnosticListener.AfterOnResourceExecution(_resourceExecutedContext, filter);
+                    _logger.AfterExecutingMethodOnFilter(
+                        FilterTypeConstants.ResourceFilter,
+                        nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
+                        filter);
+
+                    // A filter could complete a Task without setting a result
+                    if (_resourceExecutingContext.Result != null)
+                    {
+                        goto case State.ResourceShortCircuit;
+                    }                   
 
                     goto case State.ResourceEnd;
                 }
