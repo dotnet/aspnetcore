@@ -184,7 +184,7 @@ public class HttpsConfigurationTests
     }
 
     [Fact]
-    public async Task HasDefaultOrDevelopmentCertificateJustWorks()
+    public async Task CheckDefaultCertificateJustWorks()
     {
         var hostBuilder = new WebHostBuilder()
             .UseKestrelCore()
@@ -193,7 +193,7 @@ public class HttpsConfigurationTests
                 var testCertificate = new X509Certificate2(Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx"), "testPassword");
                 serverOptions.TestOverrideDefaultCertificate = testCertificate;
 
-                Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+                Assert.True(serverOptions.CheckDefaultCertificate());
             })
             .Configure(app => { });
 

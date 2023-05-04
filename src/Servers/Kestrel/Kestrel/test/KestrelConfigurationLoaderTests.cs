@@ -385,7 +385,7 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_DevelopmentCertificate()
+    public void CheckDefaultCertificate_DevelopmentCertificate()
     {
         try
         {
@@ -404,7 +404,7 @@ public class KestrelConfigurationLoaderTests
             serverOptions.Configure(config);
             serverOptions.ConfigurationLoader.Load();
 
-            Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+            Assert.True(serverOptions.CheckDefaultCertificate());
         }
         finally
         {
@@ -416,7 +416,7 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_DefaultCertificate()
+    public void CheckDefaultCertificate_DefaultCertificate()
     {
         var certificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
 
@@ -431,7 +431,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.Configure(config);
         serverOptions.ConfigurationLoader.Load();
 
-        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+        Assert.True(serverOptions.CheckDefaultCertificate());
     }
 
     [Fact]

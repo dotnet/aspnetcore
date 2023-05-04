@@ -776,18 +776,18 @@ public class HttpsTests : LoggedTest
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_ConfigurationNotLoaded()
+    public void CheckDefaultCertificate_ConfigurationNotLoaded()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
         serverOptions.Configure();
 
-        Assert.Throws<InvalidOperationException>(() => serverOptions.HasDefaultOrDevelopmentCertificate);
+        Assert.Throws<InvalidOperationException>(() => serverOptions.CheckDefaultCertificate);
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_ConfigurationLoaded()
+    public void CheckDefaultCertificate_ConfigurationLoaded()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
@@ -795,29 +795,29 @@ public class HttpsTests : LoggedTest
         serverOptions.Configure();
         serverOptions.ConfigurationLoader.Load();
 
-        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+        Assert.True(serverOptions.CheckDefaultCertificate());
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_NoConfiguration()
+    public void CheckDefaultCertificate_NoConfiguration()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.TestOverrideDefaultCertificate = _x509Certificate2;
 
-        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+        Assert.True(serverOptions.CheckDefaultCertificate());
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_NoCertificate()
+    public void CheckDefaultCertificate_NoCertificate()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.IsDevelopmentCertificateLoaded = true; // Prevent the system default from being loaded
 
-        Assert.False(serverOptions.HasDefaultOrDevelopmentCertificate);
+        Assert.False(serverOptions.CheckDefaultCertificate());
     }
 
     [Fact]
-    public void HasDefaultOrDevelopmentCertificate_FromHttpsDefaults()
+    public void CheckDefaultCertificate_FromHttpsDefaults()
     {
         var serverOptions = CreateServerOptions();
         serverOptions.ConfigureHttpsDefaults(httpsOptions =>
@@ -825,7 +825,7 @@ public class HttpsTests : LoggedTest
             httpsOptions.ServerCertificate = _x509Certificate2;
         });
 
-        Assert.True(serverOptions.HasDefaultOrDevelopmentCertificate);
+        Assert.True(serverOptions.CheckDefaultCertificate());
     }
 
     private class HandshakeErrorLoggerProvider : ILoggerProvider
