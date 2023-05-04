@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -72,13 +73,15 @@ public abstract class Http2ConnectionBenchmarkBase
             systemClock: new MockSystemClock());
         serviceContext.DateHeaderValueManager.OnHeartbeat(default);
 
+        var featureCollection = new FeatureCollection();
+        featureCollection.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: null,
             transport: _connectionPair.Transport,
             timeoutControl: new MockTimeoutControl(),
             memoryPool: _memoryPool,
-            connectionFeatures: new FeatureCollection());
+            connectionFeatures: featureCollection);
 
         _connection = new Http2Connection(connectionContext);
 
@@ -182,5 +185,10 @@ public abstract class Http2ConnectionBenchmarkBase
         _connectionPair.Application.Output.Complete();
         await _requestProcessingTask;
         _memoryPool?.Dispose();
+    }
+
+    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
+    {
+        public ConnectionMetricsContext MetricsContext { get; }
     }
 }
