@@ -61,10 +61,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.Indent++;
             codeWriter.WriteLine("(methodInfo, options) =>");
             codeWriter.StartBlock();
+            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
             codeWriter.WriteLine(@"Debug.Assert(options?.EndpointBuilder != null, ""EndpointBuilder not found."");");
             codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new SourceKey{endpoint!.EmitSourceKey()});");
             endpoint!.EmitEndpointMetadataPopulation(codeWriter);
-            codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
+            codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };");
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
             codeWriter.StartBlock();

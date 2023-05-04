@@ -94,13 +94,25 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                    var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                        (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter)),
+                    };
+                    var inferredBodyParameters = jsonBodyOrServiceTypeTuples.Where(p => !serviceProviderIsService!.IsService(p.Item2));
+                    if (inferredBodyParameters.Count() == 1)
+                    {
+                        var inferredBodyParameter = inferredBodyParameters.Single();
+                        options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    }
                     var parameterInfos = methodInfo.GetParameters();
-                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(methodInfo, options.EndpointBuilder);
                     var x_ParameterInfo = parameterInfos.Single(p => p.Name == "x");
-                    PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options.EndpointBuilder);
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                    PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options!.EndpointBuilder);
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(methodInfo, options!.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {

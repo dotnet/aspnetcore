@@ -94,10 +94,14 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                    options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: false, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options!.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -166,10 +170,14 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 27)] = (
                 (methodInfo, options) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
-                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                    options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: true, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options!.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {

@@ -94,10 +94,11 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 29)] = (
                 (methodInfo, options) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
                     options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {

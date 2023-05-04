@@ -709,3 +709,19 @@ public class AddsRoutePatternMetadata : IEndpointMetadataProvider
     }
 }
 
+public class CountsDefaultEndpointMetadataPoco : IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        var currentMetadataCount = builder.Metadata.Count;
+        builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+    }
+}
+
+public class Attribute1 : Attribute
+{
+}
+
+public class Attribute2 : Attribute
+{
+}

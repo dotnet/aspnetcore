@@ -94,10 +94,22 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                    var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                        (false, typeof(global::System.String[])),
+                    };
+                    var inferredBodyParameters = jsonBodyOrServiceTypeTuples.Where(p => !serviceProviderIsService!.IsService(p.Item2));
+                    if (inferredBodyParameters.Count() == 1)
+                    {
+                        var inferredBodyParameter = inferredBodyParameters.Single();
+                        options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    }
+                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
