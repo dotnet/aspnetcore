@@ -40,17 +40,4 @@ public class NamedFormNoParentBindingContextTest : ServerTestBase<BasicTestAppSe
         Browser.Click(By.Id("send"));
         Browser.Exists(By.Id("pass"));
     }
-
-    //[Fact]
-    //public void FormWithoutBindingContextDoesNotBind()
-    //{
-    //    var dispatchToForm = new DispatchToForm(this)
-    //    {
-    //        Url = "",
-    //        FormCssSelector = "form",
-    //        ExpectedActionValue = null,
-    //        SubmitPassId = "main-frame-error"
-    //    };
-    //    DispatchToFormCore(dispatchToForm);
-    //}
 }
