@@ -30,10 +30,11 @@ export class FetchHttpClient extends HttpClient {
             // Cookies aren't automatically handled in Node so we need to add a CookieJar to preserve cookies across requests
             this._jar = new (requireFunc("tough-cookie")).CookieJar();
 
-            // Use fetch from Node if available
-            this._fetchType = fetch;
             if (typeof fetch === "undefined") {
                 this._fetchType = requireFunc("node-fetch");
+            } else {
+                // Use fetch from Node if available
+                this._fetchType = fetch;
             }
 
             // node-fetch doesn't have a nice API for getting and setting cookies
