@@ -37,7 +37,7 @@ internal static class InvocationOperationExtensions
     public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)] out IArgumentOperation? argumentOperation)
     {
         argumentOperation = null;
-        // Route handler argument is typically the last parameter provided to
+        // Route handler argument is assumed to be the last parameter provided to
         // the Map methods.
         var routeHandlerArgumentOrdinal = invocation.Arguments.Length - 1;
         foreach (var argument in invocation.Arguments)
