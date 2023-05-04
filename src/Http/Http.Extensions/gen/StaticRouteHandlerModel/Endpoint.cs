@@ -30,7 +30,7 @@ internal class Endpoint
 
         RoutePattern = routeToken;
 
-        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method) || method == null)
+        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method))
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;

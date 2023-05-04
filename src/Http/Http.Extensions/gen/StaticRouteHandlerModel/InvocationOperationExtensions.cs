@@ -23,18 +23,18 @@ internal static class InvocationOperationExtensions
         "MapFallback"
     };
 
-    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, out IMethodSymbol? method)
+    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, [NotNullWhen(true)] out IMethodSymbol? method)
     {
         method = null;
         if (invocation.TryGetRouteHandlerArgument(out var argument))
         {
             method = ResolveMethodFromOperation(argument, semanticModel);
-            return true;
+            return method is not null;
         }
         return false;
     }
 
-    public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)]out IArgumentOperation? argumentOperation)
+    public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)] out IArgumentOperation? argumentOperation)
     {
         argumentOperation = null;
         // Route handler argument is typically the last parameter provided to
