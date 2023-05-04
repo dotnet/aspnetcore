@@ -255,7 +255,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
                 heartbeatFeature.OnHeartbeat(static state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
 
                 // Set ticks for the first time. Ticks are then updated in heartbeat.
-                var now = _context.Options.SystemClock.UtcNow.Ticks;
+                var now = _context.Options.TimeProvider.GetUtcNow().Ticks;
                 Volatile.Write(ref _heartbeatTicks, now);
 
                 _streamPoolHeartbeatInitialized = true;
@@ -284,7 +284,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         lock (_poolLock)
         {
             // Update ticks on heartbeat. A precise value isn't necessary.
-            var now = _context.Options.SystemClock.UtcNow.Ticks;
+            var now = _context.Options.TimeProvider.GetUtcNow().Ticks;
             Volatile.Write(ref _heartbeatTicks, now);
 
             StreamPool.RemoveExpired(now);

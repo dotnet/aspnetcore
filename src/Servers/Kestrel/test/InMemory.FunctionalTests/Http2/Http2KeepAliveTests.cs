@@ -28,7 +28,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -58,7 +58,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -81,7 +81,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -123,7 +123,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         TriggerTick(now);
         TriggerTick(now + TimeSpan.FromSeconds(1.1 * 2));
@@ -147,7 +147,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeats
         TriggerTick(now);
@@ -187,7 +187,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -219,7 +219,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -251,7 +251,7 @@ public class Http2KeepAliveTests : Http2TestBase
 
         await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -286,7 +286,7 @@ public class Http2KeepAliveTests : Http2TestBase
             await c.Request.Body.FlushAsync();
         }, expectedWindowUpdate: false).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);
@@ -341,7 +341,7 @@ public class Http2KeepAliveTests : Http2TestBase
             await c.Request.Body.FlushAsync();
         }, expectedWindowUpdate: false).DefaultTimeout();
 
-        DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+        DateTimeOffset now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         // Heartbeat
         TriggerTick(now);

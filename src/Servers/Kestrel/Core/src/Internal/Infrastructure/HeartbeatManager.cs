@@ -3,11 +3,10 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal sealed class HeartbeatManager : IHeartbeatHandler, ISystemClock
+internal sealed class HeartbeatManager : TimeProvider, IHeartbeatHandler
 {
     private readonly ConnectionManager _connectionManager;
     private readonly Action<KestrelConnection> _walkCallback;
-    private DateTimeOffset _now;
     private long _nowTicks;
 
     public HeartbeatManager(ConnectionManager connectionManager)
@@ -16,15 +15,12 @@ internal sealed class HeartbeatManager : IHeartbeatHandler, ISystemClock
         _walkCallback = WalkCallback;
     }
 
-    public DateTimeOffset UtcNow => new DateTimeOffset(UtcNowTicks, TimeSpan.Zero);
+    public override DateTimeOffset GetUtcNow() => new(GetTimestamp(), TimeSpan.Zero);
 
-    public long UtcNowTicks => Volatile.Read(ref _nowTicks);
-
-    public DateTimeOffset UtcNowUnsynchronized => _now;
+    public override long GetTimestamp() => Volatile.Read(ref _nowTicks);
 
     public void OnHeartbeat(DateTimeOffset now)
     {
-        _now = now;
         Volatile.Write(ref _nowTicks, now.Ticks);
 
         _connectionManager.Walk(_walkCallback);

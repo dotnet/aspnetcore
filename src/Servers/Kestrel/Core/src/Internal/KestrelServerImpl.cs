@@ -88,7 +88,7 @@ internal sealed class KestrelServerImpl : IServer
 
         var heartbeat = new Heartbeat(
             new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
-            new SystemClock(),
+            TimeProvider.System,
             DebuggerWrapper.Singleton,
             trace,
             Heartbeat.Interval);
@@ -98,7 +98,7 @@ internal sealed class KestrelServerImpl : IServer
             Log = trace,
             Scheduler = PipeScheduler.ThreadPool,
             HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information), serverOptions.DisableHttp1LineFeedTerminators),
-            SystemClock = heartbeatManager,
+            TimeProvider = heartbeatManager,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,

@@ -725,7 +725,7 @@ public class KestrelServerTests
 
         testContext.Heartbeat = new Heartbeat(
             new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
-            testContext.MockSystemClock,
+            testContext.MockTimeProvider,
             DebuggerWrapper.Singleton,
             testContext.Log,
             Heartbeat.Interval);
@@ -736,11 +736,11 @@ public class KestrelServerTests
 
             // Ensure KestrelServer is started at a different time than when it was constructed, since we're
             // verifying the heartbeat is initialized during KestrelServer.StartAsync().
-            testContext.MockSystemClock.UtcNow += TimeSpan.FromDays(1);
+            testContext.MockTimeProvider.Advance(TimeSpan.FromDays(1));
 
             StartDummyApplication(server);
 
-            Assert.Equal(HeaderUtilities.FormatDate(testContext.MockSystemClock.UtcNow),
+            Assert.Equal(HeaderUtilities.FormatDate(testContext.MockTimeProvider.GetUtcNow()),
                          testContext.DateHeaderValueManager.GetDateHeaderValues().String);
         }
     }

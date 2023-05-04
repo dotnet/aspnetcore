@@ -42,13 +42,13 @@ internal class TestServiceContext : ServiceContext
         DateHeaderValueManager = new DateHeaderValueManager();
         Heartbeat = new Heartbeat(
             new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
-            new SystemClock(),
+            TimeProvider.System,
             DebuggerWrapper.Singleton,
             Log,
             Heartbeat.Interval);
 
-        MockSystemClock = null;
-        SystemClock = heartbeatManager;
+        MockTimeProvider = null;
+        TimeProvider = heartbeatManager;
     }
 
     private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators, KestrelMetrics metrics)
@@ -56,8 +56,8 @@ internal class TestServiceContext : ServiceContext
         LoggerFactory = loggerFactory;
         Log = kestrelTrace;
         Scheduler = PipeScheduler.ThreadPool;
-        MockSystemClock = new MockSystemClock();
-        SystemClock = MockSystemClock;
+        MockTimeProvider = new MockTimeProvider();
+        TimeProvider = MockTimeProvider;
         DateHeaderValueManager = new DateHeaderValueManager();
         ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
         HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
@@ -66,13 +66,13 @@ internal class TestServiceContext : ServiceContext
             AddServerHeader = false
         };
 
-        DateHeaderValueManager.OnHeartbeat(SystemClock.UtcNow);
+        DateHeaderValueManager.OnHeartbeat(TimeProvider.GetUtcNow());
         Metrics = metrics;
     }
 
     public ILoggerFactory LoggerFactory { get; set; }
 
-    public MockSystemClock MockSystemClock { get; set; }
+    public MockTimeProvider MockTimeProvider { get; set; }
 
     public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
 

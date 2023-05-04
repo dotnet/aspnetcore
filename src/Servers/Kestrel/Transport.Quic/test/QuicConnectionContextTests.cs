@@ -506,8 +506,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
         var now = new DateTimeOffset(2021, 7, 6, 12, 0, 0, TimeSpan.Zero);
-        var testSystemClock = new TestSystemClock { UtcNow = now };
-        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testSystemClock);
+        var testTimeProvider = new TestTimeProvider(now);
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testTimeProvider);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
         await using var clientConnection = await QuicConnection.ConnectAsync(options);
@@ -529,7 +529,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
 
         now = now.AddMilliseconds(100);
-        testSystemClock.UtcNow = now;
+        testTimeProvider.SetUtcNow(now);
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
@@ -544,13 +544,13 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Same(stream1, stream2);
 
         now = now.AddTicks(QuicConnectionContext.StreamPoolExpiryTicks);
-        testSystemClock.UtcNow = now;
+        testTimeProvider.SetUtcNow(now);
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
         now = now.AddTicks(1);
-        testSystemClock.UtcNow = now;
+        testTimeProvider.SetUtcNow(now);
         testHeartbeatFeature.RaiseHeartbeat();
         // Removed.
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
@@ -720,9 +720,24 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         public int ActiveConcurrentConnections { get; set; }
     };
 
-    private class TestSystemClock : ISystemClock
+    private class TestTimeProvider : TimeProvider
     {
-        public DateTimeOffset UtcNow { get; set; }
+        private DateTimeOffset _now;
+
+        public TestTimeProvider(DateTimeOffset now)
+        {
+            _now = now;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _now;
+        }
+
+        public void SetUtcNow(DateTimeOffset now)
+        {
+            _now = now;
+        }
     }
 
     private class TestHeartbeatFeature : IConnectionHeartbeatFeature

@@ -37,13 +37,13 @@ internal class Http3InMemory
     protected static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
     protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', 16 * 1024));
 
-    public Http3InMemory(ServiceContext serviceContext, MockSystemClock mockSystemClock, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
+    public Http3InMemory(ServiceContext serviceContext, MockTimeProvider mockTimeProvider, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
     {
         _serviceContext = serviceContext;
         _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler));
         _timeoutControl.Debugger = new TestDebugger();
 
-        _mockSystemClock = mockSystemClock;
+        _mockTimeProvider = mockTimeProvider;
 
         _serverReceivedSettings = Channel.CreateUnbounded<KeyValuePair<Http3SettingType, long>>();
         Logger = loggerFactory.CreateLogger<Http3InMemory>();
@@ -73,7 +73,7 @@ internal class Http3InMemory
     }
 
     internal ServiceContext _serviceContext;
-    private MockSystemClock _mockSystemClock;
+    private MockTimeProvider _mockTimeProvider;
     internal HttpConnection _httpConnection;
     internal readonly TimeoutControl _timeoutControl;
     internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
@@ -199,26 +199,26 @@ internal class Http3InMemory
         }
     }
 
-    public void AdvanceClock(TimeSpan timeSpan)
+    public void AdvanceTime(TimeSpan timeSpan)
     {
-        Logger.LogDebug($"Advancing clock {timeSpan}.");
+        Logger.LogDebug($"Advancing timeProvider {timeSpan}.");
 
-        var clock = _mockSystemClock;
-        var endTime = clock.UtcNow + timeSpan;
+        var timeProvider = _mockTimeProvider;
+        var endTime = timeProvider.GetUtcNow() + timeSpan;
 
-        while (clock.UtcNow + Heartbeat.Interval < endTime)
+        while (timeProvider.GetUtcNow() + Heartbeat.Interval < endTime)
         {
-            clock.UtcNow += Heartbeat.Interval;
-            _timeoutControl.Tick(clock.UtcNow);
+            timeProvider.Advance(Heartbeat.Interval);
+            _timeoutControl.Tick(timeProvider.GetUtcNow());
         }
 
-        clock.UtcNow = endTime;
-        _timeoutControl.Tick(clock.UtcNow);
+        timeProvider.SetUtcNow(endTime);
+        _timeoutControl.Tick(timeProvider.GetUtcNow());
     }
 
     public void TriggerTick(DateTimeOffset now)
     {
-        _mockSystemClock.UtcNow = now;
+        _mockTimeProvider.SetUtcNow(now);
         Connection?.Tick(now);
     }
 

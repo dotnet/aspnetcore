@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -29,7 +25,7 @@ internal static class TestContextFactory
         KestrelServerOptions serverOptions,
         IHttpParser<Http1ParsingHandler> httpParser = null,
         PipeScheduler scheduler = null,
-        ISystemClock systemClock = null,
+        TimeProvider timeProvider = null,
         DateHeaderValueManager dateHeaderValueManager = null,
         ConnectionManager connectionManager = null,
         Heartbeat heartbeat = null)
@@ -39,7 +35,7 @@ internal static class TestContextFactory
             Log = new KestrelTrace(NullLoggerFactory.Instance),
             Scheduler = scheduler,
             HttpParser = httpParser,
-            SystemClock = systemClock,
+            TimeProvider = timeProvider,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,

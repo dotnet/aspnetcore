@@ -290,7 +290,7 @@ public class Http3ConnectionTests : Http3TestBase
     [Fact]
     public async Task ControlStream_ClientToServer_Completes_ConnectionError()
     {
-        var now = _serviceContext.MockSystemClock.UtcNow;
+        var now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
@@ -339,7 +339,7 @@ public class Http3ConnectionTests : Http3TestBase
     [Fact]
     public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
     {
-        var now = _serviceContext.MockSystemClock.UtcNow;
+        var now = _serviceContext.MockTimeProvider.GetUtcNow();
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 

@@ -43,8 +43,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockSystemClock.UtcNow += _keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
 
                 await connection.WaitForConnectionClose();
             }
@@ -73,8 +73,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                     await ReceiveResponse(connection, testContext);
 
                     // Max amount of time between requests that doesn't trigger a keep-alive timeout.
-                    testContext.MockSystemClock.UtcNow += _keepAliveTimeout + Heartbeat.Interval;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval);
+                    heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
                 }
             }
         }
@@ -108,8 +108,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                         "a",
                         "");
 
-                    testContext.MockSystemClock.UtcNow += _shortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
                 }
 
                 await connection.Send(
@@ -144,8 +144,8 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockSystemClock.UtcNow += _shortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
                 }
 
                 cts.Cancel();
@@ -175,8 +175,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.TransportConnection.WaitForReadTask;
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockSystemClock.UtcNow += _keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
 
                 await connection.WaitForConnectionClose();
             }
@@ -211,8 +211,8 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockSystemClock.UtcNow += _shortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
                 }
 
                 cts.Cancel();

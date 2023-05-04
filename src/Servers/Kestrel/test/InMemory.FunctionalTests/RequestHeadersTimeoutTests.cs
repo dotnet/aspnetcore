@@ -38,8 +38,8 @@ public class RequestHeadersTimeoutTests : LoggedTest
                     headers);
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
 
                 await ReceiveTimeoutResponse(connection, testContext);
             }
@@ -66,8 +66,8 @@ public class RequestHeadersTimeoutTests : LoggedTest
                     "");
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
 
                 await connection.Send(
                     "a");
@@ -94,8 +94,8 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 await connection.Send(requestLine);
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
 
                 await ReceiveTimeoutResponse(connection, testContext);
             }
@@ -121,8 +121,8 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 {
                     await connection.Send(ch.ToString());
 
-                    testContext.MockSystemClock.UtcNow += ShortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.MockTimeProvider.Advance(ShortDelay);
+                    heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
                 }
 
                 await ReceiveTimeoutResponse(connection, testContext);

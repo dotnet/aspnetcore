@@ -1664,8 +1664,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
                 await appEvent.Task.DefaultTimeout();
 
-                serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(5);
-                heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(5));
+                heartbeatManager.OnHeartbeat(serviceContext.TimeProvider.GetUtcNow());
 
                 delayEvent.SetResult();
 

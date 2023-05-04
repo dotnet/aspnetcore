@@ -472,7 +472,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
-        _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize(_serviceContext.TimeProvider.GetUtcNow().Ticks);
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
@@ -1340,20 +1340,20 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     protected void TriggerTick(DateTimeOffset? nowOrNull = null)
     {
-        var now = nowOrNull ?? _serviceContext.MockSystemClock.UtcNow;
-        _serviceContext.MockSystemClock.UtcNow = now;
+        var now = nowOrNull ?? _serviceContext.MockTimeProvider.GetUtcNow();
+        _serviceContext.MockTimeProvider.SetUtcNow(now);
         _timeoutControl.Tick(now);
         ((IRequestProcessor)_connection)?.Tick(now);
     }
 
-    protected void AdvanceClock(TimeSpan timeSpan)
+    protected void AdvanceTime(TimeSpan timeSpan)
     {
-        var clock = _serviceContext.MockSystemClock;
-        var endTime = clock.UtcNow + timeSpan;
+        var timeProvider = _serviceContext.MockTimeProvider;
+        var endTime = timeProvider.GetUtcNow() + timeSpan;
 
-        while (clock.UtcNow + Heartbeat.Interval < endTime)
+        while (timeProvider.GetUtcNow() + Heartbeat.Interval < endTime)
         {
-            TriggerTick(clock.UtcNow + Heartbeat.Interval);
+            TriggerTick(timeProvider.GetUtcNow() + Heartbeat.Interval);
         }
 
         TriggerTick(endTime);

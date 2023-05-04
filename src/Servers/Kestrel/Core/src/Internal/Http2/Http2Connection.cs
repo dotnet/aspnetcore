@@ -111,7 +111,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             _keepAlive = new Http2KeepAlive(
                 http2Limits.KeepAlivePingDelay,
                 http2Limits.KeepAlivePingTimeout,
-                context.ServiceContext.SystemClock);
+                context.ServiceContext.TimeProvider);
         }
 
         _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
@@ -145,7 +145,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     public KestrelTrace Log => _context.ServiceContext.Log;
     public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
-    public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
+    public TimeProvider TimeProvider => _context.ServiceContext.TimeProvider;
     public ITimeoutControl TimeoutControl => _context.TimeoutControl;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
@@ -240,7 +240,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 if (result.IsCanceled)
                 {
                     // Heartbeat will cancel ReadAsync and trigger expiring unused streams from pool.
-                    StreamPool.RemoveExpired(SystemClock.UtcNowTicks);
+                    StreamPool.RemoveExpired(TimeProvider.GetUtcNow().Ticks);
                 }
 
                 try
@@ -1255,7 +1255,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private void UpdateCompletedStreams()
     {
         Http2Stream? firstRequedStream = null;
-        var now = SystemClock.UtcNowTicks;
+        var now = TimeProvider.GetUtcNow().Ticks;
 
         while (_completedStreams.TryDequeue(out var stream))
         {
@@ -1304,7 +1304,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             // Pool and reuse the stream if it finished in a graceful state and there is space in the pool.
 
             // This property is used to remove unused streams from the pool
-            stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
+            stream.DrainExpirationTicks = TimeProvider.GetUtcNow().Ticks + StreamPoolExpiryTicks;
 
             StreamPool.Push(stream);
         }

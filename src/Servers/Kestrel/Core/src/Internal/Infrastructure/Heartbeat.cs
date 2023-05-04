@@ -11,17 +11,17 @@ internal sealed class Heartbeat : IDisposable
     public static readonly TimeSpan Interval = TimeSpan.FromSeconds(1);
 
     private readonly IHeartbeatHandler[] _callbacks;
-    private readonly ISystemClock _systemClock;
+    private readonly TimeProvider _timeProvider;
     private readonly IDebugger _debugger;
     private readonly KestrelTrace _trace;
     private readonly TimeSpan _interval;
     private readonly Thread _timerThread;
     private readonly ManualResetEventSlim _stopEvent;
 
-    public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, KestrelTrace trace, TimeSpan interval)
+    public Heartbeat(IHeartbeatHandler[] callbacks, TimeProvider timeProvider, IDebugger debugger, KestrelTrace trace, TimeSpan interval)
     {
         _callbacks = callbacks;
-        _systemClock = systemClock;
+        _timeProvider = timeProvider;
         _debugger = debugger;
         _trace = trace;
         _interval = interval;
@@ -42,7 +42,7 @@ internal sealed class Heartbeat : IDisposable
 
     internal void OnHeartbeat()
     {
-        var now = _systemClock.UtcNow;
+        var now = _timeProvider.GetUtcNow();
 
         try
         {
@@ -53,7 +53,7 @@ internal sealed class Heartbeat : IDisposable
 
             if (!_debugger.IsAttached)
             {
-                var after = _systemClock.UtcNow;
+                var after = _timeProvider.GetUtcNow();
 
                 var duration = TimeSpan.FromTicks(after.Ticks - now.Ticks);
 

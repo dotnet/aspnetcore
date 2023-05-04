@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
@@ -21,23 +20,23 @@ internal sealed class Http2KeepAlive
 
     private readonly TimeSpan _keepAliveInterval;
     private readonly TimeSpan _keepAliveTimeout;
-    private readonly ISystemClock _systemClock;
+    private readonly TimeProvider _timeProvider;
     private long _lastFrameReceivedTimestamp;
     private long _pingSentTimestamp;
 
     // Internal for testing
     internal KeepAliveState _state;
 
-    public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan keepAliveTimeout, ISystemClock systemClock)
+    public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan keepAliveTimeout, TimeProvider timeProvider)
     {
         _keepAliveInterval = keepAliveInterval;
         _keepAliveTimeout = keepAliveTimeout;
-        _systemClock = systemClock;
+        _timeProvider = timeProvider;
     }
 
     public KeepAliveState ProcessKeepAlive(bool frameReceived)
     {
-        var timestamp = _systemClock.UtcNowTicks;
+        var timestamp = _timeProvider.GetUtcNow().Ticks;
 
         if (frameReceived)
         {
@@ -65,7 +64,7 @@ internal sealed class Http2KeepAlive
                         _state = KeepAliveState.PingSent;
                         // System clock only has 1 second of precision, so the clock could be up to 1 second in the past.
                         // To err on the side of caution, add a second to the clock when calculating the ping sent time.
-                        _pingSentTimestamp = _systemClock.UtcNowTicks + TimeSpan.TicksPerSecond;
+                        _pingSentTimestamp = _timeProvider.GetUtcNow().Ticks + TimeSpan.TicksPerSecond;
 
                         // Indicate that the ping needs to be sent. This is only returned once
                         return KeepAliveState.SendPing;

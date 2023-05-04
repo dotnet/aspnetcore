@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -37,24 +35,21 @@ public class DateHeaderValueManagerTests
     {
         var now = DateTimeOffset.UtcNow;
         var future = now.AddSeconds(10);
-        var systemClock = new MockSystemClock
-        {
-            UtcNow = now
-        };
+        var timeProvider = new MockTimeProvider(now);
 
         var dateHeaderValueManager = new DateHeaderValueManager();
         dateHeaderValueManager.OnHeartbeat(now);
 
         var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
-        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, timeProvider, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
         {
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
-            systemClock.UtcNow = future;
+            timeProvider.SetUtcNow(future);
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
         }
 
-        Assert.Equal(0, systemClock.UtcNowCalled);
+        Assert.Equal(0, timeProvider.UtcNowCalled);
     }
 
     [Fact]
@@ -62,10 +57,7 @@ public class DateHeaderValueManagerTests
     {
         var now = DateTimeOffset.UtcNow;
         var future = now.AddSeconds(10);
-        var systemClock = new MockSystemClock
-        {
-            UtcNow = now
-        };
+        var timeProvider = new MockTimeProvider(now);
 
         var dateHeaderValueManager = new DateHeaderValueManager();
         dateHeaderValueManager.OnHeartbeat(now);
@@ -74,19 +66,19 @@ public class DateHeaderValueManagerTests
 
         var mockHeartbeatHandler = new Mock<IHeartbeatHandler>();
 
-        using (var heartbeat = new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, timeProvider, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
         {
             heartbeat.OnHeartbeat();
 
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
 
             // Wait for the next heartbeat before verifying GetDateHeaderValues picks up new time.
-            systemClock.UtcNow = future;
+            timeProvider.SetUtcNow(future);
 
             heartbeat.OnHeartbeat();
 
             Assert.Equal(future.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
-            Assert.Equal(4, systemClock.UtcNowCalled);
+            Assert.Equal(4, timeProvider.UtcNowCalled);
         }
     }
 
@@ -95,23 +87,20 @@ public class DateHeaderValueManagerTests
     {
         var now = DateTimeOffset.UtcNow;
         var future = now.AddSeconds(10);
-        var systemClock = new MockSystemClock
-        {
-            UtcNow = now
-        };
+        var timeProvider = new MockTimeProvider(now);
 
         var dateHeaderValueManager = new DateHeaderValueManager();
         dateHeaderValueManager.OnHeartbeat(now);
 
         var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
-        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, timeProvider, DebuggerWrapper.Singleton, testKestrelTrace, Heartbeat.Interval))
         {
             heartbeat.OnHeartbeat();
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
         }
 
-        systemClock.UtcNow = future;
+        timeProvider.SetUtcNow(future);
         Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
     }
 }
