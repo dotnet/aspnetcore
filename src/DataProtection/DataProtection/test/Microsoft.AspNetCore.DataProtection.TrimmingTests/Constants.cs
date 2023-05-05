@@ -6,6 +6,7 @@ internal static class Constants
     public const string Password = "password";
 
     public const string Key =
+      // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Suppression approved. Dummy certificate for testing.")]
       @"MIIKPgIBAzCCCfoGCSqGSIb3DQEHAaCCCesEggnnMIIJ4zCCBgwGCSqGSIb3DQEHAaCCBf0EggX5
         MIIF9TCCBfEGCyqGSIb3DQEMCgECoIIE/jCCBPowHAYKKoZIhvcNAQwBAzAOBAijQh1kbOZOYQIC
         B9AEggTY+wDp3V31Lh7f8YrsqEsyGZ+GlYvFhLWvDASjisYJi5NlQ0ONbf0KOXHVSvBj3tVyuHm4
