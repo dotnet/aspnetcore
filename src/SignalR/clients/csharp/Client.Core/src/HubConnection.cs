@@ -1706,7 +1706,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         if (!condition)
         {
-            throw new Exception($"Assertion failed in {memberName}, at {fileName}:{lineNumber}: {message}");
+            throw new InvalidOperationException($"Assertion failed in {memberName}, at {fileName}:{lineNumber}: {message}");
         }
     }
 

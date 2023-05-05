@@ -521,7 +521,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             // Server1 gets the result from client1 and forwards to Server2
             await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithError(invocation.InvocationId, "Error from client")).DefaultTimeout();
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<HubException>(() => resultTask).DefaultTimeout();
             Assert.Equal("Error from client", ex.Message);
         }
     }
@@ -572,7 +572,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager2.OnDisconnectedAsync(connection1).DefaultTimeout();
 
             // Server should propogate connection closure so task isn't blocked
-            var ex = await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<HubException>(() => invoke1).DefaultTimeout();
             Assert.Equal("Connection disconnected.", ex.Message);
         }
     }
@@ -653,7 +653,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             // Server1 gets the result from client1 and forwards to Server2
             await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation.InvocationId, "wrong type")).DefaultTimeout();
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<HubException>(() => resultTask).DefaultTimeout();
             Assert.StartsWith("Error trying to deserialize result to Int32.", ex.Message);
         }
     }

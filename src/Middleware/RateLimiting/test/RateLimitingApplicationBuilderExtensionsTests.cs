@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
 {
-
     [Fact]
     public void UseRateLimiter_ThrowsOnNullAppBuilder()
     {
@@ -25,6 +24,18 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
     }
 
     [Fact]
+    public void UseRateLimiter_RequireServices()
+    {
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var appBuilder = new ApplicationBuilder(serviceProvider);
+
+        // Act
+        var ex = Assert.Throws<InvalidOperationException>(() => appBuilder.UseRateLimiter());
+        Assert.Equal("Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddRateLimiter' in the application startup code.", ex.Message);
+    }
+
+    [Fact]
     public void UseRateLimiter_RespectsOptions()
     {
         // These are the options that should get used
@@ -34,7 +45,7 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
 
         // These should not get used
         var services = new ServiceCollection();
-        services.Configure<RateLimiterOptions>(options =>
+        services.AddRateLimiter(options =>
         {
             options.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
             options.RejectionStatusCode = 404;

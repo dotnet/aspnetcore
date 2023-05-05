@@ -131,13 +131,13 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
                 }
                 else if (errorContext.Result.Failure != null)
                 {
-                    throw new Exception("An error was returned from the RemoteFailure event.", errorContext.Result.Failure);
+                    throw new AuthenticationFailureException("An error was returned from the RemoteFailure event.", errorContext.Result.Failure);
                 }
             }
 
             if (errorContext.Failure != null)
             {
-                throw new Exception("An error was encountered while handling the remote login.", errorContext.Failure);
+                throw new AuthenticationFailureException("An error was encountered while handling the remote login.", errorContext.Failure);
             }
         }
 

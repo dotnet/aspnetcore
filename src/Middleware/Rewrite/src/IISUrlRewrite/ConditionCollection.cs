@@ -33,7 +33,7 @@ internal sealed class ConditionCollection : IEnumerable<Condition>
             {
                 return _conditions[index];
             }
-            throw new IndexOutOfRangeException($"Cannot access condition at index {index}. Only {_conditions.Count} conditions were captured.");
+            throw new ArgumentOutOfRangeException(null, $"Cannot access condition at index {index}. Only {_conditions.Count} conditions were captured.");
         }
     }
 
