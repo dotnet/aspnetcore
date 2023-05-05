@@ -16,10 +16,12 @@ internal partial class EndpointHtmlRenderer
 
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
+        SetHttpContext(httpContext);
+
         // First we resolve "infer" mode to a specific mode
         if (serializationMode == PersistedStateSerializationMode.Infer)
         {
-            switch (GetPersistStateRenderMode(httpContext))
+            switch (GetPersistStateRenderMode(_httpContext))
             {
                 case InvokedRenderModes.Mode.None:
                     return ComponentStateHtmlContent.Empty;
@@ -41,7 +43,7 @@ internal partial class EndpointHtmlRenderer
         var store = serializationMode switch
         {
             PersistedStateSerializationMode.Server =>
-                new ProtectedPrerenderComponentApplicationStore(httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
+                new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
             PersistedStateSerializationMode.WebAssembly =>
                 new PrerenderComponentApplicationStore(),
             _ =>
@@ -49,7 +51,7 @@ internal partial class EndpointHtmlRenderer
         };
 
         // Finally, persist the state and return the HTML content
-        var manager = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await manager.PersistStateAsync(store, Dispatcher);
         return new ComponentStateHtmlContent(store);
     }
