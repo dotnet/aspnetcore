@@ -174,7 +174,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         GoTo("forms/streaming-rendering/CanPostFormsWithStreamingRendering");
 
         Browser.Exists(By.Id("ready"));
-
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -196,7 +195,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         GoTo("forms/modify-http-context/ModifyHttpContext");
 
         Browser.Exists(By.Id("ready"));
-
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -220,7 +218,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         GoTo("forms/non-streaming-async-form-handler/CanHandleFormPostNonStreamingRenderingAsyncHandler");
 
         Browser.Exists(By.Id("ready"));
-
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -240,8 +237,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     {
         GoTo(dispatch.Url);
 
-        Browser.Exists(By.Id("ready"));
-
+        Browser.Exists(By.Id(dispatch.Ready));
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));
         var formTarget = form.GetAttribute("action");
         var actionValue = form.GetDomAttribute("action");
@@ -277,6 +273,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public string Base;
         public string Url;
         public string SubmitPassId = "pass";
+        public string Ready = "ready";
         public string FormCssSelector;
         public string ExpectedActionValue;
         public string InputFieldValue;
