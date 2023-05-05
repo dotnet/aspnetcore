@@ -476,11 +476,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
-    Func<string, AuthorizationPolicy?> _ = options.GetPolicy;
-    options.AddPolicy(""AtLeast21"", policy =>
-    {
-        policy.Requirements.Add(new MinimumAgeRequirement(21));
-    });
+    options.AddPolicy(""AtLeast21"", ((Func<string, AuthorizationPolicy?>)options.GetPolicy)(string.Empty)!);
 });
 ";
 
@@ -499,11 +495,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
-    _ = options.GetPolicy("""");
-    options.AddPolicy(""AtLeast21"", policy =>
-    {
-        policy.Requirements.Add(new MinimumAgeRequirement(21));
-    });
+    options.AddPolicy(""AtLeast21"", options.GetPolicy(string.Empty)!);
 });
 ";
 
