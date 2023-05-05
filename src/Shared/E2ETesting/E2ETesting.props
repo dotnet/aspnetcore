@@ -52,5 +52,7 @@
     </AssemblyAttribute>
 
   </ItemGroup>
+  
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" />
 
 </Project>
