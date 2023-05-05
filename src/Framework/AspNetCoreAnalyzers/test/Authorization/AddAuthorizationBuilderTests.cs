@@ -643,6 +643,24 @@ var builder = new HostBuilder()
         await VerifyCodeFix(source, new[] { diagnostic }, fixedSource);
     }
 
+    [Fact]
+    public async Task AddAuthorization_CallAssignedToVariable_NoDiagnostic()
+    {
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var services = builder.Services.AddAuthorization(options =>
+    options.AddPolicy(""AtLeast21"", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21))));
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
     private static async Task VerifyCodeFix(string source, DiagnosticResult[] diagnostics, string fixedSource)
     {
         var fullSource = string.Join(Environment.NewLine, source, _testAuthorizationPolicyClassDeclaration);
