@@ -47,7 +47,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] IServiceProvider ServiceProvider { get; set; }
 
-    private RoutingStateProvider RoutingStateProvider { get; set; }
+    private IRoutingStateProvider RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -103,7 +103,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
-        RoutingStateProvider = (RoutingStateProvider)ServiceProvider.GetService(typeof(RoutingStateProvider));
+        RoutingStateProvider = (IRoutingStateProvider)ServiceProvider.GetService(typeof(IRoutingStateProvider));
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {

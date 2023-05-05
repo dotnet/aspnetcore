@@ -52,7 +52,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
-        services.TryAddScoped<RoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
+        services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
 
         // Form handling
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
