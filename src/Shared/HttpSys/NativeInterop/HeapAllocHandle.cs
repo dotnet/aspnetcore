@@ -11,7 +11,7 @@ internal sealed class HeapAllocHandle : SafeHandleZeroOrMinusOneIsInvalid
     private static readonly IntPtr ProcessHeap = UnsafeNclNativeMethods.GetProcessHeap();
 
     // Called by P/Invoke when returning SafeHandles
-    private HeapAllocHandle()
+    public HeapAllocHandle()
         : base(ownsHandle: true)
     {
     }

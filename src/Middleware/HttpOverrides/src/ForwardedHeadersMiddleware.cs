@@ -25,17 +25,17 @@ public class ForwardedHeadersMiddleware
     private IList<StringSegment>? _allowedHosts;
 
     // RFC 3986 scheme = ALPHA * (ALPHA / DIGIT / "+" / "-" / ".")
-    private static readonly IndexOfAnyValues<char> SchemeChars =
-        IndexOfAnyValues.Create("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    private static readonly SearchValues<char> SchemeChars =
+        SearchValues.Create("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 
     // Host Matches Http.Sys and Kestrel
     // Host Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
-    private static readonly IndexOfAnyValues<char> HostChars =
-        IndexOfAnyValues.Create("!$&'()-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
+    private static readonly SearchValues<char> HostChars =
+        SearchValues.Create("!$&'()-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
 
     // 0-9 / A-F / a-f / ":" / "."
-    private static readonly IndexOfAnyValues<char> Ipv6HostChars =
-        IndexOfAnyValues.Create(".0123456789:ABCDEFabcdef");
+    private static readonly SearchValues<char> Ipv6HostChars =
+        SearchValues.Create(".0123456789:ABCDEFabcdef");
 
     /// <summary>
     /// Create a new <see cref="ForwardedHeadersMiddleware"/>.

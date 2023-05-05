@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 internal sealed unsafe partial class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
     // Called by P/Invoke when returning SafeHandles
-    private SafeLibraryHandle()
+    public SafeLibraryHandle()
         : base(ownsHandle: true)
     {
     }
