@@ -39,7 +39,7 @@
 
     <PackageReference Include="Microsoft.Dotnet.ILCompiler"
       Condition=" '$(PublishAot)' == 'true' "
-      Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+      Version="${MicrosoftNETCoreAppRuntimeVersion}" />
   </ItemGroup>
 
   <ItemGroup>
