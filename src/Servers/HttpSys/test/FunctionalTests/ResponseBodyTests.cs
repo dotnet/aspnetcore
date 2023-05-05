@@ -373,7 +373,8 @@ public class ResponseBodyTests
     [InlineData(false)]
     public async Task ResponseBody_ZeroLengthTrailingWrite_Success(bool setContentLength)
     {
-        string address, fault = null;
+        string address;
+        var completion = new TaskCompletionSource<bool>();
         using (Utilities.CreateHttpServer(out address, async httpContext =>
         {
             byte[] data = Encoding.UTF8.GetBytes("hello, world");
@@ -387,12 +388,13 @@ public class ResponseBodyTests
             {
                 await body.FlushAsync();
                 await body.WriteAsync(Array.Empty<byte>());
+                completion.TrySetResult(true);
             }
             catch (Exception ex)
             {
                 // in content-length scenarios, server-side faults after
                 // the payload would not be observed
-                Volatile.Write(ref fault, ex.Message);
+                completion.TrySetException(ex);
             }
         }))
         {
@@ -401,8 +403,7 @@ public class ResponseBodyTests
             Assert.Equal("hello, world", Encoding.UTF8.GetString(payload));
         }
 
-        await Task.Delay(50);
-        Assert.Null(fault);
+        await completion.Task; // also checks no-fault
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(string uri)
