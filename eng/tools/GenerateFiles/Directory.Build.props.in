@@ -4,5 +4,6 @@
     <ArtifactsShippingPackagesDir>${ArtifactsShippingPackagesDir}</ArtifactsShippingPackagesDir>
     <TreatWarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</TreatWarningsAsErrors>
     <LibNetHostAppPackVersion Condition=" '$(LibNetHostAppPackVersion)' == '' ">${LibNetHostAppPackVersion}</LibNetHostAppPackVersion>
+    <SuppressGenerateILCompilerExplicitPackageReferenceWarning Condition=" '$(PublishAot)' == 'true'">true</SuppressGenerateILCompilerExplicitPackageReferenceWarning>
   </PropertyGroup>
 </Project>
