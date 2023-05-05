@@ -13,11 +13,11 @@ using Components.TestServer.RazorComponents;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
-public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithoutBindingContextApp>>>
 {
     public FormWithParentBindingContextTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithoutBindingContextApp>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -173,6 +173,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     {
         GoTo("forms/streaming-rendering/CanPostFormsWithStreamingRendering");
 
+        Browser.Exists(By.Id("ready"));
+
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -192,6 +194,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public async Task CanModifyTheHttpResponseDuringEventHandling()
     {
         GoTo("forms/modify-http-context/ModifyHttpContext");
+
+        Browser.Exists(By.Id("ready"));
 
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
@@ -215,6 +219,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     {
         GoTo("forms/non-streaming-async-form-handler/CanHandleFormPostNonStreamingRenderingAsyncHandler");
 
+        Browser.Exists(By.Id("ready"));
+
         var form = Browser.Exists(By.CssSelector("form"));
         var actionValue = form.GetDomAttribute("action");
         Assert.Null(actionValue);
@@ -233,6 +239,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     private void DispatchToFormCore(DispatchToForm dispatch)
     {
         GoTo(dispatch.Url);
+
+        Browser.Exists(By.Id("ready"));
 
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));
         var formTarget = form.GetAttribute("action");

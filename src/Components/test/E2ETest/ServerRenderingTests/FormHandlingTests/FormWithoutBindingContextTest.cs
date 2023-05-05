@@ -29,6 +29,8 @@ public class FormWithoutBindingContextTest : ServerTestBase<BasicTestAppServerSi
     {
         Navigate(ServerPathBase);
 
+        Browser.Exists(By.Id("ready"));
+
         var form = Browser.Exists(By.CssSelector("form"));
         var formTarget = form.GetAttribute("action");
         var actionValue = form.GetDomAttribute("action");
