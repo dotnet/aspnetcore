@@ -59,6 +59,11 @@ internal abstract class HttpHeaderParser<T>
         return TryParseValues(values, strict: true, parsedValues: out parsedValues);
     }
 
+    public virtual bool TryParseStrictValues(IList<StringSegment>? values, [NotNullWhen(true)] out IList<T>? parsedValues)
+    {
+        return TryParseValues(values, strict: true, parsedValues: out parsedValues);
+    }
+
     protected virtual bool TryParseValues(IList<string>? values, bool strict, [NotNullWhen(true)] out IList<T>? parsedValues)
     {
         Contract.Assert(_supportsMultipleValues);

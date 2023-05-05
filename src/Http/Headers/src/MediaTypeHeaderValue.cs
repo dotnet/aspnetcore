@@ -589,6 +589,17 @@ public class MediaTypeHeaderValue
         return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
     }
 
+    /// <summary>
+    /// Takes an <see cref="IList{T}"/> of <see cref="StringSegment"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+    /// </summary>
+    /// <param name="inputs">A list of media types</param>
+    /// <param name="parsedValues">The parsed <see cref="MediaTypeHeaderValue"/>.</param>
+    /// <returns>True if the value was successfully parsed.</returns>
+    public static bool TryParseStrictList(IList<StringSegment>? inputs, [NotNullWhen(true)] out IList<MediaTypeHeaderValue>? parsedValues)
+    {
+        return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
+    }
+
     private static int GetMediaTypeLength(StringSegment input, int startIndex, out MediaTypeHeaderValue? parsedValue)
     {
         Contract.Requires(startIndex >= 0);
