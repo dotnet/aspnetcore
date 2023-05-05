@@ -163,8 +163,9 @@ internal class Endpoint
 
     private static (string, int) GetLocation(IInvocationOperation operation)
     {
-        var filePath = operation.Syntax.SyntaxTree.FilePath;
-        var span = operation.Syntax.SyntaxTree.GetLineSpan(operation.Syntax.Span);
+        var operationSpan = operation.Syntax.Span;
+        var filePath = operation.Syntax.SyntaxTree.GetDisplayPath(operationSpan, operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
+        var span = operation.Syntax.SyntaxTree.GetLineSpan(operationSpan);
         var lineNumber = span.StartLinePosition.Line + 1;
         return (filePath, lineNumber);
     }

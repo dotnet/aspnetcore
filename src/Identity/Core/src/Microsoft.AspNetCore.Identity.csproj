@@ -7,8 +7,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsPackable>false</IsPackable>
-    <!-- TODO: Re-enable trimming once https://github.com/dotnet/aspnetcore/issues/47918 is fixed and RDG is enabled. -->
-    <!--<IsTrimmable>true</IsTrimmable>-->
+    <IsTrimmable>true</IsTrimmable>
+    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- TODO: Re-enable RDG once https://github.com/dotnet/aspnetcore/issues/47918 is fixed. -->
-    <!--<ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

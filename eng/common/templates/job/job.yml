@@ -158,7 +158,7 @@ jobs:
   - template: /eng/common/templates/steps/component-governance.yml
     parameters:
       ${{ if eq(parameters.disableComponentGovernance, '') }}:
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
           disableComponentGovernance: false
         ${{ else }}:
           disableComponentGovernance: true

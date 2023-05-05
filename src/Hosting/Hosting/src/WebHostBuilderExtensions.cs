@@ -86,7 +86,7 @@ public static class WebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="startupFactory">A delegate that specifies a factory for the startup class.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    /// <remarks>When using the il linker, all public methods of <typeparamref name="TStartup"/> are preserved. This should match the Startup type directly (and not a base type).</remarks>
+    /// <remarks>When in a trimmed app, all public methods of <typeparamref name="TStartup"/> are preserved. This should match the Startup type directly (and not a base type).</remarks>
     public static IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, TStartup> startupFactory) where TStartup : class
     {
         ArgumentNullException.ThrowIfNull(startupFactory);

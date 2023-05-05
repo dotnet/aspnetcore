@@ -36,6 +36,10 @@
       Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
+
+    <PackageReference Include="Microsoft.Dotnet.ILCompiler"
+      Condition=" '$(PublishAot)' == 'true' "
+      Version="${MicrosoftNETCoreAppRuntimeVersion}" />
   </ItemGroup>
 
   <ItemGroup>
@@ -121,8 +125,8 @@
     <Warning Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRuntimeVersion} does not exist."
         Condition=" !EXISTS('$(_DotNetRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}') " />
   </Target>
-  
-  <!-- 
+
+  <!--
     Make a netstandard2.1 copy of the .net ILLinkPack to work around a trimming issue.
     See https://github.com/dotnet/linker/issues/3175
   -->

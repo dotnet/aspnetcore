@@ -277,7 +277,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
         var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
         if (!string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
         {
-            throw new Exception("Twitter oauth_callback_confirmed is not true.");
+            throw new AuthenticationFailureException("Twitter oauth_callback_confirmed is not true.");
         }
 
         return new RequestToken

@@ -30,7 +30,10 @@ namespace System.Net.Http.HPack
             {
                 if (index >= _count)
                 {
+#pragma warning disable CA2201 // Do not raise reserved exception types
+                    // Helpful to act like static table (array)
                     throw new IndexOutOfRangeException();
+#pragma warning restore CA2201
                 }
 
                 index = _insertIndex - index - 1;

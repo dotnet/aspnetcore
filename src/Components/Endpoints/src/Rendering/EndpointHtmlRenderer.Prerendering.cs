@@ -37,6 +37,7 @@ internal partial class EndpointHtmlRenderer
 
         // Make sure we only initialize the services once, but on every call we wait for that process to complete
         // This does not have to be threadsafe since it's not valid to call this simultaneously from multiple threads.
+        SetHttpContext(httpContext);
         _servicesInitializedTask ??= InitializeStandardComponentServicesAsync(httpContext);
         await _servicesInitializedTask;
 
@@ -46,8 +47,8 @@ internal partial class EndpointHtmlRenderer
         {
             var result = prerenderMode switch
             {
-                RenderMode.Server => NonPrerenderedServerComponent(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
-                RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(httpContext, GetOrCreateInvocationId(httpContext), componentType, parameters),
+                RenderMode.Server => NonPrerenderedServerComponent(GetOrCreateInvocationId(httpContext), componentType, parameters),
+                RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(GetOrCreateInvocationId(httpContext), componentType, parameters),
                 RenderMode.Static => await StaticComponentAsync(componentType, parameters),
                 RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(componentType, parameters),
                 RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(componentType, parameters),
@@ -70,6 +71,8 @@ internal partial class EndpointHtmlRenderer
         ParameterView parameters,
         bool waitForQuiescence)
     {
+        SetHttpContext(httpContext);
+
         try
         {
             var component = BeginRenderingComponent(componentType, parameters);
@@ -81,7 +84,7 @@ internal partial class EndpointHtmlRenderer
         }
         catch (NavigationException navigationException)
         {
-            return await HandleNavigationException(httpContext, navigationException);
+            return await HandleNavigationException(_httpContext, navigationException);
         }
     }
 
@@ -137,11 +140,11 @@ internal partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, null, null);
     }
 
-    private async Task<PrerenderedComponentHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private async Task<PrerenderedComponentHtmlContent> PrerenderedServerComponentAsync(ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
-        if (!context.Response.HasStarted)
+        if (!_httpContext.Response.HasStarted)
         {
-            context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
+            _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
         // Lazy because we don't actually want to require a whole chain of services including Data Protection
@@ -169,11 +172,11 @@ internal partial class EndpointHtmlRenderer
         return new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent, null, marker);
     }
 
-    private PrerenderedComponentHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
+    private PrerenderedComponentHtmlContent NonPrerenderedServerComponent(ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
     {
-        if (!context.Response.HasStarted)
+        if (!_httpContext.Response.HasStarted)
         {
-            context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
+            _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
         }
 
         // Lazy because we don't actually want to require a whole chain of services including Data Protection

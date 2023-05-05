@@ -225,7 +225,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
         if (arrayIndex < 0 || arrayIndex >= array.Length)
         {
-            throw new IndexOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
         }
 
         for (var i = 0; i < Count; i++)
@@ -404,7 +404,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
             if (arrayIndex < 0 || arrayIndex >= array.Length)
             {
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
             for (var i = 0; i < _attributes.Count; i++)
@@ -509,7 +509,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
             if (arrayIndex < 0 || arrayIndex >= array.Length)
             {
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
             for (var i = 0; i < _attributes.Count; i++)
