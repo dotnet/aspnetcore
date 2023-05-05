@@ -538,6 +538,33 @@ public static class Helper
     }
 
     [Fact]
+    public async Task ConfigureAction_AuthorizationOptionsPassedToMethodCall_NoDiagnostic()
+    {
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorization(options => Helper.ConfigureAuthorization(options));
+
+public static class Helper
+{
+    public static void ConfigureAuthorization(AuthorizationOptions options)
+    {
+        options.AddPolicy(""AtLeast21"", policy =>
+        {
+            policy.Requirements.Add(new MinimumAgeRequirement(21));
+        });
+    }
+}
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
+    [Fact]
     public async Task ConfigureAction_ContainsOperationsNotRelatedToAuthorizationOptions_NoDiagnostic()
     {
         var source = @"
