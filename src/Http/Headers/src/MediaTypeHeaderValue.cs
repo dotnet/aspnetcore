@@ -546,6 +546,17 @@ public class MediaTypeHeaderValue
     }
 
     /// <summary>
+    /// Takes an <see cref="IList{T}"/> of <see cref="StringSegment"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+    /// Throws if there is invalid data in a StringSegment.
+    /// </summary>
+    /// <param name="inputs">A list of media types</param>
+    /// <returns>The parsed <see cref="MediaTypeHeaderValue"/>.</returns>
+    public static IList<MediaTypeHeaderValue> ParseStrictList(IList<StringSegment>? inputs)
+    {
+        return MultipleValueParser.ParseStrictValues(inputs);
+    }
+
+    /// <summary>
     /// Takes an <see cref="IList{T}"/> of <see cref="string"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
     /// </summary>
     /// <param name="inputs">A list of media types</param>

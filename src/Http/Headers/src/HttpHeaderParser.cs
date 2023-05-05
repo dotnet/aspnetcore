@@ -118,6 +118,11 @@ internal abstract class HttpHeaderParser<T>
         return ParseValues(values, strict: true);
     }
 
+    public virtual IList<T> ParseStrictValues(IList<StringSegment>? values)
+    {
+        return ParseValues(values, strict: true);
+    }
+
     protected virtual IList<T> ParseValues(IList<string>? values, bool strict)
     {
         Contract.Assert(_supportsMultipleValues);
