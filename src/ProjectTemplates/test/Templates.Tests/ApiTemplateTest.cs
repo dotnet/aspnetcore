@@ -37,7 +37,7 @@ public class ApiTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "All.OSX;All.Ubuntu;Windows.11.Amd64.Client.Open;Windows.Amd64.Server2022.Open;windows.11.arm64.open")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task ApiTemplateNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
@@ -50,7 +50,7 @@ public class ApiTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = "All.OSX;All.Ubuntu;Windows.11.Amd64.Client.Open;Windows.Amd64.Server2022.Open;windows.11.arm64.open")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     public async Task ApiTemplateProgramMainNativeAotCSharp()
     {
         await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
