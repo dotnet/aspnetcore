@@ -377,7 +377,7 @@ public class ResponseBodyTests
         var completion = new TaskCompletionSource<bool>();
         using (Utilities.CreateHttpServer(out address, async httpContext =>
         {
-            byte[] data = Encoding.UTF8.GetBytes("hello, world");
+            var data = Encoding.UTF8.GetBytes("hello, world");
             if (setContentLength)
             {
                 httpContext.Response.ContentLength = data.Length;
