@@ -36,6 +36,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
 
+    private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private string? _formHandler;
     private NamedEvent _capturedNamedEvent;
 
@@ -49,6 +50,18 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         : base(serviceProvider, loggerFactory)
     {
         _services = serviceProvider;
+    }
+
+    private void SetHttpContext(HttpContext httpContext)
+    {
+        if (_httpContext is null)
+        {
+            _httpContext = httpContext;
+        }
+        else if (_httpContext != httpContext)
+        {
+            throw new InvalidOperationException("The HttpContext cannot change value once assigned.");
+        }
     }
 
     internal static async Task InitializeStandardComponentServicesAsync(
