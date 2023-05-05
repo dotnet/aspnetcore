@@ -49,6 +49,11 @@ internal abstract class HttpHeaderParser<T>
         return TryParseValues(values, strict: false, parsedValues: out parsedValues);
     }
 
+    public virtual bool TryParseValues(IList<StringSegment>? values, [NotNullWhen(true)] out IList<T>? parsedValues)
+    {
+        return TryParseValues(values, strict: false, parsedValues: out parsedValues);
+    }
+
     public virtual bool TryParseStrictValues(IList<string>? values, [NotNullWhen(true)] out IList<T>? parsedValues)
     {
         return TryParseValues(values, strict: true, parsedValues: out parsedValues);
@@ -71,6 +76,55 @@ internal abstract class HttpHeaderParser<T>
             var index = 0;
 
             while (!string.IsNullOrEmpty(value) && index < value.Length)
+            {
+                if (TryParseValue(value, ref index, out var output))
+                {
+                    // The entry may not contain an actual value, like " , "
+                    if (output != null)
+                    {
+                        if (results == null)
+                        {
+                            results = new List<T>();    // Allocate it only when used
+                        }
+                        results.Add(output);
+                    }
+                }
+                else if (strict)
+                {
+                    return false;
+                }
+                else
+                {
+                    // Skip the invalid values and keep trying.
+                    index++;
+                }
+            }
+        }
+        if (results != null)
+        {
+            parsedValues = results;
+            return true;
+        }
+        return false;
+    }
+
+    protected virtual bool TryParseValues(IList<StringSegment>? values, bool strict, [NotNullWhen(true)] out IList<T>? parsedValues)
+    {
+        Contract.Assert(_supportsMultipleValues);
+        // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
+        // can ignore the value.
+        parsedValues = null;
+        List<T>? results = null;
+        if (values == null)
+        {
+            return false;
+        }
+        for (var i = 0; i < values.Count; i++)
+        {
+            var value = values[i];
+            var index = 0;
+
+            while (!StringSegment.IsNullOrEmpty(value) && index < value.Length)
             {
                 if (TryParseValue(value, ref index, out var output))
                 {

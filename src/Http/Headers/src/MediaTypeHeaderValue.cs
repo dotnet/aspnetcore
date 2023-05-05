@@ -568,6 +568,17 @@ public class MediaTypeHeaderValue
     }
 
     /// <summary>
+    /// Takes an <see cref="IList{T}"/> of <see cref="StringSegment"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+    /// </summary>
+    /// <param name="inputs">A list of media types</param>
+    /// <param name="parsedValues">The parsed <see cref="MediaTypeHeaderValue"/>.</param>
+    /// <returns>True if the value was successfully parsed.</returns>
+    public static bool TryParseList(IList<StringSegment>? inputs, [NotNullWhen(true)] out IList<MediaTypeHeaderValue>? parsedValues)
+    {
+        return MultipleValueParser.TryParseValues(inputs, out parsedValues);
+    }
+
+    /// <summary>
     /// Takes an <see cref="IList{T}"/> of <see cref="string"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
     /// </summary>
     /// <param name="inputs">A list of media types</param>
