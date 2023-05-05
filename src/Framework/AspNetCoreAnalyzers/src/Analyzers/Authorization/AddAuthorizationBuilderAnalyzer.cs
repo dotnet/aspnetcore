@@ -130,6 +130,14 @@ public sealed class AddAuthorizationBuilderAnalyzer : DiagnosticAnalyzer
             if (propertyReferenceOperation.Parent is IAssignmentOperation { Target: IPropertyReferenceOperation targetProperty }
                 && SymbolEqualityComparer.Default.Equals(property, targetProperty.Property))
             {
+                // Ensure the referenced property isn't being assigned to itself
+                // (i.e. options.DefaultPolicy = options.DefaultPolicy;)
+                if (propertyReferenceOperation.Parent is IAssignmentOperation { Value: IPropertyReferenceOperation valueProperty }
+                    && SymbolEqualityComparer.Default.Equals(property, valueProperty.Property))
+                {
+                    return true;
+                }
+
                 return false;
             }
 

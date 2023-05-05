@@ -406,11 +406,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
-    _ = options.DefaultPolicy;
-    options.AddPolicy(""AtLeast21"", policy =>
+    options.FallbackPolicy = options.DefaultPolicy;
+});
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
+    [Fact]
+    public async Task AuthorizationOptions_DefaultPolicyAccess_SelfAssignment_NoDiagnostic()
     {
-        policy.Requirements.Add(new MinimumAgeRequirement(21));
-    });
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = options.DefaultPolicy;
 });
 ";
 
@@ -429,11 +444,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
-    _ = options.FallbackPolicy;
-    options.AddPolicy(""AtLeast21"", policy =>
+    options.DefaultPolicy = options.FallbackPolicy;
+});
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
+    [Fact]
+    public async Task AuthorizationOptions_FallbackPolicyAccess_SelfAssignment_NoDiagnostic()
     {
-        policy.Requirements.Add(new MinimumAgeRequirement(21));
-    });
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = options.FallbackPolicy;
 });
 ";
 
@@ -452,11 +482,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization(options =>
 {
-    _ = options.InvokeHandlersAfterFailure;
-    options.AddPolicy(""AtLeast21"", policy =>
+    options.InvokeHandlersAfterFailure = !options.InvokeHandlersAfterFailure;
+});
+";
+
+        await VerifyNoCodeFix(source);
+    }
+
+    [Fact]
+    public async Task AuthorizationOptions_InvokeHandlesAfterFailureAccess_SelfAssignment_NoDiagnostic()
     {
-        policy.Requirements.Add(new MinimumAgeRequirement(21));
-    });
+        var source = @"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthorization(options =>
+{
+    options.InvokeHandlersAfterFailure = options.InvokeHandlersAfterFailure;
 });
 ";
 
