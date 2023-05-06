@@ -99,7 +99,7 @@ public abstract class RevalidatingServerAuthenticationStateProvider
         }
     }
 
-    private void ForceSignOut()
+    protected virtual void ForceSignOut()
     {
         var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
         var anonymousState = new AuthenticationState(anonymousUser);
