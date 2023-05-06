@@ -69,7 +69,10 @@ internal static class ReactDevelopmentServerMiddleware
         {
             portNumber = TcpPortFinder.FindAvailablePort();
         }
-        logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
+        }
 
         var envVars = new Dictionary<string, string>
             {

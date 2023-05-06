@@ -46,7 +46,10 @@ internal sealed class ConfigureApiResources : IConfigureOptions<ApiAuthorization
         {
             foreach (var kvp in data)
             {
-                _logger.LogInformation(LoggerEventIds.ConfiguringAPIResource, "Configuring API resource '{ApiResourceName}'.", kvp.Key);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(LoggerEventIds.ConfiguringAPIResource, "Configuring API resource '{ApiResourceName}'.", kvp.Key);
+                }
                 yield return GetResource(kvp.Key, kvp.Value);
             }
         }
@@ -56,7 +59,10 @@ internal sealed class ConfigureApiResources : IConfigureOptions<ApiAuthorization
         {
             foreach (var kvp in localResources)
             {
-                _logger.LogInformation(LoggerEventIds.ConfiguringLocalAPIResource, "Configuring local API resource '{ApiResourceName}'.", kvp.Key);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(LoggerEventIds.ConfiguringLocalAPIResource, "Configuring local API resource '{ApiResourceName}'.", kvp.Key);
+                }
                 yield return GetResource(kvp.Key, kvp.Value);
             }
         }

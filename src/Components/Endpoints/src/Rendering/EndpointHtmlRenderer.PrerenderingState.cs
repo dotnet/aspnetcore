@@ -10,16 +10,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed partial class EndpointHtmlRenderer
+internal partial class EndpointHtmlRenderer
 {
     private static readonly object InvokedRenderModesKey = new object();
 
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
+        SetHttpContext(httpContext);
+
         // First we resolve "infer" mode to a specific mode
         if (serializationMode == PersistedStateSerializationMode.Infer)
         {
-            switch (GetPersistStateRenderMode(httpContext))
+            switch (GetPersistStateRenderMode(_httpContext))
             {
                 case InvokedRenderModes.Mode.None:
                     return ComponentStateHtmlContent.Empty;
@@ -41,7 +43,7 @@ internal sealed partial class EndpointHtmlRenderer
         var store = serializationMode switch
         {
             PersistedStateSerializationMode.Server =>
-                new ProtectedPrerenderComponentApplicationStore(httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
+                new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
             PersistedStateSerializationMode.WebAssembly =>
                 new PrerenderComponentApplicationStore(),
             _ =>
@@ -49,7 +51,7 @@ internal sealed partial class EndpointHtmlRenderer
         };
 
         // Finally, persist the state and return the HTML content
-        var manager = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         await manager.PersistStateAsync(store, Dispatcher);
         return new ComponentStateHtmlContent(store);
     }

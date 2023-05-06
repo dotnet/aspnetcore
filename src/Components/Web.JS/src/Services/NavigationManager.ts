@@ -55,8 +55,7 @@ function setHasLocationChangingListeners(hasListeners: boolean) {
 }
 
 export function scrollToElement(identifier: string): boolean {
-  const element = document.getElementById(identifier)
-    || document.getElementsByName(identifier)[0];
+  const element = document.getElementById(identifier);
 
     if (element) {
       element.scrollIntoView();
@@ -90,10 +89,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
       let anchorHref = anchorTarget.getAttribute('href')!; 
-      if (anchorHref.startsWith('#')) {
-        // Preserve the existing URL but set the hash to match the link that was clicked
-        anchorHref = `${location.origin}${location.pathname}${location.search}${anchorHref}`;
-      }
 
       const absoluteHref = toAbsoluteUri(anchorHref);     
 

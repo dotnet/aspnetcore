@@ -80,7 +80,10 @@ public class AspNetProcess : IDisposable
             arguments = $"run --no-build --urls \"{environmentVariables["ASPNETCORE_URLS"]}\"";
         }
 
-        logger?.LogInformation($"AspNetProcess - process: {process} arguments: {arguments}");
+        if (logger is not null && logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation($"AspNetProcess - process: {process} arguments: {arguments}");
+        }
 
         var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
         {
@@ -96,7 +99,10 @@ public class AspNetProcess : IDisposable
         {
             logger?.LogInformation("AspNetProcess - Getting listening uri");
             ListeningUri = ResolveListeningUrl(output);
-            logger?.LogInformation($"AspNetProcess - Got {ListeningUri}");
+            if (logger is not null && logger.IsEnabled(LogLevel.Information))
+            {
+                logger?.LogInformation($"AspNetProcess - Got {ListeningUri}");
+            }
         }
     }
 

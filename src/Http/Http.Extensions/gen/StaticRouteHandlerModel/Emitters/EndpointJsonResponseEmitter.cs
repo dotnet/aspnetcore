@@ -23,6 +23,6 @@ internal static class EndpointJsonResponseEmitter
         {
             return $"httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);";
         }
-        return $"GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo, serializerOptions);";
+        return $"GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo);";
     }
 }

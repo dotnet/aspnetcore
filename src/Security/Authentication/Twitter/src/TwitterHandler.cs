@@ -38,8 +38,17 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
     /// Initializes a new instance of <see cref="TwitterHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="TwitterHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />
@@ -89,7 +98,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
             return HandleRequestResult.Fail("Missing or blank oauth_verifier", properties);
         }
 
-        var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.StateCookie.Build(Context, TimeProvider.GetUtcNow());
 
         Response.Cookies.Delete(Options.StateCookie.Name!, cookieOptions);
 
@@ -163,7 +172,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
         var requestToken = await ObtainRequestTokenAsync(BuildRedirectUri(Options.CallbackPath), properties);
         var twitterAuthenticationEndpoint = TwitterDefaults.AuthenticationEndpoint + requestToken.Token;
 
-        var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.StateCookie.Build(Context, TimeProvider.GetUtcNow());
 
         Response.Cookies.Append(Options.StateCookie.Name!, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
@@ -268,7 +277,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
         var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
         if (!string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
         {
-            throw new Exception("Twitter oauth_callback_confirmed is not true.");
+            throw new AuthenticationFailureException("Twitter oauth_callback_confirmed is not true.");
         }
 
         return new RequestToken
@@ -328,7 +337,7 @@ public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions
 
     private string GenerateTimeStamp()
     {
-        var secondsSinceUnixEpocStart = Clock.UtcNow - DateTimeOffset.UnixEpoch;
+        var secondsSinceUnixEpocStart = TimeProvider.GetUtcNow() - DateTimeOffset.UnixEpoch;
         return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
     }
 

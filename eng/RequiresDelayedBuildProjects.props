@@ -17,5 +17,6 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\DefaultBuilder\test\Microsoft.AspNetCore.NativeAotTests\Microsoft.AspNetCore.NativeAotTests.proj" />
   </ItemGroup>
 </Project>

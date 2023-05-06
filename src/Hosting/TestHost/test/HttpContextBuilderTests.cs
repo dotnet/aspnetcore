@@ -338,7 +338,7 @@ public class HttpContextBuilderTests
             });
         var server = new TestServer(builder);
 
-        var ex = await Assert.ThrowsAsync<Exception>(() => server.SendAsync(c => { }));
+        var ex = await Assert.ThrowsAsync<OperationCanceledException>(() => server.SendAsync(c => { }));
         Assert.Equal("The application aborted the request.", ex.Message);
         await requestAborted.Task.DefaultTimeout();
     }

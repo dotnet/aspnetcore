@@ -18,6 +18,8 @@ internal partial class EndpointHtmlRenderer
 
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
+        SetHttpContext(httpContext);
+
         if (_streamingUpdatesWriter is not null)
         {
             // The framework is the only caller, so it's OK to have a nonobvious restriction like this
@@ -37,7 +39,7 @@ internal partial class EndpointHtmlRenderer
         }
         catch (Exception ex)
         {
-            HandleExceptionAfterResponseStarted(httpContext, writer, ex);
+            HandleExceptionAfterResponseStarted(_httpContext, writer, ex);
 
             // The rest of the pipeline can treat this as a regular unhandled exception
             // TODO: Is this really right? I think we'll terminate the response in an invalid way.

@@ -634,7 +634,7 @@ public abstract class RazorPageBase : IRazorPage
     }
 
     /// <summary>
-    /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
+    /// Invokes <see cref="TextWriter.FlushAsync()"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
     /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
     /// </summary>
     /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on

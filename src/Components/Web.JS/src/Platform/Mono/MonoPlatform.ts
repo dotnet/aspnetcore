@@ -305,6 +305,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
     onConfigLoaded,
     onDownloadResourceProgress: setProgress,
     config,
+    disableDotnet6Compatibility: false,
     print,
     printErr,
   };
@@ -392,7 +393,7 @@ async function loadLazyAssembly(resourceLoader: WebAssemblyResourceLoader, assem
   if (!assemblyMarkedAsLazy) {
     throw new Error(`${assemblyNameToLoad} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
   }
-  const dllNameToLoad = changeExtension(assemblyNameToLoad, '.dll');
+  const dllNameToLoad = assemblyNameToLoad;
   const pdbNameToLoad = changeExtension(assemblyNameToLoad, '.pdb');
   const shouldLoadPdb = hasDebuggingEnabled() && resources.pdb && lazyAssemblies.hasOwnProperty(pdbNameToLoad);
 

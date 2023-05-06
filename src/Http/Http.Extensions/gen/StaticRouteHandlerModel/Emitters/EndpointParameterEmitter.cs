@@ -243,7 +243,7 @@ internal static class EndpointParameterEmitter
                 codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");
                 break;
             default:
-                throw new Exception("Unreachable!");
+                throw new NotImplementedException($"Unreachable! Unexpected {nameof(BindabilityMethod)}: {endpointParameter.BindMethod}");
         }
 
         // TODO: Generate more compact code if the type is a reference type and/or the BindAsync return nullability matches the handler parameter type.
@@ -291,7 +291,7 @@ internal static class EndpointParameterEmitter
     public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
     {
         EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService or EndpointParameterSource.FormBody => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
-        EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
+        EndpointParameterSource.Unknown => throw new NotImplementedException($"Unreachable! Unexpected {nameof(EndpointParameterSource)}: {endpointParameter.Source}"),
         _ => endpointParameter.EmitHandlerArgument()
     };
 }

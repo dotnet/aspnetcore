@@ -1,11 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AuthSamples.DynamicSchemes;
@@ -17,7 +14,7 @@ public class SimpleOptions : AuthenticationSchemeOptions
 
 public class SimpleAuthHandler : AuthenticationHandler<SimpleOptions>
 {
-    public SimpleAuthHandler(IOptionsMonitor<SimpleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+    public SimpleAuthHandler(IOptionsMonitor<SimpleOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
     { }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()

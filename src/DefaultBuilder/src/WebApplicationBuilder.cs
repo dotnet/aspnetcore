@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -111,7 +112,8 @@ public sealed class WebApplicationBuilder
         });
 
         // Ensure the same behavior of the non-slim WebApplicationBuilder by adding the default "app" Configuration sources
-        ApplyDefaultAppConfiguration(options, configuration);
+        ApplyDefaultAppConfigurationSlim(_hostApplicationBuilder.Environment, configuration, options.Args);
+        AddDefaultServicesSlim(configuration, _hostApplicationBuilder.Services);
 
         // configure the ServiceProviderOptions here since CreateEmptyApplicationBuilder won't.
         var serviceProviderFactory = GetServiceProviderFactory(_hostApplicationBuilder);
@@ -204,14 +206,66 @@ public sealed class WebApplicationBuilder
         }
     }
 
-    private static void ApplyDefaultAppConfiguration(WebApplicationOptions options, ConfigurationManager configuration)
+    private static void ApplyDefaultAppConfigurationSlim(IHostEnvironment env, ConfigurationManager configuration, string[]? args)
     {
+        // Logic taken from https://github.com/dotnet/runtime/blob/6149ca07d2202c2d0d518e10568c0d0dd3473576/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L229-L256
+
+        var reloadOnChange = GetReloadConfigOnChangeValue(configuration);
+
+        configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: reloadOnChange)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange);
+
+        if (env.IsDevelopment() && env.ApplicationName is { Length: > 0 })
+        {
+            try
+            {
+                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                configuration.AddUserSecrets(appAssembly, optional: true, reloadOnChange: reloadOnChange);
+            }
+            catch (FileNotFoundException)
+            {
+                // The assembly cannot be found, so just skip it.
+            }
+        }
+
         configuration.AddEnvironmentVariables();
 
-        if (options.Args is { Length: > 0 } args)
+        if (args is { Length: > 0 })
         {
             configuration.AddCommandLine(args);
         }
+
+        static bool GetReloadConfigOnChangeValue(ConfigurationManager configuration)
+        {
+            const string reloadConfigOnChangeKey = "hostBuilder:reloadConfigOnChange";
+            var result = true;
+            if (configuration[reloadConfigOnChangeKey] is string reloadConfigOnChange)
+            {
+                if (!bool.TryParse(reloadConfigOnChange, out result))
+                {
+                    throw new InvalidOperationException($"Failed to convert configuration value at '{configuration.GetSection(reloadConfigOnChangeKey).Path}' to type '{typeof(bool)}'.");
+                }
+            }
+            return result;
+        }
+    }
+
+    private static void AddDefaultServicesSlim(ConfigurationManager configuration, IServiceCollection services)
+    {
+        // Add the necessary services for the slim WebApplicationBuilder, taken from https://github.com/dotnet/runtime/blob/6149ca07d2202c2d0d518e10568c0d0dd3473576/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L266
+        services.AddLogging(logging =>
+        {
+            logging.AddConfiguration(configuration.GetSection("Logging"));
+            logging.AddSimpleConsole();
+
+            logging.Configure(options =>
+            {
+                options.ActivityTrackingOptions =
+                    ActivityTrackingOptions.SpanId |
+                    ActivityTrackingOptions.TraceId |
+                    ActivityTrackingOptions.ParentId;
+            });
+        });
     }
 
     /// <summary>

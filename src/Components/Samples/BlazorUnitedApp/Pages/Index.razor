@@ -4,6 +4,24 @@
 
 <h1>Hello, world!</h1>
 
-Welcome to your new app.
+@* <CascadingModelBinder Name="Page" Context="pageContext">
+    <CascadingModelBinder Name="Navigation" Context="bindingContext">
+        <EditForm FormHandlerName="Action" method="POST" Model="new object()" OnValidSubmit="Submit">
+            <input type="submit" value="Process form" />
+        </EditForm>
+    </CascadingModelBinder>
+</CascadingModelBinder> *@
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+
+@if (_submitted)
+{
+    <p>Submited.</p>
+}
+
+@code{
+    bool _submitted = false;
+    public void Submit()
+    {
+        _submitted = true;
+    }
+}

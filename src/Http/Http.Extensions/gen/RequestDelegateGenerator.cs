@@ -79,6 +79,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.StartBlock();
             codeWriter.WriteLine(@"Debug.Assert(options?.EndpointBuilder != null, ""EndpointBuilder not found."");");
             codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new SourceKey{endpoint!.EmitSourceKey()});");
+            endpoint!.EmitEndpointMetadataPopulation(codeWriter);
             codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
@@ -170,6 +171,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var hasBindAsync = endpoints.Any(endpoint => endpoint!.EmitterContext.HasBindAsync);
                 var hasParsable = endpoints.Any(endpoint => endpoint!.EmitterContext.HasParsable);
                 var hasJsonResponse = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonResponse);
+                var hasEndpointMetadataProvider = endpoints.Any(endpoint => endpoint!.EmitterContext.HasEndpointMetadataProvider);
+                var hasEndpointParameterMetadataProvider = endpoints.Any(endpoint => endpoint!.EmitterContext.HasEndpointParameterMetadataProvider);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
@@ -209,14 +212,41 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.TryParseExplicitMethod);
                 }
 
+                if (hasEndpointMetadataProvider)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.PopulateEndpointMetadataMethod);
+                }
+
+                if (hasEndpointParameterMetadataProvider)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.PopulateEndpointParameterMetadataMethod);
+                }
+
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers);
+        var helperTypes = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                var requiresMetadataHelperTypes = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresMetadataHelperTypes);
+
+                using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+                using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
+
+                if (requiresMetadataHelperTypes)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentMetadataTypes);
+                }
+
+                return stringWriter.ToString();
+            });
+
+        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers).Combine(helperTypes);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var ((thunks, endpointsCode), helpers) = sources;
+            var (((thunks, endpointsCode), helperMethods), helperTypes) = sources;
 
             if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
@@ -233,7 +263,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 genericThunks: string.Empty,
                 thunks: thunksCode.ToString(),
                 endpoints: endpointsCode,
-                helperMethods: helpers ?? string.Empty);
+                helperMethods: helperMethods ?? string.Empty,
+                helperTypes: helperTypes ?? string.Empty);
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });

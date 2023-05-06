@@ -2,11 +2,5 @@
   "$schema": "http://json.schemastore.org/ide.host",
   "order": 300,
   "icon": "ide/Worker.png",
-  "supportsDocker": true,
-  "symbolInfo": [
-    {
-      "id": "NativeAot",
-      "isVisible": true
-    }
-  ]
+  "supportsDocker": true
 }

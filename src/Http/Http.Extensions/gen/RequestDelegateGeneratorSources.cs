@@ -20,6 +20,46 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
+    public static string ContentMetadataTypes => """
+    file static class GeneratedMetadataConstants
+    {
+        public static readonly string[] JsonContentType = new [] { "application/json" };
+        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+    }
+
+    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
+    {
+        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
+        {
+            Type = type;
+            StatusCode = statusCode;
+            ContentTypes = contentTypes;
+        }
+
+        public Type? Type { get; }
+
+        public int StatusCode { get; }
+
+        public IEnumerable<string> ContentTypes { get; }
+    }
+""";
+
+    public static string PopulateEndpointMetadataMethod => """
+        private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
+            where T : IEndpointMetadataProvider
+        {
+            T.PopulateMetadata(method, builder);
+        }
+""";
+
+    public static string PopulateEndpointParameterMetadataMethod => """
+        private static void PopulateMetadataForParameter<T>(ParameterInfo parameter, EndpointBuilder builder)
+            where T : IEndpointParameterMetadataProvider
+        {
+            T.PopulateMetadata(parameter, builder);
+        }
+""";
+
     public static string TryResolveBodyAsyncMethod => """
         private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
         {
@@ -149,7 +189,10 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string WriteToResponseAsyncMethod => """
-        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo, JsonSerializerOptions options)
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
             var runtimeType = value?.GetType();
             if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
@@ -157,7 +200,7 @@ internal static class RequestDelegateGeneratorSources
                 return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
             }
 
-            return httpContext.Response.WriteAsJsonAsync(value!, options.GetTypeInfo(runtimeType));
+            return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
         }
 """;
 
@@ -320,7 +363,7 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods) => $$"""
+    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
@@ -393,6 +436,9 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
         private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
         {
             if (obj is IResult r)
@@ -412,6 +458,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 {{helperMethods}}
     }
 
+{{helperTypes}}
 {{LogOrThrowExceptionHelperClass}}
 }
 """;
