@@ -280,8 +280,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // This will give us more control of the bytes that hit the wire, including encodings, HTTP 1.0, etc..
         // It may also be faster to do this work in managed code and then pass down only one buffer.
         // What would we loose by bypassing HttpSendHttpResponse?
-        //
-        // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
         internal unsafe uint SendHeaders(HttpApiTypes.HTTP_DATA_CHUNK[]? dataChunks,
             ResponseStreamAsyncResult? asyncResult,
             HttpApiTypes.HTTP_FLAGS flags,
