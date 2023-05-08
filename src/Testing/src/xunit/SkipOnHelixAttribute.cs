@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -62,7 +63,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
             return true;
         }
         
-        if (Queues.Contains("All.Linux") && OperatingSystem.IsLinux())
+        if (Queues.Contains("All.Linux") && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             return true;
         }
