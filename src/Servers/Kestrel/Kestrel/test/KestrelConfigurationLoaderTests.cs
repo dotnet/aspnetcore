@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Primitives;
+using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -1222,6 +1224,124 @@ public class KestrelConfigurationLoaderTests
 
         Assert.Equal(2, foundChangedCount);
         Assert.Equal(1, foundUnchangedCount);
+    }
+
+    [Fact]
+    public void MultipleLoads_ConfigureBetween()
+    {
+        var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+        }).Build();
+
+        var mockConfig = new Mock<IConfiguration>();
+        mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(currentConfig.GetSection);
+        mockConfig.Setup(c => c.GetChildren()).Returns(currentConfig.GetChildren);
+
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure(mockConfig.Object, reloadOnChange: false);
+        var oldConfigurationLoader = serverOptions.ConfigurationLoader;
+        
+        serverOptions.ConfigurationLoader.Load();
+
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockConfig.Invocations.Clear();
+
+        serverOptions.Configure(mockConfig.Object, reloadOnChange: false);
+        var newConfigurationLoader = serverOptions.ConfigurationLoader;
+        Assert.NotSame(oldConfigurationLoader, newConfigurationLoader);
+
+        serverOptions.ConfigurationLoader.Load();
+
+        // The change token is stored on the loader, so replacing the loader replaces the token.
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public void MultipleLoads_ConfigurationChanges(bool changeBeforeInitialLoad, bool changeAfterInitialLoad)
+    {
+        var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+        }).Build();
+
+        var mockReloadToken = new Mock<IChangeToken>();
+        mockReloadToken.SetupGet(t => t.HasChanged).Returns(changeBeforeInitialLoad);
+
+        var mockConfig = new Mock<IConfiguration>();
+        mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(currentConfig.GetSection);
+        mockConfig.Setup(c => c.GetChildren()).Returns(currentConfig.GetChildren);
+        mockConfig.Setup(c => c.GetReloadToken()).Returns(mockReloadToken.Object);
+
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure(mockConfig.Object, reloadOnChange: false);
+
+        serverOptions.ConfigurationLoader.Load();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.AtLeastOnce);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockReloadToken.SetupGet(t => t.HasChanged).Returns(changeAfterInitialLoad);
+
+        mockReloadToken.Invocations.Clear();
+        mockConfig.Invocations.Clear();
+
+        serverOptions.ConfigurationLoader.Load();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.AtLeastOnce);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), changeAfterInitialLoad ? Times.AtLeastOnce : Times.Never);
+    }
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(3, 0)]
+    [InlineData(2, 1)]
+    [InlineData(1, 2)]
+    [InlineData(0, 3)]
+    public void MultipleLoads_AddEndpoints(int beforeInitialLoadCount, int afterInitialLoadCount)
+    {
+        int _endpointAddedCount = 0;
+
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure();
+
+        for (int i = 0; i < beforeInitialLoadCount; i++)
+        {
+            serverOptions.ConfigurationLoader.LocalhostEndpoint(5000 + i, _ => _endpointAddedCount++);
+        }
+
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.Equal(beforeInitialLoadCount, _endpointAddedCount);
+
+        for (int i = 0; i < afterInitialLoadCount; i++)
+        {
+            serverOptions.ConfigurationLoader.LocalhostEndpoint(7000 + i, _ => _endpointAddedCount++);
+        }
+
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.Equal(beforeInitialLoadCount + afterInitialLoadCount, _endpointAddedCount);
+    }
+
+    [Fact]
+    public void ReloadDoesNotAddEndpoints()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure();
+
+        serverOptions.ConfigurationLoader.Load();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added by Reload"));
+
+        _ = serverOptions.ConfigurationLoader.Reload();
     }
 
     private static string GetCertificatePath()

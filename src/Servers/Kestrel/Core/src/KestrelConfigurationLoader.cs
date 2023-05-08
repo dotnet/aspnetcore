@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
@@ -18,7 +19,7 @@ public class KestrelConfigurationLoader
 {
     private readonly IHttpsConfigurationService _httpsConfigurationService;
 
-    private bool _loaded;
+    private IChangeToken? _reloadToken;
 
     internal KestrelConfigurationLoader(
         KestrelServerOptions options,
@@ -234,25 +235,27 @@ public class KestrelConfigurationLoader
     /// </summary>
     public void Load()
     {
-        if (_loaded)
+        if (_reloadToken is null || _reloadToken.HasChanged)
         {
-            // The loader has already been run.
-            return;
+            // Will update _reloadToken
+            _ = Reload();
         }
-        _loaded = true;
-
-        Reload();
 
         foreach (var action in EndpointsToAdd)
         {
             action();
         }
+
+        // If Load is called again, we don't want to rerun these
+        EndpointsToAdd.Clear();
     }
 
     // Adds endpoints from config to KestrelServerOptions.ConfigurationBackedListenOptions and configures some other options.
     // Any endpoints that were removed from the last time endpoints were loaded are returned.
     internal (List<ListenOptions>, List<ListenOptions>) Reload()
     {
+        _reloadToken = Configuration.GetReloadToken();
+
         var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
         var endpointsToStart = new List<ListenOptions>();
         var endpointsToReuse = new List<ListenOptions>();
