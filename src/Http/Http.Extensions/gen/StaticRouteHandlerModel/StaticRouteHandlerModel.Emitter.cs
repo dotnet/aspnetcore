@@ -214,7 +214,7 @@ internal static class StaticRouteHandlerModelEmitter
 
             if (parameter.IsEndpointParameterMetadataProvider)
             {
-                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos.Single(p => p.Name == "{{parameter.SymbolName}}");""");
+                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos[{{parameter.Ordinal}}];""");
                 codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options!.EndpointBuilder);");
             }
 
