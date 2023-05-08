@@ -56,8 +56,8 @@ public static class ConnectionBuilderExtensions
     }
 
     /// <summary>
-    /// If you aren't calling the next function, use <see cref="Run(IConnectionBuilder, Func{ConnectionContext, Task})"/> instead.
     /// Add the given <paramref name="middleware"/> to the connection.
+    /// If you aren't calling the next function, use <see cref="Run(IConnectionBuilder, Func{ConnectionContext, Task})"/> instead.
     /// </summary>
     /// <param name="connectionBuilder">The <see cref="IConnectionBuilder"/>.</param>
     /// <param name="middleware">The middleware to add to the <see cref="IConnectionBuilder"/>.</param>
