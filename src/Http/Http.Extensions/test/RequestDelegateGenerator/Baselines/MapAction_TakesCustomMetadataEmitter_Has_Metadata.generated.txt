@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
                     var parameterInfos = methodInfo.GetParameters();
                     PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(methodInfo, options.EndpointBuilder);
-                    var x_ParameterInfo = parameterInfos.Single(p => p.Name == "x");
+                    var x_ParameterInfo = parameterInfos[0];
                     PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options.EndpointBuilder);
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },

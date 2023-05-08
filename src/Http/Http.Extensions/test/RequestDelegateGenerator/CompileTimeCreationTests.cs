@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class CompileTimeCreationTests : RequestDelegateCreationTests
+public partial class CompileTimeCreationTests : RequestDelegateCreationTests
 {
     protected override bool IsGeneratorEnabled { get; } = true;
 

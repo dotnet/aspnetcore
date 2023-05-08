@@ -95,8 +95,6 @@ internal class Endpoint
 
         Parameters = parameters;
 
-        EmitterContext.HasEndpointParameterMetadataProvider = Parameters.Any(p => p.IsEndpointParameterMetadataProvider);
-        EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider || Parameters.Any(p => p.IsEndpointMetadataProvider || p.IsEndpointParameterMetadataProvider);
         EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
             parameter.Source == EndpointParameterSource.SpecialType ||
             parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });

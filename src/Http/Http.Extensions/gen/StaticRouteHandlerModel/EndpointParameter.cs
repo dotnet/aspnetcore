@@ -29,6 +29,7 @@ internal class EndpointParameter
     private EndpointParameter(Endpoint endpoint, IPropertySymbol property, IParameterSymbol? parameter, WellKnownTypes wellKnownTypes) : this(endpoint, property.Type, property.Name, wellKnownTypes)
     {
         Ordinal = parameter?.Ordinal ?? 0;
+        IsProperty = true;
         IsOptional = property.IsOptional() || parameter?.IsOptional() == true;
         DefaultValue = parameter?.GetDefaultValueString() ?? "null";
         // Coalesce attributes on the property and attributes on the matching parameter
@@ -38,6 +39,11 @@ internal class EndpointParameter
         {
             attributeBuilder.AddRange(parameter.GetAttributes());
         }
+
+        var propertyInfo = $"typeof({property.ContainingType.ToDisplayString()})!.GetProperty({SymbolDisplay.FormatLiteral(property.Name, true)})!";
+        PropertyAsParameterInfoConstruction = parameter is not null
+            ? $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo}, {parameter.GetParameterInfoFromConstructor()})"
+            : $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo})";
         ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable(), wellKnownTypes);
     }
 
@@ -52,6 +58,7 @@ internal class EndpointParameter
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol, wellKnownTypes);
         IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol, wellKnownTypes);
         endpoint.EmitterContext.HasEndpointParameterMetadataProvider = IsEndpointParameterMetadataProvider;
+        endpoint.EmitterContext.HasEndpointMetadataProvider |= IsEndpointMetadataProvider;
     }
 
     private void ProcessEndpointParameterSource(Endpoint endpoint, ISymbol symbol, ImmutableArray<AttributeData> attributes, WellKnownTypes wellKnownTypes)
@@ -126,14 +133,23 @@ internal class EndpointParameter
         }
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
-            Source = EndpointParameterSource.Unknown;
+            Source = EndpointParameterSource.AsParameters;
+            endpoint.EmitterContext.HasAsParameters = true;
+            var location = endpoint.Operation.Syntax.GetLocation();
+            if (IsOptional)
+            {
+                endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersNullable, location, Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)));
+            }
             if (symbol is IPropertySymbol ||
                 Type is not INamedTypeSymbol namedTypeSymbol ||
-                !TryGetAsParametersConstructor(namedTypeSymbol, out var isParameterlessConstructor, out var matchedParameters))
+                !TryGetAsParametersConstructor(endpoint, namedTypeSymbol, out var isParameterlessConstructor, out var matchedParameters))
             {
+                if (symbol is IPropertySymbol)
+                {
+                    endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersNested, location));
+                }
                 return;
             }
-            Source = EndpointParameterSource.AsParameters;
             EndpointParameters = matchedParameters.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
             if (isParameterlessConstructor == true)
             {
@@ -232,8 +248,12 @@ internal class EndpointParameter
     public bool IsOptional { get; set; }
     public bool IsArray { get; set; }
     public string DefaultValue { get; set; } = "null";
+    [MemberNotNullWhen(true, nameof(PropertyAsParameterInfoConstruction))]
+    public bool IsProperty { get; set; }
 
     public EndpointParameterSource Source { get; set; }
+
+    public string? PropertyAsParameterInfoConstruction { get; set; }
 
     public IEnumerable<EndpointParameter>? EndpointParameters { get; set; }
 
@@ -451,12 +471,15 @@ internal class EndpointParameter
         }
     }
 
-    private static bool TryGetAsParametersConstructor(INamedTypeSymbol type, out bool? isParameterlessConstructor, [NotNullWhen(true)] out IEnumerable<ConstructorParameter>? matchedParameters)
+    private static bool TryGetAsParametersConstructor(Endpoint endpoint, INamedTypeSymbol type, out bool? isParameterlessConstructor, [NotNullWhen(true)] out IEnumerable<ConstructorParameter>? matchedParameters)
     {
         isParameterlessConstructor = null;
         matchedParameters = null;
+        var parameterTypeString = type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+        var location = endpoint.Operation.Syntax.GetLocation();
         if (type.IsAbstract)
         {
+            endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersAbstractType, location, parameterTypeString));
             return false;
         }
 
@@ -495,6 +518,7 @@ internal class EndpointParameter
                 }
                 else
                 {
+                    endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersSignature, location, parameterTypeString));
                     return false;
                 }
             }
@@ -513,9 +537,11 @@ internal class EndpointParameter
 
         if (numOfConstructors > 1)
         {
+            endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersSingleConstructorOnly, location, parameterTypeString));
             return false;
         }
 
+        endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InvalidAsParametersNoConstructorFound, location, parameterTypeString));
         return false;
     }
 

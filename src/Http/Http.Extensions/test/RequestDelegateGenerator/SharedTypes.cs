@@ -205,7 +205,8 @@ public record MyBindAsyncRecord(Uri Uri)
         {
             throw new UnreachableException($"Unexpected parameter type: {parameter.ParameterType}");
         }
-        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.Ordinal) == false)
+        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.OrdinalIgnoreCase
+        ) == false)
         {
             throw new UnreachableException("Unexpected parameter name");
         }
@@ -699,7 +700,7 @@ public record ParameterListRecordWithoutPositionalParameters
     public HttpContext? HttpContext { get; set; }
 
     [FromRoute]
-    public int Value { get; set; }
+    public required int Value { get; set; }
 }
 #nullable restore
 
@@ -793,10 +794,101 @@ public class ParameterListWitDefaultValue
     public int Value { get; }
 }
 
-public class ParameterListWithReadOnlyProperty
+public class ParameterListWithReadOnlyProperties
+{
+    public ParameterListWithReadOnlyProperties()
+    {
+        ReadOnlyValue = 1;
+    }
+
+    public int Value { get; set; }
+
+    public int ConstantValue => 1;
+
+    public int ReadOnlyValue { get; }
+}
+
+public record struct SampleParameterList(int Foo);
+public record struct AdditionalSampleParameterList(int Bar);
+
+public record ParametersListWithBindAsyncType(
+    HttpContext HttpContext,
+    InheritBindAsync Value,
+    MyBindAsyncRecord MyBindAsyncParam);
+
+public record ParametersListWithMetadataType(
+    HttpContext HttpContext,
+    AddsCustomParameterMetadataAsProperty Value);
+
+public class ParameterListRequiredStringFromDifferentSources
 {
     public HttpContext HttpContext { get; set; }
 
     [FromRoute]
-    public int Value => 32;
+    public required string RequiredRouteParam { get; set; }
+
+    [FromQuery]
+    public required string RequiredQueryParam { get; set; }
+
+    [FromHeader]
+    public required string RequiredHeaderParam { get; set; }
+}
+
+public record BadArgumentListRecord(int Foo)
+{
+    public BadArgumentListRecord(int foo, int bar)
+        : this(foo)
+    {
+    }
+
+    public int Bar { get; set; }
+}
+
+public class BadNoPublicConstructorArgumentListClass
+{
+    private BadNoPublicConstructorArgumentListClass()
+    { }
+
+    public int Foo { get; set; }
+}
+
+public abstract class BadAbstractArgumentListClass
+{
+    public int Foo { get; set; }
+}
+
+public class BadArgumentListClass
+{
+    public BadArgumentListClass(int foo, string name)
+    {
+    }
+
+    public int Foo { get; set; }
+    public int Bar { get; set; }
+}
+
+public class BadArgumentListClassMultipleCtors
+{
+    public BadArgumentListClassMultipleCtors(int foo)
+    {
+    }
+
+    public BadArgumentListClassMultipleCtors(int foo, int bar)
+    {
+    }
+
+    public int Foo { get; set; }
+    public int Bar { get; set; }
+}
+
+public record NestedArgumentListRecord([AsParameters] object NestedParameterList);
+
+public class ClassWithParametersConstructor
+{
+    public ClassWithParametersConstructor([AsParameters] object nestedParameterList)
+    {
+        NestedParameterList = nestedParameterList;
+    }
+
+    public object NestedParameterList { get; set; }
 }

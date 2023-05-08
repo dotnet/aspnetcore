@@ -74,7 +74,7 @@ internal static class SymbolExtensions
         return false;
     }
 
-    public static bool TryGetAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
+    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
     {
         return symbol.TryGetAttributeImplementingInterface(interfaceType, out var _);
     }
@@ -159,11 +159,11 @@ internal static class SymbolExtensions
             NullableAnnotation: NullableAnnotation.Annotated
         } || parameterSymbol.HasExplicitDefaultValue;
 
-    public static bool IsOptional(this IPropertySymbol parameterSymbol) =>
-        parameterSymbol.Type is INamedTypeSymbol
+    public static bool IsOptional(this IPropertySymbol propertySymbol) =>
+        propertySymbol.Type is INamedTypeSymbol
         {
             NullableAnnotation: NullableAnnotation.Annotated
-        };
+        } && !propertySymbol.IsRequired;
 
     public static string GetDefaultValueString(this IParameterSymbol parameterSymbol)
     {
@@ -185,5 +185,18 @@ internal static class SymbolExtensions
             }
         }
         return false;
+    }
+
+    public static string GetParameterInfoFromConstructor(this IParameterSymbol parameterSymbol)
+    {
+        if (parameterSymbol is { ContainingSymbol: IMethodSymbol constructor })
+        {
+            var parameterType = $"typeof({parameterSymbol.Type.ToDisplayString()})";
+            var parameterTypes = constructor.Parameters.Select(parameter => $"typeof({parameter.Type.ToDisplayString()})");
+            var parameterTypesString = string.Join(", ", parameterTypes);
+            var getConstructorParameters = $$"""new[] { {{parameterTypesString}} }""";
+            return $"{parameterType}.GetConstructor({getConstructorParameters})?.GetParameters()[{parameterSymbol.Ordinal}]";
+        }
+        return "null";
     }
 }

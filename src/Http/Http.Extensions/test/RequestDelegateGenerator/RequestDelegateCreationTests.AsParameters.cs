@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Globalization;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -269,28 +270,144 @@ app.MapPost("/parametersListWithImplicitFromBody", ([AsParameters] ParametersLis
     }
 
     [Fact]
-    public async Task RequestDelegateHandlesReadOnlyProperties()
+    public async Task RequestDelegatePopulatesFromParameterListAndSkipReadOnlyProperties()
     {
-        const int expectedValue = 32;
+        const int routeParamValue = 42;
+        var expectedInput = new ParameterListWithReadOnlyProperties() { Value = routeParamValue };
+
         var source = """
-void TestAction([AsParameters] ParameterListWithReadOnlyProperty args)
+void TestAction(HttpContext context, [AsParameters] ParameterListWithReadOnlyProperties args)
 {
-    args.HttpContext.Items.Add("input", args.Value);
+    context.Items.Add("input", args);
 }
 app.MapGet("/{value}", TestAction);
 """;
-        const string paramName = "value";
-        const int originalRouteParam = 42;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
+
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.Value)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ConstantValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ReadOnlyValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithReadOnlyProperties>(httpContext.Items["input"]);
+        Assert.Equal(expectedInput.Value, input.Value);
+        Assert.Equal(expectedInput.ConstantValue, input.ConstantValue);
+        Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromMultipleParameterLists()
+    {
+        const int foo = 1;
+        const int bar = 2;
+
+        var source = """
+void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] AdditionalSampleParameterList args2)
+{
+    context.Items.Add("foo", args.Foo);
+    context.Items.Add("bar", args2.Bar);
+}
+app.MapGet("/{foo}/{bar}", TestAction);
+""";
 
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[nameof(SampleParameterList.Foo)] = foo.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(AdditionalSampleParameterList.Bar)] = bar.ToString(NumberFormatInfo.InvariantInfo);
 
         await endpoint.RequestDelegate(httpContext);
 
-        Assert.Equal(expectedValue, httpContext.Items["input"]);
+        Assert.Equal(foo, httpContext.Items["foo"]);
+        Assert.Equal(bar, httpContext.Items["bar"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromBindAsyncParameterList()
+    {
+        const string uriValue = "https://example.org/";
+
+        var source = """
+void TestAction([AsParameters] ParametersListWithBindAsyncType args)
+{
+    args.HttpContext.Items.Add("value", args.Value);
+    args.HttpContext.Items.Add("anotherValue", args.MyBindAsyncParam);
+}
+app.MapGet("/", TestAction);
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers.Referer = uriValue;
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var value = Assert.IsType<InheritBindAsync>(httpContext.Items["value"]);
+        var anotherValue = Assert.IsType<MyBindAsyncRecord>(httpContext.Items["anotherValue"]);
+
+        Assert.Equal(uriValue, value.Uri?.ToString());
+        Assert.Equal(uriValue, anotherValue.Uri?.ToString());
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromMetadataProviderParameterList()
+    {
+        var source = """
+void TestAction([AsParameters] ParametersListWithMetadataType args)
+{
+    args.HttpContext.Items.Add("value", args.Value);
+}
+app.MapPost("/", TestAction);
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "Value" });
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember()
+    {
+        // Arrange
+        var source = """
+app.MapGet("/{requiredRouteParam}", TestAction);
+static void TestAction([AsParameters] ParameterListRequiredStringFromDifferentSources args) { }
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        // Act
+        await endpoint.RequestDelegate(httpContext);
+
+        // Assert that the required modifier on members that
+        // are not nullable treats them as required.
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+
+        Assert.Equal(3, logs.Length);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredRouteParam"" was not provided from route.", logs[0].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredQueryParam"" was not provided from query string.", logs[1].Message);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
+        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
+        Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
     }
 }

@@ -229,14 +229,17 @@ internal static class EndpointParameterEmitter
     {
         var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
         var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var resolveParameterInfo = endpointParameter.IsProperty
+            ? endpointParameter.PropertyAsParameterInfoConstruction
+            : $"parameters[{endpointParameter.Ordinal}]";
 
         switch (endpointParameter.BindMethod)
         {
             case BindabilityMethod.IBindableFromHttpContext:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsyncWithParameter:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsync:
                 codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");

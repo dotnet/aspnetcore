@@ -1283,65 +1283,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(errorMessage, exception.Message);
     }
 
-    private record BadArgumentListRecord(int Foo)
-    {
-        public BadArgumentListRecord(int foo, int bar)
-            : this(foo)
-        {
-        }
-
-        public int Bar { get; set; }
-    }
-
-    private class BadNoPublicConstructorArgumentListClass
-    {
-        private BadNoPublicConstructorArgumentListClass()
-        { }
-
-        public int Foo { get; set; }
-    }
-
-    private abstract class BadAbstractArgumentListClass
-    {
-        public int Foo { get; set; }
-    }
-
-    private class BadArgumentListClass
-    {
-        public BadArgumentListClass(int foo, string name)
-        {
-        }
-
-        public int Foo { get; set; }
-        public int Bar { get; set; }
-    }
-
-    private class BadArgumentListClassMultipleCtors
-    {
-        public BadArgumentListClassMultipleCtors(int foo)
-        {
-        }
-
-        public BadArgumentListClassMultipleCtors(int foo, int bar)
-        {
-        }
-
-        public int Foo { get; set; }
-        public int Bar { get; set; }
-    }
-
-    private record NestedArgumentListRecord([AsParameters] object NestedParameterList);
-
-    private class ClassWithParametersConstructor
-    {
-        public ClassWithParametersConstructor([AsParameters] object nestedParameterList)
-        {
-            NestedParameterList = nestedParameterList;
-        }
-
-        public object NestedParameterList { get; set; }
-    }
-
     [Fact]
     public void BuildRequestDelegateThrowsNotSupportedExceptionForNestedParametersList()
     {
@@ -2788,34 +2729,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains($"The nullable type '{TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)}' is not supported, mark the parameter as non-nullable.", exception.Message);
     }
 
-    private record struct SampleParameterList(int Foo);
-    private record struct AdditionalSampleParameterList(int Bar);
-
-    [Fact]
-    public async Task RequestDelegatePopulatesFromMultipleParameterLists()
-    {
-        const int foo = 1;
-        const int bar = 2;
-
-        void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] AdditionalSampleParameterList args2)
-        {
-            context.Items.Add("foo", args.Foo);
-            context.Items.Add("bar", args2.Bar);
-        }
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues[nameof(SampleParameterList.Foo)] = foo.ToString(NumberFormatInfo.InvariantInfo);
-        httpContext.Request.RouteValues[nameof(AdditionalSampleParameterList.Bar)] = bar.ToString(NumberFormatInfo.InvariantInfo);
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(foo, httpContext.Items["foo"]);
-        Assert.Equal(bar, httpContext.Items["bar"]);
-    }
-
     [Fact]
     public void RequestDelegateThrowsWhenParameterNameConflicts()
     {
@@ -2841,55 +2754,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public int ConstantValue => 1;
 
         public int ReadOnlyValue { get; }
-    }
-
-    [Fact]
-    public async Task RequestDelegatePopulatesFromParameterListAndSkipReadOnlyProperties()
-    {
-        const int routeParamValue = 42;
-        var expectedInput = new ParameterListWithReadOnlyProperties() { Value = routeParamValue };
-
-        void TestAction(HttpContext context, [AsParameters] ParameterListWithReadOnlyProperties args)
-        {
-            context.Items.Add("input", args);
-        }
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.Value)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
-        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ConstantValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
-        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ReadOnlyValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var input = Assert.IsType<ParameterListWithReadOnlyProperties>(httpContext.Items["input"]);
-        Assert.Equal(expectedInput.Value, input.Value);
-        Assert.Equal(expectedInput.ConstantValue, input.ConstantValue);
-        Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
-    }
-
-    private record ParameterListRecordWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
-
-    [Fact]
-    public async Task RequestDelegatePopulatesFromParameterListRecordUsesDefaultValue()
-    {
-        const int expectedValue = 42;
-
-        void TestAction([AsParameters] ParameterListRecordWitDefaultValue args)
-        {
-            args.HttpContext.Items.Add("input", args.Value);
-        }
-
-        var httpContext = CreateHttpContext();
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(expectedValue, httpContext.Items["input"]);
     }
 
     [Fact]
@@ -4264,55 +4128,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         });
 
         await result.RequestDelegate(httpContext);
-    }
-
-    private class ParameterListRequiredStringFromDifferentSources
-    {
-        public HttpContext? HttpContext { get; set; }
-
-        [FromRoute]
-        public required string RequiredRouteParam { get; set; }
-
-        [FromQuery]
-        public required string RequiredQueryParam { get; set; }
-
-        [FromHeader]
-        public required string RequiredHeaderParam { get; set; }
-    }
-
-    [Fact]
-    public async Task RequestDelegateFactory_AsParameters_SupportsRequiredMember()
-    {
-        // Arrange
-        static void TestAction([AsParameters] ParameterListRequiredStringFromDifferentSources args) { }
-
-        var httpContext = CreateHttpContext();
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        // Act
-        await requestDelegate(httpContext);
-
-        // Assert that the required modifier on members that
-        // are not nullable treats them as required.
-        Assert.Equal(400, httpContext.Response.StatusCode);
-
-        var logs = TestSink.Writes.ToArray();
-
-        Assert.Equal(3, logs.Length);
-
-        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
-        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
-        Assert.Equal(@"Required parameter ""string RequiredRouteParam"" was not provided from route.", logs[0].Message);
-
-        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
-        Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
-        Assert.Equal(@"Required parameter ""string RequiredQueryParam"" was not provided from query string.", logs[1].Message);
-
-        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[2].EventId);
-        Assert.Equal(LogLevel.Debug, logs[2].LogLevel);
-        Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
     }
 
     private class ParameterListRequiredNullableStringFromDifferentSources

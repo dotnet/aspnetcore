@@ -230,6 +230,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Select((endpoints, _) =>
             {
                 var requiresMetadataHelperTypes = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresMetadataHelperTypes);
+                var hasAsParameters = endpoints.Any(endpoint => endpoint!.EmitterContext.HasAsParameters);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
@@ -237,6 +238,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 if (requiresMetadataHelperTypes)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentMetadataTypes);
+                }
+
+                if (hasAsParameters)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.PropertyAsParameterInfoClass);
                 }
 
                 return stringWriter.ToString();

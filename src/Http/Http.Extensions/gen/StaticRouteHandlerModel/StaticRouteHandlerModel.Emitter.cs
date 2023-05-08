@@ -206,9 +206,24 @@ internal static class StaticRouteHandlerModelEmitter
 
         foreach (var parameter in endpoint.Parameters)
         {
+            if (parameter is { Source: EndpointParameterSource.AsParameters, EndpointParameters: { } innerParameters })
+            {
+                foreach (var innerParameter in innerParameters)
+                {
+                    ProcessParameter(innerParameter, codeWriter);
+                }
+            }
+            else
+            {
+                ProcessParameter(parameter, codeWriter);
+            }
+        }
+
+        static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter)
+        {
             if (parameter.Type is not { } parameterType)
             {
-                break;
+                return;
             }
 
             if (parameter.IsEndpointMetadataProvider)
@@ -218,7 +233,10 @@ internal static class StaticRouteHandlerModelEmitter
 
             if (parameter.IsEndpointParameterMetadataProvider)
             {
-                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos.Single(p => p.Name == "{{parameter.SymbolName}}");""");
+                var resolveParameterInfo = parameter.IsProperty
+                    ? parameter.PropertyAsParameterInfoConstruction
+                    : $"parameterInfos[{parameter.Ordinal}]";
+                codeWriter.WriteLine($"var {parameter.SymbolName}_ParameterInfo = {resolveParameterInfo};");
                 codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
             }
         }

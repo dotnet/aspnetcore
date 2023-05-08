@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (routeValue_raw == null)
                         {
                             wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "unknown");
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "route");
                         }
                         var routeValue_temp = (string?)routeValue_raw;
                         string routeValue_local = routeValue_temp!;
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (routeValue_raw == null)
                         {
                             wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "unknown");
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "route");
                         }
                         var routeValue_temp = (string?)routeValue_raw;
                         string routeValue_local = routeValue_temp!;
