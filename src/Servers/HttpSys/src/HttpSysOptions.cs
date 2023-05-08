@@ -34,6 +34,8 @@ public class HttpSysOptions
     /// </summary>
     public HttpSysOptions()
     {
+        const string EnableKernelResponseBufferingSwitch = "Microsoft.AspNetCore.Server.HttpSys.EnableKernelResponseBuffering";
+        EnableKernelResponseBuffering = AppContext.TryGetSwitch(EnableKernelResponseBufferingSwitch, out var enabled) && enabled;
     }
 
     /// <summary>
@@ -107,6 +109,15 @@ public class HttpSysOptions
     /// complete normally. The default is false.
     /// </summary>
     public bool ThrowWriteExceptions { get; set; }
+
+    /// <summary>
+    /// Enable buffering of response data in the Kernel.
+    /// It should be used by an application doing synchronous I/O or by an application doing asynchronous I/O with
+    /// no more than one outstanding write at a time, and can significantly improve throughput over high-latency connections.
+    /// Applications that use asynchronous I/O and that may have more than one send outstanding at a time should not use this flag.
+    /// Enabling this can results in higher CPU and memory usage by Http.Sys.
+    /// </summary>
+    internal bool EnableKernelResponseBuffering { get; set; } // internal via app-context in pre-8.0
 
     /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
