@@ -111,7 +111,7 @@ public class Http1WritingBenchmark
             serviceContext: serviceContext,
             connectionContext: null,
             transport: pair.Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, new MockTimeProvider().TimestampFrequency),
             memoryPool: _memoryPool,
             connectionFeatures: new FeatureCollection());
 

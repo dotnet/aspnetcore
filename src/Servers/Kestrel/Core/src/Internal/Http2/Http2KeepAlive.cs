@@ -29,9 +29,9 @@ internal sealed class Http2KeepAlive
 
     public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan keepAliveTimeout, TimeProvider timeProvider)
     {
-        _keepAliveInterval = (long)(keepAliveInterval.TotalSeconds * timeProvider.TimestampFrequency);
+        _keepAliveInterval = keepAliveInterval.ToTicks(timeProvider.TimestampFrequency);
         _keepAliveTimeout = keepAliveTimeout == TimeSpan.MaxValue ? long.MaxValue
-            : (long)(keepAliveTimeout.TotalSeconds * timeProvider.TimestampFrequency);
+            : keepAliveTimeout.ToTicks(timeProvider.TimestampFrequency);
         _timeProvider = timeProvider;
     }
 

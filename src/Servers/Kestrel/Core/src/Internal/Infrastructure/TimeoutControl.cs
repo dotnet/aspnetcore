@@ -11,11 +11,14 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
 {
     private readonly ITimeoutHandler _timeoutHandler;
 
+    private readonly long _heartbeatIntervalTicks;
+    private readonly long _tickFrequency;
     private long _lastTimestamp;
     private long _timeoutTimestamp = long.MaxValue;
 
     private readonly object _readTimingLock = new object();
     private MinDataRate? _minReadRate;
+    private long _minReadRateGracePeriodTicks;
     private bool _readTimingEnabled;
     private bool _readTimingPauseRequested;
     private long _readTimingElapsedTicks;
@@ -29,9 +32,11 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
     private int _concurrentAwaitingWrites;
     private long _writeTimingTimeoutTimestamp;
 
-    public TimeoutControl(ITimeoutHandler timeoutHandler)
+    public TimeoutControl(ITimeoutHandler timeoutHandler, long tickFrequency)
     {
         _timeoutHandler = timeoutHandler;
+        _tickFrequency = tickFrequency;
+        _heartbeatIntervalTicks = Heartbeat.Interval.ToTicks(_tickFrequency);
     }
 
     public TimeoutReason TimerReason { get; private set; }
@@ -43,9 +48,9 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         _lastTimestamp = nowTicks;
     }
 
-    public void Tick(DateTimeOffset now)
+    public void Tick(long now)
     {
-        var timestamp = now.Ticks;
+        var timestamp = now;
 
         CheckForTimeout(timestamp);
         CheckForReadDataRateTimeout(timestamp);
@@ -108,13 +113,13 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
 
             // Assume overly long tick intervals are the result of server resource starvation.
             // Don't count extra time between ticks against the rate limit.
-            _readTimingElapsedTicks += Math.Min(timestamp - _lastTimestamp, Heartbeat.Interval.Ticks);
+            _readTimingElapsedTicks += Math.Min(timestamp - _lastTimestamp, _heartbeatIntervalTicks);
 
             Debug.Assert(_minReadRate != null);
 
-            if (_minReadRate.BytesPerSecond > 0 && _readTimingElapsedTicks > _minReadRate.GracePeriod.Ticks)
+            if (_minReadRate.BytesPerSecond > 0 && _readTimingElapsedTicks > _minReadRateGracePeriodTicks)
             {
-                var elapsedSeconds = (double)_readTimingElapsedTicks / TimeSpan.TicksPerSecond;
+                var elapsedSeconds = (double)_readTimingElapsedTicks / _tickFrequency;
                 var rate = _readTimingBytesRead / elapsedSeconds;
 
                 timeout = rate < _minReadRate.BytesPerSecond && !Debugger.IsAttached;
@@ -145,7 +150,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         {
             // Assume overly long tick intervals are the result of server resource starvation.
             // Don't count extra time between ticks against the rate limit.
-            var extraTimeForTick = timestamp - _lastTimestamp - Heartbeat.Interval.Ticks;
+            var extraTimeForTick = timestamp - _lastTimestamp - _heartbeatIntervalTicks;
 
             if (extraTimeForTick > 0)
             {
@@ -186,7 +191,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         TimerReason = timeoutReason;
 
         // Add Heartbeat.Interval since this can be called right before the next heartbeat.
-        Interlocked.Exchange(ref _timeoutTimestamp, Interlocked.Read(ref _lastTimestamp) + ticks + Heartbeat.Interval.Ticks);
+        Interlocked.Exchange(ref _timeoutTimestamp, Interlocked.Read(ref _lastTimestamp) + ticks + _heartbeatIntervalTicks);
     }
 
     public void InitializeHttp2(InputFlowControl connectionInputFlowControl)
@@ -202,6 +207,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
             Debug.Assert(_concurrentIncompleteRequestBodies == 0 || minRate == _minReadRate, "Multiple simultaneous read data rates are not supported.");
 
             _minReadRate = minRate;
+            _minReadRateGracePeriodTicks = minRate.GracePeriod.ToTicks(_tickFrequency);
             _concurrentIncompleteRequestBodies++;
 
             if (_concurrentIncompleteRequestBodies == 1)
@@ -282,14 +288,14 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         lock (_writeTimingLock)
         {
             // Add Heartbeat.Interval since this can be called right before the next heartbeat.
-            var currentTimeUpperBound = Interlocked.Read(ref _lastTimestamp) + Heartbeat.Interval.Ticks;
-            var ticksToCompleteWriteAtMinRate = TimeSpan.FromSeconds(count / minRate.BytesPerSecond).Ticks;
+            var currentTimeUpperBound = Interlocked.Read(ref _lastTimestamp) + _heartbeatIntervalTicks;
+            var ticksToCompleteWriteAtMinRate = TimeSpan.FromSeconds(count / minRate.BytesPerSecond).ToTicks(_tickFrequency);
 
             // If ticksToCompleteWriteAtMinRate is less than the configured grace period,
             // allow that write to take up to the grace period to complete. Only add the grace period
             // to the current time and not to any accumulated timeout.
             var singleWriteTimeoutTimestamp = currentTimeUpperBound + Math.Max(
-                minRate.GracePeriod.Ticks,
+                minRate.GracePeriod.ToTicks(_tickFrequency),
                 ticksToCompleteWriteAtMinRate);
 
             // Don't penalize a connection for completing previous writes more quickly than required.
@@ -316,7 +322,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
             throw new InvalidOperationException(CoreStrings.ConcurrentTimeoutsNotSupported);
         }
 
-        SetTimeout(timeSpan.Ticks, TimeoutReason.TimeoutFeature);
+        SetTimeout(timeSpan.ToTicks(_tickFrequency), TimeoutReason.TimeoutFeature);
     }
 
     void IConnectionTimeoutFeature.ResetTimeout(TimeSpan timeSpan)
@@ -326,13 +332,13 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
             throw new ArgumentException(CoreStrings.PositiveFiniteTimeSpanRequired, nameof(timeSpan));
         }
 
-        ResetTimeout(timeSpan.Ticks, TimeoutReason.TimeoutFeature);
+        ResetTimeout(timeSpan.ToTicks(_tickFrequency), TimeoutReason.TimeoutFeature);
     }
 
     public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)
     {
         // On grace period overflow, use max value.
-        var gracePeriod = ticks + minRate.GracePeriod.Ticks;
+        var gracePeriod = ticks + minRate.GracePeriod.ToTicks(_tickFrequency);
         gracePeriod = gracePeriod >= 0 ? gracePeriod : long.MaxValue;
 
         return Math.Max(_writeTimingTimeoutTimestamp, gracePeriod);

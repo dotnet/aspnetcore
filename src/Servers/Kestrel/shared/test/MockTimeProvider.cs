@@ -32,13 +32,18 @@ public class MockTimeProvider : TimeProvider
 
     public override long GetTimestamp() => Interlocked.Read(ref _utcNowTicks);
 
+    public void SetTimestamp(long now)
+    {
+        Interlocked.Exchange(ref _utcNowTicks, now);
+    }
+
     public override long TimestampFrequency => TimeSpan.TicksPerSecond;
 
     public int UtcNowCalled { get; private set; }
 
     public void Advance(TimeSpan timeSpan)
     {
-        Interlocked.Add(ref _utcNowTicks, timeSpan.Ticks);
+        Interlocked.Add(ref _utcNowTicks, timeSpan.ToTicks(TimestampFrequency));
     }
 
     private long NextLong(long minValue, long maxValue)

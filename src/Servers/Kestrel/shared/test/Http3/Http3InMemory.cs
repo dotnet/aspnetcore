@@ -40,7 +40,7 @@ internal class Http3InMemory
     public Http3InMemory(ServiceContext serviceContext, MockTimeProvider mockTimeProvider, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
     {
         _serviceContext = serviceContext;
-        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler));
+        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler), mockTimeProvider.TimestampFrequency);
         _timeoutControl.Debugger = new TestDebugger();
 
         _mockTimeProvider = mockTimeProvider;
@@ -201,19 +201,19 @@ internal class Http3InMemory
 
     public void AdvanceTime(TimeSpan timeSpan)
     {
-        Logger.LogDebug($"Advancing timeProvider {timeSpan}.");
+        Logger.LogDebug("Advancing timeProvider {timeSpan}.", timeSpan);
 
         var timeProvider = _mockTimeProvider;
-        var endTime = timeProvider.GetUtcNow() + timeSpan;
+        var endTime = timeProvider.GetTimestamp() + timeSpan.ToTicks(timeProvider.TimestampFrequency);
 
-        while (timeProvider.GetUtcNow() + Heartbeat.Interval < endTime)
+        while (timeProvider.GetTimestamp() + Heartbeat.Interval.ToTicks(timeProvider.TimestampFrequency) < endTime)
         {
             timeProvider.Advance(Heartbeat.Interval);
-            _timeoutControl.Tick(timeProvider.GetUtcNow());
+            _timeoutControl.Tick(timeProvider.GetTimestamp());
         }
 
-        timeProvider.SetUtcNow(endTime);
-        _timeoutControl.Tick(timeProvider.GetUtcNow());
+        timeProvider.SetTimestamp(endTime);
+        _timeoutControl.Tick(timeProvider.GetTimestamp());
     }
 
     public void TriggerTick(DateTimeOffset now)

@@ -14,7 +14,7 @@ internal interface ITimeoutControl
     void CancelTimeout();
 
     void InitializeHttp2(InputFlowControl connectionInputFlowControl);
-    void Tick(DateTimeOffset now);
+    void Tick(long now);
 
     void StartRequestBody(MinDataRate minRate);
     void StopRequestBody();

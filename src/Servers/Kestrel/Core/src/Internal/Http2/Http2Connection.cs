@@ -1270,7 +1270,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             if (stream.DrainExpirationTicks == default)
             {
                 _serverActiveStreamCount--;
-                stream.DrainExpirationTicks = now + (long)(Constants.RequestBodyDrainTimeout.TotalSeconds * TimeProvider.TimestampFrequency);
+                stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.ToTicks(TimeProvider.TimestampFrequency);
             }
 
             if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTicks < now)

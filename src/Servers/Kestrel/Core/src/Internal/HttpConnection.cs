@@ -36,7 +36,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         _context = context;
         _timeProvider = _context.ServiceContext.TimeProvider;
 
-        _timeoutControl = new TimeoutControl(this);
+        _timeoutControl = new TimeoutControl(this, _timeProvider.TimestampFrequency);
 
         // Tests override the timeout control sometimes
         _context.TimeoutControl ??= _timeoutControl;
@@ -49,7 +49,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         try
         {
             // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
-            _timeoutControl.Initialize(_timeProvider.GetUtcNow().Ticks);
+            _timeoutControl.Initialize(_timeProvider.GetTimestamp());
 
             IRequestProcessor? requestProcessor = null;
 
@@ -236,9 +236,9 @@ internal sealed class HttpConnection : ITimeoutHandler
             return;
         }
 
-        // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
         var now = _timeProvider.GetUtcNow();
-        _timeoutControl.Tick(now);
+        var ticks = _timeProvider.GetTimestamp();
+        _timeoutControl.Tick(ticks);
         _requestProcessor!.Tick(now);
     }
 

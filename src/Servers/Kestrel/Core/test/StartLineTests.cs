@@ -532,7 +532,7 @@ public class StartLineTests : IDisposable
             serviceContext: serviceContext,
             connectionContext: Mock.Of<ConnectionContext>(),
             transport: Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, new MockTimeProvider().TimestampFrequency),
             memoryPool: MemoryPool,
             connectionFeatures: new FeatureCollection());
 

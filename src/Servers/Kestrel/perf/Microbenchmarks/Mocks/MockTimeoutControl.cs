@@ -65,7 +65,7 @@ internal sealed class MockTimeoutControl : ITimeoutControl
     {
     }
 
-    public void Tick(DateTimeOffset now)
+    public void Tick(long now)
     {
     }
 }

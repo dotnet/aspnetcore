@@ -162,7 +162,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
         _hpackEncoder = new DynamicHPackEncoder();
 
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, new MockTimeProvider().TimestampFrequency);
         _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
         _timeoutControl.Debugger = Mock.Of<IDebugger>();
 
@@ -1342,7 +1342,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         var now = nowOrNull ?? _serviceContext.MockTimeProvider.GetUtcNow();
         _serviceContext.MockTimeProvider.SetUtcNow(now);
-        _timeoutControl.Tick(now);
+        _timeoutControl.Tick(now.Ticks);
         ((IRequestProcessor)_connection)?.Tick(now);
     }
 
@@ -1477,7 +1477,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
         }
 
-        public virtual void Tick(DateTimeOffset now)
+        public virtual void Tick(long now)
         {
             _realTimeoutControl.Tick(now);
         }

@@ -39,7 +39,7 @@ public class RequestParsingBenchmark
             transport: pair.Transport,
             memoryPool: _memoryPool,
             connectionFeatures: new FeatureCollection(),
-            timeoutControl: new TimeoutControl(timeoutHandler: null));
+            timeoutControl: new TimeoutControl(timeoutHandler: null, new MockTimeProvider().TimestampFrequency));
 
         var http1Connection = new Http1Connection(connectionContext);
 
