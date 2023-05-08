@@ -1285,7 +1285,7 @@ public class KestrelConfigurationLoaderTests
 
         serverOptions.ConfigurationLoader.Load();
 
-        mockReloadToken.VerifyGet(t => t.HasChanged, Times.AtLeastOnce);
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
         mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
 
         mockReloadToken.SetupGet(t => t.HasChanged).Returns(changeAfterInitialLoad);
