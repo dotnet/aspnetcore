@@ -52,6 +52,11 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
 
         var targetQueue = GetTargetHelixQueue().ToLowerInvariant();
 
+        if (Queues.Contains("All.Windows") && targetQueue.StartsWith("windows", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
         if (Queues.Contains("All.OSX") && targetQueue.StartsWith("osx", StringComparison.OrdinalIgnoreCase))
         {
             return true;
