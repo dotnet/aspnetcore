@@ -166,6 +166,9 @@ public static class ListenOptionsHttpsExtensions
         // We consider calls to `UseHttps` to be a clear expression of user intent to pull in HTTPS configuration support
         listenOptions.KestrelServerOptions.EnableHttpsConfiguration();
 
+        // If there's a configuration, load it so that the results will be available to ApplyDefaultCertificate
+        listenOptions.KestrelServerOptions.ConfigurationLoader?.LoadInternal();
+
         var options = new HttpsConnectionAdapterOptions();
         listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
         configureOptions(options);
@@ -196,9 +199,7 @@ public static class ListenOptionsHttpsExtensions
 
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
-            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory, metrics);
+            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, listenOptions.Protocols, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
 

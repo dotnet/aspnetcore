@@ -43,17 +43,19 @@ internal sealed class HttpsConnectionMiddleware
     // The following fields are only set by TlsHandshakeCallbackOptions ctor.
     private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
     private readonly object? _tlsCallbackOptionsState;
-    private readonly HttpProtocols _httpProtocols;
+
+    // Internal for testing
+    internal readonly HttpProtocols _httpProtocols;
 
     // Pool for cancellation tokens that cancel the handshake
     private readonly CancellationTokenSourcePool _ctsPool = new();
 
-    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, KestrelMetrics metrics)
-      : this(next, options, loggerFactory: NullLoggerFactory.Instance, metrics: metrics)
+    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols, KestrelMetrics metrics)
+      : this(next, options, httpProtocols, loggerFactory: NullLoggerFactory.Instance, metrics: metrics)
     {
     }
 
-    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory, KestrelMetrics metrics)
+    public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols, ILoggerFactory loggerFactory, KestrelMetrics metrics)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -74,7 +76,7 @@ internal sealed class HttpsConnectionMiddleware
         //_sslStreamFactory = s => new SslStream(s);
 
         _options = options;
-        _options.HttpProtocols = ValidateAndNormalizeHttpProtocols(_options.HttpProtocols, _logger);
+        _httpProtocols = ValidateAndNormalizeHttpProtocols(httpProtocols, _logger);
 
         // capture the certificate now so it can't be switched after validation
         _serverCertificate = options.ServerCertificate;
@@ -331,7 +333,7 @@ internal sealed class HttpsConnectionMiddleware
             CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
         };
 
-        ConfigureAlpn(sslOptions, _options.HttpProtocols);
+        ConfigureAlpn(sslOptions, _httpProtocols);
 
         _options.OnAuthenticate?.Invoke(context, sslOptions);
 
