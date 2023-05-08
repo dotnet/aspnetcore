@@ -61,6 +61,11 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
         {
             return true;
         }
+        
+        if (Queues.Contains("All.Linux") && OperatingSystem.IsLinux())
+        {
+            return true;
+        }
 
         return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
     }
