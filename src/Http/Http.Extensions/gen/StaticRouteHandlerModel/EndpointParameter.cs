@@ -142,7 +142,7 @@ internal class EndpointParameter
             }
             if (symbol is IPropertySymbol ||
                 Type is not INamedTypeSymbol namedTypeSymbol ||
-                !TryGetAsParametersConstructor(endpoint, namedTypeSymbol, out var isParameterlessConstructor, out var matchedParameters))
+                !TryGetAsParametersConstructor(endpoint, namedTypeSymbol, out var isDefaultConstructor, out var matchedProperties))
             {
                 if (symbol is IPropertySymbol)
                 {
@@ -150,8 +150,8 @@ internal class EndpointParameter
                 }
                 return;
             }
-            EndpointParameters = matchedParameters.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
-            if (isParameterlessConstructor == true)
+            EndpointParameters = matchedProperties.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
+            if (isDefaultConstructor == true)
             {
                 var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.LookupName} = {p.EmitHandlerArgument()}"));
                 AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {{ {parameterList} }}";
@@ -471,10 +471,10 @@ internal class EndpointParameter
         }
     }
 
-    private static bool TryGetAsParametersConstructor(Endpoint endpoint, INamedTypeSymbol type, out bool? isParameterlessConstructor, [NotNullWhen(true)] out IEnumerable<ConstructorParameter>? matchedParameters)
+    private static bool TryGetAsParametersConstructor(Endpoint endpoint, INamedTypeSymbol type, out bool? isDefaultConstructor, [NotNullWhen(true)] out IEnumerable<ConstructorParameter>? matchedProperties)
     {
-        isParameterlessConstructor = null;
-        matchedParameters = null;
+        isDefaultConstructor = null;
+        matchedProperties = null;
         var parameterTypeString = type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
         var location = endpoint.Operation.Syntax.GetLocation();
         if (type.IsAbstract)
@@ -492,7 +492,7 @@ internal class EndpointParameter
 
         if (numOfConstructors == 1)
         {
-            var targetConstructor = constructors.SingleOrDefault();
+            var targetConstructor = constructors.Single();
             var lookupTable = new Dictionary<ParameterLookupKey, IPropertySymbol>();
             foreach (var property in properties)
             {
@@ -504,8 +504,8 @@ internal class EndpointParameter
 
             if (parameters.Length == 0)
             {
-                isParameterlessConstructor = true;
-                matchedParameters = writableProperties.Select(property => new ConstructorParameter(property, null));
+                isDefaultConstructor = true;
+                matchedProperties = writableProperties.Select(property => new ConstructorParameter(property, null));
                 return true;
             }
 
@@ -523,15 +523,15 @@ internal class EndpointParameter
                 }
             }
 
-            isParameterlessConstructor = false;
-            matchedParameters = propertiesWithParameterInfo;
+            isDefaultConstructor = false;
+            matchedProperties = propertiesWithParameterInfo;
             return true;
         }
 
         if (type.IsValueType)
         {
-            isParameterlessConstructor = true;
-            matchedParameters = writableProperties.Select(property => new ConstructorParameter(property, null));
+            isDefaultConstructor = true;
+            matchedProperties = writableProperties.Select(property => new ConstructorParameter(property, null));
             return true;
         }
 

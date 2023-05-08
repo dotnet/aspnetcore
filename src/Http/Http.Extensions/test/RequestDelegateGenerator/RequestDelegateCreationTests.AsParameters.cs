@@ -290,6 +290,7 @@ app.MapGet("/{value}", TestAction);
         httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.Value)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
         httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ConstantValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
         httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ReadOnlyValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.PrivateSetValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
 
         await endpoint.RequestDelegate(httpContext);
 
@@ -297,6 +298,7 @@ app.MapGet("/{value}", TestAction);
         Assert.Equal(expectedInput.Value, input.Value);
         Assert.Equal(expectedInput.ConstantValue, input.ConstantValue);
         Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
+        Assert.Equal(expectedInput.PrivateSetValue, input.PrivateSetValue);
     }
 
     [Fact]

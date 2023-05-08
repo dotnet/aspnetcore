@@ -799,6 +799,7 @@ public class ParameterListWithReadOnlyProperties
     public ParameterListWithReadOnlyProperties()
     {
         ReadOnlyValue = 1;
+        PrivateSetValue = 2;
     }
 
     public int Value { get; set; }
@@ -806,6 +807,8 @@ public class ParameterListWithReadOnlyProperties
     public int ConstantValue => 1;
 
     public int ReadOnlyValue { get; }
+
+    public int PrivateSetValue { get; private set;  }
 }
 
 public record struct SampleParameterList(int Foo);
