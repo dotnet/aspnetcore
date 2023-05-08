@@ -34,7 +34,7 @@ if (e.Value != "HfIK4QgxlajUlAj2se0A90ZAtJmkI4zOLQrCwEl86WM77WlKbDQlXhnd/DYDZKHU
 
 return 100;
 
-internal class DataProtectionBuilder : IDataProtectionBuilder
+internal sealed class DataProtectionBuilder : IDataProtectionBuilder
 {
     public DataProtectionBuilder(IServiceCollection services) => Services = services;
     public IServiceCollection Services { get; }
